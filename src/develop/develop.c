@@ -400,7 +400,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->image_dirty = dev->preview_dirty = 1;
 
   dev->iop = dt_iop_load_modules(dev);
-  
+
   dt_dev_read_history(dev);
 
   dev->first_load = 0;
@@ -886,6 +886,13 @@ void dt_dev_read_history(dt_develop_t *dev)
       free(hist);
       continue;
     }
+
+    if(hist->module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
+    {
+      free(hist);
+      continue;
+    }
+
     int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
@@ -930,6 +937,12 @@ void dt_dev_read_history(dt_develop_t *dev)
     else
     {
       memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+
+    // make sure that always-on modules are always on. duh.
+    if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
+    {
+      hist->enabled = 1;
     }
 
     // memcpy(hist->module->params, hist->params, hist->module->params_size);

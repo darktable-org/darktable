@@ -790,6 +790,11 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
     return 1;      // this needs to be set
   }
+  if(module->params_size == 0)
+  {
+    fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
+    return 1;      // empty params hurt us in many places, just add a dummy value
+  }
   module->enabled = module->default_enabled; // apply (possibly new) default.
   return 0;
 }
@@ -1291,6 +1296,12 @@ init_presets(dt_iop_module_so_t *module_so)
       }
 
       module->init(module);
+      if(module->params_size == 0)
+      {
+        dt_iop_cleanup_module(module);
+        free(module);
+        continue;
+      }
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
 
@@ -1340,6 +1351,12 @@ init_presets(dt_iop_module_so_t *module_so)
       }
 
       module->init(module);
+      if(module->params_size == 0)
+      {
+        dt_iop_cleanup_module(module);
+        free(module);
+        continue;
+      }
       void *new_blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
       // convert the old blend params to new

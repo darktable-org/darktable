@@ -53,15 +53,16 @@ struct dt_develop_tiling_t;
 #define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
 /** Flag for the iop module to be enabled/included by default when creating a style */
-#define	IOP_FLAGS_INCLUDE_IN_STYLES	1
-#define	IOP_FLAGS_SUPPORTS_BLENDING	2			// Does provide blending modes
-#define	IOP_FLAGS_DEPRECATED	        4
-#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS	8			// Does only blend with L-channel in Lab space. Keeps a, b of original image.
+#define IOP_FLAGS_INCLUDE_IN_STYLES     1
+#define IOP_FLAGS_SUPPORTS_BLENDING     2                       // Does provide blending modes
+#define IOP_FLAGS_DEPRECATED            4
+#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS  8                       // Does only blend with L-channel in Lab space. Keeps a, b of original image.
 #define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
 #define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
 #define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-#define IOP_FLAGS_ONE_INSTANCE        128     // The module doesn't support multiple instances
-#define IOP_FLAGS_PREVIEW_NON_OPENCL  256     // Preview pixelpipe of this module must not run on GPU but always on CPU
+#define IOP_FLAGS_ONE_INSTANCE        128                       // The module doesn't support multiple instances
+#define IOP_FLAGS_PREVIEW_NON_OPENCL  256                       // Preview pixelpipe of this module must not run on GPU but always on CPU
+#define IOP_FLAGS_NO_HISTORY_STACK    512                       // This iop will never show up in the history stack
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
@@ -319,7 +320,7 @@ typedef struct dt_iop_module_t
   int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
   /** reverse points after the iop is applied => point before process */
   int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
-  
+
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
