@@ -1893,11 +1893,4 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="core">
-    <name>run_similarity_indexer</name>
-    <type>bool</type>
-    <default>FALSE</default>
-    <shortdescription>run indexer</shortdescription>
-    <longdescription>index images in background, so you can search them by similarity.</longdescription>
-  </dtconfig>
 </dtconfiglist>

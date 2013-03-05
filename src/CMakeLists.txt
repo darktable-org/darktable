@@ -39,7 +39,6 @@ FILE(GLOB SOURCE_FILES
   "common/metadata.c"
   "common/mipmap_cache.c"
   "common/styles.c"
-  "common/similarity.c"
   "common/selection.c"
   "common/tags.c"
   "common/utility.c"
