@@ -28,7 +28,6 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/debug.h"
-#include "common/similarity.h"
 #include "gui/gtk.h"
 
 #include <glib/gprintf.h>
@@ -553,9 +552,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 #endif
 
-  /* invalidate image data*/
-  dt_similarity_image_dirty(dev->image_storage.id);
-
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -964,8 +960,6 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
     dev->pipe->cache_obsolete = 1;
     dev->preview_pipe->cache_obsolete = 1;
 
-    dt_similarity_image_dirty(dev->image_storage.id);
-
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
 
@@ -981,8 +975,6 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->pipe->cache_obsolete = 1;
-
-    dt_similarity_image_dirty(dev->image_storage.id);
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
