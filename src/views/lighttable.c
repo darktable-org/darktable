@@ -1245,6 +1245,8 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
                             (gpointer)self);
 
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
   // clear some state variables
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
