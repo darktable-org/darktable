@@ -310,10 +310,20 @@ void _gui_init (dt_gui_styles_upload_dialog_t *sd)
   g_object_set (sd->save_local, "tooltip-text", _("do you want to save changes in name and description locally too?"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->save_local), 0, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
-  sd->agreement = gtk_check_button_new_with_label(_("I accept the user agreement"));
+  GtkWidget* agrlink, *agrspace;
+  GtkBox *agrbox;
+  char agrlinkmkup[256];
+  sprintf(agrlinkmkup, "<a href=\"%suser-agreement.php\"><span foreground=\"#ffffff\">%s</span></a>", _STYLES_SERVER, _("user agreement"));
+  agrlink = gtk_label_new("");
+  agrspace = gtk_label_new("");
+  gtk_label_set_markup(GTK_LABEL(agrlink), agrlinkmkup);
+  sd->agreement = gtk_check_button_new_with_label("I accept the ");
   g_object_set (sd->agreement, "tooltip-text", _("you must accept the user agreement to upload style"), (char *)NULL);
-  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(sd->agreement), 0, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-
+  agrbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start (agrbox,GTK_WIDGET(sd->agreement),FALSE,FALSE,0);
+  gtk_box_pack_start (agrbox,GTK_WIDGET(agrlink),FALSE,FALSE,0);
+  gtk_box_pack_start (agrbox,GTK_WIDGET(agrspace),TRUE,TRUE,0);
+  gtk_table_attach(GTK_TABLE(settings), GTK_WIDGET(agrbox), 0, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   /* set thumbnails */
 
