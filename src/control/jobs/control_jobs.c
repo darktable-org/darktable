@@ -1324,7 +1324,6 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
   char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image", "exporting %d images", total), total );
 
-  int size = 0, width = 800, height = 600;
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name("jpeg");
   g_assert(format);
 
@@ -1346,15 +1345,6 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
   }
   dt_image_cache_read_release(darktable.image_cache, image);
 
-  dt_imageio_module_data_t *fdata;
-  fdata = format->get_params(format, &size);
-  if(fdata == NULL)
-    fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
-
-  fdata->max_width  = width;
-  fdata->max_height = height;
-  fdata->style[0] = '\0';
-
   /* create a cancellable bgjob ui template */
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
@@ -1369,14 +1359,24 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-  #pragma omp parallel default(none) shared(control, fraction, stderr, format, fdata, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel default(none) shared(control, fraction, stderr, format, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
 #else
-  #pragma omp parallel shared(control, fraction, format, fdata, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel shared(control, fraction, format, job, jid, darktable, settings, style_path, beforeid, afterid, img_a, img_b) num_threads(num_threads) if(num_threads > 1)
 #endif
   {
 #endif
 
     // export before and after images
+    int size = 0, width = 800, height = 600;
+    dt_imageio_module_data_t *fdata;
+    fdata = format->get_params(format, &size);
+    if(fdata == NULL)
+      fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
+
+    fdata->max_width  = width;
+    fdata->max_height = height;
+    fdata->style[0] = '\0';
+
     {
       if (dt_imageio_export(beforeid, img_b, format, fdata, FALSE) != 0)
       {
@@ -1478,11 +1478,11 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
       }
 
     }
+    format->free_params(format, fdata);
 #ifdef _OPENMP
   }
 #endif
   dt_control_backgroundjobs_destroy(control, jid);
-  format->free_params(format, fdata);
   
   unlink(img_b);
   unlink(img_a);
