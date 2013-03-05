@@ -14,7 +14,6 @@ src/common/imageio.c
 src/common/mipmap_cache.c
 src/common/points.h
 src/common/ratings.c
-src/common/similarity.c
 src/common/styles.c
 src/common/variables.c
 src/control/control.c
@@ -45,8 +44,6 @@ src/imageio/format/jpeg.c
 src/imageio/format/pfm.c
 src/imageio/format/png.c
 src/imageio/format/ppm.c
-src/imageio/format/rgbe.c
-src/imageio/format/rgbe.c
 src/imageio/format/tiff.c
 src/imageio/storage/disk.c
 src/imageio/storage/email.c
@@ -137,7 +134,6 @@ src/libs/modulelist.c
 src/libs/navigation.c
 src/libs/recentcollect.c
 src/libs/select.c
-src/libs/similarity.c
 src/libs/snapshots.c
 src/libs/styles.c
 src/libs/tagging.c
