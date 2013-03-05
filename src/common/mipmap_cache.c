@@ -1145,6 +1145,12 @@ typedef struct _dummy_data_t
 _dummy_data_t;
 
 static int
+_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_INT8;
+}
+
+static int
 _bpp(dt_imageio_module_data_t *data)
 {
   return 8;
@@ -1279,6 +1285,7 @@ libraw_fail:
     _dummy_data_t dat;
     format.bpp = _bpp;
     format.write_image = _write_image;
+    format.levels = _levels;
     dat.head.max_width  = wd;
     dat.head.max_height = ht;
     dat.buf = buf;

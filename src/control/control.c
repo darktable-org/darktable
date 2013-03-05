@@ -450,6 +450,8 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table lock (id integer)",
                         NULL, NULL, NULL);
+  // still necessary, it creates temporary tables and such
+  dt_control_sanitize_database();
 }
 
 void dt_control_init(dt_control_t *s)

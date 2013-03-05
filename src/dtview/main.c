@@ -196,6 +196,12 @@ bpp (dt_imageio_module_data_t *data)
   return 32;
 }
 
+static int
+levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
 static const char*
 mime(dt_imageio_module_data_t *data)
 {
@@ -245,6 +251,7 @@ process_next_image()
   dt_imageio_module_format_t buf;
   dt_imageio_module_data_t dat;
   buf.mime = mime;
+  buf.levels = levels;
   buf.bpp = bpp;
   buf.write_image = write_image;
   dat.max_width  = width;
