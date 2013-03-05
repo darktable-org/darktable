@@ -1114,8 +1114,6 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     module->dev->pipe->cache_obsolete = 1;
     module->dev->preview_pipe->cache_obsolete = 1;
 
-    //dt_similarity_image_dirty(dev->image_storage.id);
-
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(module->dev);
 

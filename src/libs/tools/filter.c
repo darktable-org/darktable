@@ -223,7 +223,7 @@ static void _lib_filter_sort_combobox_changed(GtkComboBox *widget, gpointer user
 
 static void _lib_filter_update_query(dt_lib_module_t *self)
 {
-  /* sometimes changes, for similarity search e.g. */
+  /* sometimes changes */
   dt_collection_set_query_flags(darktable.collection, COLLECTION_QUERY_FULL);
 
   /* updates query */
