@@ -1456,6 +1456,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16));
 
     lib->full_preview = 0;
   }
@@ -1495,6 +1496,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)&1) << 3;
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)&1) << 4;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
 
       //dt_dev_invalidate(darktable.develop);
     }
