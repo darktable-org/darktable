@@ -269,7 +269,10 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 
   /* set the centerview scroll to top */
   if(instance != NULL)
-    lib->offset=0;
+  {
+    lib->first_visible_filemanager = lib->offset = 0;
+    lib->offset_changed = TRUE;
+  }
 
   dt_control_queue_redraw_center();
 }
