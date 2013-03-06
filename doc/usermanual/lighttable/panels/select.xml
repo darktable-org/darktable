@@ -4,7 +4,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel allows to quickly select images, according to various criteria.
+					<entry>This panel allows quick selection of images, according to some common criteria.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
@@ -18,7 +18,7 @@
 			</para>
 		</sect4>
 		<sect4><title>select none</title>
-			<para>De-select all image.
+			<para>De-select all images.
 			</para>
 		</sect4>
 		<sect4><title>invert selection</title>

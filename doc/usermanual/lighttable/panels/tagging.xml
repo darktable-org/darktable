@@ -4,12 +4,12 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel allows to manage tags for your images.
-					Those tags are currently stored in sidecar files (.xmp) and within the 
+					<entry>This panel is for managing tags on images.
+					Tags are stored in both, sidecar files (.xmp), and within the 
 					darktable database for a faster access.
 					The panel is divided into two parts: the upper part contains the tag(s) currently set for the image 
-					either under mouse (if mouse is over an image) or selected (if mouse is outside the lighttable).
-					The lower part contains all tags available; those can be filtered thanks to the upper text box.
+					under mouse (if the mouse is over an image) or the selected image (if the mouse is outside the lighttable).
+					The lower part contains all available tags, whih can be filtered in the upper text box.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />

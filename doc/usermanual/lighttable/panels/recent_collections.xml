@@ -4,7 +4,8 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel keeps tracks of your latest collections you have used, so you can jump to the latest used without remebering what rules was specified in the collection.
+					<entry>This panel keeps tracks of the latest collections you have used, so you can jump within recently used collections without remembering what rules were
+                                        specified in the collection.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_recent_collections.png" scalefit="1" width="80%" align="center" />

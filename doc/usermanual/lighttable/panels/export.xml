@@ -11,8 +11,8 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Each workflow has to end by this panel: the exportation of your developed images.
-							Currently, you can export either to a file on your disk, or to various on-line storages places.
+							<entry>Each workflow ends in this panel: the export of your developed images.
+							You can export either to a file on disk, or to various on-line storage places.
 							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> from within darkroom mode to export.
                                                         </entry>
 							<entry>
@@ -24,12 +24,12 @@
 			</informaltable>
 				<sect4><title>target storage</title>
 					<para>Where to store your selected images. Different back-ends are implemented, including file on disk, a LaTeX book template and
-                                              various web albums. Depending on the selected target you will be asked to give additional information like filenames, account
+                                              various web albums. Depending on the selected target, you will be asked to give additional information, like filenames, or account
                                               name and password.
 					</para>
 				</sect4>
 				<sect4><title>filename template</title>
-					<para>You can define the filenames that darktable generates for export. Several pre-defined variables can be used as placeholders:
+					<para>You can define filenames that darktable generates for export. Several pre-defined variables can be used as placeholders:
 					</para>
                                         <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
                                         <tbody>
@@ -104,39 +104,37 @@
                                 </informaltable>
 				</sect4>
 				<sect4><title>output directory</title>
-					<para>Pressing button <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" /> will open a dialog to select the parent directory 
+					<para>Pressing button <inlinegraphic fileref="&icon_directory;" scalefit="1" width="2%" align="center" /> opens a dialog to select the parent directory 
                                               for export.
 					</para>
 				</sect4>
 
 				<sect4><title>file format</title>
-					<para>darktable knows various file formats to export to. For some of them you need to additionally define your desired bit depth. If you export to a jpeg file you
-                                              can additionally define an output quality. Higher values will lead to larger file sizes.
+					<para>darktable can export to various file formats. For some of them you need to define the desired bit depth of the exported image. If you export to a JPEG
+                                              file you can define an output quality. Higher values will lead to larger file sizes.
 					</para>
 				</sect4>
 
 				<sect4><title>max size</title>
-					<para>Set the maximum width and height of your output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently 
+					<para>Set the maximum width and height of the output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently 
                                               can only do down-scaling; the maximum output resolution is defined by the parent image.
 					</para>
 				</sect4>
 
 				<sect4><title>intent</title>
-					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See module <emphasis>output color profile</emphasis>
-                                              (<xref linkend="output color profile"/>) for a more detailed description of the
-                                              available options. Select <quote>image settings</quote> if you want the settings in module <emphasis>output color profile</emphasis> of the 
-                                              individual images to take precedence.
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See <xref linkend="output color profile"/> for a 
+                                              more detailed description of the available options.
 					</para>
 				</sect4>
 
 				<sect4><title>profile</title>
-					<para>This defines the output color profile. Select <quote>image settings</quote> if you want the settings in module <emphasis>output color profile</emphasis>
-                                              of the individual images to take precedence.
+					<para>This defines the output color profile. Select <quote>image settings</quote> if you want the settings in the <emphasis>output color profile</emphasis>
+                                              module of the individual images to take precedence.
 					</para>
 				</sect4>
 				<sect4><title>export</title>
-					<para>Pressing this button will start a background job to export all selected images. A bar at the bottom of the left side panel will display the 
-                                              progress. Whenever a file is successfully exported a notification message will pop up. You may click on the pop-up to make it disappear.
+					<para>Pressing this button starts a background job to export all selected images. A bar at the bottom of the left side panel displays the 
+                                              progress. Whenever a file is successfully exported, a notification message pops up for a few seconds. You may click on the pop-up to make it disappear.
 					</para>
 				</sect4>
 
