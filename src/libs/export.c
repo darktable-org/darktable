@@ -503,7 +503,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  g_strlcpy(prof->name, _("aRGB"), sizeof(prof->name));
+  g_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 

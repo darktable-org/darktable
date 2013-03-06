@@ -800,7 +800,7 @@ void gui_init(struct dt_iop_module_t *self)
     else if(!strcmp(prof->name, "sRGB"))
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
     else if(!strcmp(prof->name, "adobergb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("aRGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
     else if(!strcmp(prof->name, "infrared"))

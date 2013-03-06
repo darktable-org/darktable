@@ -261,11 +261,11 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "aRGB");
+  cmsMLUsetASCII(mlu1, "en", "US", "Adobe RGB (compatible)");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
   cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu3, "en", "US", "aRGB");
+  cmsMLUsetASCII(mlu3, "en", "US", "Adobe RGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
   cmsWriteTag(hAdobeRGB, cmsSigCopyrightTag,          mlu0);
   cmsWriteTag(hAdobeRGB, cmsSigProfileDescriptionTag, mlu1);
