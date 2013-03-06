@@ -46,7 +46,7 @@
 #include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -62,6 +62,7 @@ typedef struct dt_iop_watermark_params_t
   float yoffset;
   /** Alignment value 0-8 3x3 */
   int alignment;
+  gboolean absolute;
   char filename[64];
 }
 dt_iop_watermark_params_t;
@@ -73,6 +74,7 @@ typedef struct dt_iop_watermark_data_t
   float xoffset;
   float yoffset;
   int alignment;
+  gboolean absolute;
   char filename[64];
 }
 dt_iop_watermark_data_t;
@@ -83,9 +85,49 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
+  GtkToggleButton *absolute;
 }
 dt_iop_watermark_gui_data_t;
 
+
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_watermark_params_v1_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      char filename[64];
+    }
+    dt_iop_watermark_params_v1_t;
+
+    dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->absolute = FALSE;
+    strncpy(n->filename, o->filename, 64);
+    return 0;
+  }
+  return 1;
+}
 
 const char *name()
 {
@@ -535,7 +577,6 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   return svgdoc;
 }
 
-
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_watermark_data_t *data = (dt_iop_watermark_data_t *)piece->data;
@@ -618,7 +659,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   cairo_scale (cr,scale,scale);
 
   /* translate x and y offset */
-  cairo_translate (cr,data->xoffset*iw/roi_out->scale,data->yoffset*ih/roi_out->scale);
+  int sizex, sizey;
+  if (data->absolute)
+  {
+    // in absolute mode do not depends on the size/scaling of the image
+    sizex = 6000;
+    sizey = 6000;
+  }
+  else
+  {
+    sizex = iw/roi_out->scale;
+    sizey = ih/roi_out->scale;
+  }
+
+  cairo_translate (cr,data->xoffset*sizex,data->yoffset*sizey);
 
   /* render svg into surface*/
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -805,6 +859,15 @@ scale_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void
+absolute_callback(GtkToggleButton *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  p->absolute = gtk_toggle_button_get_active(button);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
@@ -818,6 +881,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
+  d->absolute = p->absolute;
   memset(d->filename,0,64);
   sprintf(d->filename,"%s",p->filename);
 
@@ -858,6 +922,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale3, p->xoffset);
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
+  gtk_toggle_button_set_active( g->absolute, p->absolute);
   _combo_box_set_active_text( g->combobox1, p->filename );
 }
 
@@ -872,7 +937,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
   {
-    100.0,100.0,0.0,0.0,4, {"darktable.svg"}
+    100.0,100.0,0.0,0.0,4, FALSE, {"darktable.svg"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -942,6 +1007,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
+  g->absolute  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("absolute offset")));
+  gtk_toggle_button_set_active(g->absolute, p->absolute);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->absolute), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->absolute), "toggled", G_CALLBACK(absolute_callback), self);
 
   // Let's add some tooltips and hook up some signals...
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the opacity of the watermark"), (char *)NULL);
