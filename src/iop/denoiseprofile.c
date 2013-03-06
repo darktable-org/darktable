@@ -1397,14 +1397,14 @@ void reload_defaults(dt_iop_module_t *module)
       if(g->profiles[i]->iso == iso)
       {
         g->interpolated = *(g->profiles[i]);
-        snprintf(name, 512, N_("found match for iso %d"), g->profiles[i]->iso);
+        snprintf(name, 512, _("found match for iso %d"), g->profiles[i]->iso);
         break;
       }
       if(g->profiles[i-1]->iso < iso &&
          g->profiles[i]->iso > iso)
       {
         dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
-        snprintf(name, 512, N_("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
+        snprintf(name, 512, _("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
         break;
       }
     }
