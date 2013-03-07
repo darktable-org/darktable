@@ -5,9 +5,9 @@
     <colspec colwidth="4*"/>
     <tbody>
       <row>						
-	<entry>In the camera settings you have access to functionality as setting up a capture job which
-	includes sequences, brackets and delays. Also this panel includes access to camera settings that
-	can be controlled remotly from within darktable.
+	<entry>The camera settings section allows you to set up a capture job. This can include sequence, bracket and delayed
+               captures. You are also able to control other camera settings such as focus mode, aperture, shutter speed, ISO and
+               white balance.
 	</entry>
 	<entry>
 	  <graphic fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />

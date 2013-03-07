@@ -5,38 +5,36 @@
 	<sect2>
 	  <title>Studio setup with screening</title>
 
-	  <para>This is a pretty common use case. You have your studio and subject rigged, camera
-	  is connected to your computer and tethering view is active in darktable. You work behind the camera and take images.
-          Whenever you want you can screen the image directly on your computer monitor instead of using the camera LCD for validation.
+	  <para>This is a pretty common use case. You have your studio and subject set up, the camera
+	  is connected to your computer and tethering view is active in darktable. You work at the camera and take images.
+          Whenever you want, you can screen the image directly on your computer monitor instead of using the camera LCD for validation.
           </para>
 
-	  <para>This workflow is effective, as you don't need to take 20 captures and then later - while out 
-	  of the rigg - review them and hope that you got <emphasis>the one</emphasis>. Just do it up front. If you're shooting a model
-	  this is a pretty nice way to pre-show the captures to the client instead of fumbling around with your camera.
+	  <para>This workflow is efficient and effective, since you can immediately review your captures instead of waiting until after the shoot
+          when everyone is gone. If you're shooting a model
+	  this is a pretty nice way to pre-view the captures with the client instead of fumbling around with your camera.
           </para>
 
-	  <para>This workflow is kind of out-of-the-box when entering tethering view. You just need to set a session 
-	  name - preferable subject name of the shoot - then just start to take images. They will fall into 
-	  the right filmroll for the session for easy review on-site.</para>
+	  <para>Working in the tethered mode can save you time and aggravation. Set a session name, shoot your images and they will save in
+          the correct filmroll for the session for easy on-site review.</para>
 
 	</sect2>
 
 	<sect2>
 	  <title>Capturing a timelapse</title>
 
-	  <para>A timelapse is a video clip composed out of images taken on a interval of X seconds. A typical example
+	  <para>A timelapse is a video clip composed of images taken in a time sequence. A typical example
 	  is to take a timelapse of cityscapes where you capture clouds and traffic etc.</para>
 
-	  <para>To setup a timelapse capture you should as always create a new session as descibed before. Then you need
-	  to decide if you want to shoot in manual or auto mode. Only go for auto in situations were the ambient light will
-	  strongly change over time of the timelapse. Eg. shooting a timelapse over 24 hours might give you easier control of lights
-	  in that kind of captured sequence.</para>
+	  <para>To setup a timelapse capture, create a new session as descibed previously. Now decide if you want to shoot in manual or auto mode. 
+          Only use auto in situations were the ambient light will change significantly during the time of the shoot, eg. shooting a timelapse 
+          over 24 hours might give you easier control of light in that kind of captured sequence.</para>
 
-	  <para>Head over to the camera settings panel where you define delay and sequence. Sequence will give you the oppertunity to 
-          choose how many images you want to capture and delay will set the time in seconds between capture.</para>
+	  <para>The camera settings panel is where you define delay and sequence. Sequence will give you the oppertunity to 
+          choose how many images you want to capture and delay will set the time in seconds between captures.</para>
 
-	  <para>To start the capture just hit the capture button in the same panel and watch the filmstrip fill up with 
-	  images. The latest captured image is always previewed in center view.</para>
+	  <para>To start the capture click the capture button in the same panel and watch the filmstrip fill up with 
+	  images. The latest captured image is always displayed in center view.</para>
 	</sect2>
 
 </sect1>

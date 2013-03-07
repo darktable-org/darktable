@@ -6,7 +6,7 @@
 </keywordset>
 </chapterinfo>
 <title>Tethering</title>
-<para>The tethering view is where you remote control and capture images from your connected camera directly into darktable.</para>
+<para>The tethering view allows you to capture images directly into darktable from your connected camera.</para>
 <screenshot>
   <screeninfo>The tethering view</screeninfo>
   <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
@@ -14,14 +14,16 @@
 
 <sect1>
   <title>Overview</title>
-  <para>To use the tethering feature you need to connect your camera to your PC using an USB cable. Your desktop environment might ask a question of what you want to do.
-        In that case <quote>unmount/eject</quote> is the answer. This is required to unlock the camera so darktable can lock it for usage.</para>
+  <para>To use the tethering feature you need to connect your camera to your PC using a USB cable. Your computer might ask to mount or view the connected camera.
+        Do not mount or view the camera. If that happens automatically, you will need to <quote>unmount/eject</quote> the camera. This is required to unlock the 
+        camera so darktable can lock it for usage.</para>
   
-  <para>When your camera is connected, head over to the import panel in lighttable. If your camera is not visible in this panel, hit the <quote>scan devices</quote> button and it will 
-        appear with two functions: <quote>import from camera</quote> and <quote>tethered shoot</quote>, the latter button is the one you should press to enter tethering mode.</para>
+  <para>After the USB cable is connected, look at the import panel in lighttable mode (see <xref linkend="import"/>). If your camera is not visible in this panel, 
+        click the <quote>scan devices</quote> button and it will 
+        appear with two functions: <quote>import from camera</quote> and <quote>tethered shoot</quote>. Click <quote>tethered shoot</quote> to enter the tethering mode.</para>
   
-  <para>darktable uses gphoto2 to interface with your camera. If you have problems to find the connected camera as described above, do check the troubleshoot section in 
-        this chapter in order to verify that your camera is supported for use with tethering.</para>  
+  <para>darktable uses gphoto2 to interface with your camera. If you have problems finding the connected camera as described above, check the troubleshoot section in 
+        this chapter in order to verify your camera has tethering support.</para>  
 
   <sect2 status="final">
     <title>Tethering</title>
@@ -43,11 +45,11 @@
 
     <para>When entering tethering view, a filmroll will be created using the same structure as defined when you import from the camera. Job code will be predefined as <quote>capture</quote>.</para>
 
-    <para>If you want to group your captures into different filmrolls, you should use the session panel in right side. When entering a new name and hitting enter, a new filmroll 
+    <para>If you want to group your captures into different filmrolls, you should use the session panel in right side. When entering a new name and pressing enter, a new filmroll 
           will be created and captured images will go into this new filmroll.</para>
 
-    <para>darktable provides some nifty tools to setup a capture using the user interface. You can setup timelapse captures and brackets for HDR creations. The configuration 
-          is so dynamic that you can create sequential capture of brackets - go figure... For more information read the documentation about capture panel and the examples
+    <para>darktable provides some nifty tools to setup a capture in the user interface. You can setup timelapse captures and brackets for HDR creations. The configuration 
+          is so dynamic that you can create sequential capture of brackets - go figure... For more information read the documentation about the capture panel and the examples
           in this chapter.</para>
 
   </sect2>
