@@ -744,6 +744,7 @@ static void ui_refresh_users(dt_storage_facebook_gui_data_t *ui)
   gtk_list_store_clear(list_store);
   gtk_list_store_append(list_store, &iter);
 
+  int active_account = 0;
   if (g_slist_length(accountlist) == 0)
   {
     gtk_list_store_set(list_store, &iter,
@@ -762,10 +763,11 @@ static void ui_refresh_users(dt_storage_facebook_gui_data_t *ui)
                        COMBO_USER_MODEL_NAME_COL, "",
                        COMBO_USER_MODEL_TOKEN_COL, NULL,
                        COMBO_USER_MODEL_ID_COL, NULL,-1);//separator
+    active_account = 2;
   }
 
   g_slist_foreach(accountlist, (GFunc)ui_refresh_users_fill, list_store);
-  gtk_combo_box_set_active(ui->comboBox_username, 0);
+  gtk_combo_box_set_active(ui->comboBox_username, active_account);
 
   g_slist_free_full(accountlist, (GDestroyNotify)fb_account_info_destroy);
   gtk_combo_box_set_row_separator_func(ui->comboBox_username,combobox_separator,ui->comboBox_username,NULL);
