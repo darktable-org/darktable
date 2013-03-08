@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "common/history.h"
 #include "common/imageio.h"
 #include "common/image_cache.h"
 #include "common/file_location.h"
@@ -396,7 +397,10 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
   {
     /* check if we should make a duplicate before applying style */
     if (duplicate)
+    {
       newimgid = dt_image_duplicate (imgid);
+      if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+    }
     else
       newimgid = imgid;
 
