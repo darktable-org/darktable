@@ -33,14 +33,14 @@
 			</listitem>
 			
 			<listitem><para>Add color tone</para>
-				<para>This step selects the basetone of the image using <emphasis>channel mixer</emphasis> (<xref linkend="channel mixer"/>), 
-                                       we are going for cyan tone but you can choose the tone of your like here.
+				<para>This step selects the base tone of the image using <emphasis>channel mixer</emphasis> (<xref linkend="channel mixer"/>), 
+                                       we are going for cyan tone but you can choose any tone that you like here.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the channel mixer module</para></listitem>
-					<listitem><para>Select red channel and set red color value to 0.7</para></listitem>
-					<listitem><para>Select green channel and red color value to 0.150</para></listitem>
-					<listitem><para>Select blue channel and red color value to 0.150</para></listitem>
+					<listitem><para>Select red channel destination and set red color value to 0.7</para></listitem>
+					<listitem><para>Select green channel destination and red color value to 1.15</para></listitem>
+					<listitem><para>Select blue channel destination and red color value to 1.15</para></listitem>
 				</orderedlist>
 				<para>As you notice we mix blue and green color to get a cyan tone, we substract 0.3 from red channel
 					and add them to blue and green.
@@ -48,7 +48,7 @@
 			</listitem>
 			
 			<listitem><para>Splittoning</para>
-				<para>The result of previous step does also add a colorcast on highlight that we actually want to have 
+				<para>The result of previous step does also add a color cast on highlight that we actually want to have 
 					white for a prettier result. We also want to add some blue color cast to the shadows in order to emphasis them.
                                        Module <emphasis>splittoning</emphasis> (<xref linkend="splittoning"/>) can accomplish this.
 				</para>

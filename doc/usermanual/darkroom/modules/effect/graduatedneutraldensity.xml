@@ -1,11 +1,12 @@
-<sect3 status="draft" id="graduated neutral density"><title>Graduated Neutral Density</title>
+<sect3 status="draft" id="graduated density"><title>Graduated Density</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module aims at simulating a neutral density filter, in order to correct exposure and color in a progressive manner.				
+						<entry>This module aims at simulating a graduated density filter, in order to correct exposure and color in a 
+							progressive manner.				
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/graduatedneutraldensity.png" scalefit="1" width="80%" align="center" />
@@ -64,10 +65,10 @@
 			<para>Set progressiveness of the gradient. A low value creates a smooth transition, whereas a high value makes the transition abrupt.</para>
 		</sect5>
 		<sect5><title>hue</title>
-			<para>Set the hue to add a colorcast to the gradient.</para>
+			<para>Set the hue to add a color cast to the gradient.</para>
 		</sect5>
 		<sect5><title>saturation</title>
-			<para>Set the saturation to add a colorcast to the gradient.</para>
+			<para>Set the saturation to add a color cast to the gradient.</para>
 		</sect5>		
     <sect5><title>position</title>
 			<para>
@@ -88,8 +89,8 @@
 		</informaltable>
     </para>
 		</sect5>
-		<para> TIP: If you know you intend to use the GND filter before actually making a shot with your camera you might want to underexpose by one or two
-			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the GND filter cannot produce
+		<para> TIP: If you know you intend to use the graduated density filter before actually making a shot with your camera you might want to underexpose by one or two
+			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the graduated density filter cannot produce
 			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
 			please consult your camera's manual, look for 'exposure compensation'.
 
@@ -126,7 +127,7 @@
 								<graphic fileref="darkroom/modules/images/graduatedneutraldensity_ex3.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>And at last, i added an orange colored filter rotating it -180 degrees for applying it on water/trees for a more artistic use of the filter.
+								<para>And at last, I added an orange colored filter rotating it -180 degrees, applying it on water/trees for a more artistic use of the filter.
 								</para>
 							</entry>
 						</row>
@@ -135,7 +136,7 @@
 			</informaltable>
 		</para>	
 
-                <para>darktable's neutral density filter is a powerful tool. Nevertheless, hardware neutral density filters 
+                <para>darktable's graduated density filter is a powerful tool. Nevertheless, hardware filters 
                       have some advantages over a pure software solution. With a physical GND filter you can in fact reduce the dynamic range 
                       of your scene to make it better fit the limits of your camera sensor.
                 </para>
@@ -158,7 +159,7 @@
 						</row>
 						<row>
 							<entry>
-                                                               <para>darktable's neutral density filter together with the conditional 
+                                                               <para>darktable's graduated density filter together with the conditional 
                                                                      blending feature (see <xref linkend="conditional blending"/>) comes in handy. We can add a lightness 
                                                                      gradient that is just inverted in relation to the hardware filter. As we only want to compensate the unnatural
                                                                      decay of lightness in the tree trunks, we combine the module with a suited blend mask.

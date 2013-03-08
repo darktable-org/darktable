@@ -8,7 +8,7 @@
 							<entry>darktable's splittoning method creates a two color linear toning effect where the 
 								shadows and highlights are represented by two different colors.
 								In the example image below you can see an original black and white image and one where
-								a splittoning effect is applied with blue in shadows and a yellow-ish color in highlights.
+								a splittoning effect is applied with blue in shadows and a yellowish color in highlights.
 							</entry>
 							<entry>
 								<graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
@@ -19,9 +19,9 @@
 			</informaltable>
 			
 		<para>Compared to traditional splittoning our module has more parameters to influence its behavior. 
-		      We have parameter <quote>balance</quote> which offsets the 50% gray level in your image - at your choice more to the shadows or more to
-                      the highlights. Additionally with parameter <quote>compression</quote> you can compress toning in the shadows and highlights and leave a gap in the mid-tones,
-                      which is untouched by the effect.
+		      We have parameter <quote>balance</quote>, which offsets the 50% gray level in your image - at your choice - more to the shadows or more to
+                      the highlights. Additionally, with parameter <quote>compression</quote> you can compress toning in the shadows and highlights and leave a gap in the mid-tones,
+                      which remain untouched by the effect.
 		</para>
 		<para>The splittoning module does not convert images to black and white and has limited benefits on color images.
                       So, if you want to do traditional splittoning, use the <emphasis>monochrome</emphasis> module (see <xref linkend="monochrome"/>) 
