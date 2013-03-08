@@ -620,8 +620,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* translate x and y offset */
 
   // absolute offset, do not depends on the size/scaling of the image
-  int sizex = 6000;
-  int sizey = 6000;
+  float ratio = ((float)roi_in->width / (float)roi_in->height);
+  float sizex = 6000 * ratio;
+  float sizey = 6000 * ratio;
 
   cairo_translate (cr,data->xoffset*sizex,data->yoffset*sizey);
 
