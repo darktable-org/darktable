@@ -610,9 +610,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
   sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
-#ifdef picasa_EXTRA_VERBOSE
+//#ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
+//#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
@@ -625,6 +625,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   curl_easy_perform( ctx->curl_ctx );
 
   curl_slist_free_all(headers);
+
+  printf("Uploading: %s\n", buffer.data);
 
   long result;
   curl_easy_getinfo(ctx->curl_ctx,CURLINFO_RESPONSE_CODE,&result );
@@ -715,9 +717,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       writebuffer.offset=0;
 
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, updateUri);
-#ifdef picasa_EXTRA_VERBOSE
+//#ifdef picasa_iEXTRA_VERBOSE
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
+//#endif
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA,&writebuffer);
@@ -726,6 +728,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);
       curl_easy_perform( ctx->curl_ctx );
+  
+    printf("Uploading: %s\n", response.data);
 
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
@@ -1453,11 +1457,15 @@ int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_mo
     (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
   }
 
+  /* Google is showing the desciption field as the caption field */
+  /*
   desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
   if (desc != NULL)
   {
     description = desc->data;
   }
+  */
+  description = caption;
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
