@@ -165,6 +165,8 @@ copy_parts_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (d->imageid>0)
   {
+    d->dg.copied_imageid = d->imageid;
+
     // launch dialog to select the ops to copy
     int res = dt_gui_hist_dialog_new (&(d->dg), d->imageid, TRUE);
 
