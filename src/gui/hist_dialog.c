@@ -225,6 +225,12 @@ int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   return res;
 }
 
+void dt_gui_hist_dialog_init (dt_gui_hist_dialog_t *d)
+{
+  d->selops = NULL;
+  d->copied_imageid = -1;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

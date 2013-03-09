@@ -29,6 +29,9 @@ typedef struct dt_gui_hist_dialog_t
     change the sensitive state depending on the dialog response.  */
 int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy);
 
+/** must be called to initialize the structure. */
+void dt_gui_hist_dialog_init (dt_gui_hist_dialog_t *d);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
