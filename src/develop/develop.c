@@ -849,7 +849,7 @@ void dt_dev_read_history(dt_develop_t *dev)
         if (module->multi_priority == multi_priority)
         {
           hist->module = module;
-          if(strcmp(module->multi_name, multi_name))
+          if(multi_name && strcmp(module->multi_name, multi_name))
             snprintf(module->multi_name, 128, "%s", multi_name);
           break;
         }
