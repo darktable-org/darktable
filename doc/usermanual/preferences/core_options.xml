@@ -81,10 +81,11 @@
 		</para>
         </sect4>
 
+<!--
 	<sect4><title>run indexer</title>
 		<para>This will index images in background, so you can search them by similarity (default off).
 		</para>
         </sect4>
-
+-->
 
 </sect1>
