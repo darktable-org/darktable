@@ -249,6 +249,7 @@ gui_init (dt_lib_module_t *self)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(TRUE, 5);
+  dt_gui_hist_dialog_init(&d->dg);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
