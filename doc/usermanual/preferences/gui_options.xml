@@ -1,9 +1,9 @@
-<sect1 status="draft" id="gui options"><title>Gui options</title>
+<sect1 status="draft" id="gui options"><title>GUI options</title>
 	<para>These options control the look and feel of darktable.
 	</para>
 
 	<sect4><title>width of the side panels in pixels</title>
-		<para>This controls the size of size panels in pixels. Side panels are found left and right to the center view (default 300).
+		<para>This controls the size of side panels in pixels. Side panels are found left and right to the center view (default 300).
 		</para>
         </sect4>
 
@@ -13,7 +13,7 @@
         </sect4>
 
 	<sect4><title>ask before removing images from database</title>
-		<para>Always ask the user before any image is removed from db (default on).
+		<para>Always ask the user before any image is removed from the database (default on).
 		</para>
         </sect4>
 
@@ -48,17 +48,17 @@
         </sect4>
 
 	<sect4><title>creator to be applied when importing</title>
-		<para>If given automatically add this string as a creator tag when importing images (default none).
+		<para>If provided, automatically add this string as a creator tag when importing images (default none).
 		</para>
         </sect4>
 
 	<sect4><title>publisher to be applied when importing</title>
-		<para>If given automatically add this string as a publisher tag when importing images (default none).
+		<para>If provided, automatically add this string as a publisher tag when importing images (default none).
 		</para>
         </sect4>
 
 	<sect4><title>rights to be applied when importing</title>
-		<para>If given automatically add this string as a copyrights tag when importing images (default none).
+		<para>If provided, automatically add this string as a copyrights tag when importing images (default none).
 		</para>
         </sect4>
 
@@ -93,7 +93,7 @@
         </sect4>
 
 	<sect4><title>maximum number of images drawn on map</title>
-		<para>The maximum number of geotagged images drawn on the map. Increasing this number can slow drawing of the map down. Needs a restart if changed (default 100).
+		<para>The maximum number of geotagged images drawn on the map. Increasing this number can slow down the drawing of the map. Needs a restart if changed (default 100).
 		</para>
         </sect4>
 

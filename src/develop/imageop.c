@@ -790,6 +790,11 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     fprintf(stderr, "[iop_load_module] `%s' needs to set priority!\n", so->op);
     return 1;      // this needs to be set
   }
+  if(module->params_size == 0)
+  {
+    fprintf(stderr, "[iop_load_module] `%s' needs to have a params size > 0!\n", so->op);
+    return 1;      // empty params hurt us in many places, just add a dummy value
+  }
   module->enabled = module->default_enabled; // apply (possibly new) default.
   return 0;
 }
@@ -1109,8 +1114,6 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
     module->dev->pipe->cache_obsolete = 1;
     module->dev->preview_pipe->cache_obsolete = 1;
 
-    //dt_similarity_image_dirty(dev->image_storage.id);
-
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(module->dev);
 
@@ -1291,6 +1294,12 @@ init_presets(dt_iop_module_so_t *module_so)
       }
 
       module->init(module);
+      if(module->params_size == 0)
+      {
+        dt_iop_cleanup_module(module);
+        free(module);
+        continue;
+      }
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
 
@@ -1340,6 +1349,12 @@ init_presets(dt_iop_module_so_t *module_so)
       }
 
       module->init(module);
+      if(module->params_size == 0)
+      {
+        dt_iop_cleanup_module(module);
+        free(module);
+        continue;
+      }
       void *new_blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
       // convert the old blend params to new
@@ -1545,10 +1560,10 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
-      memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
-      // this should be redundant! (but is not)
-      memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     }
+    memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
+    // this should be redundant! (but is not)
+    memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
 
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
@@ -1946,6 +1961,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   char label[128];
   g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   hw[idx] = gtk_label_new("");
+  gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
 
   /* add multi instaces menu button */

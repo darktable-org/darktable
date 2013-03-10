@@ -202,7 +202,7 @@ dt_colorspaces_create_srgb_profile()
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "sRGB IEC61966-2.1");
+  cmsMLUsetASCII(mlu1, "en", "US", "sRGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
   cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
@@ -261,7 +261,7 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "Adobe RGB (1998)");
+  cmsMLUsetASCII(mlu1, "en", "US", "Adobe RGB (compatible)");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
   cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);

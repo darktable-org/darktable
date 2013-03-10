@@ -90,6 +90,8 @@ typedef struct dt_library_t
   GdkColor star_color;
   int images_in_row;
 
+  int32_t last_mouse_over_id;
+
   int32_t collection_count;
 
   /* prepared and reusable statements */
@@ -269,7 +271,10 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 
   /* set the centerview scroll to top */
   if(instance != NULL)
-    lib->offset=0;
+  {
+    lib->first_visible_filemanager = lib->offset = 0;
+    lib->offset_changed = TRUE;
+  }
 
   dt_control_queue_redraw_center();
 }
@@ -291,6 +296,7 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
+  lib->last_mouse_over_id = -1;
 
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
 
@@ -428,7 +434,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
     lib->offset = lib->first_visible_filemanager = 0;
 
-  int32_t offset = lib->offset = lib->first_visible_filemanager;
+  int32_t offset = lib->offset = MIN(lib->first_visible_filemanager, ((lib->collection_count + iir - 1) / iir - 1) * iir);
 
   int32_t drawing_offset = 0;
   if(offset < 0)
@@ -1245,6 +1251,8 @@ void enter(dt_view_t *self)
                             G_CALLBACK(_lighttable_mipamps_updated_signal_callback),
                             (gpointer)self);
 
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
   // clear some state variables
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
@@ -1283,11 +1291,17 @@ void reset(dt_view_t *self)
 
 void mouse_enter(dt_view_t *self)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
+  uint32_t id;
+  DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
+  if(id == -1)
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
 }
 
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  DT_CTL_GET_GLOBAL(lib->last_mouse_over_id, lib_image_mouse_over_id); // see mouse_enter (re: fluxbox)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
@@ -1456,6 +1470,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, ( lib->full_preview & 4));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP,    ( lib->full_preview & 8));
+    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16));
 
     lib->full_preview = 0;
   }
@@ -1495,6 +1510,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP)&1) << 3;
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE);
+      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)&1) << 4;
+      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
 
       //dt_dev_invalidate(darktable.develop);
     }

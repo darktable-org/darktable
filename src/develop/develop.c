@@ -28,7 +28,6 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/debug.h"
-#include "common/similarity.h"
 #include "gui/gtk.h"
 
 #include <glib/gprintf.h>
@@ -400,7 +399,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->image_dirty = dev->preview_dirty = 1;
 
   dev->iop = dt_iop_load_modules(dev);
-  
+
   dt_dev_read_history(dev);
 
   dev->first_load = 0;
@@ -552,9 +551,6 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
     }
   }
 #endif
-
-  /* invalidate image data*/
-  dt_similarity_image_dirty(dev->image_storage.id);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
@@ -853,6 +849,8 @@ void dt_dev_read_history(dt_develop_t *dev)
         if (module->multi_priority == multi_priority)
         {
           hist->module = module;
+          if(multi_name && strcmp(module->multi_name, multi_name))
+            snprintf(module->multi_name, 128, "%s", multi_name);
           break;
         }
         else if (multi_priority > 0)
@@ -886,6 +884,13 @@ void dt_dev_read_history(dt_develop_t *dev)
       free(hist);
       continue;
     }
+
+    if(hist->module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
+    {
+      free(hist);
+      continue;
+    }
+
     int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
@@ -932,6 +937,12 @@ void dt_dev_read_history(dt_develop_t *dev)
       memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
     }
 
+    // make sure that always-on modules are always on. duh.
+    if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
+    {
+      hist->enabled = 1;
+    }
+
     // memcpy(hist->module->params, hist->params, hist->module->params_size);
     // hist->module->enabled = hist->enabled;
     // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n", sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float *)hist->params, *(((float*)hist->params)+1));
@@ -962,8 +973,6 @@ void dt_dev_reprocess_all(dt_develop_t *dev)
     dev->pipe->cache_obsolete = 1;
     dev->preview_pipe->cache_obsolete = 1;
 
-    dt_similarity_image_dirty(dev->image_storage.id);
-
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);
 
@@ -979,8 +988,6 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   {
     dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
     dev->pipe->cache_obsolete = 1;
-
-    dt_similarity_image_dirty(dev->image_storage.id);
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(dev);

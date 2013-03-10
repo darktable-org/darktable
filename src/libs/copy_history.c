@@ -165,6 +165,8 @@ copy_parts_button_clicked (GtkWidget *widget, gpointer user_data)
 
   if (d->imageid>0)
   {
+    d->dg.copied_imageid = d->imageid;
+
     // launch dialog to select the ops to copy
     int res = dt_gui_hist_dialog_new (&(d->dg), d->imageid, TRUE);
 
@@ -216,8 +218,8 @@ paste_parts_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   // launch dialog to select the ops to paste
-  dt_gui_hist_dialog_new (&(d->dg), d->dg.copied_imageid, FALSE);
-  paste_button_clicked (widget, user_data);
+  if(dt_gui_hist_dialog_new (&(d->dg), d->dg.copied_imageid, FALSE) == GTK_RESPONSE_OK)
+    paste_button_clicked (widget, user_data);
 }
 
 static void
@@ -247,6 +249,7 @@ gui_init (dt_lib_module_t *self)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(TRUE, 5);
+  dt_gui_hist_dialog_init(&d->dg);
 
   GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 

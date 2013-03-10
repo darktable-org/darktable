@@ -737,9 +737,6 @@ int dt_init(int argc, char *argv[], const int init_gui,lua_State* L)
       dt_ctl_switch_mode_to(DT_LIBRARY);
   }
 
-  /* start the indexer background job */
-  dt_control_start_indexer();
-
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
     fprintf(stderr, "[memory] after successful startup\n");

@@ -5,7 +5,7 @@
     <xi:include href="collect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
     <xi:include href="keywords.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
     <xi:include href="recent_collections.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="metadata.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="image_information.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
     <!-- Right panel -->
     <xi:include href="select.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

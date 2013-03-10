@@ -16,7 +16,8 @@
 </chapterinfo>
 <title>Preferences and Settings</title>
 <para>darktable comes with a number of settings that can be configured by users. You reach the configuration
-      system by clicking <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" />.</para>
+      menu by clicking <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> at the top
+      of the screen.</para>
 <screenshot>
 	<screeninfo>The preferences window</screeninfo>
 	<graphic fileref="images/preferences_view.png" scalefit="1" width="80%"></graphic>

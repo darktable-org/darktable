@@ -300,6 +300,7 @@ void gui_init(dt_lib_module_t *self)
   d->history_copy_imgid = -1;
   d->activated_image = -1;
   d->mouse_over_id = -1;
+  dt_gui_hist_dialog_init(&d->dg);
 
   /* create drawingarea */
   self->widget = gtk_vbox_new(FALSE,0);
@@ -533,7 +534,7 @@ static gboolean _lib_filmstrip_imgid_in_collection(const dt_collection_t *collec
   g_free(count_query);
   return count;
 }
-  
+
 static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -798,7 +799,7 @@ static void _lib_filmstrip_scroll_to_image(dt_lib_module_t *self, gint imgid, gb
 
   strip->offset = dt_collection_image_offset(imgid);
 
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, strip->activated_image);  
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, strip->activated_image);
 
   /* activate the image if requested */
   if (activate)
@@ -849,7 +850,8 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
       (accel_group,aceeleratable, keyval, modifier, data))
   {
     dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
-    dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE);
+    if(dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, TRUE) == GTK_RESPONSE_CANCEL)
+      return FALSE;
     return TRUE;
   }
   else
@@ -887,7 +889,8 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
   int32_t mouse_over_id;
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
-  dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, FALSE);
+  int res = dt_gui_hist_dialog_new (&(strip->dg), strip->history_copy_imgid, FALSE);
+  if(res == GTK_RESPONSE_CANCEL) return FALSE;
 
   if (dt_history_copy_and_paste_on_selection (strip->history_copy_imgid, (mode==0)?TRUE:FALSE, strip->dg.selops)!=0)
   {
@@ -952,15 +955,15 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
       if (mouse_over_id <= 0) return FALSE;
       /* get image from cache */
-     
+
       int32_t activated_image = -1;
 
       activated_image = darktable.view_manager->proxy.filmstrip.activated_image(darktable.view_manager->proxy.filmstrip.module);
 
-      int offset = 0; 
+      int offset = 0;
       if(mouse_over_id == activated_image)
         offset = dt_collection_image_offset(mouse_over_id);
-      
+
       const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
       dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
       if (num == 666)

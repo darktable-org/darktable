@@ -88,11 +88,6 @@ void dt_control_time_offset(const long int offset, long int imgid);
 void dt_control_seed_denoise();
 void dt_control_denoise();
 
-struct dt_similarity_t;
-void dt_control_match_similar(struct dt_similarity_t *data);
-
-void dt_control_start_indexer();
-
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

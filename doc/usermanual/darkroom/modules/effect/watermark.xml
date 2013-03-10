@@ -18,7 +18,7 @@
 		</informaltable>
 
                 <para>The SVG processor of darktable also substitutes strings within the SVG document, which gives
-                the oppurtunity to include image dependent information in the watermark such as aperture,
+                the opportunity to include image dependent information in the watermark such as aperture,
                 exposure time and other metadata.
                 </para>
 

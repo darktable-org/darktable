@@ -148,7 +148,12 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,long int num,
   if(num==-1)
     g_snprintf(numlabel, 256, "%ld - %s", num+1, label);
   else
-    g_snprintf(numlabel, 256, "%ld - %s (%s)", num+1, label, enabled?_("on"):_("off"));
+  {
+    if(enabled)
+      g_snprintf(numlabel, 256, "%ld - %s", num+1, label);
+    else
+      g_snprintf(numlabel, 256, "%ld - %s (%s)", num+1, label, _("off"));
+  }
 
   /* create toggle button */
   widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,CPF_STYLE_FLAT);
@@ -184,12 +189,15 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* iterate over history items and add them to list*/
   GList *history = g_list_first(darktable.develop->history);
+  char label[512];
   while (history)
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
     /* create a history button and add to box */
-    GtkWidget *widget =_lib_history_create_button(self,num,hitem->module->name(),hitem->enabled);
+    snprintf(label, 512, "%s %s", hitem->module->name(), hitem->module->multi_name);
+    GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
+
     gtk_box_pack_start(GTK_BOX(d->history_box),widget,TRUE,TRUE,0);
     gtk_box_reorder_child(GTK_BOX(d->history_box),widget,0);
     num++;

@@ -21,7 +21,7 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>sharpen</title>
-			<para>Set the sharpen. The higher, the more details.</para>
+			<para>Set the sharpness. The higher, the more details.</para>
 		</sect5>
 		<sect5><title>contrast boost</title>
 			<para>Set the contrast boost.</para>

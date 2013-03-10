@@ -618,7 +618,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   cairo_scale (cr,scale,scale);
 
   /* translate x and y offset */
-  cairo_translate (cr,data->xoffset*iw/roi_out->scale,data->yoffset*ih/roi_out->scale);
+
+  // absolute offset, do not depends on the size/scaling of the image
+  float ratio = ((float)roi_in->width / (float)roi_in->height);
+  float sizex = 6000 * ratio;
+  float sizey = 6000 * ratio;
+
+  cairo_translate (cr,data->xoffset*sizex,data->yoffset*sizey);
 
   /* render svg into surface*/
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);

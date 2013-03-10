@@ -820,7 +820,9 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     cnt ++;
   }
   sqlite3_finalize(stmt);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+  if(cnt > 0)
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
   if(module)
   {
@@ -843,7 +845,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       if (darktable.gui->last_preset && found)
       {
         char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>",
-            _("update preset"), 
+            _("update preset"),
             darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);

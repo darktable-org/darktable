@@ -59,6 +59,11 @@ typedef struct dt_iop_overexposed_global_data_t
 }
 dt_iop_overexposed_global_data_t;
 
+typedef struct dt_iop_overexposed_t
+{
+  int dummy;
+}
+dt_iop_overexposed_t;
 
 const char* name()
 {
@@ -72,7 +77,7 @@ int groups()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
 
@@ -80,7 +85,7 @@ int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
   // we do no longer have module params in here and just ignore any legacy entries
-  return 1;
+  return 0;
 }
 
 
@@ -237,17 +242,19 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void init(dt_iop_module_t *module)
 {
-  module->params                  = NULL;
-  module->default_params          = NULL;
+  module->params                  = malloc(sizeof(dt_iop_overexposed_t));
+  module->default_params          = malloc(sizeof(dt_iop_overexposed_t));
   module->hide_enable_button      = 1;
   module->default_enabled         = 1;
   module->priority = 927; // module order created by iop_dependencies.py, do not edit!
-  module->params_size             = 0;
+  module->params_size             = sizeof(dt_iop_overexposed_t);
   module->gui_data                = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
 {
+  free(module->params);
+  module->params = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

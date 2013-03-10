@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is an artistic feature that creates a softened image also commonly known as the Orton effect.
+						<entry>This module is an artistic feature that creates a softened image, commonly known as the Orton effect.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
@@ -17,8 +17,8 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>Michael Orton achieved such results on slide film by using two exposures of the same scene: one well exposed and one overexposed; then 
-                      he used a darkroom technique to blend those into a final image where the overexposed image was blurred.
+                <para>Michael Orton achieved his results on slide film by using two exposures of the same scene: one well exposed and one overexposed; he then 
+                      used a darkroom technique to blend those into a final image where the overexposed image was blurred.
                 </para>
 		<para>This module is almost a copy of Orton's analogue process into the digital domain. You can control brightnesss and blur with the provided parameters; 
 			we also add a control for saturation of the overexposured image for more play.

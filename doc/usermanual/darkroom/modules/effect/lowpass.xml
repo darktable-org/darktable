@@ -6,7 +6,7 @@
 				<tbody>
 					<row>						
 						<entry>A lowpass filter (eg. gaussian blur) with additional control
-						of outcome as contrast and saturation.
+						of the outcome both of contrast and saturation.
 						The primary usage for lowpass filter is in combination with a
 						<emphasis>blending operator</emphasis> (see <xref linkend="blending operators"/>).
                                                 Try out the preset named <quote>local contrast mask</quote> with an <quote>overlay</quote> blending operation.
@@ -21,7 +21,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>This module offers enormous artistic potential, albeit with difficult to predict results sometimes.</para>
+                <para>This module offers enormous artistic potential, albeit, with results that are sometimes difficult to predict.</para>
 		<sect5><title>radius</title>
 			<para>Set the radius of the blur.</para>
 		</sect5>

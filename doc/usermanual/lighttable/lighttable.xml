@@ -12,7 +12,7 @@
 		</keywordset>
 	</chapterinfo>
 	<title>Lighttable</title>
-	<para>The lighttable is where you manage all your images, ratings, export and much more&nbsp;&hellip;</para>
+	<para>The lighttable is where you manage all your images, ratings, export and much more.</para>
 	<screenshot>
 		<screeninfo>The lighttable view</screeninfo>
 		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
@@ -26,11 +26,12 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>
-							<entry>In the central view, your images are shown as thumbs surrounded by a frame. While the mouse is over
-								an image, the information of rating, color labels and if image has already been altered in darkroom
-								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/> is shown.
-								Also when the mouse hovers over an image frame the specific image information (EXIF data, metadata) is shown in the 
-                                                                <link linkend="image information"><emphasis>image information</emphasis></link> panel.
+							<entry>In the central view, your images are shown as thumbnails, surrounded by a frame. When the mouse is over
+								an image, its rating and color labels are shown in the frame, along with an indicator 
+								<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+                                                                of whether the image has already been altered in darkroom.
+								Also, when the mouse hovers over an image frame, image information (EXIF data, metadata) is shown in the 
+                                                                <link linkend="image information"><emphasis>image information</emphasis></link> panel in the bottom left.
 							</entry>
 							<entry>
 								<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
@@ -40,11 +41,8 @@
 				</tgroup>
 			</informaltable>
 
-			<para>In order to locate where you are in your collection, you have read-only sliders at the extreme border of the window: left/right for your vertical position in the collection,
-				top/bottom (when in zoomable lighttable mode, see below) for your zoom level.</para>
-
-			<para>While the mouse is over an image frame, you can access additional actions from your keyboard to apply on the image; here
-				follows a table of key accelerators and assigned actions.
+			<para>While the mouse is over an image frame, there are a number of actions you can perform on the image. Here
+				is a table of keyboard shortcuts and assigned actions.
 				<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='1*'/>
 					<colspec colwidth='3*'/>
@@ -56,16 +54,16 @@
 							</entry>
 						</row>
 						<row>
-							<entry><emphasis>F1&nbsp;&ndash; F5</emphasis></entry><entry>set a color label for the image</entry>
+							<entry><emphasis>F1&nbsp;&ndash; F5</emphasis></entry><entry>set a color label</entry>
 						</row>
 						<row>
-							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the history stack of the image</entry>
+							<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the history stack</entry>
 						</row>
 						<row>
-							<entry><emphasis>ctrl-v</emphasis></entry><entry>paste the copied history stack on the image</entry>
+							<entry><emphasis>ctrl-v</emphasis></entry><entry>paste the copied history stack</entry>
 						</row>
 						<row>
-							<entry><emphasis>d</emphasis></entry><entry>open the image in darkroom view for developing</entry>
+							<entry><emphasis>d</emphasis></entry><entry>open in darkroom view for developing</entry>
 						</row>
 						<row>
 							<entry><emphasis>z</emphasis></entry><entry>fully zoom into the image while the key is pressed</entry>
@@ -73,63 +71,63 @@
 					</tbody>
 				</tgroup></informaltable>
 			</para>
-			<para>At the bottom you have an option to choose between zoomable lighttable view or filemanger view of the thumbnails.
-			</para>
-			<para>Using the zoomable lighttable view, scroll with your mouse wheel to zoom in and out.
+			<para>At the bottom you have an option to choose between zoomable lighttable view or filemanager view of the thumbnails.
+			In zoomable lighttable view, scroll with your mouse wheel to zoom in and out.
 			Moving the mouse while <emphasis>pressing the left mouse button</emphasis> allows you to navigate through your collection.
-			</para>
-			<para>While in filemanager you can use <emphasis>ctrl-(mouse wheel)</emphasis> to change the number of thumbs displayed
-			in a row. That action is a key accelerator of the counter that can be found beside the filemanager option.
+			In filemanager view, you can can change the number of images in each row, using the slider next to the filemanager option,
+                        or by using <emphasis>ctrl-(mouse wheel)</emphasis>.
 			Use your mouse wheel to navigate through your collection.
 			</para>
-			<para>While in filemanager mode, by pressing &uarr;/&darr; you can scroll (not select) up and down through your collection.
+			<para>While in filemanager mode, you can scroll (not select) up and down through your collection using &uarr;/&darr;.
 				In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move left/right/up/down through your collection.
 				Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
 			</para>
+			<para>To locate where you are in a collection, there are indicators at the extreme borders of the window: left/right for your position when
+                              you are in filemanager mode, left/right and top/bottom for your vertical and your horizontal position, respectively, when you are in
+                              zoomable lighttable view.
+                        </para>
 		</sect2>
 		<sect2 status="draft" id="filtering and sort order"><title>Filtering and sort order</title>
-			<para>The filtering and sort order of images on lighttable are accessed and changed in the top bar.
-				You can select among a few predefined filters and ordering like <quote>date</quote>, <quote>color labels</quote>
+			<para>The filtering and sort order of images in the lighttable are accessed and changed in the top bar.
+				You can select among a few predefined filters, and ordering like <quote>date</quote>, <quote>color labels</quote>
                                 or <quote>rating</quote>.
 			</para>
 		</sect2>
 
 		<sect2 status="draft" id="image grouping"><title>Image grouping</title>
-			<para>Image grouping helps you to improve structure and clearness of your image collection as 
+			<para>Grouping images helps improve structure and clarity of your image collection when 
                               displayed in lighttable view.
 			</para>
-                        <para>You can combine images into a group by selecting them and then 
-                              clicking button "group" in panel <emphasis>selected image(s)</emphasis> (<xref linkend="selected images"/>) or by typing 
-                              <emphasis>ctrl-g</emphasis>. Likewise you can remove selected images from a group by clicking
-                              button "ungroup" or typing <emphasis>shift-ctrl-g</emphasis>. Images that you generate by 
-                              duplicating an existing one, will automatically constitute an image group. If you import 
-                              images from file system or camera, images which have the same base name but different 
-                              extensions will form a group (eg. IMG_1234.CR2 and IMG_1234.JPG). Images which are members
-                              of a group are labelled with a symbol "G" in their thumbnails. 
+                        <para>You can combine images into a group by selecting them, and  
+                              clicking the <quote>group</quote> button in the <emphasis>selected image(s)</emphasis> panel (<xref linkend="selected images"/>), or by typing 
+                              <emphasis>ctrl-g</emphasis>. Likewise, you can remove selected images from a group by clicking
+                              the <quote>ungroup</quote> button, or typing <emphasis>shift-ctrl-g</emphasis>. Images generated by 
+                              duplicating an existing one, are automatically grouped. If you import 
+                              images from the file system or camera, images with the same base name, but different 
+                              extensions (eg. IMG_1234.CR2 and IMG_1234.JPG), will form a group. Images which are members
+                              of a group are labeled with a <quote>G</quote> symbol in their thumbnails. 
                         </para>
-                        <para>With button <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> 
-                              in the top panel of lightroom mode you toggle grouping mode on and off.
-                        </para>
-                        <para>If grouping is off, each image is displayed as an individual thumb.
-                        </para>
-                        <para>If grouping is on, images of a group are by default collapsed, which means they are 
+                        <para>The group button <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/> 
+                              in the top panel of the lightroom view toggles grouping mode on and off.
+                              If grouping is off, each image is displayed as an individual thumb.
+                              If grouping is on, images of a group are collapsed, which means they are 
                               represented by one thumbnail.
-                              The image you see is called the group head. If you press symbol "G" in the thumbnail of a group, only this
-                              group gets expanded; if another group was expanded at that time it gets collapsed. To collapse an expanded 
-                              group again, just click on symbol "G" of its group head.
+                              The image you see is called the group head. If you press <quote>G</quote> symbol in the thumbnail of a group, only this
+                              group gets expanded; if another group was expanded at that time, it gets collapsed. To collapse an expanded 
+                              group again, just click on the <quote>G</quote> symbol of its group head.
                         </para>
-                        <para>You can define which image constitutes the group head: when you are in expanded view of a group, 
-                              just go to the thumbnail of the desired image and click on the symbol "G" within that thumb.
+                        <para>You can define which image constitutes the group head, while in an expanded view of a group, 
+                              clicking on the <quote>G</quote> symbol of the desired image.
                         </para>
-                        <para>If you are in collapsed view and enter darkroom mode with an image group (eg. by 
-                              double-clicking on the thumbnail) only the group head will be opened.
+                        <para>If you are in collapsed view, and enter darkroom mode with an image group (eg. by 
+                              double-clicking on the thumbnail), only the group head will be opened.
                         </para>
-                        <para>This is a convenient way to protect an existing history stack against unintentional changes. Suppose you have 
-                              just finalized an image; all you need to do now is generate a duplicate and make sure grouping is
-                              switched on and the group is collapsed. Whenever you open the image group again in darkroom and do 
-                              further changes, only the group head will be altered. The underlying duplicate remains unchanged. 
-                              Please note that duplicating images only means that a second copy of your history stack and a second small 
-                              XMP file is generated. There still is only one RAW file, so you don't waste a lot of disk space.
+                        <para>Image groups are a convenient way to protect an existing history stack against unintentional changes. Suppose you have 
+                              just finalized an image; all you need to do now is generate a duplicate, make sure grouping is
+                              switched on, and the group collapsed. Whenever you open the image group again in darkroom, 
+                              only the group head will be altered. The underlying duplicate remains unchanged. 
+                              Please note that duplicating images only means that a second copy of your history stack, and a second small 
+                              XMP file, is generated. There still is only one RAW file, so you don't waste a lot of disk space.
                         </para>
 		</sect2>
 

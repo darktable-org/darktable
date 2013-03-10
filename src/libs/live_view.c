@@ -780,7 +780,18 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;
 
-  if(lib->imgid > 0 && dt_bauhaus_combobox_get(lib->overlay_splitline))
+  int imgid = 0;
+  switch(dt_bauhaus_combobox_get(lib->overlay))
+  {
+    case OVERLAY_SELECTED:
+      imgid = dt_view_tethering_get_selected_imgid(darktable.view_manager);
+      break;
+    case OVERLAY_ID:
+      imgid = lib->imgid;
+      break;
+  }
+
+  if(imgid > 0 && dt_bauhaus_combobox_get(lib->overlay_splitline))
   {
     const double width = lib->overlay_x1 - lib->overlay_x0;
     const double height = lib->overlay_y1 - lib->overlay_y0;

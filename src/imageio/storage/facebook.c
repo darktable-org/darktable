@@ -154,8 +154,6 @@ typedef struct FBContext
 typedef struct dt_storage_facebook_gui_data_t
 {
   // == ui elements ==
-  GtkLabel *label_username;
-  GtkLabel *label_album;
   GtkLabel *label_status;
 
   GtkComboBox *comboBox_username;
@@ -662,9 +660,14 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
   JsonObject *obj = json_node_get_object(root);
-  info->token = g_strdup(json_object_get_string_member(obj, "token"));
-  info->username = g_strdup(json_object_get_string_member(obj, "username"));
-  *accountlist =  g_slist_prepend(*accountlist, info);
+  
+  // root can be null while parsing the account info
+  if (root)
+  {
+    info->token = g_strdup(json_object_get_string_member(obj, "token"));
+    info->username = g_strdup(json_object_get_string_member(obj, "username"));
+    *accountlist =  g_slist_prepend(*accountlist, info);
+  }
   g_object_unref(parser);
 }
 
@@ -741,6 +744,7 @@ static void ui_refresh_users(dt_storage_facebook_gui_data_t *ui)
   gtk_list_store_clear(list_store);
   gtk_list_store_append(list_store, &iter);
 
+  int active_account = 0;
   if (g_slist_length(accountlist) == 0)
   {
     gtk_list_store_set(list_store, &iter,
@@ -759,10 +763,11 @@ static void ui_refresh_users(dt_storage_facebook_gui_data_t *ui)
                        COMBO_USER_MODEL_NAME_COL, "",
                        COMBO_USER_MODEL_TOKEN_COL, NULL,
                        COMBO_USER_MODEL_ID_COL, NULL,-1);//separator
+    active_account = 2;
   }
 
   g_slist_foreach(accountlist, (GFunc)ui_refresh_users_fill, list_store);
-  gtk_combo_box_set_active(ui->comboBox_username, 0);
+  gtk_combo_box_set_active(ui->comboBox_username, active_account);
 
   g_slist_free_full(accountlist, (GDestroyNotify)fb_account_info_destroy);
   gtk_combo_box_set_row_separator_func(ui->comboBox_username,combobox_separator,ui->comboBox_username,NULL);
@@ -1005,15 +1010,11 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   self->widget = gtk_vbox_new(FALSE, 0);
 
   //create labels
-  ui->label_username = GTK_LABEL(gtk_label_new(_("user")));
-  ui->label_album = GTK_LABEL(gtk_label_new(_("album")));
   ui->label_album_title = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label_album_summary = GTK_LABEL(  gtk_label_new( _("summary") ) );
   ui->label_album_privacy = GTK_LABEL(gtk_label_new(_("privacy")));
   ui->label_status = GTK_LABEL(gtk_label_new(NULL));
 
-  gtk_misc_set_alignment(GTK_MISC(ui->label_username), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_title), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_summary), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_privacy), 0.0, 0.5);
@@ -1073,13 +1074,11 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_labels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_fields, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox_auth), TRUE, FALSE, 2);
-  gtk_box_pack_start(GTK_BOX(vbox_auth_labels), GTK_WIDGET(ui->label_username), TRUE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->comboBox_username), TRUE, FALSE, 2);
 
   gtk_box_pack_start(GTK_BOX(vbox_auth_labels), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->button_login), TRUE, FALSE, 2);
 
-  gtk_box_pack_start(GTK_BOX(vbox_auth_labels), GTK_WIDGET(ui->label_album), TRUE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(albumlist), TRUE, FALSE, 2);
 
   ////the album creation box

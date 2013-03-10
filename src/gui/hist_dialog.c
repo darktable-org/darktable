@@ -119,6 +119,27 @@ _gui_hist_item_toggled (GtkCellRendererToggle *cell,
   gtk_tree_path_free (path);
 }
 
+static gboolean
+_gui_is_set (GList *selops, long unsigned int num)
+{
+  GList *l = selops;
+
+  /* nothing to filter */
+  if (!l) return TRUE;
+
+  while (l)
+  {
+    if (l->data)
+    {
+      long unsigned int lnum = (long unsigned int)(gpointer)l->data;
+      if (lnum == num)
+        return TRUE;
+    }
+    l=g_list_next(l);
+  }
+  return FALSE;
+}
+
 int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 {
   int res;
@@ -191,7 +212,7 @@ int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 
       gtk_list_store_append (GTK_LIST_STORE(liststore), &iter);
       gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
-                          DT_HIST_ITEMS_COL_ENABLED, TRUE,
+                          DT_HIST_ITEMS_COL_ENABLED, iscopy?TRUE:_gui_is_set(d->selops, item->num),
                           DT_HIST_ITEMS_COL_NAME, item->name,
                           DT_HIST_ITEMS_COL_NUM, (guint)item->num,
                           -1);
@@ -223,6 +244,12 @@ int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
   return res;
+}
+
+void dt_gui_hist_dialog_init (dt_gui_hist_dialog_t *d)
+{
+  d->selops = NULL;
+  d->copied_imageid = -1;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

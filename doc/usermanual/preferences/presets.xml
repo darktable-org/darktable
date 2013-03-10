@@ -15,7 +15,7 @@
 
 
 	  <sect4><title>auto apply this preset to matching images</title>
-		<para>activate this checkbutton to make the preset be auto applied to newly imported images; a set of
+		<para>activate this checkbutton to automatically apply the preset on newly imported images; a set of
                       fields is displayed where you can define patterns to be matched against EXIF data.
 		</para>
 	  </sect4>

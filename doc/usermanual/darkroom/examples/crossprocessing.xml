@@ -5,7 +5,7 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>Cross-processing is a analog processing technique where slide film (normally developped thanks to an E6 solution) is processed in chemicals used
+							<entry>Cross-processing is a analog processing technique where slide film (normally developed thanks to an E6 solution) is processed in chemicals used
 								for processing print film (C41). The resulting images get skewed colors usually a cyan hue and increased
 								contrast and saturation.
 							</entry>
@@ -33,14 +33,14 @@
 			</listitem>
 			<listitem><para>Boost contrast</para>
 				<para>Select the medium contrast curve preset for <emphasis>tonecurve</emphasis> module (<xref linkend="tonecurve"/>) to boost the overall contrast
-					in the image. You later might get back here to tune the curve for better result.
+					in the image. You might later return here to tune the curve for better result.
 				</para>
 			</listitem>
 			
 			<listitem><para>Color cast</para>
-				<para>This step does change the colorcast as the base for the effect using the <emphasis>channel mixer</emphasis> module
+				<para>This step changes the color cast as the base for the effect using the <emphasis>channel mixer</emphasis> module
                                       (<xref linkend="channel mixer"/>).
-						You might later get back to this and finetune the colorcast of the final result.
+						You might later again return to this and finetune the colorcast of the final result.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the channel mixer module</para></listitem>
@@ -59,7 +59,7 @@
 					<listitem><para>Select a cyan/blue tone for shadows and set saturation around 50%</para></listitem>
 					<listitem><para>Select a yellow/orange tone for highlights and set saturation around 70%</para></listitem>
 					<listitem><para>Set compression to 10%</para></listitem>
-					<listitem><para>Use the balance slider to tune the splittoning effect due this differs on every image due to it's exposure, motive etc.</para></listitem>
+					<listitem><para>Use the balance slider to tune the splittoning effect. This differs on every image due to it's exposure, motive etc.</para></listitem>
 				</orderedlist>
 			</listitem>
 		</orderedlist>

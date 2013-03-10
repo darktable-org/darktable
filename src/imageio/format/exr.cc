@@ -107,6 +107,7 @@ extern "C"
   {
     *size = sizeof(dt_imageio_module_data_t);
     dt_imageio_exr_t *d = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+  memset(d,0,sizeof(dt_imageio_exr_t));
     return d;
   }
 
