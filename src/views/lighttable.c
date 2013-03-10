@@ -90,6 +90,8 @@ typedef struct dt_library_t
   GdkColor star_color;
   int images_in_row;
 
+  int32_t last_mouse_over_id;
+
   int32_t collection_count;
 
   /* prepared and reusable statements */
@@ -294,6 +296,7 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
+  lib->last_mouse_over_id = -1;
 
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
 
@@ -1288,11 +1291,14 @@ void reset(dt_view_t *self)
 
 void mouse_enter(dt_view_t *self)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
+  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
 }
 
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  DT_CTL_GET_GLOBAL(lib->last_mouse_over_id, lib_image_mouse_over_id); // see mouse_enter (re: fluxbox)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
