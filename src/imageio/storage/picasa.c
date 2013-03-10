@@ -626,7 +626,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
   curl_slist_free_all(headers);
 
+#ifdef picasa_EXTRA_VERBOSE
   printf("Uploading: %s\n", buffer.data);
+#endif
 
   long result;
   curl_easy_getinfo(ctx->curl_ctx,CURLINFO_RESPONSE_CODE,&result );
@@ -728,8 +730,10 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, _picasa_api_buffer_write_func);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, &response);
       curl_easy_perform( ctx->curl_ctx );
-  
+
+#ifdef picasa_EXTRA_VERBOSE
     printf("Uploading: %s\n", response.data);
+#endif
 
       xmlFree( updateUri );
       xmlFree( writebuffer.data );
