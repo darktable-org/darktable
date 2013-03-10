@@ -1292,7 +1292,10 @@ void reset(dt_view_t *self)
 void mouse_enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
+  uint32_t id;
+  DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
+  if(id == -1)
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
 }
 
 void mouse_leave(dt_view_t *self)
