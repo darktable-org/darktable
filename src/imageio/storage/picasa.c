@@ -610,9 +610,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
 
   sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
-//#ifdef picasa_EXTRA_VERBOSE
+#ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-//#endif
+#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,0);   // A post request !
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST,1);
@@ -719,9 +719,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       writebuffer.offset=0;
 
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, updateUri);
-//#ifdef picasa_iEXTRA_VERBOSE
+#ifdef picasa_iEXTRA_VERBOSE
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-//#endif
+#endif
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD,1);   // A put request
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA,&writebuffer);
