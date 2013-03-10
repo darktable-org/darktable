@@ -389,7 +389,6 @@ int dt_image_altered(const uint32_t imgid)
     if(!strcmp(op, "basecurve")) continue;
     if(!strcmp(op, "sharpen")) continue;
     if(!strcmp(op, "dither")) continue;
-    if(!strcmp(op, "tonecurve")) continue;
     if(!strcmp(op, "highlights")) continue;
     altered = 1;
     break;
