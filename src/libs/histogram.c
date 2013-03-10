@@ -454,10 +454,10 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
     dt_dev_exposure_set_white(darktable.develop, cw+0.1);
 
   if(event->direction == GDK_SCROLL_UP && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb-0.005);
+    dt_dev_exposure_set_black(darktable.develop, cb-0.001);
 
   if(event->direction == GDK_SCROLL_DOWN && d->highlight == 1)
-    dt_dev_exposure_set_black(darktable.develop, cb+0.005);
+    dt_dev_exposure_set_black(darktable.develop, cb+0.001);
 
   return TRUE;
 }
