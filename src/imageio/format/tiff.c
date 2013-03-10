@@ -219,7 +219,7 @@ mime(dt_imageio_module_data_t *data)
 const char*
 extension(dt_imageio_module_data_t *data)
 {
-  return "tiff";
+  return "tif";
 }
 
 const char*
