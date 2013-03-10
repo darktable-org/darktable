@@ -58,6 +58,7 @@ get_params(dt_imageio_module_format_t *self, int *size)
 {
   *size = sizeof(dt_imageio_module_data_t);
   dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)malloc(sizeof(dt_imageio_module_data_t));
+  memset(d,0,sizeof(dt_imageio_module_data_t));
   return d;
 }
 
