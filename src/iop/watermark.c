@@ -645,9 +645,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++)
     {
       float alpha = (sd[3]/255.0)*opacity;
-      out[0] = ((1.0-alpha)*in[0]) + (alpha*(sd[2]/255.0));
-      out[1] = ((1.0-alpha)*in[1]) + (alpha*(sd[1]/255.0));
-      out[2] = ((1.0-alpha)*in[2]) + (alpha*(sd[0]/255.0));
+      /* svg uses a premultiplied alpha, so only use opacity for the blending */
+      out[0] = ((1.0-alpha)*in[0]) + (opacity*(sd[2]/255.0));
+      out[1] = ((1.0-alpha)*in[1]) + (opacity*(sd[1]/255.0));
+      out[2] = ((1.0-alpha)*in[2]) + (opacity*(sd[0]/255.0));
       out[3] = in[3];
 
       out+=ch;
