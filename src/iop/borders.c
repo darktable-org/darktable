@@ -498,12 +498,6 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_iop_borders_params_t c = (dt_iop_borders_params_t)
-  {
-    {1.0f, 1.0f, 1.0f}, 4.0f/3.0f, "4:3", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.05f, 0.0f, {0.0f, 0.0f, 0.0f}
-  };
-  dt_gui_presets_add_generic(_("cartier"), self->op, self->version(), &c, sizeof(c), 1);
-
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
     {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
