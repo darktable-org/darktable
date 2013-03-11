@@ -634,6 +634,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
+
+  lf_lens_destroy(d->lens);
+  d->lens = lf_lens_new();
+
   if(p->camera[0])
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -650,7 +654,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lens = lf_db_find_lenses_hd(dt_iop_lensfun_db, camera, NULL,
-                          p->lens, LF_SEARCH_LOOSE);
+                          p->lens, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(lens)
     {
@@ -1204,9 +1208,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   if (!lens)
   {
-    gtk_button_set_label(GTK_BUTTON(g->lens_model), "");
-    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
-    g_object_set(G_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
+    gtk_widget_hide_all (g->lens_param_box);
     return;
   }
 
@@ -1805,6 +1807,8 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_button_set_label(g->lens_model, p->lens);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->camera_model))), PANGO_ELLIPSIZE_END);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->lens_model))), PANGO_ELLIPSIZE_END);
+  g_object_set(G_OBJECT(g->camera_model), "tooltip-text", "", (char *)NULL);
+  g_object_set(G_OBJECT(g->lens_model), "tooltip-text", "", (char *)NULL);
 
   g->corrections_done = -1;
   gtk_label_set_text(g->message, "");
@@ -1838,7 +1842,7 @@ void gui_update(struct dt_iop_module_t *self)
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam) g->camera = cam[0];
   }
-  if(p->lens[0])
+  if(g->camera && p->lens[0])
   {
     char make [200], model [200];
     const gchar *txt = gtk_button_get_label(GTK_BUTTON(g->lens_model));
@@ -1848,7 +1852,14 @@ void gui_update(struct dt_iop_module_t *self)
                               make [0] ? make : NULL,
                               model [0] ? model : NULL, 0);
     if(lenslist) lens_set (self, lenslist[0]);
+    else         lens_set (self, NULL);
     lf_free (lenslist);
+    dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+  }
+  else
+  {
+    dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+    lens_set (self, NULL);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
 }
