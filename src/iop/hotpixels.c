@@ -182,7 +182,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   const dt_iop_hotpixels_params_t tmp =
   {
-    0.5, 0.01, FALSE, FALSE
+    0.25, 0.05, FALSE, FALSE
   };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_hotpixels_params_t));
