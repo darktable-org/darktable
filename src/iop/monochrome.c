@@ -342,7 +342,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t)
   {
-    0., 0., 1., 0.
+    0., 0., 2., 0.
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_monochrome_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_monochrome_params_t));
