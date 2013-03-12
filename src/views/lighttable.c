@@ -30,6 +30,7 @@
 #include "common/debug.h"
 #include "common/grouping.h"
 #include "common/history.h"
+#include "common/ratings.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
@@ -531,7 +532,8 @@ end_query_cache:
 escape_image_loop:
   cairo_restore(cr);
 
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+  if(!lib->pan && (iir != 1 || mouse_over_id != -1))
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
 
   // and now the group borders
   cairo_save(cr);
@@ -1168,45 +1170,29 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     {
       int32_t mouse_over_id;
       DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-      if(mouse_over_id <= 0)
+
+      /* clear and reset statement */
+      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+      /* setup statement and iterate over rows */
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
+
+      if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
       {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images", -1, &stmt, NULL);
-        while(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, sqlite3_column_int(stmt, 0));
-          dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-          if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
-          else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-          else
-          {
-            image->flags &= ~0x7;
-            image->flags |= num;
-          }
-          dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-          dt_image_cache_read_release(darktable.image_cache, cimg);
-        }
-        sqlite3_finalize(stmt);
+        dt_ratings_apply_to_selection(num);
       }
       else
       {
-        const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
-        dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-        if(num == 666 || num == DT_VIEW_DESERT) image->flags &= ~0xf;
-        else if(num == DT_VIEW_STAR_1 && ((image->flags & 0x7) == 1)) image->flags &= ~0x7;
-        else
-        {
-          image->flags &= ~0x7;
-          image->flags |= num;
-        }
-        dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
-        dt_image_cache_read_release(darktable.image_cache, cimg);
+        dt_ratings_apply_to_image(mouse_over_id, num);
+        dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
       }
-      dt_control_queue_redraw_center();
       break;
     }
     default:
       break;
+    
+    dt_control_queue_redraw_center();
   }
   return TRUE;
 }

@@ -54,7 +54,8 @@ void dt_ratings_apply_to_selection (int rating)
     sqlite3_finalize(stmt);
 
     /* redraw view */
-    dt_control_queue_redraw_center();
+    /* dt_control_queue_redraw_center() */
+    /* needs to be called in the caller function */
   }
   else
     dt_control_log(_("no images selected to apply rating"));
