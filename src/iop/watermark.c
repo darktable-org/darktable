@@ -93,7 +93,6 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
-  GtkWidget *sizeto;		                                             // relative size to
 }
 dt_iop_watermark_gui_data_t;
 
@@ -906,17 +905,6 @@ scale_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void
-sizeto_callback(GtkWidget *tb, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-
-  if(darktable.gui->reset) return;
-  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  p->sizeto = dt_bauhaus_combobox_get(tb);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
@@ -972,7 +960,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
-  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
 }
 
 void init(dt_iop_module_t *module)
@@ -1032,15 +1019,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
-  g->sizeto = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->sizeto, _("image"));
-  dt_bauhaus_combobox_add(g->sizeto, _("larger border"));
-  dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
-  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
-  dt_bauhaus_widget_set_label(g->sizeto,_("scale on"));
-  gtk_box_pack_start(GTK_BOX(vbox), g->sizeto, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
-
   // Create the 3x3 gtk table toggle button table...
   GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
   for(int i=0; i<9; i++)
@@ -1089,8 +1067,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->combobox1), "changed",
                     G_CALLBACK (watermark_callback), self);
-  g_signal_connect (G_OBJECT (g->sizeto), "value-changed",
-                    G_CALLBACK (sizeto_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
