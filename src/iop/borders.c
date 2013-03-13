@@ -221,6 +221,7 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
 
   const float size = fabsf(d->size);
   if(size == 0) return;
+
   if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
   {
     // this means: relative to width and constant for height as well:
