@@ -500,21 +500,6 @@ void dt_control_init(dt_control_t *s)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
-
-#if 0
-    /* check if thread created is the worker thread, then
-        set scheduling information for the thread to nice level. */
-    if (k == DT_CTL_WORKER_7)
-    {
-      int res;
-      struct sched_param sched_params;
-      sched_params.sched_priority = sched_get_priority_min(SCHED_RR);
-      if((res=pthread_setschedparam(s->thread_res[k], SCHED_RR, &sched_params))!=0)
-        fprintf(stderr,"Failed to set background thread scheduling to nice level: %d.",res);
-
-    }
-#endif
-
   }
   s->button_down = 0;
   s->button_down_which = 0;
@@ -748,6 +733,7 @@ void dt_control_init(dt_control_t *s)
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
+    dt_control_sanitize_database();
   }
   else
   {
@@ -762,8 +748,6 @@ create_tables:
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-
-  dt_control_sanitize_database();
 }
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
