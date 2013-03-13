@@ -183,13 +183,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
-  
+
   for (int i=0; i<points_count*2; i+=2)
   {
     points[i] += border_size_l;
     points[i+1] += border_size_t;
   }
-  
+
   return 1;
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
@@ -201,13 +201,13 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
-  
+
   for (int i=0; i<points_count*2; i+=2)
   {
     points[i] -= border_size_l;
     points[i+1] -= border_size_t;
   }
-  
+
   return 1;
 }
 
@@ -282,7 +282,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
-  
+
   const int ch = piece->colors;
   const int in_stride  = ch*roi_in->width;
   const int out_stride = ch*roi_out->width;
