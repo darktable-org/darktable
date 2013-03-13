@@ -116,8 +116,17 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
 {
   const long int mode = (long int)data;
   int selected;
+  
   DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-  if(selected <= 0)
+
+  /* clear and reset statement */
+  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+  /* setup statement and iterate over rows */
+  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, selected);
+  
+  if(selected <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
   {
     switch(mode)
     {
