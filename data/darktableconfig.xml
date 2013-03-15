@@ -1910,17 +1910,17 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/clipping/custom_aspect</name>
-    <type>float</type>
-    <default>1.5</default>
-    <shortdescription>last chosen custom aspect ratio</shortdescription>
+    <name>plugins/darkroom/clipping/ratio_d</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>last chosen aspect ratio denominator</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/clipping/aspect_preset</name>
+    <name>plugins/darkroom/clipping/ratio_n</name>
     <type>int</type>
-    <default>1</default>
-    <shortdescription>last chosen aspect ratio preset</shortdescription>
+    <default>0</default>
+    <shortdescription>last chosen aspect ratio numerator</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
