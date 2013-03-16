@@ -1185,7 +1185,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
       else
       {
         dt_ratings_apply_to_image(mouse_over_id, num);
-        dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
+        //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
       }
       break;
     }

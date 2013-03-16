@@ -204,7 +204,7 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
     else
     {
       dt_ratings_apply_to_image(mouse_over_id, d->current);
-      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), d->current, 1); //FIXME: Change the message after release
+      //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), d->current, 1); //FIXME: Change the message after release
     }
 
     dt_control_queue_redraw_center();
