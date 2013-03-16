@@ -169,7 +169,21 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
   if (mouse_over_id == -1)
-    mouse_over_id = darktable.develop->image_storage.id;
+  {
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    {
+      mouse_over_id = darktable.develop->image_storage.id;
+    }
+    else
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select imgid from selected_images limit 1", -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+        mouse_over_id = sqlite3_column_int(stmt, 0);
+      sqlite3_finalize(stmt);
+    }
+  }
 
   if(mouse_over_id >= 0)
   {

@@ -153,10 +153,12 @@ gui_reset (dt_lib_module_t *self)
   gboolean rc = FALSE;
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   if (style != NULL)
+  {
     rc = _combo_box_set_active_text(d->style, style);
     if (rc == FALSE)
       _combo_box_set_active_text(d->style, _("none"));
-  else 
+  }
+  else
     _combo_box_set_active_text(d->style, _("none"));
   g_free(style);
 
@@ -504,7 +506,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  g_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
+  g_strlcpy(prof->name, _("Adobe RGB"), sizeof(prof->name));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 

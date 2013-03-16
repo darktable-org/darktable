@@ -1510,7 +1510,6 @@ int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_mo
 cleanup:
   unlink( fname );
   g_free( caption );
-  g_free( description );
   if(desc)
   {
     //no need to free desc->data as caption points to it

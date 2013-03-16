@@ -41,7 +41,7 @@
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_COUNT 21
@@ -70,6 +70,7 @@ typedef struct dt_iop_borders_params_t
   float frame_size; // frame line width relative to border width
   float frame_offset; // frame offset from picture size relative to [border width - frame width]
   float frame_color[3]; // frame line color
+  gboolean max_border_size; // the way border size is computed
 }
 dt_iop_borders_params_t;
 
@@ -96,7 +97,7 @@ dt_iop_borders_gui_data_t;
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_iop_borders_params_v1_t
     {
@@ -117,8 +118,37 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->aspect_orient = o->aspect > 1 ? DT_IOP_BORDERS_ASPECT_ORIENTATION_LANDSCAPE
                        : DT_IOP_BORDERS_ASPECT_ORIENTATION_PORTRAIT;
     n->size = fabsf(o->size);  // no negative size any more (was for "constant border" detect)
+    n->max_border_size = FALSE;
     return 0;
   }
+
+  if (old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_borders_params_v2_t
+    {
+      float color[3]; // border color
+      float aspect;   // aspect ratio of the outer frame w/h
+      char aspect_text[20];   // aspect ratio of the outer frame w/h (user string version)
+      int aspect_orient;   // aspect ratio orientation
+      float size;     // border width relative to overal frame width
+      float pos_h;    // picture horizontal position ratio into the final image
+      char pos_h_text[20];   // picture horizontal position ratio into the final image (user string version)
+      float pos_v;    // picture vertical position ratio into the final image
+      char pos_v_text[20];   // picture vertical position ratio into the final image (user string version)
+      float frame_size; // frame line width relative to border width
+      float frame_offset; // frame offset from picture size relative to [border width - frame width]
+      float frame_color[3]; // frame line color
+    }
+    dt_iop_borders_params_v2_t;
+
+    dt_iop_borders_params_v2_t *o = (dt_iop_borders_params_v2_t *)old_params;
+    dt_iop_borders_params_t *n = (dt_iop_borders_params_t *)new_params;
+
+    memcpy(n,o,sizeof(struct dt_iop_borders_params_v2_t));
+    n->max_border_size = FALSE;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -183,13 +213,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
-  
+
   for (int i=0; i<points_count*2; i+=2)
   {
     points[i] += border_size_l;
     points[i+1] += border_size_t;
   }
-  
+
   return 1;
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
@@ -201,13 +231,13 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height);
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
-  
+
   for (int i=0; i<points_count*2; i+=2)
   {
     points[i] -= border_size_l;
     points[i+1] -= border_size_t;
   }
-  
+
   return 1;
 }
 
@@ -221,11 +251,24 @@ modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
 
   const float size = fabsf(d->size);
   if(size == 0) return;
+
   if(d->aspect == DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE)
   {
-    // this means: relative to width and constant for height as well:
-    roi_out->width  = (float)roi_in->width / (1.0f - size);
-    roi_out->height = roi_in->height + roi_out->width - roi_in->width;
+    // for a constant border be sure to base the computation on the larger border, failing that the border
+    // will have a difference size depending on the orientation.
+
+    if (roi_in->width>roi_in->height || !d->max_border_size)
+    {
+      // this means: relative to width and constant for height as well:
+      roi_out->width  = (float)roi_in->width / (1.0f - size);
+      roi_out->height = roi_in->height + roi_out->width - roi_in->width;
+    }
+    else
+    {
+      // this means: relative to height and constant for width as well:
+      roi_out->height = (float)roi_in->height / (1.0f - size);
+      roi_out->width  = roi_in->width + roi_out->height - roi_in->height;
+    }
   }
   else
   {
@@ -282,7 +325,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
-  
+
   const int ch = piece->colors;
   const int in_stride  = ch*roi_in->width;
   const int out_stride = ch*roi_out->width;
@@ -500,7 +543,7 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_borders_params_t p = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, 3.0f/2.0f, "3:2", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}, TRUE
   };
   dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
@@ -1093,7 +1136,7 @@ void reload_defaults(dt_iop_module_t *self)
 {
   dt_iop_borders_params_t tmp = (dt_iop_borders_params_t)
   {
-    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}
+    {1.0f, 1.0f, 1.0f}, DT_IOP_BORDERS_ASPECT_CONSTANT_VALUE, "constant border", 0, 0.1f, 0.5f, "1/2", 0.5f, "1/2", 0.0f, 0.5f, {0.0f, 0.0f, 0.0f}, TRUE
   };
   memcpy(self->params, &tmp, sizeof(dt_iop_borders_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_borders_params_t));
