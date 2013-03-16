@@ -235,6 +235,13 @@ style "clearlooks-header-panel-label"
         fg[NORMAL]      = "white"
 }
 
+style "clearlooks-watermark-align-button"
+{
+        bg[NORMAL]      = "white"
+        bg[ACTIVE]      = "#858585"
+        bg[PRELIGHT]    = "white"
+}
+
 style "metacity-frame"
 {
   # Normal base color
@@ -301,6 +308,7 @@ widget "*.darktable_label" style "clearlooks-header"
 widget "*.view_label" style "clearlooks-header"
 #widget_class "BasePWidget.GtkEventBox.GtkTable.GtkFrame" style "clearlooks-panel"
 widget "gtk-tooltip*" style "clearlooks-tooltips"
+widget "*.watermark_align_button" style "clearlooks-watermark-align-button"
 class "GtkNotebook" style "clearlooks-notebook"
 #class "GtkProgressBar" style "clearlooks-progressbar"
 #widget_class "*.GtkComboBox.GtkButton" style "clearlooks-combo"
