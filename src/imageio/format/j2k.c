@@ -78,6 +78,13 @@
 
 DT_MODULE(1)
 
+typedef enum{
+  DT_J2K_PRESET_OFF,
+  DT_J2K_PRESET_CINEMA2K_24,
+  DT_J2K_PRESET_CINEMA2K_48,
+  DT_J2K_PRESET_CINEMA4K_24
+} dt_imageio_j2k_preset_t;
+
 typedef struct dt_imageio_j2k_t
 {
   int max_width, max_height;
@@ -85,7 +92,7 @@ typedef struct dt_imageio_j2k_t
   char style[128];
   int bpp;
   int format;
-  enum{DT_J2K_PRESET_OFF, DT_J2K_PRESET_CINEMA2K_24, DT_J2K_PRESET_CINEMA2K_48, DT_J2K_PRESET_CINEMA4K_24} preset;
+  dt_imageio_j2k_preset_t preset;
   int quality;
   opj_cparameters_t parameters;
 }
@@ -105,6 +112,12 @@ void init(dt_imageio_module_format_t *self) {
   luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,bpp,int);
   luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,format,int);
   luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,quality,int);
+  luaA_enum(darktable.lua_state,dt_imageio_j2k_preset_t);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off",false);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_24,"cinema2k_24",false);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_48,"cinema2k_48",false);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA4K_24,"cinema4k_24",false);
+  luaA_struct_member(darktable.lua_state,dt_imageio_j2k_t,preset,dt_imageio_j2k_preset_t);
 #endif
 }
 void cleanup(dt_imageio_module_format_t *self) {}
