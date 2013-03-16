@@ -6,7 +6,7 @@
 				<row>						
 					<entry>This panel provides a powerful functionality in darktable: storing a history stack
                                         as a style, and applying it to other images.
-					Styles are created in darkroom using a button placed below the history panel (see <xref linkend="history"/>).
+					Styles are created in the darkroom using a button placed below the history panel (see <xref linkend="history"/>).
 					They are managed within this lighttable panel, which allows you to apply and delete styles.
 					</entry>
 					<entry>
@@ -22,9 +22,9 @@
 			</para>
 		</sect4>
 		<sect4><title>edit</title>
-			<para>Styles are a collection of history stack items. After pressing <quote>edit</quote>, you are prompted with a dialogue to remove
+			<para>Styles are a collection of history stack items. After pressing <quote>edit</quote>, you are prompted with a dialogue to include or exclude
                               specific items from the stack. Check option <quote>duplicate</quote> if you want to create a new style, instead of overwriting the existing
-                              one; you need to give a new style name in this case.
+                              one; you need to provide a new style name in this case.
 			</para>
 		</sect4>
 		<sect4><title>delete</title>

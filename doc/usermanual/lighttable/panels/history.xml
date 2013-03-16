@@ -16,11 +16,13 @@
 				</tgroup>
 			</informaltable>
 				<sect4><title>copy</title>
-					<para>Copy the history stack of the first selected image. You will be prompted for the items to include.
+					<para>Copy the history stack of the selected image. You will be prompted for which items are to be include. If more than one image
+                                              is selected, the history stack is taken from the image that has been selected first.
 					</para>
 				</sect4>
 				<sect4><title>copy all</title>
-					<para>Copy the complete history stack of the first selected image; all items will be included.
+					<para>Copy the complete history stack of the first selected image; all items will be included. If more than one image
+                                              is selected, the history stack is taken from the image that has been selected first.
 					</para>
 				</sect4>
 				<sect4><title>discard</title>
@@ -35,12 +37,12 @@
 					</para>
 				</sect4>
 				<sect4><title>paste</title>
-					<para>Paste a previously copied history stack on all selected images. You will be prompted for the items to include.
+					<para>Paste a previously copied history stack onto all selected images. You will be prompted for which items to include.
                                               This button is greyed out, until a history stack is copied from another image.
 					</para>
 				</sect4>
 				<sect4><title>paste all</title>
-					<para>Paste all previously copied items of a history history stack on all selected images. 
+					<para>Paste all previously copied items of a history history stack onto all selected images. 
                                               This button is greyed out, until a history stack is copied from another image.
 					</para>
 				</sect4>
