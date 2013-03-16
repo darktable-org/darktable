@@ -46,9 +46,17 @@
 #include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE(1)
+DT_MODULE(2)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
+
+typedef enum dt_iop_watermark_base_scale_t
+{
+  DT_SCALE_IMAGE          = 0,
+  DT_SCALE_LARGER_BORDER  = 1,
+  DT_SCALE_SMALLER_BORDER = 2
+}
+dt_iop_watermark_base_scale_t;
 
 typedef struct dt_iop_watermark_params_t
 {
@@ -62,6 +70,7 @@ typedef struct dt_iop_watermark_params_t
   float yoffset;
   /** Alignment value 0-8 3x3 */
   int alignment;
+  dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
 }
 dt_iop_watermark_params_t;
@@ -73,6 +82,7 @@ typedef struct dt_iop_watermark_data_t
   float xoffset;
   float yoffset;
   int alignment;
+  dt_iop_watermark_base_scale_t sizeto;
   char filename[64];
 }
 dt_iop_watermark_data_t;
@@ -86,6 +96,44 @@ typedef struct dt_iop_watermark_gui_data_t
 }
 dt_iop_watermark_gui_data_t;
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_watermark_params_v1_t
+    {
+      /** opacity value of rendering watermark */
+      float opacity;
+      /** scale value of rendering watermark */
+      float scale;
+      /** Pixel independent xoffset, 0 to 1 */
+      float xoffset;
+      /** Pixel independent yoffset, 0 to 1 */
+      float yoffset;
+      /** Alignment value 0-8 3x3 */
+      int alignment;
+      char filename[64];
+    }
+    dt_iop_watermark_params_v1_t;
+
+    dt_iop_watermark_params_v1_t *o = (dt_iop_watermark_params_v1_t *)old_params;
+    dt_iop_watermark_params_t *n = (dt_iop_watermark_params_t *)new_params;
+    dt_iop_watermark_params_t *d = (dt_iop_watermark_params_t *)self->default_params;
+
+    *n = *d;  // start with a fresh copy of default parameters
+
+    n->opacity = o->opacity;
+    n->scale = o->scale;
+    n->xoffset = o->xoffset;
+    n->yoffset = o->yoffset;
+    n->alignment = o->alignment;
+    n->sizeto = DT_SCALE_IMAGE;
+    strncpy(n->filename, o->filename, 64);
+    return 0;
+  }
+  return 1;
+}
 
 const char *name()
 {
@@ -561,22 +609,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
-  /* get the dimension of svg */
-  RsvgDimensionData dimension;
-  rsvg_handle_get_dimensions (svg,&dimension);
-
-  /* calculate aligment of watermark */
-  const float iw=piece->buf_in.width*roi_out->scale;
-  const float ih=piece->buf_in.height*roi_out->scale;
-
-  float scale=1.0;
-  if ((dimension.width/dimension.height)>1.0)
-    scale = iw/dimension.width;
-  else
-    scale = ih/dimension.height;
-
-  scale *= (data->scale/100.0);
-
   /* setup stride for performance */
   int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,roi_out->width);
 
@@ -595,36 +627,97 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* create cairo context and setup transformation/scale */
   cairo_t *cr = cairo_create (surface);
 
+  /* get the dimension of svg */
+  RsvgDimensionData dimension;
+  rsvg_handle_get_dimensions (svg,&dimension);
+
+  //  width/height of current (possibly cropped) image
+  const float iw = piece->buf_in.width;
+  const float ih = piece->buf_in.height;
+  const float uscale = data->scale / 100.0;   // user scale, from GUI in percent
+
+  // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
+  // scale is the scale of the watermark itself and is used only to render it
+
+  float wbase, hbase, scale;
+
+  if (data->sizeto == DT_SCALE_IMAGE)
+  {
+    // in image mode, the wbase and hbase are just the image width and height
+    wbase = iw;
+    hbase = ih;
+    if (dimension.width>dimension.height)
+      scale = (iw*roi_out->scale)/dimension.width;
+    else
+      scale = (ih*roi_out->scale)/dimension.height;
+  }
+  else
+  {
+    // in larger/smaller side mode, set wbase and hbase to the largest or smallest side of the image
+    float larger;
+    if (dimension.width > dimension.height)
+      larger = (float)dimension.width;
+    else
+      larger = (float)dimension.height;
+
+    if (iw>ih)
+    {
+      wbase = hbase = (data->sizeto==DT_SCALE_LARGER_BORDER)?iw:ih;
+      scale = (data->sizeto==DT_SCALE_LARGER_BORDER)?(iw/larger):(ih/larger);
+    }
+    else
+    {
+      wbase = hbase = (data->sizeto==DT_SCALE_SMALLER_BORDER)?iw:ih;
+      scale = (data->sizeto==DT_SCALE_SMALLER_BORDER)?(iw/larger):(ih/larger);
+    }
+    scale *= roi_out->scale;
+  }
+
+  scale *= uscale;
+
+  // compute the width and height of the SVG object in image dimension
+
+  float svg_width, svg_height;
+
+  if (dimension.width>dimension.height)
+  {
+    svg_width = iw * uscale;
+    svg_height = dimension.height * (svg_width / dimension.width);
+  }
+  else
+  {
+    svg_height = ih * uscale;
+    svg_width = dimension.width * (dimension.height / svg_height);
+  }
+
+  // compute translation for the given alignment in image dimension
+
   float ty=0,tx=0;
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
     ty=0;
   else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
-    ty=(ih/2.0)-((dimension.height*scale)/2.0);
+    ty=(ih/2.0)-(svg_height/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
-    ty=ih-(dimension.height*scale);
+    ty=ih-svg_height;
 
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
     tx=0;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
-    tx=(iw/2.0)-((dimension.width*scale)/2.0);
+    tx=(iw/2.0)-(svg_width/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
-    tx=iw-(dimension.width*scale);
+    tx=iw-svg_width;
 
-  /* translate to position */
+  // translate to position
   cairo_translate (cr,-roi_in->x,-roi_in->y);
-  cairo_translate (cr,tx,ty);
 
-  /* scale */
-  cairo_scale (cr,scale,scale);
+  // add translation for the given value in GUI (xoffset,yoffset)
+  tx += data->xoffset*wbase;
+  ty += data->yoffset*hbase;
 
-  /* translate x and y offset */
+  cairo_translate (cr,tx*roi_out->scale,ty*roi_out->scale);
 
-  // absolute offset, do not depends on the size/scaling of the image
-  float ratio = ((float)roi_in->width / (float)roi_in->height);
-  float sizex = 6000 * ratio;
-  float sizey = 6000 * ratio;
-
-  cairo_translate (cr,data->xoffset*sizex,data->yoffset*sizey);
+  // now set proper scale for the watermark itself
+  cairo_scale(cr, scale, scale);
 
   /* render svg into surface*/
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -825,6 +918,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->xoffset= p->xoffset;
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
+  d->sizeto = p->sizeto;
   memset(d->filename,0,64);
   sprintf(d->filename,"%s",p->filename);
 
@@ -879,7 +973,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t)
   {
-    100.0,100.0,0.0,0.0,4, {"darktable.svg"}
+    100.0,100.0,0.0,0.0,4,DT_SCALE_IMAGE, {"darktable.svg"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_watermark_params_t));
@@ -913,7 +1007,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
