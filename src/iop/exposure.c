@@ -163,6 +163,11 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
   dt_bauhaus_slider_set(g->black, p->black);
   dt_bauhaus_slider_set(g->exposure, p->exposure);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  dt_bauhaus_slider_set(g->autoexpp, 0.01);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+
+  module->request_color_pick = 0;
 }
 
 void init(dt_iop_module_t *module)
