@@ -1026,6 +1026,7 @@ void gui_init(struct dt_iop_module_t *self)
     g->dtba[i] = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_alignment,CPF_STYLE_FLAT|(CPF_SPECIAL_FLAG<<(i+1))));
     gtk_widget_set_size_request (GTK_WIDGET (g->dtba[i]),16,16);
     gtk_table_attach (GTK_TABLE (bat), GTK_WIDGET (g->dtba[i]), (i%3),(i%3)+1,(i/3),(i/3)+1,0,0,0,0);
+    gtk_widget_set_name(GTK_WIDGET (g->dtba[i]), "watermark_align_button");
     g_signal_connect (G_OBJECT (g->dtba[i]), "toggled",G_CALLBACK (alignment_callback), self);
   }
   GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
