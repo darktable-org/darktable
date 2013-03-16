@@ -43,7 +43,6 @@ else ifeq ($(findstring Darwin,$(PLATFORM)),Darwin)
 	STATIC_LIB_SUFFIX:=.a
 else ifeq ($(findstring MINGW,$(PLATFORM)),MINGW)
 	LUA_INCLUDE_DIR?= -I./lua52/include
-	LUA_LIBRARY_DIR?= -L./lua52
 	LUA_LIBRARY?= -llua52
 	LAC_LDFLAGS+= -L.
 	LAC_LIBS+= -lmingw32

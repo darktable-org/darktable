@@ -1,7 +1,7 @@
 Lua AutoC
 =========
 
-Version 0.8
+Version 0.85
 
 Introduction
 ------------
@@ -115,14 +115,14 @@ typedef struct {
   int x, y;
 } pair;
 
-static int luaA_push_pair(lua_State* L, void* c_in) {
+static int luaA_push_pair(lua_State* L, luaA_Type t, const void* c_in) {
   pair p = *(pair*)c_in;
   lua_pushinteger(L, p.x);
   lua_pushinteger(L, p.y);
   return 2;
 }
 
-static void luaA_to_pair(lua_State* L, void* c_out, int index) {
+static void luaA_to_pair(lua_State* L, luaA_Type t, void* c_out, int index) {
   pair* p = (pair*)c_out;
   p->y = lua_tointeger(L, index);
   p->x = lua_tointeger(L, index-1);
@@ -320,7 +320,7 @@ static void print_int_list(int* list, int num_ints) {
 typedef int* int_list;
 
 static int list_space[512];
-static void luaA_to_int_list(lau_State* L, void* c_out, int index) {
+static void luaA_to_int_list(lau_State* L, luaA_Type t, void* c_out, int index) {
   for(int i = 1; i <= luaL_getn(L, index); i++) {
     lua_pushinteger(L, i);
     lua_gettable(L, index-1);
@@ -329,12 +329,55 @@ static void luaA_to_int_list(lau_State* L, void* c_out, int index) {
   *(int_list*)c_out = list_space;
 }
 
-luaA_conversion_to(int_list, luaA_pop_int_list);
+luaA_conversion_to(int_list, luaA_to_int_list);
 
 luaA_function_void(print_int_list, 2, int_list, int);
 ```
 
-As you can probably see, automatic wrapping and type conversion becomes hard when memory management and pointers are involved. I'm looking at ways to improve this, perhaps with the ability to register 'before' and 'after' methods for certain functions or conversions.
+As you can probably see, automatic wrapping and type conversion becomes hard when memory management and pointers are involved.
+
+Using Enums
+------------
+
+Enums are transformed into strings. To handle enums you need to first register them, then register the different values as mapping from string to the appropriate value. For each string you can declare independently if it is case-sensitive or not. You can also register multiple strings for a single enum value. Any matching lua string will be transformed into the enum value, but the first correct value will be used when tranforming from C to lua
+```c
+#include <stdio.h>
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "lautoc.h"
+
+typedef enum {
+	case_sensitive,
+	case_insensitive,
+	not_contiguous =45,
+} enum_val;
+
+int main(int argc, char **argv) {
+	
+  lua_State* L = luaL_newstate();
+  luaA_open();
+	
+  luaA_enum(L,enum_val);
+  luaA_enum_value(L,enum_val,case_sensitive,true);
+  luaA_enum_value(L,enum_val,case_insensitive,false);
+  luaA_enum_value(L,enum_val,not_contiguous,false);
+  luaA_enum_value_name(L,enum_val,case_sensitive,"alias_sensitive",true);
+
+  enum_val test_enum = not_contiguous;
+  luaA_push(L,enum_val,&test_enum);
+  printf("not_contiguous pushed as %s\n",lua_tostring(L,-1));
+
+  lua_pushstring(L,"alias_sensitive");
+  luaA_to(L,enum_val,&test_enum);
+  printf("alias_sensitive read back as %d\n",test_enum); 
+
+  luaA_close();
+  lua_close(L);
+	
+  return 0;
+}
+```
 
 FAQ
 ---
@@ -343,9 +386,6 @@ FAQ
 
   They work the same way as structs. All the luaA_struct functions should be fine to use on them. Like in C though, accessing them "incorrectly" in Lua will result in the raw data being interpreted differently. Lua AutoC doesn't do any clever checking for you.
   
-* How do enums work?
-
-  Enums work like any other type and the best way to deal with them is to write an explicit conversion function. There is no real way to know what storage type compilers will pick for an enum, it could be a unsigned char, signed int, long or anything else. If though, you are sure what storage type the compiler is using for a particular enum, it might be easier to just use that as the registered type and get a conversion for free.
 
 * Does this work on Linux/Mac/Windows?
   

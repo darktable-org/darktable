@@ -135,7 +135,7 @@ int luaA_call_name(lua_State* L, const char* func_name) {
   return 0;
 }
 
-void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, char* name, luaA_Type ret_t, int num_args, ...) {
+void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, const char* name, luaA_Type ret_t, int num_args, ...) {
 
   if (num_args >= MAX_ARG_NUM) {
     lua_pushfstring(L, "luaA_func_add: Function has %i arguments - maximum supported is %i!", num_args, MAX_ARG_NUM);

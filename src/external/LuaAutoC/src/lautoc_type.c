@@ -29,7 +29,7 @@ void luaA_type_close(void) {
   free(type_sizes);
 }
 
-luaA_Type luaA_type_add(char* type, size_t size) {
+luaA_Type luaA_type_add(const char* type, size_t size) {
   
   for(int i = 0; i < num_types; i++) {
     if (strcmp(type, type_names[i]) == 0) return i;
@@ -58,7 +58,7 @@ luaA_Type luaA_type_find(const char* type) {
   return -1;
 }
 
-char* luaA_type_name(luaA_Type id) {
+const char* luaA_type_name(luaA_Type id) {
   if (id == -1) return "Unknown Type";
   return type_names[id];
 }

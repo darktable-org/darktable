@@ -9,14 +9,14 @@ typedef struct {
   int x, y;
 } pair;
 
-static int luaA_push_pair(lua_State* L, void* c_in) {
+static int luaA_push_pair(lua_State* L, luaA_Type t, const void* c_in) {
   pair p = *(pair*)c_in;
   lua_pushinteger(L, p.x);
   lua_pushinteger(L, p.y);
   return 2;
 }
 
-static void luaA_to_pair(lua_State* L, void* c_out, int index) {
+static void luaA_to_pair(lua_State* L, luaA_Type t, void* c_out, int index) {
   pair* p = (pair*)c_out;
   p->y = lua_tointeger(L, index);
   p->x = lua_tointeger(L, index-1);

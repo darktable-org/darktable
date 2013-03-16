@@ -35,10 +35,10 @@ typedef void (*luaA_Tofunc)(lua_State*, luaA_Type, void*, int);
 
 #define luaA_type_id(type) luaA_type_add(#type, sizeof(type))
 
-luaA_Type luaA_type_add(char* type, size_t size);
+luaA_Type luaA_type_add(const char* type, size_t size);
 luaA_Type luaA_type_find(const char* type);
 
-char* luaA_type_name(luaA_Type id);
+const char* luaA_type_name(luaA_Type id);
 size_t luaA_type_size(luaA_Type id);
 bool luaA_type_has_push_func(luaA_Type id);
 bool luaA_type_has_to_func(luaA_Type id);
@@ -150,6 +150,41 @@ bool luaA_struct_registered_typeid(lua_State* L, luaA_Type type);
 int luaA_struct_push_typeid(lua_State* L, luaA_Type type,const void* c_in);
 void luaA_struct_to_typeid(lua_State* L, luaA_Type type, void* c_out, int index);
 
+/*
+ ** enum function
+ */
+void luaA_enum_open(void);
+void luaA_enum_close(void);
+/* push and inspect enum members */
+#define luaA_enum_push(L,type,value) luaA_enum_push_typeid(L,luaA_type_id(type),value)
+int luaA_enum_push_typeid(lua_State *L, luaA_Type type, const void* value);
+
+#define luaA_enum_to(L,type,ptr,index) luaA_enum_to_typeid(L,luaA_type_id(type),ptr,index)
+void luaA_enum_to_typeid(lua_State* L, luaA_Type type, void *c_in,int index);
+
+#define luaA_enum_has_value(L,type,value) LuaA_enum_has_value_typeid(L,luaA_type_id(type),value)
+#define luaA_enum_has_name(L,type,value) LuaA_enum_has_name_typeid(L,luaA_type_id(type),value)
+bool luaA_enum_has_value_typeid(lua_State* L, luaA_Type type, const void* value);
+bool luaA_enum_has_name_typeid(lua_State* L, luaA_Type type, const char* name);
+
+#define luaA_enum(L,type) luaA_enum_typeid(L,luaA_type_id(type),sizeof(type))
+#define luaA_enum_value(L,type,value,case_sensitive) do{\
+	type _var; \
+	_var = value; \
+	luaA_enum_value_typeid_name(L,luaA_type_id(type),&_var,#value,case_sensitive); \
+}while(0)
+#define luaA_enum_value_name(L,type,value,name,case_sensitive) do{ \
+	type _var; \
+	_var = value; \
+	luaA_enum_value_typeid_name(L,luaA_type_id(type),&_var,name,case_sensitive); \
+}while(0)
+
+void luaA_enum_typeid(lua_State *L,luaA_Type type,size_t size);
+void luaA_enum_value_typeid_name(lua_State *L, luaA_Type type, const void* value, const char*value_name,bool case_sensitive);
+
+bool luaA_enum_registered_typeid(lua_State *L, luaA_Type type);
+
+
 
 /*
 ** function calling and registration
@@ -167,7 +202,7 @@ int luaA_call_name(lua_State* L, const char* func_name);
 
 typedef void (*luaA_Func)(void*,void*);
 
-void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, char* name, luaA_Type ret_tid, int num_args, ...);
+void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, const char* name, luaA_Type ret_tid, int num_args, ...);
 
 
 /*

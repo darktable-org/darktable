@@ -26,7 +26,6 @@ void luaA_stack_open(void) {
   luaA_conversion(float, luaA_push_float, luaA_to_float);
   luaA_conversion(double, luaA_push_double, luaA_to_double);
   luaA_conversion(long double, luaA_push_long_double, luaA_to_long_double);
-  luaA_conversion(int32_t, luaA_push_int, luaA_to_int);
   
   luaA_conversion_push(const char, luaA_push_char);
   luaA_conversion_push(const signed char, luaA_push_signed_char);
@@ -42,7 +41,6 @@ void luaA_stack_open(void) {
   luaA_conversion_push(const float, luaA_push_float);
   luaA_conversion_push(const double, luaA_push_double);
   luaA_conversion_push(const long double, luaA_push_long_double);
-  luaA_conversion(const int32_t, luaA_push_int, luaA_to_int);
   
   luaA_conversion(char*, luaA_push_char_ptr, luaA_to_char_ptr);
   luaA_conversion(const char*, luaA_push_const_char_ptr, luaA_to_const_char_ptr);
@@ -69,6 +67,10 @@ int luaA_push_typeid(lua_State* L, luaA_Type type_id,const void* c_in) {
     return luaA_struct_push_typeid(L, type_id, c_in);
   }
   
+  if (luaA_enum_registered_typeid(L, type_id)) {
+    return luaA_enum_push_typeid(L, type_id, c_in);
+  }
+  
   lua_pushfstring(L, "luaA_push: conversion to lua object from type '%s' not registered!", luaA_type_name(type_id));
   lua_error(L);
   return 0;
@@ -83,6 +85,10 @@ void luaA_to_typeid(lua_State* L, luaA_Type type_id, void* c_out, int index) {
   
   if (luaA_struct_registered_typeid(L, type_id)) {
     return luaA_struct_to_typeid(L, type_id, c_out, index);
+  }
+  
+  if (luaA_enum_registered_typeid(L, type_id)) {
+    return luaA_enum_to_typeid(L, type_id, c_out, index);
   }
   
   lua_pushfstring(L, "luaA_to: conversion from lua object to type '%s' not registered!", luaA_type_name(type_id));

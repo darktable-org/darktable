@@ -159,6 +159,10 @@ const char* luaA_struct_next_member_name_typeid(lua_State* L, luaA_Type type, co
 
   struct_entry* se = luaA_hashtable_get(struct_table, luaA_type_name(type));
   if (se != NULL) {
+    if( se->num_members == 0) {
+	    return NULL;
+    }
+
     if(member == NULL && se->num_members > 0) {
 	    return se->members[0]->name;
     }
