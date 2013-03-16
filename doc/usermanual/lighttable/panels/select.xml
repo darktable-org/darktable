@@ -4,7 +4,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel allows quick selection of images, according to some common criteria.
+					<entry>This panel allows for a quick selection of images, according to some common criteria.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
@@ -14,7 +14,7 @@
 		</tgroup>
 	</informaltable>
 		<sect4><title>select all</title>
-			<para>Select all images in the current view (collection), with respect to filters.
+			<para>Select all images in the current view (collection), with respect to the filters.
 			</para>
 		</sect4>
 		<sect4><title>select none</title>
@@ -30,7 +30,7 @@
 			</para>
 		</sect4>
 		<sect4><title>select untouched</title>
-			<para>Select all images that have not been developed yet.
+			<para>Select all images that have not yet been developed.
 			</para>
 		</sect4>
 </sect2>

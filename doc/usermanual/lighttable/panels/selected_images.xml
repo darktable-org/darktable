@@ -36,7 +36,7 @@
 		</sect4>
 		<sect4><title>create hdr</title>
 			<para>Create a high dynamic range image from the selected images, and store it as a new source file in DNG format. Images
-                              need to be properly aligned, which implies that they have been taken from a sturdy tripod. You can also 
+                              need to be properly aligned, which implies that they have been taken on a sturdy tripod. You can also 
                               generate HDRs with  programs like <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance HDR</emphasis></ulink>, and 
                               later import them into darktable for further processing (see <xref linkend="supported file formats"/>).
 			</para>
@@ -53,11 +53,11 @@
 			</para>
 		</sect4>
 		<sect4><title>group</title>
-			<para>Create a new group from selected images.
+			<para>Create a new group from selected images (see <xref linkend="image grouping"/>).
 			</para>
 		</sect4>
 		<sect4><title>ungroup</title>
-			<para>Remove selected images from the group.
+			<para>Remove selected images from the group (see <xref linkend="image grouping"/>).
 			</para>
 		</sect4>
 </sect2>

@@ -4,8 +4,8 @@
 					<colspec colwidth="4*"/>
 					<tbody>
 						<row>						
-							<entry>With this panel, you can manage a collection (the current view)
-							by filtering images with various criteria.
+							<entry>The current view in lighttable is called a collection. With this panel, you can manage the collection
+							by filtering with various criteria.
 							The left combo box lets you choose from different filters, such as <quote>filmroll</quote>,
                                                         <quote>history stack</quote>, <quote>date</quote>, <quote>camera</quote> and much more. The table below the combobox lists 
                                                         all available data for the selected filter. You can then select the data of your choice by double-clicking.						
