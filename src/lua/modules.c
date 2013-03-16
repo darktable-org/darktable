@@ -67,7 +67,7 @@ luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* 
   luaA_type_add(type_name,size);
   luaA_Type my_type = dt_lua_init_type_internal(L,type_name,format_fields_name,format_index,NULL,size);
   luaA_struct_typeid(L,my_type);
-  luaA_struct_member_typeid(L,my_type,"style",luaA_type_id(const char*),offsetof(dt_imageio_module_data_t,style));
+  //luaA_struct_member_typeid(L,my_type,"style",luaA_type_id(const char*),offsetof(dt_imageio_module_data_t,style));
   lua_pushlightuserdata(L,module);
 	lua_setfield(L,-2,"__format_object");
   lua_pop(L,1); // pop the metatable for the type, we don't want users to change it
