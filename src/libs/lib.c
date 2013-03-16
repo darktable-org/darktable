@@ -399,8 +399,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     cnt ++;
   }
   sqlite3_finalize(stmt);
-  if(cnt > 0)
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
 
   // FIXME: this doesn't seem to work.
   if(active_preset >= 0)
