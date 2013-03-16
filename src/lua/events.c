@@ -334,24 +334,39 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
+  lua_State* L = darktable.lua_state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(export_data->format_index);
   g_assert(mformat);
   int size;
   dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
-  luaA_push_typeid(darktable.lua_state,mformat->parameter_lua_type,fdata);
+  luaA_push_typeid(L,mformat->parameter_lua_type,fdata);
+  mformat->free_params(mformat,fdata);
 
-  dt_lua_image_glist_push(darktable.lua_state,export_descriptor->index);
+  dt_lua_image_glist_push(L,export_descriptor->index);
   g_list_free(export_descriptor->index);
   export_descriptor->index =NULL;
 
-  dt_lua_trigger_event("pre-export",2,1);
-  if(lua_isnoneornil(darktable.lua_state,-1)) {return; }// everything already has been removed
-  export_descriptor->index = dt_lua_image_glist_get(darktable.lua_state,-1);
-  /* TBSL see what we do with the params, the are read-only at this point  */
-  mformat->set_params(mformat,fdata,size);
+  dt_lua_trigger_event("pre-export",2,2);
+
+  // load the new list of images to process
+  if(lua_isnoneornil(L,-1)) {return; }// everything already has been removed
+  export_descriptor->index = dt_lua_image_glist_get(L,-1);
+
+  // get the new format data and the new format
+  luaL_getmetafield(L,-2,"__associated_object");
+  mformat = lua_touserdata(L,-1);
+  lua_pop(L,1);
+  fdata = mformat->get_params(mformat, &size);
+  luaL_getmetafield(L,-2,"__lua_type");
+  luaA_Type format_type = lua_tointeger(L,-1);
+  lua_pop(L,1);
+  luaA_to_typeid(L,format_type,fdata,-2);
   mformat->free_params(mformat,fdata);
+  export_data->format_index = dt_imageio_get_index_of_format(mformat);
+
+  lua_pop(L,1);
 }
 
 static void on_export_image_tmpfile(gpointer instance,

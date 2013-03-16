@@ -187,6 +187,8 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name);
 /* get by index */
 dt_imageio_module_format_t *dt_imageio_get_format_by_index(int index);
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index);
+int dt_imageio_get_index_of_format(dt_imageio_module_format_t* format);
+int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t* storage);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
