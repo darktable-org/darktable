@@ -1017,6 +1017,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
       if(sqlite3_step(stmt) == SQLITE_ROW) {
         lib->full_preview_id = sqlite3_column_int(stmt, 0);
+        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->full_preview_id);
       }
 
       sqlite3_finalize(stmt);
@@ -1451,6 +1452,7 @@ int key_released(dt_view_t *self, guint key, guint state)
   {
 
     lib->full_preview_id = -1;
+    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
