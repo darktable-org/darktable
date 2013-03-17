@@ -745,6 +745,7 @@ cleanup:
   return result;
 }
 
+void init(dt_imageio_module_storage_t *self) {}
 void*
 get_params(dt_imageio_module_storage_t *self, int *size)
 {
@@ -845,7 +846,6 @@ get_params(dt_imageio_module_storage_t *self, int *size)
   {
     set_status(ui,_("not authenticated"), "#e07f7f");
     gtk_widget_set_sensitive(GTK_WIDGET( ui->comboBox1 ) ,FALSE);
-    dt_control_log(_("Flickr account not authenticated"));
     g_free(d);
     return NULL;
   }

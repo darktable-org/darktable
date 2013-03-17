@@ -141,6 +141,9 @@ gui_reset (dt_imageio_module_storage_t *self)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 }
 
+
+void init(dt_imageio_module_storage_t *self) {}
+
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)

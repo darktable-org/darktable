@@ -172,6 +172,7 @@ static int
 dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char *libname, const char *plugin_name)
 {
   module->widget = NULL;
+  module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, 20);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -186,6 +187,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
@@ -196,6 +198,14 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
   if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
+  module->init(module);
+#ifdef USE_LUA
+  if(module->parameter_lua_type == LUAA_INVALID_TYPE) {
+    char tmp[1024];
+    snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",module->plugin_name);
+    module->parameter_lua_type = dt_lua_init_storage_internal(darktable.lua_state,module,tmp,sizeof(dt_imageio_module_data_t));
+  }
+#endif
 
   return 0;
 error:

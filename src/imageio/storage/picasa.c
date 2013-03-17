@@ -1416,6 +1416,7 @@ void gui_reset(struct dt_imageio_module_storage_t *self)
   //TODO?
 }
 
+void init(dt_imageio_module_storage_t *self) {}
 /* try and see if this format is supported? */
 int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
 {

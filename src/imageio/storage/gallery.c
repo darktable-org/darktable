@@ -196,6 +196,7 @@ gui_reset (dt_imageio_module_storage_t *self)
   dt_conf_set_string("plugins/imageio/storage/gallery/title", gtk_entry_get_text(d->title_entry));
 }
 
+void init(dt_imageio_module_storage_t *self) {}
 static gint
 sort_pos(pair_t *a, pair_t *b)
 {
