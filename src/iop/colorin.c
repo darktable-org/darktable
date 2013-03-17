@@ -42,6 +42,9 @@
 
 DT_MODULE(1)
 
+static void update_profile_list(dt_iop_module_t *self);
+
+
 typedef struct dt_iop_colorin_global_data_t
 {
   int kernel_colorin;
@@ -105,7 +108,14 @@ profile_changed (GtkWidget *widget, gpointer user_data)
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
-  GList *prof = g->profiles;
+  GList *prof;
+  if(pos < g->n_image_profiles)
+    prof = g->image_profiles;
+  else
+  {
+    prof = g->global_profiles;
+    pos -= g->n_image_profiles;
+  }
   while(prof)
   {
     // could use g_list_nth. this seems safer?
@@ -521,13 +531,28 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
   // dt_bauhaus_combobox_set(g->cbox1, (int)p->intent);
-  GList *prof = g->profiles;
+
+  update_profile_list(self);
+
+  // TODO: merge this into update_profile_list()
+  GList *prof = g->image_profiles;
   while(prof)
   {
     dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
     if(!strcmp(pp->filename, p->iccprofile))
     {
       dt_bauhaus_combobox_set(g->cbox2, pp->pos);
+      return;
+    }
+    prof = g_list_next(prof);
+  }
+  prof = g->global_profiles;
+  while(prof)
+  {
+    dt_iop_color_profile_t *pp = (dt_iop_color_profile_t *)prof->data;
+    if(!strcmp(pp->filename, p->iccprofile))
+    {
+      dt_bauhaus_combobox_set(g->cbox2, pp->pos + g->n_image_profiles);
       return;
     }
     prof = g_list_next(prof);
@@ -609,13 +634,19 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-void gui_init(struct dt_iop_module_t *self)
+static void update_profile_list(dt_iop_module_t *self)
 {
-  // pthread_mutex_lock(&darktable.plugin_threadsafe);
-  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
 
-  g->profiles = NULL;
+  // clear and refill the image profile list
+  while(g->image_profiles)
+  {
+    g_free(g->image_profiles->data);
+    g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
+  }
+  g->image_profiles = NULL;
+  g->n_image_profiles = 0;
+
   dt_iop_color_profile_t *prof;
   int pos = -1;
   // some file formats like jpeg can have an embedded color profile
@@ -626,7 +657,7 @@ void gui_init(struct dt_iop_module_t *self)
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "eprofile", sizeof(prof->filename));
     g_strlcpy(prof->name, "eprofile", sizeof(prof->name));
-    g->profiles = g_list_append(g->profiles, prof);
+    g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->pos = ++pos;
   }
   dt_image_cache_read_release(darktable.image_cache, cimg);
@@ -636,7 +667,7 @@ void gui_init(struct dt_iop_module_t *self)
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "ematrix", sizeof(prof->filename));
     g_strlcpy(prof->name, "ematrix", sizeof(prof->name));
-    g->profiles = g_list_append(g->profiles, prof);
+    g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->pos = ++pos;
   }
   // get color matrix from raw image:
@@ -650,7 +681,7 @@ void gui_init(struct dt_iop_module_t *self)
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
     g_strlcpy(prof->name, "cmatrix", sizeof(prof->name));
-    g->profiles = g_list_append(g->profiles, prof);
+    g->image_profiles = g_list_append(g->image_profiles, prof);
     prof->pos = ++pos;
   }
 
@@ -662,7 +693,7 @@ void gui_init(struct dt_iop_module_t *self)
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "darktable", sizeof(prof->filename));
       g_strlcpy(prof->name, "darktable", sizeof(prof->name));
-      g->profiles = g_list_append(g->profiles, prof);
+      g->image_profiles = g_list_append(g->image_profiles, prof);
       prof->pos = ++pos;
       break;
     }
@@ -676,7 +707,7 @@ void gui_init(struct dt_iop_module_t *self)
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "vendor", sizeof(prof->filename));
       g_strlcpy(prof->name, "vendor", sizeof(prof->name));
-      g->profiles = g_list_append(g->profiles, prof);
+      g->image_profiles = g_list_append(g->image_profiles, prof);
       prof->pos = ++pos;
       break;
     }
@@ -690,52 +721,135 @@ void gui_init(struct dt_iop_module_t *self)
       prof = (dt_iop_color_profile_t *)malloc(sizeof(dt_iop_color_profile_t));
       g_strlcpy(prof->filename, "alternate", sizeof(prof->filename));
       g_strlcpy(prof->name, "alternate", sizeof(prof->name));
-      g->profiles = g_list_append(g->profiles, prof);
+      g->image_profiles = g_list_append(g->image_profiles, prof);
       prof->pos = ++pos;
       break;
     }
   }
 
+  g->n_image_profiles = pos + 1;
+
+  // update the gui
+  dt_bauhaus_combobox_clear(g->cbox2);
+
+  GList *l = g->image_profiles;
+  while(l)
+  {
+    dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
+    if(!strcmp(prof->name, "eprofile"))
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+    else if(!strcmp(prof->name, "ematrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+    else if(!strcmp(prof->name, "cmatrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
+    else if(!strcmp(prof->name, "darktable"))
+      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+    else if(!strcmp(prof->name, "vendor"))
+      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+    else if(!strcmp(prof->name, "alternate"))
+      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
+    else if(!strcmp(prof->name, "sRGB"))
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
+    else if(!strcmp(prof->name, "adobergb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB"));
+    else if(!strcmp(prof->name, "linear_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
+    else if(!strcmp(prof->name, "infrared"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
+    else if(!strcmp(prof->name, "XYZ"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+    else if(!strcmp(prof->name, "Lab"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
+    else
+      dt_bauhaus_combobox_add(g->cbox2, prof->name);
+    l = g_list_next(l);
+  }
+  l = g->global_profiles;
+  while(l)
+  {
+    dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
+    if(!strcmp(prof->name, "eprofile"))
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+    else if(!strcmp(prof->name, "ematrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+    else if(!strcmp(prof->name, "cmatrix"))
+      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
+    else if(!strcmp(prof->name, "darktable"))
+      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
+    else if(!strcmp(prof->name, "vendor"))
+      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
+    else if(!strcmp(prof->name, "alternate"))
+      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
+    else if(!strcmp(prof->name, "sRGB"))
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
+    else if(!strcmp(prof->name, "adobergb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB"));
+    else if(!strcmp(prof->name, "linear_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
+    else if(!strcmp(prof->name, "infrared"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
+    else if(!strcmp(prof->name, "XYZ"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
+    else if(!strcmp(prof->name, "Lab"))
+      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
+    else
+      dt_bauhaus_combobox_add(g->cbox2, prof->name);
+    l = g_list_next(l);
+  }
+}
+
+void gui_init(struct dt_iop_module_t *self)
+{
+  // pthread_mutex_lock(&darktable.plugin_threadsafe);
+  self->gui_data = malloc(sizeof(dt_iop_colorin_gui_data_t));
+  dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
+
+  g->image_profiles = g->global_profiles = NULL;
+  dt_iop_color_profile_t *prof;
+
+  // the profiles that are available for every image
+  int pos = -1;
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
   g_strlcpy(prof->name, "sRGB", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // adobe rgb built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
   g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // add std RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
   g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // XYZ built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "XYZ", sizeof(prof->filename));
   g_strlcpy(prof->name, "XYZ", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // Lab built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "Lab", sizeof(prof->filename));
   g_strlcpy(prof->name, "Lab", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // infrared built-in
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "infrared", sizeof(prof->filename));
   g_strlcpy(prof->name, "infrared", sizeof(prof->name));
-  g->profiles = g_list_append(g->profiles, prof);
+  g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
@@ -770,7 +884,7 @@ void gui_init(struct dt_iop_module_t *self)
 
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         cmsCloseProfile(tmpprof);
-        g->profiles = g_list_append(g->profiles, prof);
+        g->global_profiles = g_list_append(g->global_profiles, prof);
         prof->pos = ++pos;
       }
     }
@@ -781,38 +895,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->cbox2 = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cbox2, _("profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox2, TRUE, TRUE, 0);
-  GList *l = g->profiles;
-  while(l)
-  {
-    dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
-    if(!strcmp(prof->name, "eprofile"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
-    else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
-    else if(!strcmp(prof->name, "cmatrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
-    else if(!strcmp(prof->name, "darktable"))
-      dt_bauhaus_combobox_add(g->cbox2, _("enhanced color matrix"));
-    else if(!strcmp(prof->name, "vendor"))
-      dt_bauhaus_combobox_add(g->cbox2, _("vendor color matrix"));
-    else if(!strcmp(prof->name, "alternate"))
-      dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
-    else if(!strcmp(prof->name, "sRGB"))
-      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
-    else if(!strcmp(prof->name, "adobergb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB"));
-    else if(!strcmp(prof->name, "linear_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
-    else if(!strcmp(prof->name, "infrared"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
-    else if(!strcmp(prof->name, "XYZ"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear XYZ"));
-    else if(!strcmp(prof->name, "Lab"))
-      dt_bauhaus_combobox_add(g->cbox2, _("Lab"));
-    else
-      dt_bauhaus_combobox_add(g->cbox2, prof->name);
-    l = g_list_next(l);
-  }
+
+  // now generate the list of profiles applicable to the current image and update the list
+  update_profile_list(self);
+
   dt_bauhaus_combobox_set(g->cbox2, 0);
 
   char tooltip[1024];
@@ -827,10 +913,15 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
-  while(g->profiles)
+  while(g->image_profiles)
   {
-    g_free(g->profiles->data);
-    g->profiles = g_list_delete_link(g->profiles, g->profiles);
+    g_free(g->image_profiles->data);
+    g->image_profiles = g_list_delete_link(g->image_profiles, g->image_profiles);
+  }
+  while(g->global_profiles)
+  {
+    g_free(g->global_profiles->data);
+    g->global_profiles = g_list_delete_link(g->global_profiles, g->global_profiles);
   }
   free(self->gui_data);
   self->gui_data = NULL;
