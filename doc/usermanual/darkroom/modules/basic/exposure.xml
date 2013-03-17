@@ -24,7 +24,7 @@
                       correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
 		</para>
 		<para>Positive exposure corrections will make the image brighter. As a side effect noise level gets higher. Depending on the basic noise level of your
-                      camera and the iso value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.
+                      camera and the ISO value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.
 		</para>
 		<para>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for blown out highlights (see
                       also <xref linkend="highlight reconstruction"/>).

@@ -11,7 +11,7 @@
                             presets is shown for your choice; the activated preset is in bold text.
 		    </para>
 		    <para>
-			    The preset system does also support automatic preset selection based on image data such as focal length, iso,  
+			    The preset system does also support automatic preset selection based on image data such as focal length, ISO,  
 				    camera model and many more fields.
                     </para>
 		    <sect3><title>Creating a new preset</title>
