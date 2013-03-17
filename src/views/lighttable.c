@@ -1302,10 +1302,15 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == 1 && state == 0)
+  if(lib->full_preview_id > -1)
+  {
+    if(up) lib->track = -DT_LIBRARY_MAX_ZOOM;
+    else   lib->track = +DT_LIBRARY_MAX_ZOOM;
+  }
+  else if(layout == 1 && state == 0)
   {
     if(up) move_view(lib, UP);
-    else   move_view(lib, DOWN);;
+    else   move_view(lib, DOWN);
   }
   else
   {
