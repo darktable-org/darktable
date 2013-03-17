@@ -895,13 +895,13 @@ void dt_control_copy_images_job_init(dt_job_t *job)
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
-         "moving %d image", "moving %d images");
+         _("moving %d image"), _("moving %d images"));
 }
 
 int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
-         "copying %d image", "copying %d images");
+         _("copying %d image"), _("copying %d images"));
 }
 
 int32_t dt_control_export_job_run(dt_job_t *job)
