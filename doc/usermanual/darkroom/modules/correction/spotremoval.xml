@@ -17,9 +17,10 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Click on the area to be healed then drag to a clean area. The circle with line inside is the clean one.</para>	
+		<para>Click on the area to be healed then drag to a clean area. The circle with line inside is the clean reference area.</para>	
 		<para>Use mouse scroll-wheel over the stroke to change its size.</para>
-		<para>Right-click on a stroke to delete it.</para>		
+		<para>Right-click on a stroke to delete it.</para>
+                <para>Close the module to complete the changes.</para>		
 	</sect4>
 	
 	<sect4><title>Examples</title>

@@ -27,21 +27,21 @@
                       counteract dithering.</para>
 
                 <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
-                      anyhow :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>). 
+                      enough :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>). 
                       Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. This is a speed-up option, which only affects monitor display, not file 
                       exports.</para>
 
-                <para>Watching from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of 
-                      a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in center 
-                      view, in navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. Please 
-                      note that as a consequence the histogram - which is derived from the navigation window - will show this increased number a levels and is no longer
+                <para>Viewing from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of 
+                      a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in the center 
+                      view, in the navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. 
+                      Note that as a consequence the histogram - which is derived from the navigation window - will show this increased number of levels and is no longer
                       a full match of the output image.</para>
         </sect4>
 
 	<sect4><title>Usage</title>
 		<sect5><title>method</title>
 			<para>This combobox sets the dithering method. Floyd-Steinberg error diffusion - with some typical output bit depths - and random noise 
-                        dithering are supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some
+                        dithering are both supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some
                         level of randomness to break sharp tonal value bands. The default setting is <quote>floyd-steinberg auto</quote>, which automatically adapts
                         to the desired output format.</para>
 		</sect5>
