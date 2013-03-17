@@ -41,7 +41,6 @@ _email_attachment_t;
 // saved params
 typedef struct dt_imageio_email_t
 {
-  char filename[DT_MAX_PATH_LEN];
   GList *images;
 }
 dt_imageio_email_t;
@@ -79,7 +78,6 @@ gui_reset (dt_imageio_module_storage_t *self)
 
 }
 
-void init(dt_imageio_module_storage_t *self) {}
 int
 store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
@@ -120,6 +118,12 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   d->images = g_list_append( d->images, attachment );
 
   return 0;
+}
+
+void init(dt_imageio_module_storage_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_imageio_email_t);
+#endif
 }
 
 void*

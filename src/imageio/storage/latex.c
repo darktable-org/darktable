@@ -197,7 +197,6 @@ gui_reset (dt_imageio_module_storage_t *self)
   dt_conf_set_string("plugins/imageio/storage/latex/title", gtk_entry_get_text(d->title_entry));
 }
 
-void init(dt_imageio_module_storage_t *self) {}
 static gint
 sort_pos(pair_t *a, pair_t *b)
 {
@@ -419,6 +418,13 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   fclose(f);
 }
 
+void init(dt_imageio_module_storage_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_imageio_latex_t);
+  luaA_struct_member(darktable.lua_state,dt_imageio_latex_t,filename,char_path_length);
+  luaA_struct_member(darktable.lua_state,dt_imageio_latex_t,title,char_1024);
+#endif
+}
 void*
 get_params(dt_imageio_module_storage_t *self, int* size)
 {

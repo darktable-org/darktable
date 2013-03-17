@@ -21,6 +21,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lautoc.h>
+#include "lua/types.h"
 #include "common/imageio_module.h"
 
 

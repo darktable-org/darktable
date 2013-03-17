@@ -745,7 +745,11 @@ cleanup:
   return result;
 }
 
-void init(dt_imageio_module_storage_t *self) {}
+void init(dt_imageio_module_storage_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_storage_flickr_params_t);
+#endif
+}
 void*
 get_params(dt_imageio_module_storage_t *self, int *size)
 {

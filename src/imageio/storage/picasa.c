@@ -1416,7 +1416,6 @@ void gui_reset(struct dt_imageio_module_storage_t *self)
   //TODO?
 }
 
-void init(dt_imageio_module_storage_t *self) {}
 /* try and see if this format is supported? */
 int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
 {
@@ -1537,6 +1536,11 @@ int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_d
 }
 
 
+void init(dt_imageio_module_storage_t *self) {
+#ifdef USE_LUA
+  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,PicasaContext);
+#endif
+}
 void *get_params(struct dt_imageio_module_storage_t *self, int *size)
 {
   dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
