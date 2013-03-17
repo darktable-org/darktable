@@ -747,7 +747,7 @@ cleanup:
 
 void init(dt_imageio_module_storage_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_storage_flickr_params_t);
+  self->parameter_lua_type = dt_lua_init_storage_size(darktable.lua_state,self,dt_storage_flickr_params_t, sizeof(int64_t));
 #endif
 }
 void*

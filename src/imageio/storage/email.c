@@ -122,7 +122,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
 
 void init(dt_imageio_module_storage_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_imageio_email_t);
+  self->parameter_lua_type = dt_lua_init_storage_size(darktable.lua_state,self,dt_imageio_email_t,sizeof(dt_imageio_email_t) - sizeof(GList *));
 #endif
 }
 

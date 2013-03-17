@@ -245,7 +245,7 @@ radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
 
 void init(dt_imageio_module_format_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_format(darktable.lua_state,self,dt_imageio_tiff_t);
+  self->parameter_lua_type = dt_lua_init_format_size(darktable.lua_state,self,dt_imageio_tiff_t, sizeof(dt_imageio_tiff_t) - sizeof(TIFF*));
   luaA_struct_member(darktable.lua_state,dt_imageio_tiff_t,bpp,int);
 #endif
 }

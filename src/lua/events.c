@@ -337,10 +337,16 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
   lua_State* L = darktable.lua_state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
+  int size;
+  dt_imageio_module_storage_t  *mstorage  = dt_imageio_get_storage_by_index(export_data->storage_index);
+  g_assert(mstorage);
+  dt_imageio_module_data_t *fdata = mstorage->get_params(mstorage, &size);
+  luaA_push_typeid(L,mstorage->parameter_lua_type,fdata);
+  mstorage->free_params(mstorage,fdata);
+
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(export_data->format_index);
   g_assert(mformat);
-  int size;
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
+  fdata = mformat->get_params(mformat, &size);
   luaA_push_typeid(L,mformat->parameter_lua_type,fdata);
   mformat->free_params(mformat,fdata);
 
@@ -348,23 +354,37 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
   g_list_free(export_descriptor->index);
   export_descriptor->index =NULL;
 
-  dt_lua_trigger_event("pre-export",2,2);
+  dt_lua_trigger_event("pre-export",3,3);
 
-  // load the new list of images to process
-  if(lua_isnoneornil(L,-1)) {return; }// everything already has been removed
-  export_descriptor->index = dt_lua_image_glist_get(L,-1);
+  // get the new storage data and the new storage
+  luaL_getmetafield(L,-3,"__associated_object");
+  mstorage = lua_touserdata(L,-1);
+  lua_pop(L,1);
+  fdata = mstorage->get_params(mstorage, &size);
+  luaL_getmetafield(L,-3,"__luaA_Type");
+  luaA_Type storage_type = lua_tointeger(L,-1);
+  lua_pop(L,1);
+  luaA_to_typeid(L,storage_type,fdata,-3);
+  mstorage->set_params(mstorage,fdata,size);
+  mstorage->free_params(mstorage,fdata);
+  export_data->storage_index = dt_imageio_get_index_of_storage(mstorage);
 
   // get the new format data and the new format
   luaL_getmetafield(L,-2,"__associated_object");
   mformat = lua_touserdata(L,-1);
   lua_pop(L,1);
   fdata = mformat->get_params(mformat, &size);
-  luaL_getmetafield(L,-2,"__lua_type");
+  luaL_getmetafield(L,-2,"__luaA_Type");
   luaA_Type format_type = lua_tointeger(L,-1);
   lua_pop(L,1);
   luaA_to_typeid(L,format_type,fdata,-2);
+  mformat->set_params(mformat,fdata,size);
   mformat->free_params(mformat,fdata);
   export_data->format_index = dt_imageio_get_index_of_format(mformat);
+
+  // load the new list of images to process
+  if(lua_isnoneornil(L,-1)) {lua_pop(L,3); return; }// everything already has been removed
+  export_descriptor->index = dt_lua_image_glist_get(L,-1);
 
   lua_pop(L,1);
 }

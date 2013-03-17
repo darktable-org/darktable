@@ -29,10 +29,14 @@
    
 #define dt_lua_init_format(L,format,type_name) \
   dt_lua_init_format_internal(L,format,#type_name,sizeof(type_name)) 
+#define dt_lua_init_format_size(L,format,type_name,size) \
+  dt_lua_init_format_internal(L,format,#type_name,size) 
 luaA_Type dt_lua_init_format_internal(lua_State* L, dt_imageio_module_format_t* module,char*type_name,size_t size);
 
 #define dt_lua_init_storage(L,storage,type_name) \
   dt_lua_init_storage_internal(L,storage,#type_name,sizeof(type_name)) 
+#define dt_lua_init_storage_size(L,storage,type_name,size) \
+  dt_lua_init_storage_internal(L,storage,#type_name,size) 
 luaA_Type dt_lua_init_storage_internal(lua_State* L, dt_imageio_module_storage_t* module,char*type_name,size_t size);
 
 int dt_lua_init_modules(lua_State *L);

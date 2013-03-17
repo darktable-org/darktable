@@ -259,7 +259,7 @@ failed:
 
 void init(dt_imageio_module_storage_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_imageio_disk_t);
+  self->parameter_lua_type = dt_lua_init_storage_size(darktable.lua_state,self,dt_imageio_disk_t,sizeof(dt_imageio_disk_t) - sizeof(void *));
   luaA_struct_member(darktable.lua_state,dt_imageio_disk_t,filename,char_path_length);
 #endif
 }

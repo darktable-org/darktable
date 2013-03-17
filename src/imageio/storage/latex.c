@@ -420,7 +420,7 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
 
 void init(dt_imageio_module_storage_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,dt_imageio_latex_t);
+  self->parameter_lua_type = dt_lua_init_storage_size(darktable.lua_state,self,dt_imageio_latex_t, sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - 1024);
   luaA_struct_member(darktable.lua_state,dt_imageio_latex_t,filename,char_path_length);
   luaA_struct_member(darktable.lua_state,dt_imageio_latex_t,title,char_1024);
 #endif

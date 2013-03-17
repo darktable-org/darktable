@@ -1538,7 +1538,7 @@ int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_d
 
 void init(dt_imageio_module_storage_t *self) {
 #ifdef USE_LUA
-  self->parameter_lua_type = dt_lua_init_storage(darktable.lua_state,self,PicasaContext);
+  self->parameter_lua_type = dt_lua_init_storage_size(darktable.lua_state,self,PicasaContext,sizeof(PicasaContext) - 8*sizeof(void *));
 #endif
 }
 void *get_params(struct dt_imageio_module_storage_t *self, int *size)
