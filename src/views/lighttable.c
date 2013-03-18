@@ -289,14 +289,15 @@ void init(dt_view_t *self)
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
   lib->selection_origin_idx = -1;
-  lib->first_visible_zoomable = lib->first_visible_filemanager = 0;
+  lib->first_visible_zoomable = dt_conf_get_int("lighttable/ui/first_visible_zoomable");
+  lib->first_visible_filemanager = dt_conf_get_int("lighttable/ui/first_visible_filemanager");
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
-  lib->zoom_x = 0.0f;
-  lib->zoom_y = 0.0f;
-  lib->full_preview=0;
-  lib->full_preview_id=-1;
+  lib->zoom_x = dt_conf_get_float("lighttable/ui/zoom_x");
+  lib->zoom_y = dt_conf_get_float("lighttable/ui/zoom_y");
+  lib->full_preview = 0;
+  lib->full_preview_id = -1;
   lib->last_mouse_over_id = -1;
 
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
@@ -321,6 +322,11 @@ void init(dt_view_t *self)
 
 void cleanup(dt_view_t *self)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
+  dt_conf_set_int("lighttable/ui/first_visible_filemanager", lib->first_visible_filemanager);
+  dt_conf_set_int("lighttable/ui/first_visible_zoomable", lib->first_visible_zoomable);
+  dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
+  dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
   free(self->data);
 }
 
@@ -1192,7 +1198,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     }
     default:
       break;
-    
+
     dt_control_queue_redraw_center();
   }
   return TRUE;
