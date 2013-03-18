@@ -191,7 +191,7 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
   GList *result=NULL;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 and num in (select MAX(num) from history where imgid=?1 group by operation) order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, multi_name from history where imgid=?1 and num in (select MAX(num) from history where imgid=?1 group by multi_priority) order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -204,9 +204,9 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
       item->num = sqlite3_column_int (stmt, 0);
 
       if (enabled)
-        g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+        g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
       else
-        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
+        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
       result = g_list_append (result,item);
