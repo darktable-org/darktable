@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/metadata.h"
 #include "common/debug.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "control/signal.h"
 #include "control/conf.h"
@@ -203,6 +204,22 @@ static void clear_button_clicked(GtkButton *button, gpointer user_data)
 static void write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
+ 
+  /* If only one image is shown, metadata should be applied to it.
+     If there are more images shown, metadata should always apply to 
+     selection, as it can't be applied to the image hovered */
+  
+  int mouse_over_id = -1;
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  
+  if(zoom == 1)
+  {
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  }
+  else if(dt_collection_get_selected_count(darktable.collection) > 0)
+  {
+    mouse_over_id = -1;
+  }
 
   gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
   gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
@@ -211,15 +228,15 @@ static void write_metadata(dt_lib_module_t *self)
   gchar *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
 
   if(title != NULL && (d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) != 0))
-    dt_metadata_set(-1, "Xmp.dc.title", title);
+    dt_metadata_set(mouse_over_id, "Xmp.dc.title", title);
   if(description != NULL && (d->multi_description == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)) != 0))
-    dt_metadata_set(-1, "Xmp.dc.description", description);
+    dt_metadata_set(mouse_over_id, "Xmp.dc.description", description);
   if(rights != NULL && (d->multi_rights == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->rights)) != 0))
-    dt_metadata_set(-1, "Xmp.dc.rights", rights);
+    dt_metadata_set(mouse_over_id, "Xmp.dc.rights", rights);
   if(creator != NULL && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) != 0))
-    dt_metadata_set(-1, "Xmp.dc.creator", creator);
+    dt_metadata_set(mouse_over_id, "Xmp.dc.creator", creator);
   if(publisher != NULL && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
-    dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
+    dt_metadata_set(mouse_over_id, "Xmp.dc.publisher", publisher);
 
   if(title != NULL)
     g_free(title);
@@ -232,7 +249,7 @@ static void write_metadata(dt_lib_module_t *self)
   if(publisher != NULL)
     g_free(publisher);
 
-  dt_image_synch_xmp(-1);
+  dt_image_synch_xmp(mouse_over_id);
   update(self, FALSE);
 }
 
