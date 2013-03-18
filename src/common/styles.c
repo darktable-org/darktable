@@ -496,7 +496,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       // get all items from the style
       //    UNION
       // get all items from history, not in the style : select only the last operation, that is max(num)
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, (select max(num) from history where imgid=?2 and operation=style_items.operation group by multi_priority) from style_items where styleid=?1 UNION select -1,history.operation,history.enabled,history.num from history where imgid=?2 and history.enabled=1 and (history.operation not in (select operation from style_items where styleid=?1) or (history.multi_priority not in (select multi_priority from style_items where styleid=?1 and operation=history.operation))) group by operation having max(num) order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, (select max(num) from history where imgid=?2 and operation=style_items.operation group by multi_priority),multi_name from style_items where styleid=?1 UNION select -1,history.operation,history.enabled,history.num,multi_name from history where imgid=?2 and history.enabled=1 and (history.operation not in (select operation from style_items where styleid=?1) or (history.multi_priority not in (select multi_priority from style_items where styleid=?1 and operation=history.operation))) group by operation having max(num) order by num desc", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
     else
@@ -534,7 +534,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       }
       else
       {
-        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(gchar *)sqlite3_column_text (stmt, 4),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
         item->params = NULL;
         item->blendop_params = NULL;
         if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)
