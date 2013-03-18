@@ -60,9 +60,16 @@ install(FILES gdb_commands DESTINATION ${SHARE_INSTALL}/darktable)
 # Transform darktableconfig.xml into darktablerc
 #
 
+set(DEFCONFIG_OPENCL "true")
+if(APPLE)
+  # OpenCL support on OS X isn't stable enough to enable it by default
+  set(DEFCONFIG_OPENCL "false")
+endif(APPLE)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktableconfig.xml.in ${CMAKE_CURRENT_BINARY_DIR}/darktableconfig.xml )
+
 if(USE_XMLLINT)
 	execute_process(
-		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+		COMMAND ${Xmllint_BIN} --valid ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml.in
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../data/
 		OUTPUT_QUIET ERROR_QUIET
 		RESULT_VARIABLE Xmllint_RES
@@ -74,16 +81,16 @@ endif(USE_XMLLINT)
 
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   add_custom_command(
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-    COMMAND ${Xsltproc_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+    COMMAND ${Xsltproc_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
   )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     add_custom_command(
-      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
-      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc
     )
   else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
     message(FATAL_ERROR "Don't know how to generate darktablerc")
