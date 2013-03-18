@@ -1566,6 +1566,7 @@ void gui_update(dt_iop_module_t *self)
   }
   else
   {
+    g->profile_cnt = dt_noiseprofile_get_matching(&self->dev->image_storage, g->profiles, MAX_PROFILES);
     for(int i=0;i<g->profile_cnt;i++)
     {
       if(!memcmp(g->profiles[i]->a, p->a, sizeof(float)*3) &&
@@ -1588,6 +1589,7 @@ void gui_init(dt_iop_module_t *self)
   g->mode     = dt_bauhaus_combobox_new(self);
   g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  g->profile_cnt = 0;
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
