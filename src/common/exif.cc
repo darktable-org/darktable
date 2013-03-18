@@ -1406,7 +1406,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           }
           else
           {
-            const char *mname = "0";
+            const char *mname = " ";
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
           }
 
