@@ -191,7 +191,7 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
   GList *result=NULL;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, multi_name from history where imgid=?1 and num in (select MAX(num) from history where imgid=?1 group by multi_priority) order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, multi_name from history where imgid=?1 and num in (select MAX(num) from history hst2 where hst2.imgid=?1 and hst2.operation=history.operation group by multi_priority) order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
