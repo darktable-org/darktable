@@ -86,8 +86,6 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
 
-  int32_t last_mouse_over_id;
-
   int32_t collection_count;
 
   /* prepared and reusable statements */
@@ -158,7 +156,6 @@ void init(dt_view_t *self)
   lib->zoom_y = 0.0f;
   lib->full_preview=0;
   lib->full_preview_id=-1;
-  lib->last_mouse_over_id = -1;
 
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals,
@@ -1133,14 +1130,11 @@ void reset(dt_view_t *self)
 
 void mouse_enter(dt_view_t *self)
 {
-  dt_library_t *lib = (dt_library_t *)self->data;
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
 }
 
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  DT_CTL_GET_GLOBAL(lib->last_mouse_over_id, lib_image_mouse_over_id); // see mouse_enter (re: fluxbox)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
