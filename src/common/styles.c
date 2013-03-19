@@ -409,7 +409,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
 #if 1
     {
       /* apply on top of history stack */
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
       if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     }
