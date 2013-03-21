@@ -195,10 +195,14 @@ void dt_lua_init(lua_State*L,const int init_gui){
   lua_getglobal(L,"package");
   lua_getfield(L,-1,"path");
   lua_pushstring(L,";");
+  dt_loc_get_datadir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_pushstring(L,"/lua/?.lua");
+  lua_pushstring(L,";");
   dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
   lua_pushstring(L,tmp_path);
-  lua_pushstring(L,"/lua");
-  lua_concat(L,4);
+  lua_pushstring(L,"/lua/?.lua");
+  lua_concat(L,7);
   lua_setfield(L,-2,"path");
   lua_pop(L,1);
 
@@ -211,6 +215,11 @@ void dt_lua_init(lua_State*L,const int init_gui){
 
   // if we have a UI, we need to load the modules
   if(init_gui) {
+    // run global init script
+    dt_loc_get_datadir(tmp_path, PATH_MAX);
+    g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
+    dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp_path),0,0);
+    // run user init script
     dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
     g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
     dt_lua_do_chunk(darktable.lua_state,luaL_loadfile(darktable.lua_state,tmp_path),0,0);
