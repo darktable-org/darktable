@@ -55,7 +55,8 @@ dt_iop_colorin_params_t;
 typedef struct dt_iop_colorin_gui_data_t
 {
   GtkWidget *cbox1, *cbox2;
-  GList *profiles;
+  GList *image_profiles, *global_profiles;
+  int n_image_profiles;
 }
 dt_iop_colorin_gui_data_t;
 

@@ -219,7 +219,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED))
+    if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->multi_priority==0)
     {
       char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
       dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);

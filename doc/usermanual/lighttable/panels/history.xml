@@ -16,11 +16,13 @@
 				</tgroup>
 			</informaltable>
 				<sect4><title>copy</title>
-					<para>Copy the history stack of the first selected image. You will be prompted for the items to include.
+					<para>Copy the history stack of the selected image. You will be prompted for which items are to be include. If more than one image
+                                              is selected, the history stack is taken from the image that has been selected first.
 					</para>
 				</sect4>
 				<sect4><title>copy all</title>
-					<para>Copy the complete history stack of the first selected image; all items will be included.
+					<para>Copy the complete history stack of the first selected image; all items will be included. If more than one image
+                                              is selected, the history stack is taken from the image that has been selected first.
 					</para>
 				</sect4>
 				<sect4><title>discard</title>
@@ -35,22 +37,27 @@
 					</para>
 				</sect4>
 				<sect4><title>paste</title>
-					<para>Paste a previously copied history stack on all selected images. You will be prompted for the items to include.
+					<para>Paste a previously copied history stack onto all selected images. You will be prompted for which items to include.
                                               This button is greyed out, until a history stack is copied from another image.
 					</para>
 				</sect4>
 				<sect4><title>paste all</title>
-					<para>Paste all previously copied items of a history history stack on all selected images. 
+					<para>Paste all previously copied items of a history history stack onto all selected images. 
                                               This button is greyed out, until a history stack is copied from another image.
 					</para>
 				</sect4>
 				<sect4><title>load sidecar file</title>
-					<para>Opens a dialog box to select an .xmp file, thus loading 
-					a history stack that you can paste on images.
+					<para>Opens a dialog box to select an XMP file, thus loading a history stack that you can paste on images.
 					</para>
+                                        <para>Files that were exported by darktable contain the full history stack if the file format supports embedded metadata 
+                                              (see <xref linkend="export selected"/>). You can load an exported image as a sidecar file in the same way as you do with an XMP file.
+                                              This feature allows you to recover all parameter settings in case you have accidentally lost or overwritten the XMP file. 
+                                              All you need is the source image, typically a RAW, and the exported file.
+                                        </para>
+                                          
 				</sect4>
 				<sect4><title>write sidecar files</title>
-					<para>Write .xmp sidecar files for all selected images. By default darktable will
+					<para>Write XMP sidecar files for all selected images. By default darktable will
                                               do this automatically whenever you work on an image and change the history stack. You
                                               can disable automatic sidecar file generation in the preferences dialog (see <xref linkend="core options"/>), which is not
                                               recommended.

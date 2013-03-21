@@ -20,9 +20,8 @@
 		<para>The module has no parameters. On activation it will automatically try to optimize away visible CA's.</para>
 
 
-                <para>The underlying model assumes as input a typical photographic image with radially increasing chromatic aberrations - 
-                      that's what the module gets during file exports. The module is likely to fail in darkroom view when applied to a zoomed-in 
-                      fraction of your image. As an exception to most other modules of darktable this one does not always let you see what 
-                      you will get.</para>
+                <para>The underlying model assumes as input an uncropped photographic image. The module is likely to fail 
+                      when you zoom into the image, as in that case it will only receive part of your photograph as input. As a consequence, chromatic aberrations do not
+                      get corrected properly. This limitation only applies to interactive work, not to file export.</para>
 	</sect4>
 </sect3>

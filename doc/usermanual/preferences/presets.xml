@@ -41,7 +41,7 @@
 	  </sect4>
 
 	  <sect4><title>iso</title>
-		<para>only apply the preset if the iso value of your image lies within the given range.
+		<para>only apply the preset if the ISO value of your image lies within the given range.
 		</para>
 	  </sect4>
 

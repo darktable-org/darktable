@@ -43,6 +43,26 @@ remove_preset_flag(const int imgid)
   dt_image_cache_read_release(darktable.image_cache, cimg);
 }
 
+static void
+_dt_history_cleanup_multi_instance(int imgid, int minnum)
+{
+  sqlite3_stmt *stmt;
+
+  /* let's clean-up the history multi-instance. What we want to do is have a unique multi_priority value for each iop.
+     Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
+     SQLite there is no notion of ROW_NUMBER, so we use rather ressource consuming SQL statement, but as an history has
+     never a huge number of items that's not a real issue.
+
+     We only do this for the given imgid and only for num>minnum, that is we only handle new history items just copied.
+  */
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1), multi_name=multi_priority where imgid=?1 and num>=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+}
+
 void dt_history_delete_on_image(int32_t imgid)
 {
   sqlite3_stmt *stmt;
@@ -125,7 +145,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   if (merge)
   {
     /* apply on top of history stack */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
   }
@@ -145,19 +165,20 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   //  Add ops selection if any format: ... and num in (val1, val2)
   if (ops)
   {
+    GList *l = ops;
     int first = 1;
     strcat (req, " and num in (");
 
-    while (ops)
+    while (l)
     {
-      long unsigned int value = (long unsigned int)ops->data;
+      long unsigned int value = (long unsigned int)l->data;
       char v[30];
 
       if (!first) strcat (req, ",");
       snprintf (v, 30, "%lu", value);
       strcat (req, v);
       first=0;
-      ops = g_list_next(ops);
+      l = g_list_next(l);
     }
     strcat (req, ")");
   }
@@ -169,6 +190,9 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
+
+  if (merge && ops)
+    _dt_history_cleanup_multi_instance(dest_imgid, offs);
 
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
@@ -191,7 +215,7 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
   GList *result=NULL;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from history where imgid=?1 and num in (select MAX(num) from history where imgid=?1 group by operation) order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, multi_name from history where imgid=?1 and num in (select MAX(num) from history hst2 where hst2.imgid=?1 and hst2.operation=history.operation group by multi_priority) order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -204,9 +228,9 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
       item->num = sqlite3_column_int (stmt, 0);
 
       if (enabled)
-        g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+        g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
       else
-        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
+        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
       result = g_list_append (result,item);

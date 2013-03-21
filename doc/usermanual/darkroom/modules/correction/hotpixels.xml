@@ -27,7 +27,7 @@
 			<para>The strength of blending hotpixels with their surrounding.</para>
 		</sect5>	
 		<sect5><title>detect by 3 neighbours</title>
-			<para>Will extend the detection of hotpixels. Even regard a pixel as hot if a minimum of only three (instead of four) neighbor pixels deviate by more
+			<para>This will extend the detection of hotpixels, it will even regard a pixel as hot if a minimum of only three (instead of four) neighbor pixels deviate by more
                               than the threshold level.</para>
 		</sect5>	
 		<sect5><title>mark fixed pixels</title>

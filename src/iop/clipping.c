@@ -183,7 +183,8 @@ int legacy_params (dt_iop_module_t *self, const void *const old_params, const in
     
   //and now we try to "guess" clipping ratio
   //  if no clipping yet, use default aspect ratio
-  if (fabsf(n->cw) == 1.0 && n->cx == 0.0 && fabsf(n->ch) == 1.0 && n->cy == 0.0) n->ratio_d=-1, n->ratio_n=-1;
+  if (!self->dev) n->ratio_d=0, n->ratio_n=0;
+  else if (fabsf(n->cw) == 1.0 && n->cx == 0.0 && fabsf(n->ch) == 1.0 && n->cy == 0.0) n->ratio_d=-1, n->ratio_n=-1;
   else
   {
     const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);

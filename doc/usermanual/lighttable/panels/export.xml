@@ -13,7 +13,7 @@
 						<row>						
 							<entry>Each workflow ends in this panel: the export of your developed images.
 							You can export either to a file on disk, or to various on-line storage places.
-							<emphasis>TIP</emphasis>: you can use <emphasis>ctrl-alt-e</emphasis> from within darkroom mode to export.
+							Tip: you can use <emphasis>ctrl-e</emphasis> from within darkroom mode to export.
                                                         </entry>
 							<entry>
 								<graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
@@ -113,12 +113,24 @@
 					<para>darktable can export to various file formats. For some of them you need to define the desired bit depth of the exported image. If you export to a JPEG
                                               file you can define an output quality. Higher values will lead to larger file sizes.
 					</para>
+                                        <para>If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable will store the history stack
+                                              as XMP tags within the output file. This information can later be used to reconstruct your parameters and settings that have produced the exported 
+                                              image (see <xref linkend="history stack"/>). 
+                                              If you don't want to distribute history stack data with your images, there are various tools to delete embedded XMP tags. As an example 
+                                              you can use the program <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink> with:
+		    <programlisting>
+exiftool -XMP:all=   image.jpg
+		    </programlisting>
+                                        </para>
 				</sect4>
 
 				<sect4><title>max size</title>
 					<para>Set the maximum width and height of the output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently 
                                               can only do down-scaling; the maximum output resolution is defined by the parent image.
 					</para>
+                                        <para>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10, in these fields, causing darktable to produce miniature output files. 
+                                              You might think darktable's output is broken, but in fact it only generated what you asked for.
+                                        </para>
 				</sect4>
 
 				<sect4><title>intent</title>
@@ -132,6 +144,17 @@
                                               module of the individual images to take precedence.
 					</para>
 				</sect4>
+				<sect4><title>style</title>
+					<para>This option lets you choose a style, i.e. a collection of history stack items, which darktable
+                                              concatenates with the existing history stack to generate the output image. These history
+                                              items are only added temporarily; the original history stack is not overwritten. You can
+                                              use this feature to add processing steps and parameters that you want to be applied specifically to
+                                              exported images, e.g. you may define a style that adds a stronger level of sharpening when you produce
+                                              scaled-down JPEG files for the internet. Learn more about styles in <xref linkend="styles"/>, and <xref linkend="history"/>.
+					</para>
+				</sect4>
+
+
 				<sect4><title>export</title>
 					<para>Pressing this button starts a background job to export all selected images. A bar at the bottom of the left side panel displays the 
                                               progress. Whenever a file is successfully exported, a notification message pops up for a few seconds. You may click on the pop-up to make it disappear.

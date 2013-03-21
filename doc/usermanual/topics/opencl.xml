@@ -1,7 +1,7 @@
 <sect1 status="draft" id="darktable and opencl"><title>darktable and OpenCL</title>
 	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
 
-	<sect2><title>The Background</title>
+	<sect2><title>The background</title>
 		<para>Processing high resolution images belongs to the more demanding tasks in modern computing. Both, in terms of memory requirements and in terms of 
                       CPU power, getting the best out of a typical 15, 20 or 25 Megapixel image can quickly bring your computer to its limits.</para>
 
@@ -66,7 +66,7 @@
                       fall back to CPU processing.</para>
 	</sect2>
 
-	<sect2><title>Possible Problems and Solutions</title>
+	<sect2><title>Possible problems and solutions</title>
 		<para>darktable will detect OpenCL run-time problems automatically. It will then reprocess everything on CPU; only speed is affected, the final result should 
                       not be endangered.</para>
 
@@ -145,7 +145,7 @@ darktable -d opencl
         </sect2>
 
 
-        <sect2><title>OpenCL performance Optimization</title>
+        <sect2><title>OpenCL performance optimization</title>
                 <para>There are some configuration parameters in $HOME/.config/darktable/darktablerc that help to finetune your system's OpenCL performance. Performance in this 
                  context mostly means the latency of darktable during interactive work, i.e. how long it takes to reprocess your pixelpipe. For a comfortable workflow it is essential to 
                  keep latency low.</para>

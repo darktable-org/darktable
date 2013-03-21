@@ -5,7 +5,7 @@
 			<tbody>
 				<row>						
 					<entry>This module shows a hierarchial tree of your tags. You can arrange tags within this tree
-						using drag'n'drop a tag onto another.
+						using drag-n-drop one tag onto another.
 					</entry>
 					<entry>
 						<graphic fileref="lighttable/images/panel_keywords.png" scalefit="1" width="80%" align="center" />

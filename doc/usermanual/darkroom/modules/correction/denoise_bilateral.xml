@@ -5,9 +5,9 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is used to denoise high iso pictures.
-							It is flagged as a slow module due to its high resources consumption.
-							Depending of your hardware, this module can currently slow down darktable or even crash it.
+						<entry>This module is used to denoise high ISO pictures.
+							It is flagged as a slow module due to its high resource consumption, both in terms of
+                                                        CPU cycles and in terms of memory usage.
 							Quite counter-intuitively, the greater the values for sliders, the lesser resources.
 						</entry>
 						<entry>

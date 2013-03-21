@@ -85,6 +85,22 @@ dt_styles_exists (const char *name)
   return (dt_styles_get_id_by_name(name))!=0?TRUE:FALSE;
 }
 
+static void
+_dt_style_cleanup_multi_instance(int id)
+{
+  sqlite3_stmt *stmt;
+
+  /* let's clean-up the style multi-instance. What we want to do is have a unique multi_priority value for each iop.
+     Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
+     SQLite there is no notion of ROW_NUMBER, so we use rather ressource consuming SQL statement, but as a style has
+     never a huge number of items that's not a real issue. */
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update style_items set multi_priority=(select COUNT(0)-1 from style_items sty2 where sty2.num<=style_items.num and sty2.operation=style_items.operation and sty2.styleid=?1), multi_name=multi_priority where styleid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+}
+
 static gboolean
 dt_styles_create_style_header(const char *name, const char *description)
 {
@@ -192,6 +208,8 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
 
   _dt_style_update_from_image(id,imgid,filter,update);
 
+  _dt_style_cleanup_multi_instance(id);
+
   /* backup style to disk */
   char stylesdir[1024];
   dt_loc_get_user_config_dir(stylesdir, 1024);
@@ -220,7 +238,6 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
 
   g_free(desc);
 }
-
 
 void
 dt_styles_create_from_style (const char *name, const char *newname, const char *description, GList *filter, int imgid, GList *update,gboolean silent)
@@ -267,6 +284,8 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
     /* insert items from imgid if defined */
 
     _dt_style_update_from_image(id,imgid,filter,update);
+
+    _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
     char stylesdir[1024];
@@ -326,6 +345,8 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
+
+    _dt_style_cleanup_multi_instance(id);
 
     /* backup style to disk */
     char stylesdir[1024];
@@ -404,23 +425,11 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     else
       newimgid = imgid;
 
-    /* if merge onto history stack, lets find history offest in destination image */
+    /* merge onto history stack, let's find history offest in destination image */
     int32_t offs = 0;
-#if 1
-    {
-      /* apply on top of history stack */
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(num) from history where imgid = ?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
-      if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
-    }
-#else
-    {
-      /* replace history stack */
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from history where imgid = ?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-      sqlite3_step (stmt);
-    }
-#endif
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MAX(num)+1 FROM history WHERE imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
+    if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     sqlite3_finalize (stmt);
 
     /* copy history items from styles onto image */
@@ -496,7 +505,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       // get all items from the style
       //    UNION
       // get all items from history, not in the style : select only the last operation, that is max(num)
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, (select num from history where imgid=?2 and operation=style_items.operation order by num desc limit 1) from style_items where styleid=?1 UNION select -1,history.operation,history.enabled,history.num from history where imgid=?2 and history.enabled=1 and history.operation not in (select operation from style_items where styleid=?1) group by operation having max(num) order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, (select max(num) from history where imgid=?2 and operation=style_items.operation group by multi_priority),multi_name from style_items where styleid=?1 UNION select -1,history.operation,history.enabled,history.num,multi_name from history where imgid=?2 and history.enabled=1 and (history.operation not in (select operation from style_items where styleid=?1) or (history.op_params not in (select op_params from style_items where styleid=?1 and operation=history.operation)) or (history.blendop_params not in (select blendop_params from style_items where styleid=?1 and operation=history.operation))) group by operation having max(num) order by num desc", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
     else
@@ -534,7 +543,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       }
       else
       {
-        g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(gchar *)sqlite3_column_text (stmt, 4),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
         item->params = NULL;
         item->blendop_params = NULL;
         if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)

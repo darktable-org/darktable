@@ -8,45 +8,45 @@
         </para>
         <para>
                This section includes documentation of each module and its specific parameters.
-               A module consists of an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
-               where the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon is used to turn the module
-               on or off. Then there is the name of the module; press this to expand the module to see the user interface with all parameters.
-               Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon to access the available presets stored for the module or to create new ones. 
-               The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values. Many of darktable's
-               modules can have multiple instances; click on icon <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> to generate new instances and control
+               A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
+               whose <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon turns that module
+               on or off. Clicking on the name of the module expands the module to see the user interface with all parameters.
+               Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon for accessing the 
+               module's available presets or to create a new preset from your current settings. 
+               The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values.
+        </para>
+        <para>Many of darktable's modules can have multiple instances each with different settings; click on the 
+              <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> icon to generate new instances and control
                existing ones.
 	</para>
 	<sect2 status="draft"><title>Interacting with modules</title>
            <para>The most frequently used control elements are sliders, comboboxes and curves.
            </para>
+          <sect4><title>Sliders</title>
 	   <para>For each slider, you can interact in four different ways, depending on the level of control you need.
 	   </para>
 	    <orderedlist>
 			   <listitem>
 			     <para>Triangular marker</para>
-			     <para>You left-click with your mouse on the triangular marker and move it around.
+			     <para>Left-click the slider's triangular marker and drag it to the left or right.
 			     </para>
 			   </listitem>
 			   <listitem>
 			     <para>Mouse wheel</para>
-			     <para>Hover a slider with your mouse, then use your mouse wheel to adjust by step the value.
+			     <para>Hover a slider with your mouse, then use your mouse wheel to adjust the value step by step.
 			     </para>
 			   </listitem>
    			   <listitem>
 			     <para>Right-click</para>
-                             <para>Your mouse being over a slider, right click gives you a multi-functional pop-up below the slider for fine control
-                                   with your mouse and for entering numerical values with your keyboard. A bent line that extends from the
-                                   triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
-                                   coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
-                                   mouse to accept the current value and go back to normal control. You can also directly type in the desired value
-                                   with your keyboard; there is no cursor, you just start typing.
+                             <para>When your mouse is over a slider right-click gives you a multi-functional pop-up below the slider for fine control
+                                   with your mouse or numerical entry using the keyboard, there is no cursor, you just start typing.
                              </para>
 	                     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable's innovative way of value input: coarse and fine value adjustments in one single control element.
+						<entry>darktable's innovative input method: coarse and fine value adjustments in one single control element.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
@@ -55,19 +55,30 @@
 				</tbody>
                                 </tgroup>
                            </informaltable>
+                             <para>A bent line extending from the
+                                   triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
+                                   coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
+                                   mouse to accept the current value and go back to normal control.
+                             </para>
 			   </listitem>		
    			   <listitem>
-			     <para>Double-click on parameter label</para>
-			     <para>In some modules, you can double-click on a parameter label to reset its value to default.
+			     <para>Double-click</para>
+			     <para>You can double-click on a parameter label to reset its value to default.
 			     </para>
 			   </listitem>		   
 			</orderedlist>
-          <para>Clicking on a combobox will open a list of available options. Click on the item you want to select
-          </para>
-
-          <para>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective
-                modules are explained.
-          </para>
+            </sect4>
+            <sect4><title>Comboboxes</title>
+             <para>Clicking on a combobox will open a list of available options. Click on the item you want to select. Sometimes the selection list opens close to the
+                   bottom or top of the screen and only part of the items are visible; scroll with your mouse wheel to bring up the full list.
+             </para>
+            </sect4>
+           
+            <sect4><title>Curves</title>
+             <para>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective
+                 modules are explained.
+             </para>
+            </sect4>
 	</sect2>
 	
 

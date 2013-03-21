@@ -1749,7 +1749,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         // accept input
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         // unnormalized input, user was typing this:
-        dt_bauhaus_slider_set(GTK_WIDGET(darktable.bauhaus->current), atof(darktable.bauhaus->keys));
+        dt_bauhaus_slider_set(GTK_WIDGET(darktable.bauhaus->current), g_strtod(darktable.bauhaus->keys, NULL));
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();

@@ -6,7 +6,7 @@
         <tbody>
           <row>            
             <entry>This module offers an easy to use and - at the same time - highly efficient denoise operation. Under the hood
-            it applies (at your choice) a non-local means or edge-aware wavelet denoise algorithm with parameters specifically profiled for certain
+            it applies (your choice of) a non-local means or edge-aware wavelet denoise algorithm with parameters specifically profiled for certain
             camera models and ISO settings.
             </entry>
             <entry>
@@ -19,21 +19,20 @@
   </sect4>
 
   <sect4><title>Usage</title>
-                <para>The darktable team with the help of many users has measured noise profiles for various cameras. Differentiated by ISO settings
+                <para>The darktable team, with the help of many users, has measured noise profiles for various cameras. Differentiated by ISO settings
                       we evaluated how the noise statistics develop with brightness for the three color channels. Our set of profiles already covers over 60 popular 
                       camera models from different manufacturers.</para>
     <sect5><title>profile</title>
       <para>Based on EXIF data of your RAW file, darktable will automatically determine the camera model and ISO setting. If found in its database,
                               the corresponding noise profile will be used. If your image has an intermediate ISO value, the statistical properties
                               will be interpolated between the two closest datasets in the database, and this interpolated setting will show up
-                              as the first line in the combo box. You also have the option to manually overwrite this selection in case anything goes
-                              wrong or just to suit your personal preferences better.
-                              The top most entry in the combo box brings you back to the profile darktable deems most suited.</para>
+                              as the first line in the combo box. You also have the option to manually overwrite this selection to suit your personal preferences better.
+                              The top-most entry in the combo box brings you back to the profile darktable deems most suited.</para>
     </sect5>
     <sect5><title>mode</title>
-      <para>This module can eliminate noise with two different core algorithms. <quote>non-local means</quote> is a bit better suited to tackle luma (lightness) noise, <quote>
+      <para>This module can eliminate noise with two different core algorithms. <quote>non-local means</quote> is a bit better suited to tackle luma (lightness) noise; <quote>
                               wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can apply two instances of this module (see <xref linkend="multiple instances"/>).
-                              The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote>, the <quote>wavelet</quote> instance with
+                              The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote>; the <quote>wavelet</quote> instance with
                               blend mode <quote>color</quote>. For more information on blend modes have a look at <xref linkend="blending operators"/>.</para>
     </sect5>
     <sect5><title>patch size</title>
@@ -42,9 +41,9 @@
                               Processing time will stay about the same.</para>
     </sect5>
     <sect5><title>strength</title>
-      <para>This parameter is here to finetune the strength of the denoise effect. The default value has been chosen to maximize peak signal to noise ratio.
+      <para>This parameter is here to fine-tune the strength of the denoise effect. The default value has been chosen to maximize the peak signal to noise ratio.
             It's mostly a matter of taste if you prefer a rather low noise level at the costs of
-            a higher loss of detail, or if you accept some more remaining noise in order to have fine structures better preserved in your image.</para>
+            a higher loss of detail, or if you accept more remaining noise in order to have finer structures better preserved within your image.</para>
     </sect5>
   </sect4>
 </sect3>

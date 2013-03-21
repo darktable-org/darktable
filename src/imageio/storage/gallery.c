@@ -265,7 +265,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     // save image to list, in order:
     pair_t *pair = malloc(sizeof(pair_t));
 
-    char *title = NULL, *description = NULL, *tags = NULL;
+    char *title = NULL, *description = NULL;
     GList *res;
 
     res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
@@ -280,27 +280,6 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     {
       description = res->data;
       g_list_free(res);
-    }
-
-    unsigned int count = 0;
-    res = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
-    if(res)
-    {
-      // don't show the internal tags (darktable|...)
-      res = g_list_first(res);
-      GList *iter = res;
-      while(iter)
-      {
-        GList *next = g_list_next(iter);
-        if(g_str_has_prefix(iter->data, "darktable|"))
-        {
-          g_free(iter->data);
-          res = g_list_delete_link(res, iter);
-          count--;
-        }
-        iter = next;
-      }
-      tags = dt_util_glist_to_str(", ", res, count);
     }
 
     char relfilename[256], relthumbfilename[256];
@@ -325,7 +304,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
              "\n"
              "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"
-             "      %s<br/><span class=\"tags\">%s</span></div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;", tags?tags:"&nbsp;");
+             "      %s</div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
 
     char next[256];
     sprintf(next, "img_%d.html", (num)%total+1);
@@ -333,41 +312,9 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
     char prev[256];
     sprintf(prev, "img_%d.html", (num==1)?total:num-1);
 
-    /* Becomes unecessary with the Lightbox image viewer overlay
-
-        FILE* subfile = fopen(subfilename, "wb");
-        fprintf(subfile,
-              "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-              "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-              "  <head>\n"
-              "    <meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />\n"
-              "    <link rel=\"shortcut icon\" href=\"style/favicon.ico\" />\n"
-              "    <link rel=\"stylesheet\" href=\"style/style.css\" type=\"text/css\" />\n"
-              "    <title>%s</title>\n"
-              "  </head>\n"
-              "  <body>\n"
-              "    <div class=\"title\"><a href=\"index.html\">%s</a></div>\n"
-              "    <div class=\"page\">\n"
-              "      <div style=\"width: 692px; max-width: 692px; height: 10px;\">\n"
-              "        <a style=\"float: left;\" href=\"%s\"><h1>prev</h1></a>\n"
-              "        <a style=\"float: right;\"href=\"%s\"><h1>next</h1></a>\n"
-              "      </div>\n"
-              "      <a href=\"%s\"><img src=\"%s\" width=\"692\" class=\"img\"/></a>\n"
-              "      %s<br/><span class=\"tags\">%s</span></div>\n"
-              "      <p style=\"clear:both;\"></p>\n"
-              "    </div>\n"
-              "    <div class=\"footer\">\n"
-              "      created with darktable "PACKAGE_VERSION"\n"
-              "    </div>\n"
-              "  </body>\n"
-              "</html>\n",
-              relfilename, title?title:relfilename, prev, next, relfilename, relfilename, description?description:"&nbsp;", tags?tags:"&nbsp;");
-        fclose(subfile);
-    */
     pair->pos = num;
     g_free(title);
     g_free(description);
-    g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);

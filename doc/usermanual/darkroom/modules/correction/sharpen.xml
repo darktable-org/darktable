@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This is an standard UnSharp Mask tool for sharpening the details of an image.
+						<entry>This is an standard UnSharp Mask (USM) tool for sharpening the details of an image.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/sharpen.png" scalefit="1" width="80%" align="center" />
@@ -17,7 +17,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>This module works by enhancing the contrast around edges and thereby enhances sharpness impression of an image. In darktable this module
+		<para>This module works by enhancing the contrast around edges and thereby enhances the impression of sharpness of an image. In darktable this module
                       is only applied to the L-channel in Lab color space.</para>
 		<sect5><title>radius</title>
 			<para>USM applies a gaussian blur to your image as part of its algorithm. This controls the blur radius which in turn defines the spatial extent
@@ -25,7 +25,7 @@
                         </para>
 		</sect5>
 		<sect5><title>amount</title>
-			<para>This controls the strength of sharpening.
+			<para>This controls the strength of the sharpening.
                         </para>
 		</sect5>	
 		<sect5><title>threshold</title>

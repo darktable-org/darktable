@@ -400,6 +400,31 @@ void gui_update (struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
   dt_bauhaus_slider_set(g->scale_k, temp);
   dt_bauhaus_slider_set(g->scale_tint, tint);
+
+  dt_bauhaus_combobox_clear(g->presets);
+  dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
+  dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
+  dt_bauhaus_combobox_add(g->presets, _("passthrough"));
+  g->preset_cnt = 3;
+  const char *wb_name = NULL;
+  char makermodel[1024];
+  char *model = makermodel;
+  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
+  if(!dt_image_is_ldr(&self->dev->image_storage)) for(int i=0; i<wb_preset_count; i++)
+    {
+      if(g->preset_cnt >= 50) break;
+      if(!strcmp(wb_preset[i].make,  makermodel) &&
+          !strcmp(wb_preset[i].model, model))
+      {
+        if(!wb_name || strcmp(wb_name, wb_preset[i].name))
+        {
+          wb_name = wb_preset[i].name;
+          dt_bauhaus_combobox_add(g->presets, _(wb_preset[i].name));
+          g->preset_num[g->preset_cnt++] = i;
+        }
+      }
+    }
+
   if(fabsf(p->coeffs[0]-fp->coeffs[0]) + fabsf(p->coeffs[1]-fp->coeffs[1]) + fabsf(p->coeffs[2]-fp->coeffs[2]) < 0.01)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
@@ -743,28 +768,6 @@ void gui_init (struct dt_iop_module_t *self)
 
   g->presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->presets,_("preset"));
-  dt_bauhaus_combobox_add(g->presets, _("camera white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("spot white balance"));
-  dt_bauhaus_combobox_add(g->presets, _("passthrough"));
-  g->preset_cnt = 3;
-  const char *wb_name = NULL;
-  char makermodel[1024];
-  char *model = makermodel;
-  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
-  if(!dt_image_is_ldr(&self->dev->image_storage)) for(int i=0; i<wb_preset_count; i++)
-    {
-      if(g->preset_cnt >= 50) break;
-      if(!strcmp(wb_preset[i].make,  makermodel) &&
-          !strcmp(wb_preset[i].model, model))
-      {
-        if(!wb_name || strcmp(wb_name, wb_preset[i].name))
-        {
-          wb_name = wb_preset[i].name;
-          dt_bauhaus_combobox_add(g->presets, _(wb_preset[i].name));
-          g->preset_num[g->preset_cnt++] = i;
-        }
-      }
-    }
   gtk_box_pack_start(GTK_BOX(self->widget), g->presets, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->presets), "tooltip-text", _("choose white balance preset from camera"), (char *)NULL);
 

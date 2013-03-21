@@ -5,19 +5,19 @@
 		]>
 
 	<sect2 status="final" id="multiple instances"><title>Multiple instances</title>
-		    <para>Many of darktable's modules can have multiple instances. Each instance behaves like an individual module, taking its input from the module
-                          below in pixelpipe and delivering its output to the module above.</para>
+		    <para>Many of darktable's modules can be applied multiple times. Each instance of that module behaves like any other module, taking its input from the module
+                          below in the pixelpipe delivering its output to the module above.</para>
 
 		    <sect3><title>Typical use cases</title>
-                           <para>There are many occasions where it makes sense to have an operation act more than once in pixelpipe. Here are a few use cases.</para>
+                           <para>There are many occasions where it makes sense to have an operation act more than once in the pixelpipe. Here are a few use cases.</para>
 
                            <para>Most of our modules are highly versatile and depending on parameters can deliver quite varying effects.
-                                 Take for example module <emphasis>fill light</emphasis> (<xref linkend="fill light"/>) which allows a local modification of lightness based on pixel values. You might
+                                 For example the <emphasis>fill light</emphasis> module (<xref linkend="fill light"/>) allows local modification of lightness based on pixel values. You might
                                  want to do two lightness corrections in your image at the same time - one for dark tones and another one for lighter tones.</para>
 
                            <para>You might want to apply a denoising module like <emphasis>denoise (profile)</emphasis> (<xref linkend="denoise profiled"/>) with two different parameter sets. 
-                                 One to do luma denoising and another set of parameters to do chroma denoising. You could do so by generating two instances and let the first one only act on luma 
-                                 by activating blend mode <quote>lightness</quote> and the second one only act on chroma by activating blend mode <quote>color</quote> 
+                                 One to do luma denoising and another set of parameters to do chroma denoising. You could do so by generating two instances and use the first one only on luma 
+                                 by selecting blend mode <quote>lightness</quote> and use the second one just for chroma by selecting blend mode <quote>color</quote> 
                                  (see <xref linkend="blending operators"/>).</para>
 
                            <para>In an even more elaborate case you could have a module act on different parts of your image. As an example you might want to apply a certain gradation
@@ -30,15 +30,16 @@
                     </sect3>
 
 		    <sect3><title>Managing instances</title>
-                           <para>When clicking on icon <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="2%" align="center"/> a drop-down menu will appear.</para>
+                           <para>When clicking on the <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="2%" align="center"/> icon a drop-down menu will appear.</para>
 
-                           <para>If you select <quote>new</quote> a new module instance will be generated below the already existing ones. Each new instance gets its own complete set of GUI controls.
-                                 To keep instances apart each new instance receives an ascending number, which is appended to the module name.</para>
+                           <para>Selecting <quote>new</quote> generates a new module instance below any existing ones. Each new instance gets its own complete set of GUI controls
+                                 and a number appended to the base module name for distinction.</para>
 
                            <para>To delete an instance just press <quote>delete</quote> from the drop-down menu.</para>
 
-                           <para>darktable applies all modules in a defined order in its pixelpipe; instances of a module are treated like individual modules. However, you can decide
-                                 on the relative order in which the different instances of a module are applied. Selecting <quote>move up</quote> or <quote>move down</quote> will shift the position of the
+                           <para>darktable applies all modules in a defined order according to their type. Therefore all instances of a particular module 
+                                 will occur together in the pixelpipe. You can however decide
+                                 on the relative order in which the different instances of a module are applied by selecting <quote>move up</quote> or <quote>move down</quote> to shift the position of the
                                  instance among its peers.</para>
                     </sect3>
         </sect2>

@@ -6,24 +6,23 @@
 </keywordset>
 </chapterinfo>
 <title>Darkroom</title>
-<para>The darkroom view is where you develop your image...</para>
+<para>The darkroom view is where you develop your image.</para>
 <screenshot>
 	<screeninfo>The darkroom view</screeninfo>
 	<graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
 </screenshot>
 
 <sect1><title>Overview</title>
-	<para>In darkroom you are in develop mode for the specific image; here you have a lot of tools (named modules) to
-		develop you image.
+	<para>Darkroom mode is for photograpic development of the image you selected from the lighttable. Lots of tools, named
+        modules, are available for processing that image.
 	</para>
-	<para>On the left side you have the navigation, snapshots and history panels, each of them being described below. 
-	In the right panel you can see the histogram and then a list of available modules to use when working with your image. 
-	At the bottom of the right panel you can enable/disable view of individual modules.
+	<para>On the left hand side you have navigation, snapshot and history panels, described in <xref linkend="darkroom panels"/>. 
+	In the right hand panel you can see the histogram and a list of modules available for working with the image. 
+	At the bottom of the right hand panel you can enable/disable view of individual modules.
 	</para>
-	<para>Modules are organized into five functional groups: basic, tone, color, correction, effect (for more information see
-        <xref linkend="modulegroups"/>).
-	If you click on one of the groups, you only see the respective modules. However, you can also view all modules in one
-        long list by not selecting any group.
+	<para>Modules are organized into five functional groups: basic, tone, color, correction and effect as described in
+        <xref linkend="module groups"/>.
+        You either view all modules in one long list or instead click on a group to just display modules belonging to that group.
 	</para>
 	<para>For those interested in how it works, modules are applied on images following a bottom-to-top order.
 	That means, that if you activated the view of all modules (by selecting no groups), the first module to be applied
@@ -32,18 +31,19 @@
 	That order can not be changed by user, so modules are always applied following the same order.
 	</para>
 
-	<para>You can use <emphasis>middle-click</emphasis>  to zoom 1:1. A double <emphasis>middle-click</emphasis>  takes you to 2:1.
+	<para>You can use <emphasis>middle-click</emphasis> to zoom 1:1. A double <emphasis>middle-click</emphasis> takes you to 2:1.
 	</para>
 
-	<para>You can export directly from the darkroom by using <emphasis>ctrl-e</emphasis> shortcut. Export parameters are those currently selected in lighttable.</para>
+	<para>You normally export multiple images from the lighttable view but you can also export the current image directly from the darkroom by using 
+        the shortcut <emphasis>ctrl-e</emphasis>. Export parameters are then those currently selected in the lighttable.</para>
 
 </sect1>
 <sect1 status="draft" id="filmstrip"><title>Filmstrip</title>
-	<para>The filmstrip is used to quickly switch between images to develop in darkroom view, the images viewed are the same
+	<para>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same
 		as the ones in the lighttable view.
 	</para>
-	<para>The filmstrip can be switched on and off using <emphasis>ctrl-f</emphasis> shortcut. You can scroll with your mouse to quickly navigate
-              through the images. The height of the filmstrip panel can be changed by dragging the corresponding marker.</para>
+	<para>The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>. You can scroll with your mouse to quickly navigate
+              through the images and change the height of the filmstrip panel by dragging its top.</para>
 	<graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
 
 </sect1>

@@ -17,6 +17,7 @@
 */
 
 #include "common/ratings.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
@@ -185,7 +186,29 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
   if (d->current>0)
-    dt_ratings_apply_to_selection(d->current);
+  {
+    int32_t mouse_over_id = -1;
+    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+
+    /* clear and reset statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+    /* setup statement and iterate over rows */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
+
+    if (mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+    {
+      dt_ratings_apply_to_selection(d->current);
+    }
+    else
+    {
+      dt_ratings_apply_to_image(mouse_over_id, d->current);
+      //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), d->current, 1); //FIXME: Change the message after release
+    }
+
+    dt_control_queue_redraw_center();
+  }
   return TRUE;
 }
 

@@ -23,7 +23,7 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-                <para><emphasis>Be cautious: also activating any module action by key accelerators will discard all modules above 
+                <para><emphasis>Caution: activating any module action using key accelerators will discard all modules above 
                 the currently selected one. It is easy to lose all development work on an image this way!</emphasis>
 		</para>
 		<para>
@@ -32,9 +32,10 @@
                 the currently selected one.
 		</para>
 		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
-                lets you create a new style by popping up a dialog window. Use the first line to name your style, the second to add a 
-                searchable description. The following list allows you choose which modules are to be taken into account for the style.</para> 
+                lets you create a new style for applying your history stack to other images.
+                Use the first line of the popup dialog window to name your style and the second to add a 
+                searchable description. You are prompted for which of the current history stack modules to include in the style.</para> 
 
-                <para>Go to panel <emphasis>styles</emphasis> (<xref linkend="styles"/>) in lighttable mode in order to manage your styles or 
-                apply them to other images.</para>
+                <para>Once created styles are then managed and applied to other images in the lighttable's <emphasis>styles</emphasis> panel
+                (see <xref linkend="styles"/>).</para>
 	</sect2>
