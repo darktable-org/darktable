@@ -183,8 +183,8 @@
 	</sect1>
 
 
-	<sect1 status="final" id="darktable basic workflow"><title>darktable Basic Workflow</title>
-		<sect2 status ="draft"><title>Importing Images</title>
+	<sect1 status="final" id="darktable basic workflow"><title>darktable basic workflow</title>
+		<sect2 status ="draft"><title>Importing images</title>
 			<para>To begin with darktable, you first need to import images. The import module is in the left pane of the lighttable
                                 view (<xref linkend="import"/>). You can either import
 				from the filesystem or, if darktable supports your camera model, directly from camera.</para>
@@ -355,8 +355,6 @@
 			<para>Select images on the lighttable, choose the target storage and format, and set the maximum width and height image restraints. 
                               This means that none of the images will be bigger than any of the width/height restraints and hit the export button. Leave the width and height restraints at zero, 
                               if you want the original resolution.
-                              Pay attention: it's a frequent pitfall to accidentally put low values, like 1 or 10, in these fields, causing darktable to produce miniature output files. 
-                              You might think darktable's output is broken, but in fact it only generated what you asked for.
                         </para>
 
 		</sect2>

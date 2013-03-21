@@ -33,7 +33,7 @@
                       darktable 1.0 introduces a caching algorithm to address this problem. It pre-allocates blocks of memory and makes them available on request.</para>
 	</sect2>
 
-	<sect2><title>Further Limitations</title>
+	<sect2><title>Further limitations</title>
 		<para>And as if this were not challenging enough, there are further things that might limit your access to memory. On some older boards you need to activate BIOS option 
                       “memory remapping” in order to have all physically installed memory enabled. In addition if you are on a 32-bit OS you will probably need a kernel version that has 
                       “Physical Address Extension” (PAE) enabled. This is often but not always the case for Linux. Many distributions deliver different kernels, some with and some without

@@ -58,7 +58,7 @@
 				<sect4><title>Tethering</title>
 					<para>Tethering is used to integrate darktable with your camera. While you take images with your camera, they are
 						automatically imported into darktable, so you can review the result of the shoot. You can also
-						setup remote capture jobs, controlling the number of images and time between captures, along with camera settings such as exposure time, f-length and more.
+						setup remote capture jobs, controlling the number of images and time between captures, along with camera settings such as exposure time, aperture and more.
 					</para>
 					<para>If supported by your camera, tethering will take you into the capture view for tethered shooting. Read more about tethering in <xref linkend="tethering chapter"/>.
                                         </para>

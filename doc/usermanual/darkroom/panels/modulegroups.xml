@@ -66,9 +66,10 @@
                       all non-hidden modules will be shown in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general 
                       principle darktable applies modules in a pre-defined sequence.
                 </para>
-                <para>The long list also helps you to figure out in which color space a specific module acts. In fact there are only three modules which cause a switch from one color space to another:
+                <para>For those who are interested here is some information about darktable's internals: The long list helps you to figure out in which color 
+                      space a specific module acts. In fact there are only three modules which convert from one color space to another:
                       <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input color profile"><emphasis>input color profile</emphasis></link> and
-                      <link linkend="output color profile"><emphasis>output color profile</emphasis></link>. Here is an overview:
+                      <link linkend="output color profile"><emphasis>output color profile</emphasis></link>.
                 </para>
 
 		<para>
