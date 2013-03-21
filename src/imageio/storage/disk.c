@@ -156,7 +156,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   {
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
-    if ( g_file_test(d->filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
+    if ( g_file_test(d->filename, G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
       snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
