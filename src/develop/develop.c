@@ -593,6 +593,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       if (!dt_iop_is_hidden(module) && !module->expander)
       {
         module->gui_init(module);
+        dt_iop_reload_defaults(module);
         //we search the base iop corresponding
         GList *mods = g_list_first(dev->iop);
         dt_iop_module_t *base = NULL;
