@@ -4,8 +4,9 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>More modules at the bottom of right panel is used to hide modules you don't use. As a default only
-						standard modules are shown to the user, so if you are missing anything you should check here and show it.
+						<entry>More modules at the bottom of the right panel is used to show the less frequently used modules. By default only
+						standard modules are shown to the user but you can use this function to make the extra modules visible, or
+                                                alternatively to hide away modules you don't typically use.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />
@@ -14,14 +15,14 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-		<para>Each modules is shown as a small icon and the module name.
-		Left-click with your mouse to toggle a module's status: visible, hidden or favorite. Favorite modules are indicated by 
-                a star in front of the icon and will additionally to their normal module group show up in module group 
-                <link linkend="modulegroups"><emphasis>favorites</emphasis></link>.
+		<para>Each module is shown with a small icon next to its name.
+		Left-click with your mouse to toggle the status between visible, hidden and favorite. Favorite modules are indicated by 
+                a star in front of the icon and in addition to appearing in their normal module group will also be visible in the module group 
+                <link linkend="module groups"><emphasis>favorites</emphasis></link>.
                 This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
-                by a light grey background. Hidden modules have a dark grey background; they will not display any controls whatsoever.
+                by a light grey background whilst hidden modules have a dark grey background and do not display any of their controls.
 		</para>
 
-                <para>Hiding or un-hiding modules is not meant to be part of your daily workflow. You should normally only once decide on the 
-                modules you typically use, and only come back here later if you miss anything.</para>
+                <para>Hiding or un-hiding modules is not meant to be part of your daily workflow, you should only occasionally need to review the
+                modules you typically use.</para>
 	</sect2>

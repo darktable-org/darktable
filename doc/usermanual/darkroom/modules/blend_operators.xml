@@ -5,11 +5,10 @@
 		]>
 
 	<sect2 status="draft" id="blending operators"><title>Blending operators</title>
-		<para>Blending operators are a functionality that works on the incoming image information and 
-				the output of the current module. Not all modules support blending because it would not work
-				and break the use of the module.
+		<para>Blending is a functionality that works on a per-module basis by reprocessing a module's output with its input in
+                      various ways.
 		</para>
-		<para>Modules that do support blending, inherit additional controls at the bottom of module's user interface.
+		<para>Modules that support blending inherit additional controls at the bottom of the module's user interface.
 		</para>
 
                 <sect3><title>Usage</title>	
@@ -22,27 +21,27 @@
 			</para>
 
 			<sect5><title>off</title>
-				<para>If set to <quote>off</quote> no blending will be done and blending related controls are hidden.
+				<para>If blend mode is set to its default <quote>off</quote> value no blending will be done and all other blending related controls are hidden.
 			        </para>			
 			</sect5>
 
 
 			<sect5><title>normal</title>
-				<para>This will probably be the most used blend mode. It does just mix input and output and will be used
-				      to control the amount of a module's effect.
+				<para>This will probably be the most used blend mode. It just mixes input and output and therefore 
+				      reduces the strength of a module's effect.
 			        </para>			
 			</sect5>
 
 		        <sect5><title>inverse</title>
-				<para>This blend mode acts similar to blend mode <quote>normal</quote>, only that the role of input and output of the
-        	                      current module are reversed. Can be used together with conditional blending (<xref linkend="conditional blending"/>) to
+				<para>This blend mode acts similarly to blend mode <quote>normal</quote>, only that the role of input and output of the
+        	                      current module are reversed. Tip: This can be used together with conditional blending (<xref linkend="conditional blending"/>) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
 			</sect5>
 
 			<sect5><title>unbounded</title>
-				<para>This blend mode acts similar to blend mode <quote>normal</quote>, only that input and output data are not
-        	                      clamped to a certain min/max value range. This already tells you that all other blend modes
+				<para>This blend mode acts similarly to blend mode <quote>normal</quote>, except that input and output data are not
+        	                      clamped to a particular min/max value range unlike all other blend modes which do
         	                      clamp their input and output. In some cases (e.g. highly color saturated extreme highlights) it is 
         	                      important to  let unbound values travel through the pixelpipe in order to properly deal with them at 
         	                      the right place (e.g. in module <link linkend="output color profile"><emphasis>output color profile</emphasis></link>).
@@ -50,38 +49,38 @@
 	                </sect5>
 
 			<sect5><title>lightness</title>
-				<para>This blend mode mixes lightness from input and output image. Color data (chroma and hue) are
+				<para>This blend mode mixes lightness from the input and output images. Color data (chroma and hue) are
 	                              taken unaltered from the input image.
 	                        </para>			
 	                </sect5>
 
 
 			<sect5><title>chroma</title>
-				<para>This blend mode mixes chroma (saturation) from input and output image. Lightness and hue are
+				<para>This blend mode mixes chroma (saturation) from the input and output images. Lightness and hue are
 	                              taken unaltered from the input image.
 	                        </para>			
 	                </sect5>
 
 			<sect5><title>hue</title>
-				<para>This blend mode mixes hue (color tint) from input and output image. Lightness and chroma are
-	                              taken unaltered from the input image. For modules which drastically modify hue (e.g. generating
+				<para>This blend mode mixes hue (color tint) from the input and output images. Lightness and chroma are
+	                              taken unaltered from the input image. Caution: When modules drastically modify hue (e.g. when generating
 	                              complementary colors) this blend mode can result in strong color noise.
 	                        </para>			
 	                </sect5>
 
 			<sect5><title>color</title>
-				<para>This blend mode mixes color (chroma and hue) from input and output image. Lightness is
-	                              taken unaltered from the input image. For modules which drastically modify hue (e.g. generating
+				<para>This blend mode mixes color (chroma and hue) from the input and output images. Lightness is
+	                              taken unaltered from the input image. Caution: When modules drastically modify hue (e.g. when generating
 	                              complementary colors) this blend mode can result in strong color noise.
 	                        </para>			
 	                </sect5>
 
 			<sect5><title>coloradjustment</title>
-				<para>Some modules act predominantly on the tonal values of an image but involve some adjustment of color saturation
-                                      as well, e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tonecurve">
+				<para>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments,
+                                      e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tonecurve">
                                       <emphasis>tonecurve</emphasis></link>. This blend mode takes the 
-                                      lightness only from output data and mixes colors from input and output. This way you can control the module's automatic 
-                                      color adjustment.
+                                      lightness only from output data and mixes colors from input and output enabling control of the module's 
+                                      color adjustments.
 	                        </para>			
 	                </sect5>
 
@@ -90,14 +89,14 @@
 		
 		<sect4><title>opacity</title>
 			<para>This slider controls the amount of blending. A value of 100% gives the module's full effect into the
-        	              pixelpipe; a value of 0% means no effect of this module. With blend mode <quote>normal</quote> and a proper selection
-        	              of opacity you can therefore control the strength of a module's effect.
+        	              pixelpipe; a value of 0% means no effect of this module. With blend mode <quote>normal</quote> 
+        	              opacity controls the strength of a module's effect.
 			</para>
 
 	        </sect4>
 
-	        <sect4><title>blend</title>
-        	        <para>Most modules offer additional control on blending by a user-defined blend mask. In order to activate these
+	        <sect4><title>blend if</title>
+        	        <para>Most modules offer additional control with a user-defined blend mask. In order to activate these
         	              controls you need to switch from <quote>blend uniformily</quote> to <quote>blend only, if..</quote>. More details on conditional blending
         	              are given in a separate chapter (<xref linkend="conditional blending"/>).
         	        </para>
@@ -106,8 +105,8 @@
 
 		<sect3><title>Examples</title>
 			<sect4 status="draft"><title>Texturing an image</title>
-				<para>The watermark module supports SVG files with embedded images and thanks to it we can easily texture an 
-						image using the watermark module in conjunction with a blending operator.
+				<para>The watermark module supports SVG files with embedded images that can be used as a texture source. Blending operators then allow
+                                      control of how that texture is expressed.
 				</para>
 			</sect4>
 		
@@ -118,7 +117,7 @@
 						<tbody>
 							<row>						
 								<entry>When blending operators were introduced into darktable, a new module named <emphasis>highpass</emphasis>
-                                                                       (see <xref linkend="highpass"/>) was added. It produces a highpass filter of the image to be implicitly 
+                                                                       (see <xref linkend="highpass"/>) was added. It provides a highpass filter of the image to be implicitly 
                                                                         used with blending. It allows to produce a gritty detailed image and
 										is a widely used workflow with other imaging softwares.				
 								</entry>
@@ -140,7 +139,7 @@
 										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
-										<para>This is the original image, pretty heavy processed: first <link linkend="monochrome">
+										<para>This is the original image, pretty heavily processed: first <link linkend="monochrome">
                                                                                       <emphasis>monochrome</emphasis></link>, then some blue <link linkend="splittoning">
                                                                                       <emphasis>splittoning</emphasis></link> but as you see
 											it lacks pop in details and is a bit out of focus...
@@ -152,8 +151,8 @@
 										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
-										<para>Here we applied the highpass filter with the values shown in the images above of the module userinterface; 
-											you can now see that the details are very boosted and we got a really gritty detailed image.
+										<para>Here we applied the highpass filter with the values shown above. 
+											You can now see that the details are greatly boosted and we now have a really gritty detailed image.
 										</para>
 									</entry>
 								</row>
