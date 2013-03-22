@@ -181,7 +181,7 @@ static void _lib_darktable_show_about_dialog()
     _("* ubuntu packaging, color management, video tutorials *"),
     "Pascal de Bruijn",
     "",
-    _("* opencl pipeline *"),
+    _("* opencl pipeline: *"),
     "Ulrich Pegelow",
     "",
     _("* networking, battle testing, translation expert *"),
