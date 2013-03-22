@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This modules implements another approach to compress the tonal range of HDR input images
+						<entry>This modules implements another approach to compressing the tonal range of an HDR image
                                                 into the limited tonal range of a typical LDR output file. It offers several implementations of 
                                                 global tonemap operators.
 						</entry>
@@ -20,27 +20,27 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>Global tonemapping processes each pixel of an HDR image without taking the local surrounding into account. This is generally 
-                      faster than local tonemapping as implemented in module <link linkend="tonemapping"><emphasis>tonemapping</emphasis></link> 
-                      but might lead to less convincing results with very high dynamic scenes. As an enhancement to the original operators, darktable's 
-                      implementation allows to preserve detail of the input image and transfer it back into the output image.</para>
+                <para>Global tonemapping processes each pixel of an HDR image, without taking the local surrounding into account. This is generally 
+                      faster than local tonemapping, as implemented in the <link linkend="tonemapping"><emphasis>tonemapping</emphasis></link> module
+                      but might lead to less convincing results with very high dynamic scenes. As an enhancement to the original operators, darktable 
+                      can preserve detail of the input image, and transfer it back to the output image.</para>
 
 		<sect5><title>operator</title>
                        <para>Reinhard, Filmic and Drago global tonemap operators are available for use. 
-                        Depending on the selected operator different parameters can be adjusted. Some operators are fully self-adjusting
+                        Depending on the selected operator, different parameters can be adjusted. Some operators are fully self-adjusting,
                         and do not require specific controls.</para>
                 </sect5>
 
 		<sect5><title>bias</title>
-			<para>Only offered for operator <emphasis>Drago</emphasis>. This parameter influences the contrast of your output image.
+			<para>Only offered for the <emphasis>Drago</emphasis> operator. This parameter influences the contrast of the output image.
                         It is an essential parameter for adjusting the compression of high values and the visibility of details in dark areas. 
-                        According to the original paper a value of 0.85 is recommended as a starting point.</para>
+                        According to the original paper, a value of 0.85 is recommended as a starting point.</para>
 		</sect5>
 
 		<sect5><title>target</title>
-			<para>Only offered for operator <emphasis>Drago</emphasis>. This is a scale factor to adjust global image
-                        brightness to the brightness of the intended display. It is measured in cd/m<superscript>2</superscript> and 
-                        should match the according value of your output device. Higher values lead to a brighter, while lower values lead 
+			<para>Only offered for the <emphasis>Drago</emphasis> operator. This is a scale factor to adjust the global image
+                        brightness to the brightness of the intended display. It is measured in cd/m<superscript>2</superscript>, and 
+                        should match the according value of your output device. Higher values lead to a brighter image, while lower values lead 
                         to a darker image.</para>
 		</sect5>	
 

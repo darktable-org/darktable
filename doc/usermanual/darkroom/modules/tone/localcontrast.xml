@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to enhance local contrast. It uses the unnormalized bilateral filter and works on the L channel from Lab.
+						<entry>This module allows enhancing local contrast. It uses the unnormalized bilateral filter, and works on the L channel from Lab.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
@@ -17,19 +17,20 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Local contrast boosts the details of your image much like the <emphasis>equalizer</emphasis> does (see <xref linkend="equalizer"/>), but in only one frequency band.
-    </para>
+		<para>Local contrast boosts details of your image, much like the <emphasis>equalizer</emphasis> does (see <xref linkend="equalizer"/>). However, it is easier to
+                      use as it does not require you to work on different frequency bands.
+                </para>
 		<sect5><title>coarseness</title>
 			<para>Make the details you want to adjust finer or coarser.
 			</para>
 		</sect5>
 		<sect5><title>contrast</title>
 			<para>How strongly the algorithm distinguishes between brightness levels.
-      Increasing the value will result in a more contrasty look.
+                        Increasing the value results in a more contrasty look.
 			</para>
 		</sect5>
 		<sect5><title>detail</title>
-			<para>Add or remove detail. higher values will increase local contrast.</para>
+			<para>Add or remove detail. Higher values will increase local contrast.</para>
 		</sect5>			
 	</sect4>
 
@@ -46,7 +47,7 @@
 						</entry>
 					</row>
 					<row>						
-						<entry>After, a little overdone to demonstrate the effect. Use this sparingly to avoid a cheap overprocessed look.
+						<entry>After, a little overdone to demonstrate the effect. Use this sparingly, to avoid a cheap, overprocessed look.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
