@@ -7,8 +7,8 @@ then
 else
 	sed -i '' 's|@executable_path|../..|' package/darktable.app/Contents/Resources/etc/pango/pango.modules
 fi
-sed -i '' 's|{VERSION}|'$(git describe --tags --long|cut -d- -f2)'|' package/darktable.app/Contents/Info.plist
-sed -i '' 's|{COMMITS}|'$(git describe --tags --long|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
+sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2)'|' package/darktable.app/Contents/Info.plist
+sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
 rm package/darktable.app/Contents/Resources/etc/pango/pangorc
 touch package/darktable.app/Contents/Resources/etc/pango/pangorc
 find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
