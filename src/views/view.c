@@ -632,6 +632,33 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
   cairo_close_path(cr);
 }
 
+int32_t
+dt_view_get_image_to_act_on()
+{
+  /* The criteria followed is:
+     1) If zoom == 1 the image shown has to be returned
+     2) If there is a selection, it is honored over mouse over
+     3) If there is not a selection, the image hovered is returned
+  */
+  int32_t mouse_over_id = -1;
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  
+  if(zoom == 1)
+  {
+    return mouse_over_id;
+  }
+  else
+  {
+    int count = dt_collection_get_selected_count(darktable.collection);
+
+    if (mouse_over_id <= 0 || count > 0)
+      return -1;
+    else
+      return mouse_over_id;
+  }
+}
 
 void
 dt_view_image_expose(

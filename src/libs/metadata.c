@@ -205,21 +205,9 @@ static void write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
  
-  /* If only one image is shown, metadata should be applied to it.
-     If there are more images shown, metadata should always apply to 
-     selection, as it can't be applied to the image hovered */
-  
-  int mouse_over_id = -1;
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  
-  if(zoom == 1)
-  {
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  }
-  else if(dt_collection_get_selected_count(darktable.collection) > 0)
-  {
-    mouse_over_id = -1;
-  }
+  int32_t mouse_over_id;
+ 
+  mouse_over_id = dt_view_get_image_to_act_on();
 
   gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
   gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));

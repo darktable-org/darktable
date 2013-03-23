@@ -112,7 +112,7 @@ dt_colorspaces_get_matrix_from_profile (cmsHPROFILE prof, float *matrix, float *
   matrix[7] = green_color->Z;
   matrix[8] = blue_color->Z;
 
-  // some camera ICC profiles claim to have color locations for red, green and blue base colors defined, 
+  // some camera ICC profiles claim to have color locations for red, green and blue base colors defined,
   // but in fact these are all set to zero. we catch this case here.
   float sum = 0.0f;
   for(int k=0; k<9; k++) sum += matrix[k];
@@ -742,7 +742,7 @@ dt_colorspaces_create_output_profile(const int imgid)
     const dt_iop_colorout_params_t *params;
     // sqlite:
     sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select op_params from history where imgid=?1 and operation='colorout'", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT op_params FROM history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
