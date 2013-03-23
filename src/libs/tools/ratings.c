@@ -187,17 +187,11 @@ static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventBu
   dt_lib_ratings_t *d = (dt_lib_ratings_t *)self->data;
   if (d->current>0)
   {
-    int32_t mouse_over_id = -1;
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    int32_t mouse_over_id;
 
-    /* clear and reset statement */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+    mouse_over_id = dt_view_get_image_to_act_on();
 
-    /* setup statement and iterate over rows */
-    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
-
-    if (mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+    if (mouse_over_id <= 0)
     {
       dt_ratings_apply_to_selection(d->current);
     }
