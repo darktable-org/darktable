@@ -23,6 +23,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "libs/lib.h"
+#include "views/view.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
@@ -172,7 +173,7 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   int imgsel = -1;
   if(tagid <= 0) return;
 
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  imgsel = dt_view_get_image_to_act_on();
 
   dt_tag_attach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
@@ -194,7 +195,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   int imgsel = -1;
   if(tagid <= 0) return;
 
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  imgsel = dt_view_get_image_to_act_on();
 
   dt_tag_detach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
