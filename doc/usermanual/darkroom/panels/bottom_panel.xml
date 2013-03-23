@@ -1,0 +1,59 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+	<sect2 status="draft" id="darkroom bottom panel"><title>Bottom panel</title>
+            <para>The bottom panel provides quick access to apply presets and styles to your image and allows to activate
+                  the over/underexposure warning.
+            </para>
+
+            <sect3><title>Quick access to favorite presets</title>
+                  <para>Clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon opens a combobox
+                        that gives you quick access to your favorite module's presets. Click on the preset name to apply it to the image.
+                  </para>
+            </sect3>
+
+            <sect3><title>Quick access to styles</title>
+                  <para>Clicking the <inlinegraphic fileref="&icon_styles;"  scalefit="1" width="2%" align="center"/> icon opens a combobox with
+                        your styles. Hovering with the mouse over a style name opens a tooltip showing the involved modules. Click on a style name to apply that style
+                        to the image.
+                  </para>
+            </sect3>
+
+           <sect3 status="draft" id="overexposed"><title>Over/underexposed warning</title>
+                  <para>By clicking the <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> icon an over/underexposed
+                        warning is toggled on or off. Pixels outside of the dynamic range, close to pure white or close to pure black, are prominently displayed in a
+                        signal color. You can also activate the over/underexposure warning with the keyboard shortcut <quote>o</quote>.
+                  </para>
+  	        <informaltable frame="none">
+                            <tgroup cols="2" colsep="0" rowsep="0">
+			    	<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>Right-clicking on the icon opens a dialog with configuration parameters.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_overexposed.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+                            </tgroup>
+                        </informaltable>
+
+                      <sect5><title>color scheme</title>
+                              <para>In the default color scheme underexposed pixels are shown in blue and overexposed pixels in red. These
+                              colors are easy to identify in most cases. In some cases you may want to change the color scheme to
+                              <quote>black &amp; white</quote> or <quote>purple &amp; green</quote>, eg. if you experience overexposed highlights 
+                              in red blossoms.</para>
+                      </sect5>
+                      <sect5><title>lower threshold</title>
+                            <para>Sets the threshold for underexposure warning, expressed as a percentage of the maximal brightness.</para>
+                      </sect5>
+                      <sect5><title>upper threshold</title>
+                            <para>Sets the threshold for overexposure warning, expressed as a percentage of the maximal brightness.</para>
+                      </sect5>			
+          </sect3>
+      </sect2>
