@@ -173,7 +173,8 @@ darktable -d opencl -d perf
                 <sect4><title>opencl_async_pixelpipe</title>
                       <para>This boolean flag controls how often we block the OpenCL pixelpipe and get a status on success/failure of all the kernels that have been run. For optimum 
                       latency set this to TRUE, so darktable runs the pixelpipe asynchronously and tries to use as few interrupts as possible. If you experience OpenCL errors like failing 
-                      kernels, set the parameter to FALSE. darktable will then interrupt after each module so you can more easily isolate the problem.</para>
+                      kernels, set the parameter to FALSE. darktable will then interrupt after each module so you can more easily isolate the problem. Problems have been reported with
+                      some older ATI/AMD cards, like HD57xx, which can produce garbled output if this parameter is set to TRUE. If in doubt, leave it at its default FALSE.</para>
                 </sect4>
 
                 <sect4><title>opencl_number_event_handles</title>
