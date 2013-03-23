@@ -627,6 +627,33 @@ dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
   cairo_close_path(cr);
 }
 
+int32_t
+dt_view_get_image_to_act_on()
+{
+  int32_t mouse_over_id = -1;
+  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  
+  if(zoom == 1)
+  {
+    return mouse_over_id;
+  }
+  else
+  {
+    /* clear and reset statement */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+
+    /* setup statement and iterate over rows */
+    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
+
+    if (mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+      return -1;
+    else
+      return mouse_over_id;
+  }
+}
 
 void
 dt_view_image_expose(

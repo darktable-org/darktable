@@ -115,18 +115,11 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
     GdkModifierType modifier, gpointer data)
 {
   const long int mode = (long int)data;
-  int selected;
+  int32_t selected;
+ 
+  selected = dt_view_get_image_to_act_on(); 
   
-  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
-
-  /* clear and reset statement */
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
-
-  /* setup statement and iterate over rows */
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, selected);
-  
-  if(selected <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+  if(selected <= 0)
   {
     switch(mode)
     {
