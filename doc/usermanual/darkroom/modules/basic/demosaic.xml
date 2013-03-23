@@ -52,7 +52,7 @@
 		</sect5>
 		<sect5><title>match greens</title>
 			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
-                              aditional equilibration step, which suppresses artifacts that otherwise could result. Available options
+                              aditional equilization step to suppress artifacts. Available options
                               are <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and <quote>full and local average</quote>.</para>
 		</sect5>
 

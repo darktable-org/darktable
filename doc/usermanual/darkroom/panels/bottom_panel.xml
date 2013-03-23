@@ -24,7 +24,7 @@
 
            <sect3 status="draft" id="overexposed"><title>Over/underexposed warning</title>
                   <para>By clicking the <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> icon an over/underexposed
-                        warning is toggled on or off. Pixels outside of the dynamic range, close to pure white or close to pure black, are prominently displayed in a
+                        warning is toggled on or off. Pixels outside the dynamic range, close to pure white or close to pure black, are prominently displayed in a
                         signal color. You can also activate the over/underexposure warning with the keyboard shortcut <quote>o</quote>.
                   </para>
   	        <informaltable frame="none">

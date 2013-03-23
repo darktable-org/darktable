@@ -30,11 +30,11 @@
                 <para>Whenever the user interface of this module is in focus, you will see the full uncropped image overlayed with
                       handles and guiding lines.
                 </para>
-		<para>First off, select what aspect ratio you want and size the crop bounds by dragging border and corner handles.
-		      Use the button right to the aspect box, to swap between portrait and landscape of the cropping rectangle.
+		<para>First off, select what aspect ratio you want and size the crop boundaries by dragging border and corner handles.
+		      Use the button right of the aspect box, to swap between portrait and landscape mode.
 		      You can move around the crop rectangle by holding down left mouse button and move around.
 		      When you are done and want to execute the crop, just give focus to another module. You can at any time change
-                      your crop area by just giving back focus to this module.
+                      your crop area by just revisiting this module.
 		</para>
 
 		<sect5><title>flip</title>
@@ -42,7 +42,7 @@
 			</para>
 		</sect5>
     <sect5><title>angle</title>
-			<para>This is the rotation angle to correct, for example, a non-leveled horizon.
+			<para>This tool corrects the rotation angle helping you level an image.
 			You can either set a numerical value or use your mouse directly on the image.
 			To use your mouse, right-click, hold it down and draw a line along the horizon; as soon as you release the
                         mouse button the image is rotated so the line you drew matches the horizontal axis.
@@ -84,7 +84,7 @@
                                                    </para>
 
                                                    <para>
-                                                       In order to correct perspective distortions, you need to find suited horizontal and/or vertical 
+                                                       In order to correct perspective distortions, you need to find suitable horizontal and/or vertical 
                                                        features in your image and align the adjustment lines with them. When done, press the <quote>OK</quote> button, which is
                                                        located close to the center of your image. The image will be corrected immeditely. You can at any time come 
                                                        back and refine your corrections by selecting <quote>correction applied</quote> in combobox keystone.
@@ -108,7 +108,7 @@
 		</sect5>
 		<sect5><title>aspect</title>
 			<para>Here you can change what aspect ratio you want to have on the result, thus constraining the ability to drag and crop 
-			      rectangle out of the aspect ratio of your choice. Many common numerical ratios are pre-defined. You also select any
+			      rectangle out of the aspect ratio of your choice. Many common numerical ratios are pre-defined. You can also select any
                               other ratio after opening the combobox and typing it in the form of <quote>x:y</quote>. A few special aspect ratios deserve explanation:
                         </para>
 			<para>
