@@ -769,6 +769,8 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -859,6 +861,13 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox4, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->cbox4, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(g->cbox4, _("absolute colorimetric"));
+
+  if (!high_quality_processing)
+  {
+    gtk_widget_set_sensitive(g->cbox1, FALSE);
+    gtk_widget_set_sensitive(g->cbox4, FALSE);
+  }
+
   g->cbox2 = dt_bauhaus_combobox_new(self);
   g->cbox3 = dt_bauhaus_combobox_new(self);
   g->cbox5 = dt_bauhaus_combobox_new(self);
