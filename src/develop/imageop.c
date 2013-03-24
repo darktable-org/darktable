@@ -1959,7 +1959,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+  if(module->multi_priority > 0)
+    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+  else
+    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);

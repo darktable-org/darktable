@@ -195,7 +195,10 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
     /* create a history button and add to box */
-    snprintf(label, 512, "%s %s", hitem->module->name(), hitem->module->multi_name);
+    if(hitem->module->multi_priority > 0)
+      snprintf(label, 512, "%s %s", hitem->module->name(), hitem->module->multi_name);
+    else
+      snprintf(label, 512, "%s  ", hitem->module->name());
     GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
 
     gtk_box_pack_start(GTK_BOX(d->history_box),widget,TRUE,TRUE,0);
