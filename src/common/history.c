@@ -56,7 +56,7 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
      We only do this for the given imgid and only for num>minnum, that is we only handle new history items just copied.
   */
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1), multi_name=multi_priority where imgid=?1 and num>=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1) where imgid=?1 and num>=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   sqlite3_step (stmt);
