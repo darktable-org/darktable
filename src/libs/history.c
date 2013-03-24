@@ -196,7 +196,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
     /* create a history button and add to box */
     if(hitem->module->multi_name && strcmp(hitem->module->multi_name,"0") == 0)
-      snprintf(label, 512, "%s  ", hitem->module->name());
+      snprintf(label, 512, "%s", hitem->module->name());
     else
       snprintf(label, 512, "%s %s", hitem->module->name(), hitem->module->multi_name);
     GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
