@@ -810,6 +810,13 @@ void gui_init(struct dt_iop_module_t *self)
   // the profiles that are available for every image
   int pos = -1;
 
+  // add linear RGB profile:
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
+  g->global_profiles = g_list_append(g->global_profiles, prof);
+  prof->pos = ++pos;
+
   // sRGB for ldr image input
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "sRGB", sizeof(prof->filename));
@@ -821,13 +828,6 @@ void gui_init(struct dt_iop_module_t *self)
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
   g_strlcpy(prof->name, "adobergb", sizeof(prof->name));
-  g->global_profiles = g_list_append(g->global_profiles, prof);
-  prof->pos = ++pos;
-
-  // add std RGB profile:
-  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-  g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
   g->global_profiles = g_list_append(g->global_profiles, prof);
   prof->pos = ++pos;
 
