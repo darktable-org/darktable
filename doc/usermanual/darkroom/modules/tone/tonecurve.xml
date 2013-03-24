@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="tonecurve"><title>Tonecurve</title>
+<sect3 status="draft" id="tone curve"><title>Tone curve</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -31,7 +31,7 @@
                       widget.
 		</para>
 		<sect5><title>L-channel curve</title>
-			<para>The tonecurve in L-channel works on Lightness. For a better overview a lightness histogram is displayed in the
+			<para>The tone curve in L-channel works on Lightness. For a better overview a lightness histogram is displayed in the
                               diagram.
                         </para>
                         <para>
@@ -62,7 +62,7 @@
 		</sect5>	
 		<sect5><title>scale chroma</title>
 			<para>darktable does an automatic adjustment of color saturation, if this combobox is set to <quote>auto</quote>. The level of this
-                              adjustment depends on the pixel's color values and its L-value modification by the L-channel tonecurve. It is
+                              adjustment depends on the pixel's color values and its L-value modification by the L-channel tone curve. It is
                               designed to give an overall boost in color saturation, if the L-curve gives a contrast boost. Look at blend mode
                               <quote>coloradjustment</quote> to adjust the strength of this effect (see <xref linkend="blending operators"/>). If this 
                               combobox is set to <quote>manual</quote>, you can modify color saturation using the curves in channels a and b.
@@ -89,7 +89,7 @@
 								<graphic fileref="darkroom/modules/images/tonecurve_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>Tonecurve settings. Please note how the center node of our b-curve was shifted down to
+								<para>Tone curve settings. Please note how the center node of our b-curve was shifted down to
                                                                       negative values. This gives the image its blue tint.
 								</para>
 							</entry>

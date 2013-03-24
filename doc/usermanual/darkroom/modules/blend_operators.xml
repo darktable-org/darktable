@@ -77,8 +77,8 @@
 
 			<sect5><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments,
-                                      e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tonecurve">
-                                      <emphasis>tonecurve</emphasis></link>. This blend mode takes the 
+                                      e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tone curve">
+                                      <emphasis>tone curve</emphasis></link>. This blend mode takes the 
                                       lightness only from output data and mixes colors from input and output enabling control of the module's 
                                       color adjustments.
 	                        </para>			

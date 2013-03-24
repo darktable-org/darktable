@@ -31,7 +31,7 @@
 		</para>
 		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values are
                       cut off to pure black. Use with care as the clipped values can not be recovered in other modules further down the pixelpipe. Please also have a look
-                      at the <emphasis>tonecurve</emphasis> module (see <xref linkend="tonecurve"/>) and the <emphasis>levels</emphasis> module (see <xref linkend="levels"/>)
+                      at the <emphasis>tone curve</emphasis> module (see <xref linkend="tone curve"/>) and the <emphasis>levels</emphasis> module (see <xref linkend="levels"/>)
                       which can produce similar results with less side effects as they come later in pixelpipe.
 		</para>
 		<sect5><title>black</title>

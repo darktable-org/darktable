@@ -1,12 +1,15 @@
-<sect3 status="draft" id="basecurve"><title>Basecurve</title>
+<sect3 status="draft" id="base curve"><title>Base curve</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable comes with general enhanced basecurve presets for several models. These are automatically applied
-							to raw images for better colors and contrast.
+						<entry>Camera sensors provide data in linear RGB format, the original image appears flat and dull.
+                                                       That's the reason why camera manufacturers apply their characteristic base curves to the RAW data
+                                                       when they generate in-camera JPEG images with better colors and contrast.
+                                                       darktable comes with base curve presets that mimic the curves of various manufacturers. 
+                                                       These are automatically applied to RAW images according to the manufacturer ID found in EXIF data.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
@@ -18,8 +21,14 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The basecurve works in camera linear RGB. It is defined by two or more nodes. You can click on any node and drag to adjust; you can also
-		      create additional nodes by clicking on a curve segment between two nodes. In order to remove a node drag it outside of the diagram area.
+		<para>You can adjust an existing base curve or create a new one. The base curve is defined by two or more nodes. You can click on any node and drag to 
+                      modify it. You can also create additional nodes by clicking on a curve segment between two nodes. In order to remove a node drag it outside of the 
+                      widget area.
+                </para>
+
+                <para>If you want to take full manual control of the tonal values with the <emphasis>tone curve</emphasis> module or the <emphasis>zone system</emphasis>
+                      module (see <xref linkend="tone curve"/> and <xref linkend="zone system"/>) it may be advisable to not apply a base curve and leave the data in
+                      linear format. Disable the <emphasis>base curve</emphasis> module in this case.
                 </para>
 	</sect4>
 </sect3>

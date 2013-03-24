@@ -44,7 +44,7 @@
 			   </listitem>
 			   <listitem>
 			     <para>Mouse wheel</para>
-			     <para>Hover a slider with your mouse, then use your mouse wheel to adjust the value step by step.
+			     <para>Hover over any place on the slider with your mouse, then use your mouse wheel to adjust the value step by step.
 			     </para>
 			   </listitem>
    			   <listitem>
@@ -57,7 +57,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable's innovative input method: coarse and fine value adjustments in one single control element.
+						<entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />

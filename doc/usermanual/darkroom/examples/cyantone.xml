@@ -18,7 +18,7 @@
 			</informaltable>
 	</sect3>
 	<sect3><title>Procedure</title>
-		<para>This procedure uses tonecurve, channelmixer and splittoning modules.
+		<para>This procedure uses tone curve, channel mixer and splittoning modules.
 		</para>
 		<orderedlist>
 			<listitem>

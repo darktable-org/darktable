@@ -22,7 +22,7 @@
 		</para>
 	</sect3>
 	<sect3><title>Procedure</title>
-		<para>This procedure uses tonecurve, channelmixer and splittoning modules.
+		<para>This procedure uses tone curve, channel mixer and splittoning modules.
 		</para>
 		<orderedlist>
 			<listitem>
@@ -32,7 +32,7 @@
 				</para>
 			</listitem>
 			<listitem><para>Boost contrast</para>
-				<para>Select the medium contrast curve preset for <emphasis>tonecurve</emphasis> module (<xref linkend="tonecurve"/>) to boost the overall contrast
+				<para>Select the medium contrast curve preset for <emphasis>tone curve</emphasis> module (<xref linkend="tone curve"/>) to boost the overall contrast
 					in the image. You might later return here to tune the curve for better result.
 				</para>
 			</listitem>

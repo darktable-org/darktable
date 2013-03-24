@@ -21,7 +21,7 @@
                                  (see <xref linkend="blending operators"/>).</para>
 
                            <para>In an even more elaborate case you could have a module act on different parts of your image. As an example you might want to apply a certain gradation
-                                 curve with module <emphasis>tonecurve</emphasis> (<xref linkend="tonecurve"/>) to your complete image and have a second curve being applied specifically to skin tones. 
+                                 curve with module <emphasis>tone curve</emphasis> (<xref linkend="tone curve"/>) to your complete image and have a second curve being applied specifically to skin tones. 
                                  All the controls offered by <emphasis>conditional blending</emphasis> (<xref linkend="conditional blending"/>) are at your hand to select those parts of an image where
                                  each of the module instances is applied.</para>
 

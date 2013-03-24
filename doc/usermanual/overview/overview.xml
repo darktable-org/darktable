@@ -299,7 +299,7 @@
 				<para>Almost each workflow will cover as one basic element the adjustment of 
                                       global contrast. You will want to control how the image tonal values cover the available range of your output 
                                       medium. darktable offers several alternative modules to take 
-                                      care of that. In one of them, the <link linkend="tonecurve"><emphasis>tonecurve</emphasis></link> module, tonal values are adjusted by constructing a 
+                                      care of that. In one of them, the <link linkend="tone curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
                                       gradient curve. The <link linkend="levels"><emphasis>levels</emphasis></link> module offers a much simpler interface, with just three 
                                       sliders. In addition, there is a <link linkend="zone system"><emphasis>zone system</emphasis></link> module which allows control over tonal values
                                       by zones, inspired by the work of Ansel Adams.
@@ -322,7 +322,7 @@
                                       implemented in the <link linkend="color correction"><emphasis>color correction</emphasis></link> module. Use it to give an image an 
                                       overall tint or to adjust overall color saturation. The <link linkend="color zones"><emphasis>color zones</emphasis></link> module offers 
                                       a much finer control to adjust saturation, or lightness, 
-                                      and even hue, in user defined zones. darktable's <link linkend="tonecurve"><emphasis>tonecurve</emphasis></link> module - in addition to the 
+                                      and even hue, in user defined zones. darktable's <link linkend="tone curve"><emphasis>tone curve</emphasis></link> module - in addition to the 
                                       classical adjustment of tonal values - gives you fine control over the colors in an image. 
                                       Finally, if you intend to convert an image into black &amp; white, a good starting point, with an 
                                       easy to use and intuitive user interface, is offered by the <link linkend="monochrome"><emphasis>monochrome</emphasis></link> module. Alternatively,
