@@ -864,8 +864,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   if (!high_quality_processing)
   {
-    gtk_widget_set_sensitive(g->cbox1, FALSE);
-    gtk_widget_set_sensitive(g->cbox4, FALSE);
+    gtk_widget_set_no_show_all(g->cbox1, TRUE);
+    gtk_widget_set_visible(g->cbox1, FALSE);
+    gtk_widget_set_no_show_all(g->cbox4, TRUE);
+    gtk_widget_set_visible(g->cbox4, FALSE);
   }
 
   g->cbox2 = dt_bauhaus_combobox_new(self);
