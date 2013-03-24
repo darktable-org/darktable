@@ -302,7 +302,9 @@ if(NOT CUSTOM_CFLAGS)
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+
+  # gcc 4.8 build fails on deprecated warnings too
+  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 if(NOT BINARY_PACKAGE_BUILD)
