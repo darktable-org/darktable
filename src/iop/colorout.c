@@ -593,7 +593,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) ||
+  if (d->softproof_enabled || high_quality_processing ||
       dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = NAN;
