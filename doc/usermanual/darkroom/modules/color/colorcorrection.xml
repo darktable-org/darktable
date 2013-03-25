@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module can be used to modify the global saturation or to give a tint.					
+						<entry>This module can be used to modify the global saturation, give a tint to the image or to split tone it.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/colorcorrection.png" scalefit="1" width="80%" align="center" />
@@ -18,8 +18,8 @@
 
 	<sect4><title>Usage</title>
 		<sect5><title>color board</title>
-			<para>You can drag a white dot and a dark dot independently to give global tint to highlights and shadows. Set dots to the same color
-                              for a homogeneous global tint or to different colors for split toning.</para>
+			<para>For split toning drag the white dot to the desired highlight tint and then select a tint for shadows with the dark
+                              spot. For a simple global tint set both spots to the same color.</para>
 		</sect5>
 		<sect5><title>saturation</title>
 			<para>Use the saturation slider to correct the global saturation.

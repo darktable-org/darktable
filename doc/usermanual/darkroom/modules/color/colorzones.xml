@@ -10,7 +10,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to selectively modify the colors in your image. 
+						<entry>This module selectively modifies the colors in your image. 
 						It is highly versatile and allows every transformation possible in the LCh colorspace.					
 						</entry>
 						<entry>

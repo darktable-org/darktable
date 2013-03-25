@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows to transfer to an image the colors found on another.
+						<entry>This module transfers color characteristics from one image to another.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
@@ -21,10 +21,10 @@
 			<para>Set the number of color clusters to use.</para>
 		</sect5>
 		<sect5><title>acquire</title>
-			<para>Acquire the colors of the current image.</para>
+			<para>Press this button to acquire colors from the source image.</para>
 		</sect5>
 		<sect5><title>apply</title>
-			<para>Apply the colors (shown above) previously acquired on another image, to the current image.</para>
+			<para>Press this button to impose the colors to the destination image.</para>
 		</sect5>
 	</sect4>
 </sect3>

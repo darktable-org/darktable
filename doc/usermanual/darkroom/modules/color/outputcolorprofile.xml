@@ -5,7 +5,13 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module manages the output profile both for display and for export.					
+						<entry><para>This module manages the output profiles for display and export as well as the rendering intent
+                                                       to be used when mapping between the different color spaces.</para>
+
+                                                       <para>darktable comes with pre-defined profiles sRGB, AdobeRGB, XYZ and linear RGB but you can
+                                                       provide additional profiles by placing these in $DARKTABLE/share/darktable/color/out and 
+                                                       $HOME/.config/darktable/color/out. $DARKTABLE is used here to represent your chosen darktable
+                                                       installation directory and $HOME your home directory.</para>
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
@@ -18,6 +24,12 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
+                <para>A configuration parameter <quote>always use littlecms2 during export</quote> in darktable's <emphasis>core options</emphasis> (see <xref linkend="core options"/>)
+                      defines how darktable renders colors for display and export. If the configuration parameter is disabled darktable uses a simplfied and very fast internal rendering algorithm. If
+                      the option is checked the external library <ulink url="http://www.littlecms.com/"><emphasis>littlecms2</emphasis></ulink> with higher accuracy and significantly
+                      higher processing overhead is used instead.
+                </para>
+
                 <sect5><title>output intent</title>
           		<para>Sets the rendering intent for output/export. You can easily override this setting whenever you do exports from lighttable mode.
 				<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
@@ -26,7 +38,7 @@
 					<tbody>
 						<row>
 							<entry><emphasis>perceptual</emphasis></entry>
-							<entry>Suited to pictures. It scales one gamut to fit into the other while maintaining the relative position of colors. 
+							<entry>Suited to pictures as it maintains the relative position of colors. This is usually the best choice.
 							</entry>
 						</row>
 						<row>
@@ -45,37 +57,35 @@
 
 					</tbody>
 				</tgroup></informaltable></para>
+
+                     <para>Only rendering with littelcms2 gives you a choice of rendering intent. If darktable's internal rendering routines are used the option is greyed out.</para>
+
                 </sect5>
                 <sect5><title>display intent</title>
           		<para>Sets the rendering intent for your display. See above for available options.</para>
                 </sect5>
                 <sect5><title>output profile</title>
-          		<para>Sets the color profile for output/export. darktable comes with pre-defined internal profiles: sRGB, AdobeRGB, XYZ and linear RGB.
-                        Additional profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
-                        $HOME/.config/darktable/color/out.</para>
-                        <para>$DARKTABLE is used here as a placeholder for darktable's installation directory and $HOME 
-                        is your home directory.</para>
+          		<para>Sets the color profile for output/export.</para>
                 </sect5>
                 <sect5><title>softproof profile</title>
-          		<para>Sets the color profile for softproof. Profiles to be used are picked up from $DARKTABLE/share/darktable/color/out and 
-                        $HOME/.config/darktable/color/out.</para>
+          		<para>Sets the color profile for softproofing.</para>
 
-          		<para><emphasis>softproof</emphasis> is toggled on/off by pressing <quote>s</quote>; this function allows you to preview the image rendered using a 
-	        	printer profile, to see how colors will end up on the final print.</para>
+          		<para><emphasis>softproof</emphasis> allows you to preview your image rendered using a 
+	        	printer profile so as to see how colors will end up on the final print and is toggled on and off by pressing <quote>s</quote>.</para>
 
-        		<para>Likewise <emphasis>gamut check</emphasis> is toggled on/off by pressing <quote>g</quote>; this function marks all pixels, which are out of gamut
-                        with respect to the selected softproof profile, by showing them in cyan. <emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> are mutually exclusive 
-                        modes.</para>
+        		<para>Likewise <emphasis>gamut check</emphasis> is toggled on and off by pressing <quote>g</quote>; this function highlights in cyan all pixels out of gamut
+                        with respect to the selected softproof profile.</para>
 
-                        <para><emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> can be activated at any place in darkroom mode. Only if this module is in
-                        focus, you will get the status displayed left below the center image. Especially for mode <emphasis>softproof</emphasis> this may raise doubts,
-                        if it is still active or not. If in doubt press <quote>g</quote>, which will switch to <emphasis>gamut check</emphasis> and will be 
-                        clearly discernible by cyan marked pixels. Press <quote>g</quote> again and you are back to normal display mode.
+                        <para><emphasis>softproof</emphasis> and <emphasis>gamut check</emphasis> are mutually exclusive 
+                        modes that can be activated at any place in darkroom mode and when this module is in focus the status is displayed below the image.</para> 
+
+                        <para>Tip: at other times it may not be obvious if the <emphasis>softproof</emphasis> mode is still active or not. If in doubt 
+                        press <quote>g</quote>, which will switch to <emphasis>gamut check</emphasis> and be 
+                        clearly distinguishable by cyan marked pixels. Press <quote>g</quote> again and you are back to normal display mode.
                         </para>  
                 </sect5>
                 <sect5><title>display profile</title>
-          		<para>Sets the color profile for the display. Profiles to be used is picked up from $DARKTABLE/share/darktable/color/out and 
-                        $HOME/.config/darktable/color/out. The additional option "system display profile" is taken directly from your system's
+          		<para>Sets the color profile for the display. The additional option <quote>system display profile</quote> is taken directly from your system's
                         color manager or from your X Server. When working with a calibrated display this is the preferred option to choose.</para>
                 </sect5>
 	</sect4>
