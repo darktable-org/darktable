@@ -11,6 +11,7 @@ src/common/history.c
 src/common/image.c
 src/common/imageio.c
 src/common/mipmap_cache.c
+src/common/noiseprofiles.h
 src/common/points.h
 src/common/ratings.c
 src/common/styles.c
