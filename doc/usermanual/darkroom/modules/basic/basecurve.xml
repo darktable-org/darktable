@@ -26,9 +26,9 @@
                       widget area.
                 </para>
 
-                <para>If you want to take full manual control of the tonal values with the <emphasis>tone curve</emphasis> module or the <emphasis>zone system</emphasis>
-                      module (see <xref linkend="tone curve"/> and <xref linkend="zone system"/>) it may be advisable to not apply a base curve and leave the data in
-                      linear format. Disable the <emphasis>base curve</emphasis> module in this case.
+                <para>Tip: If you intend to take full manual control of the tonal values with the <emphasis>tone curve</emphasis> module or the <emphasis>zone system</emphasis>
+                      module (see <xref linkend="tone curve"/> and <xref linkend="zone system"/>) it may be easier to leave the image in
+                      linear RGB. Disable the <emphasis>base curve</emphasis> module in this case.
                 </para>
 	</sect4>
 </sect3>
