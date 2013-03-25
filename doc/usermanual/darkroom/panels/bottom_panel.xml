@@ -4,25 +4,25 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="draft" id="darkroom bottom panel"><title>Bottom panel</title>
+	<sect2 status="final" id="darkroom bottom panel"><title>Bottom panel</title>
             <para>The bottom panel provides quick access to apply presets and styles to your image and allows to activate
                   the over/underexposure warning.
             </para>
 
-            <sect3><title>Quick access to favorite presets</title>
+            <sect3 status="final"><title>Quick access to favorite presets</title>
                   <para>Clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon opens a combobox
                         that gives you quick access to your favorite module's presets. Click on the preset name to apply it to the image.
                   </para>
             </sect3>
 
-            <sect3><title>Quick access to styles</title>
+            <sect3 status="final"><title>Quick access to styles</title>
                   <para>Clicking the <inlinegraphic fileref="&icon_styles;"  scalefit="1" width="2%" align="center"/> icon opens a combobox with
                         your styles. Hovering with the mouse over a style name opens a tooltip showing the involved modules. Click on a style name to apply that style
                         to the image.
                   </para>
             </sect3>
 
-           <sect3 status="draft" id="overexposed"><title>Over/underexposed warning</title>
+           <sect3 status="final" id="overexposed"><title>Over/underexposed warning</title>
                   <para>By clicking the <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> icon an over/underexposed
                         warning is toggled on or off. Pixels outside the dynamic range, close to pure white or close to pure black, are prominently displayed in a
                         signal color. You can also activate the over/underexposure warning with the keyboard shortcut <quote>o</quote>.

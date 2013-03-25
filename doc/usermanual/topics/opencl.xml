@@ -1,7 +1,7 @@
-<sect1 status="draft" id="darktable and opencl"><title>darktable and OpenCL</title>
+<sect1 status="final" id="darktable and opencl"><title>darktable and OpenCL</title>
 	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
 
-	<sect2><title>The background</title>
+	<sect2 status="final"><title>The background</title>
 		<para>Processing high resolution images is a demanding task needing a modern computer. Both in terms of memory requirements and in terms of 
                       CPU power, getting the best out of a typical 15, 20 or 25 Megapixel image can quickly bring your computer to its limits.</para>
 
@@ -22,7 +22,7 @@
                       of items. Typical use case: processing of megapixel images.</para>
 	</sect2>
 
-	<sect2><title>How OpenCL works</title>
+	<sect2 status="final"><title>How OpenCL works</title>
 		<para>As you can imagine, hardware architectures of GPUs can vary significantly. There are different manufacturers, and even different generations of GPUs 
                       from the same manufacturer may differ. At the same time GPU manufacturers don't normally disclose all hardware details of their 
                       products to the public. One of the known consequences is the need to use proprietary drivers under Linux, if you want to take full advantage of your 
@@ -36,7 +36,7 @@
                       ready to do calculations for you.</para>
 	</sect2>
 
-	<sect2><title>How to activate OpenCL in darktable</title>
+	<sect2 status="final"><title>How to activate OpenCL in darktable</title>
 		<para>Using OpenCL in darktable requires that your PC is equipped with a suitable graphics card and that it has the required libraries in place. Namely 
                       modern graphics cards from NVIDIA and ATI come with full OpenCL support. The OpenCL compiler is normally shipped as part of the proprietary graphics 
                       driver; it is used as a dynamic library called <quote>libOpenCL.so</quote>. This library must be in a folder where it is found by your system’s dynamic linker.</para>
@@ -67,7 +67,7 @@
                       fall back to CPU processing.</para>
 	</sect2>
 
-	<sect2><title>Possible problems and solutions</title>
+	<sect2 status="final"><title>Possible problems and solutions</title>
 		<para>darktable will detect OpenCL run-time problems automatically. It will then reprocess everything on CPU; only speed is affected, the final result should 
                       not be endangered.</para>
 
@@ -110,7 +110,7 @@ darktable -d opencl
                       our hand-optimized CPU code. Therefore we simply discard these devices.</para>
 	</sect2>
 
-        <sect2><title>Setting up OpenCL for AMD/ATI devices</title>
+        <sect2 status="final"><title>Setting up OpenCL for AMD/ATI devices</title>
                 <para>While NVIDIA devices will most often run out of the box, there is more to do for AMD/ATI graphics cards. This starts with the fact that AMD/ATI will 
                       only report to darktable half of the total GPU memory. For a 1GB device this amounts to 512MB, a value which darktable in its standard configuration will refuse 
                       as not being sufficient for its tasks. Consequence: the device will not be used.</para>
@@ -146,7 +146,7 @@ darktable -d opencl
         </sect2>
 
 
-        <sect2><title>OpenCL performance optimization</title>
+        <sect2 status="final"><title>OpenCL performance optimization</title>
                 <para>There are some configuration parameters in $HOME/.config/darktable/darktablerc that help to finetune your system's OpenCL performance. Performance in this 
                  context mostly means the latency of darktable during interactive work, i.e. how long it takes to reprocess your pixelpipe. For a comfortable workflow it is essential to 
                  keep latency low.</para>
@@ -204,7 +204,7 @@ darktable -d opencl -d perf
                 </sect4>
         </sect2>
 
-        <sect2><title>Multiple OpenCL devices</title>
+        <sect2 status="final"><title>Multiple OpenCL devices</title>
                <para>While most systems will only have one OpenCL capable GPU installed, darktable is also able to make use of multiple devices in parallel. There is a configuration
                      parameter which helps to optimize GPU priorities in that case.</para>
 
@@ -278,7 +278,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                     is free, because it's faster. If that's not the case, all other devices - in fact only the GTS450 - are checked.</para>
         </sect2>
 
-        <sect2><title>OpenCL still does not run for me!</title>
+        <sect2 status="final"><title>OpenCL still does not run for me!</title>
 		<para>As has been said before OpenCL systems come with a huge variety of setups: different GPU manufacturers, different GPU models, varying amounts of GPU memory, different drivers,
 		different distributions etc. Many of the potential problems will only appear with a very specific combination of those factors.</para>
 

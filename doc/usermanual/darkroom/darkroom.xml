@@ -1,4 +1,4 @@
-<chapter id="darkroom chapter">
+<chapter status="final" id="darkroom chapter">
 <chapterinfo>
 <keywordset>
   <keyword>darkroom</keyword>
@@ -12,7 +12,7 @@
 	<graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
 </screenshot>
 
-<sect1><title>Overview</title>
+<sect1 status="final"><title>Overview</title>
 	<para>Darkroom mode is for photograpic development of the image you selected from the lighttable. Lots of tools, named
         modules, are available for processing that image.
 	</para>
@@ -38,7 +38,7 @@
         the shortcut <emphasis>ctrl-e</emphasis>. Export parameters are then those currently selected in the lighttable.</para>
 
 </sect1>
-<sect1 status="draft" id="filmstrip"><title>Filmstrip</title>
+<sect1 status="final" id="filmstrip"><title>Filmstrip</title>
 	<para>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same
 		as the ones in the lighttable view.
 	</para>

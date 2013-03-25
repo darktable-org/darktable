@@ -14,7 +14,7 @@
 			    The preset system also supports automatic preset selection based on image data such as focal length, ISO,  
 				    camera model and other fields.
                     </para>
-		    <sect3><title>Creating a new preset</title>
+		    <sect3 status="final"><title>Creating a new preset</title>
 			    <para>First configure the module's parameters then click the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> 
                             icon and select <quote>store new preset</quote>. The following dialog will be shown for configuring the preset:
 			    </para>
@@ -38,7 +38,7 @@
                             </para>
 
 	            </sect3>
-                    <sect3><title>Managing Presets</title>
+                    <sect3 status="final"><title>Managing Presets</title>
                            <para>Both user created and pre-defined presets can be viewed and managed from within the presets menu (<xref linkend="presets"/>) in the preferences dialog 
                                  (see <xref linkend="preferences chapter"/>).
                            </para>

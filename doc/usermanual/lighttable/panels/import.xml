@@ -1,4 +1,4 @@
-<sect2 status="draft" id="import"><title>Import</title>
+<sect2 status="final" id="import"><title>Import</title>
 		 	 <para>This panel is for importing images into filmrolls. You can either import a complete folder,
       				by pressing <quote>import filmroll</quote>, or a single image with <quote>import single image</quote>. You can also import directly from a connected camera.
 		  	</para>
@@ -10,7 +10,7 @@
                                 ones you have worked with.
 			</para>
 
-			<sect3><title>Import from filesystem</title>
+			<sect3 status="final"><title>Import from filesystem</title>
 				<para>A filmroll is analogous to a folder in the filesystem. You can import either a single image, or a folder. If a folder is imported, the images
 	                                in that folder will show up in a filmroll with the same name as the imported folder. If single images are imported, they
 	                                will show up in the filmroll called <quote>single images</quote>.
@@ -35,7 +35,7 @@
                                       also apply some metadata during import; see <xref linkend="metadata editor"/> for more details.
 				</para>
 
-				<para status="draft">Importing a folder does not mean that darktable copies your images into another folder.
+				<para>Importing a folder does not mean that darktable copies your images into another folder.
 					It just means that the images are visible in lighttable and thus can be developed.
 	     				If you delete an image or a folder from disk after having imported them, darktable cannot access them anymore.
 		      			Importing an image or folder in darktable is not a backup of your filesystem!
@@ -45,7 +45,7 @@
 
 			</sect3>
 
-			<sect3><title>Import from camera</title>
+			<sect3 status="final"><title>Import from camera</title>
 				<para>When a camera is detected, it will show up in the device panel. If you hover your mouse over the camera tab label, a tooltip
 					will pop up with information about the camera, such as model, firmware version, and more.
 				        Depending on the camera's support, buttons with actions will be available such as <quote>import images</quote> and <quote>tethering</quote>.
@@ -65,7 +65,7 @@
 				</sect4>
 			</sect3>
 
-                        <sect3 id="supported file formats"><title>Supported file formats</title>
+                        <sect3 status="final" id="supported file formats"><title>Supported file formats</title>
                                <para>darktable is focused on managing and developing camera RAW files. It supports a huge number of file formats from various camera manufacturers.
                                      In addition darktable can read specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic range</emphasis> images - mainly for 
                                      data exchange between darktable and other software.</para>

@@ -8,7 +8,7 @@
 		    <para>Many of darktable's modules can be applied multiple times. Each instance of that module behaves like any other module, taking its input from the module
                           below in the pixelpipe delivering its output to the module above.</para>
 
-		    <sect3><title>Typical use cases</title>
+		    <sect3 status="final"><title>Typical use cases</title>
                            <para>There are many occasions where it makes sense to have an operation act more than once in the pixelpipe. Here are a few use cases.</para>
 
                            <para>Most of our modules are highly versatile and depending on parameters can deliver quite varying effects.
@@ -29,7 +29,7 @@
                                  modules - will certainly cause some noticable slow-down.</para>
                     </sect3>
 
-		    <sect3><title>Managing instances</title>
+		    <sect3 status="final"><title>Managing instances</title>
                            <para>When clicking on the <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="2%" align="center"/> icon a drop-down menu will appear.</para>
 
                            <para>Selecting <quote>new</quote> generates a new module instance below any existing ones. Each new instance gets its own complete set of GUI controls

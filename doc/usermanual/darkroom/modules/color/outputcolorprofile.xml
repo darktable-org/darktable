@@ -1,4 +1,4 @@
-<sect3 status="draft" id="output color profile"><title>Output color profile</title>
+<sect3 status="final" id="output color profile"><title>Output color profile</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -25,7 +25,7 @@
 
 	<sect4><title>Usage</title>
                 <para>A configuration parameter <quote>always use littlecms2 during export</quote> in darktable's <emphasis>core options</emphasis> (see <xref linkend="core options"/>)
-                      defines how darktable renders colors for display and export. If the configuration parameter is disabled darktable uses a simplfied and very fast internal rendering algorithm. If
+                      defines how darktable renders colors for display and export. If the configuration parameter is disabled darktable uses a simplified and very fast internal rendering algorithm. If
                       the option is checked the external library <ulink url="http://www.littlecms.com/"><emphasis>littlecms2</emphasis></ulink> with higher accuracy and significantly
                       higher processing overhead is used instead.
                 </para>
@@ -58,7 +58,7 @@
 					</tbody>
 				</tgroup></informaltable></para>
 
-                     <para>Only rendering with littelcms2 gives you a choice of rendering intent. If darktable's internal rendering routines are used the option is greyed out.</para>
+                     <para>Only rendering with littelcms2 gives you a choice of rendering intent. The option is greyed out, if darktable's internal rendering routines are used.</para>
 
                 </sect5>
                 <sect5><title>display intent</title>

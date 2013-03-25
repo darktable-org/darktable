@@ -1,5 +1,5 @@
 <sect3 status="final" id="crop and rotate"><title>Crop and rotate</title>
-	<sect4 status="final"><title>Overview</title>
+	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -26,7 +26,7 @@
 
         </sect4>
 
-	<sect4 status="draft"><title>Usage</title>
+	<sect4><title>Usage</title>
                 <para>Whenever the user interface of this module is in focus, you will see the full uncropped image overlayed with
                       handles and guiding lines.
                 </para>

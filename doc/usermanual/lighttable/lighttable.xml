@@ -4,7 +4,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<chapter id="lighttable chapter">
+<chapter status="final" id="lighttable chapter">
 	<chapterinfo>
 		<keywordset>
 			<keyword>lighttable</keyword>
@@ -18,7 +18,7 @@
 		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
 	</screenshot>
 
-	<sect1><title>Overview</title>
+	<sect1 status="final"><title>Overview</title>
 		<para></para>
 		<sect2 status="final" id="lighttable"><title>Lighttable</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -87,14 +87,14 @@
                               zoomable lighttable view.
                         </para>
 		</sect2>
-		<sect2 status="draft" id="filtering and sort order"><title>Filtering and sort order</title>
+		<sect2 status="final" id="filtering and sort order"><title>Filtering and sort order</title>
 			<para>The filtering and sort order of images in the lighttable are accessed and changed in the top bar.
 				You can select among a few predefined filters, and ordering like <quote>date</quote>, <quote>color labels</quote>
                                 or <quote>rating</quote>.
 			</para>
 		</sect2>
 
-		<sect2 status="draft" id="image grouping"><title>Image grouping</title>
+		<sect2 status="final" id="image grouping"><title>Image grouping</title>
 			<para>Grouping images helps improve structure and clarity of your image collection when 
                               displayed in lighttable view.
 			</para>

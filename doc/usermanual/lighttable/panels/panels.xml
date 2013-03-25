@@ -1,4 +1,4 @@
-<sect1 id="lighttable panels"><title>Lighttable panels</title>
+<sect1 status="final" id="lighttable panels"><title>Lighttable panels</title>
     <!-- Left panel -->
     <xi:include href="import.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 <!--    <xi:include href="similar.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
