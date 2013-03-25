@@ -269,7 +269,7 @@ dt_bauhaus_root_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer
 {
   if(darktable.bauhaus->current)
   {
-    const float tol = 5;
+    const float tol = 50;
     gint wx, wy;
     GtkWidget *widget = darktable.bauhaus->popup_window;
     gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
@@ -290,7 +290,7 @@ dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user
 {
   if(darktable.bauhaus->current)
   {
-    const float tol = 100;
+    const float tol = 0;
     gint wx, wy;
     GtkWidget *widget = darktable.bauhaus->popup_window;
     gdk_window_get_origin (gtk_widget_get_window (widget), &wx, &wy);
