@@ -113,11 +113,9 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam);
 
 static int logid=0;
 
-void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data)
+void _gphoto_log(GPLogLevel level, const char *domain, const char *str, void *data)
 {
-  char log[4096]= {0};
-  vsprintf(log,format,args);
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %s %s\n",domain,log);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %s %s\n",domain,str);
 }
 
 void _enable_debug()
@@ -139,12 +137,10 @@ static void _idle_func_dispatch(GPContext *context, void *data)
 }
 
 
-static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
+static void _error_func_dispatch(GPContext *context, const char *text, void *data)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
-  char buffer[4096];
-  vsprintf (buffer, format, args );
-  dt_print (DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",buffer);
+  dt_print (DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",text);
 
   if (strstr (buffer,"PTP"))
   {
@@ -163,18 +159,14 @@ static void _error_func_dispatch(GPContext *context, const char *format, va_list
   }
 }
 
-static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
+static void _status_func_dispatch(GPContext *context, const char *text, void *data)
 {
-  char buffer[4096];
-  vsprintf( buffer, format, args );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s\n",buffer);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s\n",text);
 }
 
-static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
+static void _message_func_dispatch(GPContext *context, const char *text, void *data)
 {
-  char buffer[4096];
-  vsprintf( buffer, format, args );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",buffer);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",text);
 }
 
 
