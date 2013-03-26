@@ -1391,7 +1391,7 @@ void reload_defaults(dt_iop_module_t *module)
       if(g->profiles[i-1]->iso == iso)
       {
         g->interpolated = *(g->profiles[i-1]);
-        strncpy(name, g->interpolated.name, 512);
+        snprintf(name, 512, _("found match for iso %d"), g->profiles[i-1]->iso);
         break;
       }
       if(g->profiles[i]->iso == iso)
