@@ -765,6 +765,22 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
   }
+
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if (high_quality_processing)
+  {
+    gtk_widget_set_no_show_all(g->cbox1, FALSE);
+    gtk_widget_set_visible(g->cbox1, TRUE);
+    gtk_widget_set_no_show_all(g->cbox4, FALSE);
+    gtk_widget_set_visible(g->cbox4, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(g->cbox1, TRUE);
+    gtk_widget_set_visible(g->cbox1, FALSE);
+    gtk_widget_set_no_show_all(g->cbox4, TRUE);
+    gtk_widget_set_visible(g->cbox4, FALSE);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
