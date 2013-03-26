@@ -166,8 +166,11 @@ luaA_Type dt_lua_init_type_internal(lua_State* L, char*type_name,const char ** l
   luaA_Type my_type = luaA_type_add(type_name,size); 
   luaL_newmetatable(L,type_name);
 
+  lua_pushstring(L,type_name);
+  lua_setfield(L,-2,"__luaA_TypeName");
+
   lua_pushnumber(L,my_type);
-	lua_setfield(L,-2,"__luaA_Type");
+  lua_setfield(L,-2,"__luaA_Type");
 
 
   luaA_conversion_typeid(my_type,autotype_full_pushfunc,autotype_tofunc);
