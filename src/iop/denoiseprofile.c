@@ -1556,6 +1556,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->radius,   p->radius);
   dt_bauhaus_slider_set(g->strength, p->strength);
   dt_bauhaus_combobox_set(g->mode,   p->mode);
+  dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
     gtk_widget_set_visible(g->radius, FALSE);
   else
