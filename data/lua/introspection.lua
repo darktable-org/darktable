@@ -4,6 +4,7 @@ local dt = require "darktable"
 local debug = require "debug"
 local introspect_internal
 local M = {debug = false}
+local depth = 0;
 
 local function get_userdata_type(object)
 	if type(object) ~= "userdata" then return end
@@ -35,10 +36,11 @@ local function expand_mode(object,indent,name,...)
 	if ancestors[2] == dt.images and next(dt.images()) ~= name then return "skipped" end
 	if object == dt.gui.selection then return "constructor" end
 	if get_userdata_type(ancestors[1]) == "dt_image_t" and name == "get_history" then return "member constructor" end
-	
-
-	if ancestors[1] == debug.getregistry() then return "skipped" end
-
+	for _,v in pairs(ancestors) do
+		if v == object and get_userdata_type(v) == get_userdata_type(object) then
+			return "recursion"
+		end
+	end
 
 	return obj_expand_mode
 end
@@ -57,6 +59,9 @@ end
 introspect_body = function (object,indent,name,obj_expand_mode,...)
 	local result = ""
 	local ancestors ={...}
+	if #indent > 10*#indent_string then
+		return "max depth\n"
+	end
 	if obj_expand_mode == "nil" then
 		return "\n"
 	elseif obj_expand_mode == "number" then
@@ -115,7 +120,10 @@ introspect_body = function (object,indent,name,obj_expand_mode,...)
 		return result;
 	elseif obj_expand_mode == "skipped" then
 		return ": skipped\n"
+	elseif obj_expand_mode == "recursion" then
+		return ": skipped (recursion)\n"
 	end
+	error("unknown type of object")
 
 end
 
