@@ -410,7 +410,6 @@ spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
   memset(p->hist,0, sizeof(float)*HISTN);
   memset(p->mean,0, sizeof(float)*MAXN*2);
   memset(p->var,0,  sizeof(float)*MAXN*2);
-  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   dt_control_queue_redraw_widget(self->widget);
 }
 
@@ -434,7 +433,6 @@ static void
 apply_button_pressed (GtkButton *button, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
-  self->request_color_pick = 1;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   memcpy(p, &(g->flowback), self->params_size);
@@ -448,7 +446,6 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   // this is called whenever the pipeline finishes processing (i.e. after a color pick)
   if(darktable.gui->reset) return FALSE;
-  // if(!self->request_color_pick) return FALSE;
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   if(p->flag == ACQUIRED)
   {
