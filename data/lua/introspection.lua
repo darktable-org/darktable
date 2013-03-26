@@ -4,28 +4,38 @@ local dt = require "darktable"
 local debug = require "debug"
 local introspect_internal
 local M = {debug = false}
+
+local function get_userdata_type(object)
+	if type(object) ~= "userdata" then return end
+	local metatable = getmetatable(object);
+	if not metatable then return end
+	return metatable.__luaA_TypeName
+
+end
+
 local function header(object,indent,name,obj_expand_mode)
 	if name == nil then name = "" end
 	local obj_type = type(object)
 	local complement =""
 	if(obj_expand_mode == "constructor") then complement = complement..",constructor" end
-	if(obj_expand_mode == "userdata") then 
-		local metatable = getmetatable(object);
-		if metatable and metatable.__luaA_TypeName then
-			complement = complement..","..metatable.__luaA_TypeName
-		end
+	if(obj_expand_mode == "member constructor") then complement = complement..",member constructor" end
+	local user_type = get_userdata_type(object);
+	if user_type then
+		complement = complement..","..user_type
 	end
 	return indent..name.." ("..obj_type..complement..")"
 end
 
 local function expand_mode(object,indent,name,...)
 	local obj_expand_mode = type(object)
-	ancestors ={...}
+	local ancestors ={...}
 	if ancestors[2] == dt.modules then return "constructor" end
 	if object == dt.styles.members then return "constructor" end
 	if object == dt.images then return "constructor" end
 	if ancestors[2] == dt.images and next(dt.images()) ~= name then return "skipped" end
 	if object == dt.gui.selection then return "constructor" end
+	if get_userdata_type(ancestors[1]) == "dt_image_t" and name == "get_history" then return "member constructor" end
+	
 
 	if ancestors[1] == debug.getregistry() then return "skipped" end
 
@@ -33,7 +43,7 @@ local function expand_mode(object,indent,name,...)
 	return obj_expand_mode
 end
 
-function introspect_metatable(object,indent,name,obj_expand_mode,...)
+local function introspect_metatable(object,indent,name,obj_expand_mode,...)
 	if not M.debug then return "" end
 	if name == nil then name = "(unknown)" end
 	local metatable = getmetatable(object);
@@ -46,6 +56,7 @@ end
 
 introspect_body = function (object,indent,name,obj_expand_mode,...)
 	local result = ""
+	local ancestors ={...}
 	if obj_expand_mode == "nil" then
 		return "\n"
 	elseif obj_expand_mode == "number" then
@@ -92,6 +103,12 @@ introspect_body = function (object,indent,name,obj_expand_mode,...)
 		
 	elseif obj_expand_mode == "constructor" then
 		local son = object()
+		local son_type = expand_mode(son,indent,name,object,...)
+		result = " : "..header(son,"","object",son_type)
+		result = result..introspect_body(son,indent..indent_string,nil,son_type,object,...)
+		return result;
+	elseif obj_expand_mode == "member constructor" then
+		local son = object(ancestors[1])
 		local son_type = expand_mode(son,indent,name,object,...)
 		result = " : "..header(son,"","object",son_type)
 		result = result..introspect_body(son,indent..indent_string,nil,son_type,object,...)
