@@ -103,16 +103,27 @@ void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const 
 
 static int logid=0;
 
+void _gphoto_log25(GPLogLevel level, const char *domain, const char *log, void *data)
+{
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %s %s\n",domain,log);
+}
+
+#ifndef HAVE_GPHOTO_25_OR_NEWER
 void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data)
 {
   char log[4096]= {0};
   vsprintf(log,format,args);
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] %s %s\n",domain,log);
+  _gphoto_log25(level, domain, log, data);
 }
+#endif
 
 void _enable_debug()
 {
+#ifdef HAVE_GPHOTO_25_OR_NEWER
+  logid=gp_log_add_func(GP_LOG_DATA,(GPLogFunc)_gphoto_log25,NULL);
+#else
   logid=gp_log_add_func(GP_LOG_DATA,(GPLogFunc)_gphoto_log,NULL);
+#endif
 }
 void _disable_debug()
 {
@@ -128,15 +139,13 @@ static void _idle_func_dispatch(GPContext *context, void *data)
   gdk_threads_leave();
 }
 
-
-static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
+static void _error_func_dispatch25(GPContext *context, const char *text, void *data)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)data;
-  char buffer[4096];
-  vsprintf (buffer, format, args );
-  dt_print (DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",buffer);
 
-  if (strstr (buffer,"PTP"))
+  dt_print (DT_DEBUG_CAMCTL,"[camera_control] gphoto2 error: %s\n",text);
+
+  if (strstr (text,"PTP"))
   {
 
     /* remove camera for camctl camera list */
@@ -153,20 +162,40 @@ static void _error_func_dispatch(GPContext *context, const char *format, va_list
   }
 }
 
+static void _status_func_dispatch25(GPContext *context, const char *text, void *data)
+{
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s\n",text);
+}
+
+static void _message_func_dispatch25(GPContext *context, const char *text, void *data)
+{
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",text);
+}
+
+#ifndef HAVE_GPHOTO_25_OR_NEWER
 static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
 {
   char buffer[4096];
   vsprintf( buffer, format, args );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 status: %s\n",buffer);
+
+  _status_func_dispatch25(context, buffer, data);
+}
+
+static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
+{
+  char buffer[4096];
+  vsprintf (buffer, format, args );
+
+  _error_func_dispatch25(context, buffer, data);
 }
 
 static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
 {
   char buffer[4096];
   vsprintf( buffer, format, args );
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] gphoto2 message: %s\n",buffer);
+  _message_func_dispatch25(context, buffer, data);
 }
-
+#endif
 
 static gboolean _camera_timeout_job(gpointer data)
 {
@@ -444,9 +473,16 @@ dt_camctl_t *dt_camctl_new()
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
   gp_context_set_idle_func( camctl->gpcontext , (GPContextIdleFunc)_idle_func_dispatch, camctl );
+
+#ifdef HAVE_GPHOTO_25_OR_NEWER
+  gp_context_set_status_func( camctl->gpcontext , (GPContextStatusFunc)_status_func_dispatch25, camctl );
+  gp_context_set_error_func( camctl->gpcontext , (GPContextErrorFunc)_error_func_dispatch25, camctl );
+  gp_context_set_message_func( camctl->gpcontext , (GPContextMessageFunc)_message_func_dispatch25, camctl );
+#else
   gp_context_set_status_func( camctl->gpcontext , (GPContextStatusFunc)_status_func_dispatch, camctl );
   gp_context_set_error_func( camctl->gpcontext , (GPContextErrorFunc)_error_func_dispatch, camctl );
   gp_context_set_message_func( camctl->gpcontext , (GPContextMessageFunc)_message_func_dispatch, camctl );
+#endif
 
   // Load all camera drivers we know...
   gp_abilities_list_new( &camctl->gpcams );

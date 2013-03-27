@@ -261,6 +261,19 @@ endif(USE_OPENCL)
 if(GPHOTO2_FOUND)
   set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
   add_definitions("-DHAVE_GPHOTO2")
+
+  # Gphoto 2.5 changed the prototype of a set of callback functions.
+  # The interface change makes it necessary to detect the version here,
+  # as it's not possible to do in code. Argh.
+  # Diff: http://sourceforge.net/p/gphoto/code/12735/
+  #
+  # This workaround may be removed when darktable no longer needs
+  # to support gphoto2 < 2.5.0.
+  #
+  if(${GPHOTO2_VERSION_STRING} VERSION_LESS "2.5")
+  else()
+    add_definitions("-DHAVE_GPHOTO_25_OR_NEWER")
+  endif()
 endif(GPHOTO2_FOUND)
 
 
