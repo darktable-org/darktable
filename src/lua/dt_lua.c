@@ -49,6 +49,13 @@ static void debug_table(lua_State * L,int t) {
 }
 #endif
 
+
+static int dump_error(lua_State *L) {
+	const char * message = lua_tostring(L,-1);
+	luaL_traceback(L,L,message,0);
+	return 1;
+}
+
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   int result;
   if(loadresult){
@@ -57,17 +64,20 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
     lua_pop(L,1);
     return 0;
   }
+  lua_pushcfunction(L,dump_error);
+  lua_insert(L,lua_gettop(L)-(nargs+1));
   result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
-  if(lua_pcall(L, nargs, nresults,0)) {
+  if(lua_pcall(L, nargs, nresults,result)) {
     dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
-    lua_pop(L,1);
+    lua_pop(L,2);
     if(nresults !=LUA_MULTRET) {
       for(int i= 0 ; i < nresults; i++) {
         lua_pushnil(L);
       }
     }
   }
+  lua_remove(L,result); // remove the error handler
   result= lua_gettop(L) -result;
 
   lua_gc(L,LUA_GCCOLLECT,0);
