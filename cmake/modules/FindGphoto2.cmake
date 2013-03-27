@@ -1,9 +1,14 @@
 # - Find the native sqlite3 includes and library
 #
 # This module defines
-#  GPHOTO2_INCLUDE_DIR, where to find sqlite3.h, etc.
-#  GPHOTO2_LIBRARIES, the libraries to link against to use sqlite3.
-#  GPHOTO2_FOUND, If false, do not try to use sqlite3.
+#  GPHOTO2_INCLUDE_DIR, where to find libgphoto2 header files
+#  GPHOTO2_LIBRARIES, the libraries to link against to use libgphoto2
+#  GPHOTO2_FOUND, If false, do not try to use libgphoto2.
+#  GPHOTO2_VERSION_STRING, e.g. 2.4.14
+#  GPHOTO2_VERSION_MAJOR, e.g. 2
+#  GPHOTO2_VERSION_MINOR, e.g. 4
+#  GPHOTO2_VERSION_PATCH, e.g. 14
+#
 # also defined, but not for general use are
 #  GPHOTO2_LIBRARY, where to find the sqlite3 library.
 
@@ -23,6 +28,17 @@ find_library(GPHOTO2_LIBRARY NAMES ${GPHOTO2_NAMES} )
 find_library(GPHOTO2_PORT_LIBRARY NAMES ${GPHOTO2_PORT_NAMES} )
 mark_as_advanced(GPHOTO2_LIBRARY)
 mark_as_advanced(GPHOTO2_PORT_LIBRARY)
+
+# Detect libgphoto2 version
+FIND_PROGRAM(GPHOTO2CONFIG_EXECUTABLE NAMES gphoto2-config)
+IF(GPHOTO2CONFIG_EXECUTABLE)
+  EXEC_PROGRAM(${GPHOTO2CONFIG_EXECUTABLE} ARGS --version RETURN_VALUE _return_VALUE OUTPUT_VARIABLE GPHOTO2_VERSION)
+  string(REGEX REPLACE "^.*libgphoto2 ([0-9]+).*$" "\\1" GPHOTO2_VERSION_MAJOR "${GPHOTO2_VERSION}")
+  string(REGEX REPLACE "^.*libgphoto2 [0-9]+\\.([0-9]+).*$" "\\1" GPHOTO2_VERSION_MINOR  "${GPHOTO2_VERSION}")
+  string(REGEX REPLACE "^.*libgphoto2 [0-9]+\\.[0-9]+\\.([0-9]+).*$" "\\1" GPHOTO2_VERSION_PATCH "${GPHOTO2_VERSION}")
+
+  set(GPHOTO2_VERSION_STRING "${GPHOTO2_VERSION_MAJOR}.${GPHOTO2_VERSION_MINOR}.${GPHOTO2_VERSION_PATCH}")
+ENDIF(GPHOTO2CONFIG_EXECUTABLE)
 
 # handle the QUIETLY and REQUIRED arguments and set GPHOTO2_FOUND to TRUE if
 # all listed variables are TRUE
