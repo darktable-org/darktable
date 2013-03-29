@@ -52,7 +52,6 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->average_delay = DT_DEV_AVERAGE_DELAY_START;
   dev->preview_average_delay = DT_DEV_PREVIEW_AVERAGE_DELAY_START;
   dev->gui_leaving = 0;
-  dev->gui_switch_images = 0;
   dev->gui_synch = 0;
   dt_pthread_mutex_init(&dev->history_mutex, NULL);
   dev->history_end = 0;
@@ -144,7 +143,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dev->pipe->processing || dev->gui_switch_images) return;
+  if(/*dev->image_loading ||*/ !dev->gui_attached || dev->pipe->processing) return;
   dt_job_t job;
   dt_dev_process_image_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
@@ -153,7 +152,7 @@ void dt_dev_process_image(dt_develop_t *dev)
 
 void dt_dev_process_preview(dt_develop_t *dev)
 {
-  if(!dev->gui_attached || dev->gui_switch_images) return;
+  if(!dev->gui_attached) return;
   dt_job_t job;
   dt_dev_process_preview_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_3);
@@ -213,7 +212,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
 
   // always process the whole downsampled mipf buffer, to allow for fast scrolling and mip4 write-through.
 restart:
-  if(dev->gui_leaving || dev->gui_switch_images)
+  if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
@@ -294,7 +293,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
 
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
 restart:
-  if(dev->gui_leaving || dev->gui_switch_images)
+  if(dev->gui_leaving)
   {
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();

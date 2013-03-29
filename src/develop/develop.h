@@ -54,7 +54,6 @@ typedef struct dt_develop_t
 {
   int32_t gui_attached; // != 0 if the gui should be notified of changes in hist stack and modules should be gui_init'ed.
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
-  int32_t gui_switch_images; // set by the view if images has been switched (and thus pixelpipes can't be used due to history changes)
   int32_t gui_synch; // set by the render threads if gui_update should be called in the modules.
   int32_t image_loading, image_dirty, first_load;
   int32_t image_force_reload;

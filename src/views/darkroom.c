@@ -494,16 +494,6 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
-  // set flag on dev to make sure these don't restart:
-  dev->gui_switch_images = 1;
-  // trigger interruption to drain pipes
-  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-  // now wait for pipe to finish:
-  while(dev->pipe->processing) sched_yield();
-  while(dev->preview_pipe->processing) sched_yield();
-  // keep flag (gui_switch_images) set and only reset after we're done
-
   // get last active plugin, make sure focus out is called:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   dt_iop_request_focus(NULL);
@@ -651,9 +641,6 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
-
-  // release pixel pipes:
-  dev->gui_switch_images = 0;
 
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
