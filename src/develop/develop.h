@@ -61,6 +61,7 @@ typedef struct dt_develop_t
 
   // image processing pipeline with caching
   struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
+  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex; // these are locked while the pipes are still in use
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
