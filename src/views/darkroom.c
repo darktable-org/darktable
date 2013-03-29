@@ -484,6 +484,21 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // make sure we can destroy and re-setup the pixel pipes.
+  // we acquire the pipe locks, which will block the processing threads
+  // in darkroom mode before they touch the pipes (init buffers etc).
+  // we don't block here, since we hold the gdk lock, which will
+  // result in circular locking when background threads emit signals
+  // which in turn try to acquire the gdk lock.
+  //
+  // worst case, it'll drop some change image events. sorry.
+  if(dt_pthread_mutex_trylock(&dev->preview_pipe_mutex)) return;
+  if(dt_pthread_mutex_trylock(&dev->pipe_mutex))
+  {
+    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+    return;
+  }
+
   // get last active plugin, make sure focus out is called:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   dt_iop_request_focus(NULL);
@@ -560,6 +575,10 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+  // release pixel pipe mutices
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+  dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }
 
 static void
