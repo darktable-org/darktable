@@ -68,6 +68,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->preview_input_changed = 0;
 
   dev->pipe = dev->preview_pipe = NULL;
+  dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
+  dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
@@ -108,6 +110,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
 {
   if(!dev) return;
   // image_cache does not have to be unref'd, this is done outside develop module.
+  dt_pthread_mutex_destroy(&dev->pipe_mutex);
+  dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);
@@ -143,7 +147,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
 void dt_dev_process_image(dt_develop_t *dev)
 {
-  if(/*dev->image_loading ||*/ !dev->gui_attached || dev->pipe->processing) return;
+  if(!dev->gui_attached || dev->pipe->processing) return;
   dt_job_t job;
   dt_dev_process_image_job_init(&job, dev);
   int err = dt_control_add_job_res(darktable.control, &job, DT_CTL_WORKER_2);
@@ -181,6 +185,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
     return;
   }
 
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
   dt_control_log_busy_enter();
   dev->preview_pipe->input_timestamp = dev->timestamp;
   dev->preview_dirty = 1;
@@ -190,6 +195,7 @@ void dt_dev_process_preview_job(dt_develop_t *dev)
   if(!buf.buf)
   {
     dt_control_log_busy_leave();
+    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     return; // not loaded yet. load will issue a gtk redraw on completion, which in turn will trigger us again later.
   }
   // init pixel pipeline for preview.
@@ -215,6 +221,7 @@ restart:
   if(dev->gui_leaving)
   {
     dt_control_log_busy_leave();
+    dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return;
   }
@@ -228,6 +235,7 @@ restart:
     if(dev->preview_loading || dev->preview_input_changed)
     {
       dt_control_log_busy_leave();
+      dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       return;
     }
@@ -241,11 +249,13 @@ restart:
   if(dev->gui_attached)
     dt_control_queue_redraw();
   dt_control_log_busy_leave();
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
 {
+  dt_pthread_mutex_lock(&dev->pipe_mutex);
   dt_control_log_busy_enter();
   // let gui know to draw preview instead of us, if it's there:
   dev->image_dirty = 1;
@@ -264,7 +274,12 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_image_cache_read_release(darktable.image_cache, img);
 
   // failed to load raw?
-  if(!buf.buf) return;
+  if(!buf.buf)
+  {
+    dt_control_log_busy_leave();
+    dt_pthread_mutex_unlock(&dev->pipe_mutex);
+    return;
+  }
 
   dt_dev_pixelpipe_set_input(dev->pipe, dev, (float *)buf.buf, buf.width, buf.height, 1.0);
 
@@ -297,6 +312,7 @@ restart:
   {
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     dt_control_log_busy_leave();
+    dt_pthread_mutex_unlock(&dev->pipe_mutex);
     return;
   }
   dev->pipe->input_timestamp = dev->timestamp;
@@ -321,6 +337,7 @@ restart:
     {
       dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
       dt_control_log_busy_leave();
+      dt_pthread_mutex_unlock(&dev->pipe_mutex);
       return;
     }
     // or because the pipeline changed?
@@ -341,6 +358,7 @@ restart:
   if(dev->gui_attached)
     dt_control_queue_redraw();
   dt_control_log_busy_leave();
+  dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }
 
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
