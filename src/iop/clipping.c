@@ -180,34 +180,9 @@ int legacy_params (dt_iop_module_t *self, const void *const old_params, const in
     n->k_apply = o->k_apply;
     n->crop_auto = o->crop_auto;
   }
-    
-  //and now we try to "guess" clipping ratio
-  //  if no clipping yet, use default aspect ratio
-  if (!self->dev) n->ratio_d=0, n->ratio_n=0;
-  else if (fabsf(n->cw) == 1.0 && n->cx == 0.0 && fabsf(n->ch) == 1.0 && n->cy == 0.0) n->ratio_d=-1, n->ratio_n=-1;
-  else
-  {
-    const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-    float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(n->cw) - n->cx)) /
-      ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(n->ch) - n->cy));
-    float ri = self->dev->image_storage.width / (float)self->dev->image_storage.height;
 
-    float prec = 0.0003f;
-    if (fabsf(whratio-3.0f/2.0f)<prec) n->ratio_d=3, n->ratio_n=2;
-    else if (fabsf(whratio-3.0f/2.0f)<prec) n->ratio_d=3, n->ratio_n=2;
-    else if (fabsf(whratio-2.0f/1.0f)<prec) n->ratio_d=2, n->ratio_n=1;
-    else if (fabsf(whratio-7.0f/5.0f)<prec) n->ratio_d=7, n->ratio_n=5;
-    else if (fabsf(whratio-4.0f/3.0f)<prec) n->ratio_d=4, n->ratio_n=3;
-    else if (fabsf(whratio-5.0f/4.0f)<prec) n->ratio_d=5, n->ratio_n=4;
-    else if (fabsf(whratio-1.0f/1.0f)<prec) n->ratio_d=1, n->ratio_n=1;
-    else if (fabsf(whratio-16.0f/9.0f)<prec) n->ratio_d=16, n->ratio_n=9;
-    else if (fabsf(whratio-16.0f/10.0f)<prec) n->ratio_d=16, n->ratio_n=10;
-    else if (fabsf(whratio-244.5f/203.2f)<prec) n->ratio_d=2445, n->ratio_n=2032;
-    else if (fabsf(whratio-sqrtf(2.0))<prec) n->ratio_d=14142136, n->ratio_n=10000000;
-    else if (fabsf(whratio-PHI)<prec) n->ratio_d=16180340, n->ratio_n=10000000;
-    else if (fabsf(whratio-ri)<prec) n->ratio_d=1, n->ratio_n=0;
-    else n->ratio_d=0, n->ratio_n=0;
-  }
+  // will be computed later, -2 here is used to detect uninitialized value, -1 is already used for no clipping.
+  n->ratio_d = n->ratio_n = -2;
 
   return 0;
 }
@@ -1209,7 +1184,36 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 static float _ratio_get_aspect(dt_iop_module_t *self)
 {
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
-  
+
+  // if we do not have yet computed the aspect ratio, let's do it now
+  if (p->ratio_d == -2 && p->ratio_n == -2)
+  {
+    if (fabsf(p->cw) == 1.0 && p->cx == 0.0 && fabsf(p->ch) == 1.0 && p->cy == 0.0) p->ratio_d=-1, p->ratio_n=-1;
+    else
+    {
+      const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
+        ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+      float ri = self->dev->image_storage.width / (float)self->dev->image_storage.height;
+
+      float prec = 0.0003f;
+      if (fabsf(whratio-3.0f/2.0f)<prec) p->ratio_d=3, p->ratio_n=2;
+      else if (fabsf(whratio-3.0f/2.0f)<prec) p->ratio_d=3, p->ratio_n=2;
+      else if (fabsf(whratio-2.0f/1.0f)<prec) p->ratio_d=2, p->ratio_n=1;
+      else if (fabsf(whratio-7.0f/5.0f)<prec) p->ratio_d=7, p->ratio_n=5;
+      else if (fabsf(whratio-4.0f/3.0f)<prec) p->ratio_d=4, p->ratio_n=3;
+      else if (fabsf(whratio-5.0f/4.0f)<prec) p->ratio_d=5, p->ratio_n=4;
+      else if (fabsf(whratio-1.0f/1.0f)<prec) p->ratio_d=1, p->ratio_n=1;
+      else if (fabsf(whratio-16.0f/9.0f)<prec) p->ratio_d=16, p->ratio_n=9;
+      else if (fabsf(whratio-16.0f/10.0f)<prec) p->ratio_d=16, p->ratio_n=10;
+      else if (fabsf(whratio-244.5f/203.2f)<prec) p->ratio_d=2445, p->ratio_n=2032;
+      else if (fabsf(whratio-sqrtf(2.0))<prec) p->ratio_d=14142136, p->ratio_n=10000000;
+      else if (fabsf(whratio-PHI)<prec) p->ratio_d=16180340, p->ratio_n=10000000;
+      else if (fabsf(whratio-ri)<prec) p->ratio_d=1, p->ratio_n=0;
+      else p->ratio_d=0, p->ratio_n=0;
+    }
+  }
+
   if (p->ratio_d==0 && p->ratio_n==0) return -1.0f;
   float d=1.0f, n=1.0f;
   if (p->ratio_n==0) d=copysign(self->dev->image_storage.width,p->ratio_d), n=self->dev->image_storage.height;
@@ -1489,6 +1493,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   //  set aspect ratio based on the current image, if not found let's default
   //  to free aspect.
+
+  if (p->ratio_d==-2 && p->ratio_n==-2) _ratio_get_aspect(self);
 
   int act = 0;
   if (p->ratio_d==-1 && p->ratio_n==-1)
