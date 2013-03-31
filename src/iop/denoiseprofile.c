@@ -112,9 +112,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     // not set the exact ISO on purpose instead of the "found match" - they probably still want autodetection!)
     if(!memcmp(interpolated.a, o->a, sizeof(float)*3) && !memcmp(interpolated.b, o->b, sizeof(float)*3))
     {
-      // set the params a[0] and b[0] to -1.0 to signal the autodetection
+      // set the param a[0] to -1.0 to signal the autodetection
       n->a[0] = -1.0;
-      n->b[0] = -1.0;
     }
     return 0;
   }
@@ -1415,7 +1414,6 @@ void reload_defaults(dt_iop_module_t *module)
         g->interpolated = *(g->profiles[i-1]);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("found match for iso %d"), g->profiles[i-1]->iso);
         break;
       }
@@ -1424,7 +1422,6 @@ void reload_defaults(dt_iop_module_t *module)
         g->interpolated = *(g->profiles[i]);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("found match for iso %d"), g->profiles[i]->iso);
         break;
       }
@@ -1434,7 +1431,6 @@ void reload_defaults(dt_iop_module_t *module)
         dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
         break;
       }
@@ -1552,9 +1548,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   // copy everything first and make some changes later
   memcpy(d, p, sizeof(*d));
 
-  // compare if a[0] and b[0] in params are set to "magic value" -1.0 for autodetection
-  if (   p->a[0] < (-1.0+FLT_EPSILON) && p->a[0] > (-1.0-FLT_EPSILON)
-      && p->b[0] < (-1.0+FLT_EPSILON) && p->b[0] > (-1.0-FLT_EPSILON))
+  // compare if a[0] in params is set to "magic value" -1.0 for autodetection
+  if ( p->a[0] == -1.0 )
   {
     // autodetect matching profile again, the same way as detecting their names,
     // this is partially duplicated code and data because we are not allowed to access
@@ -1637,8 +1632,7 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->radius, FALSE);
   else
     gtk_widget_set_visible(g->radius, TRUE);
-  if (   p->a[0] < (-1.0+FLT_EPSILON) && p->a[0] > (-1.0-FLT_EPSILON)
-      && p->b[0] < (-1.0+FLT_EPSILON) && p->b[0] > (-1.0-FLT_EPSILON))
+  if ( p->a[0] == -1.0 )
   {
     dt_bauhaus_combobox_set(g->profile, 0);
   }
