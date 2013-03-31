@@ -42,7 +42,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(2)
+DT_MODULE(3)
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
@@ -84,6 +84,8 @@ typedef struct dt_iop_denoiseprofile_global_data_t
 }
 dt_iop_denoiseprofile_global_data_t;
 
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
@@ -94,6 +96,26 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     // same old but one more parameter
     memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
     n->mode = MODE_NLMEANS;
+    return 0;
+  }
+  if ((old_version == 1 || old_version == 2) && new_version == 3)
+  {
+    dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
+    dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
+    // one more parameter and changed parameters in case we autodetected a profile
+    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
+    n->mode = MODE_NLMEANS;
+    // autodetect current profile:
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    // if the profile in old_version is an autodetected one (this would mean a+b params match the interpolated one, AND
+    // the profile is actually the first selected one - however we can only detect the params, but most people did probably
+    // not set the exact ISO on purpose instead of the "found match" - they probably still want autodetection!)
+    if(!memcmp(interpolated.a, o->a, sizeof(float)*3) && !memcmp(interpolated.b, o->b, sizeof(float)*3))
+    {
+      // set the params a[0] and b[0] to -1.0 to signal the autodetection
+      n->a[0] = -1.0;
+      n->b[0] = -1.0;
+    }
     return 0;
   }
   return 1;
@@ -1391,12 +1413,18 @@ void reload_defaults(dt_iop_module_t *module)
       if(g->profiles[i-1]->iso == iso)
       {
         g->interpolated = *(g->profiles[i-1]);
+        // signal later autodetection in commit_params:
+        g->interpolated.a[0] = -1.0;
+        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("found match for iso %d"), g->profiles[i-1]->iso);
         break;
       }
       if(g->profiles[i]->iso == iso)
       {
         g->interpolated = *(g->profiles[i]);
+        // signal later autodetection in commit_params:
+        g->interpolated.a[0] = -1.0;
+        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("found match for iso %d"), g->profiles[i]->iso);
         break;
       }
@@ -1404,6 +1432,9 @@ void reload_defaults(dt_iop_module_t *module)
          g->profiles[i]->iso > iso)
       {
         dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
+        // signal later autodetection in commit_params:
+        g->interpolated.a[0] = -1.0;
+        g->interpolated.b[0] = -1.0;
         snprintf(name, 512, _("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
         break;
       }
@@ -1483,13 +1514,58 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
+{
+  const dt_noiseprofile_t *profiles[MAX_PROFILES];
+  int profile_cnt = dt_noiseprofile_get_matching(&self->dev->image_storage, profiles, MAX_PROFILES);
+  dt_noiseprofile_t interpolated = dt_noiseprofiles[0]; // default to generic poissonian
+
+  const int iso = self->dev->image_storage.exif_iso;
+  for(int i=1;i<profile_cnt;i++)
+  {
+    if(profiles[i-1]->iso == iso)
+    {
+      interpolated = *(profiles[i-1]);
+      break;
+    }
+    if(profiles[i]->iso == iso)
+    {
+      interpolated = *(profiles[i]);
+      break;
+    }
+    if(profiles[i-1]->iso < iso &&
+       profiles[i]->iso > iso)
+    {
+      dt_noiseprofile_interpolate(profiles[i-1], profiles[i], &interpolated);
+      break;
+    }
+  }
+  return interpolated;
+}
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)params;
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+
+  // copy everything first and make some changes later
   memcpy(d, p, sizeof(*d));
+
+  // compare if a[0] and b[0] in params are set to "magic value" -1.0 for autodetection
+  if (   p->a[0] < (-1.0+FLT_EPSILON) && p->a[0] > (-1.0-FLT_EPSILON)
+      && p->b[0] < (-1.0+FLT_EPSILON) && p->b[0] > (-1.0-FLT_EPSILON))
+  {
+    // autodetect matching profile again, the same way as detecting their names,
+    // this is partially duplicated code and data because we are not allowed to access
+    // gui_data here ..
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    for(int k=0;k<3;k++)
+    {
+      d->a[k] = interpolated.a[k];
+      d->b[k] = interpolated.b[k];
+    }
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1561,7 +1637,8 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->radius, FALSE);
   else
     gtk_widget_set_visible(g->radius, TRUE);
-  if(!memcmp(g->interpolated.a, p->a, sizeof(float)*3) && !memcmp(g->interpolated.b, p->b, sizeof(float)*3))
+  if (   p->a[0] < (-1.0+FLT_EPSILON) && p->a[0] > (-1.0-FLT_EPSILON)
+      && p->b[0] < (-1.0+FLT_EPSILON) && p->b[0] > (-1.0-FLT_EPSILON))
   {
     dt_bauhaus_combobox_set(g->profile, 0);
   }
