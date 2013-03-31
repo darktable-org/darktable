@@ -89,23 +89,20 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 2)
-  {
-    dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
-    dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
-    // same old but one more parameter
-    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
-    n->mode = MODE_NLMEANS;
-    return 0;
-  }
   if ((old_version == 1 || old_version == 2) && new_version == 3)
   {
     dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
     dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
     // one more parameter and changed parameters in case we autodetected a profile
     memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
-    n->mode = MODE_NLMEANS;
+    if (old_version == 1 && new_version == 3) n->mode = MODE_NLMEANS;
     // autodetect current profile:
+    if (!self->dev)
+    {
+      // we are probably handling a style or preset, do nothing for them, we cant do anything to detect if
+      // autodetection was used or not
+      return 0;
+    }
     dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
     // if the profile in old_version is an autodetected one (this would mean a+b params match the interpolated one, AND
     // the profile is actually the first selected one - however we can only detect the params, but most people did probably
