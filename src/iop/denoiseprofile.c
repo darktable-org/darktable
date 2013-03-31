@@ -93,9 +93,13 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
     dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
-    // one more parameter and changed parameters in case we autodetected a profile
-    memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
-    if (old_version == 1 && new_version == 3) n->mode = MODE_NLMEANS;
+    if (old_version == 1) {
+        // one more parameter and changed parameters in case we autodetected a profile
+        memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
+        n->mode = MODE_NLMEANS;
+    } else {
+        memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t));
+    }
     // autodetect current profile:
     if (!self->dev)
     {
