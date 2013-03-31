@@ -106,6 +106,12 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
     n->mode = MODE_NLMEANS;
     // autodetect current profile:
+    if (!self->dev)
+    {
+      // we are probably handling a style or preset, do nothing for them, we cant do anything to detect if
+      // autodetection was used or not
+      return 0;
+    }
     dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
     // if the profile in old_version is an autodetected one (this would mean a+b params match the interpolated one, AND
     // the profile is actually the first selected one - however we can only detect the params, but most people did probably
