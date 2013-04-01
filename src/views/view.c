@@ -398,6 +398,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     cairo_rectangle(cr, 0, 0, v->width, v->height);
     cairo_clip(cr);
     cairo_new_path(cr);
+    cairo_save(cr);
     float px = pointerx, py = pointery;
     if(pointery > v->height)
     {
@@ -406,6 +407,7 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     }
     v->expose(v, cr, v->width, v->height, px, py);
 
+    cairo_restore(cr);
     /* expose plugins */
     GList *plugins = g_list_last(darktable.lib->plugins);
     while (plugins)
