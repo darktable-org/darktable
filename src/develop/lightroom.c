@@ -982,7 +982,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
 
   entryNode = entryNode->xmlChildrenNode;
-  entryNode = entryNode->next;
+  if (entryNode) entryNode = entryNode->next;
 
   while (entryNode)
   {
