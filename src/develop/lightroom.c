@@ -467,6 +467,14 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
     xmlFree(value);
   }
+  else
+  {
+    xmlXPathFreeObject(xpathObj);
+    xmlXPathFreeContext(xpathCtx);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    g_free(pathname);
+    return;
+  }
 
   xmlXPathFreeObject(xpathObj);
   xmlXPathFreeContext(xpathCtx);
@@ -974,7 +982,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   //  Look for tags (subject/Bag/* and RetouchInfo/seq/*)
 
   entryNode = entryNode->xmlChildrenNode;
-  entryNode = entryNode->next;
+  if (entryNode) entryNode = entryNode->next;
 
   while (entryNode)
   {
