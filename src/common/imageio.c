@@ -798,20 +798,25 @@ dt_imageio_open(
   /* check if file is ldr using magic's */
   if (dt_imageio_is_ldr(filename))
     ret = dt_imageio_open_ldr(img, filename, a);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+
 #ifdef HAVE_RAWSPEED
-    ret = dt_imageio_open_rawspeed(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
+    ret = dt_imageio_open_rawspeed(img, filename, a);
 #endif
+
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_raw(img, filename, a);
+
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_hdr(img, filename, a);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
+
 #ifdef HAVE_GRAPHICSMAGICK
-    ret = dt_imageio_open_gm(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-#endif
+    ret = dt_imageio_open_gm(img, filename, a);
+#else
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
     ret = dt_imageio_open_ldr(img, filename, a);
+#endif
 
   img->flags &= ~DT_IMAGE_THUMBNAIL;
 
