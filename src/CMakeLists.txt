@@ -308,6 +308,19 @@ endif(USE_OPENCL)
 if(GPHOTO2_FOUND)
   set(SOURCES ${SOURCES} "common/camera_control.c" "control/jobs/camera_jobs.c" "gui/camera_import_dialog.c" )
   add_definitions("-DHAVE_GPHOTO2")
+
+  # Gphoto 2.5 changed the prototype of a set of callback functions.
+  # The interface change makes it necessary to detect the version here,
+  # as it's not possible to do in code. Argh.
+  # Diff: http://sourceforge.net/p/gphoto/code/12735/
+  #
+  # This workaround may be removed when darktable no longer needs
+  # to support gphoto2 < 2.5.0.
+  #
+  if(${GPHOTO2_VERSION_STRING} VERSION_LESS "2.5")
+  else()
+    add_definitions("-DHAVE_GPHOTO_25_OR_NEWER")
+  endif()
 endif(GPHOTO2_FOUND)
 
 
@@ -328,6 +341,15 @@ if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+
+  # gcc-4.8 build fails on unused local typedefs in gmacros.h:162
+  # to be removed when glib will get fixed
+  if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-local-typedefs")
+    endif()
+  endif()
 endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 if(NOT BINARY_PACKAGE_BUILD)

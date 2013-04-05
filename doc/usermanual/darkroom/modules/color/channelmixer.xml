@@ -1,12 +1,13 @@
-<sect3 status="draft" id="channel mixer"><title>Channel mixer</title>
+<sect3 status="final" id="channel mixer"><title>Channel mixer</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module is a powerful tool to manage channels. As entry, it manipulates red, green and blue channels.
-							As output, it uses red, green, blue or gray or hue, saturation, lightness. 				
+						<entry>This module is a powerful tool to manage channels. It accepts red, green and blue channels
+                                                       as an input. As output it provides red, green, blue, gray, hue, saturation and lightness
+                                                       channels.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/channelmixer.png" scalefit="1" width="80%" align="center" />
@@ -18,7 +19,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Select your output channel and then set the amount of each channel to feed the output channel.</para>			
+		<para>First select your output channel and then set the amount each input channel feeds into that output channel.</para>			
 	</sect4>
 	
 	<sect4><title>Examples</title>
@@ -31,17 +32,19 @@
 							<entry>
 								<graphic fileref="darkroom/modules/images/channelmixer_ex1.png" scalefit="1" width="60%" align="center" />
 							</entry>						
-							<entry><para>This is the original image use it as reference for the changes below...</para></entry>
+							<entry><para>For skin tones the blue channel tends to represent detail, with red tending
+                                                                     to also have smoother tones than green. Therefore tonal rendering is controlled
+                                                                     by how we blend of the three input channels.</para></entry>
 						</row>
 						<row>
 							<entry>
 								<graphic fileref="darkroom/modules/images/channelmixer_ex2.png" scalefit="1" width="60%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here we use gray as output and the following rgb mix: 0.9, 0.3, -0.3. What this does is to reduce blue colors in the mix which usally 
-								represents some details. We use some more red than green as the skin does contain a very even red tone and the results out of this
-								is a pretty smooth skin of the portrait.</para>
-								<para>Due to the images nature, I needed to lighten it up with 0.1 EV</para>
+								<para>Here a monochrome portrait is produced by simply selecting the grey channel as output.
+                                                                      A smooth skin tone is achieved by reducing the blue channels input and also emphasising
+                                                                      the red channels input relative to green. An RGB mix of 0.9, 0.3, -0.3 was used 
+                                                                      together with an 0.1 EV exposure increase to lighten the image.</para>
 							</entry>
 						</row>
 						<row>
@@ -49,8 +52,9 @@
 								<graphic fileref="darkroom/modules/images/channelmixer_ex3.png" scalefit="1" width="60%" align="center" />
 							</entry>						
 							<entry>
-								<para>In this example we use an rgb mix of 0.4, 0.75, -0.15. The difference with the previous example is that we use more green than red,
-								which brings some features back. We still reduce the blue channel in the mix to dampen artefacts.</para>
+								<para>In this example an RGB mix of 0.4, 0.75, -0.15 uses more green than red,
+								bringing back some features. We still reduce the blue channel in the mix to 
+                                                                de-emphasize unwanted skin texture.</para>
 							</entry>
 						</row>
 					</tbody>
@@ -59,7 +63,8 @@
 		</para>	
 
 		<sect5><title>Table of mixing values for some b/w films</title>
-			<para>Select gray as output mixing channel, and try out the values descibed below for your like...</para>
+			<para>Classic black and white films have different characteristic color responses. 
+                              Select gray as output mixing channel, and try out the values suggested below for your favourite film type.</para>
 				<informaltable frame="none" width="60%">
 					<tgroup cols="4" colsep="0" rowsep="0">
 						<colspec colwidth="2*"/>

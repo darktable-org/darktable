@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="draft" id="conditional blending"><title>Conditional blending</title>
+	<sect2 status="final" id="conditional blending"><title>Conditional blending</title>
 		<para>Conditional blending offers fine-grained selective control over how individual pixels are blended.
         	      It does so by automatically generating an intermediate blend mask from user defined parameters. These parameters are color 
         	      coordinates not the geometrical coordinates used in conventional hand drawn masks. 
@@ -12,7 +12,7 @@
 	        <para>Conditional blending is a powerful tool with a certain level of complexity.
         	</para>
 
-	        <sect3><title>Working principle</title>
+	        <sect3 status="final"><title>Working principle</title>
 		        <para>For each data channel of a module (Lab, RGB) and additionally for several virtual data channels (e.g. hue, saturation) users can construct
 	        	      a per-channel opacity function. Depending on the pixel's value for this data channel this function determines 
 	        	      a blending factor between 0 and 1 (or 100%) for that pixel.
@@ -149,8 +149,8 @@
 	        </sect4>
                 </sect3>
 
-	        <sect3><title>Examples</title>
-			<sect4 status="draft"><title>Colorkey effect</title>
+	        <sect3 status="final"><title>Examples</title>
+			<sect4><title>Colorkey effect</title>
 	                        <para>
 				<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

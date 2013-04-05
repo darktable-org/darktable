@@ -1,4 +1,4 @@
-<sect3 status="draft" id="exposure"><title>Exposure</title>
+<sect3 status="final" id="exposure"><title>Exposure</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -29,8 +29,10 @@
 		<para>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for blown out highlights (see
                       also <xref linkend="highlight reconstruction"/>).
 		</para>
-		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values will
-                      be cut off to pure black. Use with care as these dark gray values can not be recovered in other modules further down the pixelpipe.
+		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values are
+                      cut off to pure black. Use with care as the clipped values can not be recovered in other modules further down the pixelpipe. Please also have a look
+                      at the <emphasis>tone curve</emphasis> module (see <xref linkend="tone curve"/>) and the <emphasis>levels</emphasis> module (see <xref linkend="levels"/>)
+                      which can produce similar results with less side effects as they come later in pixelpipe.
 		</para>
 		<sect5><title>black</title>
 			<para>Adjust the black level.</para>

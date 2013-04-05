@@ -5,21 +5,32 @@
 		]>
 <sect1 status="final" id="modules"><title>Modules</title>
 	<para>Each correction, enhancement or effect is implemented as a module.
+               This section includes documentation of each module and its specific parameters.
+        </para>
+
+        <para>
+               A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>.
+               Clicking on the name of the module expands the module's GUI with all parameters. If you expand too
+               many GUIs you may easily lose track - it's up to the user to do the housekeeping. Alternatively you can expand the
+               module's GUI with <emphasis>shift-click</emphasis>, which expands just the desired GUI while collapsing all others.
         </para>
         <para>
-               This section includes documentation of each module and its specific parameters.
-               A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>  
-               whose <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> icon turns that module
-               on or off. Clicking on the name of the module expands the module to see the user interface with all parameters.
-               Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> is the preset icon for accessing the 
-               module's available presets or to create a new preset from your current settings. 
+               Expanding a module does not activate it. You need to click the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> 
+               icon to turn a module on or off.
+        </para>
+        <para>         
+               Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> accesses the
+               module's available presets or creates a new preset from your current settings (see <xref linkend="module presets"/>).
+        </para>
+        <para> 
                The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values.
         </para>
-        <para>Many of darktable's modules can have multiple instances each with different settings; click on the 
+        <para>
+               Many of darktable's modules can have multiple instances, each with different settings. Click on the 
               <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> icon to generate new instances and control
-               existing ones.
+               existing ones (see <xref linkend="multiple instances"/>).
 	</para>
-	<sect2 status="draft"><title>Interacting with modules</title>
+	<sect2 status="final"><title>Interacting with modules</title>
            <para>The most frequently used control elements are sliders, comboboxes and curves.
            </para>
           <sect4><title>Sliders</title>
@@ -33,7 +44,7 @@
 			   </listitem>
 			   <listitem>
 			     <para>Mouse wheel</para>
-			     <para>Hover a slider with your mouse, then use your mouse wheel to adjust the value step by step.
+			     <para>Hover over any place on the slider with your mouse, then use your mouse wheel to adjust the value step by step.
 			     </para>
 			   </listitem>
    			   <listitem>
@@ -46,7 +57,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable's innovative input method: coarse and fine value adjustments in one single control element.
+						<entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />

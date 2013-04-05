@@ -56,7 +56,7 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
      We only do this for the given imgid and only for num>minnum, that is we only handle new history items just copied.
   */
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1), multi_name=multi_priority where imgid=?1 and num>=?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update history set multi_priority=(select COUNT(0)-1 from history hst2 where hst2.num<=history.num and hst2.num>=?2 and hst2.operation=history.operation and hst2.imgid=?1) where imgid=?1 and num>=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minnum);
   sqlite3_step (stmt);
@@ -226,11 +226,17 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
     {
       dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
       item->num = sqlite3_column_int (stmt, 0);
-
+      char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if (enabled)
-        g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
+      {
+        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+        else g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
+      }
       else
+      {
+        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
         g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
+      }
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
       result = g_list_append (result,item);

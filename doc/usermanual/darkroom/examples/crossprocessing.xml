@@ -1,5 +1,5 @@
 <sect2 status="final" id="cross processing"><title>Cross-processing</title>
-	<sect3><title>Overview</title>
+	<sect3 status="final"><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -21,8 +21,8 @@
 			for the moment and another way to accomodiate the effect is used.
 		</para>
 	</sect3>
-	<sect3><title>Procedure</title>
-		<para>This procedure uses tonecurve, channelmixer and splittoning modules.
+	<sect3 status="final"><title>Procedure</title>
+		<para>This procedure uses tone curve, channel mixer and splittoning modules.
 		</para>
 		<orderedlist>
 			<listitem>
@@ -32,7 +32,7 @@
 				</para>
 			</listitem>
 			<listitem><para>Boost contrast</para>
-				<para>Select the medium contrast curve preset for <emphasis>tonecurve</emphasis> module (<xref linkend="tonecurve"/>) to boost the overall contrast
+				<para>Select the medium contrast curve preset for <emphasis>tone curve</emphasis> module (<xref linkend="tone curve"/>) to boost the overall contrast
 					in the image. You might later return here to tune the curve for better result.
 				</para>
 			</listitem>

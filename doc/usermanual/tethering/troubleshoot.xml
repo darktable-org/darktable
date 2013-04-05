@@ -1,6 +1,6 @@
-<sect1>
+<sect1 status="final">
   <title>Troubleshoot</title>
-  <sect2>
+  <sect2 status="final">
     <title>Verify that your camera is supported</title>
 	<para>This troubleshoting guide will give you steps to verify your camera can be used
 	with tethering. This is done using the gphoto2 commandline tools. This is what 
@@ -49,7 +49,7 @@
 	</orderedlist>
   </sect2>
 
-  <sect2>
+  <sect2 status="final">
     <title>So, now what?</title>
     <para>If any of the steps above failed, there are problems with your specific camera and driver. Please report the issues to 
     gphoto2 mailing list for further help. You can find the mailing list at <ulink url="http://www.gphoto.org/mailinglists/">www.gphoto.org</ulink>. 

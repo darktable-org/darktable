@@ -56,7 +56,7 @@
 	<preface id="overview"><title>Preface to this manual</title>
 		<indexterm><primary>darktable</primary></indexterm>
 		<indexterm><primary>Preface</primary></indexterm>
-		<para>The current user manual is a draft issue. It is at an early stage of writing. User manual version and applicable darktable version are listed below:
+		<para>User manual version and applicable darktable version are listed below:
 				<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
 					<colspec colwidth='3cm'/>
 					<tbody>
@@ -67,23 +67,23 @@
 						</row>
 						<row>
 							<entry>user manual</entry>
-							<entry>1.2.0 (draft)</entry>
-							<entry>February 2013</entry>
+							<entry>1.2.0</entry>
+							<entry>March 2013</entry>
 						</row>
 						<row>
 							<entry>darktable</entry>
 							<entry>1.2</entry>
-							<entry>February 2013</entry>
+							<entry>March 2013</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>
 		</para>
-<!--		<para>Please note that every key accelerators given in this manual is only applicable on english keyboards layout.
-			The key accelerators are not linked to the actual letter printed on it, but only to its position on the keyboard.
-			For example, the <emphasis>z</emphasis> allowing a full-screen view on english keyboards, becomes <emphasis>w</emphasis> on french keyboard.
-		</para> --> <!-- no longer true! -->
-		<para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
-		</para>
+                <para>Many thanks to all contributors to this user manual. Special thanks for proof reading, style improvement, and constructive criticism 
+                      go to Colin Adams, Mark Garrow, Simon Harhues, Ammon Riley, Rob Z. Smith, and David Vincent-Jones.
+                </para>
+
+	<!--	<para>For the course of this documentation the arrow keys on your keyboard are referenced as with arrow symbols: &uarr;&larr;&darr;&rarr;.
+		</para>  -->
 	</preface>
 
 <!-- Overview chapter -->

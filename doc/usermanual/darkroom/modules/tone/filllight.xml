@@ -3,14 +3,14 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="fill light"><title>Fill light</title>
+<sect3 status="final" id="fill light"><title>Fill light</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module allows a local modification of the exposure based on pixel lightness.				
+						<entry>This module allows local modification of the exposure based on pixel lightness.				
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/relight.png" scalefit="1" width="80%" align="center" />
@@ -22,20 +22,19 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>The module pushes exposure by increasing lightness in the form of a Gaussian curve, centered on a given lightness, 
-                      with a given width in lightness. 
+		<para>Pushes exposure by increasing lightness with a Gaussian curve of a specified width, centered on a given lightness.
                 </para>
 		<sect5><title>exposure</title>
-			<para>Set the fill-light exposure in [EV].</para>
+			<para>Sets fill-light exposure in [EV].</para>
 		</sect5>
 		<sect5><title>center</title>
-			<para>Set the median lightness being impacted by the fill-light. A color picker is activated by pressing 
-                             <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />. It will show 
-                             the picked lightness value in the gradient bar and thus helps to find the right center value.</para>
+			<para>Sets the median lightness impacted by the fill-light. A color picker is activated by pressing 
+                             <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />. It shows 
+                             the picked lightness value in the gradient bar, which helps find the desired center value.</para>
 		</sect5>
 		<sect5><title>width</title>
-			<para>Set the width of the Gaussian curve. It is expressed in zone, the whole dynamic range being 10 zones.
-                              As the Gaussian is symmetric, only even numbers can be entered.</para>
+			<para>Sets the width of the Gaussian curve. This number is expressed in zones, with the whole dynamic range being 10 zones.
+                              As the Gaussian curve is symmetric, only even numbers can be entered.</para>
 		</sect5>	
 	</sect4>
 </sect3>

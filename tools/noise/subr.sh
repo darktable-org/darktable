@@ -248,6 +248,7 @@ normalize_darktable_version() {
 	version=$1
 
 	version=${version%+*}
+	version=${version%~*}
 
 	case "$version" in
 	*.*.*) ;;

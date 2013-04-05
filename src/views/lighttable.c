@@ -1176,24 +1176,14 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     case 666:
     {
       int32_t mouse_over_id;
-      DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
-      /* clear and reset statement */
-      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+      mouse_over_id = dt_view_get_image_to_act_on();
 
-      /* setup statement and iterate over rows */
-      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
-
-      if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
-      {
+      if(mouse_over_id <= 0)
         dt_ratings_apply_to_selection(num);
-      }
       else
-      {
         dt_ratings_apply_to_image(mouse_over_id, num);
         //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
-      }
       break;
     }
     default:

@@ -1,4 +1,4 @@
-<chapter id="tethering chapter">
+<chapter status="final" id="tethering chapter">
 <chapterinfo>
 <keywordset>
   <keyword>tethering</keyword>
@@ -12,7 +12,7 @@
   <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
 </screenshot>
 
-<sect1>
+<sect1 status="final">
   <title>Overview</title>
   <para>To use the tethering feature you need to connect your camera to your PC using a USB cable. Your computer might ask to mount or view the connected camera.
         Do not mount or view the camera. If that happens automatically, you will need to <quote>unmount/eject</quote> the camera. This is required to unlock the 

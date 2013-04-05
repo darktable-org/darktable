@@ -1,5 +1,5 @@
 <sect2 status="final" id="cyan toned images"><title>Cyan toned image</title>
-	<sect3><title>Overview</title>
+	<sect3 status="final"><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -17,8 +17,8 @@
 				</tgroup>
 			</informaltable>
 	</sect3>
-	<sect3><title>Procedure</title>
-		<para>This procedure uses tonecurve, channelmixer and splittoning modules.
+	<sect3 status="final"><title>Procedure</title>
+		<para>This procedure uses tone curve, channel mixer and splittoning modules.
 		</para>
 		<orderedlist>
 			<listitem>

@@ -1,4 +1,4 @@
-<sect1 id="darkroom panels"><title>Darkroom panels</title>
+<sect1 status="final" id="darkroom panels"><title>Darkroom panels</title>
 	<para>This section contains documentation for panels that are specific to the
 	darkroom view.
 	</para>
@@ -13,4 +13,7 @@
 	<xi:include href="histogram.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	<xi:include href="modulegroups.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	<xi:include href="modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+        <!-- Bottom -->
+	<xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>        
 </sect1>

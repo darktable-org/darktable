@@ -593,7 +593,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if (d->softproof_enabled || (pipe->type == DT_DEV_PIXELPIPE_EXPORT && high_quality_processing) ||
+  if (d->softproof_enabled || high_quality_processing ||
       dt_colorspaces_get_matrix_from_output_profile (d->output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
   {
     d->cmatrix[0] = NAN;
@@ -765,10 +765,28 @@ void gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, 
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
   }
+
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+  if (high_quality_processing)
+  {
+    gtk_widget_set_no_show_all(g->cbox1, FALSE);
+    gtk_widget_set_visible(g->cbox1, TRUE);
+    gtk_widget_set_no_show_all(g->cbox4, FALSE);
+    gtk_widget_set_visible(g->cbox4, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_no_show_all(g->cbox1, TRUE);
+    gtk_widget_set_visible(g->cbox1, FALSE);
+    gtk_widget_set_no_show_all(g->cbox4, TRUE);
+    gtk_widget_set_visible(g->cbox4, FALSE);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
+  const int high_quality_processing = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
+
   self->gui_data = malloc(sizeof(dt_iop_colorout_gui_data_t));
   memset(self->gui_data,0,sizeof(dt_iop_colorout_gui_data_t));
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
@@ -859,6 +877,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox4, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->cbox4, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(g->cbox4, _("absolute colorimetric"));
+
+  if (!high_quality_processing)
+  {
+    gtk_widget_set_no_show_all(g->cbox1, TRUE);
+    gtk_widget_set_visible(g->cbox1, FALSE);
+    gtk_widget_set_no_show_all(g->cbox4, TRUE);
+    gtk_widget_set_visible(g->cbox4, FALSE);
+  }
+
   g->cbox2 = dt_bauhaus_combobox_new(self);
   g->cbox3 = dt_bauhaus_combobox_new(self);
   g->cbox5 = dt_bauhaus_combobox_new(self);

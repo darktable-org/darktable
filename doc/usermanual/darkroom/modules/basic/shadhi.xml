@@ -1,4 +1,4 @@
-<sect3 status="draft" id="shadows and highlights">
+<sect3 status="final" id="shadows and highlights">
   <title>Shadows and Highlights</title>
   <sect4>
     <title>Overview</title>
@@ -8,7 +8,8 @@
         <colspec colwidth="4*" />
         <tbody>
           <row>
-            <entry>The shadows and highlights module allows to adjust the tonal range of darker parts of an image (shadows) and lighter parts (highlights); it can bring back details in shadows and highlights by enhancing local contrast.</entry>
+            <entry>The shadows and highlights module allows adjustment to the tonal range of darker parts of an image (shadows) and lighter parts (highlights); 
+                   it can bring back details in shadows and highlights by enhancing local contrast.</entry>
             <entry>
               <graphic width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" />
             </entry>
@@ -49,7 +50,7 @@
     <sect5>
       <title>shadows color adjustment</title>
       <para>This slider controls the color saturation adjustment made to shadows; high values cause saturation enhancements on lightened shadows; 
-            low values cause desaturation on lightened shadows. It is normally safe to leave this at its default of 100%. This gives a quite
+            low values cause desaturation on lightened shadows. It is normally safe to leave this at its default of 100%. This gives a 
             natural saturation boost on shadows - similar to the one you would also expect in nature if shadows would receive more light.</para>
     </sect5>
     <sect5>

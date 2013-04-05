@@ -1,6 +1,6 @@
 <sect2 status="final" id="color group">
   <title>Color group</title>
-  <para>This group contains the modules to work with colors of your image.
+  <para>Modules for working specifically on your image's color are found here in the color group.
   </para>
 
   <xi:include href="velvia.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

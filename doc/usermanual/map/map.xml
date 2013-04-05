@@ -1,4 +1,4 @@
-<chapter id="map chapter">
+<chapter status="final" id="map chapter">
 <chapterinfo>
 <keywordset>
   <keyword>geotagging</keyword>
@@ -13,7 +13,7 @@
 	<graphic fileref="map/images/map_view.png" scalefit="1" width="80%"></graphic>
 </screenshot>
 
-<sect1>
+<sect1 status="final">
   <title>Overview</title>
   <para>Map view will show you a world map with the currently open image, or filmroll of images, pinned
   to their geotagged location. This requires that the image was geotagged by a camera with that feature.
