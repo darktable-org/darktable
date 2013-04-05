@@ -29,6 +29,7 @@
 #include "lua/modules.h"
 #include "lua/styles.h"
 #include "lua/preferences.h"
+#include "lua/storage.h"
 #include "common/imageio_module.h"
 #include "config.h"
 
@@ -52,13 +53,16 @@ static void debug_table(lua_State * L,int t) {
 
 static int dump_error(lua_State *L) {
 	const char * message = lua_tostring(L,-1);
+printf("%s %d %s\n",__FUNCTION__,__LINE__,message);
 	luaL_traceback(L,L,message,0);
+printf("%s %d %s\n",__FUNCTION__,__LINE__,message);
 	return 1;
 }
 
 int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   int result;
   if(loadresult){
+printf("%s %d\n",__FUNCTION__,__LINE__);
     dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
     lua_pop(L,1);
@@ -68,6 +72,7 @@ int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   lua_insert(L,lua_gettop(L)-(nargs+1));
   result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
   if(lua_pcall(L, nargs, nresults,result)) {
+printf("%s %d\n",__FUNCTION__,__LINE__);
     dt_control_log("LUA ERROR %s",lua_tostring(L,-1));
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
     lua_pop(L,2);
@@ -123,6 +128,7 @@ static lua_CFunction init_funcs[] = {
   dt_lua_init_image,
   dt_lua_init_database,
   dt_lua_init_preferences,
+  dt_lua_init_storages,
   dt_lua_init_modules,
   NULL
 };

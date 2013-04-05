@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
+#include "control/signal.h"
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
 #include "dtgtk/label.h"
@@ -252,7 +253,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
     do
     {
       k++;
-      if( strcmp(  ((dt_imageio_module_storage_t *)it->data)->name(),name) == 0 ||
+      if( strcmp(  ((dt_imageio_module_storage_t *)it->data)->name(((dt_imageio_module_storage_t *)it->data)),name) == 0 ||
           strcmp(  ((dt_imageio_module_storage_t *)it->data)->plugin_name,name) == 0) break;
     }
     while( ( it = g_list_next(it) ) );
@@ -410,6 +411,22 @@ focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 }
 */
 
+static void on_storage_list_changed(gpointer instance,dt_lib_module_t *self) {
+  dt_lib_export_t *d = self->data;
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
+  GtkTreeModel *store = gtk_combo_box_get_model( d->storage );
+  gtk_list_store_clear( GTK_LIST_STORE( store ) );
+  GList *it = darktable.imageio->plugins_storage;
+  while(it)
+  {
+    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
+    gtk_combo_box_append_text(d->storage, module->name(module));
+    it = g_list_next(it);
+  }
+  gtk_combo_box_set_active(d->storage,dt_imageio_get_index_of_storage(storage));
+}
+
+
 void
 gui_init (dt_lib_module_t *self)
 {
@@ -428,9 +445,10 @@ gui_init (dt_lib_module_t *self)
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    gtk_combo_box_append_text(d->storage, module->name());
+    gtk_combo_box_append_text(d->storage, module->name(module));
     it = g_list_next(it);
   }
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,G_CALLBACK(on_storage_list_changed),self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (d->storage), "changed",
                     G_CALLBACK (storage_changed),

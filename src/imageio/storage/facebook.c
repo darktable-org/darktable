@@ -995,7 +995,7 @@ static void ui_combo_album_changed(GtkComboBox *combo, gpointer data)
 ////////////////////////// darktable library interface
 
 /* plugin name */
-const char *name()
+const char *name(const struct dt_imageio_module_storage_t *self)
 {
   return _("facebook webalbum");
 }
@@ -1133,7 +1133,7 @@ int supported(struct dt_imageio_module_storage_t *self, struct dt_imageio_module
 }
 
 /* this actually does the work */
-int store(struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality)
+int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality)
 {
   gint result = 1;
   dt_storage_facebook_param_t *p = (dt_storage_facebook_param_t*)sdata;

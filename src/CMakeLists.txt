@@ -101,6 +101,7 @@ if(USE_LUA)
 		"lua/modules.c"
 		"lua/preferences.c"
 		"lua/stmt.c"
+		"lua/storage.c"
 		"lua/styles.c"
 		"lua/types.c"
 		)

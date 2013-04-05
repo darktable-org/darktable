@@ -54,7 +54,7 @@ dt_imageio_disk_t;
 
 
 const char*
-name ()
+name (const struct dt_imageio_module_storage_t *self)
 {
   return _("file on disk");
 }
@@ -144,7 +144,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;

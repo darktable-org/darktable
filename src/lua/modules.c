@@ -149,7 +149,7 @@ static int storage_index(lua_State*L) {
       lua_pushstring(L,storage->plugin_name);
       return 1;
     case GET_STORAGE_NAME:
-      lua_pushstring(L,storage->name());
+      lua_pushstring(L,storage->name(storage));
       return 1;
     case GET_WIDTH:
       width=0;

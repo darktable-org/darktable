@@ -233,8 +233,8 @@ static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,i
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_getfield(L,-1,evt_name);
   if(lua_isnil(L,-1)) {
-    lua_pop(L,2+nargs);
-    for(int i = 0 ; i < nresults ; i++) lua_pushnil(L);
+    lua_pop(L,2); // remove what we built
+    for(int i = 0 ; i < nargs - nresults ; i++) lua_remove(L,-(nresults+1));
     return nresults;
   }
   lua_remove(L,-2);
