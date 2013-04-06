@@ -108,6 +108,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'bloom'))
   gr.add_edge(('colorout', 'nlmeans'))
   gr.add_edge(('colorout', 'colortransfer'))
+  gr.add_edge(('colorout', 'colormapping'))
   gr.add_edge(('colorout', 'atrous'))
   gr.add_edge(('colorout', 'bilat'))
   gr.add_edge(('colorout', 'colorzones'))
@@ -129,6 +130,7 @@ def add_edges(gr):
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
+  gr.add_edge(('colormapping', 'colorin'))
   gr.add_edge(('atrous', 'colorin'))
   gr.add_edge(('bilat', 'colorin'))
   gr.add_edge(('colorzones', 'colorin'))
@@ -262,23 +264,24 @@ def add_edges(gr):
   gr.add_edge(('bilat', 'globaltonemap'))
   
   # want to fine-tune stuff after injection of color transfer:
-  gr.add_edge(('atrous', 'colortransfer'))
-  gr.add_edge(('colorzones', 'colortransfer'))
-  gr.add_edge(('tonecurve', 'colortransfer'))
-  gr.add_edge(('levels', 'colortransfer'))
-  gr.add_edge(('monochrome', 'colortransfer'))
-  gr.add_edge(('zonesystem', 'colortransfer'))
-  gr.add_edge(('colorcorrection', 'colortransfer'))
-  gr.add_edge(('relight', 'colortransfer'))
-  gr.add_edge(('lowpass', 'colortransfer'))
-  gr.add_edge(('shadhi', 'colortransfer'))
-  gr.add_edge(('highpass', 'colortransfer'))
-  gr.add_edge(('anlfyeni', 'colortransfer'))
-  gr.add_edge(('lowlight', 'colortransfer'))
-  gr.add_edge(('bloom', 'colortransfer'))
+  gr.add_edge(('atrous', 'colormapping'))
+  gr.add_edge(('colorzones', 'colormapping'))
+  gr.add_edge(('tonecurve', 'colormapping'))
+  gr.add_edge(('levels', 'colormapping'))
+  gr.add_edge(('monochrome', 'colormapping'))
+  gr.add_edge(('zonesystem', 'colormapping'))
+  gr.add_edge(('colorcorrection', 'colormapping'))
+  gr.add_edge(('relight', 'colormaping'))
+  gr.add_edge(('lowpass', 'colormapping'))
+  gr.add_edge(('shadhi', 'colormapping'))
+  gr.add_edge(('highpass', 'colormapping'))
+  gr.add_edge(('anlfyeni', 'colormapping'))
+  gr.add_edge(('lowlight', 'colormapping'))
+  gr.add_edge(('bloom', 'colormapping'))
   
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
+  gr.add_edge(('colormapping', 'colortransfer'))
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
@@ -331,6 +334,7 @@ gr.add_nodes([
 'colorize',
 'colorout',
 'colortransfer',
+'colormapping',
 'colorzones',
 'colorcontrast',
 'demosaic',
