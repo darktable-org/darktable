@@ -1234,17 +1234,19 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(up)
   {
     if (scale == 1.0f) return;
+    else if (scale < fitscale) scale += .05f*(1.0f - fitscale);
     else scale += .1f*(1.0f - fitscale);
   }
   else
   {
-    if (oldscale == fitscale) scale = fitscale - 0.001f;
+    if (oldscale == fitscale) scale = fitscale - 0.0001f;
     else if (scale < 0.5*fitscale) return;
+    else if (scale <= fitscale) scale -= .05f*(1.0f - fitscale);
     else scale -= .1f*(1.0f - fitscale);
   }
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if(scale > 0.99)            zoom = DT_ZOOM_1;
-  if(fabsf(scale - fitscale) < 0.01) zoom = DT_ZOOM_FIT;
+  if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
   if(zoom != DT_ZOOM_1)
   {
     zoom_x -= mouse_off_x/(procw*scale);
