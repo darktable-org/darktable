@@ -127,7 +127,7 @@ backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t i
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
+  //if (!self->enabled) return 2;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x,y;
@@ -152,7 +152,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
+  //if (!self->enabled) return 2;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x,y;

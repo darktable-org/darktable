@@ -28,6 +28,7 @@
 #include "dtgtk/tristatebutton.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/masks.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -402,11 +403,22 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
       cairo_stroke(cri);
     }
   }
-  else if(dev->gui_module && dev->gui_module->gui_post_expose)
+  else
   {
-    if(width_i  > capwd) pointerx += (capwd-width_i) *.5f;
-    if(height_i > capht) pointery += (capht-height_i)*.5f;
-    dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+    //masks
+    if (dev->form_visible)
+    {
+      if(width_i  > capwd) pointerx += (capwd-width_i) *.5f;
+      if(height_i > capht) pointery += (capht-height_i)*.5f;
+      dt_masks_events_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+    }
+    //module
+    if(dev->gui_module && dev->gui_module->gui_post_expose)
+    {
+      if(width_i  > capwd) pointerx += (capwd-width_i) *.5f;
+      if(height_i > capht) pointery += (capht-height_i)*.5f;
+      dev->gui_module->gui_post_expose(dev->gui_module, cri, width, height, pointerx, pointery);
+    }
   }
 }
 
@@ -533,6 +545,17 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_image_synch_xmp(dev->image_storage.id);
   }
 
+  //cleanup visible masks
+  if (!dev->form_gui) 
+  {
+    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
+    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+  }
+  dt_masks_init_formgui(dev);
+  dev->form_visible = NULL;
+  dev->form_gui->pipe_hash = 0;
+  dev->form_gui->formid = 0;
+  
   select_this_image(imgid);
 
   while(dev->history)
@@ -582,6 +605,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   }
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
+  dt_masks_read_forms(dev);
   dt_dev_read_history(dev);
 
   //we have to init all module instances other than "base" instance
@@ -654,6 +678,8 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     g_free(active_plugin);
   }
 
+  dt_dev_masks_list_change(dev);
+  
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
 
@@ -1011,6 +1037,7 @@ static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group,
 
 void enter(dt_view_t *self)
 {
+   
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
@@ -1018,7 +1045,15 @@ void enter(dt_view_t *self)
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
-
+  if (!dev->form_gui) 
+  {
+    dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
+    memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
+  }
+  dt_masks_init_formgui(dev);
+  dev->form_visible = NULL;
+  dev->form_gui->pipe_hash = 0;
+  dev->form_gui->formid = 0;
   dev->gui_leaving = 0;
   dev->gui_module = NULL;
 
@@ -1203,7 +1238,8 @@ void enter(dt_view_t *self)
     }
     g_free(active_plugin);
   }
-
+  dt_dev_masks_list_change(dev);
+  
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -1361,6 +1397,10 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     dt_control_queue_redraw();
     return;
   }
+  //masks
+  if (dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, which);
+  if(handled) return;
+  //module
   if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
   if(handled) return;
 
@@ -1401,6 +1441,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
+  //masks
+  if (dev->form_visible) handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
+  if(handled) return handled;
+  //module
   if(dev->gui_module && dev->gui_module->button_released) handled = dev->gui_module->button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
   if(which == 1) dt_control_change_cursor(GDK_LEFT_PTR);
@@ -1440,6 +1484,10 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     dt_control_queue_redraw();
     return 1;
   }
+  //masks
+  if (dev->form_visible) handled = dt_masks_events_button_pressed(dev->gui_module, x, y, which, type, state);
+  if(handled) return handled;
+  //module
   if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
   if(handled) return handled;
 
@@ -1497,6 +1545,10 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
+  //masks
+  if (dev->form_visible) handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
+  if(handled) return;
+  //module
   if(dev->gui_module && dev->gui_module->scrolled) handled = dev->gui_module->scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
   // free zoom

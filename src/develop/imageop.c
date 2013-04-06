@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "develop/tiling.h"
+#include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1153,7 +1154,7 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
   gtk_menu_append(menu, item);
-
+  
   gtk_widget_show_all(menu);
   //popup
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
@@ -1552,19 +1553,24 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     /* construct module params data for hash calc */
     int length = module->params_size;
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) length += sizeof(dt_develop_blend_params_t);
-
+    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,blendop_params->mask_id);
+    length += dt_masks_group_get_hash_buffer_length(grp);
+    
     char *str = malloc(length);
     memcpy(str, module->params, module->params_size);
-
+    int pos = module->params_size;
     /* if module supports blend op add blend params into account */
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
     {
       memcpy(str+module->params_size, blendop_params, sizeof(dt_develop_blend_params_t));
+      pos += sizeof(dt_develop_blend_params_t);
     }
     memcpy(piece->blendop_data, blendop_params, sizeof(dt_develop_blend_params_t));
     // this should be redundant! (but is not)
     memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
-
+    /* and we add masks */
+    dt_masks_group_get_hash_buffer(grp,str+pos);
+    
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
     module->commit_params(module, params, pipe, piece);
@@ -1710,6 +1716,17 @@ void dt_iop_request_focus(dt_iop_module_t *module)
       dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
+    
+    /*reset mask view */
+    darktable.develop->form_visible = NULL;
+    dt_masks_init_formgui(darktable.develop);
+    dt_iop_module_t *m = darktable.develop->gui_module;
+    if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+    {
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
+      GTK_TOGGLE_BUTTON(bd->masks_edit)->active = FALSE;
+      dt_dev_masks_selection_change(darktable.develop,0,FALSE);
+    }
   }
 
   darktable.develop->gui_module = module;
@@ -1736,6 +1753,10 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus)
       module->gui_focus(module, TRUE);
   }
+  
+  //update masks manager
+  //dt_dev_masks_switch_module(darktable.develop);
+  
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 

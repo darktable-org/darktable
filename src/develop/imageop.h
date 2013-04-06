@@ -63,6 +63,7 @@ struct dt_develop_tiling_t;
 #define IOP_FLAGS_ONE_INSTANCE        128                       // The module doesn't support multiple instances
 #define IOP_FLAGS_PREVIEW_NON_OPENCL  256                       // Preview pixelpipe of this module must not run on GPU but always on CPU
 #define IOP_FLAGS_NO_HISTORY_STACK    512                       // This iop will never show up in the history stack
+#define IOP_FLAGS_NO_MASKS  1024    // The module doesn't support masks (used with SUPPORT_BLENDING)
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
