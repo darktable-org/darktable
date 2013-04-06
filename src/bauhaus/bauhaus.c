@@ -1497,10 +1497,13 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 static void
 dt_bauhaus_hide_popup()
 {
-  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-  gtk_widget_hide(darktable.bauhaus->popup_window);
-  darktable.bauhaus->current = NULL;
-  // TODO: give focus to center view? do in accept() as well?
+  if(darktable.bauhaus->current)
+  {
+    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+    gtk_widget_hide(darktable.bauhaus->popup_window);
+    darktable.bauhaus->current = NULL;
+    // TODO: give focus to center view? do in accept() as well?
+  }
 }
 
 static void
@@ -1637,7 +1640,9 @@ dt_bauhaus_combobox_button_press(GtkWidget *widget, GdkEventButton *event, gpoin
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // never called, as we popup the other window under your cursor before.
+      // (except in weird corner cases where the popup is under the -1st entry
       dt_bauhaus_combobox_set(widget, d->defpos);
+      dt_bauhaus_hide_popup();
     }
     else
     {
