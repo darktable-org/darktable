@@ -730,6 +730,20 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   //                   G_CALLBACK (dt_bauhaus_popup_button_release), (gpointer)NULL);
 }
 
+void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->defpos = def;
+}
+
+void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->defpos = (def-d->min)/(d->max-d->min);
+}
+
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);

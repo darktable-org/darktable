@@ -218,6 +218,7 @@ void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
+void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
@@ -230,6 +231,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
 const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
+void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 
 // key accel parsing:
 // execute a line of input

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2009--2013 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ convert_rgb_to_k(float rgb[3], float *temp, float *tint)
   tmax = DT_IOP_HIGHEST_TEMPERATURE;
   for (*temp=(tmax+tmin)/2; tmax-tmin>1; *temp=(tmax+tmin)/2)
   {
-    convert_k_to_rgb (*temp, tmp);
+    convert_k_to_rgb(*temp, tmp);
     if (tmp[2]/tmp[0] > rgb[2]/rgb[0])
       tmax = *temp;
     else
@@ -409,15 +409,6 @@ void reload_defaults(dt_iop_module_t *module)
     {
       module->default_enabled = 1;
 
-      // remember daylight wb used for temperature/tint conversion,
-      // assuming it corresponds to CIE daylight
-      if(module->gui_data)
-      {
-        dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-        for(int c = 0; c < 3; c++)
-          g->daylight_wb[c] = raw->color.pre_mul[c];
-      }
-
       for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
       if(tmp.coeffs[0] <= 0.0)
       {
@@ -455,6 +446,20 @@ void reload_defaults(dt_iop_module_t *module)
         tmp.coeffs[2] /= tmp.coeffs[1];
         tmp.coeffs[1] = 1.0f;
       }
+      // remember daylight wb used for temperature/tint conversion,
+      // assuming it corresponds to CIE daylight
+      if(module->gui_data)
+      {
+        dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+        for(int c = 0; c < 3; c++)
+          g->daylight_wb[c] = raw->color.pre_mul[c];
+        float temp, tint, mul[3];
+        for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
+        convert_rgb_to_k(mul, &temp, &tint);
+        dt_bauhaus_slider_set_default(g->scale_k,    temp);
+        dt_bauhaus_slider_set_default(g->scale_tint, tint);
+      }
+
     }
     libraw_close(raw);
   }
@@ -553,11 +558,11 @@ temp_changed(dt_iop_module_t *self)
   const float temp = dt_bauhaus_slider_get(g->scale_k);
   const float tint = dt_bauhaus_slider_get(g->scale_tint);
 
-  convert_k_to_rgb (temp, p->coeffs);
+  convert_k_to_rgb(temp, p->coeffs);
   // apply green tint
-  p->coeffs[1] *= tint;
+  p->coeffs[1] /= tint;
   // relative to daylight wb:
-  for(int k=0;k<3;k++) p->coeffs[k] *= g->daylight_wb[k];
+  for(int k=0;k<3;k++) p->coeffs[k] = g->daylight_wb[k]/p->coeffs[k];
   // normalize:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
