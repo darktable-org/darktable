@@ -1526,7 +1526,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else
   {
-    if (fabsf(oldscale - fitscale) < 0.0003f) scale = oldscale - 0.0001f;
+    if (fabsf(oldscale - fitscale) < 0.00051f) scale = oldscale - 0.0001f;
     else if (scale < 0.5*fitscale) return;
     else if (scale <= fitscale) scale -= .05f*(1.0f - fitscale);
     else scale -= .1f*(1.0f - fitscale);
