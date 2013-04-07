@@ -115,6 +115,12 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_IMPORT,
 
+  /** \brief This signal is raised when multiple images are exporte
+    1 dt_image_export_t *: structure describing the export. the content can be edited
+    no return
+    */
+  DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 }

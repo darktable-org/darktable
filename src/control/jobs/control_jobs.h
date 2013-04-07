@@ -21,6 +21,13 @@
 #include <inttypes.h>
 #include "control/control.h"
 
+typedef struct dt_control_export_t
+{
+  int max_width, max_height, format_index, storage_index;
+  gboolean high_quality;
+  char style[128];
+} dt_control_export_t;
+
 typedef struct dt_control_image_enumerator_t
 {
   GList *index;

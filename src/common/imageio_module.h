@@ -21,6 +21,7 @@
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <common/darktable.h>
 
 /** Flag for the format modules */
 #define FORMAT_FLAGS_SUPPORT_XMP   1

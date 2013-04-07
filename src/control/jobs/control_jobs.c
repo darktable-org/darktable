@@ -52,13 +52,6 @@ typedef struct dt_control_gpx_apply_t
 } dt_control_gpx_apply_t;
 #endif
 
-typedef struct dt_control_export_t
-{
-  int max_width, max_height, format_index, storage_index;
-  gboolean high_quality;
-  char style[128];
-} dt_control_export_t;
-
 void dt_control_write_sidecar_files()
 {
   dt_job_t j;
@@ -1058,7 +1051,8 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
 void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
 {
   dt_job_t j;
-  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality, style);
+  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality,style);
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,(dt_control_image_enumerator_t *)j.param);
   dt_control_add_job(darktable.control, &j);
 }
 
