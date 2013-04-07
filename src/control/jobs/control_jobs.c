@@ -897,7 +897,7 @@ int32_t dt_control_copy_images_job_run(dt_job_t *job)
          _("copying %d image"), _("copying %d images"));
 }
 
-int32_t dt_control_export_job_run(dt_job_t *job)
+static int32_t dt_control_export_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -1032,12 +1032,14 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
+
+void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
 {
-  dt_control_job_init(job, "export");
-  job->execute = &dt_control_export_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
+  dt_job_t job;
+  dt_control_job_init(&job, "export");
+  job.execute = &dt_control_export_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job.param;
+  t->index = imgid_list;
   dt_control_export_t *data = (dt_control_export_t*)malloc(sizeof(dt_control_export_t));
   data->max_width = max_width;
   data->max_height = max_height;
@@ -1046,14 +1048,8 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
   data->high_quality = high_quality;
   strncpy(data->style,style,128);
   t->data = data;
-}
-
-void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
-{
-  dt_job_t j;
-  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality,style);
-  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,(dt_control_image_enumerator_t *)j.param);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
+  dt_control_add_job(darktable.control, &job);
 }
 
 #if GLIB_CHECK_VERSION (2, 26, 0)

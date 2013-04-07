@@ -20,6 +20,7 @@
 #include "common/colorspaces.h"
 #include "common/imageio_module.h"
 #include "common/styles.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/conf.h"
@@ -98,7 +99,7 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
     strncpy (style, tmp, 128);
     g_free(tmp);
   }
-  dt_control_export(max_width, max_height, format_index, storage_index, high_quality, style);
+  dt_control_export(dt_collection_get_selected(darktable.collection),max_width, max_height, format_index, storage_index, high_quality,style);
 }
 
 static void
