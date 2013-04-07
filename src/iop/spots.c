@@ -298,6 +298,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         pos++;
         continue;
       }
+
       //if the form is outside the roi, we just skip it
       fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
       if (ft>=roi_out->y+roi_out->height || ft+fh<=roi_out->y || fl>=roi_out->x+roi_out->width || fl+fw<=roi_out->x)
@@ -321,7 +322,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     
         // convert from world space:
         float filter[2*rad + 1];
-        // for(int k=-rad; k<=rad; k++) filter[rad + k] = expf(-k*k*2.f/(rad*rad));
+
         if(rad > 0)
         {
           for(int k=-rad; k<=rad; k++)
@@ -347,7 +348,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             //we test if the source point is inside roi_in
             if (xx-dx<roi_in->x || xx-dx>=roi_in->x+roi_in->width) continue;
             
-            const float f = filter[xx-posx+1]*filter[yy-posy+1];//*d->spot[i].opacity;          
+            const float f = filter[xx-posx+1]*filter[yy-posy+1];         
             for(int c=0; c<ch; c++)
               out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
                 out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
@@ -361,6 +362,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         float *mask;
         int posx,posy,width,height;    
         dt_masks_get_mask(self,piece,form,&mask,&width,&height,&posx,&posy);
+        int fts = posy*roi_in->scale, fhs = height*roi_in->scale, fls = posx*roi_in->scale, fws = width*roi_in->scale;
         //now we search the delta with the source
         int dx,dy;
         dx=dy=0;
@@ -376,27 +378,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           dx = pt->center[0]*roi_in->scale*piece->buf_in.width - form->source[0]*roi_in->scale*piece->buf_in.width;
           dy = pt->center[1]*roi_in->scale*piece->buf_in.height - form->source[1]*roi_in->scale*piece->buf_in.height;
         }
-        if (dx==0 && dy==0) continue;
-        //now we do the pixel clone
-        for (int yy=ft ; yy<ft+fh; yy++)
+        if (dx!=0 || dy!=0)
         {
-          //we test if we are inside roi_out
-          if (yy<roi_out->y || yy>=roi_out->y+roi_out->height) continue;
-          //we test if the source point is inside roi_in
-          if (yy-dy<roi_in->y || yy-dy>=roi_in->y+roi_in->height) continue;
-          for (int xx=fl ; xx<fl+fw; xx++)
+          //now we do the pixel clone
+          for (int yy=fts+1 ; yy<fts+fhs-1; yy++)
           {
             //we test if we are inside roi_out
-            if (xx<roi_out->x || xx>=roi_out->x+roi_out->width) continue;
+            if (yy<roi_out->y || yy>=roi_out->y+roi_out->height) continue;
             //we test if the source point is inside roi_in
-            if (xx-dx<roi_in->x || xx-dx>=roi_in->x+roi_in->width) continue;
-            
-            float f = mask[((int)((yy-ft)/roi_in->scale))*width + (int)((xx-fl)/roi_in->scale)];  //we can add the opacity here
-            
-            for(int c=0; c<ch; c++)
-              out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
-                out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
-                in[4*(roi_in->width*(yy-dy-roi_in->y) + xx-dx-roi_in->x) + c] * f;
+            if (yy-dy<roi_in->y || yy-dy>=roi_in->y+roi_in->height) continue;
+            for (int xx=fls+1 ; xx<fls+fws-1; xx++)
+            {
+              //we test if we are inside roi_out
+              if (xx<roi_out->x || xx>=roi_out->x+roi_out->width) continue;
+              //we test if the source point is inside roi_in
+              if (xx-dx<roi_in->x || xx-dx>=roi_in->x+roi_in->width) continue;
+              
+              float f = mask[((int)((yy-fts)/roi_in->scale))*width + (int)((xx-fls)/roi_in->scale)];  //we can add the opacity here
+              
+              for(int c=0; c<ch; c++)
+                out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
+                  out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
+                  in[4*(roi_in->width*(yy-dy-roi_in->y) + xx-dx-roi_in->x) + c] * f;
+            }
           }
         }
         free(mask);

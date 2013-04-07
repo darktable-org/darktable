@@ -497,7 +497,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
     ymin = fminf(points[i*2+1],ymin);
     ymax = fmaxf(points[i*2+1],ymax);
   }
-  
+  free(points);
   //and we set values
   *posx = xmin;
   *posy = ymin;
@@ -545,6 +545,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
     ymin = fminf(points[i*2+1],ymin);
     ymax = fmaxf(points[i*2+1],ymax);
   }
+  free(points);
   
   //and we set values
   *posx = xmin;

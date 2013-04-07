@@ -1786,11 +1786,13 @@ static int dt_curve_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
     ymin = fminf(yy,ymin);
     ymax = fmaxf(yy,ymax);
   }
-
-  *height = ymax-ymin+2;
-  *width = xmax-xmin+2;
-  *posx = xmin-1;
-  *posy = ymin-1;
+  
+  free(points);
+  free(border);
+  *height = ymax-ymin+4;
+  *width = xmax-xmin+4;
+  *posx = xmin-2;
+  *posy = ymin-2;
   return 1;
 }
 
@@ -1833,11 +1835,14 @@ static int dt_curve_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     ymin = fminf(yy,ymin);
     ymax = fmaxf(yy,ymax);
   }
-
-  *height = ymax-ymin+2;
-  *width = xmax-xmin+2;
-  *posx = xmin-1;
-  *posy = ymin-1;
+  
+  free(points);
+  free(border);
+  
+  *height = ymax-ymin+4;
+  *width = xmax-xmin+4;
+  *posx = xmin-2;
+  *posy = ymin-2;
   return 1;
 }
 
