@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
 #include "control/control.h"
@@ -590,38 +591,34 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
     grp->formid = 0;
     dt_masks_group_ungroup(grp,form);
   }
-  if (!(module->flags()&IOP_FLAGS_NO_MASKS)) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),value);
+  if (!(module->flags()&IOP_FLAGS_NO_MASKS))
+  {
+    if (value) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
+    else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+    bd->masks_shown = value;
+    gtk_widget_queue_draw(bd->masks_combo);
+  }
   dt_masks_change_form_gui(grp);
   if (value && form) dt_dev_masks_selection_change(darktable.develop,form->formid,FALSE);
   else dt_dev_masks_selection_change(darktable.develop,0,FALSE);
-  dt_control_queue_redraw_center();
+  dt_control_queue_redraw_center();  
 }
 
 void dt_masks_iop_edit_toggle_callback(GtkWidget *widget, dt_iop_module_t *module)
 {
+  if (!module) return;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
   if (module->blend_params->mask_id==0)
   {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),FALSE);
+    bd->masks_shown = 0;
     return;
   }
 
   //reset the gui
-  dt_masks_set_edit_mode(module,gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+  dt_masks_set_edit_mode(module,!bd->masks_shown);  
 }
 
-static void _menu_position(GtkMenu *menu, int *x, int *y, gboolean *push_in, gpointer user_data)
-{
-  dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  GtkWidget *hb = bd->masks_hbox;
-  int yy,xx; 
-  gdk_window_get_origin(hb->window,&xx,&yy);
-  *y = hb->allocation.y + hb->allocation.height+yy;
-  *x = hb->allocation.x + xx;
-  *push_in = TRUE;
-}
-
-static void _menu_no_masks(GtkButton *button, struct dt_iop_module_t *module)
+static void _menu_no_masks(struct dt_iop_module_t *module)
 {
   //we drop all the forms in the iop
   //NOTE : maybe a little bit too definitive ? just add a state "not used" ?
@@ -630,26 +627,25 @@ static void _menu_no_masks(GtkButton *button, struct dt_iop_module_t *module)
   module->blend_params->mask_id = 0;
   
   //and we update the iop
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
   dt_masks_set_edit_mode(module,FALSE);
-  //gtk_widget_set_sensitive(bd->masks_edit,FALSE);
-  gtk_label_set_text(GTK_LABEL(bd->masks_state),_("no masks used"));
+  dt_masks_iop_update(module);
   
   dt_dev_add_history_item(darktable.develop, module, TRUE);
   dt_dev_masks_list_change(darktable.develop);
 }
-static void _menu_add_circle(GtkButton *button, struct dt_iop_module_t *module)
+static void _menu_add_circle(struct dt_iop_module_t *module)
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(module);
   //we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
   dt_masks_change_form_gui(spot);
+
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
-static void _menu_add_curve(GtkButton *button, struct dt_iop_module_t *module)
+static void _menu_add_curve(struct dt_iop_module_t *module)
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(module);
@@ -660,9 +656,8 @@ static void _menu_add_curve(GtkButton *button, struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
-static void _menu_add_exist(GtkButton *button, dt_masks_form_t *form)
+static void _menu_add_exist(dt_iop_module_t *module, int formid)
 {
-  dt_iop_module_t *module = darktable.develop->gui_module;
   if (!module) return;
   
   //is there already a masks group for this module ?
@@ -679,7 +674,7 @@ static void _menu_add_exist(GtkButton *button, dt_masks_form_t *form)
   }
   //we add the form in this group
   dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
-  grpt->formid = form->formid;
+  grpt->formid = formid;
   grpt->parentid = grpid;
   grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
   if (g_list_length(grp->points)>0) grpt->state |= DT_MASKS_STATE_UNION;
@@ -694,9 +689,8 @@ static void _menu_add_exist(GtkButton *button, dt_masks_form_t *form)
   dt_dev_masks_list_change(darktable.develop);
   dt_masks_set_edit_mode(module,TRUE);
 }
-static void _menu_use_same_as(GtkButton *button, dt_iop_module_t *src)
+static void _menu_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
 {
-  dt_iop_module_t *module = darktable.develop->gui_module;
   if (!module || !src) return;
   
   //we get the source group
@@ -740,37 +734,43 @@ static void _menu_use_same_as(GtkButton *button, dt_iop_module_t *src)
   dt_masks_set_edit_mode(module,TRUE);
 }
 
-void dt_masks_iop_dropdown_callback(GtkWidget *widget, struct dt_iop_module_t *module)
+void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
 {
   //we ensure that the module has focus
+  dt_iop_module_t *module = *m;
   dt_iop_request_focus(module);
   dt_masks_form_t *mgrp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
   int nbf = 0;
   if (mgrp) nbf = g_list_length(mgrp->points);
   
-  GtkWidget *menu0 = gtk_menu_new();
-  GtkWidget *menu = gtk_menu_new();
-  GtkWidget *item;
+  //we determine a higher approx of the entry number
+  int nbe = 5+g_list_length(darktable.develop->forms)+g_list_length(darktable.develop->iop);
+  free(bd->masks_combo_ids);
+  bd->masks_combo_ids = malloc(nbe*sizeof(int));
+
+  int *cids = bd->masks_combo_ids;
+  GtkWidget *combo = bd->masks_combo;
   
-  item = gtk_menu_item_new_with_label(_("don't use masks"));
-  //g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_menu_no_masks), module);
-  gtk_widget_set_sensitive(item,(nbf>0));
-  gtk_menu_append(menu0, item);
+  int pos = 0;
+  cids[pos++] = 0;  //nothing to do for the first entry (already here)
   
-  gtk_menu_append(menu0, gtk_separator_menu_item_new());
+  //delete all masks
+  if (nbf>0)
+  {
+    dt_bauhaus_combobox_add(combo,_("don't use masks"));
+    cids[pos++] = -1000000;
+  }
   
-  item = gtk_menu_item_new_with_label(_("add circle shape"));
-  //g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_menu_add_circle), module);
-  gtk_menu_append(menu0, item);
-  item = gtk_menu_item_new_with_label(_("add curve shape"));
-  //g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_menu_add_curve), module);
-  gtk_menu_append(menu0, item);
-      
-  //existing forms
+  //add new shapes
+  dt_bauhaus_combobox_add(combo,_("add circle shape"));
+  cids[pos++] = -2000001;
+  dt_bauhaus_combobox_add(combo,_("add curve shape"));
+  cids[pos++] = -2000002;
+  
+  //add existing shapes
   GList *forms = g_list_first(darktable.develop->forms);
+  int nb=0;
   while (forms)
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
@@ -779,93 +779,117 @@ void dt_masks_iop_dropdown_callback(GtkWidget *widget, struct dt_iop_module_t *m
       forms = g_list_next(forms);
       continue;
     }
-    char str[10000] = "";
+    char str[256] = "";
     strcat(str,form->name);
-    int nbuse = 0;
+    strcat(str,"   ");
+    int used = 0;
     
-    //we search were this form is used
-    GList *modules = g_list_first(darktable.develop->iop);
-    while (modules)
+    //we search were this form is used in the current module
+    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+    if (grp && (grp->type & DT_MASKS_GROUP))
     {
-      dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
-      dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,m->blend_params->mask_id);
-      if (grp && (grp->type & DT_MASKS_GROUP))
+      GList *pts = g_list_first(grp->points);
+      while(pts)
       {
-        GList *pts = g_list_first(grp->points);
-        while(pts)
+        dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+        if (pt->formid == form->formid)
         {
-          dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-          if (pt->formid == form->formid)
-          {
-            if (m == module)
-            {
-              nbuse = -1;
-              break;
-            }
-            if (nbuse==0) strcat(str," (");
-            strcat(str," ");
-            strcat(str,m->name());
-            nbuse++;
-          }
-          pts = g_list_next(pts);
+          used = 1;
+          break;
         }
+        pts = g_list_next(pts);
       }
-      modules = g_list_next(modules);
     }
-    if (nbuse != -1)
+    if (!used)
     {
-      if (nbuse>0) strcat(str," )");
-      
-      //we add the menu entry
-      item = gtk_menu_item_new_with_label(str);
-      //g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-      g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_menu_add_exist), form);
-      gtk_menu_append(menu, item);
+      if (nb==0)
+      {
+        dt_bauhaus_combobox_add(combo,_("add existing shape"));
+        cids[pos++] = 0;  //nothing to do
+      }
+      dt_bauhaus_combobox_add(combo,str);
+      cids[pos++] = form->formid;
+      nb++;
     }
+    
     forms = g_list_next(forms);
   }
   
-  item = gtk_menu_item_new_with_label(_("add existing shape"));
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu);
-  gtk_menu_append(menu0, item);
-
-  //other masks iops
-  menu = gtk_menu_new();
+  //masks from other iops
   GList *modules = g_list_first(darktable.develop->iop);
-  int nb = 0;
+  nb = 0;
+  int pos2 = 1;
   while (modules)
   {
     dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
-    if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+    if ((m!=module) && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,m->blend_params->mask_id);
       if (grp)
       {
-        item = gtk_menu_item_new_with_label(m->name());
-        //g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-        g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_menu_use_same_as), m);
-        gtk_menu_append(menu, item);
+        if (nb==0)
+        {
+          dt_bauhaus_combobox_add(combo,_("use same shapes as"));
+          cids[pos++] = 0;  //nothing to do
+        }
+        char str[256] = "";
+        strcat(str,m->name());
+        strcat(str," ");
+        strcat(str,m->multi_name);
+        strcat(str,"   ");
+        dt_bauhaus_combobox_add(combo,str);
+        cids[pos++] = -1*pos2;
         nb++;
       }
     }
+    pos2++;
     modules = g_list_next(modules);
   }
-  
-  if (nb > 0)
-  {
-    item = gtk_menu_item_new_with_label(_("use same shapes as"));
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu);
-    gtk_menu_append(menu0, item);
-  }
-  
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  GtkWidget *hb = bd->masks_hbox;
-  gtk_widget_set_size_request(menu0,hb->allocation.width,-1); 
-  
-  gtk_widget_show_all(menu0);
+}
 
-  //we show the menu
-  gtk_menu_popup (GTK_MENU (menu0), NULL, NULL, _menu_position, module, 0, gtk_get_current_event_time());
+void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module)
+{
+  //we get the corresponding value
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  
+  int sel = dt_bauhaus_combobox_get(bd->masks_combo);
+  if (sel==0) return;
+  if (sel > 0)
+  {
+    int val = bd->masks_combo_ids[sel];
+    if (val == -1000000)
+    {
+      //delete all masks
+      _menu_no_masks(module);
+    }
+    else if (val == -2000001)
+    {
+      //add a circle shape
+      _menu_add_circle(module);
+    }
+    else if (val == -2000002)
+    {
+      //add a curve shape
+      _menu_add_curve(module);
+    }
+    else if (val < 0)
+    {
+      //use same shapes as another iop
+      val = -1*val - 1;
+      if (val < g_list_length(module->dev->iop))
+      {
+        dt_iop_module_t *m = (dt_iop_module_t *)g_list_nth_data(module->dev->iop,val);
+        _menu_use_same_as(module,m);
+      }
+    }
+    else if (val > 0)
+    {
+      //add an existing shape
+      _menu_add_exist(module,val);
+    }
+  }
+  //we update the combo line
+  dt_masks_iop_update(module);
 }
 
 void dt_masks_iop_update(struct dt_iop_module_t *module)
@@ -878,18 +902,20 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
   int nb = 0;
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
   if (grp && (grp->type&DT_MASKS_GROUP)) nb = g_list_length(grp->points);
+  dt_bauhaus_combobox_clear(bd->masks_combo);
+  free(bd->masks_combo_ids);
+  bd->masks_combo_ids = NULL;
   if (nb>0)
   {
     char txt[512];
     snprintf(txt,512,"%d shapes used",nb);
-    gtk_label_set_text(GTK_LABEL(bd->masks_state),txt);
+    dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
-  else
-  {
-    gtk_label_set_text(GTK_LABEL(bd->masks_state),_("no masks used"));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),FALSE);
-  }
-  //gtk_widget_set_sensitive(bd->masks_edit,(module->blend_params->forms_count>0));
+  else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
+
+  dt_bauhaus_combobox_set(bd->masks_combo,0);
+  if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
+  else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
 }
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)

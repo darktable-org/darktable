@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "control/control.h"
@@ -50,7 +50,7 @@ dt_lib_masks_t;
 
 const char* name()
 {
-  return _("masks manager");
+  return _("mask manager");
 }
 
 uint32_t views()
@@ -654,8 +654,9 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
     if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-      GTK_TOGGLE_BUTTON(bd->masks_edit)->active = FALSE;
-      gtk_widget_queue_draw (bd->masks_edit);
+      bd->masks_shown = 0;
+      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+      gtk_widget_queue_draw (bd->masks_combo);
     }
     modules = g_list_next(modules);
   }
@@ -704,8 +705,9 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
           if (module && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(module->flags() & IOP_FLAGS_NO_MASKS))
           {
             dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),TRUE);
-            gtk_widget_queue_draw (bd->masks_edit);
+            bd->masks_shown = 1;
+            dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
+            gtk_widget_queue_draw (bd->masks_combo);
           }
         }
       }

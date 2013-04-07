@@ -992,15 +992,18 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   if (!(module->flags()&IOP_FLAGS_NO_MASKS))
   {
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+    dt_bauhaus_combobox_clear(bd->masks_combo);
     if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
     {
       char txt[512];
       snprintf(txt,512,"%d shapes used",g_list_length(grp->points));
-      gtk_label_set_text(GTK_LABEL(bd->masks_state),txt);
+      dt_bauhaus_combobox_add(bd->masks_combo,txt);
     }
-    else gtk_label_set_text(GTK_LABEL(bd->masks_state),_("no masks used"));
+    else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
+    dt_bauhaus_combobox_set(bd->masks_combo,0);
+    if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
+    else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
   }
-  //gtk_widget_set_sensitive(bd->masks_edit,(module->blend_params->forms_count>0));
   
   /* now show hide controls as required */
   if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
@@ -1104,20 +1107,18 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     if (!(module->flags()&IOP_FLAGS_NO_MASKS))
     {
       //masks line
-      bd->masks_hbox = gtk_hbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
-    
-      gtk_box_pack_start(GTK_BOX(bd->masks_hbox), gtk_label_new(_("masks")), FALSE,FALSE,2);
-      bd->masks_state = gtk_label_new(_("no masks used"));
-      gtk_misc_set_alignment(GTK_MISC(bd->masks_state), 1.0f, 0.5f);
-      gtk_box_pack_start(GTK_BOX(bd->masks_hbox), bd->masks_state, TRUE, TRUE,5);
-      bd->masks_dropdown = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|CPF_DIRECTION_DOWN);
-      g_signal_connect (G_OBJECT (bd->masks_dropdown), "clicked", G_CALLBACK (dt_masks_iop_dropdown_callback), module);
-      gtk_widget_set_size_request(GTK_WIDGET(bd->masks_dropdown),14,14);
-      gtk_box_pack_start(GTK_BOX(bd->masks_hbox), bd->masks_dropdown, FALSE,FALSE,0);
-      bd->masks_edit = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
-      g_signal_connect (G_OBJECT (bd->masks_edit), "toggled", G_CALLBACK (dt_masks_iop_edit_toggle_callback), module);
-      gtk_box_pack_start(GTK_BOX(bd->masks_hbox), bd->masks_edit, FALSE,FALSE,0);
+      bd->masks_combo = dt_bauhaus_combobox_new(module);
+      dt_bauhaus_widget_set_label(bd->masks_combo, _("masks"));
+      dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
+      dt_bauhaus_combobox_set(bd->masks_combo, 0);
+      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+      g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
+      g_signal_connect (G_OBJECT (bd->masks_combo), "quad-pressed", G_CALLBACK (dt_masks_iop_edit_toggle_callback), module);
+      dt_bauhaus_combobox_add_populate_fct(bd->masks_combo,dt_masks_iop_combo_populate);
+      bd->masks_combo_ids = NULL;
+      bd->masks_shown = 0;
+      
+      gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->masks_combo), TRUE, TRUE,0);
     }
     
     for(int k = 0; k < bd->number_modes; k++)
@@ -1133,7 +1134,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_mode_callback), bd);
 
-    if (!(module->flags()&IOP_FLAGS_NO_MASKS)) gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->masks_hbox), TRUE, TRUE,0);
     gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);    
     gtk_box_pack_start(GTK_BOX(iopw), bd->opacity_slider, TRUE, TRUE,0);
 

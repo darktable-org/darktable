@@ -228,10 +228,9 @@ typedef struct dt_iop_gui_blend_data_t
   const dt_iop_gui_blendif_colorstop_t *colorstops[8];
   float increments[8];
   
-  GtkWidget* masks_state;
-  GtkWidget* masks_edit;
-  GtkWidget* masks_dropdown;
-  GtkWidget* masks_hbox;
+  GtkWidget* masks_combo;
+  int *masks_combo_ids;
+  int masks_shown;
 }
 dt_iop_gui_blend_data_t;
 

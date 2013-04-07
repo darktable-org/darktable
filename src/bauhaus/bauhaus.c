@@ -710,7 +710,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   // no quad icon and no toggle button:
   w->quad_paint  = 0;
   w->quad_toggle = 0;
-
+  w->combo_populate = NULL;
   gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w),
@@ -877,6 +877,13 @@ dt_bauhaus_combobox_new(dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (w), "destroy",
                     G_CALLBACK (dt_bauhaus_combobox_destroy), (gpointer)NULL);
   return GTK_WIDGET(w);
+}
+
+void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct) (struct dt_iop_module_t **module))
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  w->combo_populate = fct;
 }
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
@@ -1548,6 +1555,8 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     }
     case DT_BAUHAUS_COMBOBOX:
     {
+      // we launch the dynamic populate fct if any
+      if (w->combo_populate) w->combo_populate(&w->module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
       GtkAllocation tmp;

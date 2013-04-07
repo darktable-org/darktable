@@ -193,9 +193,10 @@ void dt_masks_gui_form_save_creation (struct dt_iop_module_t *module, dt_masks_f
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 
 void dt_masks_iop_edit_toggle_callback(GtkWidget *widget, struct dt_iop_module_t *module);
-void dt_masks_iop_dropdown_callback(GtkWidget *widget, struct dt_iop_module_t *module);
+void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
+void dt_masks_iop_combo_populate(struct dt_iop_module_t **m);
 int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form);
 char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
 

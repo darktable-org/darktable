@@ -1724,7 +1724,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-      GTK_TOGGLE_BUTTON(bd->masks_edit)->active = FALSE;
+      bd->masks_shown = 0;
+      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
       dt_dev_masks_selection_change(darktable.develop,0,FALSE);
     }
   }
