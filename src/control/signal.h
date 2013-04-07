@@ -129,6 +129,11 @@ typedef enum dt_signal_t
     no return
     */
   DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
+  /** \brief This signal is raised when a new storage module is loaded
+    noparameters
+    no return
+    */
+  DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
 
   /* do not touch !*/
   DT_SIGNAL_COUNT
