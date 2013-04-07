@@ -166,7 +166,6 @@ typedef struct dt_imageio_t
 }
 dt_imageio_t;
 
-
 /* load all modules */
 void dt_imageio_init   (dt_imageio_t *iio);
 /* cleanup */
@@ -188,6 +187,8 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index);
 int dt_imageio_get_index_of_format(dt_imageio_module_format_t* format);
 int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t* storage);
 
+/* add a module into the known module list */
+void dt_imageio_insert_storage(dt_imageio_module_storage_t* storage);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
