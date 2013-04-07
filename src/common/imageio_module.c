@@ -28,7 +28,7 @@ dt_imageio_sort_modules_storage (gconstpointer a, gconstpointer b)
 {
   const dt_imageio_module_storage_t *am = (const dt_imageio_module_storage_t *)a;
   const dt_imageio_module_storage_t *bm = (const dt_imageio_module_storage_t *)b;
-  return strcmp(am->name(), bm->name());
+  return strcmp(am->name(am), bm->name(bm));
 }
 
 static gint

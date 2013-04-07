@@ -939,7 +939,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
-  snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
+  snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
 
   /* create a cancellable bgjob ui template */
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
@@ -1010,7 +1010,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(sdata, imgid, mformat, fdata, num, total, settings->high_quality);
+          mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality);
         }
       }
 #ifdef _OPENMP

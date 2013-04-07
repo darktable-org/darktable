@@ -251,7 +251,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
     do
     {
       k++;
-      if( strcmp(  ((dt_imageio_module_storage_t *)it->data)->name(),name) == 0 ||
+      if( strcmp(  ((dt_imageio_module_storage_t *)it->data)->name(((dt_imageio_module_storage_t *)it->data)),name) == 0 ||
           strcmp(  ((dt_imageio_module_storage_t *)it->data)->plugin_name,name) == 0) break;
     }
     while( ( it = g_list_next(it) ) );
@@ -427,7 +427,7 @@ gui_init (dt_lib_module_t *self)
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    gtk_combo_box_append_text(d->storage, module->name());
+    gtk_combo_box_append_text(d->storage, module->name(module));
     it = g_list_next(it);
   }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->storage), 0, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);

@@ -131,7 +131,7 @@ typedef struct dt_imageio_module_storage_t
 
   // gui and management:
   /* get translated module name */
-  const char* (*name) ();
+  const char* (*name) (const struct dt_imageio_module_storage_t *self);
   /* construct widget above */
   void (*gui_init)    (struct dt_imageio_module_storage_t *self);
   /* destroy resources */
@@ -146,7 +146,7 @@ typedef struct dt_imageio_module_storage_t
   int (*recommended_dimension)    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 
   /* this actually does the work */
-  int (*store)(struct dt_imageio_module_data_t *self, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
+  int (*store)(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
   /* called once at the end (after exporting all images), if implemented. */
   int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
