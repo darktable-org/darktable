@@ -291,6 +291,31 @@ compress_callback (GtkWidget* slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static inline void
+update_colorpicker_fg(
+    GtkWidget* colorpicker,
+    float hue,
+    float sat)
+{
+  float rgb[3];
+  GdkColor c;
+  hsl2rgb(rgb, hue, sat, 0.5);
+  c.red = rgb[0]*65535.0;
+  c.green = rgb[1]*65535.0;
+  c.blue = rgb[2]*65535.0;
+  gtk_widget_modify_fg(colorpicker,GTK_STATE_NORMAL,&c);
+}
+
+static inline void
+update_saturation_slider_end_color(
+    GtkWidget* slider,
+    float hue)
+{
+  float rgb[3];
+  hsl2rgb(rgb, hue, 1.0, 0.5);
+  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+}
+
 static void
 hue_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -300,37 +325,30 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   double hue=0;
   double saturation=0;
-  float color[3];
-  GtkWidget *preview;
-  GtkWidget *sslider=NULL;
+  GtkWidget* colorpicker;
+  GtkWidget* sat_slider=NULL;
   if( slider == g->gslider1 )
   {
     // Shadows
-    p->shadow_hue=hue=dt_bauhaus_slider_get(slider);
-    saturation=p->shadow_saturation;
-    preview=GTK_WIDGET(g->colorpick1);
-    sslider=g->gslider2;
+    hue = p->shadow_hue = dt_bauhaus_slider_get(slider);
+    saturation = p->shadow_saturation;
+    colorpicker = GTK_WIDGET(g->colorpick1);
+    sat_slider = g->gslider2;
   }
   else
   {
-    p->highlight_hue=hue=dt_bauhaus_slider_get(slider);
+    hue = p->highlight_hue = dt_bauhaus_slider_get(slider);
     saturation=p->highlight_saturation;
-    preview=GTK_WIDGET(g->colorpick2);
-    sslider=g->gslider4;
+    colorpicker=GTK_WIDGET(g->colorpick2);
+    sat_slider=g->gslider4;
   }
 
-  hsl2rgb(color,hue,saturation,0.5);
-
-  GdkColor c;
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  dt_bauhaus_slider_set_stop(sslider,1.0,c.red,c.green,c.blue);  // Update saturation end color
-  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // update color preview
+  update_colorpicker_fg(colorpicker, hue, saturation);
+  update_saturation_slider_end_color(sat_slider, hue);
 
   if(self->dt->gui->reset) return;
-  gtk_widget_draw(GTK_WIDGET(sslider),NULL);
+
+  gtk_widget_draw(GTK_WIDGET(sat_slider),NULL);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -344,30 +362,22 @@ saturation_callback(GtkWidget *slider, gpointer user_data)
 
   double hue=0;
   double saturation=0;
-  float color[3];
-  GtkWidget *preview;
+  GtkWidget* colorpicker;
   if( slider == g->gslider2 )
   {
     // Shadows
     hue=dt_bauhaus_slider_get(g->gslider1);
     p->shadow_saturation=saturation=dt_bauhaus_slider_get(slider);
-    preview=GTK_WIDGET(g->colorpick1);
+    colorpicker=GTK_WIDGET(g->colorpick1);
   }
   else
   {
     hue=dt_bauhaus_slider_get(g->gslider3);
     p->highlight_saturation=saturation=dt_bauhaus_slider_get(slider);
-    preview=GTK_WIDGET(g->colorpick2);
+    colorpicker=GTK_WIDGET(g->colorpick2);
   }
 
-  hsl2rgb(color,hue,saturation,0.5);
-
-  GdkColor c;
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  gtk_widget_modify_fg(preview,GTK_STATE_NORMAL,&c); // Update color preview
+  update_colorpicker_fg(colorpicker, hue, saturation);
 
   if(self->dt->gui->reset) return;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -480,23 +490,10 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->balance*100.0);
   dt_bauhaus_slider_set(g->scale2, p->compress);
 
-  float color[3];
-  hsl2rgb(color,p->shadow_hue,p->shadow_saturation,0.5);
-
-  GdkColor c;
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick1),GTK_STATE_NORMAL,&c);
-
-  hsl2rgb(color,p->highlight_hue,p->highlight_saturation,0.5);
-  c.red=color[0]*65535.0;
-  c.green=color[1]*65535.0;
-  c.blue=color[2]*65535.0;
-
-  gtk_widget_modify_fg(GTK_WIDGET(g->colorpick2),GTK_STATE_NORMAL,&c);
-
+  update_colorpicker_fg(GTK_WIDGET(g->colorpick1), p->shadow_hue, p->shadow_saturation);
+  update_colorpicker_fg(GTK_WIDGET(g->colorpick2), p->highlight_hue, p->highlight_saturation);
+  update_saturation_slider_end_color(g->gslider2, p->shadow_hue);
+  update_saturation_slider_end_color(g->gslider4, p->highlight_hue);
 }
 
 void init(dt_iop_module_t *module)
