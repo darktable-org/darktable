@@ -39,8 +39,12 @@
                 <para>When both source and target clusters are collected an automatic color mapping is applied to the target image. In its default settings the overall 
                       effect is quite exaggerated. A set of sliders gives you control of the effect's strength. You can also use blending operator <quote>normal</quote>
                       to tame the effect (see <xref linkend="blending operators"/>).</para>
-                      
-                     
+
+
+                <sect5><title>acquire as source/target</title>
+                        <para>Press these buttons to generate color clusters for the source and target image, respectively. The processing takes a few seconds
+                         in which the GUI remains unresponsive.</para>
+                </sect5>
 		<sect5><title>number of clusters</title>
 			<para>Sets the number of color clusters to use. If you change this parameter all collected color clusters are reset and need to be acquired anew.</para>
 		</sect5>
@@ -80,8 +84,8 @@
 								<graphic fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry><para>The target image with color mapping applied. A number of 5 clusters was used. <quote>color dominance</quote> is 
-                                                               set to 85% for a bold but still credible effect. <quote>histogram equalization</quote> is set to 80% and the overall
-                                                               effect is controlled by blend mode <quote>normal</quote> with an opacity of 50%. As the 
+                                                               set to 100% for a bold but still credible effect. <quote>histogram equalization</quote> is set to 90% and the overall
+                                                               effect is controlled by blend mode <quote>normal</quote> with an opacity of 90%. As the 
                                                                <emphasis>color mapping</emphasis> module comes early in the pixelpipe, we could further optimize the colors
                                                                with modules like <emphasis>tone curve</emphasis> (see <xref linkend="tone curve"/>) or 
                                                                <emphasis>color correction</emphasis> (see <xref linkend="color correction"/>).</para></entry>

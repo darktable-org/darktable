@@ -517,7 +517,7 @@ get_clusters(const float4 col, const int n, global float2 *mean, float *weight)
   float Mdist = 0.0f, mdist = FLT_MAX;
   for(int k=0; k<n; k++)
   {
-    const float dist = (col.y-mean[k].x)*(col.y-mean[k].x) + (col.z-mean[k].y)*(col.z-mean[k].y);
+    const float dist = sqrt((col.y-mean[k].x)*(col.y-mean[k].x) + (col.z-mean[k].y)*(col.z-mean[k].y));
     weight[k] = dist;
     if(dist < mdist) mdist = dist;
     if(dist > Mdist) Mdist = dist;

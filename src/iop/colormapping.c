@@ -261,7 +261,7 @@ get_clusters(const float *col, const int n, float mean[n][2], float *weight)
   float Mdist = 0.0f, mdist = FLT_MAX;
   for(int k=0; k<n; k++)
   {
-    const float dist = (col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]);
+    const float dist = sqrtf((col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]));
     weight[k] = dist;
     if(dist < mdist) mdist = dist;
     if(dist > Mdist) Mdist = dist;
@@ -1004,7 +1004,7 @@ gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, int3
     capture_histogram(buffer, width, height, p->target_hist);
 
     // get n color clusters
-    kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->source_weight);
+    kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->target_weight);
 
     p->flag |= HAS_TARGET;
   }   
