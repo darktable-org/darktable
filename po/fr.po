@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-06 13:45+0200\n"
-"PO-Revision-Date: 2013-04-06 13:47+0100\n"
+"POT-Creation-Date: 2013-04-07 12:01+0200\n"
+"PO-Revision-Date: 2013-04-07 12:13+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -323,12 +323,12 @@ msgid "not available on this system"
 msgstr "non disponible sur cette plateforme"
 
 #: ../build/src/preferences_gen.h:1507
-msgid "always use littlecms2 during export"
-msgstr "toujours utiliser littlecms2 pendant l'exportation"
+msgid "always try to use littlecms2"
+msgstr "toujours essayer d'utiliser littlecms2"
 
 #: ../build/src/preferences_gen.h:1519
-msgid "this is about 28x as slow as the default."
-msgstr "à peu près 28x plus lent que l'option par défaut."
+msgid "this is significantly slower as the default."
+msgstr "c'est plus lent que l'option par défaut"
 
 #: ../build/src/preferences_gen.h:1526
 msgid "do high quality resampling during export"
@@ -445,7 +445,7 @@ msgstr ""
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:961
 #: ../src/iop/bilateral.cc:346 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:721
+#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:726
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "rouge"
@@ -457,14 +457,14 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:965
 #: ../src/iop/bilateral.cc:347 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:722
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:727
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "vert"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:967
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:723
+#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:728
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
 msgid "blue"
 msgstr "bleu"
@@ -1135,7 +1135,7 @@ msgstr "chroma"
 #: ../src/develop/blend_gui.c:1066 ../src/iop/channelmixer.c:437
 #: ../src/iop/colorize.c:417 ../src/iop/colorzones.c:975
 #: ../src/iop/colorzones.c:1002 ../src/iop/graduatednd.c:1046
-#: ../src/iop/splittoning.c:549 ../src/iop/splittoning.c:608
+#: ../src/iop/splittoning.c:545
 msgid "hue"
 msgstr "teinte"
 
@@ -1216,7 +1216,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:733 ../src/libs/import.c:487 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:738 ../src/libs/import.c:487 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "pré-réglage"
@@ -2914,7 +2914,8 @@ msgid "orientation"
 msgstr "orientation"
 
 #: ../src/iop/borders.c:1067
-msgid "portait"
+#, fuzzy
+msgid "portrait"
 msgstr "portrait"
 
 #: ../src/iop/borders.c:1068
@@ -3011,8 +3012,7 @@ msgstr "canal de destination"
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
 #: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1061
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
-#: ../src/iop/splittoning.c:550 ../src/iop/splittoning.c:609
-#: ../src/iop/vignette.c:1129
+#: ../src/iop/splittoning.c:557 ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "saturation"
 
@@ -3358,9 +3358,8 @@ msgstr "sRGB (ex: jpg)"
 
 #: ../src/iop/colorin.c:754 ../src/iop/colorin.c:786 ../src/iop/colorout.c:921
 #: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
-#: ../src/libs/export.c:508
-msgid "Adobe RGB"
-msgstr "Adobe RGB"
+msgid "Adobe RGB (compatible)"
+msgstr "Adobe RGB (compatible)"
 
 #: ../src/iop/colorin.c:756 ../src/iop/colorin.c:788 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
@@ -3405,15 +3404,15 @@ msgctxt "accel"
 msgid "source mix"
 msgstr "mélange des sources"
 
-#: ../src/iop/colorize.c:279 ../src/iop/splittoning.c:394
+#: ../src/iop/colorize.c:279 ../src/iop/splittoning.c:392
 msgid "select tone color"
 msgstr "sélectionne la couleur"
 
-#: ../src/iop/colorize.c:424
+#: ../src/iop/colorize.c:424 ../src/iop/splittoning.c:552
 msgid "select the hue tone"
-msgstr "sélectionne la saturation"
+msgstr "sélectionne la teinte"
 
-#: ../src/iop/colorize.c:434 ../src/iop/splittoning.c:592
+#: ../src/iop/colorize.c:434
 msgid "select the saturation shadow tone"
 msgstr "sélectionne la saturation des ombres"
 
@@ -4549,7 +4548,7 @@ msgstr "conserver les hautes lumières"
 
 #. Highlights
 #: ../src/iop/monochrome.c:552 ../src/iop/shadhi.c:651
-#: ../src/iop/splittoning.c:595
+#: ../src/iop/splittoning.c:586
 msgid "highlights"
 msgstr "hautes lumières"
 
@@ -4671,7 +4670,7 @@ msgctxt "accel"
 msgid "highlights"
 msgstr "hautes lumières"
 
-#: ../src/iop/shadhi.c:149 ../src/iop/splittoning.c:109
+#: ../src/iop/shadhi.c:149 ../src/iop/splittoning.c:107
 msgctxt "accel"
 msgid "compress"
 msgstr "seuil"
@@ -4687,11 +4686,11 @@ msgid "highlights color correction"
 msgstr "saturation des hautes lumières"
 
 #. Shadows
-#: ../src/iop/shadhi.c:650 ../src/iop/splittoning.c:536
+#: ../src/iop/shadhi.c:650 ../src/iop/splittoning.c:583
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:653 ../src/iop/splittoning.c:667
+#: ../src/iop/shadhi.c:653 ../src/iop/splittoning.c:601
 msgid "compress"
 msgstr "seuil"
 
@@ -4793,21 +4792,21 @@ msgstr "luminance du flou"
 msgid "the mix of effect"
 msgstr "mélange entre pré-réglages"
 
-#: ../src/iop/splittoning.c:87
+#: ../src/iop/splittoning.c:85
 msgid "split toning"
 msgstr "virage partiel"
 
-#: ../src/iop/splittoning.c:103
+#: ../src/iop/splittoning.c:101
 msgctxt "accel"
 msgid "pick primary color"
 msgstr "première couleur"
 
-#: ../src/iop/splittoning.c:105
+#: ../src/iop/splittoning.c:103
 msgctxt "accel"
 msgid "pick secondary color"
 msgstr "seconde couleur"
 
-#: ../src/iop/splittoning.c:108
+#: ../src/iop/splittoning.c:106
 msgctxt "accel"
 msgid "balance"
 msgstr "répartition"
@@ -4816,7 +4815,7 @@ msgstr "répartition"
 #. highlights: #ECA413
 #. balance : 63
 #. compress : 0
-#: ../src/iop/splittoning.c:135
+#: ../src/iop/splittoning.c:133
 msgid "authentic sepia"
 msgstr "sépia authentique"
 
@@ -4824,7 +4823,7 @@ msgstr "sépia authentique"
 #. highlights: #446CBB
 #. balance : 0
 #. compress : 5.22
-#: ../src/iop/splittoning.c:144
+#: ../src/iop/splittoning.c:142
 msgid "authentic cyanotype"
 msgstr "cyanotype authentique"
 
@@ -4832,7 +4831,7 @@ msgstr "cyanotype authentique"
 #. highlights : #A16C5E
 #. balance : 100
 #. compress : 0
-#: ../src/iop/splittoning.c:153
+#: ../src/iop/splittoning.c:151
 msgid "authentic platinotype"
 msgstr "platinotype authentique"
 
@@ -4840,33 +4839,25 @@ msgstr "platinotype authentique"
 #. highlights: #D9D0C7
 #. balance : 60
 #. compress : 0
-#: ../src/iop/splittoning.c:162
+#: ../src/iop/splittoning.c:160
 msgid "chocolate brown"
 msgstr "marron chocolat"
 
-#: ../src/iop/splittoning.c:582
-msgid "select the hue tone for shadows"
-msgstr "sélectionne la teinte des ombres"
+#: ../src/iop/splittoning.c:560
+msgid "select the saturation tone"
+msgstr "sélectionne la saturation"
 
-#: ../src/iop/splittoning.c:642
-msgid "select the hue tone for highlights"
-msgstr "sélectionne la teinte des hautes lumières"
-
-#: ../src/iop/splittoning.c:652
-msgid "select the saturation highlights tone"
-msgstr "sélectionne la saturation des hautes lumières"
-
-#: ../src/iop/splittoning.c:662
+#: ../src/iop/splittoning.c:596
 msgid "balance"
 msgstr "répartition"
 
-#: ../src/iop/splittoning.c:671
+#: ../src/iop/splittoning.c:605
 msgid "the balance of center of splittoning"
 msgstr ""
 "répartition de la luminance\n"
 "entre ombres et hautes lumières"
 
-#: ../src/iop/splittoning.c:672
+#: ../src/iop/splittoning.c:606
 msgid ""
 "compress the effect on highlighs/shadows and\n"
 "preserve midtones"
@@ -4923,28 +4914,28 @@ msgstr "spot"
 msgid "passthrough"
 msgstr "aucune"
 
-#: ../src/iop/temperature.c:719
+#: ../src/iop/temperature.c:724
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:720
+#: ../src/iop/temperature.c:725
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/temperature.c:735
+#: ../src/iop/temperature.c:740
 msgid "choose white balance preset from camera"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:738
+#: ../src/iop/temperature.c:743
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:739
+#: ../src/iop/temperature.c:744
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:743
+#: ../src/iop/temperature.c:748
 msgid "fine tune white balance preset"
 msgstr "ajustement de balance des blancs"
 
@@ -5933,6 +5924,10 @@ msgstr "rendu"
 msgid "image settings"
 msgstr "paramètres d'image"
 
+#: ../src/libs/export.c:508
+msgid "Adobe RGB"
+msgstr "Adobe RGB"
+
 #: ../src/libs/export.c:581
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
@@ -5953,7 +5948,7 @@ msgstr "exporte avec les réglages actuels (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:825 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1606
+#: ../src/views/darkroom.c:1611
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -7354,7 +7349,7 @@ msgstr "aucun boîtier disponible pour la capture..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1594
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1599
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
@@ -7429,34 +7424,34 @@ msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1598
+#: ../src/views/darkroom.c:1603
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:1600
+#: ../src/views/darkroom.c:1605
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:1602
+#: ../src/views/darkroom.c:1607
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1610
+#: ../src/views/darkroom.c:1615
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:1612
+#: ../src/views/darkroom.c:1617
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1616
+#: ../src/views/darkroom.c:1621
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
@@ -7554,15 +7549,21 @@ msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
+#~ msgid "select the hue tone for shadows"
+#~ msgstr "sélectionne la teinte des ombres"
+
+#~ msgid "select the hue tone for highlights"
+#~ msgstr "sélectionne la teinte des hautes lumières"
+
+#~ msgid "select the saturation highlights tone"
+#~ msgstr "sélectionne la saturation des hautes lumières"
+
 #~ msgctxt "accel"
 #~ msgid "temperature out"
 #~ msgstr "T(K) sortie"
 
 #~ msgid "temperature out"
 #~ msgstr "T(K) sortie"
-
-#~ msgid "Adobe RGB (compatible)"
-#~ msgstr "Adobe RGB (compatible)"
 
 #~ msgid "run indexer"
 #~ msgstr "indexer les images"

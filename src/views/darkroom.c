@@ -1509,7 +1509,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
-  const float minscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+  const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
+  float oldscale;
+  DT_CTL_GET_GLOBAL(oldscale, dev_zoom_scale);
   // offset from center now (current zoom_{x,y} points there)
   float mouse_off_x = x - .5*dev->width, mouse_off_y = y - .5*dev->height;
   zoom_x += mouse_off_x/(procw*scale);
@@ -1519,16 +1521,19 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(up)
   {
     if (scale == 1.0f) return;
-    else scale += .1f*(1.0f - minscale);
+    else if (scale < fitscale) scale += .05f*(1.0f - fitscale);
+    else scale += .1f*(1.0f - fitscale);
   }
   else
   {
-    if (scale == minscale) return;
-    else scale -= .1f*(1.0f - minscale);
+    if (fabsf(oldscale - fitscale) < 0.0003f) scale = oldscale - 0.0001f;
+    else if (scale < 0.5*fitscale) return;
+    else if (scale <= fitscale) scale -= .05f*(1.0f - fitscale);
+    else scale -= .1f*(1.0f - fitscale);
   }
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if(scale > 0.99)            zoom = DT_ZOOM_1;
-  if(scale < minscale + 0.01) zoom = DT_ZOOM_FIT;
+  if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
   if(zoom != DT_ZOOM_1)
   {
     zoom_x -= mouse_off_x/(procw*scale);

@@ -1064,7 +1064,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_orient = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->aspect_orient, _("orientation"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
-  dt_bauhaus_combobox_add(g->aspect_orient, _("portait"));
+  dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
   g_object_set(G_OBJECT(g->aspect_orient), "tooltip-text", _("aspect ratio orientation of the image with border"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->aspect_orient), "value-changed", G_CALLBACK (aspect_orient_changed), self);

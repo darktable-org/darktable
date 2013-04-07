@@ -949,8 +949,8 @@
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
     <default>FALSE</default>
-    <shortdescription>always use littlecms2 during export</shortdescription>
-    <longdescription>this is about 28x as slow as the default.</longdescription>
+    <shortdescription>always try to use littlecms2</shortdescription>
+    <longdescription>this is significantly slower as the default.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/high_quality_processing</name>
