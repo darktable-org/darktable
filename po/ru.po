@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-03-31 09:41+0400\n"
-"PO-Revision-Date: 2013-03-31 13:18+0300\n"
+"PO-Revision-Date: 2013-04-08 20:03+0300\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
@@ -5187,7 +5187,7 @@ msgstr "Вельвия"
 #: ../src/iop/vibrance.c:86
 msgctxt "accel"
 msgid "vibrance"
-msgstr "Живость"
+msgstr "Сочность"
 
 #: ../src/iop/velvia.c:102
 msgctxt "accel"
@@ -5209,12 +5209,11 @@ msgstr "Баланс между тенями и светами"
 #: ../src/iop/vibrance.c:69
 #: ../src/iop/vibrance.c:256
 msgid "vibrance"
-msgstr "Живость"
+msgstr "Сочность"
 
 #: ../src/iop/vibrance.c:258
-#, fuzzy
 msgid "the amount of vibrance"
-msgstr "Количество применяемой насыщенности"
+msgstr "Количество применяемой сочности"
 
 #: ../src/iop/vignette.c:142
 msgid "vignetting"
