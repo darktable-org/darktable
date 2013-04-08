@@ -226,7 +226,8 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
     {
       dt_history_item_t *item=g_malloc (sizeof (dt_history_item_t));
       item->num = sqlite3_column_int (stmt, 0);
-      char *mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
+      char *mname = NULL;
+      mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if (enabled)
       {
         if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
@@ -240,6 +241,8 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
       result = g_list_append (result,item);
+
+      g_free(mname);
     }
   }
   return result;
