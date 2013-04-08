@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/debug.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -82,6 +83,8 @@ void dt_colorlabels_toggle_label_selection (const int color)
 
   // clean up
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from memory.color_labels_temp", NULL, NULL, NULL);
+
+  dt_collection_hint_message(darktable.collection);
 }
 
 void dt_colorlabels_toggle_label (const int imgid, const int color)
@@ -108,6 +111,8 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
     sqlite3_finalize(stmt2);
   }
   sqlite3_finalize(stmt);
+  
+  dt_collection_hint_message(darktable.collection);
 }
 
 gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
