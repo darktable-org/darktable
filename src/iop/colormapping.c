@@ -158,15 +158,15 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 
 void
 init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire source"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire target"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as source"), 0, 0);
+  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as target"), 0, 0);
 }
 
 void
@@ -175,8 +175,8 @@ connect_key_accels(dt_iop_module_t *self)
   dt_iop_colormapping_gui_data_t *g =
     (dt_iop_colormapping_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_button_iop(self, "acquire source", g->acquire_source_button);
-  dt_accel_connect_button_iop(self, "acquire target", g->acquire_target_button);
+  dt_accel_connect_button_iop(self, "acquire as source", g->acquire_source_button);
+  dt_accel_connect_button_iop(self, "acquire as target", g->acquire_target_button);
 }
 
 
@@ -543,12 +543,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
   dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->data;
+  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
+  const int ch = piece->colors;
 
   const float scale = piece->iscale/roi_in->scale;
   const float sigma_s = 50.0f / scale;
@@ -564,6 +566,28 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_mem dev_source_mean = NULL;
   cl_mem dev_var_ratio = NULL;
   cl_mem dev_mapio = NULL;
+
+
+  // save a copy of preview input buffer so we can get histogram and color statistics out of it
+  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
+  {
+    dt_pthread_mutex_lock(&g->lock);
+    if(g->buffer)
+      free (g->buffer);
+
+    g->buffer = malloc (width*height*ch*sizeof(float));
+    g->width = width;
+    g->height = height;
+    g->ch = ch;
+
+    if(g->buffer)
+      err = dt_opencl_copy_device_to_host(devid, g->buffer, dev_in, width, height, ch*sizeof(float));
+
+    dt_pthread_mutex_unlock(&g->lock);
+
+    if(err != CL_SUCCESS) goto error;
+  }
+
 
   // process image if all mapping information is present in the parameter set
   if(data->flag & HAS_TARGET && data->flag & HAS_SOURCE)
@@ -714,7 +738,6 @@ clusters_changed (GtkWidget *slider, dt_iop_module_t *self)
   memset(p->target_weight, 0, sizeof(float)*MAXN);
   p->flag = NEUTRAL;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  //dt_control_queue_redraw_widget(self->widget);
 }
 
 static void
