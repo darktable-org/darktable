@@ -7,7 +7,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
 	basecurve highlights velvia vignette splittoning grain bilateral
 	profile_gamma colorcontrast lowpass vibrance
 	channelmixer graduatednd relight zonesystem demosaic atrous tonemap
-  colortransfer colorize invert shadhi
+  colortransfer colormapping colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
   flip globaltonemap bilat denoiseprofile dither)
@@ -43,6 +43,7 @@ add_library(clahe MODULE "clahe.c")
 add_library(bilateral MODULE "bilateral.cc")
 add_library(profile_gamma MODULE "profile_gamma.c")
 add_library(colortransfer MODULE "colortransfer.c")
+add_library(colormapping MODULE "colormapping.c")
 add_library(channelmixer MODULE "channelmixer.c")
 add_library(graduatednd MODULE "graduatednd.c")
 add_library(relight MODULE "relight.c")
