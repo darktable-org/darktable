@@ -339,6 +339,18 @@
 				</para>
 			</sect3>
 
+			<sect3 status="draft"><title>Artistic effects</title>
+                                <para>darktable comes with a rich set of artistic effect modules. To name just a few: with the 
+                                      <link linkend="watermark"><emphasis>watermark</emphasis></link> module you
+                                      add an individual watermark to your image. The <link linkend="grain"><emphasis>grain</emphasis></link> 
+                                      module simulates the typical noise of classical analogue footage. Use the
+                                      <link linkend="color mapping"><emphasis>color mapping</emphasis></link> module to transfer the look and feel 
+                                      of one color image onto another. darktable's <link linkend="low light"><emphasis>low light</emphasis></link> module allows to 
+                                      simulate human vision to make lowlight pictures look closer to reality. 
+                                      The <link linkend="graduated density"><emphasis>graduated density</emphasis></link> filter adds a neutral
+                                      or colored gradient to your image for exposure and color correction.
+                                </para>
+                        </sect3>
 
 		</sect2>
 
