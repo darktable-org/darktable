@@ -18,6 +18,8 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define __STDC_FORMAT_MACROS
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

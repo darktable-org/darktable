@@ -9,6 +9,7 @@
 <!ATTLIST type
 	min CDATA #IMPLIED
 	max CDATA #IMPLIED
+	factor CDATA #IMPLIED
 >
 <!ELEMENT enum (option)+>
 <!ELEMENT option (#PCDATA)>
