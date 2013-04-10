@@ -1245,7 +1245,7 @@ void leave(dt_view_t *self)
   // tag image as changed
   // TODO: only tag the image when there was a real change.
   guint tagid = 0;
-  dt_tag_new("darktable|changed",&tagid);
+  dt_tag_new_from_gui("darktable|changed",&tagid);
   dt_tag_attach(tagid, dev->image_storage.id);
   // commit image ops to db
   dt_dev_write_history(dev);
