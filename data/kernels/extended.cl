@@ -511,24 +511,22 @@ global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const i
 #define HISTN (1<<11)
 #define MAXN 5
 
+// inverse distant weighting according to D. Shepard's method; with power parameter 2.0
 static void
 get_clusters(const float4 col, const int n, global float2 *mean, float *weight)
 {
-  float Mdist = 0.0f, mdist = FLT_MAX;
+  float mdist = FLT_MAX;
   for(int k=0; k<n; k++)
   {
-    const float dist = sqrt((col.y-mean[k].x)*(col.y-mean[k].x) + (col.z-mean[k].y)*(col.z-mean[k].y));
-    weight[k] = dist;
-    if(dist < mdist) mdist = dist;
-    if(dist > Mdist) Mdist = dist;
+    const float dist2 = (col.y-mean[k].x)*(col.y-mean[k].x) + (col.z-mean[k].y)*(col.z-mean[k].y);  // dist^2
+    weight[k] = dist2 > 1.0e-6f ? 1.0f/dist2 : -1.0f;                                                // direct hits marked as -1
+    if(dist2 < mdist) mdist = dist2;
   }
-  if(Mdist-mdist > 0) for(int k=0; k<n; k++) weight[k] = (weight[k] - mdist)/(Mdist-mdist);
+  if(mdist < 1.0e-6f) for(int k=0; k<n; k++) weight[k] = weight[k] < 0.0f ? 1.0f : 0.0f;             // correction in case of direct hits
   float sum = 0.0f;
   for(int k=0; k<n; k++) sum += weight[k];
-  if(sum > 0) for(int k=0; k<n; k++) weight[k] /= sum;
+  if(sum > 0.0f) for(int k=0; k<n; k++) weight[k] /= sum;
 }
-
-
 
 kernel void
 colormapping_histogram (read_only image2d_t in, write_only image2d_t out, const int width, const int height,

@@ -85,18 +85,9 @@
 							<entry>
 								<graphic fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" />
 							</entry>						
-							<entry><para>The target image with color mapping applied. A number of 5 clusters was used. <quote>color dominance</quote> is 
-                                                               set to 100% for a bold but still credible effect. <quote>histogram equalization</quote> is set to 90% and the overall
-                                                               effect is controlled by blend mode <quote>normal</quote> with an opacity of 90%.</para></entry>
+							<entry><para>The target image with color mapping applied. A number of 2 clusters was used. <quote>color dominance</quote> is 
+                                                               set to 100% for a bold but still credible effect. <quote>histogram equalization</quote> is set to 80%.</para></entry>
 						</row>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/colormapping_ex4.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry><para>The same as before, only the turquoise color of the water damped a bit by a blend mask
-                                                                using the a-channel (see <xref linkend="conditional blending"/>).</para></entry>
-						</row>
-
 
 					</tbody>
 				</tgroup>

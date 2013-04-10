@@ -58,8 +58,6 @@ DT_MODULE(1)
 #define HISTN (1<<11)
 #define MAXN 5
 
-#define LEGACY_APPLY     4
-
 #define NEUTRAL          0
 #define HAS_SOURCE       1
 #define HAS_TARGET       2
@@ -255,22 +253,24 @@ get_cluster_mapping(const int n, float mi[n][2], float wi[n], float mo[n][2], fl
   //for(int i=0;i<n;i++) printf("[%d] => [%d]\n", i, mapio[i]);
 }
 
+
+// inverse distant weighting according to D. Shepard's method; with power parameter 2.0
 static void
 get_clusters(const float *col, const int n, float mean[n][2], float *weight)
 {
-  float Mdist = 0.0f, mdist = FLT_MAX;
+  float mdist = FLT_MAX;
   for(int k=0; k<n; k++)
   {
-    const float dist = sqrtf((col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]));
-    weight[k] = dist;
-    if(dist < mdist) mdist = dist;
-    if(dist > Mdist) Mdist = dist;
+    const float dist2 = (col[1]-mean[k][0])*(col[1]-mean[k][0]) + (col[2]-mean[k][1])*(col[2]-mean[k][1]);  // dist^2
+    weight[k] = dist2 > 1.0e-6f ? 1.0f/dist2 : -1.0f;                                                        // direct hits marked as -1
+    if(dist2 < mdist) mdist = dist2;
   }
-  if(Mdist-mdist > 0) for(int k=0; k<n; k++) weight[k] = (weight[k] - mdist)/(Mdist-mdist);
+  if(mdist < 1.0e-6f) for(int k=0; k<n; k++) weight[k] = weight[k] < 0.0f ? 1.0f : 0.0f;                     // correction in case of direct hits
   float sum = 0.0f;
   for(int k=0; k<n; k++) sum += weight[k];
-  if(sum > 0) for(int k=0; k<n; k++) weight[k] /= sum;
+  if(sum > 0.0f) for(int k=0; k<n; k++) weight[k] /= sum;
 }
+
 
 static int
 get_cluster(const float *col, const int n, float mean[n][2])
@@ -854,7 +854,7 @@ reload_defaults(dt_iop_module_t *module)
 
   dt_iop_colormapping_params_t tmp;
   tmp.flag = NEUTRAL;
-  tmp.n = 5;
+  tmp.n = 3;
   tmp.dominance = 100.0f;
   tmp.equalization = 50.0f;
   memset(tmp.source_ihist, 0, sizeof(float)*HISTN);
@@ -883,59 +883,26 @@ reload_defaults(dt_iop_module_t *module)
 
 
 static gboolean
-source_cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
+cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-  const int inset = 5;
-  int width = widget->allocation.width, height = widget->allocation.height;
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(cst);
-  cairo_set_source_rgb (cr, .2, .2, .2);
-  cairo_paint(cr);
 
-  cairo_translate(cr, inset, inset);
-  width -= 2*inset;
-  height -= 2*inset;
+  float (*mean)[2];
+  float (*var)[2];
 
-
-  const float sep = 2.0;
-  const float qwd = (width-(p->n-1)*sep)/(float)p->n;
-  for(int cl=0; cl<p->n; cl++)
+  if(widget == g->source_area)
   {
-    // draw cluster
-    for(int j=-1; j<=1; j++) for(int i=-1; i<=1; i++)
-      {
-        // draw 9x9 grid showing mean and variance of this cluster.
-        double rgb[3] = {0.5, 0.5, 0.5};
-        cmsCIELab Lab;
-        Lab.L = 5.0;//53.390011;
-        Lab.a = (p->source_mean[cl][0] + i*p->source_var[cl][0]);// / Lab.L;
-        Lab.b = (p->source_mean[cl][1] + j*p->source_var[cl][1]);// / Lab.L;
-        Lab.L = 53.390011;
-        cmsDoTransform(g->xform, &Lab, rgb, 1);
-        cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-.5, height/3.0-.5);
-        cairo_fill(cr);
-      }
-    cairo_translate (cr, qwd + sep, 0);
+    mean = p->source_mean;
+    var = p->source_var;
+  }
+  else
+  {
+    mean = p->target_mean;
+    var = p->target_var;
   }
 
-  cairo_destroy(cr);
-  cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
-  cairo_set_source_surface (cr_pixmap, cst, 0, 0);
-  cairo_paint(cr_pixmap);
-  cairo_destroy(cr_pixmap);
-  cairo_surface_destroy(cst);
-  return TRUE;
-}
 
-
-static gboolean
-target_cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
-{
-  dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   const int inset = 5;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -959,8 +926,8 @@ target_cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_
         double rgb[3] = {0.5, 0.5, 0.5};
         cmsCIELab Lab;
         Lab.L = 5.0;//53.390011;
-        Lab.a = (p->target_mean[cl][0] + i*p->target_var[cl][0]);// / Lab.L;
-        Lab.b = (p->target_mean[cl][1] + j*p->target_var[cl][1]);// / Lab.L;
+        Lab.a = (mean[cl][0] + i*var[cl][0]);// / Lab.L;
+        Lab.b = (mean[cl][1] + j*var[cl][1]);// / Lab.L;
         Lab.L = 53.390011;
         cmsDoTransform(g->xform, &Lab, rgb, 1);
         cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
@@ -1087,7 +1054,7 @@ gui_init(struct dt_iop_module_t *self)
   g->source_area = gtk_drawing_area_new();
   gtk_widget_set_size_request(g->source_area, 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (g->source_area), "expose-event", G_CALLBACK (source_cluster_preview_expose), self);
+  g_signal_connect (G_OBJECT (g->source_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
   GtkHBox *hbox2 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkWidget *target = gtk_label_new(_("target clusters:"));
@@ -1097,7 +1064,7 @@ gui_init(struct dt_iop_module_t *self)
   g->target_area = gtk_drawing_area_new();
   gtk_widget_set_size_request(g->target_area, 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (g->target_area), "expose-event", G_CALLBACK (target_cluster_preview_expose), self);
+  g_signal_connect (G_OBJECT (g->target_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
 
   GtkBox *box = GTK_BOX(gtk_hbox_new(FALSE, 5));
@@ -1116,7 +1083,7 @@ gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
 
-  g->clusters = dt_bauhaus_slider_new_with_range(self, 3.0f, 5.0f, 1., p->n, 0);
+  g->clusters = dt_bauhaus_slider_new_with_range(self, 1.0f, 5.0f, 1., p->n, 0);
   dt_bauhaus_widget_set_label(g->clusters, _("number of clusters"));
   dt_bauhaus_slider_set_format(g->clusters, "%.0f");
   g_object_set(G_OBJECT(g->clusters), "tooltip-text", _("number of clusters to find in image. value change resets all clusters"), (char *)NULL);
