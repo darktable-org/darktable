@@ -727,17 +727,22 @@ clusters_changed (GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
-  p->n = (int)dt_bauhaus_slider_get(slider);
-  memset(p->source_ihist, 0, sizeof(float)*HISTN);
-  memset(p->source_mean, 0, sizeof(float)*MAXN*2);
-  memset(p->source_var, 0,  sizeof(float)*MAXN*2);
-  memset(p->source_weight, 0, sizeof(float)*MAXN);
-  memset(p->target_hist, 0, sizeof(int)*HISTN);
-  memset(p->target_mean, 0, sizeof(float)*MAXN*2);
-  memset(p->target_var, 0,  sizeof(float)*MAXN*2);
-  memset(p->target_weight, 0, sizeof(float)*MAXN);
-  p->flag = NEUTRAL;
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  int new = (int)dt_bauhaus_slider_get(slider);
+  if(new != p->n)
+  {
+    p->n = new;
+    memset(p->source_ihist, 0, sizeof(float)*HISTN);
+    memset(p->source_mean, 0, sizeof(float)*MAXN*2);
+    memset(p->source_var, 0,  sizeof(float)*MAXN*2);
+    memset(p->source_weight, 0, sizeof(float)*MAXN);
+    memset(p->target_hist, 0, sizeof(int)*HISTN);
+    memset(p->target_mean, 0, sizeof(float)*MAXN*2);
+    memset(p->target_var, 0,  sizeof(float)*MAXN*2);
+    memset(p->target_weight, 0, sizeof(float)*MAXN);
+    p->flag = NEUTRAL;
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
 }
 
 static void
