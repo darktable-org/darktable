@@ -1694,7 +1694,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   float *mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
   {
-    dt_control_log("could not allocate buffer for blending");
+    dt_control_log(_("could not allocate buffer for blending"));
     return;
   }
   
@@ -1897,7 +1897,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
   {
-    dt_control_log("could not allocate buffer for blending");
+    dt_control_log(_("could not allocate buffer for blending"));
     goto error;
   }
   

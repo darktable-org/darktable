@@ -1316,7 +1316,9 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     Exiv2::XmpData::iterator mask_version;
     Exiv2::XmpData::iterator mask_id;
     Exiv2::XmpData::iterator mask_nb;
+    Exiv2::XmpData::iterator mask_src;
     if ((mask=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask"))) != xmpData.end() &&
+         (mask_src=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_src"))) != xmpData.end() &&
          (mask_name=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_name"))) != xmpData.end() &&
          (mask_type=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_type"))) != xmpData.end() &&
          (mask_version=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_version"))) != xmpData.end() &&
@@ -1324,7 +1326,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
          (mask_nb=xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_nb"))) != xmpData.end() )
     {
       const int cnt = mask->count();
-      if(cnt == mask_name->count() && cnt == mask_type->count() && cnt == mask_version->count() && cnt == mask_id->count() && cnt == mask_nb->count())
+      if(cnt == mask_src->count() && cnt == mask_name->count() && cnt == mask_type->count() && cnt == mask_version->count() && cnt == mask_id->count() && cnt == mask_nb->count())
       {
         //clean all registered form for this image
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"delete from mask where imgid = ?1", -1, &stmt, NULL);
@@ -1335,8 +1337,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
         //register all forms
         for (int i=0; i<cnt; i++)
         {
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"insert into mask (imgid, formid, form, name, version, points, points_count) "
-                                                            "values (?1, ?2, ?3, ?4, ?5, ?6, ?7)", -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"insert into mask (imgid, formid, form, name, version, points, points_count, source) "
+                                                            "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)", -1, &stmt, NULL);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, mask_id->toLong(i));
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, mask_type->toLong(i));
@@ -1357,7 +1359,15 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           unsigned char *mask_d = (unsigned char *)malloc(mask_len);
           dt_exif_xmp_decode(mask_c, mask_d, mask_c_len);
           DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_d, mask_len, SQLITE_TRANSIENT);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, mask_nb->toLong());
+          DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, mask_nb->toLong(i));
+          
+          const char *mask_src_c = mask_src->toString(i).c_str();
+          const int mask_src_c_len = strlen(mask_src_c);
+          const int mask_src_len = mask_src_c_len/2;
+          unsigned char *mask_src = (unsigned char *)malloc(mask_src_len);
+          dt_exif_xmp_decode(mask_src_c, mask_src, mask_src_c_len);
+          DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src, mask_src_len, SQLITE_TRANSIENT);
+          
           sqlite3_step(stmt);
           sqlite3_finalize (stmt);
         }
@@ -1642,12 +1652,13 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.mask_version"), &tvm);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.mask"), &tvm);
   xmpData.add(Exiv2::XmpKey("Xmp.darktable.mask_nb"), &tvm);
+  xmpData.add(Exiv2::XmpKey("Xmp.darktable.mask_src"), &tvm);
 
   // reset tv
   tvm.setXmpArrayType(Exiv2::XmpValue::xaNone);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select imgid, formid, form, name, version, points, points_count from mask where imgid = ?1",
+                              "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1675,7 +1686,6 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     snprintf(key, 1024, "Xmp.darktable.mask_version[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
     
-    /* read and add history params */
     int32_t len = sqlite3_column_bytes(stmt, 5);
     char *mask_d = (char *)malloc(2*len + 1);
     dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 5), mask_d, len);
@@ -1689,7 +1699,15 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     tvm.read(val);
     snprintf(key, 1024, "Xmp.darktable.mask_nb[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
-
+    
+    len = sqlite3_column_bytes(stmt, 7);
+    char *mask_src = (char *)malloc(2*len + 1);
+    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 7), mask_src, len);
+    tvm.read(mask_src);
+    snprintf(key, 1024, "Xmp.darktable.mask_src[%d]", num);
+    xmpData.add(Exiv2::XmpKey(key), &tvm);
+    free(mask_src);
+    
     num ++;
   }
   sqlite3_finalize (stmt);

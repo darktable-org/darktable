@@ -752,6 +752,12 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   int *cids = bd->masks_combo_ids;
   GtkWidget *combo = bd->masks_combo;
   
+  //we remove all the combo entries except the first one
+  while (dt_bauhaus_combobox_length(combo) > 1)
+  {
+    dt_bauhaus_combobox_remove_at(combo,1);
+  }
+  
   int pos = 0;
   cids[pos++] = 0;  //nothing to do for the first entry (already here)
   
@@ -804,7 +810,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
     {
       if (nb==0)
       {
-        dt_bauhaus_combobox_add(combo,_("add existing shape"));
+        dt_bauhaus_combobox_add(combo,_("<add existing shape"));
         cids[pos++] = 0;  //nothing to do
       }
       dt_bauhaus_combobox_add(combo,str);
@@ -829,7 +835,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       {
         if (nb==0)
         {
-          dt_bauhaus_combobox_add(combo,_("use same shapes as"));
+          dt_bauhaus_combobox_add(combo,_("<use same shapes as"));
           cids[pos++] = 0;  //nothing to do
         }
         char str[256] = "";

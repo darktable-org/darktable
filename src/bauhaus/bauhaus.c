@@ -903,6 +903,28 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
   d->editable = editable ? 1 : 0;
 }
 
+void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  
+  if (pos < 0 || pos >= d->num_labels) return;
+  
+  GList *rm = g_list_nth(d->labels,pos);
+  d->labels = g_list_delete_link(d->labels,rm);
+  d->num_labels--;
+}
+
+int dt_bauhaus_combobox_length(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  
+  return d->num_labels;
+}
+
 const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -1402,7 +1424,17 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
           {
             highlight = TRUE;
           }
-          show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, 0, TRUE, !highlight, highlight);
+
+          if (text[0] == '<')
+          {
+            gchar *text2 = (gchar *) (text+1);
+            show_pango_text(cr, text2, 2, (get_line_space()+ht)*k, 0, FALSE, !highlight, highlight);
+          }
+          else
+          {
+            show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, 0, TRUE, !highlight, highlight);
+          }
+          
           k++;
         }
         i++;
