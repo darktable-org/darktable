@@ -220,12 +220,12 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       /* Zoom % */
       cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
-      cairo_set_source_rgb(cr, 1., 1., 1.);
+      cairo_set_source_rgb(cr, style->fg[0].red/65535.0, style->fg[0].green/65535.0, style->fg[0].blue/65535.0);
       char zoomline[5];
       snprintf(zoomline, 5, "%.0f%%", cur_scale*100);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-                              CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 12);
+                              CAIRO_FONT_WEIGHT_NORMAL);
+      cairo_set_font_size (cr, 11.5);
       cairo_show_text(cr, zoomline);
       cairo_stroke(cr);
     }
