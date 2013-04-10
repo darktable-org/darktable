@@ -1045,7 +1045,8 @@ gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, int3
     FILE *f = fopen("/tmp/dt_colormapping_loaded", "wb");
     if(f)
     {
-      fwrite(&g->flowback, sizeof(g->flowback), 1, f);
+      if(fwrite(&g->flowback, sizeof(g->flowback), 1, f) < 1)
+        fprintf(stderr, "[colormapping] could not write flowback file /tmp/dt_colormapping_loaded\n");
       fclose(f);
     }
   }
