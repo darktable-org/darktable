@@ -31,6 +31,9 @@ dt_tag_t;
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use. \note If tag already exists the existing tag id is returned. */
 gboolean dt_tag_new(const char *name,guint *tagid);
 
+/** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use. \note If tag already exists the existing tag id is returned. This function will also raise a DT_SIGNAL_TAG_CHANGED signal if necessary, so keywords GUI can refresh. */
+gboolean dt_tag_new_from_gui(const char *name,guint *tagid);
+
 /** get the name of specified id */
 const gchar *dt_tag_get_name(const guint tagid);
 
