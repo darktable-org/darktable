@@ -372,7 +372,6 @@ transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const float rx = piece->buf_in.width;
@@ -415,7 +414,6 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
   const float rx = piece->buf_in.width;
@@ -844,7 +842,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)

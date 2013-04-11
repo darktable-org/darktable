@@ -140,6 +140,27 @@ void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, g
 /** paint the pin for map thumbnails */
 void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
+/** Paint a eye icon for masks*/
+void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a circle icon for masks*/
+void dtgtk_cairo_paint_masks_circle(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a curve icon for masks*/
+void dtgtk_cairo_paint_masks_curve(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a multi-path icon for masks*/
+void dtgtk_cairo_paint_masks_multi(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a inverse icon for masks*/
+void dtgtk_cairo_paint_masks_inverse(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a op union icon for masks*/
+void dtgtk_cairo_paint_masks_union(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a op intersection icon for masks*/
+void dtgtk_cairo_paint_masks_intersection(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a op difference icon for masks*/
+void dtgtk_cairo_paint_masks_difference(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a op exclusion icon for masks*/
+void dtgtk_cairo_paint_masks_exclusion(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a used icon for masks*/
+void dtgtk_cairo_paint_masks_used(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -565,7 +565,6 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   
     if(!d->lens->Maker || d->crop <= 0.0f) return 0;
@@ -596,7 +595,6 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
     if(!d->lens->Maker || d->crop <= 0.0f) return 0;
 

@@ -89,7 +89,7 @@ const char dt_supported_extensions[] = "3fr,arw,bay,bmq,cap,cine,cr2,crw,cs1,dc2
 
 static int usage(const char *argv0)
 {
-  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,lighttable,memory,nan,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
+  printf("usage: %s [-d {all,cache,camctl,control,dev,fswatch,lighttable,masks,memory,nan,opencl,perf,pwstorage,sql}] [IMG_1234.{RAW,..}|image_folder/]", argv0);
 #ifdef HAVE_OPENCL
   printf(" [--disable-opencl]");
 #endif
@@ -444,6 +444,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else if(!strcmp(argv[k+1], "memory"))     darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
         else if(!strcmp(argv[k+1], "lighttable")) darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
         else if(!strcmp(argv[k+1], "nan"))        darktable.unmuted |= DT_DEBUG_NAN; // check for NANs when processing the pipe.
+        else if(!strcmp(argv[k+1], "masks"))        darktable.unmuted |= DT_DEBUG_MASKS; // masks reated stuff.
         else return usage(argv[0]);
         k ++;
       }

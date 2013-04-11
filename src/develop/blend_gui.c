@@ -26,6 +26,7 @@
 #include "develop/develop.h"
 #include "develop/blend.h"
 #include "develop/tiling.h"
+#include "develop/masks.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -986,8 +987,24 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
 
   dt_iop_gui_update_blendif(module);
-
-
+  
+  /* update masks state */
+  if (!(module->flags()&IOP_FLAGS_NO_MASKS))
+  {
+    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+    dt_bauhaus_combobox_clear(bd->masks_combo);
+    if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
+    {
+      char txt[512];
+      snprintf(txt,512,"%d shapes used",g_list_length(grp->points));
+      dt_bauhaus_combobox_add(bd->masks_combo,txt);
+    }
+    else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
+    dt_bauhaus_combobox_set(bd->masks_combo,0);
+    if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
+    else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+  }
+  
   /* now show hide controls as required */
   if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
   {
@@ -1087,7 +1104,23 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
 
-
+    if (!(module->flags()&IOP_FLAGS_NO_MASKS))
+    {
+      //masks line
+      bd->masks_combo = dt_bauhaus_combobox_new(module);
+      dt_bauhaus_widget_set_label(bd->masks_combo, _("masks"));
+      dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
+      dt_bauhaus_combobox_set(bd->masks_combo, 0);
+      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+      g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
+      g_signal_connect (G_OBJECT (bd->masks_combo), "quad-pressed", G_CALLBACK (dt_masks_iop_edit_toggle_callback), module);
+      dt_bauhaus_combobox_add_populate_fct(bd->masks_combo,dt_masks_iop_combo_populate);
+      bd->masks_combo_ids = NULL;
+      bd->masks_shown = 0;
+      
+      gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->masks_combo), TRUE, TRUE,0);
+    }
+    
     for(int k = 0; k < bd->number_modes; k++)
       dt_bauhaus_combobox_add(bd->blend_modes_combo, bd->modes[k].name);
 
@@ -1101,7 +1134,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_mode_callback), bd);
 
-    gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);
+    gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);    
     gtk_box_pack_start(GTK_BOX(iopw), bd->opacity_slider, TRUE, TRUE,0);
 
     if(bd->blendif_support)
@@ -1113,7 +1146,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_iop_gui_update_blending(module);
   }
 }
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
