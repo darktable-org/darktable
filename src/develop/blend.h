@@ -101,7 +101,6 @@ typedef enum dt_develop_blendif_channels_t
 }
 dt_develop_blendif_channels_t;
 
-
 /** blend legacy parameters version 1 */
 typedef struct dt_develop_blend_params1_t
 {
@@ -142,7 +141,6 @@ typedef struct dt_develop_blend_params3_t
   float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
 }
 dt_develop_blend_params3_t;
-
 
 typedef struct dt_develop_blend_params_t
 {
@@ -229,6 +227,10 @@ typedef struct dt_iop_gui_blend_data_t
   int numberstops[8];
   const dt_iop_gui_blendif_colorstop_t *colorstops[8];
   float increments[8];
+  
+  GtkWidget* masks_combo;
+  int *masks_combo_ids;
+  int masks_shown;
 }
 dt_iop_gui_blend_data_t;
 

@@ -710,7 +710,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   // no quad icon and no toggle button:
   w->quad_paint  = 0;
   w->quad_toggle = 0;
-
+  w->combo_populate = NULL;
   gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w),
@@ -879,6 +879,13 @@ dt_bauhaus_combobox_new(dt_iop_module_t *self)
   return GTK_WIDGET(w);
 }
 
+void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct) (struct dt_iop_module_t **module))
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  w->combo_populate = fct;
+}
+
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -894,6 +901,28 @@ void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->editable = editable ? 1 : 0;
+}
+
+void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  
+  if (pos < 0 || pos >= d->num_labels) return;
+  
+  GList *rm = g_list_nth(d->labels,pos);
+  d->labels = g_list_delete_link(d->labels,rm);
+  d->num_labels--;
+}
+
+int dt_bauhaus_combobox_length(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_COMBOBOX) return 0;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  
+  return d->num_labels;
 }
 
 const char* dt_bauhaus_combobox_get_text(GtkWidget *widget)
@@ -1395,7 +1424,17 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
           {
             highlight = TRUE;
           }
-          show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, 0, TRUE, !highlight, highlight);
+
+          if (text[0] == '<')
+          {
+            gchar *text2 = (gchar *) (text+1);
+            show_pango_text(cr, text2, 2, (get_line_space()+ht)*k, 0, FALSE, !highlight, highlight);
+          }
+          else
+          {
+            show_pango_text(cr, text, wd-4-ht, (get_line_space()+ht)*k, 0, TRUE, !highlight, highlight);
+          }
+          
           k++;
         }
         i++;
@@ -1548,6 +1587,8 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     }
     case DT_BAUHAUS_COMBOBOX:
     {
+      // we launch the dynamic populate fct if any
+      if (w->combo_populate) w->combo_populate(&w->module);
       // comboboxes change immediately
       darktable.bauhaus->change_active = 1;
       GtkAllocation tmp;
