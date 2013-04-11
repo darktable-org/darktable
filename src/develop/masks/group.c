@@ -157,21 +157,21 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   int wt = piece->iwidth;
   int ht = piece->iheight;
   float *buf = malloc(ht*wt*sizeof(float));
-  
+
   //we fill this buffer
-  for (int yy=0; yy<*posy; yy++)
+  for (int yy=0; yy<MIN(*posy,ht); yy++)
   {
     for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
   
-  for (int yy=*posy; yy<(*posy)+(*height); yy++)
+  for (int yy=MAX(*posy,0); yy<MIN(ht,(*posy)+(*height)); yy++)
   {
-    for (int xx=0; xx<(*posx); xx++) buf[yy*wt+xx] = 1.0f;
-    for (int xx=(*posx); xx<(*posx)+(*width); xx++) buf[yy*wt+xx] = 1.0f-(*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
-    for (int xx=(*posx)+(*width); xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
+    for (int xx=0; xx<MIN((*posx),wt); xx++) buf[yy*wt+xx] = 1.0f;
+    for (int xx=MAX((*posx),0); xx<MIN(wt,(*posx)+(*width)); xx++) buf[yy*wt+xx] = 1.0f-(*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
+    for (int xx=MAX((*posx)+(*width),0); xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
   
-  for (int yy=(*posy)+(*height); yy<ht; yy++)
+  for (int yy=MAX((*posy)+(*height),0); yy<ht; yy++)
   {
     for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
@@ -340,16 +340,21 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   start2 = dt_get_wtime();
   
   //we don't want row which are outisde the roi_out
-  int fxx = fx*scale+1;
-  int fww = fw*scale-1;
-  int fyy = fy*scale+1;
-  int fhh = fh*scale-1;
-  if (fxx>roi[0]+roi[2])
-  {
-    return 1;
-  }
+  int fxx = fx*scale;
+  int fww = fw*scale;
+  int fyy = fy*scale;
+  int fhh = fh*scale;
+  if (fxx>roi[0]+roi[2]) return 1;
+  
   if (fxx<roi[0]) fww += fxx-roi[0], fxx=roi[0];
   if (fww+fxx>=roi[0]+roi[2]) fww = roi[0]+roi[2]-fxx-1;
+  
+  //we adjust to avoid rounding errors
+  if (fyy/scale-fy<0) fyy++, fhh--;
+  if (fxx/scale-fx<0) fxx++, fww--;
+  if ((fyy+fhh)/scale-fy>=fh) fhh--;
+  if ((fxx+fww)/scale-fx>=fw) fww--;
+  
   //we apply the mask row by row
   for (int yy=fyy; yy<fyy+fhh; yy++)
   {

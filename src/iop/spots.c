@@ -274,7 +274,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
   // iterate throught all forms
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
+  dt_masks_form_t *grp = dt_masks_get_from_id(self->dev,bp->mask_id);
   int pos=0;
   if (grp && (grp->type & DT_MASKS_GROUP))
   {
