@@ -1843,7 +1843,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_int err = -999;
   cl_mem dev_m = NULL;
   cl_mem dev_mask = NULL;
-  cl_mem dev_mask_form = NULL;
+  float *mask = NULL;
 
   // fprintf(stderr, "dt_develop_blend_process_cl: mode %d\n", d->mode);
   
@@ -1894,7 +1894,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   /* quick workaround for masks to be opencl compliant */
   /* the first mask creation may need to be compute by opencl too */
-  float *mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
+  mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -1914,11 +1914,6 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     const int buffsize = roi_out->width*roi_out->height;
     for (int i=0; i<buffsize; i++) mask[i] = 1.0f;
   }
-  
-  dev_mask_form = dt_opencl_copy_host_to_device(devid, mask, width, height, sizeof(float));
-  if (dev_mask_form == NULL) goto error;
-  
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
   if (dev_m == NULL) goto error;
@@ -1926,15 +1921,19 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if (dev_mask == NULL) goto error;
 
+  err = dt_opencl_write_host_to_device(devid, mask, dev_mask, width, height, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
+
   /* The following call to clFinish() works around a bug in some OpenCL drivers (namely AMD).
      Without this synchronization point, reads to dev_in would often not return the correct value.
      This depends on the module after which blending is called. One of the affected ones is sharpen.
   */
   dt_opencl_finish(devid);
 
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask_form);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
@@ -2005,11 +2004,13 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     piece->pipe->mask_display = 1;
   }
 
+  if (mask != NULL) free(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
+  if (mask != NULL) free(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
