@@ -1601,12 +1601,12 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS REBEL T3i", Fluorescent, 0,	{ 1.958008, 1, 2.260742, 0 } },
   { "Canon", "EOS REBEL T3i", Flash, 0,		{ 2.509766, 1, 1.464844, 0 } },
 
-  { "Canon", "EOS Kiss Digital X5", Daylight, 0, { 2.235352, 1, 1.612305, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Shade, 0,	{ 2.592773, 1, 1.377930, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Cloudy, 0,	{ 2.409180, 1, 1.486328, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Tungsten, 0, { 1.597656, 1, 2.409180, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Fluorescent, 0, { 1.958008, 1, 2.260742, 0 } },
-  { "Canon", "EOS Kiss Digital X5", Flash, 0,	{ 2.509766, 1, 1.464844, 0 } },
+  { "Canon", "EOS Kiss X5", Daylight, 0, 	{ 2.235352, 1, 1.612305, 0 } },
+  { "Canon", "EOS Kiss X5", Shade, 0,		{ 2.592773, 1, 1.377930, 0 } },
+  { "Canon", "EOS Kiss X5", Cloudy, 0,		{ 2.409180, 1, 1.486328, 0 } },
+  { "Canon", "EOS Kiss X5", Tungsten, 0, 	{ 1.597656, 1, 2.409180, 0 } },
+  { "Canon", "EOS Kiss X5", Fluorescent, 0, 	{ 1.958008, 1, 2.260742, 0 } },
+  { "Canon", "EOS Kiss X5", Flash, 0,		{ 2.509766, 1, 1.464844, 0 } },
 
   /* Fine-tuning is the camera's Amber-Blue bracketing. */
   { "Canon", "EOS 650D", Daylight, -3,		{ 1.9502, 1, 1.7539, 0 } },
