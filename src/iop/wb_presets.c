@@ -1210,12 +1210,13 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS DIGITAL REBEL XSi", Fluorescent, 0, { 1.922857, 1, 1.996190, 0 } },
   { "Canon", "EOS DIGITAL REBEL XSi", Flash, 0, { 2.456055, 1, 1.318359, 0 } },
 
-  { "Canon", "EOS Kiss Digital X2", Daylight, 0, { 2.216797, 1, 1.471680, 0 } },
-  { "Canon", "EOS Kiss Digital X2", Shade, 0,	{ 2.566406, 1, 1.241211, 0 } },
-  { "Canon", "EOS Kiss Digital X2", Cloudy, 0,	{ 2.386719, 1, 1.345703, 0 } },
-  { "Canon", "EOS Kiss Digital X2", Tungsten, 0, { 1.559034, 1, 2.170841, 0 } },
-  { "Canon", "EOS Kiss Digital X2", Fluorescent, 0, { 1.922857, 1, 1.996190, 0 } },
-  { "Canon", "EOS Kiss Digital X2", Flash, 0,	{ 2.456055, 1, 1.318359, 0 } },
+  // we're sure about this alias, checked with a CR2 sample from bartokk
+  { "Canon", "EOS Kiss X2", Daylight, 0, 	{ 2.216797, 1, 1.471680, 0 } },
+  { "Canon", "EOS Kiss X2", Shade, 0,		{ 2.566406, 1, 1.241211, 0 } },
+  { "Canon", "EOS Kiss X2", Cloudy, 0,		{ 2.386719, 1, 1.345703, 0 } },
+  { "Canon", "EOS Kiss X2", Tungsten, 0, 	{ 1.559034, 1, 2.170841, 0 } },
+  { "Canon", "EOS Kiss X2", Fluorescent, 0, 	{ 1.922857, 1, 1.996190, 0 } },
+  { "Canon", "EOS Kiss X2", Flash, 0,		{ 2.456055, 1, 1.318359, 0 } },
 
   { "Canon", "EOS 500D", Daylight, 0,		{ 2.023438, 1, 1.417969, 0 } },
   { "Canon", "EOS 500D", Shade, 0,		{ 2.291016, 1, 1.217773, 0 } },
