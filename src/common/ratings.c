@@ -39,7 +39,10 @@ void dt_ratings_apply_to_selection (int rating)
   uint32_t count = dt_collection_get_selected_count(darktable.collection);
   if (count)
   {
-    dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count), rating, count);
+    if(rating == 6)
+      dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
+    else
+      dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", count), rating, count);
 #if 0 // not updating cache
     gchar query[1024]= {0};
     g_snprintf(query,1024,
