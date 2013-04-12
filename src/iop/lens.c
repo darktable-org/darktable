@@ -1273,7 +1273,19 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   if (!lens)
   {
+    gtk_container_foreach (
+      GTK_CONTAINER (g->detection_warning), delete_children, NULL);
+
+    GtkLabel *label;
+
+    label = GTK_LABEL(gtk_label_new(_("camera/lens not found - please select manually")));
+
+    g_object_set (GTK_OBJECT(label), "tooltip-text", _("try to locate your camera/lens in the above two menues"), (char *)NULL);
+
+    gtk_box_pack_start(GTK_BOX(g->detection_warning), GTK_WIDGET(label), FALSE, FALSE, 0);
+
     gtk_widget_hide_all (g->lens_param_box);
+    gtk_widget_show_all (g->detection_warning);
     return;
   }
 
@@ -1422,6 +1434,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
+  gtk_widget_hide_all (g->detection_warning);
   gtk_widget_show_all (g->lens_param_box);
 }
 
@@ -1780,6 +1793,10 @@ void gui_init(struct dt_iop_module_t *self)
   // lens properties
   g->lens_param_box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lens_param_box, TRUE, TRUE, 0);
+
+  // camera/lens not detected warning box
+  g->detection_warning = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->detection_warning, TRUE, TRUE, 0);
 
 #if 0
   // if unambigious info is there, use it.
