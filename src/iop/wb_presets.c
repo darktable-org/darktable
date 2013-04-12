@@ -1232,12 +1232,12 @@ const wb_data wb_preset[] = {
   { "Canon", "EOS REBEL T1i", Fluorescent, 0,	{ 1.799224, 1, 1.824442, 0 } },
   { "Canon", "EOS REBEL T1i", Flash, 0,		{ 2.207031, 1, 1.295898, 0 } },
 
-  { "Canon", "EOS Kiss Digital X3", Daylight, 0, { 2.023438, 1, 1.417969, 0 } },
-  { "Canon", "EOS Kiss Digital X3", Shade, 0,	{ 2.291016, 1, 1.217773, 0 } },
-  { "Canon", "EOS Kiss Digital X3", Cloudy, 0,	{ 2.156250, 1, 1.304687, 0 } },
-  { "Canon", "EOS Kiss Digital X3", Tungsten, 0, { 1.481347, 1, 1.976342, 0 } },
-  { "Canon", "EOS Kiss Digital X3", Fluorescent, 0, { 1.799224, 1, 1.824442, 0 } },
-  { "Canon", "EOS Kiss Digital X3", Flash, 0,	{ 2.207031, 1, 1.295898, 0 } },
+  { "Canon", "EOS Kiss X3", Daylight, 0, 	{ 2.023438, 1, 1.417969, 0 } },
+  { "Canon", "EOS Kiss X3", Shade, 0,		{ 2.291016, 1, 1.217773, 0 } },
+  { "Canon", "EOS Kiss X3", Cloudy, 0,		{ 2.156250, 1, 1.304687, 0 } },
+  { "Canon", "EOS Kiss X3", Tungsten, 0, 	{ 1.481347, 1, 1.976342, 0 } },
+  { "Canon", "EOS Kiss X3", Fluorescent, 0, 	{ 1.799224, 1, 1.824442, 0 } },
+  { "Canon", "EOS Kiss X3", Flash, 0,		{ 2.207031, 1, 1.295898, 0 } },
 
   /* Canon EOS 550D Firmware Version 1.0.9 */
   /* Fine-tuning is the camera's Amber-Blue bracketing. */
