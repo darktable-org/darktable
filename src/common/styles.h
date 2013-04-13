@@ -47,7 +47,7 @@ typedef struct dt_style_item_t
 } dt_style_item_t;
 
 /** creates a new style from specified image, items are the history stack number of items to include in style */
-void dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
+gboolean dt_styles_create_from_image (const char *name,const char *description,int32_t imgid,GList *items);
 
 /** creates styles from selection */
 void dt_styles_create_from_selection(void);
