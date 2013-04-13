@@ -590,13 +590,11 @@ int dt_imageio_export_with_flags(
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
 
           h->params = s->params;
+          h->blend_params = s->blendop_params;
           h->enabled = 1;
           h->module = m;
           h->multi_priority = 1;
           strcpy(h->multi_name, "");
-
-          h->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-          memset(h->blend_params, 0, sizeof(dt_develop_blend_params_t));
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);
