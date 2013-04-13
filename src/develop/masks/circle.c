@@ -179,16 +179,18 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
       const float spots_size = dt_conf_get_float("plugins/darkroom/spots/size");
       circle->radius = MAX(0.01f, spots_size);
       circle->border = 0.005f;
+      form->source[0] = circle->center[0] + 0.02f;
+      form->source[1] = circle->center[1] + 0.02f;
     }
     else
     {
       const float circle_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
       circle->radius = MAX(0.01f, circle_size);
       circle->border = 0.05f;
+      // not used for masks
+      form->source[0] = form->source[1] = 0.0f;
     }
     form->points = g_list_append(form->points,circle);
-    form->source[0] = circle->center[0] + 0.1f;
-    form->source[1] = circle->center[1] + 0.1f;
     dt_masks_gui_form_save_creation(crea_module,form,gui);
     
     if (crea_module)
