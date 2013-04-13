@@ -654,12 +654,15 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       start2 = dt_get_wtime();
       
       free(border_init);
+      free(intersections);
       return 1;
     }
   }
   
   //if we failed, then free all and return
   free(*points);
+  free(border_init);
+  free(intersections);
   *points = NULL;
   *points_count = 0;
   if (border) free(*border);
@@ -888,6 +891,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
                                           dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
+  if (type==GDK_2BUTTON_PRESS || type==GDK_3BUTTON_PRESS) return 1;
   if (!gui) return 0;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return 0;
