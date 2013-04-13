@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-11 20:00+0100\n"
-"PO-Revision-Date: 2013-04-11 20:11+0100\n"
+"POT-Creation-Date: 2013-04-13 12:09+0100\n"
+"PO-Revision-Date: 2013-04-13 12:14+0100\n"
 "Last-Translator: Jose Carlos <jcrc@portugalmail.com>\n"
 "Language-Team: \n"
 "Language: pt_PT\n"
@@ -579,7 +579,7 @@ msgstr "imagem `%s' não está disponível!"
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1459
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:1717
 #: ../src/iop/clipping.c:1760 ../src/iop/clipping.c:1777
-#: ../src/iop/lens.c:1692 ../src/libs/export.c:158 ../src/libs/export.c:161
+#: ../src/iop/lens.c:1705 ../src/libs/export.c:158 ../src/libs/export.c:161
 #: ../src/libs/export.c:594 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
@@ -596,14 +596,21 @@ msgstr "o estilo '%s' a aplicar durante a exportação não foi encontrado"
 msgid "generic poissonian"
 msgstr "genérico"
 
-#: ../src/common/ratings.c:44
+#: ../src/common/ratings.c:45
+#, c-format
+msgid "rejecting %d image"
+msgid_plural "rejecting %d images"
+msgstr[0] "rejeitando %d imagem"
+msgstr[1] "rejeitando %d imagens"
+
+#: ../src/common/ratings.c:47
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "aplicando classificação %d a %d imagem"
 msgstr[1] "aplicando classificação %d a %d imagens"
 
-#: ../src/common/ratings.c:68
+#: ../src/common/ratings.c:71
 msgid "no images selected to apply rating"
 msgstr "não foram seleccionadas imagens para classificar"
 
@@ -3241,7 +3248,7 @@ msgstr "espiral áurea em seccções "
 msgid "golden spiral"
 msgstr "espiral áurea"
 
-#: ../src/iop/clipping.c:1790 ../src/iop/lens.c:1698
+#: ../src/iop/clipping.c:1790 ../src/iop/lens.c:1711
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "todas"
@@ -3775,7 +3782,7 @@ msgstr "correspondência para %d ISO"
 msgid "interpolated from iso %d and %d"
 msgstr "interpolado a partir de ISO %d e %d"
 
-#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1843
+#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1860
 msgid "mode"
 msgstr "modo"
 
@@ -4282,13 +4289,21 @@ msgstr ""
 "encaixe:\t\t%s\n"
 "factor de recorte:\t%.1f"
 
-#: ../src/iop/lens.c:1316
+#: ../src/iop/lens.c:1281
+msgid "camera/lens not found - please select manually"
+msgstr "câmara/lente não encontrada - por favor seleccione manualmente"
+
+#: ../src/iop/lens.c:1283
+msgid "try to locate your camera/lens in the above two menues"
+msgstr "tente localizar a sua câmara/lente nos dois menus acima"
+
+#: ../src/iop/lens.c:1328
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
 "focal range:\t%s\n"
-"aperture:\t\t%s\n"
+"aperture:\t%s\n"
 "crop factor:\t%.1f\n"
 "type:\t\t%s\n"
 "mounts:\t\t%s"
@@ -4296,141 +4311,141 @@ msgstr ""
 "fabricante:\t\t%s\n"
 "modelo:\t\t%s\n"
 "distância focal:\t%s\n"
-"abertura:\t\t%s\n"
+"abertura:\t%s\n"
 "factor de recorte:\t%.1f\n"
 "tipo:\t\t%s\n"
 "encaixe:\t\t%s"
 
-#: ../src/iop/lens.c:1362
+#: ../src/iop/lens.c:1374
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1363
+#: ../src/iop/lens.c:1375
 msgid "focal length (mm)"
 msgstr "distância focal (mm)"
 
-#: ../src/iop/lens.c:1390
+#: ../src/iop/lens.c:1402
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1391
+#: ../src/iop/lens.c:1403
 msgid "f-number (aperture)"
 msgstr "f-number (abertura)"
 
-#: ../src/iop/lens.c:1406
+#: ../src/iop/lens.c:1418
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1407
+#: ../src/iop/lens.c:1419
 msgid "distance to subject"
 msgstr "distância ao objecto"
 
-#: ../src/iop/lens.c:1704
+#: ../src/iop/lens.c:1717
 msgid "distortion & TCA"
 msgstr "distorção & TCA"
 
-#: ../src/iop/lens.c:1710
+#: ../src/iop/lens.c:1723
 msgid "distortion & vignetting"
 msgstr "distorção & vinheta"
 
-#: ../src/iop/lens.c:1716
+#: ../src/iop/lens.c:1729
 msgid "TCA & vignetting"
 msgstr "TCA & vinheta"
 
-#: ../src/iop/lens.c:1722
+#: ../src/iop/lens.c:1735
 msgid "only distortion"
 msgstr "apenas distorção"
 
-#: ../src/iop/lens.c:1728
+#: ../src/iop/lens.c:1741
 msgid "only TCA"
 msgstr "apenas TCA"
 
-#: ../src/iop/lens.c:1734
+#: ../src/iop/lens.c:1747
 msgid "only vignetting"
 msgstr "apenas vinheta"
 
-#: ../src/iop/lens.c:1757
+#: ../src/iop/lens.c:1770
 msgid "find camera"
 msgstr "encontrar câmara"
 
-#: ../src/iop/lens.c:1774
+#: ../src/iop/lens.c:1787
 msgid "find lens"
 msgstr "encontrar lente"
 
-#: ../src/iop/lens.c:1803
+#: ../src/iop/lens.c:1820
 msgid "corrections"
 msgstr "correcções"
 
-#: ../src/iop/lens.c:1805
+#: ../src/iop/lens.c:1822
 msgid "which corrections to apply"
 msgstr "quais correcções a aplicar"
 
-#: ../src/iop/lens.c:1820
+#: ../src/iop/lens.c:1837
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:1822
+#: ../src/iop/lens.c:1839
 msgid "target geometry"
 msgstr "geometria de destino"
 
-#: ../src/iop/lens.c:1823
+#: ../src/iop/lens.c:1840
 msgid "rectilinear"
 msgstr "rectilinear"
 
-#: ../src/iop/lens.c:1824
+#: ../src/iop/lens.c:1841
 msgid "fish-eye"
 msgstr "olho de peixe"
 
-#: ../src/iop/lens.c:1825
+#: ../src/iop/lens.c:1842
 msgid "panoramic"
 msgstr "panorâmica"
 
-#: ../src/iop/lens.c:1826
+#: ../src/iop/lens.c:1843
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.c:1833
+#: ../src/iop/lens.c:1850
 msgid "auto scale"
 msgstr "escala automática"
 
-#: ../src/iop/lens.c:1834 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1851 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1052
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1862
 msgid "correct distortions or apply them"
 msgstr "corrigir distorções ou aplicá-las"
 
-#: ../src/iop/lens.c:1846
+#: ../src/iop/lens.c:1863
 msgid "correct"
 msgstr "corrigir"
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1864
 msgid "distort"
 msgstr "distorcer"
 
-#: ../src/iop/lens.c:1854
+#: ../src/iop/lens.c:1871
 msgid "transversal chromatic aberration red"
 msgstr "aberração cromática transversal vermelho"
 
-#: ../src/iop/lens.c:1855
+#: ../src/iop/lens.c:1872
 msgid "tca red"
 msgstr "tca vermelho"
 
-#: ../src/iop/lens.c:1860
+#: ../src/iop/lens.c:1877
 msgid "transversal chromatic aberration blue"
 msgstr "aberração cromática transversal azul"
 
-#: ../src/iop/lens.c:1861
+#: ../src/iop/lens.c:1878
 msgid "tca blue"
 msgstr "tca azul"
 
-#: ../src/iop/lens.c:1868
+#: ../src/iop/lens.c:1885
 msgid "corrections done: "
 msgstr "correcções efectuadas"
 
-#: ../src/iop/lens.c:1869
+#: ../src/iop/lens.c:1886
 msgid "which corrections have actually been done"
 msgstr "quais as correcções que realmente foram efectuadas"
 
