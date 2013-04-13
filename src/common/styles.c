@@ -528,7 +528,12 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       {
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
-        g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), sqlite3_column_text (stmt, 5));
+        const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
+
+        if (!multi_name || strlen(multi_name))
+          g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
+        else
+          g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), multi_name);
 
         const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
         const int32_t op_len = sqlite3_column_bytes(stmt, 3);
