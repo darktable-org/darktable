@@ -15,6 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#define __STDC_FORMAT_MACROS
+
 extern "C"
 {
 #ifdef HAVE_CONFIG_H

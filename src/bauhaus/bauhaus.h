@@ -119,6 +119,9 @@ typedef struct dt_bauhaus_widget_t
   int quad_paint_flags;
   // quad is a toggle button?
   int quad_toggle;
+  
+  //function to populate the combo list on the fly
+  void (*combo_populate) (struct dt_iop_module_t **module);
 
   // goes last, might extend past the end:
   dt_bauhaus_data_t data;
@@ -218,18 +221,23 @@ void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
+void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);
 
 void dt_bauhaus_combobox_add(GtkWidget *widget, const char *text);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
+void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
+int dt_bauhaus_combobox_length(GtkWidget *widget);
 void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
 const char* dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
 int  dt_bauhaus_combobox_get(GtkWidget *w);
 const GList* dt_bauhaus_combobox_get_labels(GtkWidget *w);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
+void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
+void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct) (struct dt_iop_module_t **module));
 
 // key accel parsing:
 // execute a line of input

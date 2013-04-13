@@ -431,6 +431,7 @@ void dt_film_import1(dt_film_t *film)
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   //dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED);

@@ -170,6 +170,15 @@ void gui_update(struct dt_iop_module_t *self)
   module->request_color_pick = 0;
 }
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  // switch off auto exposure when we lose focus (switching images etc)
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  dt_bauhaus_slider_set(g->autoexpp, 0.01);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+}
+
 void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_exposure_params_t));

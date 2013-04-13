@@ -565,7 +565,6 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   
     if(!d->lens->Maker || d->crop <= 0.0f) return 0;
@@ -596,7 +595,6 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
     if(!d->lens->Maker || d->crop <= 0.0f) return 0;
 
@@ -1275,7 +1273,19 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   if (!lens)
   {
+    gtk_container_foreach (
+      GTK_CONTAINER (g->detection_warning), delete_children, NULL);
+
+    GtkLabel *label;
+
+    label = GTK_LABEL(gtk_label_new(_("camera/lens not found - please select manually")));
+
+    g_object_set (GTK_OBJECT(label), "tooltip-text", _("try to locate your camera/lens in the above two menues"), (char *)NULL);
+
+    gtk_box_pack_start(GTK_BOX(g->detection_warning), GTK_WIDGET(label), FALSE, FALSE, 0);
+
     gtk_widget_hide_all (g->lens_param_box);
+    gtk_widget_show_all (g->detection_warning);
     return;
   }
 
@@ -1318,7 +1328,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   fm = g_strdup_printf (_("maker:\t\t%s\n"
                           "model:\t\t%s\n"
                           "focal range:\t%s\n"
-                          "aperture:\t\t%s\n"
+                          "aperture:\t%s\n"
                           "crop factor:\t%.1f\n"
                           "type:\t\t%s\n"
                           "mounts:\t\t%s"),
@@ -1424,6 +1434,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
+  gtk_widget_hide_all (g->detection_warning);
   gtk_widget_show_all (g->lens_param_box);
 }
 
@@ -1782,6 +1793,10 @@ void gui_init(struct dt_iop_module_t *self)
   // lens properties
   g->lens_param_box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->lens_param_box, TRUE, TRUE, 0);
+
+  // camera/lens not detected warning box
+  g->detection_warning = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->detection_warning, TRUE, TRUE, 0);
 
 #if 0
   // if unambigious info is there, use it.

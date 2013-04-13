@@ -93,6 +93,7 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
+  GtkWidget *sizeto;		                                             // relative size to
 }
 dt_iop_watermark_gui_data_t;
 
@@ -637,7 +638,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float uscale = data->scale / 100.0;   // user scale, from GUI in percent
 
   // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
-  // scale is the scale of the watermark itself and is used only to render it
+  // scale is the scale of the watermark itself and is used only to render it.
 
   float wbase, hbase, scale;
 
@@ -675,19 +676,40 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   scale *= uscale;
 
-  // compute the width and height of the SVG object in image dimension
+  // compute the width and height of the SVG object in image dimension. This is only used to properly
+  // layout the watermark based on the alignment.
 
   float svg_width, svg_height;
 
   if (dimension.width>dimension.height)
   {
-    svg_width = iw * uscale;
-    svg_height = dimension.height * (svg_width / dimension.width);
+    if (data->sizeto==DT_SCALE_IMAGE
+        || (iw>ih && data->sizeto==DT_SCALE_LARGER_BORDER)
+        || (iw<ih && data->sizeto==DT_SCALE_SMALLER_BORDER))
+    {
+      svg_width = iw * uscale;
+      svg_height = dimension.height * (svg_width / dimension.width);
+    }
+    else
+    {
+      svg_width = ih * uscale;
+      svg_height = dimension.height * (svg_width / dimension.width);
+    }
   }
   else
   {
-    svg_height = ih * uscale;
-    svg_width = dimension.width * (dimension.height / svg_height);
+    if (data->sizeto==DT_SCALE_IMAGE
+        || (ih>iw && data->sizeto==DT_SCALE_LARGER_BORDER)
+        || (ih<iw && data->sizeto==DT_SCALE_SMALLER_BORDER))
+    {
+      svg_height = ih * uscale;
+      svg_width = dimension.width * (dimension.height / svg_height);
+    }
+    else
+    {
+      svg_height = iw * uscale;
+      svg_width = dimension.width * (dimension.height / svg_height);
+    }
   }
 
   // compute translation for the given alignment in image dimension
@@ -905,6 +927,17 @@ scale_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void
+sizeto_callback(GtkWidget *tb, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+
+  if(darktable.gui->reset) return;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+  p->sizeto = dt_bauhaus_combobox_get(tb);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)p1;
@@ -960,6 +993,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
   _combo_box_set_active_text( g->combobox1, p->filename );
+  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
 }
 
 void init(dt_iop_module_t *module)
@@ -1019,6 +1053,15 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
+  g->sizeto = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_add(g->sizeto, _("image"));
+  dt_bauhaus_combobox_add(g->sizeto, _("larger border"));
+  dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
+  dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
+  dt_bauhaus_widget_set_label(g->sizeto,_("scale on"));
+  gtk_box_pack_start(GTK_BOX(vbox), g->sizeto, TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
+
   // Create the 3x3 gtk table toggle button table...
   GtkTable *bat = GTK_TABLE( gtk_table_new(3,3,TRUE));
   for(int i=0; i<9; i++)
@@ -1067,6 +1110,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect (G_OBJECT (g->combobox1), "changed",
                     G_CALLBACK (watermark_callback), self);
+  g_signal_connect (G_OBJECT (g->sizeto), "value-changed",
+                    G_CALLBACK (sizeto_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

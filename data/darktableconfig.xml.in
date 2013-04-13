@@ -20,14 +20,14 @@
     <type>int</type>
     <default>300</default>
     <shortdescription>width of the side panels in pixels</shortdescription>
-    <longdescription> (needs a restart)</longdescription>
+    <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>cache_memory</name>
-    <type>int</type>
-    <default>536870912</default>
-    <shortdescription>memory in bytes to use for mipmap cache</shortdescription>
-    <longdescription> (needs a restart) </longdescription>
+    <type factor="(1.0 / (1024.0 * 1024.0))" min="0">int64</type>
+    <default>(1024 * 1024 * 512)</default>
+    <shortdescription>memory in megabytes to use for mipmap cache</shortdescription>
+    <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>worker_threads</name>
@@ -48,14 +48,14 @@
     <type>int</type>
     <default>1500</default>
     <shortdescription>host memory limit (in MB) for tiling</shortdescription>
-    <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500. needs a restart.</longdescription>
+    <longdescription>this variable controls the maximum amount of memory (in MB) a module may use during image processing. lower values will force memory hungry modules to process image with increasing number of tiles. setting this to 0 will omit any limit. values below 500 will be treated as 500 (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>singlebuffer_limit</name>
     <type min="2">int</type>
     <default>16</default>
     <shortdescription>minimum amount of memory (in MB) for a single buffer in tiling</shortdescription>
-    <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit. needs a restart.</longdescription>
+    <longdescription>if set to a positive, non-zero value this variable defines the minimum amount of memory (in MB) that tiling should take for a single image buffer. has precedence over heuristics based on host_memory_limit (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_memory_headroom</name>
@@ -104,7 +104,7 @@
     <type>string</type>
     <default>*/!0,*/*/*</default>
     <shortdescription>priority of OpenCL devices for each pixelpipe type</shortdescription>
-    <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual. needs a restart.</longdescription>
+    <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
@@ -949,8 +949,8 @@
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
     <default>FALSE</default>
-    <shortdescription>always use littlecms2 during export</shortdescription>
-    <longdescription>this is about 28x as slow as the default.</longdescription>
+    <shortdescription>always try to use littlecms2</shortdescription>
+    <longdescription>this is significantly slower as the default.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/high_quality_processing</name>

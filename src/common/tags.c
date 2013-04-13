@@ -74,10 +74,16 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   if( tagid != NULL)
     *tagid=id;
 
-  /* raise signal of tags change to refresh keywords module */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
   return TRUE;
+}
+
+gboolean dt_tag_new_from_gui(const char *name,guint *tagid)
+{
+  gboolean ret = dt_tag_new(name,tagid);
+  /* if everything went fine, raise signal of tags change to refresh keywords module in GUI */
+  if (ret)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  return ret;
 }
 
 guint dt_tag_remove(const guint tagid, gboolean final)

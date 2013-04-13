@@ -206,7 +206,6 @@ void connect_key_accels(dt_iop_module_t *self)
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width );
@@ -224,7 +223,6 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
-  if (!self->enabled) return 2;
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width );
@@ -1064,7 +1062,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_orient = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->aspect_orient, _("orientation"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
-  dt_bauhaus_combobox_add(g->aspect_orient, _("portait"));
+  dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
   g_object_set(G_OBJECT(g->aspect_orient), "tooltip-text", _("aspect ratio orientation of the image with border"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->aspect_orient), "value-changed", G_CALLBACK (aspect_orient_changed), self);

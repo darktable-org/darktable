@@ -507,4 +507,73 @@ global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const i
 }
 
 
+/* kernels for the colormapping module */
+#define HISTN (1<<11)
+#define MAXN 5
+
+// inverse distant weighting according to D. Shepard's method; with power parameter 2.0
+static void
+get_clusters(const float4 col, const int n, global float2 *mean, float *weight)
+{
+  float mdist = FLT_MAX;
+  for(int k=0; k<n; k++)
+  {
+    const float dist2 = (col.y-mean[k].x)*(col.y-mean[k].x) + (col.z-mean[k].y)*(col.z-mean[k].y);  // dist^2
+    weight[k] = dist2 > 1.0e-6f ? 1.0f/dist2 : -1.0f;                                                // direct hits marked as -1
+    if(dist2 < mdist) mdist = dist2;
+  }
+  if(mdist < 1.0e-6f) for(int k=0; k<n; k++) weight[k] = weight[k] < 0.0f ? 1.0f : 0.0f;             // correction in case of direct hits
+  float sum = 0.0f;
+  for(int k=0; k<n; k++) sum += weight[k];
+  if(sum > 0.0f) for(int k=0; k<n; k++) weight[k] /= sum;
+}
+
+kernel void
+colormapping_histogram (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+            const float equalization, global int *target_hist, global float *source_ihist)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float L = read_imagef(in, sampleri, (int2)(x, y)).x;
+
+  float dL = 0.5f*((L * (1.0f - equalization) + source_ihist[target_hist[(int)clamp(HISTN*L/100.0f, 0.0f, (float)HISTN-1.0f)]] * equalization) - L) + 50.0f;
+  dL = clamp(dL, 0.0f, 100.0f);
+
+  write_imagef (out, (int2)(x, y), (float4)(dL, 0.0f, 0.0f, 0.0f));
+}
+
+kernel void
+colormapping_mapping (read_only image2d_t in, read_only image2d_t tmp, write_only image2d_t out, const int width, const int height,
+            const int clusters, global float2 *target_mean, global float2 *source_mean, global float2 *var_ratio, global int *mapio)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 ipixel = read_imagef(in, sampleri, (int2)(x, y));
+  float dL = read_imagef(tmp, sampleri, (int2)(x, y)).x;
+  float weight[MAXN];
+  float4 opixel = (float4)0.0f;
+
+  opixel.x = 2.0f*(dL - 50.0f) + ipixel.x;
+  opixel.x = clamp(opixel.x, 0.0f, 100.0f);
+
+  get_clusters(ipixel, clusters, target_mean, weight);
+
+  for(int c=0; c < clusters; c++)
+  {
+    opixel.y += weight[c] * ((ipixel.y - target_mean[c].x)*var_ratio[c].x + source_mean[mapio[c]].x);
+    opixel.z += weight[c] * ((ipixel.z - target_mean[c].y)*var_ratio[c].y + source_mean[mapio[c]].y);
+  }
+  opixel.w = ipixel.w;
+
+  write_imagef (out, (int2)(x, y), opixel);
+}
+
+#undef HISTN
+#undef MAXN
 

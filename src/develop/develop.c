@@ -28,6 +28,7 @@
 #include "common/imageio.h"
 #include "common/tags.h"
 #include "common/debug.h"
+#include "develop/masks.h"
 #include "gui/gtk.h"
 
 #include <glib/gprintf.h>
@@ -416,6 +417,9 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->first_load = 1;
   dev->image_dirty = dev->preview_dirty = 1;
 
+  dt_masks_read_forms(dev);
+  dev->form_visible = NULL;
+  
   dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
@@ -534,7 +538,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       memcpy(hist->params, module->params, module->params_size);
 
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-        memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
+      memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
       // if the user changed stuff and the module is still not enabled, do it:
       if(!hist->enabled && !module->enabled)
@@ -917,6 +921,23 @@ void dt_dev_read_history(dt_develop_t *dev)
     snprintf(hist->multi_name,128,"%s",multi_name);
     hist->multi_priority = multi_priority;
 
+    const void *blendop_params = sqlite3_column_blob(stmt, 6);
+    int bl_length = sqlite3_column_bytes(stmt, 6);
+    int blendop_version = sqlite3_column_int(stmt, 7);
+
+    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
+    {
+      memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
+    }
+    else if (blendop_params && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
+    {
+      // do nothing
+    }
+    else
+    {
+      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    }    
+    
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
         strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
@@ -938,24 +959,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     {
       memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     }
-
-    const void *blendop_params = sqlite3_column_blob(stmt, 6);
-    int bl_length = sqlite3_column_bytes(stmt, 6);
-    int blendop_version = sqlite3_column_int(stmt, 7);
-
-    if (blendop_params && (blendop_version == dt_develop_blend_version()) && (bl_length == sizeof(dt_develop_blend_params_t)))
-    {
-      memcpy(hist->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
-    }
-    else if (blendop_params && dt_develop_blend_legacy_params(hist->module, blendop_params, blendop_version, hist->blend_params, dt_develop_blend_version(), bl_length) == 0)
-    {
-      // do nothing
-    }
-    else
-    {
-      memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
-    }
-
+    
     // make sure that always-on modules are always on. duh.
     if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
     {
@@ -1199,6 +1203,21 @@ void dt_dev_modulegroups_switch(dt_develop_t *dev, dt_iop_module_t *module)
     dev->proxy.modulegroups.switch_group(dev->proxy.modulegroups.module, module);
 }
 
+void dt_dev_masks_list_change(dt_develop_t *dev)
+{
+  if (dev->proxy.masks.module && dev->proxy.masks.list_change)
+    dev->proxy.masks.list_change(dev->proxy.masks.module);
+}
+void dt_dev_masks_list_update(dt_develop_t *dev)
+{
+  if (dev->proxy.masks.module && dev->proxy.masks.list_update)
+    dev->proxy.masks.list_update(dev->proxy.masks.module);
+}
+void dt_dev_masks_selection_change(dt_develop_t *dev, int selectid, int throw_event)
+{
+  if (dev->proxy.masks.module && dev->proxy.masks.selection_change)
+    dev->proxy.masks.selection_change(dev->proxy.masks.module, selectid, throw_event);
+}
 
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename)
 {
@@ -1367,10 +1386,9 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
   {
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
-    if ( module->priority <= pmax && module->priority >= pmin)
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
+    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-
       module->distort_transform(module,piece,points,points_count);
     }
     modules = g_list_next(modules);
@@ -1387,10 +1405,9 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
   {
     if (!pieces) return 0;
     dt_iop_module_t *module = (dt_iop_module_t *) (modules->data);
-    if ( module->priority <= pmax && module->priority >= pmin)
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
+    if ((module->enabled || piece->enabled) && module->priority <= pmax && module->priority >= pmin)
     {
-      dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *) (pieces->data);
-
       module->distort_backtransform(module,piece,points,points_count);
     }
     modules = g_list_previous(modules);

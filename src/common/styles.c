@@ -499,7 +499,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
     if (params)
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, op_params, blendop_params from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, op_params, blendop_params, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
     else if (imgid != -1)
     {
       // get all items from the style
@@ -509,7 +509,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, multi_name, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -528,7 +528,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       {
         // when we get the parameters we do not want to get the operation localized as this
         // is used to compare against the internal module name.
-        g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
+        g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), sqlite3_column_text (stmt, 5));
 
         const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
         const int32_t op_len = sqlite3_column_bytes(stmt, 3);
@@ -546,8 +546,8 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(gchar *)sqlite3_column_text (stmt, 4),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
         item->params = NULL;
         item->blendop_params = NULL;
-        if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)
-          item->selimg_num = sqlite3_column_int (stmt, 3);
+        if (imgid != -1 && sqlite3_column_type(stmt,4)!=SQLITE_NULL)
+          item->selimg_num = sqlite3_column_int (stmt, 4);
       }
       item->name = g_strdup (name);
       result = g_list_append (result,item);

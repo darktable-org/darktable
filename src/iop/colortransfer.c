@@ -113,9 +113,10 @@ groups ()
 
 int flags ()
 {
-  return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
+  return IOP_FLAGS_DEPRECATED | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_PREVIEW_NON_OPENCL;
 }
 
+#if 0
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "acquire"), 0, 0);
@@ -130,6 +131,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "acquire", g->acquire_button);
   dt_accel_connect_button_iop(self, "apply", g->apply_button);
 }
+#endif
 
 static void
 capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
@@ -405,6 +407,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+#if 0
 static void
 spinbutton_changed (GtkSpinButton *button, dt_iop_module_t *self)
 {
@@ -510,6 +513,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
 #endif
 }
+#endif
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -537,12 +541,14 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 
 void gui_update(struct dt_iop_module_t *self)
 {
+#if 0
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   gtk_spin_button_set_value(g->spinbutton, p->n);
   //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
   // redraw color cluster preview
   dt_control_queue_redraw_widget(self->widget);
+#endif
 }
 
 void init(dt_iop_module_t *module)
@@ -572,6 +578,7 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
+#if 0
 static gboolean
 cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
@@ -631,9 +638,16 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   cairo_surface_destroy(cst);
   return TRUE;
 }
+#endif
 
 void gui_init(struct dt_iop_module_t *self)
 {
+
+  self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
+  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can switch it off\nand move to the new color mapping module."));
+  gtk_misc_set_alignment(GTK_MISC(self->widget), 0.0f, 0.5f);
+
+#if 0
   self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
@@ -677,14 +691,15 @@ void gui_init(struct dt_iop_module_t *self)
     fclose(f);
   }
   else gtk_widget_set_sensitive(GTK_WIDGET(g->apply_button), FALSE);
+#endif
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
-  dt_colorspaces_cleanup_profile(g->hsRGB);
-  dt_colorspaces_cleanup_profile(g->hLab);
-  cmsDeleteTransform(g->xform);
+//  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
+//  dt_colorspaces_cleanup_profile(g->hsRGB);
+//  dt_colorspaces_cleanup_profile(g->hLab);
+//  cmsDeleteTransform(g->xform);
   free(self->gui_data);
   self->gui_data = NULL;
 }

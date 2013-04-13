@@ -18,6 +18,7 @@
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
+#include "develop/masks.h"
 #include "common/gaussian.h"
 #include "blend.h"
 
@@ -304,7 +305,7 @@ static void _blend_make_mask(dt_iop_colorspace_type_t cst,const unsigned int ble
  
   for(int i=0, j=0; j<stride; i++, j+=4)
   {
-    mask[i] = opacity*_blendif_factor(cst,&a[j],&b[j],blendif,blendif_parameters);
+    mask[i] *= opacity*_blendif_factor(cst,&a[j],&b[j],blendif,blendif_parameters);
   }
 }
 
@@ -1600,16 +1601,23 @@ static void _blend_inverse(dt_iop_colorspace_type_t cst,const float *a, float *b
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
-
   int ch = piece->colors;
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
+  /* enable mode if there is some mask */
+  int mode = d->mode;
+  if (mode == 0 && (!(self->flags()&IOP_FLAGS_NO_MASKS)))
+  {
+    dt_masks_form_t *grp = dt_masks_get_from_id(self->dev,d->mask_id);
+    if (grp && (grp->type & DT_MASKS_GROUP)) mode = DEVELOP_BLEND_NORMAL;
+  }
+  
   /* check if blend is disabled */
-  if (!d || d->mode==0) return;
+  if (!d || mode==0) return;
 
   /* select the blend operator */
-  switch (d->mode)
+  switch (mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       blend = _blend_lighten;
@@ -1686,11 +1694,26 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   float *mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
   {
-    dt_control_log("could not allocate buffer for blending");
+    dt_control_log(_("could not allocate buffer for blending"));
     return;
   }
-
-  if (!(d->mode & DEVELOP_BLEND_MASK_FLAG))
+  
+  /* apply masks if there's some */
+  dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
+  
+  if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)))
+  {
+    int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
+    dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+  }
+  else
+  {
+    //we fill the buffer with 1.0f
+    const int buffsize = roi_out->width*roi_out->height;
+    for (int i=0; i<buffsize; i++) mask[i] = 1.0f;
+  }
+  
+  if (!(mode & DEVELOP_BLEND_MASK_FLAG))
   {
     /* get the clipped opacity value  0 - 1 */
     const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
@@ -1820,11 +1843,20 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_int err = -999;
   cl_mem dev_m = NULL;
   cl_mem dev_mask = NULL;
+  float *mask = NULL;
 
   // fprintf(stderr, "dt_develop_blend_process_cl: mode %d\n", d->mode);
-
+  
+  /* enable mode if there is some mask */
+  int mode = d->mode;
+  if (mode == 0 && (!(self->flags()&IOP_FLAGS_NO_MASKS)))
+  {
+    dt_masks_form_t *grp = dt_masks_get_from_id(self->dev,d->mask_id);
+    if (grp && (grp->type & DT_MASKS_GROUP)) mode = DEVELOP_BLEND_NORMAL;
+  }
+  
   /* check if blend is disabled: just return, output is already in dev_out */
-  if (!d || d->mode==0) return TRUE;
+  if (!d || mode==0) return TRUE;
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
@@ -1853,7 +1885,6 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int devid = piece->pipe->devid;
   const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
-  const int mode = d->mode;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const unsigned blendif = d->blendif;
@@ -1861,8 +1892,28 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int gaussian = d->radius > 0.0f ? 1 : 0;
   const float radius = fabs(d->radius);
 
-
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+  /* quick workaround for masks to be opencl compliant */
+  /* the first mask creation may need to be compute by opencl too */
+  mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
+  if(!mask)
+  {
+    dt_control_log(_("could not allocate buffer for blending"));
+    goto error;
+  }
+  
+  /* apply masks if there's some */
+  dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
+  if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)))
+  {
+    int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
+    dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+  }
+  else
+  {
+    //we fill the buffer with 1.0f
+    const int buffsize = roi_out->width*roi_out->height;
+    for (int i=0; i<buffsize; i++) mask[i] = 1.0f;
+  }
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
   if (dev_m == NULL) goto error;
@@ -1870,20 +1921,25 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
   if (dev_mask == NULL) goto error;
 
+  err = dt_opencl_write_host_to_device(devid, mask, dev_mask, width, height, sizeof(float));
+  if(err != CL_SUCCESS) goto error;
+
   /* The following call to clFinish() works around a bug in some OpenCL drivers (namely AMD).
      Without this synchronization point, reads to dev_in would often not return the correct value.
      This depends on the module after which blending is called. One of the affected ones is sharpen.
   */
   dt_opencl_finish(devid);
 
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(float), (void *)&opacity);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(unsigned), (void *)&blendif);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(cl_mem), (void *)&dev_m);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(unsigned), (void *)&blendif);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_m);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -1948,11 +2004,13 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     piece->pipe->mask_display = 1;
   }
 
+  if (mask != NULL) free(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
+  if (mask != NULL) free(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
@@ -2013,9 +2071,7 @@ tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
 /** update blendop params from older versions */
 int
 dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
-{
-
-
+{  
   if(old_version == 1 && new_version == 4)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
@@ -2070,8 +2126,6 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
 
     return 0;
   }
-
-
 
   return 1;
 }

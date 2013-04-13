@@ -148,7 +148,7 @@
     <Sensor black="1020" white="14500"/>
     <Aliases>
 		<Alias>Canon EOS DIGITAL REBEL XSi</Alias>
-		<Alias>Canon EOS Kiss Digital X2</Alias>
+		<Alias>Canon EOS Kiss X2</Alias>
 	</Aliases>
   </Camera>
   <Camera make="Canon" model="Canon EOS 50D" decoder_version="1">

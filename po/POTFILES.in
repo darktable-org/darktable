@@ -67,6 +67,7 @@ src/iop/colorcontrast.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
 src/iop/colorize.c
+src/iop/colormapping.c
 src/iop/colorout.c
 src/iop/colortransfer.c
 src/iop/colorzones.c

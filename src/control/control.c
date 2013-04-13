@@ -426,6 +426,9 @@ void dt_control_create_database_schema()
                         "operation varchar(256), op_params blob, enabled integer, "
                         "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "create table mask (imgid integer, formid integer, form integer, name varchar(256), "
+                        "version integer, points blob, points_count integer, source blob)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create index if not exists imgid_index on history (imgid)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table tags (id integer primary key, name varchar, icon blob, "
@@ -603,6 +606,9 @@ void dt_control_init(dt_control_t *s)
                    "module integer, operation varchar(256), op_params blob, "
                    "enabled integer)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
+                   "create table mask (imgid integer, formid integer, form integer, name varchar(256), "
+                   "version integer, points blob, points_count integer)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
                    "create table meta_data (id integer, key integer,value varchar)",
                    NULL, NULL, NULL);
       // quick hack to detect if the db is already used by another process
@@ -729,7 +735,10 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_name varchar(256)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-
+      
+      //add columns for masks clone source
+      sqlite3_exec(dt_database_get(darktable.db), "alter table mask add column source blob", NULL, NULL, NULL);
+      
       // and the color matrix
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
       // and the colorspace as specified in some image types
