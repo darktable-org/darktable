@@ -1242,6 +1242,8 @@ int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_d
 }
 
 
+void init(dt_imageio_module_storage_t *self) {
+}
 void *get_params(struct dt_imageio_module_storage_t *self, int *size)
 {
   *size = sizeof(gint64);

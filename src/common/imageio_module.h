@@ -139,6 +139,8 @@ typedef struct dt_imageio_module_storage_t
   void (*gui_cleanup) (struct dt_imageio_module_storage_t *self);
   /* reset options to defaults */
   void (*gui_reset)   (struct dt_imageio_module_storage_t *self);
+  /* allow the module to initialize itself */
+  void (*init)    (struct dt_imageio_module_storage_t *self);
   /* try and see if this format is supported? */
   int (*supported)    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
