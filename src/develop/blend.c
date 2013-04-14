@@ -1065,7 +1065,7 @@ static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float *a, float
       doublemax = lmax*2.0f;
 
       tb[0] = CLAMP_RANGE( ((la * (1.0 - local_opacity2)) + (
-                              (lb>halfmax) ? ( la / (doublemax*(lmax - lb))) : ( lmax - (lmax - la)/(doublemax * lb) )
+                              (lb>halfmax) ? (lb >= lmax ? lmax : la / (doublemax*(lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb) )
                             ) * local_opacity2), lmin, lmax)-fabs(min[0]);
 
       if (flag == 0)
@@ -1100,7 +1100,7 @@ static void _blend_vividlight(dt_iop_colorspace_type_t cst,const float *a, float
         doublemax = lmax*2.0f;
 
         b[j+k] =  CLAMP_RANGE( ((la * (1.0f - local_opacity2)) + (
-                                  (lb>halfmax) ? ( la / (doublemax*(lmax - lb))) : ( lmax - (lmax - la)/(doublemax * lb) )
+                                  (lb>halfmax) ? (lb >= lmax ? lmax : la / (doublemax*(lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb) )
                                 ) * local_opacity2), lmin, lmax)-fabs(min[k]);
       }
     }

@@ -446,7 +446,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
-      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? la / (doublemax * (lmax - lb)) : lmax - (lmax - la)/(doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? (lb >= lmax ? lmax : la / (doublemax * (lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb))) * opacity2, lmin, lmax) - fabs(min);
       if (a.x > 0.01f)
       {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/a.x * opacity2, min.y, max.y);
@@ -636,7 +636,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
-      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? la / (doublemax * (lmax - lb)) : lmax - (lmax - la)/(doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? la / (lb >= lmax ? lmax : (doublemax * (lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb))) * opacity2, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_LINEARLIGHT:
@@ -763,7 +763,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_VIVIDLIGHT:
-      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? la / (doublemax * (lmax - lb)) : lmax - (lmax - la)/(doublemax * lb)) * opacity2, lmin, lmax) - fabs(min);
+      o = clamp(la * (1.0f - opacity2) + (lb > halfmax ? (lb >= lmax ? lmax : la / (doublemax * (lmax - lb))) : (lb <= lmin ? lmin : lmax - (lmax - la)/(doublemax * lb))) * opacity2, lmin, lmax) - fabs(min);
       break;
 
     case DEVELOP_BLEND_LINEARLIGHT:
