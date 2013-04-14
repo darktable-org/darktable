@@ -52,13 +52,6 @@ typedef struct dt_control_gpx_apply_t
 } dt_control_gpx_apply_t;
 #endif
 
-typedef struct dt_control_export_t
-{
-  int max_width, max_height, format_index, storage_index;
-  gboolean high_quality;
-  char style[128];
-} dt_control_export_t;
-
 void dt_control_write_sidecar_files()
 {
   dt_job_t j;
@@ -904,7 +897,7 @@ int32_t dt_control_copy_images_job_run(dt_job_t *job)
          _("copying %d image"), _("copying %d images"));
 }
 
-int32_t dt_control_export_job_run(dt_job_t *job)
+static int32_t dt_control_export_job_run(dt_job_t *job)
 {
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
@@ -939,7 +932,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   }
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
-  snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name() );
+  snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
 
   /* create a cancellable bgjob ui template */
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
@@ -1010,7 +1003,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(sdata, imgid, mformat, fdata, num, total, settings->high_quality);
+          mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality);
         }
       }
 #ifdef _OPENMP
@@ -1039,12 +1032,14 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
+
+void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style)
 {
-  dt_control_job_init(job, "export");
-  job->execute = &dt_control_export_job_run;
-  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
-  dt_control_image_enumerator_job_selected_init(t);
+  dt_job_t job;
+  dt_control_job_init(&job, "export");
+  job.execute = &dt_control_export_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job.param;
+  t->index = imgid_list;
   dt_control_export_t *data = (dt_control_export_t*)malloc(sizeof(dt_control_export_t));
   data->max_width = max_width;
   data->max_height = max_height;
@@ -1053,13 +1048,8 @@ void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, in
   data->high_quality = high_quality;
   strncpy(data->style,style,128);
   t->data = data;
-}
-
-void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style)
-{
-  dt_job_t j;
-  dt_control_export_job_init(&j, max_width, max_height, format_index, storage_index, high_quality, style);
-  dt_control_add_job(darktable.control, &j);
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
+  dt_control_add_job(darktable.control, &job);
 }
 
 #if GLIB_CHECK_VERSION (2, 26, 0)

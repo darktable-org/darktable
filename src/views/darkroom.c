@@ -826,7 +826,7 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
-  dt_control_export(max_width, max_height, format_index, storage_index, high_quality, style);
+  dt_control_export(dt_collection_get_selected(darktable.collection),max_width, max_height, format_index, storage_index, high_quality,style);
   return TRUE;
 }
 

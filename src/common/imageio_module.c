@@ -21,6 +21,7 @@
 #include "common/imageio.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "control/signal.h"
 #include <stdlib.h>
 
 static gint
@@ -28,7 +29,7 @@ dt_imageio_sort_modules_storage (gconstpointer a, gconstpointer b)
 {
   const dt_imageio_module_storage_t *am = (const dt_imageio_module_storage_t *)a;
   const dt_imageio_module_storage_t *bm = (const dt_imageio_module_storage_t *)b;
-  return strcmp(am->name(), bm->name());
+  return strcmp(am->name(am), bm->name(bm));
 }
 
 static gint
@@ -200,7 +201,6 @@ static int
 dt_imageio_load_modules_storage (dt_imageio_t *iio)
 {
   iio->plugins_storage = NULL;
-  GList *res = NULL;
   dt_imageio_module_storage_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
@@ -226,10 +226,9 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
     module->gui_init(module);
     if(module->widget) gtk_widget_ref(module->widget);
     g_free(libname);
-    res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_storage);
+    dt_imageio_insert_storage(module);
   }
   g_dir_close(dir);
-  iio->plugins_storage = res;
   return 0;
 }
 
@@ -323,6 +322,23 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_index(int index)
   GList *it = g_list_nth(iio->plugins_storage, index);
   if(!it) it = iio->plugins_storage;
   return (dt_imageio_module_storage_t *)it->data;
+}
+
+int dt_imageio_get_index_of_format(dt_imageio_module_format_t* format)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  return g_list_index(iio->plugins_format,format);
+}
+int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t* storage)
+{
+  dt_imageio_t *iio = darktable.imageio;
+  return g_list_index(iio->plugins_storage,storage);
+}
+
+void dt_imageio_insert_storage(dt_imageio_module_storage_t* storage)
+{
+  darktable.imageio->plugins_storage = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

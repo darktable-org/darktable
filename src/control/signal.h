@@ -115,6 +115,26 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_IMPORT,
 
+  /** \brief This signal is raised when multiple images are exporte
+    1 dt_image_export_t *: structure describing the export. the content can be edited
+    no return
+    */
+  DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,
+
+  /** \brief This signal is raised after an image has been exported
+    to a file, but before it is sent to facebook/picassa etc...
+    export won't happen until this function returns
+    1 int : the imgid exported
+    2 char* : the filename we exported to
+    no return
+    */
+  DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
+  /** \brief This signal is raised when a new storage module is loaded
+    noparameters
+    no return
+    */
+  DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 }
