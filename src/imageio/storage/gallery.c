@@ -491,6 +491,10 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   fclose(f);
 }
 
+static inline int get_visible_storage_size() {
+  return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
+}
+
 void init(dt_imageio_module_storage_t *self) {
 }
 void*
@@ -499,7 +503,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
   memset(d, 0, sizeof(dt_imageio_gallery_t));
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
-  *size = sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
+  *size = get_visible_storage_size();
   gallery_t *g = (gallery_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
@@ -524,7 +528,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
 int
 set_params(dt_imageio_module_storage_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024) return 1;
+  if(size != get_visible_storage_size()) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)params;
   gallery_t *g = (gallery_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
