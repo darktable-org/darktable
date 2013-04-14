@@ -255,7 +255,7 @@ int main(int argc, char *arg[])
 
   //TODO: add a callback to set the bpp without going through the config
 
-  storage->store(sdata, id, format, fdata, 1, 1, high_quality);
+  storage->store(storage,sdata, id, format, fdata, 1, 1, high_quality);
 
   // cleanup time
   if(storage->finalize_store) storage->finalize_store(storage, sdata);
