@@ -146,7 +146,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_MEMORY = 512,
   DT_DEBUG_LIGHTTABLE = 1024,
   DT_DEBUG_NAN = 2048,
-  DT_DEBUG_MASKS = 4096
+  DT_DEBUG_MASKS = 4096,
+  DT_DEBUG_LUA = 8192,
 }
 dt_debug_thread_t;
 

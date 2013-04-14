@@ -445,6 +445,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else if(!strcmp(argv[k+1], "lighttable")) darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
         else if(!strcmp(argv[k+1], "nan"))        darktable.unmuted |= DT_DEBUG_NAN; // check for NANs when processing the pipe.
         else if(!strcmp(argv[k+1], "masks"))        darktable.unmuted |= DT_DEBUG_MASKS; // masks reated stuff.
+        else if(!strcmp(argv[k+1], "lua"))        darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
         else return usage(argv[0]);
         k ++;
       }
