@@ -226,14 +226,26 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       {
         //we get the area for the form
         int fl,ft,fw,fh;
-        if (!dt_masks_get_area(self,piece,form,&fw,&fh,&fl,&ft)) continue;
+        if (!dt_masks_get_area(self,piece,form,&fw,&fh,&fl,&ft))
+        {
+          forms = g_list_next(forms);
+          continue;
+        }
     
         //if the form is outside the roi, we just skip it
         fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
-        if (ft>=roi_out->y+roi_out->height || ft+fh<=roi_out->y || fl>=roi_out->x+roi_out->width || fl+fw<=roi_out->x) continue;
+        if (ft>=roi_out->y+roi_out->height || ft+fh<=roi_out->y || fl>=roi_out->x+roi_out->width || fl+fw<=roi_out->x)
+        {
+          forms = g_list_next(forms);
+          continue;
+        }
     
         //we get the area for the source
-        if (!dt_masks_get_source_area(self,piece,form,&fw,&fh,&fl,&ft)) continue;
+        if (!dt_masks_get_source_area(self,piece,form,&fw,&fh,&fl,&ft))
+        {
+          forms = g_list_next(forms);
+          continue;
+        }
         fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
     
         //we elarge the roi if needed
