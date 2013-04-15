@@ -137,10 +137,12 @@ _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, dt_gui_style
 
     /* create the style from imageid */
     if (gtk_entry_get_text ( GTK_ENTRY (g->name)) && strlen(gtk_entry_get_text ( GTK_ENTRY (g->name)))>0)
-      dt_styles_create_from_image(
-        gtk_entry_get_text ( GTK_ENTRY (g->name)),
-        gtk_entry_get_text ( GTK_ENTRY (g->description)),
-        g->imgid,result);
+      if(dt_styles_create_from_image(
+            gtk_entry_get_text ( GTK_ENTRY (g->name)),
+            gtk_entry_get_text ( GTK_ENTRY (g->description)),
+            g->imgid,result)) {
+        dt_control_log(_("style named '%s' successfully created"),gtk_entry_get_text ( GTK_ENTRY (g->name)));
+      };
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->nameorig);
@@ -159,20 +161,23 @@ _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id, dt_gui_styl
 
     if (gtk_entry_get_text ( GTK_ENTRY (g->name)) && strlen(gtk_entry_get_text ( GTK_ENTRY (g->name)))>0)
     {
-      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (g->duplicate)))
+      if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (g->duplicate))) {
         dt_styles_create_from_style(
           g->nameorig,
           gtk_entry_get_text ( GTK_ENTRY (g->name)),
           gtk_entry_get_text ( GTK_ENTRY (g->description)),
           result,
           g->imgid, update);
-      else
+        dt_control_log(_("style %s was successfully saved"),gtk_entry_get_text ( GTK_ENTRY (g->name)));
+      }else {
         dt_styles_update(
           g->nameorig,
           gtk_entry_get_text ( GTK_ENTRY (g->name)),
           gtk_entry_get_text ( GTK_ENTRY (g->description)),
           result,
           g->imgid, update);
+        dt_control_log(_("style %s was successfully saved"),gtk_entry_get_text ( GTK_ENTRY (g->name)));
+      }
     }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));

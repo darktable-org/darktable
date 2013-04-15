@@ -302,7 +302,7 @@ char static *_flickr_api_create_photoset(_flickr_api_context_t *ctx, const char 
 }
 
 const char*
-name ()
+name (const struct dt_imageio_module_storage_t *self)
 {
   return _("flickr webalbum");
 }
@@ -612,7 +612,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 }
 
 int
-store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
+store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
   gint result=1;

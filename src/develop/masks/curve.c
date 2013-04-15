@@ -807,7 +807,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     else
     {
       float amount = 1.05;
-      if (!up) amount = 0.95;
+      if (up) amount = 0.95;
       int nb = g_list_length(form->points);
       if (gui->border_selected)
       {

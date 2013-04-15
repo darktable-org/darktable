@@ -722,10 +722,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   }
 
   // adjust roi_in to minimally needed region
-  roi_in->x      = aabb_in[0];
-  roi_in->y      = aabb_in[1];
-  roi_in->width  = aabb_in[2]-aabb_in[0];
-  roi_in->height = aabb_in[3]-aabb_in[1];
+  roi_in->x      = aabb_in[0]-1;
+  roi_in->y      = aabb_in[1]-1;
+  roi_in->width  = aabb_in[2]-aabb_in[0]+2;
+  roi_in->height = aabb_in[3]-aabb_in[1]+2;
 
   if(d->angle == 0.0f && d->all_off)
   {
@@ -797,8 +797,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         float pi[2], po[2];
 
-        pi[0] = roi_out->x - roi_out->scale*d->enlarge_x + roi_out->scale*d->cix + i + .5;
-        pi[1] = roi_out->y - roi_out->scale*d->enlarge_y + roi_out->scale*d->ciy + j + .5;
+        pi[0] = roi_out->x - roi_out->scale*d->enlarge_x + roi_out->scale*d->cix + i;
+        pi[1] = roi_out->y - roi_out->scale*d->enlarge_y + roi_out->scale*d->ciy + j;
 
         // transform this point using matrix m
         if(d->flip)
@@ -876,7 +876,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     }
 
     int roi[2]  = { roi_in->x, roi_in->y };
-    float roo[2]  = { roi_out->x - roi_out->scale*d->enlarge_x + roi_out->scale*d->cix + .5, roi_out->y - roi_out->scale*d->enlarge_y + roi_out->scale*d->ciy + .5 };
+    float roo[2]  = { roi_out->x - roi_out->scale*d->enlarge_x + roi_out->scale*d->cix, roi_out->y - roi_out->scale*d->enlarge_y + roi_out->scale*d->ciy };
     float t[2]  = { d->tx, d->ty };
     float k[2]  = { d->k_h, d->k_v };
     float m[4]  = { d->m[0], d->m[1], d->m[2], d->m[3] };

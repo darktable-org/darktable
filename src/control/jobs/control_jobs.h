@@ -21,6 +21,13 @@
 #include <inttypes.h>
 #include "control/control.h"
 
+typedef struct dt_control_export_t
+{
+  int max_width, max_height, format_index, storage_index;
+  gboolean high_quality;
+  char style[128];
+} dt_control_export_t;
+
 typedef struct dt_control_image_enumerator_t
 {
   GList *index;
@@ -54,8 +61,6 @@ void dt_control_copy_images_job_init(dt_job_t *job);
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
-void dt_control_export_job_init(dt_job_t *job, int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style);
-int32_t dt_control_export_job_run(dt_job_t *job);
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
@@ -74,7 +79,7 @@ void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();
-void dt_control_export(int max_width, int max_height, int format_index, int storage_index, gboolean high_quality, char *style);
+void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style);
 void dt_control_merge_hdr();
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
