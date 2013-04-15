@@ -1791,10 +1791,24 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/spots/size</name>
+    <name>plugins/darkroom/spots/circle_size</name>
     <type>float</type>
-    <default>0.01</default>
-    <shortdescription>percent of image size</shortdescription>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/circle_border</name>
+    <type>float</type>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/curve_border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1960,6 +1974,27 @@
     <name>plugins/darkroom/histogram/show_blue</name>
     <type>bool</type>
     <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/circle/size</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/circle/border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/curve/border</name>
+    <type>float</type>
+    <default>0.05</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
