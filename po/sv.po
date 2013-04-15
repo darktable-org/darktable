@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-12 00:50+0200\n"
-"PO-Revision-Date: 2013-04-12 01:00+0200\n"
+"POT-Creation-Date: 2013-04-15 04:23+0200\n"
+"PO-Revision-Date: 2013-04-15 05:18+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -538,13 +538,13 @@ msgstr ""
 "du måste kopiera historik från en bild innan du klistrar in på en annan"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
-#: ../src/common/history.c:255 ../src/common/styles.c:546
+#: ../src/common/history.c:255 ../src/common/styles.c:552
 #: ../src/develop/develop.c:1113 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
-#: ../src/common/history.c:255 ../src/common/styles.c:546
+#: ../src/common/history.c:255 ../src/common/styles.c:552
 #: ../src/develop/blend_gui.c:1045 ../src/develop/develop.c:1113
 #: ../src/imageio/format/j2k.c:602 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
@@ -575,8 +575,8 @@ msgstr "bild `%s' är inte tillgänglig"
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1459
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:1717
 #: ../src/iop/clipping.c:1760 ../src/iop/clipping.c:1777
-#: ../src/iop/lens.c:1692 ../src/libs/export.c:158 ../src/libs/export.c:161
-#: ../src/libs/export.c:594 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1705 ../src/libs/export.c:160 ../src/libs/export.c:163
+#: ../src/libs/export.c:613 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -592,14 +592,21 @@ msgstr "kan inte finna stilen '%s' att applicera under export."
 msgid "generic poissonian"
 msgstr "generisk poissonfördelning"
 
-#: ../src/common/ratings.c:44
+#: ../src/common/ratings.c:45
+#, c-format
+msgid "rejecting %d image"
+msgid_plural "rejecting %d images"
+msgstr[0] "förkastar %d bild"
+msgstr[1] "förkastar %d bilder"
+
+#: ../src/common/ratings.c:47
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "applicerar betyg %d på %d bild"
 msgstr[1] "applicerar betyg %d på %d bilder"
 
-#: ../src/common/ratings.c:68
+#: ../src/common/ratings.c:71
 msgid "no images selected to apply rating"
 msgstr "inga bilder valda för applicering av betyg"
 
@@ -608,33 +615,28 @@ msgstr "inga bilder valda för applicering av betyg"
 msgid "style with name '%s' already exists"
 msgstr "stil med namn '%s' existerar redan"
 
-#: ../src/common/styles.c:307 ../src/common/styles.c:368
+#: ../src/common/styles.c:307 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "skapade stilen '%s'"
 
 #. fail :(
-#: ../src/common/styles.c:388 ../src/common/styles.c:407
+#: ../src/common/styles.c:389 ../src/common/styles.c:408
 #: ../src/views/darkroom.c:458
 msgid "no image selected!"
 msgstr "inga bilder valda!"
 
-#: ../src/common/styles.c:630
+#: ../src/common/styles.c:636
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "kunde inte skriva över stilfilen för %s"
 
-#: ../src/common/styles.c:636
+#: ../src/common/styles.c:642
 #, c-format
 msgid "style file for %s exists"
 msgstr "stil fil med namn '%s' existerar redan"
 
-#: ../src/common/styles.c:683
-#, c-format
-msgid "style %s was successfully saved"
-msgstr "exporterade stilen '%s'"
-
-#: ../src/common/styles.c:876
+#: ../src/common/styles.c:881
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
@@ -699,69 +701,69 @@ msgstr ""
 "misslyckades med att skapa filmrulle för import från kamera, importen "
 "avbröts."
 
-#: ../src/control/jobs/control_jobs.c:127
+#: ../src/control/jobs/control_jobs.c:120
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "slår samman %d bild"
 msgstr[1] "slår samman %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:148
+#: ../src/control/jobs/control_jobs.c:141
 msgid "exposure bracketing only works on raw images"
 msgstr "exponeringstegning fungerar endast med råbilder"
 
-#: ../src/control/jobs/control_jobs.c:157
+#: ../src/control/jobs/control_jobs.c:150
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "misslyckades med att läsa råbuffer från bild `%s'"
 
-#: ../src/control/jobs/control_jobs.c:176
+#: ../src/control/jobs/control_jobs.c:169
 msgid "images have to be of same size!"
 msgstr "bilderna måste ha samma storlek!"
 
-#: ../src/control/jobs/control_jobs.c:251
+#: ../src/control/jobs/control_jobs.c:244
 #, c-format
 msgid "wrote merged hdr `%s'"
 msgstr "sparade ihopslagen HDR bild `%s'"
 
-#: ../src/control/jobs/control_jobs.c:277
+#: ../src/control/jobs/control_jobs.c:270
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplicerar %d bild"
 msgstr[1] "duplicerar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:302
+#: ../src/control/jobs/control_jobs.c:295
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "vänd %d bild"
 msgstr[1] "vänd %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:325
+#: ../src/control/jobs/control_jobs.c:318
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "tar bort %d bild"
 msgstr[1] "tar bort %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:376
+#: ../src/control/jobs/control_jobs.c:369
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "raderar %d bild"
 msgstr[1] "raderar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:461
+#: ../src/control/jobs/control_jobs.c:454
 msgid "failed to parse gpx file"
 msgstr "lyckades inte tolka gpx-filen"
 
-#: ../src/control/jobs/control_jobs.c:528
+#: ../src/control/jobs/control_jobs.c:521
 #, c-format
 msgid "applied matched gpx location onto %d image(s)"
 msgstr "applicerar tillhörande gpx-läge på %d bild(er)"
 
-#: ../src/control/jobs/control_jobs.c:679
+#: ../src/control/jobs/control_jobs.c:672
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -769,11 +771,11 @@ msgid_plural ""
 msgstr[0] "vill du verkligen ta bort %d vald bild från samlingen?"
 msgstr[1] "vill du verkligen ta bort %d valda bilder från samlingen?"
 
-#: ../src/control/jobs/control_jobs.c:682
+#: ../src/control/jobs/control_jobs.c:675
 msgid "remove images?"
 msgstr "ta bort bilder?"
 
-#: ../src/control/jobs/control_jobs.c:708
+#: ../src/control/jobs/control_jobs.c:701
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -781,24 +783,24 @@ msgid_plural ""
 msgstr[0] "vill du verkligen radera %d vald bilder fysiskt från disk?"
 msgstr[1] "vill du verkligen radera %d valda bilder fysiskt från disk?"
 
-#: ../src/control/jobs/control_jobs.c:711
+#: ../src/control/jobs/control_jobs.c:704
 msgid "delete images?"
 msgstr "radera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:744
+#: ../src/control/jobs/control_jobs.c:737
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "misslyckades med att skapa filmrulle för målkatalogen, avbryter flytten.."
 
-#: ../src/control/jobs/control_jobs.c:776
-#: ../src/control/jobs/control_jobs.c:833 ../src/imageio/storage/disk.c:67
+#: ../src/control/jobs/control_jobs.c:769
+#: ../src/control/jobs/control_jobs.c:826 ../src/imageio/storage/disk.c:67
 #: ../src/imageio/storage/disk.c:120 ../src/imageio/storage/gallery.c:78
 #: ../src/imageio/storage/gallery.c:161 ../src/imageio/storage/latex.c:78
 #: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "välj katalog"
 
-#: ../src/control/jobs/control_jobs.c:799
+#: ../src/control/jobs/control_jobs.c:792
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -813,13 +815,13 @@ msgstr[1] ""
 "vill du verkligen flytta de %d valda bilderna fysiskt till %s?\n"
 "(alla ej valda kopior kommer att flyttas med)"
 
-#: ../src/control/jobs/control_jobs.c:803
+#: ../src/control/jobs/control_jobs.c:796
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "flytta bild?"
 msgstr[1] "flytta bilder?"
 
-#: ../src/control/jobs/control_jobs.c:856
+#: ../src/control/jobs/control_jobs.c:849
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -827,64 +829,64 @@ msgstr[0] "vill du verkligen kopiera den %d valda bilden fysiskt till %s?"
 msgstr[1] ""
 "vill du verkligen kopiera de %d valda bilderna fysiskt från till %s?"
 
-#: ../src/control/jobs/control_jobs.c:859
+#: ../src/control/jobs/control_jobs.c:852
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopiera bild?"
 msgstr[1] "kopiera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:891
 #, c-format
 msgid "moving %d image"
 msgstr "flyttar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:891
 #, c-format
 msgid "moving %d images"
 msgstr "flyttar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:904
+#: ../src/control/jobs/control_jobs.c:897
 #, c-format
 msgid "copying %d image"
 msgstr "kopierar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:904
+#: ../src/control/jobs/control_jobs.c:897
 #, c-format
 msgid "copying %d images"
 msgstr "kopierar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:936
+#: ../src/control/jobs/control_jobs.c:929
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr "parametrar från lagringsmodul är inkorrekta, avbryter exporten..."
 
-#: ../src/control/jobs/control_jobs.c:940
+#: ../src/control/jobs/control_jobs.c:933
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporterar %d bild..."
 msgstr[1] "exporterar %d bilder..."
 
-#: ../src/control/jobs/control_jobs.c:942
+#: ../src/control/jobs/control_jobs.c:935
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1005
-#: ../src/control/jobs/control_jobs.c:1006 ../src/views/darkroom.c:469
+#: ../src/control/jobs/control_jobs.c:998
+#: ../src/control/jobs/control_jobs.c:999 ../src/views/darkroom.c:469
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1077
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "lägger till tidsförskjutning på %d bild"
 msgstr[1] "lägger till tidsförskjutning på %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "la till tidsförskjutning på %d bild(er)"
@@ -1198,7 +1200,7 @@ msgstr "flytta ner"
 
 #. delete
 #: ../src/develop/imageop.c:1152 ../src/libs/image.c:143
-#: ../src/libs/styles.c:395 ../src/libs/tagging.c:487
+#: ../src/libs/styles.c:396 ../src/libs/tagging.c:487
 msgid "delete"
 msgstr "radera"
 
@@ -1841,8 +1843,8 @@ msgstr "importera"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:608 ../src/libs/export.c:620
-#: ../src/libs/styles.c:409
+#: ../src/gui/preferences.c:608 ../src/libs/export.c:639
+#: ../src/libs/styles.c:410
 msgid "export"
 msgstr "exportera"
 
@@ -2008,46 +2010,52 @@ msgstr "spara ny förinställning..."
 msgid "update preset"
 msgstr "uppdatera förinställning"
 
-#: ../src/gui/styles_dialog.c:284
+#: ../src/gui/styles_dialog.c:171 ../src/gui/styles_dialog.c:179
+#: ../src/libs/styles.c:252
+#, c-format
+msgid "style %s was successfully saved"
+msgstr "exporterade stilen '%s'"
+
+#: ../src/gui/styles_dialog.c:289
 #, c-format
 msgid "edit style"
 msgstr "ändra stil"
 
-#: ../src/gui/styles_dialog.c:288
+#: ../src/gui/styles_dialog.c:293
 msgid "duplicate style"
 msgstr "duplicera stil"
 
-#: ../src/gui/styles_dialog.c:289
+#: ../src/gui/styles_dialog.c:294
 msgid "creates a duplicate of the style before applying changes"
 msgstr "skapa en kopia på stilen innan förändringar appliceras"
 
-#: ../src/gui/styles_dialog.c:293
+#: ../src/gui/styles_dialog.c:298
 msgid "create new style"
 msgstr "skapa ny stil"
 
-#: ../src/gui/styles_dialog.c:314
+#: ../src/gui/styles_dialog.c:319
 msgid "enter a name for the new style"
 msgstr "ange ett namn för stilen"
 
-#: ../src/gui/styles_dialog.c:317
+#: ../src/gui/styles_dialog.c:322
 msgid "enter a description for the new style, this description is searchable"
 msgstr "ange en beskrivning av den nya stilen, denna beskrivning är sökbar"
 
-#: ../src/gui/styles_dialog.c:350 ../src/gui/styles_dialog.c:363
+#: ../src/gui/styles_dialog.c:355 ../src/gui/styles_dialog.c:368
 #: ../src/gui/hist_dialog.c:181
 msgid "include"
 msgstr "inkludera"
 
-#: ../src/gui/styles_dialog.c:380
+#: ../src/gui/styles_dialog.c:385
 msgid "update"
 msgstr "uppdatera"
 
-#: ../src/gui/styles_dialog.c:392 ../src/gui/styles_dialog.c:399
+#: ../src/gui/styles_dialog.c:397 ../src/gui/styles_dialog.c:404
 #: ../src/gui/hist_dialog.c:192
 msgid "item"
 msgstr "post"
 
-#: ../src/gui/styles_dialog.c:498
+#: ../src/gui/styles_dialog.c:503
 msgid "can't create style out of unaltered image"
 msgstr "kan inte skapa en stil utifrån en orörd bild"
 
@@ -3224,7 +3232,7 @@ msgstr "gyllene spiralsektioner"
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1790 ../src/iop/lens.c:1698
+#: ../src/iop/clipping.c:1790 ../src/iop/lens.c:1711
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "alla"
@@ -3347,7 +3355,7 @@ msgstr "Adobe RGB (kompatibel)"
 
 #: ../src/iop/colorin.c:756 ../src/iop/colorin.c:788 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
-#: ../src/libs/export.c:520
+#: ../src/libs/export.c:539
 msgid "linear RGB"
 msgstr "linjär RGB"
 
@@ -3365,7 +3373,7 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:896 ../src/iop/denoiseprofile.c:1669
-#: ../src/libs/export.c:561
+#: ../src/libs/export.c:580
 msgid "profile"
 msgstr "profil"
 
@@ -3456,7 +3464,8 @@ msgstr "antal klungor:"
 
 #: ../src/iop/colormapping.c:1094
 msgid "number of clusters to find in image. value change resets all clusters"
-msgstr "antal klungor att hitta i bilder. ändring av värdet återställer alla klungor"
+msgstr ""
+"antal klungor att hitta i bilder. ändring av värdet återställer alla klungor"
 
 #: ../src/iop/colormapping.c:1099
 msgid "color dominance"
@@ -3466,16 +3475,17 @@ msgstr "färgdominans"
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
-msgstr "Hur klungor läggs. lågt värde: baserat på liknande färg, högt värde: baserat på dominerande färg"
+msgstr ""
+"Hur klungor läggs. lågt värde: baserat på liknande färg, högt värde: baserat "
+"på dominerande färg"
 
 #: ../src/iop/colormapping.c:1106
-#, fuzzy
 msgid "histogram equalization"
-msgstr "histogram vikt"
+msgstr "histogramutjämning"
 
 #: ../src/iop/colormapping.c:1107
 msgid "level of histogram equalization"
-msgstr ""
+msgstr "histogramutjämningens styrka"
 
 #: ../src/iop/colorout.c:48
 msgid "output color profile"
@@ -3498,23 +3508,23 @@ msgid "output intent"
 msgstr "utgående avsikt"
 
 #: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
-#: ../src/libs/export.c:489
+#: ../src/libs/export.c:508
 msgid "perceptual"
 msgstr "perceptuell"
 
 #: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
-#: ../src/libs/export.c:490
+#: ../src/libs/export.c:509
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
 #: ../src/iop/colorout.c:871 ../src/iop/colorout.c:878
-#: ../src/libs/export.c:491
+#: ../src/libs/export.c:510
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
 #: ../src/iop/colorout.c:872 ../src/iop/colorout.c:879
-#: ../src/libs/export.c:492
+#: ../src/libs/export.c:511
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
@@ -3535,12 +3545,12 @@ msgid "display profile"
 msgstr "skärmprofil"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:905 ../src/libs/export.c:573
+#: ../src/iop/colorout.c:905 ../src/libs/export.c:592
 msgid "system display profile"
 msgstr "systemets skärmprofil"
 
 #: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/libs/export.c:501
+#: ../src/iop/colorout.c:917 ../src/libs/export.c:520
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
@@ -3755,7 +3765,7 @@ msgstr "fann motsvarighet till iso %d"
 msgid "interpolated from iso %d and %d"
 msgstr "interpolerat från iso %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1843
+#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1860
 msgid "mode"
 msgstr "läge"
 
@@ -4260,160 +4270,168 @@ msgid ""
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
 msgstr ""
-"tillverkare:\t\t%s\n"
-"modell:\t\t%s%s\n"
-"montering:\t\t%s\n"
+"tillverkare:\t\t\t%s\n"
+"modell:\t\t\t\t%s%s\n"
+"montering:\t\t\t%s\n"
 "beskärningsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:1316
+#: ../src/iop/lens.c:1281
+msgid "camera/lens not found - please select manually"
+msgstr "fann inte kamera/objektiv - var god välj manuellt"
+
+#: ../src/iop/lens.c:1283
+msgid "try to locate your camera/lens in the above two menues"
+msgstr "Försök att hitta din kamera eller ditt objektiv i de två menyerna ovan"
+
+#: ../src/iop/lens.c:1328
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
 "focal range:\t%s\n"
-"aperture:\t\t%s\n"
+"aperture:\t%s\n"
 "crop factor:\t%.1f\n"
 "type:\t\t%s\n"
 "mounts:\t\t%s"
 msgstr ""
-"tillverkare:\t\t%s\n"
+"tillverkare:\t\t\t%s\n"
 "modell:\t\t\t\t%s\n"
-"brännvidd:\t%s\n"
+"brännvidd:\t\t\t%s\n"
 "bländare:\t\t\t%s\n"
-"beskärningsfaktor:\t\t%.1f\n"
-"typ:\t\t\t\t%s\n"
-"monteringar:\t\t\t%s"
+"beskärningsfaktor:\t%.1f\n"
+"typ:\t\t\t\t\t%s\n"
+"monteringar:\t\t%s"
 
-#: ../src/iop/lens.c:1362
+#: ../src/iop/lens.c:1374
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1363
+#: ../src/iop/lens.c:1375
 msgid "focal length (mm)"
 msgstr "brännvidd (mm)"
 
-#: ../src/iop/lens.c:1390
+#: ../src/iop/lens.c:1402
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1391
+#: ../src/iop/lens.c:1403
 msgid "f-number (aperture)"
 msgstr "bländartal"
 
-#: ../src/iop/lens.c:1406
+#: ../src/iop/lens.c:1418
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1407
+#: ../src/iop/lens.c:1419
 msgid "distance to subject"
 msgstr "distans till motivet"
 
-#: ../src/iop/lens.c:1704
+#: ../src/iop/lens.c:1717
 msgid "distortion & TCA"
 msgstr "distortioner & TCA"
 
-#: ../src/iop/lens.c:1710
+#: ../src/iop/lens.c:1723
 msgid "distortion & vignetting"
 msgstr "distortioner och vinjettering"
 
-#: ../src/iop/lens.c:1716
+#: ../src/iop/lens.c:1729
 msgid "TCA & vignetting"
 msgstr "TCA & vinjettering"
 
-#: ../src/iop/lens.c:1722
+#: ../src/iop/lens.c:1735
 msgid "only distortion"
 msgstr "enbart distortioner"
 
-#: ../src/iop/lens.c:1728
+#: ../src/iop/lens.c:1741
 msgid "only TCA"
 msgstr "enbart TCA"
 
-#: ../src/iop/lens.c:1734
+#: ../src/iop/lens.c:1747
 msgid "only vignetting"
 msgstr "enbart vinjettering"
 
-#: ../src/iop/lens.c:1757
+#: ../src/iop/lens.c:1770
 msgid "find camera"
 msgstr "sök kamera"
 
-#: ../src/iop/lens.c:1774
+#: ../src/iop/lens.c:1787
 msgid "find lens"
 msgstr "sök objektiv"
 
-#: ../src/iop/lens.c:1803
+#: ../src/iop/lens.c:1820
 msgid "corrections"
 msgstr "korrigeringar"
 
-#: ../src/iop/lens.c:1805
+#: ../src/iop/lens.c:1822
 msgid "which corrections to apply"
 msgstr "vilka korrigeringar som ska utföras"
 
-#: ../src/iop/lens.c:1820
+#: ../src/iop/lens.c:1837
 msgid "geometry"
 msgstr "geometrisk"
 
-#: ../src/iop/lens.c:1822
+#: ../src/iop/lens.c:1839
 msgid "target geometry"
 msgstr "målgeometri"
 
-#: ../src/iop/lens.c:1823
+#: ../src/iop/lens.c:1840
 msgid "rectilinear"
 msgstr "rätlinjig"
 
-#: ../src/iop/lens.c:1824
+#: ../src/iop/lens.c:1841
 msgid "fish-eye"
 msgstr "fisköga"
 
-#: ../src/iop/lens.c:1825
+#: ../src/iop/lens.c:1842
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:1826
+#: ../src/iop/lens.c:1843
 msgid "equirectangular"
 msgstr "ekvirektangulär"
 
-#: ../src/iop/lens.c:1833
+#: ../src/iop/lens.c:1850
 msgid "auto scale"
 msgstr "autoskalning"
 
-#: ../src/iop/lens.c:1834 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1851 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1052
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1862
 msgid "correct distortions or apply them"
 msgstr "korrigera eller applicera förvridningar"
 
-#: ../src/iop/lens.c:1846
+#: ../src/iop/lens.c:1863
 msgid "correct"
 msgstr "korrigering"
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1864
 msgid "distort"
 msgstr "förvrid"
 
-#: ../src/iop/lens.c:1854
+#: ../src/iop/lens.c:1871
 msgid "transversal chromatic aberration red"
 msgstr "röd transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:1855
+#: ../src/iop/lens.c:1872
 msgid "tca red"
 msgstr "tca röd"
 
-#: ../src/iop/lens.c:1860
+#: ../src/iop/lens.c:1877
 msgid "transversal chromatic aberration blue"
 msgstr "blå transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:1861
+#: ../src/iop/lens.c:1878
 msgid "tca blue"
 msgstr "tca blå"
 
-#: ../src/iop/lens.c:1868
+#: ../src/iop/lens.c:1885
 msgid "corrections done: "
 msgstr "gjorda korrigeringar: "
 
-#: ../src/iop/lens.c:1869
+#: ../src/iop/lens.c:1886
 msgid "which corrections have actually been done"
 msgstr "vilka korrigeringar som faktiskt har gjorts"
 
@@ -5551,7 +5569,7 @@ msgid "filename"
 msgstr "filnamn"
 
 #. create
-#: ../src/libs/capture.c:146 ../src/libs/styles.c:382
+#: ../src/libs/capture.c:146 ../src/libs/styles.c:383
 msgid "create"
 msgstr "skapa"
 
@@ -5745,7 +5763,7 @@ msgid "xmp sidecar files"
 msgstr "XMP inställningsfil"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:680 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "alla filer"
 
@@ -5877,23 +5895,23 @@ msgctxt "accel"
 msgid "write sidecar files"
 msgstr "skapa sidofiler med inställningar"
 
-#: ../src/libs/export.c:70
+#: ../src/libs/export.c:72
 msgid "export selected"
 msgstr "exportera valda bilder"
 
-#: ../src/libs/export.c:422
+#: ../src/libs/export.c:440
 msgid "target storage"
 msgstr "mållagring"
 
-#: ../src/libs/export.c:442
+#: ../src/libs/export.c:461
 msgid "file format"
 msgstr "filformat"
 
-#: ../src/libs/export.c:457
+#: ../src/libs/export.c:476
 msgid "global options"
 msgstr "globala inställningar"
 
-#: ../src/libs/export.c:461
+#: ../src/libs/export.c:480
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -5901,7 +5919,7 @@ msgstr ""
 "maximal bredd,\n"
 "ange 0 för att utesluta skalning"
 
-#: ../src/libs/export.c:463
+#: ../src/libs/export.c:482
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -5917,47 +5935,47 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:475
+#: ../src/libs/export.c:494
 msgid "max size"
 msgstr "maximal storlek"
 
-#: ../src/libs/export.c:480
+#: ../src/libs/export.c:499
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:484
+#: ../src/libs/export.c:503
 msgid "intent"
 msgstr "avsikt"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:488 ../src/libs/export.c:568
+#: ../src/libs/export.c:507 ../src/libs/export.c:587
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:508
+#: ../src/libs/export.c:527
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/libs/export.c:581
+#: ../src/libs/export.c:600
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
 msgstr "utgående icc profiler i %s/color/out eller %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:587
+#: ../src/libs/export.c:606
 msgid "style"
 msgstr "stil"
 
-#: ../src/libs/export.c:604
+#: ../src/libs/export.c:623
 msgid "temporary style to append while exporting"
 msgstr "temporär stil som ska appliceras vid export"
 
-#: ../src/libs/export.c:622
+#: ../src/libs/export.c:641
 msgid "export with current settings (ctrl-e)"
 msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:825 ../src/libs/styles.c:69
+#: ../src/libs/export.c:844 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1669
 msgctxt "accel"
 msgid "export"
@@ -6856,15 +6874,15 @@ msgctxt "accel"
 msgid "import"
 msgstr "importera"
 
-#: ../src/libs/styles.c:262
+#: ../src/libs/styles.c:263
 msgid "select style"
 msgstr "välj stil"
 
-#: ../src/libs/styles.c:275
+#: ../src/libs/styles.c:276
 msgid "darktable style files"
 msgstr "darktable stil filer"
 
-#: ../src/libs/styles.c:351
+#: ../src/libs/styles.c:352
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -6872,46 +6890,46 @@ msgstr ""
 "tillgängliga stilar,\n"
 "dubbelklicka för att applicera"
 
-#: ../src/libs/styles.c:357
+#: ../src/libs/styles.c:358
 msgid "enter style name"
 msgstr "ange namn för stil"
 
-#: ../src/libs/styles.c:370
+#: ../src/libs/styles.c:371
 msgid "create duplicate"
 msgstr "skapa kopia"
 
-#: ../src/libs/styles.c:374
+#: ../src/libs/styles.c:375
 msgid "creates a duplicate of the image before applying style"
 msgstr "skapa en kopia av bilden innan applicering av stil"
 
-#: ../src/libs/styles.c:384
+#: ../src/libs/styles.c:385
 msgid "create styles from history stack of selected images"
 msgstr "skapa stilar utifrån historiken för valda bilder"
 
 #. edit
-#: ../src/libs/styles.c:388
+#: ../src/libs/styles.c:389
 msgid "edit"
 msgstr "redigera"
 
-#: ../src/libs/styles.c:391
+#: ../src/libs/styles.c:392
 msgid "edit the selected style in list above"
 msgstr "redigera den markerade stilen i listan ovan"
 
-#: ../src/libs/styles.c:398
+#: ../src/libs/styles.c:399
 msgid "deletes the selected style in list above"
 msgstr "tar bort den markerade stilen i listan ovan"
 
 #. import button
-#: ../src/libs/styles.c:402
+#: ../src/libs/styles.c:403
 msgctxt "styles"
 msgid "import"
 msgstr "importera"
 
-#: ../src/libs/styles.c:404
+#: ../src/libs/styles.c:405
 msgid "import style from a style file"
 msgstr "importera stil från en fil"
 
-#: ../src/libs/styles.c:411
+#: ../src/libs/styles.c:412
 msgid "export the selected style into a style file"
 msgstr "exportera den valda stilen till en fil"
 
