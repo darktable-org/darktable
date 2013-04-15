@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-13 12:09+0100\n"
+"POT-Creation-Date: 2013-04-15 23:56+0100\n"
 "PO-Revision-Date: 2013-04-13 12:14+0100\n"
 "Last-Translator: Jose Carlos <jcrc@portugalmail.com>\n"
 "Language-Team: \n"
@@ -541,13 +541,13 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "necessita copiar o historial de uma imagem antes de colá-lo noutra"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
-#: ../src/common/history.c:255 ../src/common/styles.c:546
+#: ../src/common/history.c:255 ../src/common/styles.c:552
 #: ../src/develop/develop.c:1113 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "ligado"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
-#: ../src/common/history.c:255 ../src/common/styles.c:546
+#: ../src/common/history.c:255 ../src/common/styles.c:552
 #: ../src/develop/blend_gui.c:1045 ../src/develop/develop.c:1113
 #: ../src/imageio/format/j2k.c:602 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
@@ -579,8 +579,8 @@ msgstr "imagem `%s' não está disponível!"
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1459
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:1717
 #: ../src/iop/clipping.c:1760 ../src/iop/clipping.c:1777
-#: ../src/iop/lens.c:1705 ../src/libs/export.c:158 ../src/libs/export.c:161
-#: ../src/libs/export.c:594 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1705 ../src/libs/export.c:160 ../src/libs/export.c:163
+#: ../src/libs/export.c:613 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -619,33 +619,28 @@ msgstr "não foram seleccionadas imagens para classificar"
 msgid "style with name '%s' already exists"
 msgstr "estilo com o nome '%s' já existe"
 
-#: ../src/common/styles.c:307 ../src/common/styles.c:368
+#: ../src/common/styles.c:307 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "estilo denominado '%s' foi criado correctamente"
 
 #. fail :(
-#: ../src/common/styles.c:388 ../src/common/styles.c:407
+#: ../src/common/styles.c:389 ../src/common/styles.c:408
 #: ../src/views/darkroom.c:458
 msgid "no image selected!"
 msgstr "nenhuma imagem seleccionada!"
 
-#: ../src/common/styles.c:630
+#: ../src/common/styles.c:636
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "erro ao actualizar o ficheiro de estilo para %s"
 
-#: ../src/common/styles.c:636
+#: ../src/common/styles.c:642
 #, c-format
 msgid "style file for %s exists"
 msgstr "ficheiro de estilo para %s existe"
 
-#: ../src/common/styles.c:683
-#, c-format
-msgid "style %s was successfully saved"
-msgstr "estilo %s foi guardado correctamente"
-
-#: ../src/common/styles.c:876
+#: ../src/common/styles.c:881
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado correctamente"
@@ -709,69 +704,69 @@ msgid "failed to create filmroll for camera import, import aborted."
 msgstr ""
 "falha ao criar rolo de filme da importação da câmara, importação abortada."
 
-#: ../src/control/jobs/control_jobs.c:127
+#: ../src/control/jobs/control_jobs.c:120
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "fundindo %d imagem"
 msgstr[1] "fundindo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:148
+#: ../src/control/jobs/control_jobs.c:141
 msgid "exposure bracketing only works on raw images"
 msgstr "bracketing de exposição apenas funciona com imagens raw"
 
-#: ../src/control/jobs/control_jobs.c:157
+#: ../src/control/jobs/control_jobs.c:150
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "falha a obter buffer raw da imagen `%s'"
 
-#: ../src/control/jobs/control_jobs.c:176
+#: ../src/control/jobs/control_jobs.c:169
 msgid "images have to be of same size!"
 msgstr "as imagens devem ter o mesmo tamanho!"
 
-#: ../src/control/jobs/control_jobs.c:251
+#: ../src/control/jobs/control_jobs.c:244
 #, c-format
 msgid "wrote merged hdr `%s'"
 msgstr "gravado o hdr fundido `%s'"
 
-#: ../src/control/jobs/control_jobs.c:277
+#: ../src/control/jobs/control_jobs.c:270
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "duplicando %d imagem"
 msgstr[1] "duplicando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:302
+#: ../src/control/jobs/control_jobs.c:295
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "invertendo %d imagem"
 msgstr[1] "invertendo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:325
+#: ../src/control/jobs/control_jobs.c:318
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "removendo %d imagem"
 msgstr[1] "removendo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:376
+#: ../src/control/jobs/control_jobs.c:369
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "eliminando %d imagem"
 msgstr[1] "eliminando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:461
+#: ../src/control/jobs/control_jobs.c:454
 msgid "failed to parse gpx file"
 msgstr "falha a analisar o ficheiro gpx"
 
-#: ../src/control/jobs/control_jobs.c:528
+#: ../src/control/jobs/control_jobs.c:521
 #, c-format
 msgid "applied matched gpx location onto %d image(s)"
 msgstr "aplicada localização gpx correspondente a %d imagem(ns)"
 
-#: ../src/control/jobs/control_jobs.c:679
+#: ../src/control/jobs/control_jobs.c:672
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -779,11 +774,11 @@ msgid_plural ""
 msgstr[0] "deseja realmente remover a %d imagem seleccionada da colecção?"
 msgstr[1] "deseja realmente remover as %d imagens seleccionada da colecção?"
 
-#: ../src/control/jobs/control_jobs.c:682
+#: ../src/control/jobs/control_jobs.c:675
 msgid "remove images?"
 msgstr "remover as imagens?"
 
-#: ../src/control/jobs/control_jobs.c:708
+#: ../src/control/jobs/control_jobs.c:701
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -793,24 +788,24 @@ msgstr[0] ""
 msgstr[1] ""
 "deseja realmente eliminar FISICAMENTE %d imagens seleccionadas do disco?"
 
-#: ../src/control/jobs/control_jobs.c:711
+#: ../src/control/jobs/control_jobs.c:704
 msgid "delete images?"
 msgstr "eliminar imagens?"
 
-#: ../src/control/jobs/control_jobs.c:744
+#: ../src/control/jobs/control_jobs.c:737
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "falha na criação de rolo de filme no directório de destino, abortando..."
 
-#: ../src/control/jobs/control_jobs.c:776
-#: ../src/control/jobs/control_jobs.c:833 ../src/imageio/storage/disk.c:67
+#: ../src/control/jobs/control_jobs.c:769
+#: ../src/control/jobs/control_jobs.c:826 ../src/imageio/storage/disk.c:67
 #: ../src/imageio/storage/disk.c:120 ../src/imageio/storage/gallery.c:78
 #: ../src/imageio/storage/gallery.c:161 ../src/imageio/storage/latex.c:78
 #: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "seleccionar directório"
 
-#: ../src/control/jobs/control_jobs.c:799
+#: ../src/control/jobs/control_jobs.c:792
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -825,13 +820,13 @@ msgstr[1] ""
 "deseja realmente mover fisicamente as %d imagens seleccionadas para %s?\n"
 " ?(todos los duplicados não seleccionados serão movidos também)"
 
-#: ../src/control/jobs/control_jobs.c:803
+#: ../src/control/jobs/control_jobs.c:796
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "mover a imagem?"
 msgstr[1] "mover as imagens?"
 
-#: ../src/control/jobs/control_jobs.c:856
+#: ../src/control/jobs/control_jobs.c:849
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -840,66 +835,66 @@ msgstr[0] ""
 msgstr[1] ""
 "deseja realmente copiar fisicamente as %d imagens seleccionadas para %s ?"
 
-#: ../src/control/jobs/control_jobs.c:859
+#: ../src/control/jobs/control_jobs.c:852
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copiar imagem?"
 msgstr[1] "copiar imagens?"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:891
 #, c-format
 msgid "moving %d image"
 msgstr "movendo %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:891
 #, c-format
 msgid "moving %d images"
 msgstr "movendo %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:904
+#: ../src/control/jobs/control_jobs.c:897
 #, c-format
 msgid "copying %d image"
 msgstr "copiando %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:904
+#: ../src/control/jobs/control_jobs.c:897
 #, c-format
 msgid "copying %d images"
 msgstr "copiando %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:936
+#: ../src/control/jobs/control_jobs.c:929
 msgid "failed to get parameters from storage module, aborting export.."
 msgstr ""
 "falha ao obter parâmetros do módulo de armazenamento, abortando a "
 "exportação..."
 
-#: ../src/control/jobs/control_jobs.c:940
+#: ../src/control/jobs/control_jobs.c:933
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportando %d imagem ..."
 msgstr[1] "exportando %d imagens ..."
 
-#: ../src/control/jobs/control_jobs.c:942
+#: ../src/control/jobs/control_jobs.c:935
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exportando %d imagem para %s"
 msgstr[1] "exportando %d imagens para %s"
 
-#: ../src/control/jobs/control_jobs.c:1005
-#: ../src/control/jobs/control_jobs.c:1006 ../src/views/darkroom.c:469
+#: ../src/control/jobs/control_jobs.c:998
+#: ../src/control/jobs/control_jobs.c:999 ../src/views/darkroom.c:469
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imagem `%s' não está disponível actualmente"
 
-#: ../src/control/jobs/control_jobs.c:1087
+#: ../src/control/jobs/control_jobs.c:1077
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "adicionando compensação de tempo a %d imagem"
 msgstr[1] "adicionando compensação de tempo a %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1107
+#: ../src/control/jobs/control_jobs.c:1097
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "compensação de tempo adicionada a %d imagem(ns)"
@@ -1212,7 +1207,7 @@ msgstr "mover abaixo"
 
 #. delete
 #: ../src/develop/imageop.c:1152 ../src/libs/image.c:143
-#: ../src/libs/styles.c:395 ../src/libs/tagging.c:487
+#: ../src/libs/styles.c:396 ../src/libs/tagging.c:487
 msgid "delete"
 msgstr "eliminar"
 
@@ -1864,8 +1859,8 @@ msgstr "importar"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:608 ../src/libs/export.c:620
-#: ../src/libs/styles.c:409
+#: ../src/gui/preferences.c:608 ../src/libs/export.c:639
+#: ../src/libs/styles.c:410
 msgid "export"
 msgstr "exportar"
 
@@ -2031,47 +2026,53 @@ msgstr "guardar nova predefinição..."
 msgid "update preset"
 msgstr "actualizar a predefinição"
 
-#: ../src/gui/styles_dialog.c:284
+#: ../src/gui/styles_dialog.c:171 ../src/gui/styles_dialog.c:179
+#: ../src/libs/styles.c:252
+#, c-format
+msgid "style %s was successfully saved"
+msgstr "estilo %s foi guardado correctamente"
+
+#: ../src/gui/styles_dialog.c:289
 #, c-format
 msgid "edit style"
 msgstr "editar estilo"
 
-#: ../src/gui/styles_dialog.c:288
+#: ../src/gui/styles_dialog.c:293
 msgid "duplicate style"
 msgstr "estilo duplicado"
 
-#: ../src/gui/styles_dialog.c:289
+#: ../src/gui/styles_dialog.c:294
 msgid "creates a duplicate of the style before applying changes"
 msgstr "cria um duplicado do estilo antes de aplicar as alterações"
 
-#: ../src/gui/styles_dialog.c:293
+#: ../src/gui/styles_dialog.c:298
 msgid "create new style"
 msgstr "criar novo estilo"
 
-#: ../src/gui/styles_dialog.c:314
+#: ../src/gui/styles_dialog.c:319
 msgid "enter a name for the new style"
 msgstr "introduza um nome para o novo estilo"
 
-#: ../src/gui/styles_dialog.c:317
+#: ../src/gui/styles_dialog.c:322
 msgid "enter a description for the new style, this description is searchable"
 msgstr ""
 "introduza uma descrição para o novo estilo, esta descrição é pesquisável"
 
-#: ../src/gui/styles_dialog.c:350 ../src/gui/styles_dialog.c:363
+#: ../src/gui/styles_dialog.c:355 ../src/gui/styles_dialog.c:368
 #: ../src/gui/hist_dialog.c:181
 msgid "include"
 msgstr "incluir"
 
-#: ../src/gui/styles_dialog.c:380
+#: ../src/gui/styles_dialog.c:385
 msgid "update"
 msgstr "actualizar"
 
-#: ../src/gui/styles_dialog.c:392 ../src/gui/styles_dialog.c:399
+#: ../src/gui/styles_dialog.c:397 ../src/gui/styles_dialog.c:404
 #: ../src/gui/hist_dialog.c:192
 msgid "item"
 msgstr "item"
 
-#: ../src/gui/styles_dialog.c:498
+#: ../src/gui/styles_dialog.c:503
 msgid "can't create style out of unaltered image"
 msgstr "não é possível criar estilo duma imagem inalterada"
 
@@ -3371,7 +3372,7 @@ msgstr "Adobe RGB (compatível)"
 
 #: ../src/iop/colorin.c:756 ../src/iop/colorin.c:788 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
-#: ../src/libs/export.c:520
+#: ../src/libs/export.c:539
 msgid "linear RGB"
 msgstr "Linear RGB"
 
@@ -3389,7 +3390,7 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:896 ../src/iop/denoiseprofile.c:1669
-#: ../src/libs/export.c:561
+#: ../src/libs/export.c:580
 msgid "profile"
 msgstr "perfil"
 
@@ -3525,23 +3526,23 @@ msgid "output intent"
 msgstr "intenção de saída"
 
 #: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
-#: ../src/libs/export.c:489
+#: ../src/libs/export.c:508
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
-#: ../src/libs/export.c:490
+#: ../src/libs/export.c:509
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
 #: ../src/iop/colorout.c:871 ../src/iop/colorout.c:878
-#: ../src/libs/export.c:491
+#: ../src/libs/export.c:510
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
 #: ../src/iop/colorout.c:872 ../src/iop/colorout.c:879
-#: ../src/libs/export.c:492
+#: ../src/libs/export.c:511
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
 
@@ -3562,12 +3563,12 @@ msgid "display profile"
 msgstr "perfil de visualização"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:905 ../src/libs/export.c:573
+#: ../src/iop/colorout.c:905 ../src/libs/export.c:592
 msgid "system display profile"
 msgstr "perfil de visualização do S.O."
 
 #: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/libs/export.c:501
+#: ../src/iop/colorout.c:917 ../src/libs/export.c:520
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para web)"
 
@@ -4940,15 +4941,15 @@ msgstr ""
 msgid "spot removal"
 msgstr "remoção de mancha"
 
-#: ../src/iop/spots.c:517
+#: ../src/iop/spots.c:529
 msgid "number of strokes:"
 msgstr "número de traços:"
 
-#: ../src/iop/spots.c:524
+#: ../src/iop/spots.c:536
 msgid "add curve shape"
 msgstr "adicionar forma curva"
 
-#: ../src/iop/spots.c:531
+#: ../src/iop/spots.c:543
 msgid "add circular shape"
 msgstr "adicionar forma circular"
 
@@ -5588,7 +5589,7 @@ msgid "filename"
 msgstr "nome do ficheiro"
 
 #. create
-#: ../src/libs/capture.c:146 ../src/libs/styles.c:382
+#: ../src/libs/capture.c:146 ../src/libs/styles.c:383
 msgid "create"
 msgstr "criar"
 
@@ -5782,7 +5783,7 @@ msgid "xmp sidecar files"
 msgstr "ficheiros sidecar xmp"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:680 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "todos os ficheiros"
 
@@ -5914,23 +5915,23 @@ msgctxt "accel"
 msgid "write sidecar files"
 msgstr "escrever ficheiros sidecar"
 
-#: ../src/libs/export.c:70
+#: ../src/libs/export.c:72
 msgid "export selected"
 msgstr "exportar selecionadas"
 
-#: ../src/libs/export.c:422
+#: ../src/libs/export.c:440
 msgid "target storage"
 msgstr "armazenamento de destino"
 
-#: ../src/libs/export.c:442
+#: ../src/libs/export.c:461
 msgid "file format"
 msgstr "formato de ficheiro"
 
-#: ../src/libs/export.c:457
+#: ../src/libs/export.c:476
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:461
+#: ../src/libs/export.c:480
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -5938,7 +5939,7 @@ msgstr ""
 "largura máxima de saída\n"
 "definir 0 para não escalar"
 
-#: ../src/libs/export.c:463
+#: ../src/libs/export.c:482
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -5954,47 +5955,47 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:475
+#: ../src/libs/export.c:494
 msgid "max size"
 msgstr "tamanho máximo"
 
-#: ../src/libs/export.c:480
+#: ../src/libs/export.c:499
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:484
+#: ../src/libs/export.c:503
 msgid "intent"
 msgstr "propósito"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:488 ../src/libs/export.c:568
+#: ../src/libs/export.c:507 ../src/libs/export.c:587
 msgid "image settings"
 msgstr "configurações de imagem"
 
-#: ../src/libs/export.c:508
+#: ../src/libs/export.c:527
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/libs/export.c:581
+#: ../src/libs/export.c:600
 #, c-format
 msgid "output icc profiles in %s/color/out or %s/color/out"
 msgstr "exportar perfis icc em %s/color/out ou %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:587
+#: ../src/libs/export.c:606
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:604
+#: ../src/libs/export.c:623
 msgid "temporary style to append while exporting"
 msgstr "estilo a ser aplicado temporariamente aquando da importação"
 
-#: ../src/libs/export.c:622
+#: ../src/libs/export.c:641
 msgid "export with current settings (ctrl-e)"
 msgstr "exportar com as definições actuais (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:825 ../src/libs/styles.c:69
+#: ../src/libs/export.c:844 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1669
 msgctxt "accel"
 msgid "export"
@@ -6910,15 +6911,15 @@ msgctxt "accel"
 msgid "import"
 msgstr "importar"
 
-#: ../src/libs/styles.c:262
+#: ../src/libs/styles.c:263
 msgid "select style"
 msgstr "seleccionar estilo"
 
-#: ../src/libs/styles.c:275
+#: ../src/libs/styles.c:276
 msgid "darktable style files"
 msgstr "ficheiros de estilo de darktable"
 
-#: ../src/libs/styles.c:351
+#: ../src/libs/styles.c:352
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -6926,48 +6927,48 @@ msgstr ""
 "estilos disponíveis,\n"
 "duplo click para aplicar"
 
-#: ../src/libs/styles.c:357
+#: ../src/libs/styles.c:358
 msgid "enter style name"
 msgstr "insira nome do estilo"
 
-#: ../src/libs/styles.c:370
+#: ../src/libs/styles.c:371
 msgid "create duplicate"
 msgstr "criar duplicado"
 
-#: ../src/libs/styles.c:374
+#: ../src/libs/styles.c:375
 msgid "creates a duplicate of the image before applying style"
 msgstr "criar um duplicado da imagem antes de aplicar o estilo"
 
-#: ../src/libs/styles.c:384
+#: ../src/libs/styles.c:385
 msgid "create styles from history stack of selected images"
 msgstr ""
 "criar estilos do historial de acções das\n"
 "imagens seleccionadas"
 
 #. edit
-#: ../src/libs/styles.c:388
+#: ../src/libs/styles.c:389
 msgid "edit"
 msgstr "editar"
 
-#: ../src/libs/styles.c:391
+#: ../src/libs/styles.c:392
 msgid "edit the selected style in list above"
 msgstr "editar o estilo seleccionado na lista acima"
 
-#: ../src/libs/styles.c:398
+#: ../src/libs/styles.c:399
 msgid "deletes the selected style in list above"
 msgstr "eliminar o estilo seleccionado na lista acima"
 
 #. import button
-#: ../src/libs/styles.c:402
+#: ../src/libs/styles.c:403
 msgctxt "styles"
 msgid "import"
 msgstr "importar"
 
-#: ../src/libs/styles.c:404
+#: ../src/libs/styles.c:405
 msgid "import style from a style file"
 msgstr "importar estilo dum ficheiro de estilo"
 
-#: ../src/libs/styles.c:411
+#: ../src/libs/styles.c:412
 msgid "export the selected style into a style file"
 msgstr "exportar o estilo seleccionado para um ficheiro de estilo"
 
