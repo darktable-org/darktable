@@ -817,6 +817,16 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           point->border[0] *= amount;
           point->border[1] *= amount;
         }
+        if (form->type & DT_MASKS_CLONE)
+        {
+          const float masks_border = dt_conf_get_float("plugins/darkroom/spots/curve_border");
+          dt_conf_set_float("plugins/darkroom/spots/curve_border", masks_border*amount);
+        }
+        else
+        {
+          const float masks_border = dt_conf_get_float("plugins/darkroom/masks/curve/border");
+          dt_conf_set_float("plugins/darkroom/masks/curve/border", masks_border*amount);
+        }
       }
       else
       {
@@ -895,6 +905,11 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
   if (!gui) return 0;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return 0;
+  
+  float masks_border;
+  if (form->type & DT_MASKS_CLONE) masks_border = dt_conf_get_float("plugins/darkroom/spots/curve_border");
+  else masks_border = dt_conf_get_float("plugins/darkroom/masks/curve/border");
+  
   if (gui->creation && (which == 3 || gui->creation_closing_form))
   {
     //we don't want a form with less than 3 points
@@ -952,8 +967,8 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       bzpt->corner[1] = pts[1]/darktable.develop->preview_pipe->iheight;
       bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
       bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
-
-      bzpt->border[0] = bzpt->border[1] = 0.05;
+      
+      bzpt->border[0] = bzpt->border[1] = MAX(0.005f,masks_border);
       
       //if that's the first point we should had another one as base point
       if (nb == 0)
@@ -962,7 +977,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
         bzpt2->corner[0] = pts[0]/darktable.develop->preview_pipe->iwidth;
         bzpt2->corner[1] = pts[1]/darktable.develop->preview_pipe->iheight;
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
-        bzpt2->border[0] = bzpt2->border[1] = 0.05;
+        bzpt2->border[0] = bzpt2->border[1] = MAX(0.005f,masks_border);
         bzpt2->state = DT_MASKS_POINT_STATE_NORMAL;
         form->points = g_list_append(form->points,bzpt2);
         form->source[0] = bzpt->corner[0] + 0.1f;
@@ -1050,7 +1065,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
         bzpt->corner[1] = pts[1]/darktable.develop->preview_pipe->iheight;
         bzpt->ctrl1[0] = bzpt->ctrl1[1] = bzpt->ctrl2[0] = bzpt->ctrl2[1] = -1.0;
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
-        bzpt->border[0] = bzpt->border[1] = 0.05;
+        bzpt->border[0] = bzpt->border[1] = MAX(0.005f,masks_border);
         form->points = g_list_insert(form->points,bzpt,gui->seg_selected+1);
         _curve_init_ctrl_points(form);
         dt_masks_gui_form_remove(form,gui,index);
