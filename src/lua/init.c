@@ -18,6 +18,7 @@
 #include "lua/lua.h"
 #include "lua/init.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 
 
 // closed on GC of the dt lib, usually when the lua interpreter closes
@@ -57,6 +58,7 @@ void dt_lua_init_early(lua_State*L){
 
 
 void dt_lua_init(lua_State*L,const int init_gui){
+  char tmp_path[PATH_MAX];
 
   // init the lua environment
   lua_CFunction* cur_type = init_funcs;
@@ -73,6 +75,21 @@ void dt_lua_init(lua_State*L,const int init_gui){
   dt_lua_push_darktable_lib(L);
   lua_settable(L,-3);
   lua_pop(L,1);
+
+  lua_getglobal(L,"package");
+  lua_getfield(L,-1,"path");
+  lua_pushstring(L,";");
+  dt_loc_get_datadir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_pushstring(L,"/lua/?.lua");
+  lua_pushstring(L,";");
+  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  lua_pushstring(L,tmp_path);
+  lua_pushstring(L,"/lua/?.lua");
+  lua_concat(L,7);
+  lua_setfield(L,-2,"path");
+  lua_pop(L,1);
+
 
 }
 
