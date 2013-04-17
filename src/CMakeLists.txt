@@ -94,6 +94,7 @@ FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*
 if(USE_LUA)
 	FILE(GLOB SOURCE_FILES_LUA
 		"lua/call.c"
+		"lua/configuration.c"
 		"lua/init.c"
 		"lua/lua.c"
 		"lua/print.c"
