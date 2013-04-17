@@ -510,7 +510,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
     else
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, multi_name, enabled from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select num, operation, enabled, 0, multi_name from style_items where styleid=?1 order by num desc", -1, &stmt, NULL);
 
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     while (sqlite3_step(stmt) == SQLITE_ROW)
