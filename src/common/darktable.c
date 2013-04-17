@@ -47,6 +47,7 @@
 #include "control/conf.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "lua/init.h"
 #include "bauhaus/bauhaus.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -501,6 +502,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
   (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
+#ifdef USE_LUA
+  dt_lua_init_early(NULL);
+#endif
 
   // thread-safe init:
   dt_exif_init();
@@ -740,6 +744,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_print_mem_usage();
   }
 
+  /* init lua last, since it's user made stuff it must be in the real environment */
+#ifdef USE_LUA
+  dt_lua_init(darktable.lua_state,init_gui);
+#endif
   return 0;
 }
 

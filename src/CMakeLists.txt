@@ -90,8 +90,15 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
-set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(USE_LUA)
+	FILE(GLOB SOURCE_FILES_LUA
+		"lua/init.c"
+		"lua/lua.c"
+		)
+endif(USE_LUA)
+
+set(SOURCES ${SOURCE_FILES} ${SOURCE_FILES_LUA} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)

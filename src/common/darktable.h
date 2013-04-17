@@ -44,10 +44,13 @@
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <lua/lua.h>
+
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
 #endif
+
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 typedef	unsigned int	u_int;
 #include <sys/types.h>
@@ -196,6 +199,7 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
+  lua_State *lua_state;
 }
 darktable_t;
 
