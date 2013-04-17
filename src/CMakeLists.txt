@@ -524,6 +524,17 @@ set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
 
+if(USE_LUA)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
+endif(USE_LUA)
+
+
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first
 list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})

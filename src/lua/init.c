@@ -51,6 +51,7 @@ void dt_lua_init_early(lua_State*L){
     L= luaL_newstate();
   darktable.lua_state= L;
   luaL_openlibs(darktable.lua_state);
+  luaA_open();
   dt_lua_push_darktable_lib(L);
   // set the metatable
   lua_newtable(L);
