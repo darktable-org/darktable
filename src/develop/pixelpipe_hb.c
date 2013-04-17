@@ -1491,24 +1491,28 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         if(*cl_mem_output != NULL)
           dt_opencl_copy_device_to_host(pipe->devid, *output, *cl_mem_output, roi_out->width, roi_out->height, bpp);
 #endif
+        int hasinf = 0, hasnan = 0;
+        float min[3] = { FLT_MAX };
+        float max[3] = { FLT_MIN };
 
         for(int k=0; k<4*roi_out->width*roi_out->height; k++)
         {
           if((k&3)<3)
           {
             float f = ((float*)(*output))[k];
-            if(!isfinite(f))
+            if(isnan(f)) hasnan = 1;
+            else if(isinf(f)) hasinf = 1;
+            else
             {
-              fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-              break;
-            }
-            if(f < 0)
-            {
-              fprintf(stderr, "[dev_pixelpipe] module `%s' outputs negative floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-              break;
+              min[k&3] = fmin(f, min[k&3]);
+              max[k&3] = fmax(f, max[k&3]);
             }
           }
         }
+        if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
+        if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
+        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module->name(), 
+                min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }
