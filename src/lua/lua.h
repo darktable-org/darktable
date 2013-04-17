@@ -24,6 +24,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include <lautoc.h>
 
 /**
   (0,+1)
