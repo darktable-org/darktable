@@ -17,6 +17,7 @@
  */
 #include "lua/lua.h"
 #include "lua/init.h"
+#include "lua/call.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -90,6 +91,18 @@ void dt_lua_init(lua_State*L,const int init_gui){
   lua_setfield(L,-2,"path");
   lua_pop(L,1);
 
+
+
+  if(init_gui) {
+    // run global init script
+    dt_loc_get_datadir(tmp_path, PATH_MAX);
+    g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
+    dt_lua_dofile(darktable.lua_state,tmp_path);
+    // run user init script
+    dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+    g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
+    dt_lua_dofile(darktable.lua_state,tmp_path);
+  }
 
 }
 
