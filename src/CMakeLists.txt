@@ -97,6 +97,7 @@ if(USE_LUA)
 		"lua/configuration.c"
 		"lua/init.c"
 		"lua/lua.c"
+		"lua/preferences.c"
 		"lua/print.c"
 		)
 endif(USE_LUA)

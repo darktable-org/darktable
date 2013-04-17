@@ -19,6 +19,7 @@
 #include "lua/init.h"
 #include "lua/call.h"
 #include "lua/configuration.h"
+#include "lua/preferences.h"
 #include "lua/print.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
@@ -40,6 +41,7 @@ static int dt_luacleanup(lua_State*L) {
 static lua_CFunction init_funcs[] = {
   dt_lua_init_print,
   dt_lua_init_configuration,
+  dt_lua_init_preferences,
   NULL
 };
 
