@@ -96,6 +96,7 @@ if(USE_LUA)
 		"lua/call.c"
 		"lua/init.c"
 		"lua/lua.c"
+		"lua/print.c"
 		)
 endif(USE_LUA)
 
