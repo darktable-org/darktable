@@ -549,7 +549,17 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
       }
       else
       {
-        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(gchar *)sqlite3_column_text (stmt, 4),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        const char *multi_name = (const char *)sqlite3_column_text (stmt, 4);
+        gboolean has_multi_name = FALSE;
+
+        if (multi_name && strlen(multi_name)>0 && strcmp(multi_name,"0")!=0)
+            has_multi_name = TRUE;
+
+        if (has_multi_name)
+          g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),multi_name,(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+        else
+          g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+
         item->params = NULL;
         item->blendop_params = NULL;
         if (imgid != -1 && sqlite3_column_type(stmt,4)!=SQLITE_NULL)
