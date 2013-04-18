@@ -179,6 +179,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              goto error;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            goto error;
+  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
@@ -189,6 +190,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "supported",              (gpointer)&(module->supported)))              module->supported = _default_supported;
   if(!g_module_symbol(module->module, "dimension",              (gpointer)&(module->dimension)))            	module->dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "recommended_dimension",  (gpointer)&(module->recommended_dimension)))  module->recommended_dimension = _default_storage_dimension;
+  module->init(module);
 
   return 0;
 error:
