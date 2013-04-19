@@ -418,6 +418,8 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   fclose(f);
 }
 
+void init(dt_imageio_module_storage_t *self) {
+}
 void*
 get_params(dt_imageio_module_storage_t *self, int* size)
 {

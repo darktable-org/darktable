@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <unistd.h>
 #include <math.h>
 #include <sys/stat.h>
@@ -227,8 +228,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
   return film->id;
 }
 
-static int
-dt_film_import_blocking(const char *dirname, const int blocking)
+int dt_film_import_blocking(const char *dirname)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -460,10 +460,11 @@ void dt_film_import1(dt_film_t *film)
 
 int dt_film_import(const char *dirname)
 {
-  int v = dt_film_import_blocking(dirname,0);
+  int v = dt_film_import_blocking(dirname);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED);
   return v;
 }
+
 
 void dt_film_remove_empty()
 {
@@ -565,7 +566,6 @@ void dt_film_remove(const int id)
   // dt_control_update_recent_films();
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_CHANGED);
 }
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
