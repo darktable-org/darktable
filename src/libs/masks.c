@@ -1201,6 +1201,35 @@ static void _lib_masks_update_list(dt_lib_module_t *self)
   gtk_tree_model_foreach(model,_update_foreach,NULL);
 }
 
+static gboolean _remove_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  if (!iter) return 0;
+  int *fid = (int *) data;
+  
+  //we retrieve the id
+  GValue gv = {0,};
+  gtk_tree_model_get_value (model,iter,TREE_GROUPID,&gv);
+  int grid = g_value_get_int(&gv);
+  GValue gv3 = {0,};
+  gtk_tree_model_get_value (model,iter,TREE_FORMID,&gv3);
+  int id = g_value_get_int(&gv3);
+  
+  if (grid == fid[1] && id == fid[0])
+  {
+    gtk_tree_store_remove(GTK_TREE_STORE(model),iter);
+  }
+  return 0;
+}
+
+static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parentid)
+{
+  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  //for each node , we refresh the string
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+  int ids[2] = {formid,parentid};
+  gtk_tree_model_foreach(model,_remove_foreach,ids);
+}
+
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 {
   //dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1373,6 +1402,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.masks.module = self;
   darktable.develop->proxy.masks.list_change = _lib_masks_recreate_list;
   darktable.develop->proxy.masks.list_update = _lib_masks_update_list;
+  darktable.develop->proxy.masks.list_remove = _lib_masks_remove_item;
   darktable.develop->proxy.masks.selection_change = _lib_masks_selection_change;
 }
 

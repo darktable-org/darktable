@@ -1213,6 +1213,11 @@ void dt_dev_masks_list_update(dt_develop_t *dev)
   if (dev->proxy.masks.module && dev->proxy.masks.list_update)
     dev->proxy.masks.list_update(dev->proxy.masks.module);
 }
+void dt_dev_masks_list_remove(dt_develop_t *dev, int formid, int parentid)
+{
+  if (dev->proxy.masks.module && dev->proxy.masks.list_remove)
+    dev->proxy.masks.list_remove(dev->proxy.masks.module,formid,parentid);
+}
 void dt_dev_masks_selection_change(dt_develop_t *dev, int selectid, int throw_event)
 {
   if (dev->proxy.masks.module && dev->proxy.masks.selection_change)
