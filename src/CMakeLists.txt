@@ -90,19 +90,8 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
+set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
-if(USE_LUA)
-	FILE(GLOB SOURCE_FILES_LUA
-		"lua/call.c"
-		"lua/configuration.c"
-		"lua/init.c"
-		"lua/lua.c"
-		"lua/preferences.c"
-		"lua/print.c"
-		)
-endif(USE_LUA)
-
-set(SOURCES ${SOURCE_FILES} ${SOURCE_FILES_LUA} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -176,9 +165,21 @@ if(USE_LUA)
 		include_directories(${LUA_INCLUDE_DIR})
 		list(APPEND LIBS ${LUA_LIBRARIES})
 		add_definitions(${LUA_DEFINITIONS})
+		FILE(GLOB SOURCE_FILES_LUA
+			"lua/call.c"
+			"lua/configuration.c"
+			"lua/init.c"
+			"lua/lua.c"
+			"lua/preferences.c"
+			"lua/print.c"
+			)
+		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
 	else()
 		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
 	endif(LUA52_FOUND)
+endif(USE_LUA)
+
+if(USE_LUA)
 endif(USE_LUA)
 
 if(USE_NLS)
