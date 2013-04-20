@@ -1558,7 +1558,11 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   int layout = lib->layout;
   if (layout == 1)
   {
-    move_view(lib, which);
+    if(which == 0 || which == 1)
+    {
+      if(up) move_view(lib, UP);
+      else   move_view(lib, DOWN);
+    }
   }
   else
   {
