@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <strings.h>
 #include <math.h>
 #include <assert.h>
 
@@ -31,7 +31,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
 {
   const char *ext = filename + strlen(filename);
   while(*ext != '.' && ext > filename) ext--;
-  if(strncmp(ext, ".pfm", 4) && strncmp(ext, ".PFM", 4) && strncmp(ext, ".Pfm", 4)) return DT_IMAGEIO_FILE_CORRUPTED;
+  if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_FILE_CORRUPTED;
   FILE *f = fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
   int ret = 0;
@@ -53,7 +53,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   if(cols == 3)
   {
     ret = fread(buf, 3*sizeof(float), img->width*img->height, f);
-    for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0, buf[3*i+c]));
+    for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(FLT_MAX, buf[3*i+c]));
   }
   else for(int j=0; j < img->height; j++)
       for(int i=0; i < img->width; i++)

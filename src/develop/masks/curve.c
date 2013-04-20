@@ -1087,7 +1087,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
     }
     gui->point_edited = -1;
   }
-  else if (which==3)
+  else if (which==3 && parentid>0)
   {
     dt_masks_init_formgui(darktable.develop);
     //we hide the form
@@ -1108,11 +1108,9 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       }
     }
     
-    //we delete or remove the shape
-    int id = 0;
-    if(module) id = module->blend_params->mask_id;
-    dt_masks_form_remove(module,dt_masks_get_from_id(darktable.develop,id),form);
-    dt_dev_masks_list_change(darktable.develop);
+    //we remove the shape
+    dt_masks_form_remove(module,dt_masks_get_from_id(darktable.develop,parentid),form);
+    dt_dev_masks_list_remove(darktable.develop,form->formid,parentid);
     return 1;
   }
     

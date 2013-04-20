@@ -194,6 +194,31 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   if (merge && ops)
     _dt_history_cleanup_multi_instance(dest_imgid, offs);
 
+  //we have to copy masks too
+  //what to do with existing masks ?
+  if (merge)
+  {
+    //there's very little chance that we will have same shapes id.
+    //but we may want to handle this case anyway
+    //and it's not trivial at all !
+  }
+  else
+  {
+    //let's remove all existing shapes
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
+    sqlite3_step (stmt);
+  }
+  sqlite3_finalize (stmt);
+  
+  //let's copy now
+  strcpy (req, "insert into mask (imgid, formid, form, name, version, points, points_count, source) select ?1, formid, form, name, version, points, points_count, source from mask where imgid = ?2");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+  
   /* if current image in develop reload history */
   if (dt_dev_is_current_image(darktable.develop, dest_imgid))
   {

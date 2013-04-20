@@ -157,6 +157,31 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
+if(USE_LUA)
+	find_package(Lua52)
+	if(LUA52_FOUND)
+		message(STATUS "Lua support: Enabled")
+		add_definitions("-DUSE_LUA")
+		include_directories(${LUA_INCLUDE_DIR})
+		list(APPEND LIBS ${LUA_LIBRARIES})
+		add_definitions(${LUA_DEFINITIONS})
+		FILE(GLOB SOURCE_FILES_LUA
+			"lua/call.c"
+			"lua/configuration.c"
+			"lua/init.c"
+			"lua/lua.c"
+			"lua/preferences.c"
+			"lua/print.c"
+			)
+		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
+	else()
+		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
+	endif(LUA52_FOUND)
+endif(USE_LUA)
+
+if(USE_LUA)
+endif(USE_LUA)
+
 if(USE_NLS)
   find_package(Gettext)
   if(Gettext_FOUND)

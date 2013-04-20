@@ -250,7 +250,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
 static int dt_circle_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
                                           dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
-  if (which == 3)
+  if (which == 3 && parentid > 0)
   {
     dt_masks_init_formgui(darktable.develop);
     //we hide the form
@@ -271,11 +271,9 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module,float
       }
     }    
     
-    //we delete or remove the shape
-    int id = 0;
-    if(module) id = module->blend_params->mask_id;
-    dt_masks_form_remove(module,dt_masks_get_from_id(darktable.develop,id),form);
-    dt_dev_masks_list_change(darktable.develop);
+    //we remove the shape
+    dt_masks_form_remove(module,dt_masks_get_from_id(darktable.develop,parentid),form);
+    dt_dev_masks_list_remove(darktable.develop,form->formid,parentid);
     return 1;
   }
   if (gui->form_dragging)

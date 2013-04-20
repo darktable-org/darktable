@@ -33,6 +33,7 @@
 DT_MODULE(1)
 
 static void _lib_masks_recreate_list(dt_lib_module_t *self);
+static void _lib_masks_update_list(dt_lib_module_t *self);
 
 typedef struct dt_lib_masks_t
 {
@@ -149,27 +150,16 @@ static void _bt_add_curve (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t
   }
   else _tree_add_curve(NULL,NULL);
 }
-static void _tree_add_exist(GtkButton *button, dt_iop_module_t *module)
+static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
-  if (!module) return;
+  if (!grp || !(grp->type & DT_MASKS_GROUP)) return;
   //we get the new formid
   int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button),"formid"));
   
-  //is there already a masks group for this module ?
-  int grpid = module->blend_params->mask_id;
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,grpid);
-  if (!grp)
-  {
-    //we create a new group
-    grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,128,"grp %s",module->name());
-    darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
-    module->blend_params->mask_id = grpid = grp->formid;
-  }
   //we add the form in this group
   dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
   grpt->formid = id;
-  grpt->parentid = grpid;
+  grpt->parentid = grp->formid;
   grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
   if (g_list_length(grp->points)>0) grpt->state |= DT_MASKS_STATE_UNION;
   grpt->opacity = 1.0f;
@@ -177,11 +167,10 @@ static void _tree_add_exist(GtkButton *button, dt_iop_module_t *module)
   //we save the group
   dt_masks_write_form(grp,darktable.develop);
   
-  //and we ensure that we are in edit mode
-  dt_masks_set_edit_mode(module,TRUE);
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-  dt_masks_iop_update(module);
+  //and we apply the change
   dt_dev_masks_list_change(darktable.develop);
+  dt_masks_update_image(darktable.develop);
+  dt_dev_masks_selection_change(darktable.develop,grp->formid,TRUE);
 }
 
 static void _tree_group(GtkButton *button, dt_lib_module_t *self)
@@ -196,6 +185,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
 
   GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection,NULL));
+  int pos = 0;
   while(items)
   {
     GtkTreePath *item = (GtkTreePath *)items->data;
@@ -210,8 +200,11 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
         dt_masks_point_group_t *fpt = (dt_masks_point_group_t *) malloc(sizeof(dt_masks_point_group_t));
         fpt->formid = id;
         fpt->parentid = grp->formid;
+        fpt->opacity = 1.0f;
         fpt->state = DT_MASKS_STATE_USE;
+        if (pos>0) fpt->state |= DT_MASKS_STATE_UNION;
         grp->points = g_list_append(grp->points,fpt);
+        pos++;
       }      
     }
     items = g_list_next(items);
@@ -226,7 +219,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   //dt_masks_change_form_gui(grp);
 }
 
-static void _set_iter_name(dt_masks_form_t *form, int state, float opacity, GtkTreeModel *model, GtkTreeIter *iter)
+static void _set_iter_name(dt_lib_masks_t *lm, dt_masks_form_t *form, int state, float opacity, GtkTreeModel *model, GtkTreeIter *iter)
 {
   if (!form) return;
   
@@ -239,11 +232,18 @@ static void _set_iter_name(dt_masks_form_t *form, int state, float opacity, GtkT
     strcpy(str2,str);
     snprintf(str,256,"%s %d%%",str2,(int)(opacity*100));
   }
-  strcat(str,"  ");
-  GValue gv = {0,};
-  g_value_init(&gv,G_TYPE_STRING);
-  g_value_set_string(&gv,str);
-  gtk_tree_store_set_value(GTK_TREE_STORE(model),iter,TREE_TEXT,&gv);
+  
+  GdkPixbuf *icop = NULL;
+  GdkPixbuf *icinv = NULL;
+  if (state & DT_MASKS_STATE_UNION) icop = lm->ic_union;
+  else if (state & DT_MASKS_STATE_INTERSECTION) icop = lm->ic_intersection;
+  else if (state & DT_MASKS_STATE_DIFFERENCE) icop = lm->ic_difference;
+  else if (state & DT_MASKS_STATE_EXCLUSION) icop = lm->ic_exclusion;
+  if (state & DT_MASKS_STATE_INVERSE) icinv = lm->ic_inverse;
+  
+  gtk_tree_store_set(GTK_TREE_STORE(model), iter, TREE_TEXT, str, TREE_IC_OP, icop, TREE_IC_OP_VISIBLE, (icop != NULL), TREE_IC_INVERSE, icinv, 
+                      TREE_IC_INVERSE_VISIBLE, (icinv!=NULL), -1);
+  
 }
 
 static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
@@ -279,7 +279,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
           {
             if (pt->state & DT_MASKS_STATE_INVERSE) pt->state &= ~DT_MASKS_STATE_INVERSE;
             else pt->state |= DT_MASKS_STATE_INVERSE;
-            _set_iter_name(dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
+            _set_iter_name(lm,dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
             change = 1;
             break;
           }
@@ -335,7 +335,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
               else if (pt->state & DT_MASKS_STATE_UNION) pt->state &= ~DT_MASKS_STATE_UNION;
               else if (pt->state & DT_MASKS_STATE_EXCLUSION) pt->state &= ~DT_MASKS_STATE_EXCLUSION;
               pt->state |= DT_MASKS_STATE_INTERSECTION;
-              _set_iter_name(dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
+              _set_iter_name(lm,dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
               change = 1;
             }
             break;
@@ -392,7 +392,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
               else if (pt->state & DT_MASKS_STATE_INTERSECTION) pt->state &= ~DT_MASKS_STATE_INTERSECTION;
               else if (pt->state & DT_MASKS_STATE_EXCLUSION) pt->state &= ~DT_MASKS_STATE_EXCLUSION;
               pt->state |= DT_MASKS_STATE_DIFFERENCE;
-              _set_iter_name(dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
+              _set_iter_name(lm,dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
               change = 1;
             }
             break;
@@ -449,7 +449,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
               else if (pt->state & DT_MASKS_STATE_INTERSECTION) pt->state &= ~DT_MASKS_STATE_INTERSECTION;
               else if (pt->state & DT_MASKS_STATE_UNION) pt->state &= ~DT_MASKS_STATE_UNION;
               pt->state |= DT_MASKS_STATE_EXCLUSION;
-              _set_iter_name(dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
+              _set_iter_name(lm,dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
               change = 1;
             }
             break;
@@ -506,7 +506,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
               else if (pt->state & DT_MASKS_STATE_INTERSECTION) pt->state &= ~DT_MASKS_STATE_INTERSECTION;
               else if (pt->state & DT_MASKS_STATE_EXCLUSION) pt->state &= ~DT_MASKS_STATE_EXCLUSION;
               pt->state |= DT_MASKS_STATE_UNION;
-              _set_iter_name(dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
+              _set_iter_name(lm,dt_masks_get_from_id(darktable.develop,id),pt->state,pt->opacity,model,&iter);
               change = 1;
             }
             break;
@@ -657,7 +657,7 @@ static void _tree_cell_edited (GtkCellRendererText *cell, gchar *path_string, gc
   dt_masks_write_form(form,darktable.develop);
   
   //and we update the cell text
-  _set_iter_name(form,0,1.0f,model,&iter);
+  _set_iter_name(lm,form,0,1.0f,model,&iter);
 }
 
 static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *self)
@@ -873,7 +873,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
             //we add the menu entry
             item = gtk_menu_item_new_with_label(str);
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
-            g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_tree_add_exist), module);
+            g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_tree_add_exist), grp);
             gtk_menu_append(menu0, item);
           }
       
@@ -1075,7 +1075,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
     gtk_tree_store_set(treestore, &child, TREE_TEXT, str,TREE_MODULE,module,TREE_GROUPID,grp_id, TREE_FORMID, form->formid, 
                       TREE_EDITABLE, (grp_id==0), TREE_IC_OP, icop, TREE_IC_OP_VISIBLE, (icop != NULL), TREE_IC_INVERSE, icinv, 
                       TREE_IC_INVERSE_VISIBLE, (icinv!=NULL), TREE_IC_USED, icuse, TREE_IC_USED_VISIBLE, (nbuse>0), TREE_USED_TEXT, str2, -1);
-    _set_iter_name(form,gstate,opacity,GTK_TREE_MODEL(treestore),&child);
+    _set_iter_name(lm,form,gstate,opacity,GTK_TREE_MODEL(treestore),&child);
   }
   else
   {
@@ -1101,7 +1101,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
     gtk_tree_store_set(treestore, &child, TREE_TEXT, str,TREE_MODULE,module,TREE_GROUPID,grp_id, TREE_FORMID, form->formid, 
                       TREE_EDITABLE, (grp_id==0), TREE_IC_OP, icop, TREE_IC_OP_VISIBLE, (icop != NULL), TREE_IC_INVERSE, icinv, 
                       TREE_IC_INVERSE_VISIBLE, (icinv!=NULL), TREE_IC_USED, icuse, TREE_IC_USED_VISIBLE, (nbuse>0), TREE_USED_TEXT, str2, -1);
-    _set_iter_name(form,gstate,opacity,GTK_TREE_MODEL(treestore),&child);
+    _set_iter_name(lm,form,gstate,opacity,GTK_TREE_MODEL(treestore),&child);
     //we add all nodes to the tree
     GList *forms = g_list_first(form->points);
     while (forms)
@@ -1189,7 +1189,7 @@ static gboolean _update_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeI
     }
   }
   
-  _set_iter_name(form,state,opacity,model,iter);
+  _set_iter_name(data,form,state,opacity,model,iter);
   return 0;
 }
 
@@ -1198,7 +1198,56 @@ static void _lib_masks_update_list(dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   //for each node , we refresh the string
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
-  gtk_tree_model_foreach(model,_update_foreach,NULL);
+  gtk_tree_model_foreach(model,_update_foreach,lm);
+}
+
+static gboolean _remove_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  if (!iter) return 0;
+  GList **rl = (GList **) data;
+  int refid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model),"formid"));
+  int refgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(model),"groupid"));
+  
+  //we retrieve the id
+  GValue gv = {0,};
+  gtk_tree_model_get_value (model,iter,TREE_GROUPID,&gv);
+  int grid = g_value_get_int(&gv);
+  GValue gv3 = {0,};
+  gtk_tree_model_get_value (model,iter,TREE_FORMID,&gv3);
+  int id = g_value_get_int(&gv3);
+  
+  if (grid == refgid && id == refid)
+  {
+    GtkTreeRowReference  *rowref = gtk_tree_row_reference_new(model, path);
+    *rl = g_list_append(*rl,rowref);
+  }
+  return 0;
+}
+
+static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parentid)
+{
+  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  //for each node , we refresh the string
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+  GList *rl = NULL;
+  g_object_set_data(G_OBJECT(model), "formid", GUINT_TO_POINTER(formid));
+  g_object_set_data(G_OBJECT(model), "groupid", GUINT_TO_POINTER(parentid));
+  gtk_tree_model_foreach(model,_remove_foreach,&rl);
+  
+  GList *rlt = g_list_first(rl);
+  while(rlt)
+  {
+    GtkTreePath *path = gtk_tree_row_reference_get_path((GtkTreeRowReference*)rlt->data);
+    if (path)
+    {
+       GtkTreeIter  iter;
+       if (gtk_tree_model_get_iter(model, &iter, path))
+       {
+         gtk_tree_store_remove(GTK_TREE_STORE(model), &iter);
+       }
+    }
+    rlt = g_list_next(rlt);
+  }
 }
 
 static void _lib_history_change_callback(gpointer instance, gpointer user_data)
@@ -1373,6 +1422,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.develop->proxy.masks.module = self;
   darktable.develop->proxy.masks.list_change = _lib_masks_recreate_list;
   darktable.develop->proxy.masks.list_update = _lib_masks_update_list;
+  darktable.develop->proxy.masks.list_remove = _lib_masks_remove_item;
   darktable.develop->proxy.masks.selection_change = _lib_masks_selection_change;
 }
 

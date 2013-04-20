@@ -40,6 +40,14 @@ install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/js)
 FILE(GLOB WEB_FILES "latex/*")
 install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/latex)
 
+if(USE_LUA)
+#
+# lua system scripts
+#
+FILE(GLOB WEB_FILES "lua/*")
+install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/lua)
+install(FILES rc.lua DESTINATION ${SHARE_INSTALL}/darktable/)
+endif(USE_LUA)
 #
 # Install other system shares
 #
