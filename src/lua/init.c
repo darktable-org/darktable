@@ -21,6 +21,7 @@
 #include "lua/configuration.h"
 #include "lua/preferences.h"
 #include "lua/print.h"
+#include "lua/types.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -61,6 +62,8 @@ void dt_lua_init_early(lua_State*L){
 
   lua_pop(L,1);
 
+  /* types need to be initialized early */
+  dt_lua_initialize_types(L);
 
 }
 
