@@ -28,7 +28,9 @@
 #include "develop/imageop.h"
 #include "libs/lib.h"
 #include "preferences_gen.h"
-
+#ifdef USE_LUA
+#include "lua/preferences.h"
+#endif
 #define ICON_SIZE 13
 
 typedef struct dt_gui_presets_edit_dialog_t
@@ -237,6 +239,9 @@ void dt_gui_preferences_show()
   init_tab_core(_preferences_dialog, notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
+#ifdef USE_LUA
+  init_tab_lua(_preferences_dialog, notebook);
+#endif
   gtk_widget_show_all(_preferences_dialog);
   (void) gtk_dialog_run(GTK_DIALOG(_preferences_dialog));
   gtk_widget_destroy(_preferences_dialog);
