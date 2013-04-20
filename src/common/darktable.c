@@ -84,7 +84,7 @@ static int usage(const char *argv0)
   printf(" [--moduledir <module directory>]");
   printf(" [--tmpdir <tmp directory>]");
   printf(" [--configdir <user config directory>]");
-  printf(" [--cachedir <user config directory>]");
+  printf(" [--cachedir <user cache directory>]");
   printf(" [--localedir <locale directory>]");
   printf("\n");
   return 1;
