@@ -392,6 +392,15 @@ gboolean dt_imageio_is_ldr(const char *filename)
   return FALSE;
 }
 
+int dt_imageio_is_hdr(const char *filename)
+{
+  const char *c = filename + strlen(filename);
+  while(c > filename && *c != '.') c--;
+  if(*c == '.')
+    if(!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr") || !strcasecmp(c, ".exr")) return 1;
+  return 0;
+}
+
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t
 dt_imageio_open_ldr(
@@ -712,14 +721,17 @@ dt_imageio_open(
   /* check if file is ldr using magic's */
   if (dt_imageio_is_ldr(filename))
     ret = dt_imageio_open_ldr(img, filename, a);
+
+  /* silly check using file extensions: */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
+    ret = dt_imageio_open_hdr(img, filename, a);
+
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #ifdef HAVE_RAWSPEED
     ret = dt_imageio_open_rawspeed(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
 #endif
     ret = dt_imageio_open_raw(img, filename, a);
-  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)
-    ret = dt_imageio_open_hdr(img, filename, a);
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)      // failsafing, if ldr magic test fails..
     ret = dt_imageio_open_ldr(img, filename, a);
 
