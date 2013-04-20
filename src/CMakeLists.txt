@@ -168,6 +168,7 @@ if(USE_LUA)
 		FILE(GLOB SOURCE_FILES_LUA
 			"lua/call.c"
 			"lua/configuration.c"
+			"lua/glist.c"
 			"lua/init.c"
 			"lua/lua.c"
 			"lua/preferences.c"
