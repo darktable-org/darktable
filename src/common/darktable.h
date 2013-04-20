@@ -44,10 +44,13 @@
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <lua/lua.h>
+
 #ifdef __APPLE__
 #include <mach/mach.h>
 #include <sys/sysctl.h>
 #endif
+
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 typedef	unsigned int	u_int;
 #include <sys/types.h>
@@ -146,7 +149,8 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_MEMORY = 512,
   DT_DEBUG_LIGHTTABLE = 1024,
   DT_DEBUG_NAN = 2048,
-  DT_DEBUG_MASKS = 4096
+  DT_DEBUG_MASKS = 4096,
+  DT_DEBUG_LUA = 8192,
 }
 dt_debug_thread_t;
 
@@ -195,6 +199,7 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
+  lua_State *lua_state;
 }
 darktable_t;
 

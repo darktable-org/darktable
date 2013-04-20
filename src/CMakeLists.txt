@@ -90,8 +90,19 @@ FILE(GLOB SOURCE_FILES
   )
 FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
 
-set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(USE_LUA)
+	FILE(GLOB SOURCE_FILES_LUA
+		"lua/call.c"
+		"lua/configuration.c"
+		"lua/init.c"
+		"lua/lua.c"
+		"lua/preferences.c"
+		"lua/print.c"
+		)
+endif(USE_LUA)
+
+set(SOURCES ${SOURCE_FILES} ${SOURCE_FILES_LUA} ${HEADER_FILES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -156,6 +167,19 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
   list(APPEND LIBS ${${lib}_LIBRARIES})
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
+
+if(USE_LUA)
+	find_package(Lua52)
+	if(LUA52_FOUND)
+		message(STATUS "Lua support: Enabled")
+		add_definitions("-DUSE_LUA")
+		include_directories(${LUA_INCLUDE_DIR})
+		list(APPEND LIBS ${LUA_LIBRARIES})
+		add_definitions(${LUA_DEFINITIONS})
+	else()
+		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
+	endif(LUA52_FOUND)
+endif(USE_LUA)
 
 if(USE_NLS)
   find_package(Gettext)
