@@ -46,8 +46,8 @@ void LJpegPlain::decodeScan() {
   if (frame.h + offY > (uint32)mRaw->dim.y)
     skipY = frame.h + offY - mRaw->dim.y;
 
-  _RPT1(0,"SlicesW:0x%x,\n",&slicesW);
-  _RPT1(0,"Slices:%d\n",slicesW.size());
+//  _RPT1(0,"SlicesW:0x%x,\n",&slicesW);
+//  _RPT1(0,"Slices:%d\n",slicesW.size());
 
   if (slicesW.empty())
     slicesW.push_back(frame.w*frame.cps);

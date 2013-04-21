@@ -35,12 +35,18 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
   for (uint32 i = 0; i < opcode_count; i++) {
     uint32 code = getULong(&data[bytes_used]);
     //uint32 version = getULong(&data[bytes_used+4]);
-    //uint32 flags = getULong(&data[bytes_used+8]);
+    uint32 flags = getULong(&data[bytes_used+8]);
     uint32 expected_size = getULong(&data[bytes_used+12]);
     bytes_used += 16;
     uint32 opcode_used = 0;
     switch (code)
     {
+      case 4:
+        mOpcodes.push_back(new OpcodeFixBadPixelsConstant(&data[bytes_used], entry_size - bytes_used, &opcode_used));
+        break;
+      case 5:
+        mOpcodes.push_back(new OpcodeFixBadPixelsList(&data[bytes_used], entry_size - bytes_used, &opcode_used));
+        break;
       case 6:
         mOpcodes.push_back(new OpcodeTrimBounds(&data[bytes_used], entry_size - bytes_used, &opcode_used));
         break;
@@ -63,7 +69,9 @@ DngOpcodes::DngOpcodes(TiffEntry *entry)
         mOpcodes.push_back(new OpcodeScalePerCol(&data[bytes_used], entry_size - bytes_used, &opcode_used));
         break;
       default:
-        ThrowRDE("DngOpcodes: Unsupported Opcode: %d", code);
+        // Throw Error if not marked as optional
+        if (!(flags & 1))
+          ThrowRDE("DngOpcodes: Unsupported Opcode: %d", code);
     }
     if (opcode_used != expected_size)
       ThrowRDE("DngOpcodes: Inconsistent length of opcode");
@@ -99,6 +107,99 @@ RawImage& DngOpcodes::applyOpCodes( RawImage &img )
     }
   }
   return img;
+}
+
+/***************** OpcodeFixBadPixelsConstant   ****************/
+
+OpcodeFixBadPixelsConstant::OpcodeFixBadPixelsConstant(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used )
+{
+  if (param_max_bytes < 8)
+    ThrowRDE("OpcodeFixBadPixelsConstant: Not enough data to read parameters, only %d bytes left.", param_max_bytes);
+  mValue = getLong(&parameters[0]);
+  // Bayer Phase not used
+  *bytes_used = 8;
+  mFlags = MultiThreaded;
+}
+
+RawImage& OpcodeFixBadPixelsConstant::createOutput( RawImage &in )
+{
+  // These limitations are present within the DNG SDK as well.
+  if (in->getDataType() != TYPE_USHORT16)
+    ThrowRDE("OpcodeFixBadPixelsConstant: Only 16 bit images supported");
+
+  if (in->getCpp() > 1)
+    ThrowRDE("OpcodeFixBadPixelsConstant: This operation is only supported with 1 component");
+
+  return in;
+}
+
+void OpcodeFixBadPixelsConstant::apply( RawImage &in, RawImage &out, int startY, int endY )
+{
+  iPoint2D crop = in->getCropOffset();
+  uint32 offset = crop.x | (crop.y << 16);
+  vector<uint32> bad_pos;
+  for (int y = startY; y < endY; y ++) {
+    ushort16* src = (ushort16*)out->getData(0, y);
+    for (int x = 0; x < in->dim.x; x++) {
+      if (src[x]== mValue) {
+        bad_pos.push_back(offset + ((uint32)x | (uint32)y<<16));
+      }
+    }
+  }
+  if (!bad_pos.empty()) {
+    pthread_mutex_lock(&out->mBadPixelMutex);
+    out->mBadPixelPositions.insert(out->mBadPixelPositions.end(), bad_pos.begin(), bad_pos.end());
+    pthread_mutex_unlock(&out->mBadPixelMutex);
+  }
+
+}
+
+/***************** OpcodeFixBadPixelsList   ****************/
+
+OpcodeFixBadPixelsList::OpcodeFixBadPixelsList( const uchar8* parameters, int param_max_bytes, uint32 *bytes_used )
+{
+  if (param_max_bytes < 12)
+    ThrowRDE("OpcodeFixBadPixelsList: Not enough data to read parameters, only %d bytes left.", param_max_bytes);
+  // Skip phase - we don't care
+  int BadPointCount = getLong(&parameters[4]);
+  int BadRectCount = getLong(&parameters[8]);
+  bytes_used[0] = 12; 
+  if (12 + BadPointCount * 8 + BadRectCount * 16 > param_max_bytes)
+    ThrowRDE("OpcodeFixBadPixelsList: Ran out parameter space, only %d bytes left.", param_max_bytes);
+
+  // Read points
+  for (int i = 0; i < BadPointCount; i++) {
+    uint32 BadPointRow = (uint32)getLong(&parameters[bytes_used[0]]);
+    uint32 BadPointCol = (uint32)getLong(&parameters[bytes_used[0]+4]);
+    bytes_used[0] += 8;
+    bad_pos.push_back(BadPointRow | (BadPointCol << 16));
+  }
+
+  // Read rects
+  for (int i = 0; i < BadRectCount; i++) {
+    uint32 BadRectTop = (uint32)getLong(&parameters[bytes_used[0]]);
+    uint32 BadRectLeft = (uint32)getLong(&parameters[bytes_used[0]+4]);
+    uint32 BadRectBottom = (uint32)getLong(&parameters[bytes_used[0]]);
+    uint32 BadRectRight = (uint32)getLong(&parameters[bytes_used[0]+4]);
+    bytes_used[0] += 16;
+    if (BadRectTop < BadRectBottom && BadRectLeft < BadRectRight) {
+      for (uint32 y = BadRectLeft; y <= BadRectRight; y++) {
+        for (uint32 x = BadRectTop; x <= BadRectBottom; x++) {
+          bad_pos.push_back(x | (y << 16));
+        }
+      }
+    }
+  }
+}
+
+void OpcodeFixBadPixelsList::apply( RawImage &in, RawImage &out, int startY, int endY )
+{
+  iPoint2D crop = in->getCropOffset();
+  uint32 offset = crop.x | (crop.y << 16);
+  for (vector<uint32>::iterator i=bad_pos.begin(); i != bad_pos.end(); i++) {
+    uint32 pos = offset + (*i);
+    out->mBadPixelPositions.push_back(pos);
+  }
 }
 
  /***************** OpcodeTrimBounds   ****************/
@@ -591,5 +692,6 @@ void OpcodeScalePerCol::apply( RawImage &in, RawImage &out, int startY, int endY
     }
   }
 }
+
 
 } // namespace RawSpeed 

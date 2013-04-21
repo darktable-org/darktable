@@ -100,6 +100,29 @@ private:
   }
 };
 
+class OpcodeFixBadPixelsConstant: public DngOpcode
+{
+public:
+  OpcodeFixBadPixelsConstant(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeFixBadPixelsConstant(void) {};
+  virtual RawImage& createOutput( RawImage &in );
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  int mValue;
+};
+
+
+class OpcodeFixBadPixelsList: public DngOpcode
+{
+public:
+  OpcodeFixBadPixelsList(const uchar8* parameters, int param_max_bytes, uint32 *bytes_used);
+  virtual ~OpcodeFixBadPixelsList(void) {};
+  virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
+private:
+  vector<uint32> bad_pos;
+};
+
+
 class OpcodeTrimBounds: public DngOpcode
 {
 public:
@@ -109,7 +132,6 @@ public:
 private:
   int mTop, mLeft, mBottom, mRight;
 };
-
 
 
 class OpcodeMapTable: public DngOpcode

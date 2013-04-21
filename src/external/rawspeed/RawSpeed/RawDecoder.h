@@ -93,6 +93,14 @@ public:
   /* DNGs are always attempted to be decoded, so this variable has no effect on DNGs */
   bool failOnUnknown;
 
+  /* Set how to handle bad pixels. */
+  /* If you disable this parameter, no bad pixel interpolation will be done */
+  bool interpolateBadPixels;
+
+  /* Apply stage 1 DNG opcodes. */
+  /* This usually maps out bad pixels, etc */
+  bool applyStage1DngOpcodes;
+
 protected:
   /* Attempt to decode the image */
   /* A RawDecoderException will be thrown if the image cannot be decoded, */

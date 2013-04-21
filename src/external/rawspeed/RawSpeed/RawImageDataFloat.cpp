@@ -127,26 +127,8 @@ namespace RawSpeed {
     if (blackLevelSeparate[0] < 0)
       calculateBlackAreas();
 
-    int threads = getThreadCount(); 
-    if (threads <= 1)
-      scaleValues(0, dim.y);
-    else {
-      RawImageWorker **workers = new RawImageWorker*[threads];
-      int y_offset = 0;
-      int y_per_thread = (dim.y + threads - 1) / threads;
-
-      for (int i = 0; i < threads; i++) {
-        int y_end = MIN(y_offset + y_per_thread, dim.y);
-        workers[i] = new RawImageWorker(this, RawImageWorker::TASK_SCALE_VALUES, y_offset, y_end);
-        y_offset = y_end;
-      }
-      for (int i = 0; i < threads; i++) {
-        workers[i]->waitForThread();
-        delete workers[i];
-      }
-      delete[] workers;
-    }
-  }
+    startWorker(RawImageWorker::SCALE_VALUES, true);
+}
 
 #if 0 // _MSC_VER > 1399 || defined(__SSE2__)
 
@@ -287,5 +269,97 @@ namespace RawSpeed {
   }
 
 #endif
+
+  /* This performs a 4 way interpolated pixel */
+  /* The value is interpolated from the 4 closest valid pixels in */
+  /* the horizontal and vertical direction. Pixels found further away */
+  /* are weighed less */
+
+void RawImageDataFloat::fixBadPixel( uint32 x, uint32 y, int component )
+{
+  float values[4];
+  float dist[4];
+  float weight[4];
+
+  values[0] = values[1] = values[2] = values[3] = -1;
+  dist[0] = dist[1] = dist[2] = dist[3] = 0;
+  uchar8* bad_line = &mBadPixelMap[y*mBadPixelMapPitch];
+
+  // Find pixel to the left
+  int x_find = (int)x - 2;
+  int curr = 0;
+  while (x_find >= 0 && values[curr] < 0) {
+    if (0 == ((bad_line[x_find>>3] >> (x_find&7)) & 1)) {
+      values[curr] = ((float*)getData(x_find, y))[component];
+      dist[curr] = float((int)x-x_find);
+    }
+    x_find-=2;
+  }
+  // Find pixel to the right
+  x_find = (int)x + 2;
+  curr = 1;
+  while (x_find < uncropped_dim.x && values[curr] < 0) {
+    if (0 == ((bad_line[x_find>>3] >> (x_find&7)) & 1)) {
+      values[curr] = ((float*)getData(x_find, y))[component];
+      dist[curr] = float(x_find-(int)x);
+    }
+    x_find+=2;
+  }
+
+  bad_line = &mBadPixelMap[x>>3];
+  // Find pixel upwards
+  int y_find = (int)y - 2;
+  curr = 2;
+  while (y_find >= 0 && values[curr] < 0) {
+    if (0 == ((bad_line[y_find*mBadPixelMapPitch] >> (x&7)) & 1)) {
+      values[curr] = ((float*)getData(x, y_find))[component];
+      dist[curr] = float((int)y-y_find);
+    }
+    y_find-=2;
+  }
+  // Find pixel downwards
+  y_find = (int)y + 2;
+  curr = 3;
+  while (y_find < uncropped_dim.y && values[curr] < 0) {
+    if (0 == ((bad_line[y_find*mBadPixelMapPitch] >> (x&7)) & 1)) {
+      values[curr] = ((float*)getData(x, y_find))[component];
+      dist[curr] = float(y_find-(int)y);
+    }
+    y_find+=2;
+  }
+  // Find x weights
+  float total_dist_x = dist[0] + dist[1];
+
+  float total_div = 0.000001f;
+  if (total_dist_x) {
+    weight[0] = dist[0] > 0.0f ? (total_dist_x - dist[0]) / total_dist_x : 0;
+    weight[1] = 1.0f - weight[0];
+    total_div += 1;
+  }
+
+  // Find y weights
+  float total_dist_y = dist[2] + dist[3];
+  if (total_dist_y) {
+    weight[2] = dist[2] > 0.0f ? (total_dist_x - dist[2]) / total_dist_y : 0;
+    weight[3] = 1.0f - weight[2];
+    total_div += 1;
+  }
+
+
+  float total_pixel = 0;
+  for (int i = 0; i < 4; i++)
+    if (values[i] >= 0)
+      total_pixel += values[i] * dist[i];
+
+  total_pixel /= total_div;
+  float* pix = (float*)getDataUncropped(x, y);
+  pix[component] = total_pixel;
+
+  /* Process other pixels - could be done inline, since we have the weights */
+  if (cpp > 1 && component == 0)
+    for (int i = 1; i < (int)cpp; i++)
+      fixBadPixel(x,y,i);
+
+}
 
 } // namespace RawSpeed
