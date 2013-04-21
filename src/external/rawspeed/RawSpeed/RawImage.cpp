@@ -37,7 +37,9 @@ RawImageData::RawImageData(void):
   pthread_mutex_init(&mymutex, NULL);
   subsampling.x = subsampling.y = 1;
   isoSpeed = 0;
+  mBadPixelMap = NULL;
   pthread_mutex_init(&errMutex, NULL);
+  pthread_mutex_init(&mBadPixelMutex, NULL);
 }
 
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
@@ -48,23 +50,24 @@ RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   subsampling.x = subsampling.y = 1;
   isoSpeed = 0;
+  mBadPixelMap = NULL;
   createData();
   pthread_mutex_init(&mymutex, NULL);
   pthread_mutex_init(&errMutex, NULL);
+  pthread_mutex_init(&mBadPixelMutex, NULL);
 }
 
 RawImageData::~RawImageData(void) {
   _ASSERTE(dataRefCount == 0);
-  if (data)
-    _aligned_free(data);
-  data = 0;
   mOffset = iPoint2D(0, 0);
   pthread_mutex_destroy(&mymutex);
   pthread_mutex_destroy(&errMutex);
+  pthread_mutex_destroy(&mBadPixelMutex);
   for (uint32 i = 0 ; i < errors.size(); i++) {
     free((void*)errors[i]);
   }
   errors.clear();
+  destroyData();
 }
 
 
@@ -85,7 +88,10 @@ void RawImageData::createData() {
 void RawImageData::destroyData() {
   if (data)
     _aligned_free(data);
+  if (mBadPixelMap)
+    _aligned_free(mBadPixelMap);
   data = 0;
+  mBadPixelMap = 0;
 }
 
 void RawImageData::setCpp(uint32 val) {
@@ -164,6 +170,17 @@ void RawImageData::setError( const char* err )
   pthread_mutex_unlock(&errMutex);
 }
 
+void RawImageData::createBadPixelMap()
+{
+  if (!isAllocated())
+    ThrowRDE("RawImageData::createBadPixelMap: (internal) Bad pixel map cannot be allocated before image.");
+  mBadPixelMapPitch = (((uncropped_dim.x / 8) + 15) / 16) * 16;
+  mBadPixelMap = (uchar8*)_aligned_malloc(mBadPixelMapPitch * uncropped_dim.y, 16);
+  memset(mBadPixelMap, 0, mBadPixelMapPitch * uncropped_dim.y);
+  if (!mBadPixelMap)
+    ThrowRDE("RawImageData::createData: Memory Allocation failed.");
+}
+
 RawImage::RawImage(RawImageData* p) : p_(p) {
   pthread_mutex_lock(&p_->mymutex);
   ++p_->dataRefCount;
@@ -186,6 +203,123 @@ RawImage::~RawImage() {
   pthread_mutex_unlock(&p_->mymutex);
 }
 
+
+void RawImageData::transferBadPixelsToMap()
+{
+  if (mBadPixelPositions.empty())
+    return;
+
+  if (!mBadPixelMap)
+    createBadPixelMap();
+
+  for (vector<uint32>::iterator i=mBadPixelPositions.begin(); i != mBadPixelPositions.end(); i++) {
+    uint32 pos = *i;
+    uint32 pos_x = pos&0xffff;
+    uint32 pos_y = pos>>16;
+    mBadPixelMap[mBadPixelMapPitch * pos_y + (pos_x >> 3)] |= 1 << (pos_x&7);
+  }
+  mBadPixelPositions.clear();
+}
+
+void RawImageData::fixBadPixels()
+{
+#if !defined (EMULATE_DCRAW_BAD_PIXELS)
+
+  /* Transfer if not already done */
+  transferBadPixelsToMap();
+
+#if 0 // For testing purposes
+  if (!mBadPixelMap)
+    createBadPixelMap();
+  for (int y = 400; y < 700; y++){
+    for (int x = 1200; x < 1700; x++) {
+      mBadPixelMap[mBadPixelMapPitch * y + (x >> 3)] |= 1 << (x&7);
+    }
+  }
+#endif
+
+  /* Process bad pixels, if any */
+  if (mBadPixelMap)
+    startWorker(RawImageWorker::FIX_BAD_PIXELS, false);
+
+  return;
+
+#else  // EMULATE_DCRAW_BAD_PIXELS - not recommended, testing purposes only
+
+  for (vector<uint32>::iterator i=mBadPixelPositions.begin(); i != mBadPixelPositions.end(); i++) {
+    uint32 pos = *i;
+    uint32 pos_x = pos&0xffff;
+    uint32 pos_y = pos>>16;
+    uint32 total = 0;
+    uint32 div = 0;
+    // 0 side covered by unsignedness.
+    for (uint32 r=pos_x-2; r<=pos_x+2 && r<(uint32)uncropped_dim.x; r+=2) {
+      for (uint32 c=pos_y-2; c<=pos_y+2 && c<(uint32)uncropped_dim.y; c+=2) {
+        ushort16* pix = (ushort16*)getDataUncropped(r,c);
+        if (*pix) {
+          total += *pix;
+          div++;
+        }
+      }
+    }
+    ushort16* pix = (ushort16*)getDataUncropped(pos_x,pos_y);
+    if (div) {
+      pix[0] = total / div;
+    }
+  }
+#endif
+
+}
+
+void RawImageData::startWorker(RawImageWorker::RawImageWorkerTask task, bool cropped )
+{
+  int height = cropped ? dim.y : uncropped_dim.y;
+
+  int threads = getThreadCount(); 
+  if (threads <= 1) {
+    RawImageWorker worker(this, task, 0, height);
+    worker.performTask();
+    return;
+  }
+
+  RawImageWorker **workers = new RawImageWorker*[threads];
+  int y_offset = 0;
+  int y_per_thread = (height + threads - 1) / threads;
+
+  for (int i = 0; i < threads; i++) {
+    int y_end = MIN(y_offset + y_per_thread, height);
+    workers[i] = new RawImageWorker(this, task, y_offset, y_end);
+    workers[i]->startThread();
+    y_offset = y_end;
+  }
+  for (int i = 0; i < threads; i++) {
+    workers[i]->waitForThread();
+    delete workers[i];
+  }
+  delete[] workers;
+}
+
+void RawImageData::fixBadPixelsThread( int start_y, int end_y )
+{
+  int gw = (uncropped_dim.x + 15) / 32;
+  for (int y = start_y; y < end_y; y++) {
+    uint32* bad_map = (uint32*)&mBadPixelMap[y*mBadPixelMapPitch];
+    for (int x = 0 ; x < gw; x++) {
+      // Test if there is a bad pixel within these 32 pixels
+      if (bad_map[x] != 0) {
+        uchar8 *bad = (uchar8*)&bad_map[x];
+        // Go through each pixel
+        for (int i = 0; i < 4; i++) {
+          for (int j = 0; j < 8; j++) {
+            if (1 == ((bad[i]>>j) & 1))
+              fixBadPixel(x*32+i*8+j, y, 0);
+          }
+        }
+      }
+    }
+  }
+}
+
 RawImageData* RawImage::operator->() {
   return p_;
 }
@@ -204,7 +338,7 @@ RawImage& RawImage::operator=(const RawImage & p) {
 
 void *RawImageWorkerThread(void *_this) {
   RawImageWorker* me = (RawImageWorker*)_this;
-  me->_performTask();
+  me->performTask();
   pthread_exit(NULL);
   return 0;
 }
@@ -215,7 +349,6 @@ RawImageWorker::RawImageWorker( RawImageData *_img, RawImageWorkerTask _task, in
   start_y = _start_y;
   end_y = _end_y;
   task = _task;
-  startThread();
 }
 
 void RawImageWorker::startThread()
@@ -233,13 +366,16 @@ void RawImageWorker::waitForThread()
   pthread_join(threadid, &status);
 }
 
-void RawImageWorker::_performTask()
+void RawImageWorker::performTask()
 {
   try {
     switch(task)
     {
-    case TASK_SCALE_VALUES:
+    case SCALE_VALUES:
       data->scaleValues(start_y, end_y);
+      break;
+    case FIX_BAD_PIXELS:
+      data->fixBadPixelsThread(start_y, end_y);
       break;
     default:
       _ASSERTE(false);
@@ -252,6 +388,7 @@ void RawImageWorker::_performTask()
     data->setError(e.what());
   }
 }
+
 
 
 } // namespace RawSpeed

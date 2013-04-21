@@ -55,7 +55,7 @@ RawImage Rw2Decoder::decodeRawInternal() {
   uint32 width = raw->getEntry((TiffTag)2)->getShort();
 
   if (isOldPanasonic) {
-    ThrowRDE("Cannot decoder old-style Panasonic RAW files");
+    ThrowRDE("Cannot decode old-style Panasonic RAW files");
     TiffEntry *offsets = raw->getEntry(STRIPOFFSETS);
     TiffEntry *counts = raw->getEntry(STRIPBYTECOUNTS);
 
@@ -110,6 +110,11 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
   int w = mRaw->dim.x / 14;
   uint32 y;
 
+  bool zero_is_bad = false;
+  map<string,string>::iterator zero_hint = hints.find("zero_is_bad");
+  if (zero_hint != hints.end())
+    zero_is_bad = true;
+
   /* 9 + 1/7 bits per pixel */
   int skip = w * 14 * t->start_y * 9;
   skip += w * 2 * t->start_y;
@@ -119,6 +124,7 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
   bits.load_flags = load_flags;
   bits.skipBytes(skip);
 
+  vector<uint32> zero_pos;
   for (y = t->start_y; y < t->end_y; y++) {
     ushort16* dest = (ushort16*)mRaw->getData(0, y);
     for (x = 0; x < w; x++) {
@@ -140,6 +146,8 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
         } else if ((nonz[0] = bits.getBits(8)) || i > 11)
           pred[0] = nonz[0] << 4 | bits.getBits(4);
         *dest++ = pred[0];
+        if (zero_is_bad && 0 == pred[0])
+          zero_pos.push_back((y<<16) | (x*14+i));
 
         // Odd pixels
         i++;
@@ -158,9 +166,16 @@ void Rw2Decoder::decodeThreaded(RawDecoderThread * t) {
         } else if ((nonz[1] = bits.getBits(8)) || i > 11)
           pred[1] = nonz[1] << 4 | bits.getBits(4);
         *dest++ = pred[1];
+        if (zero_is_bad && 0 == pred[1])
+          zero_pos.push_back((y<<16) | (x*14+i));
         u++;
       }
     }
+  }
+  if (zero_is_bad && !zero_pos.empty()) {
+    pthread_mutex_lock(&mRaw->mBadPixelMutex);
+    mRaw->mBadPixelPositions.insert(mRaw->mBadPixelPositions.end(), zero_pos.begin(), zero_pos.end());
+    pthread_mutex_unlock(&mRaw->mBadPixelMutex);
   }
 }
 
