@@ -45,6 +45,7 @@ protected:
   TiffIFD *mRootIFD;
   uint32 curve[0x4001];
   ByteStream *in;
+  int mShiftDownScale;
 };
 
 } // namespace RawSpeed

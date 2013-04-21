@@ -379,6 +379,21 @@ RawImage DngDecoder::decodeRawInternal() {
   if (mRaw->dim.area() <= 0)
     ThrowRDE("DNG Decoder: No image left after crop");
 
+  // Apply stage 1 opcodes
+  if (applyStage1DngOpcodes) {
+    if (raw->hasEntry(OPCODELIST1))
+    {
+      // Apply stage 1 codes
+      try{
+        DngOpcodes codes(raw->getEntry(OPCODELIST1));
+        mRaw = codes.applyOpCodes(mRaw);
+      } catch (RawDecoderException &e) {
+        // We push back errors from the opcode parser, since the image may still be usable
+        mRaw->setError(e.what());
+      }
+    }
+  }
+
   // Linearization
   if (raw->hasEntry(LINEARIZATIONTABLE)) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
