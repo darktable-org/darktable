@@ -154,3 +154,7 @@ src/views/darkroom.c
 src/views/lighttable.c
 src/views/map.c
 src/views/view.c
+src/develop/blend.c
+src/develop/masks/masks.c
+src/libs/masks.c
+
