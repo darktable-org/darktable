@@ -24,6 +24,7 @@
 
 #include "common/darktable.h"
 #include "common/file_location.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -69,6 +70,14 @@ static inline void dt_conf_set_int(const char *name, int val)
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
 }
 
+static inline void dt_conf_set_int64(const char *name, int64_t val)
+{
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  char *str = g_strdup_printf("%"PRId64, val);
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+}
+
 static inline void dt_conf_set_float(const char *name, float val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
@@ -98,6 +107,15 @@ static inline int dt_conf_get_int(const char *name)
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   const int val = atol(str);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  return val;
+}
+
+static inline int dt_conf_get_int64(const char *name)
+{
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  const char *str = dt_conf_get_var(name);
+  const int64_t val = g_ascii_strtoll(str, NULL, 10);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }

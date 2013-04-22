@@ -57,9 +57,9 @@
 
 	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
 		<xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-			<xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id == GTK_RESPONSE_ACCEPT)&#xA;  {&#xA;  </xsl:text>
+			<xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_ACCEPT)&#xA;    return;&#xA;</xsl:text>
 			<xsl:apply-templates select="." mode="change"/>
-			<xsl:text>&#xA;  }&#xA;}&#xA;&#xA;</xsl:text>
+			<xsl:text>&#xA;}&#xA;&#xA;</xsl:text>
 		</xsl:if>
 	</xsl:for-each>
 
@@ -127,11 +127,18 @@
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='int']" mode="reset">
-		<xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text>);</xsl:text>
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="dtconfig[type='int64']" mode="reset">
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='float']" mode="reset">
-		<xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text>);</xsl:text>
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='bool']" mode="reset">
@@ -153,11 +160,18 @@
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='int']" mode="change">
-		<xsl:text>  dt_conf_set_int("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));</xsl:text>
+		<xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>  dt_conf_set_int("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="dtconfig[type='int64']" mode="change">
+		<xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>  dt_conf_set_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='float']" mode="change">
-		<xsl:text>  dt_conf_set_float("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));</xsl:text>
+		<xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>  dt_conf_set_float("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='bool']" mode="change">
@@ -182,25 +196,44 @@
 	<xsl:template match="dtconfig[type='int']" mode="tab">
 		<xsl:text>    gint min = 0;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>
 		<xsl:apply-templates select="type" mode="range"/>
-		<xsl:text>    widget = gtk_spin_button_new_with_range(min, max, 1);
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    min *= factor; max *= factor;
+    widget = gtk_spin_button_new_with_range(min, max, 1);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    snprintf(tooltip, 1024, _("double click to reset to `%d'"), (int)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
+    gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
+</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="dtconfig[type='int64']" mode="tab">
+		<xsl:text>    gint64 min = 0;&#xA;    gint64 max = G_MAXINT64;&#xA;</xsl:text>
+		<xsl:apply-templates select="type" mode="range"/>
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    min *= factor; max *= factor;
+    widget = gtk_spin_button_new_with_range(min, max, 1);
+    gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
+    g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    snprintf(tooltip, 1024, _("double click to reset to `%"PRId64"'"), (gint64)(</xsl:text><xsl:value-of select="default"/><xsl:text> * factor));
     gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type='float']" mode="tab">
-		<xsl:text>    float min = -1000000000.0;&#xA;    float max = 1000000000.0;&#xA;</xsl:text>
+		<xsl:text>    float min = -1000000000.0f;&#xA;    float max = 1000000000.0f;&#xA;</xsl:text>
 		<xsl:apply-templates select="type" mode="range"/>
-		<xsl:text>    widget = gtk_spin_button_new_with_range(min, max, 0.001);
+		<xsl:text>  </xsl:text><xsl:apply-templates select="type" mode="factor"/>
+		<xsl:text>    min *= factor; max *= factor;
+    widget = gtk_spin_button_new_with_range(min, max, 0.001f);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>"));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
-    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    snprintf(tooltip, 1024, _("double click to reset to `%.03f'"), </xsl:text><xsl:value-of select="default"/><xsl:text> * factor);
     gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", tooltip, (char *)NULL);
 </xsl:text>
 	</xsl:template>
@@ -251,6 +284,15 @@
 	</xsl:template>
 
 	<xsl:template match="type" mode="range"  priority="1"/>
+
+<!-- Also look for the factor used in the GUI. -->
+	<xsl:template match="type[@factor]" mode="factor" priority="3">
+		<xsl:text>  float factor = </xsl:text><xsl:value-of select="@factor"/><xsl:text>;&#xA;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="type" mode="factor"  priority="1">
+		<xsl:text>  float factor = 1.0f;&#xA;</xsl:text>
+	</xsl:template>
 
 
 </xsl:stylesheet>

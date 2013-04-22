@@ -25,6 +25,8 @@
 // See Permutohedral.h
 //
 
+#define __STDC_FORMAT_MACROS
+
 extern "C"
 {
 
