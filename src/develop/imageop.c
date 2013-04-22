@@ -55,7 +55,8 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLED, 100.0, 0, 0, 0.0f,
+static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED, DEVELOP_BLEND_NORMAL, 100.0f, DEVELOP_COMBINE_NORM_EXCL, 0, 0, 0.0f,
+  { 0, 0, 0, 0 },
   {
     0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
     0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
@@ -781,7 +782,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->blend_params=g_malloc(sizeof(dt_develop_blend_params_t));
   module->default_blendop_params=g_malloc(sizeof(dt_develop_blend_params_t));
   memset(module->blend_params, 0, sizeof(dt_develop_blend_params_t));
-  // dt_develop_blend_params_t default_blendop_params= {DEVELOP_BLEND_DISABLED,100.0,0};
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   memcpy(module->blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));

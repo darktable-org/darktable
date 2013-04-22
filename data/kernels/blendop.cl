@@ -45,8 +45,22 @@
 #define DEVELOP_BLEND_UNBOUNDED                         0x15
 #define DEVELOP_BLEND_COLORADJUST                       0x16
 
-#define BLEND_ONLY_LIGHTNESS				8
+#define DEVELOP_MASK_DISABLED       0x00
+#define DEVELOP_MASK_ENABLED        0x01
+#define DEVELOP_MASK_MASK           0x02
+#define DEVELOP_MASK_CONDITIONAL    0x04
+#define DEVELOP_MASK_BOTH           (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
 
+#define DEVELOP_COMBINE_NORM        0x00
+#define DEVELOP_COMBINE_INV         0x01
+#define DEVELOP_COMBINE_EXCL        0x00
+#define DEVELOP_COMBINE_INCL        0x02
+#define DEVELOP_COMBINE_NORM_EXCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_EXCL)
+#define DEVELOP_COMBINE_NORM_INCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_INCL)
+#define DEVELOP_COMBINE_INV_EXCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL)
+#define DEVELOP_COMBINE_INV_INCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
+
+#define BLEND_ONLY_LIGHTNESS				8
 
 typedef enum iop_cs_t 
 {
@@ -102,12 +116,12 @@ dt_develop_blendif_channels_t;
 
 
 float
-blendif_factor_Lab(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters)
+blendif_factor_Lab(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if((blendif & (1u<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
+  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return 1.0f;
 
   scaled[DEVELOP_BLENDIF_L_in] = clamp(input.x / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
   scaled[DEVELOP_BLENDIF_A_in] = clamp((input.y + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
@@ -166,12 +180,12 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
 
 float
-blendif_factor_rgb(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters)
+blendif_factor_rgb(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if((blendif & (1u<<DEVELOP_BLENDIF_active)) == 0) return 1.0f;
+  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return 1.0f;
 
   scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f);	// Gray scaled to 0..1
   scaled[DEVELOP_BLENDIF_RED_in]   = clamp(input.x, 0.0f, 1.0f);						// Red
@@ -232,7 +246,7 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
 __kernel void
 blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -243,7 +257,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   
-  float opacity = form * gopacity * blendif_factor_Lab(a, b, blendif, blendif_parameters);
+  float opacity = form * gopacity * blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
   write_imagef(mask, (int2)(x, y), opacity);
 }
@@ -251,7 +265,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 #if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -269,7 +283,7 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 // TODO: review after some time (May 2013) if this is still needed.
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -280,7 +294,7 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   
-  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters);
+  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
   float opacity = form * gopacity * bif;
   opacity /= bif;
 
@@ -290,7 +304,7 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -301,14 +315,14 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   
-  float opacity = form * gopacity * blendif_factor_rgb(a, b, blendif, blendif_parameters);
+  float opacity = form * gopacity * blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
   write_imagef(mask, (int2)(x, y), opacity);
 }
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int mode, const int blendflag)
+             const int blend_mode, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -345,7 +359,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 
   /* select the blend operator */
-  switch (mode)
+  switch (blend_mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o = clamp(a * (1.0f - opacity) + (a > b ? a : b) * opacity, min, max);
@@ -563,7 +577,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int mode, const int blendflag)
+             const int blend_mode, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -589,7 +603,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 
   /* select the blend operator */
-  switch (mode)
+  switch (blend_mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o = clamp(a * (1.0f - opacity) + fmax(a, b) * opacity, min, max);
@@ -688,7 +702,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int mode, const int blendflag)
+             const int blend_mode, const int blendflag)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -716,7 +730,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 
   /* select the blend operator */
-  switch (mode)
+  switch (blend_mode)
   {
     case DEVELOP_BLEND_LIGHTEN:
       o =  clamp(a * (1.0f - opacity) + fmax(a, b) * opacity, min, max);

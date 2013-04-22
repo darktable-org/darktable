@@ -29,7 +29,7 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION				(4)
+#define DEVELOP_BLEND_VERSION				(5)
 
 
 #define DEVELOP_BLEND_MASK_FLAG		  0x80
@@ -56,6 +56,22 @@
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED     0x15
 #define DEVELOP_BLEND_COLORADJUST   0x16
+
+
+#define DEVELOP_MASK_DISABLED       0x00
+#define DEVELOP_MASK_ENABLED        0x01
+#define DEVELOP_MASK_MASK           0x02
+#define DEVELOP_MASK_CONDITIONAL    0x04
+#define DEVELOP_MASK_BOTH           (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
+
+#define DEVELOP_COMBINE_NORM        0x00
+#define DEVELOP_COMBINE_INV         0x01
+#define DEVELOP_COMBINE_EXCL        0x00
+#define DEVELOP_COMBINE_INCL        0x02
+#define DEVELOP_COMBINE_NORM_EXCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_EXCL)
+#define DEVELOP_COMBINE_NORM_INCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_INCL)
+#define DEVELOP_COMBINE_INV_EXCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL)
+#define DEVELOP_COMBINE_INV_INCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL)
 
 
 typedef enum dt_develop_blendif_channels_t
@@ -110,7 +126,7 @@ typedef struct dt_develop_blend_params1_t
 }
 dt_develop_blend_params1_t;
 
-
+/** blend legacy parameters version 2 */
 typedef struct dt_develop_blend_params2_t
 {
   /** blending mode */
@@ -126,7 +142,7 @@ typedef struct dt_develop_blend_params2_t
 }
 dt_develop_blend_params2_t;
 
-
+/** blend legacy parameters version 3 */
 typedef struct dt_develop_blend_params3_t
 {
   /** blending mode */
@@ -142,7 +158,8 @@ typedef struct dt_develop_blend_params3_t
 }
 dt_develop_blend_params3_t;
 
-typedef struct dt_develop_blend_params_t
+/** blend legacy parameters version 4 */
+typedef struct dt_develop_blend_params4_t
 {
   /** blending mode */
   uint32_t mode;
@@ -157,8 +174,31 @@ typedef struct dt_develop_blend_params_t
   /** blendif parameters */
   float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
 }
-dt_develop_blend_params_t;
+dt_develop_blend_params4_t;
 
+/** blend parameters current version */
+typedef struct dt_develop_blend_params_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+  uint32_t mask_mode;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blur radius */
+  float radius;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
+}
+dt_develop_blend_params_t;
 
 
 typedef struct dt_blendop_t
@@ -175,15 +215,6 @@ typedef struct dt_blendop_t
 dt_blendop_t;
 
 
-
-typedef struct dt_iop_gui_blendop_modes_t
-{
-  int mode;
-  char *name;
-}
-dt_iop_gui_blendop_modes_t;
-
-
 typedef struct dt_iop_gui_blendif_colorstop_t
 {
   float stoppoint;
@@ -198,14 +229,17 @@ typedef struct dt_iop_gui_blend_data_t
   int blendif_support;
   int blend_inited;
   int blendif_inited;
+  int masks_support;
+  int masks_inited;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
-  dt_iop_gui_blendop_modes_t modes[30];
-  int number_modes;
+  GList *blend_modes;;
+  GList *masks_modes;
   GtkWidget *iopw;
-  GtkWidget *blendif_enable;
-  GtkVBox *box;
+  GtkVBox *top_box;
+  GtkVBox *bottom_box;
   GtkVBox *blendif_box;
+  GtkVBox *masks_box;
   GtkDarktableGradientSlider *upper_slider;
   GtkDarktableGradientSlider *lower_slider;
   GtkLabel *upper_label[8];
@@ -218,6 +252,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);
+  GtkWidget *masks_modes_combo;
   GtkWidget *blend_modes_combo;
   GtkWidget *opacity_slider;
   GtkWidget *radius_slider;
@@ -237,7 +272,7 @@ dt_iop_gui_blend_data_t;
 
 
 
-#define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
+//#define DT_DEVELOP_BLEND_WITH_MASK(p) ((p->mode&DEVELOP_BLEND_MASK_FLAG)?1:0)
 
 /** global init of blendops */
 void dt_develop_blend_init(dt_blendop_t *gd);
