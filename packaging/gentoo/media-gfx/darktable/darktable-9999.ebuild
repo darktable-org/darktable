@@ -15,7 +15,7 @@ LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS=""
 IUSE="colord flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde
-nls opencl openmp pax_kernel +rawspeed +slideshow web-services"
+lua nls opencl openmp pax_kernel +rawspeed +slideshow web-services"
 
 CDEPEND="
 	dev-db/sqlite:3
@@ -29,6 +29,7 @@ CDEPEND="
 	gphoto2? ( media-libs/libgphoto2 )
 	graphicsmagick? ( media-gfx/graphicsmagick )
 	jpeg2k? ( media-libs/openjpeg )
+	lua? ( >=dev-lang/lua-5.2 )
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
 	>=media-libs/lensfun-0.2.3
@@ -77,6 +78,7 @@ src_configure() {
 		$(cmake-utils_use_use gphoto2 CAMERA_SUPPORT)
 		$(cmake-utils_use_use graphicsmagick GRAPHICSMAGICK)
 		$(cmake-utils_use_use jpeg2k OPENJPEG)
+		$(cmake-utils_use_use lua LUA)
 		$(cmake-utils_use_use nls NLS)
 		$(cmake-utils_use_use opencl OPENCL)
 		$(cmake-utils_use_use openmp OPENMP)
