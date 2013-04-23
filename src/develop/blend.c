@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2011--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,13 +145,12 @@ static inline void _PX_COPY(const float *src, float *dst)
 
 
 static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *input, const float *output, const unsigned int blendif, const float *parameters, 
-           const unsigned int mask_mode, const unsigned int combine)
+           const unsigned int mask_mode, const unsigned int mask_combine)
 {
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE] = { 0.5f };
 
-  //if(!(blendif & (1<<DEVELOP_BLENDIF_active))) return 1.0f;
-  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return 1.0f;
+  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
   switch(cst)
   {
@@ -205,7 +205,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
 
       break;
     default:
-      return 1.0f;					// not implemented for other color spaces
+      return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;					// not implemented for other color spaces
   }
 
 
@@ -236,10 +236,10 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
 
     if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel?
 
-    result *= factor;
+    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
   }
 
-  return result;
+  return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
 }
 
 
@@ -302,12 +302,16 @@ static inline void _blend_Lab_rescale(const float *i, float *o)
 
 
 /* generate blend mask */
-static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int combine,
-                             const float opacity, const float *a, const float *b, float *mask, int stride)
+static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int blendif, const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine,
+                             const float gopacity, const float *a, const float *b, float *mask, int stride)
 {
   for(int i=0, j=0; j<stride; i++, j+=4)
   {
-    mask[i] *= opacity*_blendif_factor(cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, combine);
+    float form = mask[i];
+    float conditional = _blendif_factor(cst, &a[j], &b[j], blendif, blendif_parameters, mask_mode, mask_combine);
+    float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
+    opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
+    mask[i] = opacity*gopacity;
   }
 }
 

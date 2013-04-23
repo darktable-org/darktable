@@ -369,6 +369,12 @@ _blendop_blend_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void
+_blendop_masks_combine_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
+{
+  data->module->blend_params->mask_combine = GPOINTER_TO_UINT(g_list_nth_data(data->masks_combine, dt_bauhaus_combobox_get(data->masks_combine_combo)));
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+}
 
 static void
 _blendop_opacity_callback (GtkWidget *slider, dt_iop_gui_blend_data_t *data)
@@ -959,6 +965,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
 
   g_list_free(bd->blend_modes);
   g_list_free(bd->masks_modes);
+  g_list_free(bd->masks_combine);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 
@@ -978,6 +985,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   dt_bauhaus_combobox_set(bd->masks_modes_combo, g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode)));
   dt_bauhaus_combobox_set(bd->blend_modes_combo, g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode)));
+  dt_bauhaus_combobox_set(bd->masks_combine_combo, g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine)));
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
   dt_bauhaus_slider_set(bd->radius_slider, module->blend_params->radius);
 
@@ -1063,6 +1071,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->masks_modes = NULL;
     bd->blend_modes = NULL;
+    bd->masks_combine = NULL;
 
     bd->masks_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_modes_combo, _("blend"));
@@ -1180,6 +1189,27 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                       G_CALLBACK (_blendop_opacity_callback), bd);
 
 
+    bd->masks_combine_combo = dt_bauhaus_combobox_new(module);
+    dt_bauhaus_widget_set_label(bd->masks_combine_combo, _("combine masks"));
+
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("substractive-normal"));
+    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_EXCL));
+
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("substractive-inverted"));
+    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_EXCL));
+
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("additive-normal"));
+    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_INCL));
+
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("additive-inverted"));
+    bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_INCL));
+
+    dt_bauhaus_combobox_set(bd->masks_combine_combo, 0);
+    gtk_object_set(GTK_OBJECT(bd->masks_combine_combo), "tooltip-text", _("how to combine individual conditional masks and painted masks"), (char *)NULL);
+    g_signal_connect (G_OBJECT (bd->masks_combine_combo), "value-changed",
+                      G_CALLBACK (_blendop_masks_combine_callback), bd);
+
+
     bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 50.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->radius_slider, _("mask blur"));
     dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
@@ -1215,6 +1245,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->suppress), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->showmask), FALSE, FALSE, 0);
     bd->bottom_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);    
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), hbox, TRUE, TRUE, 0);    
     gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->bottom_box), TRUE, TRUE, 0);
 

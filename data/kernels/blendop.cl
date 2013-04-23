@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 ulrich pegelow.
+    copyright (c) 2011--2013 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return 1.0f;
+  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
   scaled[DEVELOP_BLENDIF_L_in] = clamp(input.x / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
   scaled[DEVELOP_BLENDIF_A_in] = clamp((input.y + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
@@ -172,10 +172,10 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
     if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel
 
-    result *= factor;
+    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
   }
 
-  return result;
+  return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
 }
 
 
@@ -185,7 +185,7 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
-  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return 1.0f;
+  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
   scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f);	// Gray scaled to 0..1
   scaled[DEVELOP_BLENDIF_RED_in]   = clamp(input.x, 0.0f, 1.0f);						// Red
@@ -238,10 +238,10 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
     if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel
 
-    result *= factor;
+    result *= ((mask_combine & DEVELOP_COMBINE_EXCL) ? 1.0f - factor : factor);
   }
 
-  return result;
+  return (mask_combine & DEVELOP_COMBINE_EXCL) ? 1.0f - result : result;
 }
 
 __kernel void
@@ -256,10 +256,13 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  float opacity = form * gopacity * blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
-  write_imagef(mask, (int2)(x, y), opacity);
+  float conditional = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
+  
+  float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
+  opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
+
+  write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
 #if 0
@@ -272,8 +275,10 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
   if(x >= width || y >= height) return;
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  write_imagef(mask, (int2)(x, y), form*gopacity);
+
+  float opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form;
+    
+  write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 #else
 // the following is a workaround for a current bug (as of Nov. 2012) in NVIDIA's OpenCL compiler, affecting GeForce GT6xx gpus.
@@ -294,11 +299,12 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   
-  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
-  float opacity = form * gopacity * bif;
+  float bif = blendif_factor_Lab(a, b, blendif, blendif_parameters, DEVELOP_MASK_DISABLED, DEVELOP_COMBINE_EXCL);
+
+  float opacity = ((mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form)*bif;
   opacity /= bif;
 
-  write_imagef(mask, (int2)(x, y), opacity);
+  write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 #endif
 
@@ -314,10 +320,13 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
-  
-  float opacity = form * gopacity * blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
 
-  write_imagef(mask, (int2)(x, y), opacity);
+  float conditional = blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
+  
+  float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
+  opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
+  
+  write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
 __kernel void

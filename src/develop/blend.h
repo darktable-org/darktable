@@ -233,8 +233,9 @@ typedef struct dt_iop_gui_blend_data_t
   int masks_inited;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
-  GList *blend_modes;;
+  GList *blend_modes;
   GList *masks_modes;
+  GList *masks_combine;
   GtkWidget *iopw;
   GtkVBox *top_box;
   GtkVBox *bottom_box;
@@ -254,6 +255,7 @@ typedef struct dt_iop_gui_blend_data_t
   void (*scale_print[8])(float value, char *string, int n);
   GtkWidget *masks_modes_combo;
   GtkWidget *blend_modes_combo;
+  GtkWidget *masks_combine_combo;
   GtkWidget *opacity_slider;
   GtkWidget *radius_slider;
   int tab;
