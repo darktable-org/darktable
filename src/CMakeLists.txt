@@ -169,6 +169,7 @@ if(USE_LUA)
 			"lua/call.c"
 			"lua/configuration.c"
 			"lua/glist.c"
+			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"
 			"lua/preferences.c"
