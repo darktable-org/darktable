@@ -19,6 +19,7 @@
 #include "lua/image.h"
 #include "lua/types.h"
 #include "lua/glist.h"
+#include "lua/colorlabels.h"
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -71,6 +72,7 @@ typedef enum {
   IS_RAW,
   RATING,
   ID,
+  COLORLABEL,
   CREATOR,
   PUBLISHER,
   TITLE,
@@ -86,6 +88,7 @@ const char *image_fields_name[] = {
   "is_raw",
   "rating",
   "id",
+  "colorlabels",
   "creator",
   "publisher",
   "title",
@@ -159,6 +162,11 @@ static int image_index(lua_State *L){
     case ID:
       lua_pushinteger(L,my_image->height);
       break;
+    case COLORLABEL:
+      {
+        luaA_push(L,dt_lua_colorlabel_t,&my_image->id);
+        break;
+      }
     case CREATOR:
       {
         sqlite3_stmt *stmt;
@@ -300,6 +308,9 @@ static int image_newindex(lua_State *L){
     case IS_HDR:
     case IS_RAW:
     case ID:
+    case COLORLABEL:
+      releasewriteimage(L,my_image);
+      return luaL_error(L,"read only field : ",lua_tostring(L,-2));
     default:
       releasewriteimage(L,my_image);
       return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));

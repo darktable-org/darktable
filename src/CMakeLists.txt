@@ -167,6 +167,7 @@ if(USE_LUA)
 		add_definitions(${LUA_DEFINITIONS})
 		FILE(GLOB SOURCE_FILES_LUA
 			"lua/call.c"
+			"lua/colorlabels.c"
 			"lua/configuration.c"
 			"lua/glist.c"
 			"lua/image.c"

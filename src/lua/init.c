@@ -18,6 +18,7 @@
 #include "lua/lua.h"
 #include "lua/init.h"
 #include "lua/call.h"
+#include "lua/colorlabels.h"
 #include "lua/configuration.h"
 #include "lua/glist.h"
 #include "lua/image.h"
@@ -44,6 +45,7 @@ static int dt_luacleanup(lua_State*L) {
 static lua_CFunction init_funcs[] = {
   dt_lua_init_glist,
   dt_lua_init_image,
+  dt_lua_init_colorlabels,
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,
