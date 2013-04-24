@@ -44,8 +44,7 @@ if(USE_LUA)
 #
 # lua system scripts
 #
-FILE(GLOB WEB_FILES "lua/*")
-install(FILES ${WEB_FILES} DESTINATION ${SHARE_INSTALL}/darktable/lua)
+install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable/)
 install(FILES rc.lua DESTINATION ${SHARE_INSTALL}/darktable/)
 endif(USE_LUA)
 #
