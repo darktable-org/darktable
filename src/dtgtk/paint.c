@@ -300,6 +300,7 @@ void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 
 void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
+  cairo_save(cr);
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
@@ -330,6 +331,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   }
 
   cairo_identity_matrix(cr);
+  cairo_restore(cr);
 }
 
 

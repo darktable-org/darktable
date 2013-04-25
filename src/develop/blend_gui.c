@@ -327,21 +327,27 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   {
     gtk_widget_show(GTK_WIDGET(data->masks_box));
   }
-  else
+  else if(data->masks_inited)
   {
     data->module->request_mask_display = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
     data->module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
 
+    dt_masks_set_edit_mode(data->module, 0);
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(data->masks_box));
+  }
+
 
   if(data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
     gtk_widget_show(GTK_WIDGET(data->blendif_box));
   }
-  else
+  else if(data->blendif_inited)
   {
     /* switch off color picker if it was requested by blendif */
     if(data->module->request_color_pick < 0)
@@ -355,6 +361,10 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
     data->module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
 
+    gtk_widget_hide(GTK_WIDGET(data->blendif_box));
+  }
+  else
+  {
     gtk_widget_hide(GTK_WIDGET(data->blendif_box));
   }
 
@@ -902,11 +912,11 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
+
+    bd->blendif_inited = 1;
   }
 
   gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->blendif_box),TRUE,TRUE,0);
-
-  bd->blendif_inited = 1;
 }
 
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
@@ -951,10 +961,11 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     bd->masks_shown = 0;
       
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(bd->masks_combo), TRUE, TRUE,0);
+
+    bd->masks_inited = 1;
   }
 
   gtk_box_pack_start(GTK_BOX(blendw), GTK_WIDGET(bd->masks_box),TRUE,TRUE,0);
-  bd->masks_inited = 1;
 }
 
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
@@ -1014,25 +1025,33 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_widget_hide(GTK_WIDGET(bd->bottom_box));
   }
 
+
   if(bd->masks_inited && (mask_mode & DEVELOP_MASK_MASK))
   {
     gtk_widget_show(GTK_WIDGET(bd->masks_box));
   }
-  else
+  else if(bd->masks_inited)
   {
-    module->request_mask_display = 0;
+    bd->module->request_mask_display = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), 0);
-    module->suppress_mask = 0;
+    bd->module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
+
+    dt_masks_set_edit_mode(module, 0);
 
     gtk_widget_hide(GTK_WIDGET(bd->masks_box));
   }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(bd->masks_box));
+  }
+
 
   if(bd->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
   {
     gtk_widget_show(GTK_WIDGET(bd->blendif_box));
   }
-  else
+  else if(bd->blendif_inited)
   {
     /* switch off color picker if it was requested by blendif */
     if(module->request_color_pick < 0)
@@ -1046,6 +1065,10 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     module->suppress_mask = 0;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
 
+    gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
+  }
+  else
+  {
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
 
