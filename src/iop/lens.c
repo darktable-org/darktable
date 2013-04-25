@@ -1280,7 +1280,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
     label = GTK_LABEL(gtk_label_new(_("camera/lens not found - please select manually")));
 
-    g_object_set (GTK_OBJECT(label), "tooltip-text", _("try to locate your camera/lens in the above two menues"), (char *)NULL);
+    g_object_set (GTK_OBJECT(label), "tooltip-text", _("try to locate your camera/lens in the above two menus"), (char *)NULL);
 
     gtk_box_pack_start(GTK_BOX(g->detection_warning), GTK_WIDGET(label), FALSE, FALSE, 0);
 
