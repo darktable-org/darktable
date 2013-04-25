@@ -170,6 +170,7 @@ if(USE_LUA)
 			"lua/colorlabels.c"
 			"lua/configuration.c"
 			"lua/glist.c"
+			"lua/history.c"
 			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"

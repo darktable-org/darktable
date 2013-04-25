@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/image.h"
 #include "common/image_cache.h"
+#include "common/history.h"
 #include "common/metadata.h"
 #include "metadata_gen.h"
 
@@ -64,6 +65,26 @@ void dt_lua_image_push(lua_State * L,int imgid) {
   luaA_push(L,dt_lua_image_t,&imgid);
 }
 
+static int image_get_history(lua_State*L) {
+  dt_lua_image_t imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  GList * items = dt_history_get_items(imgid,true);
+  dt_lua_push_glist(L,items,dt_history_item_t);
+  while(items) {
+    g_free(items->data);
+    items = items->next;
+  }
+  return 1;
+}
+
+
+static int image_reset_history(lua_State*L) {
+  dt_lua_image_t imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_history_delete_on_image(imgid);
+  return 0;
+}
+
 typedef enum {
   PATH,
   DUP_INDEX,
@@ -78,6 +99,8 @@ typedef enum {
   TITLE,
   DESCRIPTION,
   RIGHTS,
+  GET_HISTORY,
+  RESET,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] = {
@@ -94,6 +117,8 @@ const char *image_fields_name[] = {
   "title",
   "description",
   "rights",
+  "get_history",
+  "reset",
   NULL
 };
 
@@ -242,6 +267,16 @@ static int image_index(lua_State *L){
         break;
 
       }
+    case GET_HISTORY:
+      {
+        lua_pushcfunction(L,image_get_history);
+        break;
+      }
+    case RESET:
+      {
+        lua_pushcfunction(L,image_reset_history);
+        break;
+      }
     default:
       releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -302,6 +337,8 @@ static int image_newindex(lua_State *L){
       dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
       dt_image_synch_xmp(my_image->id);
       break;
+    case GET_HISTORY:
+    case RESET:
     case PATH:
     case DUP_INDEX:
     case IS_LDR:
