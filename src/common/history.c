@@ -208,9 +208,9 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
     sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
   }
-  sqlite3_finalize (stmt);
-  
+
   //let's copy now
   strcpy (req, "insert into mask (imgid, formid, form, name, version, points, points_count, source) select ?1, formid, form, name, version, points, points_count, source from mask where imgid = ?2");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
