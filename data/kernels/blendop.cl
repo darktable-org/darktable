@@ -109,7 +109,10 @@ typedef enum dt_develop_blendif_channels_t
 
   DEVELOP_BLENDIF_active    = 31,
 
-  DEVELOP_BLENDIF_SIZE      = 16
+  DEVELOP_BLENDIF_SIZE      = 16,
+
+  DEVELOP_BLENDIF_Lab_MASK  = 0x3377,
+  DEVELOP_BLENDIF_RGB_MASK  = 0x77FF
 }
 dt_develop_blendif_channels_t;
 
@@ -147,11 +150,14 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if((blendif & (1<<ch)) == 0)
+    if((DEVELOP_BLENDIF_Lab_MASK & (1<<ch)) == 0) continue;       // skip blendif channels not used in this color space
+
+    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
-      result = (blendif & (1<<(ch+16))) ? 0.0f : result;    
+      result *= !(blendif & (1<<(ch+16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
       continue;
     }
+
     if(result <= 0.000001f) break;				// no need to continue if we are already close to or at zero
 
     float factor;
@@ -213,9 +219,11 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if((blendif & (1<<ch)) == 0)
+    if((DEVELOP_BLENDIF_RGB_MASK & (1<<ch)) == 0) continue;       // skip blendif channels not used in this color space
+
+    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
-      result = (blendif & (1<<(ch+16))) ? 0.0f : result;    
+      result *= !(blendif & (1<<(ch+16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
       continue;
     }
 
@@ -238,10 +246,10 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
     if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel
 
-    result *= ((mask_combine & DEVELOP_COMBINE_EXCL) ? 1.0f - factor : factor);
+    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
   }
 
-  return (mask_combine & DEVELOP_COMBINE_EXCL) ? 1.0f - result : result;
+  return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
 }
 
 __kernel void

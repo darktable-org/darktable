@@ -149,6 +149,7 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
 {
   float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE] = { 0.5f };
+  unsigned int channel_mask = 0;
 
   if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
@@ -175,6 +176,8 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
         scaled[DEVELOP_BLENDIF_C_out] = CLAMP_RANGE(LCH_output[1] / (128.0f*sqrtf(2.0f)), 0.0f, 1.0f);			      // C scaled to 0..1
         scaled[DEVELOP_BLENDIF_h_out] = CLAMP_RANGE(LCH_output[2], 0.0f, 1.0f);		        // h scaled to 0..1
       }
+
+      channel_mask = DEVELOP_BLENDIF_Lab_MASK;
 
       break;
     case iop_cs_rgb:
@@ -203,6 +206,8 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
         scaled[DEVELOP_BLENDIF_l_out] = CLAMP_RANGE(HSL_output[2], 0.0f, 1.0f);		        // L scaled to 0..1
       }
 
+      channel_mask = DEVELOP_BLENDIF_RGB_MASK;
+
       break;
     default:
       return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;					// not implemented for other color spaces
@@ -211,9 +216,11 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst,const float *in
 
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
-    if((blendif & (1<<ch)) == 0)
+    if((channel_mask & (1<<ch)) == 0) continue;                   // skip blendif channels not used in this color space
+
+    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
-      result = (blendif & (1<<(ch+16))) ? 0.0f : result;
+      result *= !(blendif & (1<<(ch+16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
       continue;
     }
 
@@ -1718,9 +1725,10 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   }
   else
   {
-    //we fill the buffer with 1.0f
+    //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+    const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     const int buffsize = roi_out->width*roi_out->height;
-    for (int i=0; i<buffsize; i++) mask[i] = 1.0f;
+    for (int i=0; i<buffsize; i++) mask[i] = fill;
   }
   
   if (!(blend_mode & DEVELOP_BLEND_MASK_FLAG))
@@ -1917,9 +1925,10 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
   else
   {
-    //we fill the buffer with 1.0f
+    //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+    const float fill = (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     const int buffsize = roi_out->width*roi_out->height;
-    for (int i=0; i<buffsize; i++) mask[i] = 1.0f;
+    for (int i=0; i<buffsize; i++) mask[i] = fill;
   }
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);

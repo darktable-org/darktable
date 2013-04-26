@@ -560,6 +560,36 @@ _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
+static void
+_blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+
+  unsigned int toggle_mask = 0;
+
+  switch(data->csp)
+  {
+    case iop_cs_Lab:
+      toggle_mask = DEVELOP_BLENDIF_Lab_MASK << 16;
+      break;
+
+    case iop_cs_rgb:
+      toggle_mask = DEVELOP_BLENDIF_RGB_MASK << 16;
+      break;
+
+    case iop_cs_RAW:
+      toggle_mask = 0;
+      break;
+  }
+
+  module->blend_params->blendif ^= toggle_mask;
+  module->blend_params->mask_combine ^= DEVELOP_COMBINE_INCL;
+  dt_iop_gui_update_blending(module);
+  dt_dev_add_history_item(darktable.develop, module, TRUE);
+}
+
 
 static gboolean
 _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
@@ -833,8 +863,12 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
     g_object_set(G_OBJECT(res), "tooltip-text", _("reset blend mask settings"), (char *)NULL);
 
+    GtkWidget *inv = dtgtk_button_new(dtgtk_cairo_paint_invert, CPF_STYLE_FLAT);
+    g_object_set(G_OBJECT(inv), "tooltip-text", _("invert all channel's polarities"), (char *)NULL);
+
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -900,6 +934,9 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect (G_OBJECT(res), "clicked",
                       G_CALLBACK (_blendop_blendif_reset), module);
+
+    g_signal_connect (G_OBJECT(inv), "clicked",
+                      G_CALLBACK (_blendop_blendif_invert), module);
 
     g_signal_connect (G_OBJECT(bd->lower_polarity), "toggled",
                       G_CALLBACK (_blendop_blendif_polarity_callback), bd);

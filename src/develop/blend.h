@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2011--2012 henrik andersson.
-    copyright (c) 2012 ulrich pegelow.
+    copyright (c) 2012--2013 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,9 +113,32 @@ typedef enum dt_develop_blendif_channels_t
 
   DEVELOP_BLENDIF_active    = 31,
 
-  DEVELOP_BLENDIF_SIZE      = 16
+  DEVELOP_BLENDIF_SIZE      = 16,
+
+  DEVELOP_BLENDIF_Lab_MASK  = 0x3377,
+  DEVELOP_BLENDIF_RGB_MASK  = 0x77FF
 }
 dt_develop_blendif_channels_t;
+
+
+typedef enum dt_develop_blendop_display_mask_t
+{
+  DEVELOP_DISPLAY_NONE      = 0,
+  DEVELOP_DISPLAY_MASK      = 1,
+  DEVELOP_DISPLAY_L         = 2,
+  DEVELOP_DISPLAY_a         = 3,
+  DEVELOP_DISPLAY_b         = 4,
+  DEVELOP_DISPLAY_R         = 5,
+  DEVELOP_DISPLAY_G         = 6,
+  DEVELOP_DISPLAY_B         = 7,
+  DEVELOP_DISPLAY_GRAY      = 8,
+  DEVELOP_DISPLAY_LCH_C     = 9,
+  DEVELOP_DISPLAY_LCH_h     = 10,
+  DEVELOP_DISPLAY_HSL_H     = 11,
+  DEVELOP_DISPLAY_HSL_S     = 12,
+}
+dt_develop_blendop_display_mask_t;
+
 
 /** blend legacy parameters version 1 */
 typedef struct dt_develop_blend_params1_t
