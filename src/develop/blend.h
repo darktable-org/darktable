@@ -41,7 +41,7 @@
 #define DEVELOP_BLEND_AVERAGE				0x05
 #define DEVELOP_BLEND_ADD					  0x06
 #define DEVELOP_BLEND_SUBSTRACT			0x07
-#define DEVELOP_BLEND_DIFFERENCE		0x08
+#define DEVELOP_BLEND_DIFFERENCE		0x08   /* deprecated */
 #define DEVELOP_BLEND_SCREEN				0x09
 #define DEVELOP_BLEND_OVERLAY				0x0A
 #define DEVELOP_BLEND_SOFTLIGHT			0x0B
@@ -53,9 +53,10 @@
 #define DEVELOP_BLEND_CHROMA				0x11
 #define DEVELOP_BLEND_HUE				    0x12
 #define DEVELOP_BLEND_COLOR				  0x13
-#define DEVELOP_BLEND_INVERSE				0x14
+#define DEVELOP_BLEND_INVERSE				0x14   /* deprecated */
 #define DEVELOP_BLEND_UNBOUNDED     0x15
 #define DEVELOP_BLEND_COLORADJUST   0x16
+#define DEVELOP_BLEND_DIFFERENCE2   0x17
 
 
 #define DEVELOP_MASK_DISABLED       0x00
@@ -246,6 +247,14 @@ typedef struct dt_iop_gui_blendif_colorstop_t
 dt_iop_gui_blendif_colorstop_t;
 
 
+/** container to deal with deprecated blend modes in gui */
+typedef struct dt_iop_blend_mode_t
+{
+  char name[128];
+  unsigned int mode;
+}
+dt_iop_blend_mode_t;
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
@@ -259,6 +268,7 @@ typedef struct dt_iop_gui_blend_data_t
   GList *blend_modes;
   GList *masks_modes;
   GList *masks_combine;
+  GList *blend_modes_deprecated;
   GtkWidget *iopw;
   GtkVBox *top_box;
   GtkVBox *bottom_box;

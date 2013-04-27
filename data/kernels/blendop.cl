@@ -44,6 +44,7 @@
 #define DEVELOP_BLEND_INVERSE				0x14
 #define DEVELOP_BLEND_UNBOUNDED                         0x15
 #define DEVELOP_BLEND_COLORADJUST                       0x16
+#define DEVELOP_BLEND_DIFFERENCE2                       0x17
 
 #define DEVELOP_MASK_DISABLED       0x00
 #define DEVELOP_MASK_ENABLED        0x01
@@ -420,6 +421,13 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o = clamp(la * (1.0f - opacity) + fabs(la - lb) * opacity, lmin, lmax) - fabs(min);
       break;
 
+    case DEVELOP_BLEND_DIFFERENCE2:
+      to = fabs(a - b) / fabs(max - min);
+      to.x = fmax(to.x, fmax(to.y, to.z));
+      o = clamp(la * (1.0f - opacity) + to * opacity, lmin, lmax);
+      o.y = o.z = 0.0f;
+      break;
+
     case DEVELOP_BLEND_SCREEN:
       o = clamp(la * (1.0f - opacity) + (lmax - (lmax - la) * (lmax - lb)) * opacity, lmin, lmax) - fabs(min);
       if (a.x > 0.01f)
@@ -647,6 +655,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_DIFFERENCE:
+    case DEVELOP_BLEND_DIFFERENCE2:
       o = clamp(la * (1.0f - opacity) + fabs(la - lb) * opacity, lmin, lmax) - fabs(min);
       break;
 
@@ -774,6 +783,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       break;
 
     case DEVELOP_BLEND_DIFFERENCE:
+    case DEVELOP_BLEND_DIFFERENCE2:
       o = clamp(la * (1.0f - opacity) + fabs(la - lb) * opacity, lmin, lmax) - fabs(min);
       break;
 

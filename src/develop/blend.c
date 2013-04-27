@@ -692,8 +692,7 @@ static void _blend_substract(dt_iop_colorspace_type_t cst,const float *a, float 
 }
 
 
-
-/* difference */
+/* difference (deprecated) */
 static void _blend_difference(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
 {
   float ta[3], tb[3];
@@ -727,6 +726,63 @@ static void _blend_difference(dt_iop_colorspace_type_t cst,const float *a, float
         la = CLAMP_RANGE(ta[2]+fabs(min[2]), lmin, lmax);
         lb = CLAMP_RANGE(tb[2]+fabs(min[2]), lmin, lmax);
         tb[2] = CLAMP_RANGE( (la * (1.0f - local_opacity)) + ( fabs(la - lb) * local_opacity), lmin, lmax)-fabs(min[2]);
+      }
+      else
+      {
+        tb[1] = ta[1];
+        tb[2] = ta[2];
+      }
+
+      _blend_Lab_rescale(tb, &b[j]);
+    }
+    else
+    {
+      for(int k=0; k<channels; k++)
+      {
+        lmax = max[k]+fabs(min[k]);
+        la = a[j+k]+fabs(min[k]);
+        lb = b[j+k]+fabs(min[k]);
+
+        b[j+k] =  CLAMP_RANGE( (la * (1.0f - local_opacity)) + ( fabs(la - lb) * local_opacity), lmin, lmax)-fabs(min[k]);
+      }
+    }
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+  // return fabs(a-b);
+}
+
+
+/* difference 2 (new) */
+static void _blend_difference2(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+  float max[4]= {0},min[4]= {0};
+  float lmin = 0.0, lmax, la, lb;
+
+  _blend_colorspace_channel_range(cst,min,max);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_Lab)
+    {
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
+
+      tb[0] = fabs(ta[0] - tb[0]) / fabs(max[0] - min[0]);
+      tb[1] = fabs(ta[1] - tb[1]) / fabs(max[1] - min[1]);
+      tb[2] = fabs(ta[2] - tb[2]) / fabs(max[2] - min[2]);
+      tb[0] = fmaxf(tb[0], fmaxf(tb[1], tb[2]));
+
+      tb[0] = CLAMP_RANGE(ta[0] * (1.0f - local_opacity) + tb[0] * local_opacity, min[0], max[0]);
+
+      if (flag == 0)
+      {
+        tb[1] = 0.0f;
+        tb[2] = 0.0f;
       }
       else
       {
@@ -1656,6 +1712,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_DIFFERENCE:
       blend = _blend_difference;
+      break;
+    case DEVELOP_BLEND_DIFFERENCE2:
+      blend = _blend_difference2;
       break;
     case DEVELOP_BLEND_SCREEN:
       blend = _blend_screen;

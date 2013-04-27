@@ -1008,6 +1008,8 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   g_list_free(bd->blend_modes);
   g_list_free(bd->masks_modes);
   g_list_free(bd->masks_combine);
+  g_list_foreach(bd->blend_modes_deprecated, (GFunc)g_free, NULL);
+  g_list_free(bd->blend_modes_deprecated);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 
@@ -1026,7 +1028,40 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   darktable.gui->reset = 1;
 
   dt_bauhaus_combobox_set(bd->masks_modes_combo, g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode)));
-  dt_bauhaus_combobox_set(bd->blend_modes_combo, g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode)));
+
+  /* special handling of deprecated blend modes */
+  int blend_mode_number = g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode));
+  if(blend_mode_number < 0)
+  {
+    GList *deprecated_list = bd->blend_modes_deprecated;
+
+    while(deprecated_list)
+    {
+      dt_iop_blend_mode_t *bm = (dt_iop_blend_mode_t *)deprecated_list->data;
+      if(bm->mode == module->blend_params->blend_mode)
+      {
+        dt_bauhaus_combobox_add(bd->blend_modes_combo, bm->name);
+        bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(bm->mode));
+        break;
+      }
+      deprecated_list = g_list_next(deprecated_list);
+    }
+
+    if(deprecated_list)
+    {
+      /* found it and added it to combobox, now find entry number */
+      blend_mode_number = g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode));
+    }
+    else
+    {
+      /* should never happen: unknown blend mode */
+      dt_control_log("unknown blend mode '%d' in module '%s'", module->blend_params->blend_mode, module->op);
+      blend_mode_number = 0;
+    }
+  }
+
+  dt_bauhaus_combobox_set(bd->blend_modes_combo, blend_mode_number);
+
   dt_bauhaus_combobox_set(bd->masks_combine_combo, g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine)));
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
   dt_bauhaus_slider_set(bd->radius_slider, module->blend_params->radius);
@@ -1120,6 +1155,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_modes = NULL;
     bd->blend_modes = NULL;
     bd->masks_combine = NULL;
+    bd->blend_modes_deprecated = NULL;
 
     bd->masks_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_modes_combo, _("blend"));
@@ -1159,9 +1195,6 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("normal"));
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_NORMAL));
 
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("inverse"));
-    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_INVERSE));
-
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("lighten"));
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_LIGHTEN));
 
@@ -1181,7 +1214,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_SUBSTRACT));
 
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("difference"));
-    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_DIFFERENCE));
+    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_DIFFERENCE2));
 
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("screen"));
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_SCREEN));
@@ -1226,6 +1259,20 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_blend_mode_callback), bd);
+
+
+    /** deprecated blend modes: make them available if legacy history stacks want them */
+    dt_iop_blend_mode_t *bm;
+    bm = g_malloc(sizeof(dt_iop_blend_mode_t));
+    strncpy(bm->name, _("difference (deprecated)"), 128);
+    bm->mode = DEVELOP_BLEND_DIFFERENCE;
+    bd->blend_modes_deprecated = g_list_append(bd->blend_modes_deprecated , bm);
+
+    bm = g_malloc(sizeof(dt_iop_blend_mode_t));
+    strncpy(bm->name, _("inverse (deprecated)"), 128);
+    bm->mode = DEVELOP_BLEND_INVERSE;
+    bd->blend_modes_deprecated = g_list_append(bd->blend_modes_deprecated , bm);
+
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
