@@ -108,6 +108,9 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data);
+static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_group,
+    GObject *aceeleratable, guint keyval,
+    GdkModifierType modifier, gpointer data);
 
 /* drag'n'drop callbacks */
 static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
@@ -167,6 +170,14 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "color green"), GDK_F3, 0);
   dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_F4, 0);
   dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_F5, 0);
+
+  /* setup selection accelerators */
+  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_a, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_i, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
+
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -252,6 +263,34 @@ void connect_key_accels(dt_lib_module_t *self)
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
       (gpointer)4,NULL));
+
+  // Selection accels
+  dt_accel_connect_lib(
+    self, "select all",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
+      (gpointer)0, NULL));
+  dt_accel_connect_lib(
+    self, "select none",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
+      (gpointer)1, NULL));
+  dt_accel_connect_lib(
+    self, "invert selection",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
+      (gpointer)2, NULL));
+  dt_accel_connect_lib(
+    self, "select film roll",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
+      (gpointer)3, NULL));
+  dt_accel_connect_lib(
+    self, "select untouched",
+    g_cclosure_new(
+      G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
+      (gpointer)4, NULL));
+
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -834,6 +873,33 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   /* redraw filmstrip */
   if(darktable.view_manager->proxy.filmstrip.module)
     gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+  return TRUE;
+}
+
+static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+    guint keyval, GdkModifierType modifier, gpointer data)
+{
+  switch((long int)data)
+  {
+    case 0:  // all
+      dt_selection_select_all(darktable.selection);
+      break;
+    case 1: // none
+      dt_selection_clear(darktable.selection);
+      break;
+    case 2: // invert
+      dt_selection_invert(darktable.selection);
+      break;
+    case 4: // untouched
+      dt_selection_select_unaltered(darktable.selection);
+      break;
+    default: // case 3: same film roll
+      dt_selection_select_filmroll(darktable.selection);
+  }
+
+  if(darktable.view_manager->proxy.filmstrip.module)
+    gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+
   return TRUE;
 }
 
