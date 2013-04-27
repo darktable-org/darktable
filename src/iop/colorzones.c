@@ -187,6 +187,21 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->strength = 0.0;
     return 0;
   }
+  if (old_version == 2 && new_version == 3)
+  {
+    const dt_iop_colorzones_params2_t *old = old_params;
+    dt_iop_colorzones_params_t *new = new_params;
+    new->channel = old->channel;
+
+    for (int b=0; b<DT_IOP_COLORZONES_BANDS; b++)
+      for (int c=0; c<3; c++)
+      {
+        new->equalizer_x[c][b] = old->equalizer_x[c][b];
+        new->equalizer_y[c][b] = old->equalizer_y[c][b];
+      }
+    new->strength = 0.0;
+    return 0;
+  }
   return 1;
 }
 
