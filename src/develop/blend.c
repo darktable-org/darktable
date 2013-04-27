@@ -2149,7 +2149,7 @@ tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
 int
 dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
 {  
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
