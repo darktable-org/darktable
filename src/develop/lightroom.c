@@ -55,6 +55,13 @@ typedef struct dt_iop_clipping_params_t
 }
 dt_iop_clipping_params_t;
 
+#define LRDT_FLIP_VERSION 1
+typedef struct dt_iop_flip_params_t
+{
+  int32_t orientation;
+}
+dt_iop_flip_params_t;
+
 #define LRDT_EXPOSURE_VERSION 2
 typedef struct dt_iop_exposure_params_t
 {
@@ -503,6 +510,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   dt_iop_clipping_params_t pc;
   memset(&pc, 0, sizeof(pc));
   gboolean has_crop = FALSE;
+
+  dt_iop_flip_params_t pf;
+  memset(&pf, 0, sizeof(pf));
   gboolean has_flip = FALSE;
 
   dt_iop_exposure_params_t pe;
@@ -1080,7 +1090,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     refresh_needed=TRUE;
   }
 
-  if (dev != NULL && (has_crop || has_flip))
+  if (dev != NULL && has_crop)
   {
     pc.k_sym = 0;
     pc.k_apply = 0;
@@ -1151,6 +1161,43 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
 
     dt_add_hist (imgid, "clipping", (dt_iop_params_t *)&pc, sizeof(dt_iop_clipping_params_t), imported, LRDT_CLIPPING_VERSION, &n_import);
+    refresh_needed=TRUE;
+  }
+
+  if (dev != NULL && (!has_crop && has_flip))
+  {
+    pf.orientation = 0;
+
+    if (iwidth < iheight)
+      switch (orientation)
+      {
+      case 8: pf.orientation = 0; break;
+      case 3: pf.orientation = 5; break;
+      case 6: pf.orientation = 3; break;
+      case 1: pf.orientation = 6; break;
+
+        // with horizontal flip
+      case 7: pf.orientation = 1; break;
+      case 2: pf.orientation = 4; break;
+      case 5: pf.orientation = 2; break;
+      case 4: pf.orientation = 7; break;
+      }
+    else
+      switch (orientation)
+      {
+      case 8: pf.orientation = 5; break;
+      case 3: pf.orientation = 3; break;
+      case 6: pf.orientation = 6; break;
+      case 1: pf.orientation = 0; break;
+
+        // with horizontal flip
+      case 7: pf.orientation = 7; break;
+      case 2: pf.orientation = 1; break;
+      case 5: pf.orientation = 4; break;
+      case 4: pf.orientation = 2; break;
+      }
+
+    dt_add_hist (imgid, "flip", (dt_iop_params_t *)&pf, sizeof(dt_iop_flip_params_t), imported, LRDT_FLIP_VERSION, &n_import);
     refresh_needed=TRUE;
   }
 
