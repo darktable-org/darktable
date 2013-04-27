@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="final" id="module groups"><title>Module groups</title>
+	<sect2 status="final" id="module_groups"><title>Module groups</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -34,28 +34,28 @@
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Favorites</entry>
-                           <entry>Modules you have marked as favorites using <emphasis>more modules</emphasis> (see <xref linkend="more modules"/>).</entry>
+                           <entry>Modules you have marked as favorites using <emphasis>more modules</emphasis> (see <xref linkend="more_modules"/>).</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Basic</entry>
                            <entry>Modules that are frequently used, such as exposure, temperature etc.
-                                  (see <xref linkend="basic group"/>).</entry>
+                                  (see <xref linkend="basic_group"/>).</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Tone</entry>
-                           <entry>Modules for working with the image's tonal values, e.g. levels, tonemap etc. (see <xref linkend="tone group"/>).</entry>
+                           <entry>Modules for working with the image's tonal values, e.g. levels, tonemap etc. (see <xref linkend="tone_group"/>).</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Color</entry>
-                           <entry>Modules for processing colors, such as color correction, vibrance etc. (see <xref linkend="color group"/>).</entry>
+                           <entry>Modules for processing colors, such as color correction, vibrance etc. (see <xref linkend="color_group"/>).</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Correction</entry>
-                           <entry>Modules making corrections to the image, e.g. denoise, CA correction etc. (see <xref linkend="correction group"/>).</entry>
+                           <entry>Modules making corrections to the image, e.g. denoise, CA correction etc. (see <xref linkend="correction_group"/>).</entry>
                       </row>
 		      <row><entry><graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" /></entry>
                            <entry>Effect</entry>
-                           <entry>Modules with a more artistic output, such as vignetting, softening etc. (see <xref linkend="effect group"/>).</entry>
+                           <entry>Modules with a more artistic output, such as vignetting, softening etc. (see <xref linkend="effect_group"/>).</entry>
                       </row>
 		    </tbody>
 		  </tgroup>
@@ -68,8 +68,8 @@
                 </para>
                 <para>For those who are interested here is some information about darktable's internals: The long list helps you to figure out in which color 
                       space a specific module acts. In fact there are only three modules which convert from one color space to another:
-                      <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input color profile"><emphasis>input color profile</emphasis></link> and
-                      <link linkend="output color profile"><emphasis>output color profile</emphasis></link>.
+                      <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input_color_profile"><emphasis>input color profile</emphasis></link> and
+                      <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>.
                 </para>
 
 		<para>

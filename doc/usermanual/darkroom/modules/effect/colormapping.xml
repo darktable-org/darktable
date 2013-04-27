@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="draft" id="color mapping"><title>Color mapping</title>
+<sect3 status="draft" id="color_mapping"><title>Color mapping</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -38,9 +38,9 @@
 
                 <para>When both source and target clusters are collected an automatic color mapping is applied to the target image. In its default settings the overall 
                       effect is quite exaggerated. A set of sliders gives you control of the effect's strength. You can also use blending operator <quote>normal</quote>
-                      to tame the effect (see <xref linkend="blending operators"/>).  As the <emphasis>color mapping</emphasis> module comes early in the pixelpipe, you can 
-                      finetune the colors with modules like <emphasis>tone curve</emphasis> (see <xref linkend="tone curve"/>) or 
-                      <emphasis>color correction</emphasis> (see <xref linkend="color correction"/>).</para>
+                      to tame the effect (see <xref linkend="blending_operators"/>).  As the <emphasis>color mapping</emphasis> module comes early in the pixelpipe, you can 
+                      finetune the colors with modules like <emphasis>tone curve</emphasis> (see <xref linkend="tone_curve"/>) or 
+                      <emphasis>color correction</emphasis> (see <xref linkend="color_correction"/>).</para>
 
 
                 <sect5><title>acquire as source/target</title>

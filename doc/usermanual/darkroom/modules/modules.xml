@@ -20,7 +20,7 @@
         </para>
         <para>         
                Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> accesses the
-               module's available presets or creates a new preset from your current settings (see <xref linkend="module presets"/>).
+               module's available presets or creates a new preset from your current settings (see <xref linkend="module_presets"/>).
         </para>
         <para> 
                The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values.
@@ -28,7 +28,7 @@
         <para>
                Many of darktable's modules can have multiple instances, each with different settings. Click on the 
               <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> icon to generate new instances and control
-               existing ones (see <xref linkend="multiple instances"/>).
+               existing ones (see <xref linkend="multiple_instances"/>).
 	</para>
 	<sect2 status="final"><title>Interacting with modules</title>
            <para>The most frequently used control elements are sliders, comboboxes and curves.

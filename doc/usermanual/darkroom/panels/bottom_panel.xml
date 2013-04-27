@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="final" id="darkroom bottom panel"><title>Bottom panel</title>
+	<sect2 status="final" id="darkroom_bottom_panel"><title>Bottom panel</title>
             <para>The bottom panel provides quick access to apply presets and styles to your image and allows to activate
                   the over/underexposure warning.
             </para>

@@ -1,4 +1,4 @@
-<sect1 status="final" id="darktable and opencl"><title>darktable and OpenCL</title>
+<sect1 status="final" id="darktable_and_opencl"><title>darktable and OpenCL</title>
 	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
 
 	<sect2 status="final"><title>The background</title>
@@ -48,16 +48,16 @@
                       is finished.</para>
 
 		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in <quote>core options</quote> 
-                      (<xref linkend="core options"/>) by unchecking <quote>activate opencl support</quote>. This configuration parameter also tells you if OpenCL initialization failed: it is 
+                      (<xref linkend="core_options"/>) by unchecking <quote>activate opencl support</quote>. This configuration parameter also tells you if OpenCL initialization failed: it is 
                       greyed out in that case.</para>
 
 		<para>You can at any time switch OpenCL support off and on; this will happen immediately. Depending on the type of modules you are using, you will notice 
                       the effect as a general speed-up during interactive work and during export. Most modules in darktable can take advantage of OpenCL but not all modules 
                       are demanding enough to make a noticeable difference. In order to feel a real difference, take modules like 
-                      <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>, 
+                      <link linkend="shadows_and_highlights"><emphasis>shadows and highlights</emphasis></link>, 
                       <link linkend="sharpen"><emphasis>sharpen</emphasis></link>, <link linkend="lowpass"><emphasis>lowpass</emphasis></link>, 
                       <link linkend="lowpass"><emphasis>highpass</emphasis></link> or even more extreme <link linkend="equalizer"><emphasis>equalizer</emphasis></link>
-                      and <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>.</para>
+                      and <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>.</para>
 
 		<para>If you are interested in profiling figures, you can start darktable with command line parameters <quote>-d opencl -d perf</quote>. After each run of the pixelpipe you 
                       will get a detailed allocation of processing time to each module plus an even more fine grained profile for all used OpenCL kernels.</para>
@@ -139,9 +139,9 @@ darktable -d opencl
 		<sect4><title>opencl_avoid_atomics</title>
                       <para>Atomic operations in OpenCL are a special way of data synchronization. They are only used in a few kernels. Unfortunately, some (most?) AMD/ATI devices 
                       are extremely slow in processing atomics. It's better to process the affected modules on CPU rather than accepting an ultra-slow GPU codepath. Set this 
-                      parameter to TRUE if you experience slow processing of modules like <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>, 
-                      <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, <link linkend="local contrast"><emphasis>local contrast</emphasis></link>,
-                      or <link linkend="global tonemap"><emphasis>global tonemap</emphasis></link> or if you even get intermittent system freezes.</para>
+                      parameter to TRUE if you experience slow processing of modules like <link linkend="shadows_and_highlights"><emphasis>shadows and highlights</emphasis></link>, 
+                      <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, <link linkend="local_contrast"><emphasis>local contrast</emphasis></link>,
+                      or <link linkend="global_tonemap"><emphasis>global tonemap</emphasis></link> or if you even get intermittent system freezes.</para>
                 </sect4>
         </sect2>
 

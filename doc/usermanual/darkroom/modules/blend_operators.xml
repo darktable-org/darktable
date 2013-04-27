@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="final" id="blending operators"><title>Blending operators</title>
+	<sect2 status="final" id="blending_operators"><title>Blending operators</title>
 		<para>Blending is a functionality that works on a per-module basis by reprocessing a module's output with its input in
                       various ways.
 		</para>
@@ -34,7 +34,7 @@
 
 		        <sect5><title>inverse</title>
 				<para>This blend mode acts similarly to blend mode <quote>normal</quote>, only that the role of input and output of the
-        	                      current module are reversed. Tip: This can be used together with conditional blending (<xref linkend="conditional blending"/>) to
+        	                      current module are reversed. Tip: This can be used together with conditional blending (<xref linkend="conditional_blending"/>) to
         	                      get the effect of an inversed blend mask.
         	                </para>			
 			</sect5>
@@ -44,7 +44,7 @@
         	                      clamped to a particular min/max value range unlike all other blend modes which do
         	                      clamp their input and output. In some cases (e.g. highly color saturated extreme highlights) it is 
         	                      important to  let unbound values travel through the pixelpipe in order to properly deal with them at 
-        	                      the right place (e.g. in module <link linkend="output color profile"><emphasis>output color profile</emphasis></link>).
+        	                      the right place (e.g. in module <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>).
 	                        </para>			
 	                </sect5>
 
@@ -77,7 +77,7 @@
 
 			<sect5><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments,
-                                      e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tone curve">
+                                      e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tone_curve">
                                       <emphasis>tone curve</emphasis></link>. This blend mode takes the 
                                       lightness only from output data and mixes colors from input and output enabling control of the module's 
                                       color adjustments.
@@ -98,7 +98,7 @@
 	        <sect4><title>blend if</title>
         	        <para>Most modules offer additional control with a user-defined blend mask. In order to activate these
         	              controls you need to switch from <quote>blend uniformily</quote> to <quote>blend only, if..</quote>. More details on conditional blending
-        	              are given in a separate chapter (<xref linkend="conditional blending"/>).
+        	              are given in a separate chapter (<xref linkend="conditional_blending"/>).
         	        </para>
 	        </sect4>
                 </sect3>

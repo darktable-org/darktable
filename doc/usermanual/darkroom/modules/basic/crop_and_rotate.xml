@@ -1,4 +1,4 @@
-<sect3 status="final" id="crop and rotate"><title>Crop and rotate</title>
+<sect3 status="final" id="crop_and_rotate"><title>Crop and rotate</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -21,7 +21,7 @@
         <sect4>
                <para>Some of the tools of this module, namely adjustment of angle and corrections of perspective distortion, will require the 
                      original image data to be interpolated. For best sharpness results set <quote>lanczos3</quote> as pixel interpolator 
-                     in <emphasis>core options</emphasis> (see <xref linkend="core options"/>).
+                     in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>).
                </para>
 
         </sect4>

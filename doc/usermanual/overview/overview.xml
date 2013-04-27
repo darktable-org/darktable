@@ -5,7 +5,7 @@
 		%darktable_dtd;
 		]>
 
-<chapter status="final" id="overview chapter">
+<chapter status="final" id="overview_chapter">
 	<chapterinfo>
 		<keywordset>
 			<keyword>darktable</keyword>
@@ -88,7 +88,7 @@
 	</itemizedlist>
 		
 		
-	<sect1 status="final" id="user interface"><title>User interface</title>
+	<sect1 status="final" id="user_interface"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='6*'/>
 					<colspec colwidth='4*'/>
@@ -131,24 +131,24 @@
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
 				<para>The lighttable view is where images and filmrolls are managed. It's also where you rate images, add tags and  
-                                      colorlabels, and export images among other actions (see <xref linkend="lighttable chapter"/>).
+                                      colorlabels, and export images among other actions (see <xref linkend="lighttable_chapter"/>).
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Darkroom</title>
-				<para>In the darkroom view you develop a single image using the available modules (see <xref linkend="darkroom chapter"/>).
+				<para>In the darkroom view you develop a single image using the available modules (see <xref linkend="darkroom_chapter"/>).
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Tethering</title>
 				<para>This view is for shooting with the camera connected to the computer and remotely capturing images that will be downloaded and shown on 
-                                      computer screen (see <xref linkend="tethering chapter"/>).
+                                      computer screen (see <xref linkend="tethering_chapter"/>).
 				</para>
 			</sect3>
 			<sect3 status="final"><title>Map</title>
-				<para>This view shows images with geo-tag data on a map and allows manually geo-tagging new images (see <xref linkend="map chapter"/>).
+				<para>This view shows images with geo-tag data on a map and allows manually geo-tagging new images (see <xref linkend="map_chapter"/>).
 				</para>
 			</sect3>
                </sect2>
-               <sect2 status="final" id="screen layout"><title>Screen layout</title>
+               <sect2 status="final" id="screen_layout"><title>Screen layout</title>
                         <para>The general screen layout of all views is similar. There is a center area which contains most of the relevant information of that view. Then there are panels left,
                         right, top and bottom to the center area. The left panel typically has an informational purpose. The right panel offers functions to modify an image. The top 
                         and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle like
@@ -163,7 +163,7 @@
                         and darktable's lightness by using <emphasis>F9</emphasis> and <emphasis>F10</emphasis>.
                         </para>
                </sect2>
-               <sect2 status="final" id="filmstrip overview"><title>Filmstrip</title>
+               <sect2 status="final" id="filmstrip_overview"><title>Filmstrip</title>
 			<para>The filmstrip along the bottom shows the same images as lighttable, with respect to filters and sort order. It is turned on/off with key accelerator <emphasis>ctrl-f</emphasis>.
 		  	You can navigate along the filmstrip by scrolling with the mouse wheel.
 			The filmstrip allows you to interact with images while you are not in lighttable mode. For example, you can, while developing an image in darkroom mode,
@@ -177,13 +177,13 @@
                         which control darktable's behavior.
 			</para>
 			<para>The options are fairly self-explanatory. If you need more information, hover the mouse cursor over the text label or entry box, to display a popup tool-tip. 
-                              All configuration parameters are explained in <xref linkend="preferences chapter"/>.
+                              All configuration parameters are explained in <xref linkend="preferences_chapter"/>.
 			</para>
 		</sect2>
 	</sect1>
 
 
-	<sect1 status="final" id="darktable basic workflow"><title>darktable basic workflow</title>
+	<sect1 status="final" id="darktable_basic_workflow"><title>darktable basic workflow</title>
 		<sect2 status ="final"><title>Importing images</title>
 			<para>To begin with darktable, you first need to import images. The import module is in the left pane of the lighttable
                                 view (<xref linkend="import"/>). You can either import
@@ -203,7 +203,7 @@
 			</sect3>
 		</sect2>
 
-		<sect2 status="final" id="basic development steps"><title>Basic development steps</title>
+		<sect2 status="final" id="basic_development_steps"><title>Basic development steps</title>
 			<sect3><title>Introduction</title>
 				<para>This section will guide you through the basics of developing an image in the darkroom view.
 				</para>
@@ -233,7 +233,7 @@
 					There are also two special module groups named <quote>active</quote> and <quote>favorites</quote>, which only show modules enabled in 
                                         the history for the current image, and modules selected as a favorite, respectively. Marking a module as a favorite 
                                         is done in the <emphasis>more modules</emphasis> 
-                                        dialog (<xref linkend="more modules"/>), 
+                                        dialog (<xref linkend="more_modules"/>), 
                                         at the bottom of the right panel, by clicking a module until a star is displayed in front of the icon.
 				</para>
 			</sect3>
@@ -255,21 +255,21 @@
 			</sect3>
 
   	         	<sect3 status="final"><title>Noise reduction</title>
-           			<para>The best starting point for noise reduction is <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>. This module offers 
+           			<para>The best starting point for noise reduction is <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>. This module offers 
                                       an almost <quote>single-click</quote> solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both 
                                       derived from EXIF data. All other settings are taken from
                                       a database of noise profiles that the darktable team has collected - now covering already over 70 popular camera models.
-                                      In addition you have several other options in darktable to reduce noise. There is <link linkend="raw denoise"><emphasis>raw denoise</emphasis></link>, 
-                                      <link linkend="denoise bilateral"><emphasis>denoising based on bilateral filter</emphasis></link>, <link linkend="denoise non local means">
+                                      In addition you have several other options in darktable to reduce noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>, 
+                                      <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral filter</emphasis></link>, <link linkend="denoise_non_local_means">
                                       <emphasis>denoising based on non-local means</emphasis></link>, and <link linkend="equalizer"><emphasis>equalizer</emphasis></link>, which is based on wavelets. 
-                                      If your camera is not yet supported by <link linkend="denoise profiled"><emphasis>profiled denoise</emphasis></link>,
-                                      <link linkend="denoise non local means"><emphasis>denoising based on non-local means</emphasis></link> is probably the most convenient, as it allows you 
+                                      If your camera is not yet supported by <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>,
+                                      <link linkend="denoise_non_local_means"><emphasis>denoising based on non-local means</emphasis></link> is probably the most convenient, as it allows you 
                                       to treat color and luminance noise separately.
                                 </para>
 			</sect3>
 
 			<sect3 status="final"><title>Fixing spots</title>
-				<para>Sometimes you will need to remove spots caused by sensor dirt. The <link linkend="spot removal"><emphasis>spot removal</emphasis></link> 
+				<para>Sometimes you will need to remove spots caused by sensor dirt. The <link linkend="spot_removal"><emphasis>spot removal</emphasis></link> 
                                       module is at hand and can also correct other disturbing elements like skin blemishes. If your camera has stuck
                                       pixels or tends to produce hot pixels at high ISO values, or longer exposure times, have a look at the
                                       <link linkend="hotpixels"><emphasis>hot pixels</emphasis></link> module for automatic correction.
@@ -280,18 +280,18 @@
 				<para>Quite frequently you want to only show part of the captured scene in your image, e.g. to 
                                       take away some disturbing feature close to the frame. In other cases, the horizon in the image 
                                       may need levelling, or there are perspective distortions. All this can be corrected in 
-                                      the <link linkend="crop and rotate"><emphasis>crop and rotate</emphasis></link> module. If you need to correct typical camera lens flaws
+                                      the <link linkend="crop_and_rotate"><emphasis>crop and rotate</emphasis></link> module. If you need to correct typical camera lens flaws
                                       like cushion distortion, transversal chromatic aberrations or vignetting, there is a 
-                                      <link linkend="lens correction"><emphasis>lens correction</emphasis></link> module.
+                                      <link linkend="lens_correction"><emphasis>lens correction</emphasis></link> module.
 				</para>
 			</sect3>
 
 			<sect3 status="final"><title>Bringing back detail</title>
 				<para>Digital RAW images often contain more information than you can see at first sight. Especially 
-                                      in the shadows of an image, there are lots of hidden details. The <link linkend="shadows and highlights"><emphasis>shadows and highlights</emphasis></link>
+                                      in the shadows of an image, there are lots of hidden details. The <link linkend="shadows_and_highlights"><emphasis>shadows and highlights</emphasis></link>
                                       module helps bring these details back into visible tonal values. Structural details in fully blown-out highlights, by nature of the digital sensor, can not 
                                       be recovered. However, you can correct unfavorable color casts in these areas with the 
-                                      <link linkend="highlight reconstruction"><emphasis>highlight reconstruction</emphasis></link> module.
+                                      <link linkend="highlight_reconstruction"><emphasis>highlight reconstruction</emphasis></link> module.
 				</para>
 			</sect3>
 
@@ -299,9 +299,9 @@
 				<para>Almost each workflow will cover as one basic element the adjustment of 
                                       global contrast. You will want to control how the image tonal values cover the available range of your output 
                                       medium. darktable offers several alternative modules to take 
-                                      care of that. In one of them, the <link linkend="tone curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
+                                      care of that. In one of them, the <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
                                       gradient curve. The <link linkend="levels"><emphasis>levels</emphasis></link> module offers a much simpler interface, with just three 
-                                      sliders. In addition, there is a <link linkend="zone system"><emphasis>zone system</emphasis></link> module which allows control over tonal values
+                                      sliders. In addition, there is a <link linkend="zone_system"><emphasis>zone system</emphasis></link> module which allows control over tonal values
                                       by zones, inspired by the work of Ansel Adams.
 				</para>
 			</sect3>
@@ -309,7 +309,7 @@
 			<sect3 status="final"><title>Enhancing local contrast</title>
 				<para>Local contrast enhancement can emphasize detail and clarity in your image. Carefully used, it can give your 
                                       photograph the right pop. darktable offers several modules for this task. 
-                                      The <link linkend="local contrast"><emphasis>local contrast</emphasis></link> module is 
+                                      The <link linkend="local_contrast"><emphasis>local contrast</emphasis></link> module is 
                                       easy to handle, with just a few parameters. A much more versatile, but also more complex 
                                       technique, is offered by the <link linkend="equalizer"><emphasis>equalizer</emphasis></link> module. Have a look at its presets,
                                       to get a feeling for how it works. Equalizer is darktable's "Swiss Army Knife" for many adjustments where spatial dimension
@@ -319,14 +319,14 @@
 
 			<sect3 status="final"><title>Color adjustments</title>
 				<para>darktable offers many modules for adjusting colors in an image. A very straightforward technique is 
-                                      implemented in the <link linkend="color correction"><emphasis>color correction</emphasis></link> module. Use it to give an image an 
-                                      overall tint or to adjust overall color saturation. The <link linkend="color zones"><emphasis>color zones</emphasis></link> module offers 
+                                      implemented in the <link linkend="color_correction"><emphasis>color correction</emphasis></link> module. Use it to give an image an 
+                                      overall tint or to adjust overall color saturation. The <link linkend="color_zones"><emphasis>color zones</emphasis></link> module offers 
                                       a much finer control to adjust saturation, or lightness, 
-                                      and even hue, in user defined zones. darktable's <link linkend="tone curve"><emphasis>tone curve</emphasis></link> module - in addition to the 
+                                      and even hue, in user defined zones. darktable's <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module - in addition to the 
                                       classical adjustment of tonal values - gives you fine control over the colors in an image. 
                                       Finally, if you intend to convert an image into black &amp; white, a good starting point, with an 
                                       easy to use and intuitive user interface, is offered by the <link linkend="monochrome"><emphasis>monochrome</emphasis></link> module. Alternatively,
-                                      you might consider using darktable's <link linkend="channel mixer"><emphasis>channel mixer</emphasis></link>.
+                                      you might consider using darktable's <link linkend="channel_mixer"><emphasis>channel mixer</emphasis></link>.
 				</para>
 			</sect3>
 
@@ -344,21 +344,21 @@
                                       <link linkend="watermark"><emphasis>watermark</emphasis></link> module you
                                       add an individual watermark to your image. The <link linkend="grain"><emphasis>grain</emphasis></link> 
                                       module simulates the typical noise of classical analogue footage. Use the
-                                      <link linkend="color mapping"><emphasis>color mapping</emphasis></link> module to transfer the look and feel 
-                                      of one color image onto another. darktable's <link linkend="low light"><emphasis>low light</emphasis></link> module allows to 
+                                      <link linkend="color_mapping"><emphasis>color mapping</emphasis></link> module to transfer the look and feel 
+                                      of one color image onto another. darktable's <link linkend="low_light"><emphasis>low light</emphasis></link> module allows to 
                                       simulate human vision to make lowlight pictures look closer to reality. 
-                                      The <link linkend="graduated density"><emphasis>graduated density</emphasis></link> filter adds a neutral
+                                      The <link linkend="graduated_density"><emphasis>graduated density</emphasis></link> filter adds a neutral
                                       or colored gradient to your image for exposure and color correction.
                                 </para>
                         </sect3>
 
 		</sect2>
 
-		<sect2 status="final" id="exporting images"><title>Exporting images</title>
+		<sect2 status="final" id="exporting_images"><title>Exporting images</title>
 			<para>Changes to an image are not saved as in a regular image editor. darktable is a non-destructive editor, which means all changes are stored 
                               in a database, and the original image is untouched. Therefore, you need to export images to bake the processing options into an output
                               file that can be distributed outside of darktable.</para>
-			<para>Images are exported from the lighttable view, using the <emphasis>export selected</emphasis> dialog in the right panel (<xref linkend="export selected"/>). In general, 
+			<para>Images are exported from the lighttable view, using the <emphasis>export selected</emphasis> dialog in the right panel (<xref linkend="export_selected"/>). In general, 
                               export means: save my developed RAW image as a JPEG.</para>
 			<para>The export is modularized into <emphasis>storage</emphasis> and <emphasis>format</emphasis>. darktable ships with several storage modules such as 
                               <emphasis>save on disk</emphasis>, <emphasis>picasa</emphasis> and <emphasis>flickr webalbum</emphasis> and more.

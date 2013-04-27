@@ -3,7 +3,7 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="final" id="conditional blending"><title>Conditional blending</title>
+	<sect2 status="final" id="conditional_blending"><title>Conditional blending</title>
 		<para>Conditional blending offers fine-grained selective control over how individual pixels are blended.
         	      It does so by automatically generating an intermediate blend mask from user defined parameters. These parameters are color 
         	      coordinates not the geometrical coordinates used in conventional hand drawn masks. 
@@ -18,7 +18,7 @@
 	        	      a blending factor between 0 and 1 (or 100%) for that pixel.
 		        </para>
 		        <para>Each pixel of an image thus has different blending factors for each of its data channels (real and virtual). All blending 
-	        	      factors are finally pixel-wise multiplied together with the value of the global opacity slider (see <xref linkend="blending operators"/>) to form a 
+	        	      factors are finally pixel-wise multiplied together with the value of the global opacity slider (see <xref linkend="blending_operators"/>) to form a 
 	        	      blend mask for the image.
 		        </para>
 		        <para>If for a given pixel the blend mask has a value of 0, the input of the module is left unchanged. If for a pixel the

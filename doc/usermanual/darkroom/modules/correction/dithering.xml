@@ -23,11 +23,11 @@
                       when darktable displays or exports the results of a pixelpipe. In order to avoid banding, you may activate this modules.</para>  
 
                 <para>If you export images with a reduced width/height and want best dithering results, please make sure that you de-activate option <quote>do high 
-                      quality resampling during export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>), else the final scaling step will 
+                      quality resampling during export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>), else the final scaling step will 
                       counteract dithering.</para>
 
                 <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
-                      enough :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core options"/>). 
+                      enough :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>). 
                       Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. This is a speed-up option, which only affects monitor display, not file 
                       exports.</para>
 

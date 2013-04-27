@@ -1,4 +1,4 @@
-	<sect2 status="final" id="more modules"><title>More modules</title>
+	<sect2 status="final" id="more_modules"><title>More modules</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -18,7 +18,7 @@
 		<para>Each module is shown with a small icon next to its name.
 		Left-click with your mouse to toggle the status between visible, hidden and favorite. Favorite modules are indicated by 
                 a star in front of the icon and in addition to appearing in their normal module group will also be visible in the module group 
-                <link linkend="module groups"><emphasis>favorites</emphasis></link>.
+                <link linkend="module_groups"><emphasis>favorites</emphasis></link>.
                 This is a good way to get fast access to modules that you use very frequently. Visible modules are indicated in the list
                 by a light grey background whilst hidden modules have a dark grey background and do not display any of their controls.
 		</para>

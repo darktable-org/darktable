@@ -1,4 +1,4 @@
-<sect2 status="final" id="tone group">
+<sect2 status="final" id="tone_group">
   <title>Tone group</title>
   <para>This group contains modules that operate on the tonal values of an image, modulating brightness while leaving
         color values intact.

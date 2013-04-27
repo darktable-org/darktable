@@ -6,7 +6,7 @@
 
 			<para>All filmrolls are available in a list, which can be filtered using the editbox to fast find the filmroll of interest.
 				Double click on a filmroll in the list and it will open in the lighttable.
-				You can also click the items in <emphasis>recently used collections</emphasis> (see <xref linkend="recently used collections"/>) to open the latest 
+				You can also click the items in <emphasis>recently used collections</emphasis> (see <xref linkend="recently_used_collections"/>) to open the latest 
                                 ones you have worked with.
 			</para>
 
@@ -32,7 +32,7 @@
 
                                 </para>
                                 <para>You can
-                                      also apply some metadata during import; see <xref linkend="metadata editor"/> for more details.
+                                      also apply some metadata during import; see <xref linkend="metadata_editor"/> for more details.
 				</para>
 
 				<para>Importing a folder does not mean that darktable copies your images into another folder.
@@ -60,12 +60,12 @@
 						automatically imported into darktable, so you can review the result of the shoot. You can also
 						setup remote capture jobs, controlling the number of images and time between captures, along with camera settings such as exposure time, aperture and more.
 					</para>
-					<para>If supported by your camera, tethering will take you into the capture view for tethered shooting. Read more about tethering in <xref linkend="tethering chapter"/>.
+					<para>If supported by your camera, tethering will take you into the capture view for tethered shooting. Read more about tethering in <xref linkend="tethering_chapter"/>.
                                         </para>
 				</sect4>
 			</sect3>
 
-                        <sect3 status="final" id="supported file formats"><title>Supported file formats</title>
+                        <sect3 status="final" id="supported_file_formats"><title>Supported file formats</title>
                                <para>darktable is focused on managing and developing camera RAW files. It supports a huge number of file formats from various camera manufacturers.
                                      In addition darktable can read specific <emphasis>low dynamic range</emphasis> and <emphasis>high dynamic range</emphasis> images - mainly for 
                                      data exchange between darktable and other software.</para>
