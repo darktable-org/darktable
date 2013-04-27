@@ -1,4 +1,4 @@
-		<sect2 status="final" id="history stack"><title>History stack</title>
+		<sect2 status="final" id="history_stack"><title>History stack</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -50,7 +50,7 @@
 					<para>Opens a dialog box to select an XMP file, thus loading a history stack that you can paste on images.
 					</para>
                                         <para>Files that were exported by darktable contain the full history stack if the file format supports embedded metadata 
-                                              (see <xref linkend="export selected"/>). You can load an exported image as a sidecar file in the same way as you do with an XMP file.
+                                              (see <xref linkend="export_selected"/>). You can load an exported image as a sidecar file in the same way as you do with an XMP file.
                                               This feature allows you to recover all parameter settings in case you have accidentally lost or overwritten the XMP file. 
                                               All you need is the source image, typically a RAW, and the exported file.
                                         </para>
@@ -59,7 +59,7 @@
 				<sect4><title>write sidecar files</title>
 					<para>Write XMP sidecar files for all selected images. By default darktable will
                                               do this automatically whenever you work on an image and change the history stack. You
-                                              can disable automatic sidecar file generation in the preferences dialog (see <xref linkend="core options"/>), which is not
+                                              can disable automatic sidecar file generation in the preferences dialog (see <xref linkend="core_options"/>), which is not
                                               recommended.
 					</para>
 				</sect4>

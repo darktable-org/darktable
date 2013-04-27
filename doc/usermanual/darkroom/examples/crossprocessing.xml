@@ -1,4 +1,4 @@
-<sect2 status="final" id="cross processing"><title>Cross-processing</title>
+<sect2 status="final" id="cross_processing"><title>Cross-processing</title>
 	<sect3 status="final"><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
@@ -32,14 +32,14 @@
 				</para>
 			</listitem>
 			<listitem><para>Boost contrast</para>
-				<para>Select the medium contrast curve preset for <emphasis>tone curve</emphasis> module (<xref linkend="tone curve"/>) to boost the overall contrast
+				<para>Select the medium contrast curve preset for <emphasis>tone curve</emphasis> module (<xref linkend="tone_curve"/>) to boost the overall contrast
 					in the image. You might later return here to tune the curve for better result.
 				</para>
 			</listitem>
 			
 			<listitem><para>Color cast</para>
 				<para>This step changes the color cast as the base for the effect using the <emphasis>channel mixer</emphasis> module
-                                      (<xref linkend="channel mixer"/>).
+                                      (<xref linkend="channel_mixer"/>).
 						You might later again return to this and finetune the colorcast of the final result.
 				</para>
 				<orderedlist>

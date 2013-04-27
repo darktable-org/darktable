@@ -8,7 +8,7 @@
 						<entry>A lowpass filter (eg. gaussian blur) with additional control
 						of the outcome both of contrast and saturation.
 						The primary usage for lowpass filter is in combination with a
-						<emphasis>blending operator</emphasis> (see <xref linkend="blending operators"/>).
+						<emphasis>blending operator</emphasis> (see <xref linkend="blending_operators"/>).
                                                 Try out the preset named <quote>local contrast mask</quote> with an <quote>overlay</quote> blending operation.
 						</entry>
 						<entry>

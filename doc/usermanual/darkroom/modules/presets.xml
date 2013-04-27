@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="final" id="module presets"><title>Module presets</title>
+	<sect2 status="final" id="module_presets"><title>Module presets</title>
 		    <para>
 			    Presets are stored configurations for a module's parameters. Some modules already have internal pre-defined presets but you can also define your own. Both internal 
                             and user-defined presets are displayed by clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon with the
@@ -34,13 +34,13 @@
                             values except for the model field.
 			    </para>
                             <para>Tip: The <emphasis>image information</emphasis> panel for your image displays your model name, use this to ensure you have
-                            the correct spelling (see <xref linkend="image information"/>).
+                            the correct spelling (see <xref linkend="image_information"/>).
                             </para>
 
 	            </sect3>
                     <sect3 status="final"><title>Managing Presets</title>
                            <para>Both user created and pre-defined presets can be viewed and managed from within the presets menu (<xref linkend="presets"/>) in the preferences dialog 
-                                 (see <xref linkend="preferences chapter"/>).
+                                 (see <xref linkend="preferences_chapter"/>).
                            </para>
                     </sect3>
         </sect2>

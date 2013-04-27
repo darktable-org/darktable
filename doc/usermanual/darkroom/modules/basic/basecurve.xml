@@ -1,4 +1,4 @@
-<sect3 status="final" id="base curve"><title>Base curve</title>
+<sect3 status="final" id="base_curve"><title>Base curve</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -27,7 +27,7 @@
                 </para>
 
                 <para>Tip: If you intend to take full manual control of the tonal values with the <emphasis>tone curve</emphasis> module or the <emphasis>zone system</emphasis>
-                      module (see <xref linkend="tone curve"/> and <xref linkend="zone system"/>) it may be easier to leave the image in
+                      module (see <xref linkend="tone_curve"/> and <xref linkend="zone_system"/>) it may be easier to leave the image in
                       linear RGB. Disable the <emphasis>base curve</emphasis> module in this case.
                 </para>
 	</sect4>

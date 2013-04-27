@@ -1,4 +1,4 @@
-<sect3 status="final" id="denoise profiled"><title>Denoise - profiled</title>
+<sect3 status="final" id="denoise_profiled"><title>Denoise - profiled</title>
   <sect4><title>Overview</title>
     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
         <colspec colwidth="6*"/>
@@ -31,13 +31,13 @@
     </sect5>
     <sect5><title>mode</title>
       <para>This module can eliminate noise with two different core algorithms. <quote>non-local means</quote> is a bit better suited to tackle luma (lightness) noise; <quote>
-                              wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can apply two instances of this module (see <xref linkend="multiple instances"/>).
+                              wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can apply two instances of this module (see <xref linkend="multiple_instances"/>).
                               The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote>; the <quote>wavelet</quote> instance with
-                              blend mode <quote>color</quote>. For more information on blend modes have a look at <xref linkend="blending operators"/>.</para>
+                              blend mode <quote>color</quote>. For more information on blend modes have a look at <xref linkend="blending_operators"/>.</para>
     </sect5>
     <sect5><title>patch size</title>
       <para>This slider is only available if mode <quote>non-local means</quote> is selected. It controls the size of the patches being matched
-                              when deciding which pixels to average (see also <xref linkend="denoise non local means"/>). Setting this to higher values can give more sharpness.
+                              when deciding which pixels to average (see also <xref linkend="denoise_non_local_means"/>). Setting this to higher values can give more sharpness.
                               Processing time will stay about the same.</para>
     </sect5>
     <sect5><title>strength</title>

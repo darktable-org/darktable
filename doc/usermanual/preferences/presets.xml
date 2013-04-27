@@ -4,7 +4,7 @@
         </para>
 
         <para>darktable already comes with a set of pre-defined presets for several modules. In addition you can define your own presets
-	        from within each module in darkroom mode (see <xref linkend="module presets"/>). 
+	        from within each module in darkroom mode (see <xref linkend="module_presets"/>). 
 	</para>
 
         <para>Pre-defined presets are shown with a lock symbol. Their auto-apply properties can not be changed.

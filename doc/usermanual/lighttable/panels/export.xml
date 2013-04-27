@@ -5,7 +5,7 @@
 		]>
 
 
-		<sect2 status="final" id="export selected"><title>Export selected</title>
+		<sect2 status="final" id="export_selected"><title>Export selected</title>
 			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>
 					<colspec colwidth="4*"/>
@@ -115,7 +115,7 @@
 					</para>
                                         <para>If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable will store the history stack
                                               as XMP tags within the output file. This information can later be used to reconstruct your parameters and settings that have produced the exported 
-                                              image (see <xref linkend="history stack"/>). 
+                                              image (see <xref linkend="history_stack"/>). 
                                               If you don't want to distribute history stack data with your images, there are various tools to delete embedded XMP tags. As an example 
                                               you can use the program <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink> with:
 		    <programlisting>
@@ -134,7 +134,7 @@ exiftool -XMP:all=   image.jpg
 				</sect4>
 
 				<sect4><title>intent</title>
-					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See <xref linkend="output color profile"/> for a 
+					<para>This option lets you define the intent, i.e. the way darktable will deal with out-of-gamut colors. See <xref linkend="output_color_profile"/> for a 
                                               more detailed description of the available options.
 					</para>
 				</sect4>

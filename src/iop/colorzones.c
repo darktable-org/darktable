@@ -35,7 +35,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 #define DT_IOP_COLORZONES_INSET 5
 #define DT_IOP_COLORZONES_CURVE_INFL .3f
@@ -57,8 +57,16 @@ typedef struct dt_iop_colorzones_params_t
 {
   int32_t channel;
   float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
+  float strength;
 }
 dt_iop_colorzones_params_t;
+
+typedef struct dt_iop_colorzones_params2_t
+{
+  int32_t channel;
+  float equalizer_x[3][DT_IOP_COLORZONES_BANDS], equalizer_y[3][DT_IOP_COLORZONES_BANDS];
+}
+dt_iop_colorzones_params2_t;
 
 typedef struct dt_iop_colorzones_params1_t
 {
@@ -74,6 +82,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
   GtkWidget *select_by;
+  GtkWidget *strength;
   double mouse_x, mouse_y, mouse_pick;
   float mouse_radius;
   dt_iop_colorzones_params_t drag_params;
@@ -125,7 +134,7 @@ groups ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if (old_version == 1 && new_version == 3)
   {
     const dt_iop_colorzones_params1_t *old = old_params;
     dt_iop_colorzones_params_t *new = new_params;
@@ -160,6 +169,22 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
       new->equalizer_x[i][7] = old->equalizer_x[i][5];
       new->equalizer_y[i][7] = old->equalizer_y[i][5];
     }
+    new->strength = 0.0;
+    return 0;
+  }
+  if (old_version == 2 && new_version == 3)
+  {
+    const dt_iop_colorzones_params2_t *old = old_params;
+    dt_iop_colorzones_params_t *new = new_params;
+    new->channel = old->channel;
+
+    for (int b=0; b<DT_IOP_COLORZONES_BANDS; b++)
+      for (int c=0; c<3; c++)
+      {
+        new->equalizer_x[c][b] = old->equalizer_x[c][b];
+        new->equalizer_y[c][b] = old->equalizer_y[c][b];
+      }
+    new->strength = 0.0;
     return 0;
   }
   return 1;
@@ -172,6 +197,11 @@ lookup(const float *lut, const float i)
   const int bin1 = MIN(0xffff, MAX(0, (int)(DT_IOP_COLORZONES_LUT_RES * i) + 1));
   const float f = DT_IOP_COLORZONES_LUT_RES * i - bin0;
   return lut[bin1]*f + lut[bin0]*(1.-f);
+}
+
+static float strength(float value, float strength)
+{
+  return value + (value-0.5)*(strength/100.0);
 }
 
 void
@@ -298,15 +328,15 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int ch=0; ch<3; ch++)
   {
     if(d->channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(d->curve[ch], 0, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-2]);
+      dt_draw_curve_set_point(d->curve[ch], 0, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, strength(p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-2],p->strength));
     else
-      dt_draw_curve_set_point(d->curve[ch], 0, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, p->equalizer_y[ch][0]);
+      dt_draw_curve_set_point(d->curve[ch], 0, p->equalizer_x[ch][DT_IOP_COLORZONES_BANDS-2]-1.0, strength(p->equalizer_y[ch][0],p->strength));
     for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++)
-      dt_draw_curve_set_point(d->curve[ch], k+1, p->equalizer_x[ch][k], p->equalizer_y[ch][k]);
+      dt_draw_curve_set_point(d->curve[ch], k+1, p->equalizer_x[ch][k], strength(p->equalizer_y[ch][k], p->strength));
     if(d->channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(d->curve[ch], DT_IOP_COLORZONES_BANDS+1, p->equalizer_x[ch][1]+1.0, p->equalizer_y[ch][1]);
+      dt_draw_curve_set_point(d->curve[ch], DT_IOP_COLORZONES_BANDS+1, p->equalizer_x[ch][1]+1.0, strength(p->equalizer_y[ch][1],p->strength));
     else
-      dt_draw_curve_set_point(d->curve[ch], DT_IOP_COLORZONES_BANDS+1, p->equalizer_x[ch][1]+1.0, p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-1]);
+      dt_draw_curve_set_point(d->curve[ch], DT_IOP_COLORZONES_BANDS+1, p->equalizer_x[ch][1]+1.0, strength(p->equalizer_y[ch][DT_IOP_COLORZONES_BANDS-1],p->strength));
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_COLORZONES_LUT_RES, d->lut[3], d->lut[ch]);
   }
 #endif
@@ -347,6 +377,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   dt_bauhaus_combobox_set(g->select_by, 2-p->channel);
+  dt_bauhaus_slider_set(g->strength, p->strength);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -364,6 +395,7 @@ void init(dt_iop_module_t *module)
     for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++) tmp.equalizer_x[ch][k] = k/(DT_IOP_COLORZONES_BANDS-1.0);
     for(int k=0; k<DT_IOP_COLORZONES_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
   }
+  tmp.strength = 0.0;
   tmp.channel = DT_IOP_COLORZONES_h;
   memcpy(module->params, &tmp, sizeof(dt_iop_colorzones_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorzones_params_t));
@@ -380,6 +412,8 @@ void cleanup(dt_iop_module_t *module)
 void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_colorzones_params_t p;
+
+  p.strength = 0.0;
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
@@ -840,6 +874,7 @@ colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_
       p->equalizer_x[c->channel][k] = d->equalizer_x[c->channel][k];
       p->equalizer_y[c->channel][k] = d->equalizer_y[c->channel][k];
     }
+    p->strength = d->strength;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
@@ -943,6 +978,16 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
   dt_iop_request_focus(self);
 }
 
+static void
+strength_changed (GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+  p->strength = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
@@ -994,6 +1039,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
   gtk_drawing_area_size(c->area, 195, 195);
+
+  c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
+  dt_bauhaus_slider_set_format(c->strength,"%.01f%%");
+  dt_bauhaus_widget_set_label(c->strength,_("mix"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
+  g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
+  g_signal_connect (G_OBJECT (c->strength), "value-changed", G_CALLBACK (strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);

@@ -1,4 +1,4 @@
-<sect3 status="final" id="input color profile"><title>Input color profile</title>
+<sect3 status="final" id="input_color_profile"><title>Input color profile</title>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -26,7 +26,7 @@
 			      You can also supply your own input ICC profiles and put them into $DARKTABLE/share/darktable/color/in or
                               $HOME/.config/darktable/color/in. $DARKTABLE is used here to represent darktable's installation directory and $HOME your home directory.
                               One common source of ICC profiles is the software that is shipped with your camera; it often contains profiles specific to your camera model. 
-                              You may need to activate module <emphasis>unbreak input profile</emphasis> (see <xref linkend="unbreak input profile"/>) to use your extra profiles.
+                              You may need to activate module <emphasis>unbreak input profile</emphasis> (see <xref linkend="unbreak_input_profile"/>) to use your extra profiles.
 			</para>
 
 			<para>If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it might already contain an embedded ICC profile which darktable will 

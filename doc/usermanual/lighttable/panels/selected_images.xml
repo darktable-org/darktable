@@ -1,4 +1,4 @@
-<sect2 status="final" id="selected images"><title>Selected image(s)</title>
+<sect2 status="final" id="selected_images"><title>Selected image(s)</title>
 	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 			<colspec colwidth="6*"/>
 			<colspec colwidth="4*"/>
@@ -22,7 +22,7 @@
 		</sect4>
 		<sect4><title>delete</title>
 			<para>Physically delete selected images from filesystem. See also preference option <quote>ask before erasing images from disk</quote>
-                              (<xref linkend="gui options"/>). If this option is not active, darktable will delete the file(s) without further question! This is 
+                              (<xref linkend="gui_options"/>). If this option is not active, darktable will delete the file(s) without further question! This is 
                                irreversible, and will also erase your development work of these images.
 			</para>
 		</sect4>
@@ -38,7 +38,7 @@
 			<para>Create a high dynamic range image from the selected images, and store it as a new source file in DNG format. Images
                               need to be properly aligned, which implies that they have been taken on a sturdy tripod. You can also 
                               generate HDRs with  programs like <ulink url="http://qtpfsgui.sourceforge.net/"><emphasis>Luminance HDR</emphasis></ulink>, and 
-                              later import them into darktable for further processing (see <xref linkend="supported file formats"/>).
+                              later import them into darktable for further processing (see <xref linkend="supported_file_formats"/>).
 			</para>
 		</sect4>
 		<sect4><title>duplicate</title>
@@ -53,11 +53,11 @@
 			</para>
 		</sect4>
 		<sect4><title>group</title>
-			<para>Create a new group from selected images (see <xref linkend="image grouping"/>).
+			<para>Create a new group from selected images (see <xref linkend="image_grouping"/>).
 			</para>
 		</sect4>
 		<sect4><title>ungroup</title>
-			<para>Remove selected images from the group (see <xref linkend="image grouping"/>).
+			<para>Remove selected images from the group (see <xref linkend="image_grouping"/>).
 			</para>
 		</sect4>
 </sect2>
