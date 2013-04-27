@@ -1843,6 +1843,12 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->target_geom, _("fish-eye"));
   dt_bauhaus_combobox_add(g->target_geom, _("panoramic"));
   dt_bauhaus_combobox_add(g->target_geom, _("equirectangular"));
+#if LF_VERSION >= ((0 << 24) | (2 << 16) | (6 << 8) | 0)
+  dt_bauhaus_combobox_add(g->target_geom, _("orthographic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("stereographic"));
+  dt_bauhaus_combobox_add(g->target_geom, _("equisolid angle"));
+  dt_bauhaus_combobox_add(g->target_geom, _("Thoby fish-eye"));
+#endif
   g_signal_connect (G_OBJECT (g->target_geom), "value-changed",
                     G_CALLBACK (target_geometry_changed),
                     (gpointer)self);
