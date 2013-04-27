@@ -1168,24 +1168,24 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     if(bd->masks_support)
     {
-      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("with drawn mask"));
+      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("drawn mask"));
       bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_MASK));
     }
 
     if(bd->blendif_support)
     {
-      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("with parametric mask"));
+      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("parametric mask"));
       bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_CONDITIONAL));
     }
 
     if(bd->blendif_support && bd->masks_support)
     {
-      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("with drawn & parametric mask"));
+      dt_bauhaus_combobox_add(bd->masks_modes_combo, _("drawn & parametric mask"));
       bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_ENABLED | DEVELOP_MASK_BOTH));
     }
 
     dt_bauhaus_combobox_set(bd->masks_modes_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->masks_modes_combo), "tooltip-text", _("activate blending: uniformly, with drawn mask, parametric mask, or combination of both"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->masks_modes_combo), "tooltip-text", _("activate blending: uniformly, with drawn mask, with parametric mask, or combination of both"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->masks_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_masks_mode_callback), bd);
 
@@ -1287,20 +1287,20 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_combine_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_combine_combo, _("combine masks"));
 
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("substractive"));
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("exclusive"));
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_EXCL));
 
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("additive"));
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("inclusive"));
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_INCL));
 
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("substractive & inverted"));
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("exclusive & inverted"));
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_EXCL));
 
-    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("additive & inverted"));
+    dt_bauhaus_combobox_add(bd->masks_combine_combo, _("inclusive & inverted"));
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_INCL));
 
     dt_bauhaus_combobox_set(bd->masks_combine_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->masks_combine_combo), "tooltip-text", _("how to combine individual drawn masks and parametric masks"), (char *)NULL);
+    gtk_object_set(GTK_OBJECT(bd->masks_combine_combo), "tooltip-text", _("how to combine individual drawn mask and different channels of parametric mask"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->masks_combine_combo), "value-changed",
                       G_CALLBACK (_blendop_masks_combine_callback), bd);
 
