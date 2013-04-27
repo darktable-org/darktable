@@ -320,6 +320,11 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   }
   else
   {
+    data->module->request_mask_display = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
+    data->module->suppress_mask = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
+
     gtk_widget_hide(GTK_WIDGET(data->bottom_box));
   }
 
@@ -329,11 +334,6 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   }
   else if(data->masks_inited)
   {
-    data->module->request_mask_display = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
-    data->module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
-
     dt_masks_set_edit_mode(data->module, 0);
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
@@ -355,11 +355,6 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
       data->module->request_color_pick = 0;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), 0);
     }
-
-    data->module->request_mask_display = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), 0);
-    data->module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
 
     gtk_widget_hide(GTK_WIDGET(data->blendif_box));
   }
@@ -1039,7 +1034,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_iop_gui_update_blendif(module);
   dt_iop_gui_update_masks(module);
 
-
   /* now show hide controls as required */
   const unsigned int mask_mode = module->blend_params->mask_mode;
 
@@ -1059,6 +1053,11 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
   else
   {
+    module->request_mask_display = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), 0);
+    module->suppress_mask = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
+
     gtk_widget_hide(GTK_WIDGET(bd->bottom_box));
   }
 
@@ -1069,11 +1068,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
   else if(bd->masks_inited)
   {
-    bd->module->request_mask_display = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), 0);
-    bd->module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
-
     dt_masks_set_edit_mode(module, 0);
 
     gtk_widget_hide(GTK_WIDGET(bd->masks_box));
@@ -1096,11 +1090,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       module->request_color_pick = 0;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->colorpicker), 0);
     }
-
-    module->request_mask_display = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), 0);
-    module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
 
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
