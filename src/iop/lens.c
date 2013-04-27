@@ -1845,7 +1845,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->target_geom, _("orthographic"));
   dt_bauhaus_combobox_add(g->target_geom, _("stereographic"));
   dt_bauhaus_combobox_add(g->target_geom, _("equisolid angle"));
-  dt_bauhaus_combobox_add(g->target_geom, _("Thoby fish-eye"));
+  dt_bauhaus_combobox_add(g->target_geom, _("thoby fish-eye"));
 #endif
   g_signal_connect (G_OBJECT (g->target_geom), "value-changed",
                     G_CALLBACK (target_geometry_changed),
