@@ -924,7 +924,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
   dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage, &size);
   if(sdata == NULL)
   {
-    dt_control_log(_("failed to get parameters from storage module, aborting export.."));
+    dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
     g_free(t1->data);
     return 1;
   }
