@@ -703,12 +703,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         || (ih<iw && data->sizeto==DT_SCALE_SMALLER_BORDER))
     {
       svg_height = ih * uscale;
-      svg_width = dimension.width * (dimension.height / svg_height);
+      svg_width = dimension.width * (svg_height / dimension.height );
     }
     else
     {
       svg_height = iw * uscale;
-      svg_width = dimension.width * (dimension.height / svg_height);
+      svg_width = dimension.width * (svg_height / dimension.height);
     }
   }
 
