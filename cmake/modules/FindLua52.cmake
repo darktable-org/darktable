@@ -6,7 +6,7 @@ SET(LUA52_FIND_QUIETLY ${Lua52_FIND_QUIETLY})
 include(Prebuilt)
 include(FindPkgConfig)
 
-pkg_check_modules(LUA52 lua5.2)
+pkg_search_module(LUA52 lua5.2 lua)
 
 if(LUA52_FIND_VERSION)
   cmake_minimum_required(VERSION 2.6.2)
