@@ -996,7 +996,9 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   while (entryNode)
   {
-    if (dev == NULL && !xmlStrcmp(entryNode->name, (const xmlChar *) "subject"))
+    if (dev == NULL
+        && (!xmlStrcmp(entryNode->name, (const xmlChar *) "subject")
+            ||!xmlStrcmp(entryNode->name, (const xmlChar *) "hierarchicalSubject")))
     {
       xmlNodePtr tagNode = entryNode;
 
