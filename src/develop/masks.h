@@ -90,13 +90,13 @@ typedef struct dt_masks_form_t
 {
   GList *points; //list of point structures
   dt_masks_type_t type;
-  
+
   //position of the source (used only for clone)
   float source[2];
   //name of the form
   char name[128];
   //id used to store the form
-  int formid;  
+  int formid;
   //version of the form
   int version;
 }
@@ -119,7 +119,7 @@ typedef struct dt_masks_form_gui_t
 {
   //points used to draw the form
   GList *points;  //list of dt_masks_form_gui_points_t
-   
+
   //values for mouse positions, etc...
   float posx, posy, dx, dy;
   gboolean form_selected;
@@ -130,22 +130,22 @@ typedef struct dt_masks_form_gui_t
   int feather_selected;
   int seg_selected;
   int point_border_selected;
-  
+
   gboolean form_dragging;
   gboolean source_dragging;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;
   int point_border_dragging;
-  
+
   int group_edited;
   int group_selected;
-  
+
 
   gboolean creation;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
-  
+
   //ids
   int formid;
   uint64_t pipe_hash;
