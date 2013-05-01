@@ -34,7 +34,7 @@
 
 #define DEVELOP_BLEND_MASK_FLAG		  0x80
 #define DEVELOP_BLEND_DISABLED			0x00
-#define DEVELOP_BLEND_NORMAL				0x01
+#define DEVELOP_BLEND_NORMAL				0x01   /* deprecated as it did clamping */
 #define DEVELOP_BLEND_LIGHTEN				0x02
 #define DEVELOP_BLEND_DARKEN				0x03
 #define DEVELOP_BLEND_MULTIPLY			0x04
@@ -54,9 +54,11 @@
 #define DEVELOP_BLEND_HUE				    0x12
 #define DEVELOP_BLEND_COLOR				  0x13
 #define DEVELOP_BLEND_INVERSE				0x14   /* deprecated */
-#define DEVELOP_BLEND_UNBOUNDED     0x15
+#define DEVELOP_BLEND_UNBOUNDED     0x15   /* deprecated as new normal takes over */
 #define DEVELOP_BLEND_COLORADJUST   0x16
 #define DEVELOP_BLEND_DIFFERENCE2   0x17
+#define DEVELOP_BLEND_NORMAL2       0x18
+#define DEVELOP_BLEND_BOUNDED       0x19
 
 
 #define DEVELOP_MASK_DISABLED       0x00

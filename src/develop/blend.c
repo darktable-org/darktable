@@ -324,8 +324,8 @@ static void _blend_make_mask(dt_iop_colorspace_type_t cst, const unsigned int bl
 
 
 
-/* normal blend */
-static void _blend_normal(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+/* normal blend with clamping */
+static void _blend_normal_bounded(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -366,7 +366,7 @@ static void _blend_normal(dt_iop_colorspace_type_t cst,const float *a, float *b,
 }
 
 /* normal blend without any clamping */
-static void _blend_unbounded(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+static void _blend_normal_unbounded(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
 {
   float ta[3], tb[3];
   int channels = _blend_colorspace_channels(cst);
@@ -1752,17 +1752,19 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     case DEVELOP_BLEND_INVERSE:
       blend = _blend_inverse;
       break;
-    case DEVELOP_BLEND_UNBOUNDED:
-      blend = _blend_unbounded;
+    case DEVELOP_BLEND_NORMAL:
+    case DEVELOP_BLEND_BOUNDED:
+      blend = _blend_normal_bounded;
       break;
     case DEVELOP_BLEND_COLORADJUST:
       blend = _blend_coloradjust;
       break;
 
       /* fallback to normal blend */
-    case DEVELOP_BLEND_NORMAL:
+    case DEVELOP_BLEND_NORMAL2:
+    case DEVELOP_BLEND_UNBOUNDED:
     default:
-      blend = _blend_normal;
+      blend = _blend_normal_unbounded;
       break;
   }
 

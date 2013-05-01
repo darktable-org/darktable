@@ -1229,7 +1229,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend mode"));
 
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("normal"));
-    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_NORMAL));
+    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_NORMAL2));
+
+    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("normal bounded"));
+    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_BOUNDED));
 
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("lighten"));
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_LIGHTEN));
@@ -1288,8 +1291,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add(bd->blend_modes_combo, _("coloradjustment"));
     bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_COLORADJUST));
 
-    dt_bauhaus_combobox_add(bd->blend_modes_combo, _("unbounded"));
-    bd->blend_modes = g_list_append(bd->blend_modes, GUINT_TO_POINTER(DEVELOP_BLEND_UNBOUNDED));
+
 
     dt_bauhaus_combobox_set(bd->blend_modes_combo, 0);
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
@@ -1309,6 +1311,15 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bm->mode = DEVELOP_BLEND_INVERSE;
     bd->blend_modes_deprecated = g_list_append(bd->blend_modes_deprecated , bm);
 
+    bm = g_malloc(sizeof(dt_iop_blend_mode_t));
+    strncpy(bm->name, _("normal (deprecated)"), 128);
+    bm->mode = DEVELOP_BLEND_NORMAL;
+    bd->blend_modes_deprecated = g_list_append(bd->blend_modes_deprecated , bm);
+
+    bm = g_malloc(sizeof(dt_iop_blend_mode_t));
+    strncpy(bm->name, _("unbounded (deprecated)"), 128);
+    bm->mode = DEVELOP_BLEND_UNBOUNDED;
+    bd->blend_modes_deprecated = g_list_append(bd->blend_modes_deprecated , bm);
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);

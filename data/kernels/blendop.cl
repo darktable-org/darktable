@@ -45,6 +45,8 @@
 #define DEVELOP_BLEND_UNBOUNDED                         0x15
 #define DEVELOP_BLEND_COLORADJUST                       0x16
 #define DEVELOP_BLEND_DIFFERENCE2                       0x17
+#define DEVELOP_BLEND_NORMAL2                           0x18
+#define DEVELOP_BLEND_BOUNDED                           0x19
 
 #define DEVELOP_MASK_DISABLED       0x00
 #define DEVELOP_MASK_ENABLED        0x01
@@ -571,15 +573,18 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
       break;
 
-    case DEVELOP_BLEND_UNBOUNDED:
-      o =  (a * (1.0f - opacity)) + (b * opacity);
+    case DEVELOP_BLEND_BOUNDED:
+    case DEVELOP_BLEND_NORMAL:
+      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_NORMAL:
+    case DEVELOP_BLEND_UNBOUNDED:
+    case DEVELOP_BLEND_NORMAL2:
     default:
-      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      o =  (a * (1.0f - opacity)) + (b * opacity);
       break;
+
   }
 
   /* scale L back to [0; 100] and a,b to [-128; 128] */
@@ -711,15 +716,18 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
       break;
 
-    case DEVELOP_BLEND_UNBOUNDED:
-      o =  (a * (1.0f - opacity)) + (b * opacity);
+    case DEVELOP_BLEND_BOUNDED:
+    case DEVELOP_BLEND_NORMAL:
+      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_NORMAL:
+    case DEVELOP_BLEND_UNBOUNDED:
+    case DEVELOP_BLEND_NORMAL2:
     default:
-      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      o =  (a * (1.0f - opacity)) + (b * opacity);
       break;
+
   }
 
   write_imagef(out, (int2)(x, y), (float4)(o, 0.0f, 0.0f, 0.0f));
@@ -870,15 +878,18 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp((a * opacity) + (b * (1.0f - opacity)), min, max);
       break;
 
-    case DEVELOP_BLEND_UNBOUNDED:
-      o =  (a * (1.0f - opacity)) + (b * opacity);
+    case DEVELOP_BLEND_BOUNDED:
+    case DEVELOP_BLEND_NORMAL:
+      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
     /* fallback to normal blend */
-    case DEVELOP_BLEND_NORMAL:
+    case DEVELOP_BLEND_UNBOUNDED:
+    case DEVELOP_BLEND_NORMAL2:
     default:
-      o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      o =  (a * (1.0f - opacity)) + (b * opacity);
       break;
+
   }
 
   /* save opacity in alpha channel */
