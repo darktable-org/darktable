@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-25 16:50+0200\n"
-"PO-Revision-Date: 2013-04-25 16:50+0100\n"
+"POT-Creation-Date: 2013-04-29 16:44+0200\n"
+"PO-Revision-Date: 2013-04-29 16:51+0100\n"
 "Last-Translator: Guilherme Brondani Torri <guitorri@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -430,26 +430,26 @@ msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "falha ao obter parâmetros do módulo de formato, abortando exportação..."
 
-#: ../src/common/collection.c:454 ../src/develop/lightroom.c:961
+#: ../src/common/collection.c:454 ../src/develop/lightroom.c:971
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:726
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "vermelho"
 
-#: ../src/common/collection.c:455 ../src/develop/lightroom.c:963
+#: ../src/common/collection.c:455 ../src/develop/lightroom.c:973
 #: ../src/libs/collect.c:1145 ../src/libs/collect.c:1147
 msgid "yellow"
 msgstr "amarelo"
 
-#: ../src/common/collection.c:456 ../src/develop/lightroom.c:965
+#: ../src/common/collection.c:456 ../src/develop/lightroom.c:975
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:727
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "verde"
 
-#: ../src/common/collection.c:457 ../src/develop/lightroom.c:967
+#: ../src/common/collection.c:457 ../src/develop/lightroom.c:977
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:728
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
@@ -837,9 +837,11 @@ msgid "copying %d images"
 msgstr "copiando %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:929
-msgid "failed to get parameters from storage module, aborting export.."
+#, c-format
+msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"falha o obter parâmetros do módulo de armazenamento, abortando exportação..."
+"falha o obter parâmetros do módulo de armazenamento `%s', abortando "
+"exportação…"
 
 #: ../src/control/jobs/control_jobs.c:933
 #, c-format
@@ -987,7 +989,7 @@ msgstr "uniforme"
 msgid "only, if.."
 msgstr "somente, se..."
 
-#: ../src/develop/blend_gui.c:844 ../src/iop/colorzones.c:984
+#: ../src/develop/blend_gui.c:844 ../src/iop/colorzones.c:1029
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
 msgstr "selecionar cor na imagem"
@@ -1104,8 +1106,8 @@ msgid "pinlight"
 msgstr "luz do pino"
 
 #: ../src/develop/blend_gui.c:1079 ../src/iop/channelmixer.c:439
-#: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:973
-#: ../src/iop/colorzones.c:1004
+#: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1018
+#: ../src/iop/colorzones.c:1056
 msgid "lightness"
 msgstr "luminosidade"
 
@@ -1116,8 +1118,8 @@ msgstr "croma"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/develop/blend_gui.c:1083 ../src/iop/channelmixer.c:437
-#: ../src/iop/colorize.c:417 ../src/iop/colorzones.c:975
-#: ../src/iop/colorzones.c:1002 ../src/iop/graduatednd.c:1046
+#: ../src/iop/colorize.c:417 ../src/iop/colorzones.c:1020
+#: ../src/iop/colorzones.c:1054 ../src/iop/graduatednd.c:1046
 #: ../src/iop/splittoning.c:542
 msgid "hue"
 msgstr "matiz"
@@ -1244,35 +1246,35 @@ msgstr "redefine parâmetros"
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/lightroom.c:397
+#: ../src/develop/lightroom.c:404
 msgid "cannot find lightroom xmp!"
 msgstr "xmp do lightroom não encontrado!"
 
-#: ../src/develop/lightroom.c:422 ../src/develop/lightroom.c:444
-#: ../src/develop/lightroom.c:464 ../src/develop/lightroom.c:474
-#: ../src/develop/lightroom.c:495
+#: ../src/develop/lightroom.c:429 ../src/develop/lightroom.c:451
+#: ../src/develop/lightroom.c:471 ../src/develop/lightroom.c:481
+#: ../src/develop/lightroom.c:502
 #, c-format
 msgid "`%s' not a lightroom xmp!"
 msgstr "`%s' não é um xmp do lightroom!"
 
-#: ../src/develop/lightroom.c:1321 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1370 ../src/libs/import.c:511
 msgid "tags"
 msgstr "etiquetas"
 
-#: ../src/develop/lightroom.c:1330 ../src/libs/tools/filter.c:128
+#: ../src/develop/lightroom.c:1379 ../src/libs/tools/filter.c:128
 msgid "rating"
 msgstr "classificação"
 
-#: ../src/develop/lightroom.c:1339 ../src/libs/geotagging.c:45
+#: ../src/develop/lightroom.c:1388 ../src/libs/geotagging.c:45
 msgid "geotagging"
 msgstr "geoetiquetando"
 
-#: ../src/develop/lightroom.c:1348 ../src/libs/collect.h:37
+#: ../src/develop/lightroom.c:1397 ../src/libs/collect.h:37
 #: ../src/libs/tools/filter.c:130
 msgid "color label"
 msgstr "cor da etiqueta"
 
-#: ../src/develop/lightroom.c:1358
+#: ../src/develop/lightroom.c:1407
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -1467,12 +1469,11 @@ msgstr "cópia de segurança externa"
 
 #: ../src/gui/camera_import_dialog.c:385
 msgid ""
-"external backup is an option to automatic do a backup of the imported "
-"image(s) to another physical location, when activated it does looks for "
-"specified backup foldername of mounted devices on your system... each found "
-"folder is used as basedirectory in the above storage structure and when a "
-"image are downloaded from camera it is replicated to found backup "
-"destinations."
+"external backup is an option to automatic do a backup of the imported image"
+"(s) to another physical location, when activated it does looks for specified "
+"backup foldername of mounted devices on your system... each found folder is "
+"used as basedirectory in the above storage structure and when a image are "
+"downloaded from camera it is replicated to found backup destinations."
 msgstr ""
 "backup externo é uma opção para fazer um backup automático da(s) imagem(ns) "
 "importada para outro local físico, quando ativado faz procura pelo nome do "
@@ -2570,11 +2571,12 @@ msgstr "nitidez"
 msgid "sharpness of edges at each feature size"
 msgstr "nitidez das bordas a cada dimensão característica"
 
-#: ../src/iop/atrous.c:1457 ../src/iop/soften.c:601
+#: ../src/iop/atrous.c:1457 ../src/iop/colorzones.c:1045
+#: ../src/iop/soften.c:601
 msgid "mix"
 msgstr "mix"
 
-#: ../src/iop/atrous.c:1458
+#: ../src/iop/atrous.c:1458 ../src/iop/colorzones.c:1047
 msgid "make effect stronger or weaker"
 msgstr "torna efeito mais forte ou fraco"
 
@@ -2991,8 +2993,8 @@ msgstr "destino"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
-#: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
-#: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1061
+#: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:1019
+#: ../src/iop/colorzones.c:1055 ../src/iop/graduatednd.c:1061
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
 #: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
 msgid "saturation"
@@ -3620,35 +3622,35 @@ msgstr "aplicar"
 msgid "apply previously analyzed image look to this image"
 msgstr "aplicar aparência da imagem analisada anteriormente a esta imagem"
 
-#: ../src/iop/colorzones.c:111
+#: ../src/iop/colorzones.c:120
 msgid "color zones"
 msgstr "zonas de cor"
 
-#: ../src/iop/colorzones.c:403
+#: ../src/iop/colorzones.c:437
 msgid "red black white"
 msgstr "vermelho preto branco"
 
-#: ../src/iop/colorzones.c:421
+#: ../src/iop/colorzones.c:455
 msgid "black white and skin tones"
 msgstr "preto branco e tons de pele"
 
-#: ../src/iop/colorzones.c:439
+#: ../src/iop/colorzones.c:473
 msgid "polarizing filter"
 msgstr "filtro polarizador"
 
-#: ../src/iop/colorzones.c:467
+#: ../src/iop/colorzones.c:501
 msgid "natural skin tones"
 msgstr "tons de pele natural"
 
-#: ../src/iop/colorzones.c:495
+#: ../src/iop/colorzones.c:529
 msgid "black & white film"
 msgstr "filme preto & branco"
 
-#: ../src/iop/colorzones.c:1000
+#: ../src/iop/colorzones.c:1052
 msgid "select by"
 msgstr "selecionar por"
 
-#: ../src/iop/colorzones.c:1001
+#: ../src/iop/colorzones.c:1053
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "escolher o critério de seleção, será a abscissa no gráfico"
 
@@ -3758,7 +3760,7 @@ msgstr "encontrada correspondência para iso %d"
 msgid "interpolated from iso %d and %d"
 msgstr "interpolado de iso %d e %d"
 
-#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1860
+#: ../src/iop/denoiseprofile.c:1670 ../src/iop/lens.c:1866
 msgid "mode"
 msgstr "modo"
 
@@ -4379,48 +4381,64 @@ msgstr "panorâmica"
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.c:1850
+#: ../src/iop/lens.c:1845
+msgid "orthographic"
+msgstr "ortográfica"
+
+#: ../src/iop/lens.c:1846
+msgid "stereographic"
+msgstr "estereográfica"
+
+#: ../src/iop/lens.c:1847
+msgid "equisolid angle"
+msgstr "ângulo equisólido"
+
+#: ../src/iop/lens.c:1848
+msgid "thoby fish-eye"
+msgstr "thoby olho de peixe"
+
+#: ../src/iop/lens.c:1856
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.c:1851 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1857 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1052
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/lens.c:1862
+#: ../src/iop/lens.c:1868
 msgid "correct distortions or apply them"
 msgstr "corrige ou aplica distorções"
 
-#: ../src/iop/lens.c:1863
+#: ../src/iop/lens.c:1869
 msgid "correct"
 msgstr "corregir"
 
-#: ../src/iop/lens.c:1864
+#: ../src/iop/lens.c:1870
 msgid "distort"
 msgstr "distorções"
 
-#: ../src/iop/lens.c:1871
+#: ../src/iop/lens.c:1877
 msgid "transversal chromatic aberration red"
 msgstr "aberrações cromáticas transversais vermelho"
 
-#: ../src/iop/lens.c:1872
+#: ../src/iop/lens.c:1878
 msgid "tca red"
 msgstr "tca vermelho"
 
-#: ../src/iop/lens.c:1877
+#: ../src/iop/lens.c:1883
 msgid "transversal chromatic aberration blue"
 msgstr "aberrações cromáticas transversais azul"
 
-#: ../src/iop/lens.c:1878
+#: ../src/iop/lens.c:1884
 msgid "tca blue"
 msgstr "tca azul"
 
-#: ../src/iop/lens.c:1885
+#: ../src/iop/lens.c:1891
 msgid "corrections done: "
 msgstr "correções feitas:"
 
-#: ../src/iop/lens.c:1886
+#: ../src/iop/lens.c:1892
 msgid "which corrections have actually been done"
 msgstr "quais correções foram realizadas efetivamente"
 
@@ -5982,7 +6000,7 @@ msgstr "exporta"
 #. char* n = _("zoomable light table\nfile manager");
 #. while(*n != '\n') n++; n++;
 #. return n;
-#: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:95
+#: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:98
 msgid "file manager"
 msgstr "gerenciador de arquivos"
 
@@ -6807,31 +6825,6 @@ msgstr ""
 "seleciona imagens não modificadas na\n"
 "coleção atual"
 
-#: ../src/libs/select.c:144
-msgctxt "accel"
-msgid "select all"
-msgstr "seleciona tudo"
-
-#: ../src/libs/select.c:146
-msgctxt "accel"
-msgid "select none"
-msgstr "cancela seleção"
-
-#: ../src/libs/select.c:148
-msgctxt "accel"
-msgid "invert selection"
-msgstr "inverte seleção"
-
-#: ../src/libs/select.c:150
-msgctxt "accel"
-msgid "select film roll"
-msgstr "seleciona rolo de filme"
-
-#: ../src/libs/select.c:151
-msgctxt "accel"
-msgid "select untouched"
-msgstr "seleciona não modificadas"
-
 #: ../src/libs/snapshots.c:81
 msgid "snapshots"
 msgstr "instantânea"
@@ -7107,105 +7100,132 @@ msgstr "* colaboradores *"
 msgid "translator-credits"
 msgstr "Guilherme Brondani Torri <guitorri@gmail.com>"
 
-#: ../src/libs/tools/filmstrip.c:132
+#: ../src/libs/tools/filmstrip.c:135
 msgid "filmstrip"
 msgstr "tira de filme"
 
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:158 ../src/views/lighttable.c:1589
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1589
 msgctxt "accel"
 msgid "rate desert"
 msgstr "sem classificação"
 
-#: ../src/libs/tools/filmstrip.c:159 ../src/views/lighttable.c:1590
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1590
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 estrela"
 
-#: ../src/libs/tools/filmstrip.c:160 ../src/views/lighttable.c:1591
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1591
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 estrelas"
 
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1592
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1592
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 estrelas"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1593
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1593
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 estrelas"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1594
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1594
 msgctxt "accel"
 msgid "rate 5"
 msgstr "4 estrelas"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1595
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1595
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeitar"
 
 #. setup history key accelerators
-#: ../src/libs/tools/filmstrip.c:168
+#: ../src/libs/tools/filmstrip.c:171
 msgctxt "accel"
 msgid "copy history"
 msgstr "copia história"
 
-#: ../src/libs/tools/filmstrip.c:170
+#: ../src/libs/tools/filmstrip.c:173
 msgctxt "accel"
 msgid "copy history parts"
 msgstr "copia parete da história"
 
-#: ../src/libs/tools/filmstrip.c:172
+#: ../src/libs/tools/filmstrip.c:175
 msgctxt "accel"
 msgid "paste history"
 msgstr "colar história"
 
-#: ../src/libs/tools/filmstrip.c:174
+#: ../src/libs/tools/filmstrip.c:177
 msgctxt "accel"
 msgid "paste history parts"
 msgstr "cola parte da história"
 
-#: ../src/libs/tools/filmstrip.c:176
+#: ../src/libs/tools/filmstrip.c:179
 msgctxt "accel"
 msgid "discard history"
 msgstr "descartar história"
 
-#: ../src/libs/tools/filmstrip.c:179
+#: ../src/libs/tools/filmstrip.c:182
 msgctxt "accel"
 msgid "duplicate image"
 msgstr "duplicar imagem"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:1608
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1608
 msgctxt "accel"
 msgid "color red"
 msgstr "cor vermelha"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:1609
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1609
 msgctxt "accel"
 msgid "color yellow"
 msgstr "cor amarela"
 
-#: ../src/libs/tools/filmstrip.c:186 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1610
 msgctxt "accel"
 msgid "color green"
 msgstr "cor verde"
 
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1611
 msgctxt "accel"
 msgid "color blue"
 msgstr "cor azul"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1612
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1612
 msgctxt "accel"
 msgid "color purple"
 msgstr "cor púrpura "
+
+#. setup selection accelerators
+#. selection accels
+#: ../src/libs/tools/filmstrip.c:194 ../src/libs/tools/lighttable.c:147
+msgctxt "accel"
+msgid "select all"
+msgstr "seleciona tudo"
+
+#: ../src/libs/tools/filmstrip.c:195 ../src/libs/tools/lighttable.c:149
+msgctxt "accel"
+msgid "select none"
+msgstr "cancela seleção"
+
+#: ../src/libs/tools/filmstrip.c:196 ../src/libs/tools/lighttable.c:151
+msgctxt "accel"
+msgid "invert selection"
+msgstr "inverte seleção"
+
+#: ../src/libs/tools/filmstrip.c:197 ../src/libs/tools/lighttable.c:153
+msgctxt "accel"
+msgid "select film roll"
+msgstr "seleciona rolo de filme"
+
+#: ../src/libs/tools/filmstrip.c:198 ../src/libs/tools/lighttable.c:154
+msgctxt "accel"
+msgid "select untouched"
+msgstr "seleciona não modificadas"
 
 #: ../src/libs/tools/filter.c:53
 msgid "filter"
@@ -7265,30 +7285,31 @@ msgstr "preferências"
 msgid "hinter"
 msgstr "dicas"
 
-#: ../src/libs/tools/lighttable.c:58 ../src/views/lighttable.c:120
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:120
 msgid "lighttable"
 msgstr "mesa de luz"
 
-#: ../src/libs/tools/lighttable.c:94
+#: ../src/libs/tools/lighttable.c:97
 msgid "zoomable light table"
 msgstr "mesa de luz com zoom"
 
-#: ../src/libs/tools/lighttable.c:133
+#. view accels
+#: ../src/libs/tools/lighttable.c:137
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom máximo"
 
-#: ../src/libs/tools/lighttable.c:135
+#: ../src/libs/tools/lighttable.c:139
 msgctxt "accel"
 msgid "zoom in"
 msgstr "aproximar"
 
-#: ../src/libs/tools/lighttable.c:137
+#: ../src/libs/tools/lighttable.c:141
 msgctxt "accel"
 msgid "zoom out"
 msgstr "afastar"
 
-#: ../src/libs/tools/lighttable.c:139
+#: ../src/libs/tools/lighttable.c:143
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mínimo"
