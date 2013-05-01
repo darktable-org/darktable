@@ -268,6 +268,7 @@ typedef struct dt_iop_gui_blend_data_t
   GList *blend_modes;
   GList *masks_modes;
   GList *masks_combine;
+  GList *masks_invert;
   GList *blend_modes_deprecated;
   GtkWidget *iopw;
   GtkVBox *top_box;
@@ -289,6 +290,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_modes_combo;
   GtkWidget *blend_modes_combo;
   GtkWidget *masks_combine_combo;
+  GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
   GtkWidget *radius_slider;
   int tab;
