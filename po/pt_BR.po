@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-04-29 16:44+0200\n"
-"PO-Revision-Date: 2013-04-29 16:51+0100\n"
+"PO-Revision-Date: 2013-05-04 14:33+0100\n"
 "Last-Translator: Guilherme Brondani Torri <guitorri@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1477,7 +1477,7 @@ msgid ""
 msgstr ""
 "backup externo é uma opção para fazer um backup automático da(s) imagem(ns) "
 "importada para outro local físico, quando ativado faz procura pelo nome do "
-"diretório de backup especificado nos dispositivos montados em seu sistema... "
+"diretório de backup especificado nos dispositivos montados em seu sistema… "
 "cada diretório encontrado é usado como directório base na estrutura de "
 "armazenamento acima e quando uma imagem é baixadas da câmera ele é replicado "
 "nos destinos de backup encontrados."
@@ -2491,7 +2491,7 @@ msgstr "melhora nitidez (forte)"
 #: ../src/iop/atrous.c:829
 msgctxt "atrous"
 msgid "sharpen"
-msgstr "melhora nitidez"
+msgstr "nitidez"
 
 #: ../src/iop/atrous.c:843
 msgid "chroma denoise"
@@ -2678,7 +2678,7 @@ msgstr "detalhe"
 
 #: ../src/iop/bilateral.cc:72
 msgid "denoise (bilateral filter)"
-msgstr "reduz ruído (filtro bilateral)"
+msgstr "redução ruído (filtro bilateral)"
 
 #: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:102 ../src/iop/shadhi.c:148
 #: ../src/iop/sharpen.c:102
@@ -3748,7 +3748,7 @@ msgstr "método de correspondência canal verde"
 
 #: ../src/iop/denoiseprofile.c:126
 msgid "denoise (profiled)"
-msgstr "reduz ruído (perfilado)"
+msgstr "redução de ruído (perfilado)"
 
 #: ../src/iop/denoiseprofile.c:1418 ../src/iop/denoiseprofile.c:1426
 #, c-format
@@ -4623,7 +4623,7 @@ msgstr "realces"
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
-msgstr "reduz ruído (método não local)"
+msgstr "redução de ruído (método não local)"
 
 #: ../src/iop/nlmeans.c:114
 msgctxt "accel"
@@ -4673,7 +4673,7 @@ msgstr "gama fator exponencial "
 
 #: ../src/iop/rawdenoise.c:60
 msgid "raw denoise"
-msgstr "reduz ruído raw"
+msgstr "redução ruído raw"
 
 #: ../src/iop/rawdenoise.c:82
 msgctxt "accel"
