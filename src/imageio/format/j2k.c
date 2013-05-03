@@ -87,7 +87,6 @@ typedef struct dt_imageio_j2k_t
   int format;
   enum{DT_J2K_PRESET_OFF, DT_J2K_PRESET_CINEMA2K_24, DT_J2K_PRESET_CINEMA2K_48, DT_J2K_PRESET_CINEMA4K_24} preset;
   int quality;
-  opj_cparameters_t parameters;
 }
 dt_imageio_j2k_t;
 
