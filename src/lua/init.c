@@ -19,6 +19,7 @@
 #include "lua/init.h"
 #include "lua/call.h"
 #include "lua/configuration.h"
+#include "lua/database.h"
 #include "lua/glist.h"
 #include "lua/image.h"
 #include "lua/preferences.h"
@@ -49,6 +50,7 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,
+  dt_lua_init_database,
   NULL
 };
 

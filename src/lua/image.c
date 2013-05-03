@@ -19,6 +19,7 @@
 #include "lua/image.h"
 #include "lua/types.h"
 #include "lua/glist.h"
+#include "lua/database.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/image.h"
@@ -410,6 +411,8 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
   dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id") ; // make these fields read-only
+  lua_pushcfunction(L,dt_lua_duplicate_image);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   luaL_getmetatable(L,"dt_lua_image_t");
   lua_pushcfunction(L,image_eq);
   lua_setfield(L,-2,"__eq");
