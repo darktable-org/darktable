@@ -276,7 +276,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // we don't modify most of the image:
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out,in,roi_in,roi_out)
+  #pragma omp parallel for schedule(static) default(none) shared(out,in,roi_in,roi_out)
 #endif
   for (int k=0; k<roi_out->height; k++)
   {
@@ -405,9 +405,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
               if (xx<roi_out->x || xx>=roi_out->x+roi_out->width) continue;
               //we test if the source point is inside roi_in
               if (xx-dx<roi_in->x || xx-dx>=roi_in->x+roi_in->width) continue;
-              
+
               float f = mask[((int)((yy-fts)/roi_in->scale))*width + (int)((xx-fls)/roi_in->scale)];  //we can add the opacity here
-              
+
               for(int c=0; c<ch; c++)
                 out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
                   out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
@@ -439,7 +439,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_spots_params_t tmp = (dt_iop_spots_params_t)
   {
-    {0},{2}
+    {0}, {2}
   };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_spots_params_t));

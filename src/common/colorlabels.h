@@ -4,13 +4,14 @@
 #include "common/darktable.h"
 #include <gtk/gtk.h>
 /** array of names and constant to ease lable manipulation */
-typedef enum dt_colorlables_enum {
-	DT_COLORLABELS_RED,
-	DT_COLORLABELS_YELLOW,
-	DT_COLORLABELS_GREEN,
-	DT_COLORLABELS_BLUE,
-	DT_COLORLABELS_PURPLE,
-	DT_COLORLABELS_LAST,
+typedef enum dt_colorlables_enum
+{
+  DT_COLORLABELS_RED,
+  DT_COLORLABELS_YELLOW,
+  DT_COLORLABELS_GREEN,
+  DT_COLORLABELS_BLUE,
+  DT_COLORLABELS_PURPLE,
+  DT_COLORLABELS_LAST,
 } dt_colorlabels_enum;
 /** array with all names as strings, terminated by a NULL entry */
 extern const char *dt_colorlabels_name[];

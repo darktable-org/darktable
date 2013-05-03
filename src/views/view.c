@@ -644,9 +644,9 @@ dt_view_get_image_to_act_on()
   */
   int32_t mouse_over_id = -1;
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
-  
+
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  
+
   if(zoom == 1)
   {
     return mouse_over_id;

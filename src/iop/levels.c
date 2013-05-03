@@ -323,7 +323,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT(autobutton), "clicked",
-		    G_CALLBACK(dt_iop_levels_autoadjust_callback), (gpointer)self);
+                    G_CALLBACK(dt_iop_levels_autoadjust_callback), (gpointer)self);
   g_signal_connect (G_OBJECT(blackpick), "toggled",
                     G_CALLBACK (dt_iop_levels_pick_black_callback), self);
   g_signal_connect (G_OBJECT(greypick), "toggled",
@@ -363,9 +363,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   /* we need to save the last picked color to prevent flickering when
    * changing from one picker to another, as the picked_color value does not
    * update as rapidly */
-  if(self->request_color_pick && 
-     self->color_picker_point[0] >= 0.0f && self->color_picker_point[1] >= 0.0f &&
-     mean_picked_color != c->last_picked_color)
+  if(self->request_color_pick &&
+      self->color_picker_point[0] >= 0.0f && self->color_picker_point[1] >= 0.0f &&
+      mean_picked_color != c->last_picked_color)
   {
     float previous_color[3];
     previous_color[0] = p->levels[0];
@@ -415,8 +415,8 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
     }
 
     if (   previous_color[0] != p->levels[0]
-        || previous_color[1] != p->levels[1]
-        || previous_color[2] != p->levels[2] )
+           || previous_color[1] != p->levels[1]
+           || previous_color[2] != p->levels[2] )
     {
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
@@ -768,7 +768,7 @@ static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *
 {
   if(darktable.gui->reset) return;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;  
+  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
 
   float *hist = self->histogram;
 

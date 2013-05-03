@@ -19,17 +19,20 @@
 #include "lua/call.h"
 #include "control/control.h"
 
-static int dump_error(lua_State *L) {
-	const char * message = lua_tostring(L,-1);
-	if(darktable.unmuted & DT_DEBUG_LUA)
-		luaL_traceback(L,L,message,0);
-	// else : the message is already on the top of the stack, don't touch
-	return 1;
+static int dump_error(lua_State *L)
+{
+  const char * message = lua_tostring(L,-1);
+  if(darktable.unmuted & DT_DEBUG_LUA)
+    luaL_traceback(L,L,message,0);
+  // else : the message is already on the top of the stack, don't touch
+  return 1;
 }
 
-static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
+static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults)
+{
   int result;
-  if(loadresult){
+  if(loadresult)
+  {
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
     lua_pop(L,1);
     return 0;
@@ -37,11 +40,14 @@ static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   lua_pushcfunction(L,dump_error);
   lua_insert(L,lua_gettop(L)-(nargs+1));
   result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
-  if(lua_pcall(L, nargs, nresults,result)) {
+  if(lua_pcall(L, nargs, nresults,result))
+  {
     dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
     lua_pop(L,2);
-    if(nresults !=LUA_MULTRET) {
-      for(int i= 0 ; i < nresults; i++) {
+    if(nresults !=LUA_MULTRET)
+    {
+      for(int i= 0 ; i < nresults; i++)
+      {
         lua_pushnil(L);
       }
     }
@@ -54,15 +60,18 @@ static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults) {
   return result;
 }
 
-void dt_lua_protect_call(lua_State *L,lua_CFunction func) {
+void dt_lua_protect_call(lua_State *L,lua_CFunction func)
+{
   lua_pushcfunction(L,func);
   dt_lua_do_chunk(L,0,0,0);
 }
-void dt_lua_dostring(lua_State *L,const char* command) {
+void dt_lua_dostring(lua_State *L,const char* command)
+{
   dt_lua_do_chunk(L,luaL_loadstring(darktable.lua_state, command),0,0);
 }
 
-void dt_lua_dofile(lua_State *L,const char* filename) {
+void dt_lua_dofile(lua_State *L,const char* filename)
+{
   dt_lua_do_chunk(L,luaL_loadfile(darktable.lua_state, filename),0,0);
 }
 

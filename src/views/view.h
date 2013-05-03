@@ -103,7 +103,7 @@ typedef enum dt_view_image_over_t
 }
 dt_view_image_over_t;
 
-/** returns -1 if the action has to be applied to the selection, 
+/** returns -1 if the action has to be applied to the selection,
     or the imgid otherwise */
 int32_t dt_view_get_image_to_act_on();
 

@@ -1022,7 +1022,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 
       if(mouse_over_id == activated_image)
         if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
-         dt_view_filmstrip_scroll_relative(0, offset);
+          dt_view_filmstrip_scroll_relative(0, offset);
 
       /* redraw all */
       dt_control_queue_redraw();

@@ -95,7 +95,8 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char* tmp = dt_conf_get_string("plugins/lighttable/export/style");
-  if (tmp) {
+  if (tmp)
+  {
     strncpy (style, tmp, 128);
     g_free(tmp);
   }
@@ -411,7 +412,8 @@ focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
 }
 */
 
-static void on_storage_list_changed(gpointer instance,dt_lib_module_t *self) {
+static void on_storage_list_changed(gpointer instance,dt_lib_module_t *self)
+{
   dt_lib_export_t *d = self->data;
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage();
   GtkTreeModel *store = gtk_combo_box_get_model( d->storage );
@@ -711,7 +713,8 @@ get_params (dt_lib_module_t *self, int *size)
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
 
-  if (fdata) {
+  if (fdata)
+  {
     strncpy(fdata->style, style, 128);
   }
 

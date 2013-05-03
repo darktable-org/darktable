@@ -332,8 +332,8 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   gchar *prev_filename;
   gchar *fullfile;
   prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S,
-					  storage, file,
-					  (char *)NULL);
+                                          storage, file,
+                                          (char *)NULL);
 
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
@@ -348,15 +348,15 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
       // is probably missing...
       if (strcmp(prev_filename, fullfile) == 0)
       {
-	if (prev_filename != fullfile)
-	  g_free(prev_filename);
+        if (prev_filename != fullfile)
+          g_free(prev_filename);
 
-	g_free(fullfile);
-	g_free(storage);
+        g_free(fullfile);
+        g_free(storage);
 
-	dt_control_log(_("Couldn't expand to a uniq filename for import, please check your import settings."));
+        dt_control_log(_("Couldn't expand to a uniq filename for import, please check your import settings."));
 
-	return NULL;
+        return NULL;
       }
 
       g_free(prev_filename);

@@ -69,7 +69,7 @@ typedef struct dt_bauhaus_slider_data_t
 
   char format[24];// numeric value is printed with this string
 
-  int   is_dragging;     // indicates is mouse is dragging slider 
+  int   is_dragging;     // indicates is mouse is dragging slider
   int   is_changed;      // indicates new data
   guint timeout_handle; // used to store id of timout routine
 }
@@ -119,7 +119,7 @@ typedef struct dt_bauhaus_widget_t
   int quad_paint_flags;
   // quad is a toggle button?
   int quad_toggle;
-  
+
   //function to populate the combo list on the fly
   void (*combo_populate) (struct dt_iop_module_t **module);
 

@@ -359,8 +359,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
         int loaded_cached;
         char md5sum[33];
-        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, &loaded_cached) && 
-           dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir) != CL_SUCCESS)
+        if(dt_opencl_load_program(dev, prog, filename, binname, cachedir, md5sum, &loaded_cached) &&
+            dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           goto finally;
@@ -406,7 +406,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] \t\timage\tpreview\texport\tthumbnail\n");
     for(int i=0; i<dev; i++)
       dt_print(DT_DEBUG_OPENCL,"[opencl_init]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i], cl->dev_priority_preview[i],
-                                                                    cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+               cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
 
   }
   else
@@ -444,7 +444,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
         if(cl->dev[i].totalevents)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_summary_statistics] device '%s': %d out of %d events were successful and %d events lost\n", cl->dev[i].name,
-                                 cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost);
+                   cl->dev[i].totalsuccess, cl->dev[i].totalevents, cl->dev[i].totallost);
         }
         else
         {
@@ -522,7 +522,11 @@ static int _take_from_list(int *list, int value)
   while(*list != -1 && *list != value) list++;
   result = *list;
 
-  while(*list != -1) { *list = *(list+1); list++; }
+  while(*list != -1)
+  {
+    *list = *(list+1);
+    list++;
+  }
 
   return result;
 }
@@ -759,7 +763,7 @@ int dt_opencl_lock_device(const int pipetype)
   {
     while(*priority != -1)
     {
-      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority; 
+      if(!dt_pthread_mutex_trylock(&cl->dev[*priority].lock)) return *priority;
       priority++;
     }
   }

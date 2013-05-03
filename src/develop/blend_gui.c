@@ -987,7 +987,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
 
   dt_iop_gui_update_blendif(module);
-  
+
   /* update masks state */
   if (!(module->flags()&IOP_FLAGS_NO_MASKS))
   {
@@ -1004,7 +1004,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
     else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
   }
-  
+
   /* now show hide controls as required */
   if(bd->modes[dt_bauhaus_combobox_get(bd->blend_modes_combo)].mode == DEVELOP_BLEND_DISABLED)
   {
@@ -1117,10 +1117,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       dt_bauhaus_combobox_add_populate_fct(bd->masks_combo,dt_masks_iop_combo_populate);
       bd->masks_combo_ids = NULL;
       bd->masks_shown = 0;
-      
+
       gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->masks_combo), TRUE, TRUE,0);
     }
-    
+
     for(int k = 0; k < bd->number_modes; k++)
       dt_bauhaus_combobox_add(bd->blend_modes_combo, bd->modes[k].name);
 
@@ -1134,7 +1134,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->blend_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_mode_callback), bd);
 
-    gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);    
+    gtk_box_pack_start(GTK_BOX(iopw), bd->blend_modes_combo, TRUE, TRUE,0);
     gtk_box_pack_start(GTK_BOX(iopw), bd->opacity_slider, TRUE, TRUE,0);
 
     if(bd->blendif_support)

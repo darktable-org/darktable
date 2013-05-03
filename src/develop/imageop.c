@@ -65,11 +65,11 @@ static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_BLEND_DISABLE
 };
 
 int dt_iop_load_preset_interpolated_iso(
-    dt_iop_module_t *module,     // module to set params (via add history item)
-    const dt_image_t *cimg,      // const image carrying all the exif data to filter by
-    void *output_params,         // this has to be module->params_size large and will contain the output
-    float *output_iso1,          // if != 0, will contain one iso value
-    float *output_iso2)          // if != 0, will contain the other iso value interpolated from.
+  dt_iop_module_t *module,     // module to set params (via add history item)
+  const dt_image_t *cimg,      // const image carrying all the exif data to filter by
+  void *output_params,         // this has to be module->params_size large and will contain the output
+  float *output_iso1,          // if != 0, will contain one iso value
+  float *output_iso2)          // if != 0, will contain the other iso value interpolated from.
 {
   const void *op_params = NULL;
 
@@ -81,8 +81,8 @@ int dt_iop_load_preset_interpolated_iso(
   sqlite3_stmt *stmt;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "select op_params, iso_min, iso_max "
-      "from presets where operation = ?1 and op_version = ?2 and "
+                              "select op_params, iso_min, iso_max "
+                              "from presets where operation = ?1 and op_version = ?2 and "
                               "?3 like model and ?4 like maker and ?5 like lens and "
                               // we interpolate that away:
                               // "?6 between iso_min and iso_max and "
@@ -91,7 +91,7 @@ int dt_iop_load_preset_interpolated_iso(
                               "?8 between focal_length_min and focal_length_max and "
                               "(isldr = 0 or isldr=?9) order by "
                               "length(model), length(maker), length(lens)",
-      -1, &stmt, NULL);
+                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, cimg->exif_model, strlen(cimg->exif_model), SQLITE_TRANSIENT);
@@ -139,7 +139,7 @@ int dt_iop_load_preset_interpolated_iso(
   else
   {
     const float t = (cimg->exif_iso - iso1)/(iso2-iso1);
-    for(int k=0;k<module->params_size/4;k++)
+    for(int k=0; k<module->params_size/4; k++)
     {
       ((float *)output_params)[k] = (1.0f-t)*params1[k] + t*params2[k];
     }
@@ -1154,7 +1154,7 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
   gtk_menu_append(menu, item);
-  
+
   gtk_widget_show_all(menu);
   //popup
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
@@ -1462,16 +1462,16 @@ void dt_iop_load_modules_so()
 
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, dt_develop_t *dev)
 {
-    memset(module,0,sizeof(dt_iop_module_t));
-    if(dt_iop_load_module_by_so(module, module_so, dev))
-    {
-      free(module);
-      return 1;
-    }
-    module->data = module_so->data;
-    module->so = module_so;
-    dt_iop_reload_defaults(module);
-    return 0;
+  memset(module,0,sizeof(dt_iop_module_t));
+  if(dt_iop_load_module_by_so(module, module_so, dev))
+  {
+    free(module);
+    return 1;
+  }
+  module->data = module_so->data;
+  module->so = module_so;
+  dt_iop_reload_defaults(module);
+  return 0;
 }
 
 GList *dt_iop_load_modules(dt_develop_t *dev)
@@ -1555,7 +1555,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     if (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) length += sizeof(dt_develop_blend_params_t);
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,blendop_params->mask_id);
     length += dt_masks_group_get_hash_buffer_length(grp);
-    
+
     char *str = malloc(length);
     memcpy(str, module->params, module->params_size);
     int pos = module->params_size;
@@ -1570,7 +1570,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params, dt_d
     memcpy(module->blend_params, blendop_params, sizeof(dt_develop_blend_params_t));
     /* and we add masks */
     dt_masks_group_get_hash_buffer(grp,str+pos);
-    
+
     // assume process_cl is ready, commit_params can overwrite this.
     if(module->process_cl) piece->process_cl_ready = 1;
     module->commit_params(module, params, pipe, piece);
@@ -1716,7 +1716,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
       dt_dev_invalidate_from_gui(darktable.develop);
 
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
-    
+
     /*reset mask view */
     darktable.develop->form_visible = NULL;
     dt_masks_init_formgui(darktable.develop);
@@ -1754,7 +1754,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus)
       module->gui_focus(module, TRUE);
   }
-  
+
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
@@ -2795,7 +2795,7 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
   while (mods)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
-    if (mod->so == module->so) mod->state = state;      
+    if (mod->so == module->so) mod->state = state;
     mods = g_list_next(mods);
   }
   if(state==dt_iop_state_HIDDEN)

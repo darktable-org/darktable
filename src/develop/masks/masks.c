@@ -38,7 +38,7 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   gui->pipe_hash = gui->formid = gpt->points_count = gpt->border_count = gpt->source_count = 0;
   gpt->points = gpt->border = gpt->source = NULL;
-  
+
   if (dt_masks_get_points_border(darktable.develop,form, &gpt->points, &gpt->points_count,&gpt->border, &gpt->border_count,0))
   {
     if (form->type & DT_MASKS_CLONE) dt_masks_get_points_border(darktable.develop,form, &gpt->source, &gpt->source_count,NULL,NULL,1);
@@ -263,7 +263,7 @@ void dt_masks_read_forms(dt_develop_t *dev)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1", -1, &stmt, NULL);
+                              "select imgid, formid, form, name, version, points, points_count, source from mask where imgid = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)

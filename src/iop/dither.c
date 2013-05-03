@@ -117,7 +117,9 @@ void init_presets (dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
-    { DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
+  {
+    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
+  };
   // add the preset.
   dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
   // make it auto-apply for all images:
@@ -154,8 +156,8 @@ _find_nearest_color_n_levels_rgb(float *val, const float f, const float rf)
   __m128 tmp  = _mm_mul_ps(old, _mm_set1_ps(f));                                               // old * f
   __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp));                                         // floor(tmp)
   __m128 new  = _mm_mul_ps(_mm_add_ps(itmp, _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp),     // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
-                                   _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
-                                      
+                                      _mm_set1_ps(0.5f)), _mm_set1_ps(1.0f))), _mm_set1_ps(rf));
+
   _mm_store_ps(val, new);
 
   return _mm_sub_ps(old, new);
@@ -247,8 +249,8 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       // no automatic dithering for preview and thumbnail and also not for center view if according
       // config variable is FALSE
       if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL ||
-           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && !data->dither_center_view))
-         nearest_color = NULL;
+          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && !data->dither_center_view))
+        nearest_color = NULL;
       break;
   }
 
@@ -300,7 +302,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     _diffuse_error(out+ch, err, 7.0f/16.0f);
     _diffuse_error(out+ch*width, err, 5.0f/16.0f);
     _diffuse_error(out+ch*(width+1), err, 1.0f/16.0f);
-    
+
 
     // main part of image
     for(int i=1; i<width-1; i++)
@@ -326,7 +328,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     // lower left pixel
     err = nearest_color(out, f, rf);
     _diffuse_error(out+ch, err, 7.0f/16.0f);
-    
+
     // main part of last row
     for(int i=1; i<width-1; i++)
     {
@@ -337,7 +339,8 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     // lower right pixel
     (void)nearest_color(out+ch*(width-1), f, rf);
 
-  } while(0);
+  }
+  while(0);
 
   // copy alpha channel if needed
   if(piece->pipe->mask_display)
@@ -431,7 +434,7 @@ method_callback (GtkWidget *widget, gpointer user_data)
   if(p->dither_type == DITHER_RANDOM)
     gtk_widget_show(GTK_WIDGET(g->random));
   else
-    gtk_widget_hide(GTK_WIDGET(g->random));    
+    gtk_widget_hide(GTK_WIDGET(g->random));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -517,7 +520,7 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->dither_type == DITHER_RANDOM)
     gtk_widget_show(GTK_WIDGET(g->random));
   else
-    gtk_widget_hide(GTK_WIDGET(g->random));    
+    gtk_widget_hide(GTK_WIDGET(g->random));
 }
 
 void init(dt_iop_module_t *module)

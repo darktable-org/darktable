@@ -215,7 +215,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     buckets[k] = dt_opencl_alloc_device_buffer(devid, width*height*sizeof(float));
     if(buckets[k] == NULL) goto error;
   }
- 
+
   // prepare local work group
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group

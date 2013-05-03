@@ -78,7 +78,8 @@
 
 DT_MODULE(1)
 
-typedef enum{
+typedef enum
+{
   DT_J2K_PRESET_OFF,
   DT_J2K_PRESET_CINEMA2K_24,
   DT_J2K_PRESET_CINEMA2K_48,
@@ -194,43 +195,43 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
 
   switch(parameters->cp_cinema)
   {
-  case CINEMA2K_24:
-  case CINEMA2K_48:
-    parameters->cp_rsiz = CINEMA2K;
-    if(parameters->numresolution > 6)
-    {
-      parameters->numresolution = 6;
-    }
-    if (!((image->comps[0].w == 2048) | (image->comps[0].h == 1080)))
-    {
-      fprintf(stdout,"Image coordinates %d x %d is not 2K compliant.\nJPEG Digital Cinema Profile-3 "
-              "(2K profile) compliance requires that at least one of coordinates match 2048 x 1080\n",
-              image->comps[0].w,image->comps[0].h);
-      parameters->cp_rsiz = STD_RSIZ;
-    }
-  break;
+    case CINEMA2K_24:
+    case CINEMA2K_48:
+      parameters->cp_rsiz = CINEMA2K;
+      if(parameters->numresolution > 6)
+      {
+        parameters->numresolution = 6;
+      }
+      if (!((image->comps[0].w == 2048) | (image->comps[0].h == 1080)))
+      {
+        fprintf(stdout,"Image coordinates %d x %d is not 2K compliant.\nJPEG Digital Cinema Profile-3 "
+                "(2K profile) compliance requires that at least one of coordinates match 2048 x 1080\n",
+                image->comps[0].w,image->comps[0].h);
+        parameters->cp_rsiz = STD_RSIZ;
+      }
+      break;
 
-  case CINEMA4K_24:
-    parameters->cp_rsiz = CINEMA4K;
-    if(parameters->numresolution < 1)
-    {
-      parameters->numresolution = 1;
-    }
-    else if(parameters->numresolution > 7)
-    {
-      parameters->numresolution = 7;
-    }
-    if (!((image->comps[0].w == 4096) | (image->comps[0].h == 2160)))
-    {
-      fprintf(stdout,"Image coordinates %d x %d is not 4K compliant.\nJPEG Digital Cinema Profile-4"
-              "(4K profile) compliance requires that at least one of coordinates match 4096 x 2160\n",
-              image->comps[0].w,image->comps[0].h);
-      parameters->cp_rsiz = STD_RSIZ;
-    }
-    parameters->numpocs = initialise_4K_poc(parameters->POC,parameters->numresolution);
-    break;
-  default:
-    break;
+    case CINEMA4K_24:
+      parameters->cp_rsiz = CINEMA4K;
+      if(parameters->numresolution < 1)
+      {
+        parameters->numresolution = 1;
+      }
+      else if(parameters->numresolution > 7)
+      {
+        parameters->numresolution = 7;
+      }
+      if (!((image->comps[0].w == 4096) | (image->comps[0].h == 2160)))
+      {
+        fprintf(stdout,"Image coordinates %d x %d is not 4K compliant.\nJPEG Digital Cinema Profile-4"
+                "(4K profile) compliance requires that at least one of coordinates match 4096 x 2160\n",
+                image->comps[0].w,image->comps[0].h);
+        parameters->cp_rsiz = STD_RSIZ;
+      }
+      parameters->numpocs = initialise_4K_poc(parameters->POC,parameters->numresolution);
+      break;
+    default:
+      break;
   }
 
   switch(parameters->cp_cinema)
@@ -243,7 +244,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec)) /
-                                      (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                                     (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
         }
         else
         {
@@ -252,7 +253,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
           if(temp_rate > CINEMA_24_CS)
           {
             parameters->tcp_rates[i] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))/
-                                        (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                                       (CINEMA_24_CS * 8 * image->comps[0].dx * image->comps[0].dy);
           }
           else
           {
@@ -270,7 +271,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))/
-                                      (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                                     (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
         }
         else
         {
@@ -279,7 +280,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
           if(temp_rate > CINEMA_48_CS)
           {
             parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))/
-                                        (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
+                                       (CINEMA_48_CS * 8 * image->comps[0].dx * image->comps[0].dy);
           }
           else
           {

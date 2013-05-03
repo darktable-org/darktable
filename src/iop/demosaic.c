@@ -1124,7 +1124,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
   if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
     tiling->factor += fmax(0.25f, smooth);
-  else if(roi_out->scale > 0.5f || 
+  else if(roi_out->scale > 0.5f ||
           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
     tiling->factor += fmax(1.25f, smooth);
   else

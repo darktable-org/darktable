@@ -104,9 +104,9 @@ int legacy_params (dt_iop_module_t *self, const void *const old_params, const in
       float angle, cx, cy, cw, ch, k_h, k_v;
     }
     old_params_t;
-    
+
     old_params_t *o = (old_params_t *)old_params;
-    
+
     uint32_t intk = *(uint32_t *)&o->k_h;
     int is_horizontal;
     if(intk & 0x40000000u) is_horizontal = 1;
@@ -146,7 +146,7 @@ int legacy_params (dt_iop_module_t *self, const void *const old_params, const in
       float angle, cx, cy, cw, ch, k_h, k_v;
     }
     old_params_t;
-    
+
     old_params_t *o = (old_params_t *)old_params;
 
     n->angle=o->angle, n->cx=o->cx, n->cy=o->cy, n->cw=o->cw, n->ch=o->ch;
@@ -174,9 +174,9 @@ int legacy_params (dt_iop_module_t *self, const void *const old_params, const in
       int k_apply, crop_auto;
     }
     old_params_t;
-    
+
     old_params_t *o = (old_params_t *)old_params;
-    
+
     n->angle=o->angle, n->cx=o->cx, n->cy=o->cy, n->cw=o->cw, n->ch=o->ch;
     n->k_h=o->k_h, n->k_v=o->k_v;
     n->kxa=o->kxa, n->kxb=o->kxb, n->kxc=o->kxc, n->kxd=o->kxd;
@@ -1196,7 +1196,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
     {
       const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
       float whratio = ((float)(self->dev->image_storage.width - 2 * interpolation->width) * (fabsf(p->cw) - p->cx)) /
-        ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+                      ((float)(self->dev->image_storage.height - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       float ri = self->dev->image_storage.width / (float)self->dev->image_storage.height;
 
       float prec = 0.0003f;
@@ -1221,7 +1221,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
   float d=1.0f, n=1.0f;
   if (p->ratio_n==0) d=copysign(self->dev->image_storage.width,p->ratio_d), n=self->dev->image_storage.height;
   else d=p->ratio_d, n=p->ratio_n;
-  
+
   if (d<0) return -n/d;
   else return d/n;
 }
@@ -1383,7 +1383,7 @@ static void aspect_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
     else if (which==RATIO_IMAGE) d=1, n=0;
     else d=n=0;
   }
-  
+
   //now we save all that if it has changed
   if (d!=abs(p->ratio_d) || n!=p->ratio_n)
   {
@@ -1423,10 +1423,10 @@ keystone_type_changed (GtkWidget *combo, dt_iop_module_t *self)
   int which = dt_bauhaus_combobox_get(combo);
   if ((which == 5) || (which == 4 && p->k_h==0 && p->k_v==0))
   {
-     //if the keystone is applied,autocrop must be disabled !
-     gtk_widget_set_sensitive(g->crop_auto,FALSE);
-     gtk_widget_set_sensitive(g->aspect_presets, TRUE);
-     return;
+    //if the keystone is applied,autocrop must be disabled !
+    gtk_widget_set_sensitive(g->crop_auto,FALSE);
+    gtk_widget_set_sensitive(g->aspect_presets, TRUE);
+    return;
   }
   //we recreate the list to be sure that the "already applied" entry is not display
   if (g->k_show == 2)
@@ -1546,7 +1546,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if (dt_bauhaus_combobox_get(g->aspect_presets) == act) aspect_presets_changed(g->aspect_presets, self);
   else dt_bauhaus_combobox_set(g->aspect_presets, act);
-  
+
   // reset gui draw box to what we have in the parameters:
   g->applied = 1;
   g->clip_x = p->cx;
@@ -1748,7 +1748,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->aspect_presets, _("10:8 in print"));
 
   dt_bauhaus_combobox_set(g->aspect_presets, 0);
-  
+
   g_signal_connect (G_OBJECT (g->aspect_presets), "value-changed", G_CALLBACK (aspect_presets_changed), self);
   g_object_set(G_OBJECT(g->aspect_presets), "tooltip-text", _("set the aspect ratio (w:h)"), (char *)NULL);
   dt_bauhaus_widget_set_quad_paint(g->aspect_presets, dtgtk_cairo_paint_aspectflip, 0);
@@ -1854,7 +1854,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   //we don't do anything if the image is not ready
   if (self->dev->preview_pipe->backbuf_width==g->old_width && self->dev->preview_pipe->backbuf_height==g->old_height) return;
   g->old_width = g->old_height = -1;
-  
+
   //reapply box aspect to be sure that the ratio has not been modified by the keystone transform
   apply_box_aspect(self,5);
 
@@ -2314,7 +2314,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   //we don't do anything if the image is not ready
   if (self->dev->preview_pipe->backbuf_width==g->old_width && self->dev->preview_pipe->backbuf_height==g->old_height) return 0;
   g->old_width = g->old_height = -1;
-  
+
   int32_t zoom, closeup;
   float wd = self->dev->preview_pipe->backbuf_width;
   float ht = self->dev->preview_pipe->backbuf_height;
@@ -2620,7 +2620,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   //we don't do anything if the image is not ready
   if (self->dev->preview_pipe->backbuf_width==g->old_width && self->dev->preview_pipe->backbuf_height==g->old_height) return 0;
   g->old_width = g->old_height = -1;
-  
+
   if(g->straightening)
   {
     float dx = x - g->button_down_x, dy = y - g->button_down_y;
@@ -2657,7 +2657,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
   //we don't do anything if the image is not ready
   if (self->dev->preview_pipe->backbuf_width==g->old_width && self->dev->preview_pipe->backbuf_height==g->old_height) return 0;
   g->old_width = g->old_height = -1;
-  
+
   // avoid unexpected back to lt mode:
   if(type == GDK_2BUTTON_PRESS && which == 1)
   {

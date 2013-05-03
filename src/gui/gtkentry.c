@@ -188,7 +188,8 @@ dt_gtkentry_setup_completion(GtkEntry *entry, const dt_gtkentry_completion_spec 
 const dt_gtkentry_completion_spec *
 dt_gtkentry_get_default_path_compl_list ()
 {
-  static dt_gtkentry_completion_spec default_path_compl_list[] = {
+  static dt_gtkentry_completion_spec default_path_compl_list[] =
+  {
     { "ROLL_NAME", N_("$(ROLL_NAME) - roll of the input image") },
     { "FILE_FOLDER", N_("$(FILE_FOLDER) - folder containing the input image") },
     { "FILE_NAME", N_("$(FILE_NAME) - basename of the input image") },
@@ -226,7 +227,7 @@ dt_gtkentry_get_default_path_compl_list ()
  */
 gchar *
 dt_gtkentry_build_completion_tooltip_text (const gchar *header,
-		                           const dt_gtkentry_completion_spec *compl_list)
+    const dt_gtkentry_completion_spec *compl_list)
 {
   const unsigned int tooltip_len = 1024;
   gchar *tt = g_malloc0_n(tooltip_len, sizeof(gchar));

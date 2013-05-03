@@ -26,7 +26,8 @@
 
 
 // closed on GC of the dt lib, usually when the lua interpreter closes
-static int dt_luacleanup(lua_State*L) {
+static int dt_luacleanup(lua_State*L)
+{
   const int init_gui = (darktable.gui != NULL);
   if(!init_gui)
     dt_cleanup();
@@ -38,7 +39,8 @@ static int dt_luacleanup(lua_State*L) {
   hardcoded list of types to register
   other types can be added dynamically
  */
-static lua_CFunction init_funcs[] = {
+static lua_CFunction init_funcs[] =
+{
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,
@@ -46,7 +48,8 @@ static lua_CFunction init_funcs[] = {
 };
 
 
-void dt_lua_init_early(lua_State*L){
+void dt_lua_init_early(lua_State*L)
+{
   if(!L)
     L= luaL_newstate();
   darktable.lua_state= L;
@@ -64,18 +67,20 @@ void dt_lua_init_early(lua_State*L){
 }
 
 
-void dt_lua_init(lua_State*L,const int init_gui){
+void dt_lua_init(lua_State*L,const int init_gui)
+{
   char tmp_path[PATH_MAX];
 
   // init the lua environment
   lua_CFunction* cur_type = init_funcs;
-  while(*cur_type) {
+  while(*cur_type)
+  {
     (*cur_type)(L);
     cur_type++;
   }
   dt_lua_push_darktable_lib(L);
-  // build the table containing the configuration info 
-  
+  // build the table containing the configuration info
+
   lua_getglobal(L,"package");
   dt_lua_goto_subtable(L,"loaded");
   lua_pushstring(L,"darktable");
@@ -99,7 +104,8 @@ void dt_lua_init(lua_State*L,const int init_gui){
 
 
 
-  if(init_gui) {
+  if(init_gui)
+  {
     // run global init script
     dt_loc_get_datadir(tmp_path, PATH_MAX);
     g_strlcat(tmp_path,"/rc.lua",PATH_MAX);
