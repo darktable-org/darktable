@@ -41,7 +41,8 @@ DT_MODULE(1)
 #define FB_GRAPH_BASE_URL "https://graph.facebook.com/"
 #define FB_API_KEY "315766121847254"
 
-#define FB_IMAGE_MAX_SIZE 960
+//facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
+#define FB_IMAGE_MAX_SIZE 2048
 
 #define MSGCOLOR_RED "#e07f7f"
 #define MSGCOLOR_GREEN "#7fe07f"
@@ -1177,7 +1178,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  //facebook doesn't allow picture bigger than 960x960 px
+  //facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
   if (fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE)
     fdata->max_height = FB_IMAGE_MAX_SIZE;
   if (fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE)
