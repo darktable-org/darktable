@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "POT-Creation-Date: 2013-05-02 15:27+0200\n"
-"PO-Revision-Date: 2013-05-02 17:31+0100\n"
+"PO-Revision-Date: 2013-05-04 14:28+0100\n"
 "Last-Translator: Guilherme Brondani Torri <guitorri@gmail.com>\n"
 "Language-Team: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -311,7 +311,7 @@ msgstr ""
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:132(para)
 msgid "Tethered shooting."
-msgstr "Disparo remoto"
+msgstr "Acesso remoto"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:135(para)
 msgid ""
@@ -360,6 +360,9 @@ msgid ""
 "A powerful blend mask feature gives you fine control on module's effect to "
 "different parts of an image steered by pixel values."
 msgstr ""
+"Um poderoso recurso de máscara de mesclagem oferece detalhado controle sobre "
+"o efeito do módulo para diferentes partes de uma imagem orientada por "
+"valores de pixel."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:154(para)
 msgid ""
@@ -367,6 +370,9 @@ msgid ""
 "feature, you can let an operation have different effects on different parts "
 "of the image."
 msgstr ""
+"A maioria dos módulos podem existir como múltiplas instâncias. Junto com o "
+"recurso de máscara de mesclagem, você pode deixar uma operação têm "
+"diferentes efeitos em diferentes partes da imagem."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:157(para)
 msgid ""
@@ -375,6 +381,11 @@ msgid ""
 "the denoising performance only depends on camera and ISO setting. A database "
 "of profiles contains parameters for well over 70 popular camera models."
 msgstr ""
+"darktable introduz um altamente eficiente, porém simples <quote>single-"
+"click</quote> redutor de ruído que sempre funciona (™). Ele foi projetado "
+"como um módulo onde o desempenho da redução de ruído só depende da câmera e "
+"ajuste de ISO. Um banco de dados de perfis contém parâmetros para bem mais "
+"de 70 modelos de câmeras populares."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:167(title)
 msgid "User interface"
@@ -386,7 +397,7 @@ msgstr "Esta seção descreve o layout da interface do usuário."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:185(title)
 msgid "Views"
-msgstr ""
+msgstr "Vistas"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:186(para)
 msgid ""
@@ -402,6 +413,17 @@ msgid ""
 "tethering</entry></row><row><entry><emphasis>m</emphasis></"
 "entry><entry>switches to map</entry></row></tbody></tgroup></informaltable>"
 msgstr ""
+"darktable consiste de várias visas ou modos. Existem quatro vistas "
+"disponíveis como descritas nesta seção. Você pode alternar entre vistas "
+"clicando no nome da vista no topo do painel da direita - a vista ativa é "
+"realçada - ou usando uma das teclas de atalho rápido: <informaltable frame="
+"\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec "
+"colwidth=\"1*\"/><colspec colwidth=\"9*\"/><tbody><row><entry><emphasis>l</"
+"emphasis></entry><entry>muda para mesa de luz</entry></"
+"row><row><entry><emphasis>d</emphasis></entry><entry>muda para sala escura</"
+"entry></row><row><entry><emphasis>t</emphasis></entry><entry>muda para "
+"acesso remoto</entry></row><row><entry><emphasis>m</emphasis></"
+"entry><entry>muda para mapa</entry></row></tbody></tgroup></informaltable>"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:208(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:461(title)
@@ -415,6 +437,10 @@ msgid ""
 "where you rate images, add tags and colorlabels, and export images among "
 "other actions (see <xref linkend=\"lighttable_chapter\"/>)."
 msgstr ""
+"A vista mesa de luz é onde as imagens e rolos de filme são gerenciados. É "
+"também onde você classifica imagens, adicionar tags e etiquetas coloridas, e "
+"exporta imagens entre outras ações (ver <xref linkend=\"lighttable_chapter\"/"
+">)."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:213(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1222(title)
@@ -426,13 +452,15 @@ msgid ""
 "In the darkroom view you develop a single image using the available modules "
 "(see <xref linkend=\"darkroom_chapter\"/>)."
 msgstr ""
+"Na sala escura você revela uma única imagem usando os módulos disponíveis "
+"(see <xref linkend=\"darkroom_chapter\"/>)."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:217(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:644(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:5560(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:5581(title)
 msgid "Tethering"
-msgstr "Disparo remoto"
+msgstr "Acesso remoto"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:218(para)
 msgid ""
@@ -440,6 +468,9 @@ msgid ""
 "remotely capturing images that will be downloaded and shown on computer "
 "screen (see <xref linkend=\"tethering_chapter\"/>)."
 msgstr ""
+"Esta vista é para fotografar com a câmera conectada ao computador e capturar "
+"imagens remotamente que serão baixadas e mostradas na tela do computador "
+"(veja <xref linkend=\"tethering_chapter\"/>)."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:222(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:980(emphasis)
@@ -452,6 +483,8 @@ msgid ""
 "This view shows images with geo-tag data on a map and allows manually geo-"
 "tagging new images (see <xref linkend=\"map_chapter\"/>)."
 msgstr ""
+"Esta vista mostra imagens com dados geo-tag em um mapa e permite manualmente "
+"geo-tagging novas imagens (veja <xref linkend=\"map_chapter\"/>)."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:227(title)
 msgid "Screen layout"
@@ -468,6 +501,15 @@ msgid ""
 "triangle like <inlinegraphic fileref=\"images/general_icon_collapse.png\" "
 "scalefit=\"1\" width=\"2%\"/>, located close to the panel."
 msgstr ""
+"O layout de todas as vistas em geral é semelhante. Há uma área central que "
+"contém a maioria das informações relevantes aquele modo de visualização. "
+"Depois, existem painéis na esquerda, direita, acima e abaixo da área "
+"central. O painel da esquerda tem tipicamente fins informativos. O painel da "
+"direita oferece funções para modificar uma imagem. O painel superior e "
+"inferior dão acesso a várias configurações e atalhos. Cada um dos painéis "
+"pode ser recolhido ou expandido pressionando um triângulo como "
+"<inlinegraphic fileref=\"images/general_icon_collapse.png\" scalefit=\"1\" "
+"width=\"2%\"/>, localizado perto do painel."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:233(para)
 msgid ""
@@ -475,10 +517,15 @@ msgid ""
 "allowing the center area to occupy all available space. Pressing "
 "<emphasis>TAB</emphasis> again brings you back to the previous view."
 msgstr ""
+"Ao pressionar a tecla <emphasis>TAB</emphasis> todos os painéis são "
+"colapsados, permitindo que a área central para ocupar todo o espaço "
+"disponível. Pressionando <emphasis>TAB</emphasis> novamente o traz de volta "
+"à tela anterior."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:236(para)
 msgid "Fullscreen view can be toggled by pressing <emphasis>F11</emphasis>."
 msgstr ""
+"Modo de tela cheia pode ser alternado pressionando <emphasis>F11</emphasis>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:238(para)
 msgid ""
@@ -486,11 +533,14 @@ msgid ""
 "<emphasis>F8</emphasis> and darktable's lightness by using <emphasis>F9</"
 "emphasis> and <emphasis>F10</emphasis>."
 msgstr ""
+"contraste de darktable pode ser alterado usando <emphasis>F7</emphasis> e "
+"<emphasis>F8</emphasis> e a luminosidade de darktable usando <emphasis>F9</"
+"emphasis> e <emphasis>F10</emphasis>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:242(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1255(title)
 msgid "Filmstrip"
-msgstr ""
+msgstr "Tira de filme"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:243(para)
 msgid ""
@@ -503,10 +553,19 @@ msgid ""
 "double clicking the thumbnail in the filmstrip. You can also rate the images "
 "as you do in lighttable, copy/paste history stack, etc."
 msgstr ""
+"A tira de filme na parte inferior mostra as mesmas imagens como a mesa de "
+"luz, com relação aos filtros e ordem de classificação. Ela é ligada/"
+"desligada com a tecla de atalho <emphasis>ctrl-f</emphasis>. Você pode "
+"navegar ao longo da tira de filme de com a roda do mouse. A tira de filme "
+"permite que você interaja com as imagens enquanto você não está no modo mesa "
+"de luz. Por exemplo, ao revelar uma imagem no modo de sala escura, você pode "
+"mudar para a revelação de outra imagem com um duplo clique na miniatura na "
+"película. Você também pode classificar as imagens como você faz na mesa de "
+"luz, copiar/colar o histórico de ações, etc."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:251(title)
 msgid "Preferences"
-msgstr ""
+msgstr "Preferências"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:252(para)
 msgid ""
@@ -514,6 +573,9 @@ msgid ""
 "\"1\" width=\"2%\" align=\"center\"/> located in the upper panel allows you "
 "to define various parameters which control darktable's behavior."
 msgstr ""
+"O botão <inlinegraphic fileref=\"images/darkroom_preferences.png\" scalefit="
+"\"1\" width=\"2%\" align=\"center\"/> localizado no painel superior permite "
+"a definição de vários parâmetros que controlam o comportamento de darktable."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:255(para)
 msgid ""
@@ -522,14 +584,18 @@ msgid ""
 "tip. All configuration parameters are explained in <xref linkend="
 "\"preferences_chapter\"/>."
 msgstr ""
+"As opções são bastante auto-explicativas. Se precisar de mais informações, "
+"passe o cursor do mouse sobre o rótulo de texto ou caixa de entrada, para "
+"exibir uma mensagem pop-up. Todos os parâmetros de configuração são "
+"explicados em <xref linkend=\"preferences_chapter\"/>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:262(title)
 msgid "darktable basic workflow"
-msgstr ""
+msgstr "Fluxo de trabalho básico do darktable"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:263(title)
 msgid "Importing images"
-msgstr ""
+msgstr "Importando imagens"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:264(para)
 msgid ""
@@ -538,10 +604,14 @@ msgid ""
 "can either import from the filesystem or, if darktable supports your camera "
 "model, directly from camera."
 msgstr ""
+"Para começar com darktable, você precisa antes importar imagens. O módulo de "
+"importação está no painel esquerdo da vista mesa de luz (<xref linkend="
+"\"import\"/>). Você pode tanto importar do sistema de arquivos ou, se "
+"darktable suporta o seu modelo de câmera, diretamente da câmera."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:268(title)
 msgid "Importing images from filesystem"
-msgstr ""
+msgstr "Importando imagens do sistema de arquivos"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:269(para)
 msgid ""
@@ -549,10 +619,13 @@ msgid ""
 "darktable will analyse its content, detect images that are already imported "
 "and only import new images."
 msgstr ""
+"Quando importando do disco, você pode importar tanto uma única imagem ou uma "
+"pasta de arquivos. darktable irá analisar o conteúdo,  detectar imagens que "
+"já foram importadas e importará somente novas imagens."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:274(title)
 msgid "Importing from camera"
-msgstr ""
+msgstr "Importando da câmera"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:275(para)
 msgid ""
@@ -563,20 +636,29 @@ msgid ""
 "button. Your camera will then appear in the same pane with additional "
 "choices: <emphasis>import</emphasis> and <emphasis>tethering</emphasis>."
 msgstr ""
+"Conecte sua câmera ao seu sistema. Se a sua distribuição tenta montar a "
+"câmera automaticamente, selecione a opção de abortar a operação de montagem. "
+"Caso contrário, a câmera será bloqueada e não poderá ser acessada por meio "
+"do darktable. Se você não vê a câmera no painel de importação, pressione o "
+"botão <quote>procurar por dispositivos</quote>. Sua câmera irá aparecer no "
+"mesmo painel com opções adicionais: <emphasis> importação </emphasis> e "
+"<emphasis> acesso remoto </emphasis>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:282(title)
 msgid "Basic development steps"
-msgstr ""
+msgstr "Passos básicos de revelação"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:283(title)
 msgid "Introduction"
-msgstr ""
+msgstr "Introdução"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:284(para)
 msgid ""
 "This section will guide you through the basics of developing an image in the "
 "darkroom view."
 msgstr ""
+"Esta seção irá guiá-lo através dos fundamentos da revelação de uma imagem na "
+"vista de câmara escura."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:287(para)
 msgid ""
@@ -585,6 +667,10 @@ msgid ""
 "adjustments for an image are made, where an arsenal of modules are at hand "
 "to help you reach your goal."
 msgstr ""
+"Para começar, abra uma imagem no modo de sala escura com um duplo clique na "
+"miniatura de uma imagem na mesa de luz. O modo de sala escura é onde são "
+"feitos os ajustes de uma imagem, onde um arsenal de módulos estão à "
+"disposição para ajudá-lo a alcançar seu objetivo."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:292(para)
 msgid ""
@@ -595,6 +681,13 @@ msgid ""
 "\"save\" button, therefore you can safely leave darkroom mode or darktable, "
 "and come back later to continue your work."
 msgstr ""
+"Cada mudança feita em um módulo durante o desenvolvimento de uma imagem é "
+"transformada em um ítem no <link linkend=\"history\"><emphasis> histórico de "
+"ações </emphasis></link>. O histórico é armazenado em um banco de dados e em "
+"um arquivo XMP associado para a imagem específica. As alterações são "
+"armazenadas automaticamente, sem a necessidade de pressionar um botão "
+"\"salvar\", portanto, você pode seguramente sair do modo de sala escura ou "
+"darktable, e voltar mais tarde para continuar o seu trabalho."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:298(para)
 msgid ""
@@ -606,6 +699,14 @@ msgid ""
 "redundant changes will be discarded. When you think you are done and are "
 "happy with what you have done, just compress the history stack."
 msgstr ""
+"No painel da esquerda no modo de sala escura está o <link linkend=\"history"
+"\"><emphasis>histórico de ações</emphasis></link>, mostrando alterações a de "
+"baixo para cima, e incrementado com cada alteração feita à imagem. Você pode "
+"selecionar um ponto nesse histórico para mostrar como a imagem parecia "
+"naquele momento, para comparar as mudanças. O histórico pode ser comprimido: "
+"ele vai ser otimizado e as mudanças redundantes serão descartadas. Quando "
+"você pensa que terminou e está feliz com o trabalho realizado, basta "
+"comprimir a pilha do histórico de ações."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:306(para)
 msgid ""
@@ -619,11 +720,21 @@ msgid ""
 "of the right panel, by clicking a module until a star is displayed in front "
 "of the icon."
 msgstr ""
+"darktable é distribuído com um número de módulos, dispostos em grupos. Estes "
+"grupos de módulos são acessados através de botões de alternância no painel "
+"da direita, logo abaixo do histograma. Há também dois grupos de módulos "
+"especiais módulo chamados <quote>ativos</quote> e <quote>favoritos</quote>, "
+"que mostram apenas os módulos habilitados no histórico para a imagem actual "
+"e módulos selecionados como favoritos, respectivamente. Marcando um módulo "
+"como um favorito é feito na caixa  de diálogo <emphasis>mais modulos</"
+"emphasis> (<xref linkend=\"more_modules\"/>), na parte inferior do painel da "
+"direita, clicando um módulo de modo que uma estrela seja mostrada em frente "
+"ao ícone."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:317(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:2612(title)
 msgid "White balance"
-msgstr ""
+msgstr "Balanço de branco"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:318(para)
 msgid ""
@@ -634,10 +745,17 @@ msgid ""
 "done using the <quote>temperature in</quote> slider. Moving this slider left "
 "will make the color balance cooler, and moving it right will make it warmer."
 msgstr ""
+"O módulo <link linkend=\"whitebalance\"><emphasis>balanço de branco</"
+"emphasis></link> controla o balanço de branco ou temperatura de cor da "
+"imagem. É sempre habilitado e lê seus valores padrão de metadados da câmera "
+"embutidos na imagem. A alteração mais comum é o ajuste fino do balanço de "
+"branco, o que é feito usando o deslizador <quote>temperatura</quote>. "
+"Movendo este deslizador para esquerda fará o equilíbrio de cores mais frias, "
+"e movendo-o para a direita irá torná-lo mais quente."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:326(title)
 msgid "Exposure correction"
-msgstr ""
+msgstr "Correção de exposição"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:327(para)
 msgid ""
@@ -648,10 +766,17 @@ msgid ""
 "black level to enhance contrast; but be careful: use small amounts, like "
 "steps of 0.005. There is also an auto-correct feature."
 msgstr ""
+"O módulo <link linkend=\"exposure\"><emphasis>exposição</emphasis></link> é "
+"provavelmente o módulo mais básico de todos. O ajuste fino de exposição é "
+"feito ou usando o deslizador, ou arrastando com o mouse no <link linkend="
+"\"histogram\"><emphasis>histograma</emphasis></link>. Você também pode "
+"aumentar o nível de preto para melhorar o contraste, mas tenha cuidado: use "
+"pequenas quantidades, como passos de 0,005. Há também um recurso de auto-"
+"correção."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:333(title)
 msgid "Noise reduction"
-msgstr ""
+msgstr "Redução de ruído"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:334(para)
 msgid ""
@@ -674,10 +799,29 @@ msgid ""
 "means</emphasis></link> is probably the most convenient, as it allows you to "
 "treat color and luminance noise separately."
 msgstr ""
+"O melhor ponto de partida para a redução de ruído é <link linkend="
+"\"denoise_profiled\"><emphasis>redução de ruído (perfilado)</emphasis></"
+"link>. Este módulo oferece uma solução quase <quote> único clique </quote> "
+"para combater o ruído. Da perspectiva do usuário o efeito só depende do tipo "
+"de câmera e valor ISO, ambos derivados de dados EXIF. Todas as outras "
+"configurações são tomadas a partir de uma base de dados de perfis de ruído "
+"que a equipe darktable recolheu - agora já abrange mais de 70 modelos de "
+"câmeras populares. Além disso, você tem várias outras opções no darktable "
+"para reduzir o ruído. Há <link linkend=\"raw_denoise\"><emphasis>redução "
+"ruído raw</emphasis> </link>, <link linkend=\"denoise_bilateral"
+"\"><emphasis>redução ruído baseado em filtro bilateral</emphasis></link>, "
+"<link linkend=\"denoise_non_local_means\"> <emphasis>redução de ruido "
+"baseada em médias não-locais</emphasis></link> e <link linkend=\"equalizer"
+"\"><emphasis>equalizador</emphasis > </link>, que se baseia em wavelets. Se "
+"sua câmera ainda não é suportado por <link linkend=\"denoise_profiled"
+"\"><emphasis>redução de ruído (perfilado)</emphasis></link>, <link linkend="
+"\"denoise_non_local_means\"><emphasis>redução de ruído baseada em médias não-"
+"locais</emphasis> </link> é provavelmente o mais conveniente, pois permite "
+"tratar ruído de cor e luminância separadamente."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:347(title)
 msgid "Fixing spots"
-msgstr ""
+msgstr "Corrigindo manchas"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:348(para)
 msgid ""
@@ -689,10 +833,17 @@ msgid ""
 "\"hotpixels\"><emphasis>hot pixels</emphasis></link> module for automatic "
 "correction."
 msgstr ""
+"Às vezes você precisará remover manchas causadas pela sujeira sensor. O "
+"módulo <link linkend=\"spot_removal\"> <emphasis>remoção de manchas</"
+"emphasis></link> está disponível e também pode corrigir outros elementos "
+"indesejados, como manchas na pele. Se a sua câmera possui pixels defeituosos "
+"ou tende a produzir quentes pixels em valores altos de ISO, ou tempos de "
+"exposição mais longos, dê uma olhar no módulo <link linkend=\"hotpixels"
+"\"><emphasis>pixels quentes</emphasis></link> para correção automática."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:355(title)
 msgid "Geometrical corrections"
-msgstr ""
+msgstr "Correções geométricas"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:356(para)
 msgid ""
@@ -705,10 +856,19 @@ msgid ""
 "transversal chromatic aberrations or vignetting, there is a <link linkend="
 "\"lens_correction\"><emphasis>lens correction</emphasis></link> module."
 msgstr ""
+"Muito freqüentemente você quer mostrar apenas uma parte da cena capturada em "
+"sua imagem, por exemplo, para tirar alguma característica indesejada perto "
+"da borda da cena. Em outros casos, o horizonte na imagem pode precisar de "
+"nivelamento, ou se houverem distorções de perspectiva. Tudo isso pode ser "
+"corrigido no módulo <link linkend=\"crop_and_rotate\"><emphasis>cortar e "
+"girar</emphasis></link>. Se você precisa corrigir falhas típicas da lente de "
+"câmera como distorção almofada, aberrações cromáticas transversais ou "
+"vinhetas, há um módulo <link linkend=\"lens_correction\"><emphasis>correção "
+"da lente</emphasis></link>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:365(title)
 msgid "Bringing back detail"
-msgstr ""
+msgstr "Trazendo de volta detalhes"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:366(para)
 msgid ""
@@ -722,10 +882,19 @@ msgid ""
 "\"highlight_reconstruction\"><emphasis>highlight reconstruction</emphasis></"
 "link> module."
 msgstr ""
+"As imagens digitais RAW, muitas vezes contêm mais informações do que você "
+"pode ver à primeira vista. Especialmente nas sombras de uma imagem, há "
+"muitos detalhes ocultos. Os módulo <link linkend=\"shadows_and_highlights\"> "
+"<emphasis>sombras e relces</emphasis></link> ajuda a trazer essas "
+"informações de volta para os valores tonais visíveis. Detalhes estruturais "
+"em realces completamente estourados, por natureza do sensor digital, não "
+"podem ser recuperado. No entanto, você pode corrigir a cor desfavorável "
+"nestas áreas com o módulo <link linkend=\"highlight_reconstruction"
+"\"><emphasis>reconstrução de realce</emphasis></link>."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:374(title)
 msgid "Adjusting global contrast"
-msgstr ""
+msgstr "Ajustando o contraste global"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:375(para)
 msgid ""
@@ -740,10 +909,21 @@ msgid ""
 "\"zone_system\"><emphasis>zone system</emphasis></link> module which allows "
 "control over tonal values by zones, inspired by the work of Ansel Adams."
 msgstr ""
+"Quase cada fluxo de trabalho irá abranger como um elemento fundamental o "
+"ajuste de contraste global. Você vai querer controlar como os valores de "
+"tonais da imagem cobrem a faixa disponível em sua mídia de saída. darktable "
+"oferece vários módulos alternativos para cuidar disso. Em um deles, o módulo "
+"<link linkend=\"tone_curve\"><emphasis>curva de tom</emphasis></link>, os "
+"valores tonais são ajustados através da construção de uma curva de "
+"gradiente. O módulo <link linkend=\"levels\"><emphasis>níveis</emphasis></"
+"link> oferece uma interface muito mais simples, com apenas três controles "
+"deslizantes. Além disso, há o módulo <link linkend=\"zone_system"
+"\"><emphasis>sistema de zona</emphasis></link> que permite o controle sobre "
+"os valores tonais por zonas, inspirada na obra de Ansel Adams."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:385(title)
 msgid "Enhancing local contrast"
-msgstr ""
+msgstr "Melhorando o contraste local"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:386(para)
 msgid ""
@@ -757,10 +937,20 @@ msgid ""
 "to get a feeling for how it works. Equalizer is darktable's \"Swiss Army "
 "Knife\" for many adjustments where spatial dimension plays a role."
 msgstr ""
+"Realce de contraste local pode enfatizar detalhes e a clareza em sua imagem. "
+"Usada com cautela, pode dar a sua fotografia um certo charme. darktable "
+"oferece vários módulos para esta tarefa. O módulo <link linkend="
+"\"local_contrast\"><emphasis>contraste local</emphasis></link> é fácil de "
+"usar, com apenas alguns parâmetros. Uma técnica muito mais versátil, mas "
+"também mais complexa, é oferecido pelo módulo <link linkend=\"equalizer"
+"\"><emphasis> equalizador</emphasis></link>. Dê uma olhada em suas "
+"predefinições, para ter uma idéia de como ele funciona. O equalizador é o "
+"\"canivete suíço\" de darktable para muitos ajustes em que a dimensão "
+"espacial desempenha um papel."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:396(title)
 msgid "Color adjustments"
-msgstr ""
+msgstr "Ajustes de cor"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:397(para)
 msgid ""
@@ -780,10 +970,26 @@ msgid ""
 "consider using darktable's <link linkend=\"channel_mixer\"><emphasis>channel "
 "mixer</emphasis></link>."
 msgstr ""
+"darktable oferece vários módulos para ajustar as cores em uma imagem. Uma "
+"técnica muito simples é implementada no módulo <link linkend="
+"\"color_correction\"><emphasis>correção de cor</emphasis></link>. Use-o para "
+"dar a uma imagem um tonalidade generalizada ou ajustar a saturação de cores "
+"em geral. O módulo <link linkend=\"color_zones\"><emphasis>zonas de cor</"
+"emphasis></link> oferece um controle muito mais fino para ajustar a "
+"saturação, ou luminosidade, e mesmo matiz, em zonas definidas pelo usuário. "
+"O módulo de darktable <link linkend=\"tone_curve\"><emphasis>curva de tom</"
+"emphasis></link> - além do clássico ajuste de valores tonais - permite um "
+"controle fino sobre as cores de uma imagem. Finalmente, se você pretende "
+"converter uma imagem para pretp &amp; branco, um bom ponto de partida, com "
+"um interface de usuário fácil de usar e intuitiva, é oferecido pelo módulo "
+"<link linkend=\"monochrome\"><emphasis>monocromático</emphasis></link>. "
+"Alternativamente, você pode considerar o uso  do <link linkend="
+"\"channel_mixer\"><emphasis>misturador  de canais</emphasis></link> de "
+"darktable."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:409(title)
 msgid "Sharpening"
-msgstr ""
+msgstr "Nitidez"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:410(para)
 msgid ""
@@ -795,10 +1001,18 @@ msgid ""
 "\"highpass\"><emphasis>highpass</emphasis></link> module, in combination "
 "with darktable's rich set of blending operators."
 msgstr ""
+"Se você começar o seu fluxo de trabalho a partir de uma imagem RAW, você "
+"precisa acrescentar nitized ao seu resultado final. O módulo <link linkend="
+"\"sharpen\"><emphasis>nitidez</emphasis></link> pode fazer isso com a "
+"abordagem clássica USM (Unsharp Mask), disponível na maioria dos softwares "
+"de processamento de imagem. Outra maneira muito versátil para melhorar as "
+"bordas de uma imagem é oferecido pelo módulo <link linkend=\"highpass"
+"\"><emphasis>passa-altas</emphasis></link>, em combinação com o rico "
+"conjunto de operadores de mesclagem do darktable."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:418(title)
 msgid "Artistic effects"
-msgstr ""
+msgstr "Efeitos artísticos"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:419(para)
 msgid ""
@@ -815,10 +1029,23 @@ msgid ""
 "density</emphasis></link> filter adds a neutral or colored gradient to your "
 "image for exposure and color correction."
 msgstr ""
+"darktable vem com um rico conjunto de módulos de efeitos artísticos. Para "
+"citar apenas alguns: com o módulo <link linkend=\"watermark"
+"\"><emphasis>marca d'água</emphasis></link> você adiciona uma marca-d'água "
+"indivídual à sua imagem. O módulo <link linkend=\"grain\"><emphasis>grão</"
+"emphasis></link> simula o ruído típico de clássicas imagens analógicas. Use "
+"o módulo <link linkend=\"color_mapping\"><emphasis>mapeamento de cores</"
+"emphasis></link> para transferir a aparência de cor de uma imagem para "
+"outra. O módulo <link linkend=\"low_light\"><emphasis>visão luminosidade "
+"baixa</emphasis></link> de darktable permite simular a visão humana para "
+"fazer imagens de pouca luz parecer mais próximas da realidade. O filtro "
+"<link linkend=\"graduated_density\"><emphasis>densidade graduada</emphasis></"
+"link> adiciona um gradiente neutro ou colorido à sua imagem para a exposição "
+"e correção de cores."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:433(title)
 msgid "Exporting images"
-msgstr ""
+msgstr "Exportando imagens"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:434(para)
 msgid ""
@@ -828,6 +1055,12 @@ msgid ""
 "bake the processing options into an output file that can be distributed "
 "outside of darktable."
 msgstr ""
+"Mudanças em uma imagem não são armazenadas como em um editor de imagem "
+"convencional. darktable é um editor não-destrutivo, o que significa que "
+"todas as alterações são armazenadas em um banco de dados, e a imagem "
+"original é intocável. Portanto, você precisa exportar imagens para fixar as "
+"opções de processamento em um arquivo de saída que pode ser distribuído fora "
+"do darktable."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:437(para)
 msgid ""
@@ -836,6 +1069,10 @@ msgid ""
 "\"export_selected\"/>). In general, export means: save my developed RAW "
 "image as a JPEG."
 msgstr ""
+"Imagens são exportados a partir da vista mesa de luz, usando o diálogo "
+"<emphasis>exportar selecionados</emphasis> no painel direito (<xref linkend="
+"\"export_selected\"/>). Em geral, a exportação significa: salvar a minha "
+"imagem RAW revelada como JPEG."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:439(para)
 msgid ""
@@ -845,6 +1082,12 @@ msgid ""
 "<emphasis>flickr webalbum</emphasis> and more. Format modules are the actual "
 "image formats such as JPEG, PNG, TIFF, OpenEXR and more."
 msgstr ""
+"A exportação é modularizada em <emphasis>armazenamento</emphasis> e "
+"<emphasis>formato</emphasis>. darktable é distribuído com diversos módulos "
+"de armazenamento como <emphasis>salvar em disco</emphasis>, "
+"<emphasis>picasa</emphasis> e <emphasis>flickr webalbum</emphasis> e outros. "
+"Módulos de formato são os de fato os formatos de imagem como JPEG, PNG, "
+"TIFF, OpenEXR e outros."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:443(para)
 msgid ""
@@ -854,6 +1097,12 @@ msgid ""
 "the export button. Leave the width and height restraints at zero, if you "
 "want the original resolution."
 msgstr ""
+"Selecione imagens na mesa de luz, escolha o armazenamento e formato de "
+"destino e defina as restrições máximas de largura e altura das imagens. Isso "
+"significa que nenhuma das imagens será maior do que qualquer uma das "
+"restrições de largura/altura. Basta pressionar o botão de exportação. Deixe "
+"a largura e a altura de restrições a zero, se você quiser a resolução "
+"original."
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:457(keyword)
 msgid "lighttable"
@@ -1224,12 +1473,12 @@ msgstr ""
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:700(quote)
 msgid "date"
-msgstr ""
+msgstr "data"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:700(quote)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:3962(title)
 msgid "camera"
-msgstr ""
+msgstr "camera"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:697(entry)
 msgid ""
@@ -1720,7 +1969,7 @@ msgstr ""
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1061(emphasis)
 msgid "ctrl-e"
-msgstr ""
+msgstr "ctrl-e"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1059(entry)
 msgid ""
@@ -1845,7 +2094,7 @@ msgstr "$(EXIF_YEAR)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1115(entry)
 msgid "exif year"
-msgstr ""
+msgstr "exif ano"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1118(entry)
 msgid "$(EXIF_MONTH)"
@@ -1853,7 +2102,7 @@ msgstr "$(EXIF_MONTH)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1118(entry)
 msgid "exif month"
-msgstr ""
+msgstr "exif mês"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1121(entry)
 msgid "$(EXIF_DAY)"
@@ -1861,7 +2110,7 @@ msgstr "$(EXIF_DAY)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1121(entry)
 msgid "exif day"
-msgstr ""
+msgstr "exif dia"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1124(entry)
 msgid "$(EXIF_HOUR)"
@@ -1869,7 +2118,7 @@ msgstr "$(EXIF_HOUR)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1124(entry)
 msgid "exif hour"
-msgstr ""
+msgstr "exif hora"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1127(entry)
 msgid "$(EXIF_MINUTE)"
@@ -1877,7 +2126,7 @@ msgstr "$(EXIF_MINUTE)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1127(entry)
 msgid "exif minute"
-msgstr ""
+msgstr "exif minuto"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1130(entry)
 msgid "$(EXIF_SECOND)"
@@ -1885,7 +2134,7 @@ msgstr "$(EXIF_SECOND)"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1130(entry)
 msgid "exif second"
-msgstr ""
+msgstr "exif segundo"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1133(entry)
 msgid "$(STARS)"
@@ -2832,7 +3081,7 @@ msgstr ""
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1732(title)
 msgid "normal"
-msgstr ""
+msgstr "normal"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1733(para)
 msgid ""
@@ -2975,7 +3224,7 @@ msgstr ""
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:5331(title)
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:5679(title)
 msgid "Examples"
-msgstr ""
+msgstr "Exemplos"
 
 #: /Users/guilherme/build/darktable/doc/usermanual/build/po/darktable-usermanual_profiled.xml:1810(title)
 msgid "Texturing an image"
