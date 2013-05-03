@@ -95,7 +95,6 @@ typedef struct dt_imageio_j2k_t
   int format;
   dt_imageio_j2k_preset_t preset;
   int quality;
-  opj_cparameters_t parameters;
 }
 dt_imageio_j2k_t;
 
