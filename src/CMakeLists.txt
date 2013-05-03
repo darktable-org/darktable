@@ -169,6 +169,7 @@ if(USE_LUA)
 			"lua/configuration.c"
 			"lua/database.c"
 			"lua/glist.c"
+			"lua/gui.c"
 			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"
