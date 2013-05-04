@@ -303,6 +303,8 @@ typedef struct dt_iop_gui_blend_data_t
   float increments[8];
 
   GtkWidget* masks_combo;
+  GtkWidget *masks_curve;
+  GtkWidget *masks_circle;
   int *masks_combo_ids;
   int masks_shown;
 }

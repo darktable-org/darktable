@@ -607,6 +607,31 @@ _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
+static void 
+_blendop_masks_add_curve(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+{
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  //we create the new form
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_CURVE);
+  dt_masks_change_form_gui(form);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = self;
+  dt_control_queue_redraw_center();
+}
+
+static void
+_blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+{
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  //we create the new form
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
+  dt_masks_change_form_gui(spot);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = self;
+  dt_control_queue_redraw_center();
+}
 
 static gboolean
 _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
@@ -992,6 +1017,16 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   dt_bauhaus_combobox_set(bd->masks_combo,0);
   if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
   else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+
+  //update buttons status
+  int b1=0,b2=0;
+  if (module->dev->form_gui && module->dev->form_visible && module->dev->form_gui->creation && module->dev->form_gui->creation_module == module)
+  {
+    if (module->dev->form_visible->type & DT_MASKS_CIRCLE) b1=1;
+    else if (module->dev->form_visible->type & DT_MASKS_CURVE) b2=1;
+  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), b1);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_curve), b2);
 }
 
 void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
@@ -1003,6 +1038,11 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
   /* create and add masks support if module supports it */
   if (bd->masks_support)
   {
+    bd->masks_combo_ids = NULL;
+    bd->masks_shown = 0;
+
+    GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
+
     bd->masks_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->masks_combo, _("masks"));
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
@@ -1011,10 +1051,21 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
     g_signal_connect (G_OBJECT (bd->masks_combo), "quad-pressed", G_CALLBACK (dt_masks_iop_edit_toggle_callback), module);
     dt_bauhaus_combobox_add_populate_fct(bd->masks_combo,dt_masks_iop_combo_populate);
-    bd->masks_combo_ids = NULL;
-    bd->masks_shown = 0;
-      
-    gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(bd->masks_combo), TRUE, TRUE,0);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
+
+    bd->masks_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect(G_OBJECT(bd->masks_circle), "button-press-event", G_CALLBACK(_blendop_masks_add_circle), module);
+    g_object_set(G_OBJECT(bd->masks_circle), "tooltip-text", _("add circular shape"), (char *)NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_circle, FALSE, FALSE, 0);
+
+    bd->masks_curve = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_curve, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect(G_OBJECT(bd->masks_curve), "button-press-event", G_CALLBACK(_blendop_masks_add_curve), module);
+    g_object_set(G_OBJECT(bd->masks_curve), "tooltip-text", _("add curve shape"), (char *)NULL);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_curve), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_curve, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE,0);
 
     bd->masks_inited = 1;
   }
