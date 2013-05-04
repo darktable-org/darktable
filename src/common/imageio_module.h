@@ -22,6 +22,11 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <common/darktable.h>
+#ifdef USE_LUA
+#include "lua/types.h"
+#include "lua/modules.h"
+#endif
+
 
 /** Flag for the format modules */
 #define FORMAT_FLAGS_SUPPORT_XMP   1
@@ -102,6 +107,8 @@ typedef struct dt_imageio_module_format_t
   int (*flags)(dt_imageio_module_data_t *data);
 
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
+  luaA_Type parameter_lua_type;
+
 }
 dt_imageio_module_format_t;
 
@@ -146,6 +153,7 @@ typedef struct dt_imageio_module_storage_t
   void* (*get_params)   (struct dt_imageio_module_storage_t *self);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
+  luaA_Type parameter_lua_type;
 }
 dt_imageio_module_storage_t;
 

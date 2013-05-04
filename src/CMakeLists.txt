@@ -173,6 +173,7 @@ if(USE_LUA)
 			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"
+			"lua/modules.c"
 			"lua/preferences.c"
 			"lua/print.c"
 			"lua/types.c"
