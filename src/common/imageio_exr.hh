@@ -30,8 +30,14 @@
 #include <OpenEXR/ImfChannelList.h>
 #include <OpenEXR/ImfStandardAttributes.h>
 
+#ifdef OPENEXR_IMF_INTERNAL_NAMESPACE
+#define IMF_NS OPENEXR_IMF_INTERNAL_NAMESPACE
+#else
+#define IMF_NS Imf
+#endif
+
 // this stores our exif data as a blob.
-namespace Imf
+namespace IMF_NS
 {
 class Blob
 {
@@ -54,7 +60,7 @@ public:
 };
 
 
-typedef Imf::TypedAttribute<Imf::Blob> BlobAttribute;
+typedef IMF_NS::TypedAttribute<IMF_NS::Blob> BlobAttribute;
 template <> const char *BlobAttribute::staticTypeName()
 {
   return "blob";
