@@ -55,7 +55,7 @@ dt_imageio_png_gui_t;
 
 /* Write EXIF data to PNG file.
  * Code copied from DigiKam's libs/dimg/loaders/pngloader.cpp.
- * The EXIF embeding is defined by ImageMagicK.
+ * The EXIF embedding is defined by ImageMagicK.
  * It is documented in the ExifTool page:
  * http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/PNG.html
  *

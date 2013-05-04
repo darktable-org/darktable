@@ -233,7 +233,7 @@ int dt_film_import_blocking(const char *dirname)
   int rc;
   sqlite3_stmt *stmt;
 
-  /* intialize a film object*/
+  /* initialize a film object*/
   dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
   dt_film_init(film);
   film->id = -1;
@@ -247,7 +247,7 @@ int dt_film_import_blocking(const char *dirname)
     film->id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  /* if we didnt find a id, lets instansiate a new filmroll */
+  /* if we didn't find a id, lets instansiate a new filmroll */
   if(film->id <= 0)
   {
     char datetime[20];

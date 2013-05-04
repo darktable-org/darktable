@@ -258,7 +258,7 @@ static gboolean _gradient_slider_button_release(GtkWidget *widget, GdkEventButto
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
   if( event->button==1  && gslider->selected != -1 && gslider->do_reset==FALSE )
   {
-    // First get some dimention info
+    // First get some dimension info
     gslider->is_changed=TRUE;
     gdouble newposition = roundf(_screen_to_scale(widget, event->x)/gslider->increment)*gslider->increment;
 
@@ -631,7 +631,7 @@ gint _list_find_by_position(gconstpointer a, gconstpointer b)
 
 void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslider,gfloat position,GdkColor color)
 {
-  // First find color att position, if exists update color, otherwise create a new stop at position.
+  // First find color at position, if exists update color, otherwise create a new stop at position.
   GList *current=g_list_find_custom(gslider->colors,(gpointer)&position,_list_find_by_position);
   if( current != NULL )
   {

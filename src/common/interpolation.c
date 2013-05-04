@@ -37,11 +37,11 @@ enum border_mode
 };
 
 /* Supporting them all might be overkill, let the compiler trim all
- * unecessary modes in clip for resampling codepath*/
+ * unnecessary modes in clip for resampling codepath*/
 #define RESAMPLING_BORDER_MODE BORDER_REPLICATE
 
 /* Supporting them all might be overkill, let the compiler trim all
- * unecessary modes in interpolation codepath */
+ * unnecessary modes in interpolation codepath */
 #define INTERPOLATION_BORDER_MODE BORDER_MIRROR
 
 // Defines minimum alignment requirement for critical SIMD code
@@ -1149,7 +1149,7 @@ prepare_resampling_plan(
   int* meta = metareq ? (int*)blob : NULL;
   blob = (char*)blob + metareq;
 
-  /* setting this as a const should help the compilers trim all unecessary
+  /* setting this as a const should help the compilers trim all unnecessary
    * codepaths */
   const enum border_mode bordermode = RESAMPLING_BORDER_MODE;
 

@@ -174,7 +174,7 @@ extern "C"
     // Plus :
     //  Before compressing the base intensity , we remove average base intensity in order to not have
     //  variable average intensity when varying compression factor.
-    //  after compression we substract 2.0 to have an average intensiy at middle tone.
+    //  after compression we substract 2.0 to have an average intensity at middle tone.
     //
 
     const float contr = 1./data->contrast;

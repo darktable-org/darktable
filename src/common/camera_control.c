@@ -78,7 +78,7 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
 /** Poll camera events, this one is called from the thread handling the camera. */
 void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam);
 
-/** Lock camera control and notify listener. \note Locks mutex and signals CAMERA_CONTROL_BUSY. \remarks all interface functions availble to host application should lock/unlock its operation. */
+/** Lock camera control and notify listener. \note Locks mutex and signals CAMERA_CONTROL_BUSY. \remarks all interface functions available to host application should lock/unlock its operation. */
 void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam);
 /** Lock camera control and notify listener. \note Locks mutex and signals CAMERA_CONTROL_AVAILABLE. \see _camctl_lock() */
 void _camctl_unlock(const dt_camctl_t *c);
@@ -285,7 +285,7 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
         gp_camera_file_get (camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
         close (handle);
 
-        // Notify listerners of captured image
+        // Notify listeners of captured image
         _dispatch_camera_image_downloaded (c,camera,output);
         g_free (output);
       }
@@ -519,7 +519,7 @@ dt_camctl_t *dt_camctl_new()
   dt_pthread_mutex_init(&camctl->lock, NULL);
   dt_pthread_mutex_init(&camctl->listeners_lock, NULL);
 
-  // Let's detect cameras connexted
+  // Let's detect cameras connected
   dt_camctl_detect_cameras(camctl);
 
 
@@ -640,7 +640,7 @@ void dt_camctl_detect_cameras(const dt_camctl_t *c)
           continue;
         }
 
-        // Check if camera has capabililties for being presented to darktable
+        // Check if camera has capabilities for being presented to darktable
         if( camera->can_import==FALSE && camera->can_tether==FALSE )
         {
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] device %s on port %s doesn't support import or tether, skipping device.\n", camera->model,camera->port);
@@ -864,13 +864,13 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
           gp_file_new(&preview);
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,preview,c->gpcontext) < GP_OK )
           {
-            // No preview for file lets check image size to se if we should download full image for preview...
+            // No preview for file lets check image size to see if we should download full image for preview...
             if( cfi.file.size > 0  && cfi.file.size < 512000 )
             {
               if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,preview,c->gpcontext) < GP_OK )
               {
                 preview=NULL;
-                dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive preview of file %s\n",filename);
+                dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retrieve preview of file %s\n",filename);
               }
             }
             else if (!strncmp(c->active_camera->port, "disk:", 5))
@@ -905,7 +905,7 @@ libraw_thumb_fail:
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF,exif,c->gpcontext) < GP_OK )
           {
             exif=NULL;
-            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive exif of file %s\n",filename);
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retrieve exif of file %s\n",filename);
           }
         }
 
@@ -1274,7 +1274,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
           (strstr((char *)data, "PTP Property") && strstr((char *)data, "changed"))  // Some Canon driver maybe all ??
         )
       {
-        // Property change event occured on camera
+        // Property change event occurred on camera
         // let's update cache and signalling
         dt_print(DT_DEBUG_CAMCTL, "[camera_control] Camera configuration change event, lets update internal configuration cache.\n");
         _camera_configuration_update(c,cam);
@@ -1299,7 +1299,7 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
         gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
         close( handle );
 
-        // Notify listerners of captured image
+        // Notify listeners of captured image
         _dispatch_camera_image_downloaded(c,cam,output);
         g_free(output);
       }
@@ -1369,7 +1369,7 @@ void _camera_configuration_merge(const dt_camctl_t *c,const dt_camera_t *camera,
       if( ( ( stv && dtv ) && strcmp( stv, dtv ) != 0 ) && ( changed = TRUE ) )
       {
         gp_widget_set_value( dw, stv );
-        // Dont flag this change as changed, otherwise a read-only widget might get tried
+        // Don't flag this change as changed, otherwise a read-only widget might get tried
         // to update the camera configuration...
         gp_widget_set_changed( dw, 0 );
       }

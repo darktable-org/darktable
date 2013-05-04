@@ -57,7 +57,7 @@ dt_bauhaus_type_t;
 typedef struct dt_bauhaus_slider_data_t
 {
   float pos;      // normalized slider value
-  float oldpos;   // sider value before entering finetune mode (normalized)
+  float oldpos;   // slider value before entering finetune mode (normalized)
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
@@ -71,7 +71,7 @@ typedef struct dt_bauhaus_slider_data_t
 
   int   is_dragging;     // indicates is mouse is dragging slider
   int   is_changed;      // indicates new data
-  guint timeout_handle; // used to store id of timout routine
+  guint timeout_handle; // used to store id of timeout routine
 }
 dt_bauhaus_slider_data_t;
 
@@ -91,7 +91,7 @@ typedef union dt_bauhaus_data_t
 {
   // this is the placeholder for the data portions
   // associated with the implementations such as
-  // siders, combo boxes, ..
+  // sliders, combo boxes, ..
   dt_bauhaus_slider_data_t slider;
   dt_bauhaus_combobox_data_t combobox;
 }

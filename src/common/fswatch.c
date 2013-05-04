@@ -40,7 +40,7 @@ typedef struct _watch_t
   int descriptor;   // Handle
   dt_fswatch_type_t type;        // DT_FSWATCH_* type
   void *data;				// Assigned data
-  int events;				// events occured..
+  int events;				// events occurred..
 } _watch_t;
 
 
@@ -118,7 +118,7 @@ static void *_fswatch_thread(void *data)
           }
           else if( (event_hdr->mask&IN_ATTRIB) && (item->events&IN_DELETE_SELF) && (item->events&IN_IGNORED))
           {
-            // This pattern showed up when another file is replacing the orginal...
+            // This pattern showed up when another file is replacing the original...
             dt_image_t *img=(dt_image_t *)item->data;
             img->force_reimport = 1;
             if(darktable.develop->image==img)

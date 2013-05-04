@@ -144,7 +144,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
 #endif
 #if 1
-  // UPLAB to presserve hue with saturation changes
+  // UPLAB to preserve hue with saturation changes
   // see http://www.brucelindbloom.com/UPLab.html
   // TODO or better CIECAM02 http://www.mail-archive.com/lcms-user@lists.sourceforge.net/msg01263.html
   int rowsize=roi_out->width*3;
@@ -370,7 +370,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.points[p.size-1].y = 0.0;
 
   //p.densitycurve_preset = 1;
-  dt_gui_presets_add_generic(_("linear dencity"), self->op, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("linear density"), self->op, &p, sizeof(p), 1);
 }
 
 void init(dt_iop_module_t *module)
@@ -1000,7 +1000,7 @@ static gboolean dt_iop_densitycurve_expose(GtkWidget *widget, GdkEventExpose *ev
   cairo_set_line_width(cr, 1.);
   cairo_translate(cr, 0, height);
 
-  // draw lum h istogram in background
+  // draw lum histogram in background
   float *hist, hist_max;
   hist = self->histogram;
   hist_max = self->histogram_max[0];
@@ -1078,7 +1078,7 @@ static gboolean dt_iop_densitycurve_motion_notify(GtkWidget *widget, GdkEventMot
 
   if (c->selected >=0 && c->dragging )
   {
-    // Don't allow a draging point to exceed or preceed neighbors or
+    // Don't allow a dragging point to exceed or preceed neighbors or
     // else the spline algorithm will explode.
     // Also prevent moving central points beyond the two end points.
     if ( !point_exists(&c->Curve, c->selected, mx) &&

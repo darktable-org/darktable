@@ -1799,7 +1799,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->detection_warning, TRUE, TRUE, 0);
 
 #if 0
-  // if unambigious info is there, use it.
+  // if unambiguous info is there, use it.
   if(self->dev->image_storage.exif_lens[0] != '\0')
   {
     char make [200], model [200];

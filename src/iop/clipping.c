@@ -579,7 +579,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     float corn_out_x[4] = {0.0f};
     float corn_out_y[4] = {0.0f};
 
-    //we don't test image flip as autocrop is not completly ok...
+    //we don't test image flip as autocrop is not completely ok...
     d->flip = 0;
 
     //we apply rotation and keystone to all those points
@@ -625,7 +625,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
     new_sc_y = fmaxf(fmaxf(fmaxf(corn_out_y[0],corn_out_y[1]),corn_out_y[2]),corn_out_y[3]);
     if (new_sc_y > 2.0f*roi_in->height) new_sc_y = 2.0f*roi_in->height;
 
-    //be carefull, we don't want too small area here !
+    //be careful, we don't want too small area here !
     if (new_sc_x - new_x < roi_in->width/8.0f)
     {
       float f = (new_sc_x+new_x)/2.0f;
@@ -746,7 +746,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
-// do your best to fill the ouput region!
+// do your best to fill the output region!
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
@@ -969,7 +969,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)p1;
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
-  //reset all values to be sure evreything is initialized
+  //reset all values to be sure everything is initialized
   d->m[0] = d->m[3] = 1.0f;
   d->m[1] = d->m[2] = 0.0f;
   d->ki_h = d->ki_v = d->k_h = d->k_v = 0.0f;
@@ -1282,7 +1282,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     }
     else if(grab & 10) // dragged either y or h (2 8)
     {
-      // channge w and move x, w equally
+      // change w and move x, w equally
       const double off = target_w - clip_w;
       clip_w = clip_w + off;
       clip_x = clip_x - .5*off;
@@ -1828,7 +1828,7 @@ void gui_draw_rounded_rectangle(cairo_t *cr,int width,int height,int x,int y)
   cairo_close_path (cr);
   cairo_fill(cr);
 }
-// draw symetry signs
+// draw symmetry signs
 void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   cairo_text_extents_t extents;
@@ -2266,7 +2266,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_set_source_rgba(cr, .2,.2,.2, .9);
       cairo_show_text(cr, "ok");
 
-      //draw the symetry buttons
+      //draw the symmetry buttons
       gboolean sym = FALSE;
       if (p->k_type == 1 || p->k_type == 3)
       {
@@ -2705,7 +2705,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
         }
         else
         {
-          //Horizontal symetry button (1)
+          //Horizontal symmetry button (1)
           c[0] = (pts[0]+pts[6])/2.0f, c[1] = (pts[1]+pts[7])/2.0f;
           if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
           {
@@ -2716,7 +2716,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
           }
           else
           {
-            //Horizontal symetry button (2)
+            //Horizontal symmetry button (2)
             c[0] = (pts[2]+pts[4])/2.0f, c[1] = (pts[3]+pts[5])/2.0f;
             if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==1 || p->k_type==3))
             {
@@ -2727,7 +2727,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
             }
             else
             {
-              //vertical symetry button (1)
+              //vertical symmetry button (1)
               c[0] = (pts[2]+pts[0])/2.0f, c[1] = (pts[3]+pts[1])/2.0f;
               if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
               {
@@ -2738,7 +2738,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, 
               }
               else
               {
-                //vertical symetry button (2)
+                //vertical symmetry button (2)
                 c[0] = (pts[4]+pts[6])/2.0f, c[1] = (pts[5]+pts[7])/2.0f;
                 if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext && (p->k_type==2 || p->k_type==3))
                 {

@@ -341,11 +341,11 @@ void gui_init(dt_lib_module_t *self)
   d->mouse_over_id = -1;
   dt_gui_hist_dialog_init(&d->dg);
 
-  /* create drawingarea */
+  /* create drawing area */
   self->widget = gtk_vbox_new(FALSE,0);
 
 
-  /* createing filmstrip box*/
+  /* creating filmstrip box*/
   d->filmstrip = gtk_event_box_new();
 
   /* allow drag&drop of images from the filmstrip. this has to come before the other callbacks are registered! */
@@ -443,7 +443,7 @@ void gui_cleanup(dt_lib_module_t *self)
   /* unset viewmanager proxy */
   darktable.view_manager->proxy.filmstrip.module = NULL;
 
-  /* cleaup */
+  /* cleanup */
   g_free(self->data);
   self->data = NULL;
 }

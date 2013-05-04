@@ -284,7 +284,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   {
     case CAMERA_CONTROL_BUSY:
     {
-      /* set all devicese as inaccessible */
+      /* set all devices as inaccessible */
       GList *child = gtk_container_get_children(GTK_CONTAINER(d->devices));
       if(child)
         do
@@ -810,7 +810,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
 
-  /* add import singel image buttons */
+  /* add import single image buttons */
   GtkWidget *widget = gtk_button_new_with_label(_("image"));
   d->import_file = GTK_BUTTON(widget);
   gtk_button_set_alignment(GTK_BUTTON(widget), 0.05, 5);

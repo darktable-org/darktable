@@ -38,7 +38,7 @@ typedef struct dt_gui_widgets_t
   GtkWidget *top_border;
 
   /* left panel */
-  GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and fille on center
+  GtkTable *panel_left;                 // panel table 3 rows, top,center,bottom and file on center
   GtkTable *panel_right;
 
 }
@@ -93,7 +93,7 @@ typedef enum dt_ui_container_t
   /* the center container of left panel, the center container
      contains the scrollable area that all plugins are placed within and last
      widget is the end marker.
-     This container will always expand|fill empty veritcal space
+     This container will always expand|fill empty vertical space
   */
   DT_UI_CONTAINER_PANEL_LEFT_CENTER = 1,
 

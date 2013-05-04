@@ -37,7 +37,7 @@
 #define DTGTK_SLIDER_BORDER_WIDTH 1
 #define DTGTK_VALUE_SENSITIVITY 5.0
 #define DTGTK_SLIDER_SENSIBILITY_KEY GDK_Control_L
-// Delay before emitting value change while draggin value.. (prevent hogging hostapp)
+// Delay before emitting value change while dragging value.. (prevent hogging hostapp)
 #define DTGTK_SLIDER_VALUE_CHANGED_DELAY 250
 
 static GtkEventBoxClass* _slider_parent_class;

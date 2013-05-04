@@ -16,7 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* getpwnam_r availibility check */
+/* getpwnam_r availability check */
 #if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || \
     defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || \
     defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__ || \
@@ -44,7 +44,7 @@ gchar* dt_loc_get_home_dir(const gchar* user)
 
 #if defined HAVE_GETPWNAM_R
   /* if the given username is not the same as the current one, we try
-   * to retreive the pw dir from the password file entry */
+   * to retrieve the pw dir from the password file entry */
   struct passwd pwd;
   struct passwd* result;
 #ifdef _SC_GETPW_R_SIZE_MAX

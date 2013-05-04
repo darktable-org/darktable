@@ -268,7 +268,7 @@ static void _curve_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
     }
   }
 
-  //we dertermine start and end radius too
+  //we determine start and end radius too
   float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
   float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
 
@@ -302,7 +302,7 @@ static void _curve_points_recurs(float *p1, float *p2,
                                  double tmin, double tmax, float *curve_min, float *curve_max, float *border_min, float *border_max,
                                  float *rcurve, float *rborder, float *curve, float *border, int *pos_curve, int *pos_border, int withborder)
 {
-  //we calcul points if needed
+  //we calculate points if needed
   if (curve_min[0] == -99999)
   {
     _curve_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
@@ -347,7 +347,7 @@ static int _curve_find_self_intersection(int **inter, int nb_corners, float *bor
 {
   int inter_count = 0;
 
-  //we search extrem points in x and y
+  //we search extreme points in x and y
   int xmin, xmax, ymin, ymax;
   xmin = ymin = INT_MAX;
   xmax = ymax = INT_MIN;
@@ -583,7 +583,7 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
     }
 
-    //we first want to be sure that theres's no gaps in broder
+    //we first want to be sure that there's no gaps in border
     if (border && nb>=3)
     {
       //we get the next point (start of the next segment)
@@ -986,7 +986,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       }
       form->points = g_list_append(form->points,bzpt);
 
-      //if this is a ctrl click, the last creted point is a sharp one
+      //if this is a ctrl click, the last created point is a sharp one
       if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
         dt_masks_point_curve_t *bzpt3 = g_list_nth_data(form->points,nb-1);
@@ -1593,7 +1593,7 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     int seg = 1, seg2 = 0;
     for (int i=nb*3; i<gpt->points_count; i++)
     {
-      //we decide to hightlight the form segment by segment
+      //we decide to highlight the form segment by segment
       if (gpt->points[i*2+1] == gpt->points[seg*6+3] && gpt->points[i*2] == gpt->points[seg*6+2])
       {
         //this is the end of the last segment, so we have to draw it
@@ -1953,7 +1953,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     int just_change_dir = 0;
     for (int ii=nb_corner*3; ii < 2*nbp; ii++)
     {
-      //we are writting more than 1 loop in the case the dir in y change
+      //we are writing more than 1 loop in the case the dir in y change
       //exactly at start/end point
       int i = ii;
       if (ii >= nbp) i = ii - nbp + nb_corner*3;
@@ -1996,7 +1996,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       //we add the point
       if (just_change_dir && ii==i)
       {
-        //if we have changed the direction, we have to be carrefull that point can be at the same place
+        //if we have changed the direction, we have to be careful that point can be at the same place
         //as the previous one , especially on sharp edges
         float v = (*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
         if (v>0.0)

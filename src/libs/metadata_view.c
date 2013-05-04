@@ -355,7 +355,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_table_new(md_size, 2, FALSE);
 
 
-  /* intialize the metadata name/value labels */
+  /* initialize the metadata name/value labels */
   for (int k = 0; k < md_size; k++)
   {
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));

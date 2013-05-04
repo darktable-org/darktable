@@ -154,7 +154,7 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
   {
     x++;
 
-    /* check if even number then continue to skip seperator widgets */
+    /* check if even number then continue to skip separator widgets */
     if(!(x%2))
     {
       childs = g_list_next(childs);

@@ -122,14 +122,14 @@ style \"clearlooks-vbrightbg\" = \"clearlooks-default\" \
 void
 dt_gui_contrast_init ()
 {
-  /* create a copy of orginal style of window */
+  /* create a copy of original style of window */
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
-  /* realize window to enshure style is applied before copy */
+  /* realize window to ensure style is applied before copy */
   gtk_widget_realize(window);
   _main_window_orginal_style = gtk_style_copy (window->style);
 
-  /* get clearlooks-brightbg orginal style */
+  /* get clearlooks-brightbg original style */
 
   /* create a eventbox and add to */
   GtkWidget *ev = gtk_event_box_new();

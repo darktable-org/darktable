@@ -215,7 +215,7 @@ dt_image_cache_write_get(
 }
 
 
-// drops the write priviledges on an image struct.
+// drops the write privileges on an image struct.
 // this triggers a write-through to sql, and if the setting
 // is present, also to xmp sidecar files (safe setting).
 void

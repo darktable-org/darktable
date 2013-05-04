@@ -92,7 +92,7 @@ typedef struct dt_storage_flickr_params_t
 } dt_storage_flickr_params_t;
 
 
-/** Authenticates and retreives an initialized flickr api object */
+/** Authenticates and retrieves an initialized flickr api object */
 _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
 
 flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description, gint imgid);
@@ -340,7 +340,7 @@ flickcurl_photoset static **_flickr_api_photosets( _flickr_api_context_t *ctx, c
 //  char *nsid;
 
 //TODO: Support both userid and email. As more services uses email as username
-//      users can confise the needed id to be introduced in the user field.
+//      users can confuse the needed id to be introduced in the user field.
 //  nsid = flickcurl_people_findByEmail(ctx->fc, "@");
 
 //  no need to specify nsid at all
@@ -676,7 +676,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   #pragma omp critical
 #endif
   {
-    //TODO: Check if this could be done in threads, so we enhace export time by using
+    //TODO: Check if this could be done in threads, so we enhance export time by using
     //      upload time for one image to export another image to disk.
     // Upload image
     // Do we export tags?
@@ -711,7 +711,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   }
 
 //  if(fail) return 1;
-// TODO: What to do if photset creation fails?
+// TODO: What to do if photoset creation fails?
 
   // Add to gallery, if needed
   if (p->flickr_api->current_album != NULL && p->flickr_api->new_album != TRUE)

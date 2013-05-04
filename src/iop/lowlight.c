@@ -149,7 +149,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
     dt_Lab_to_XYZ(in, XYZ);
 
-    // calculate scotopic luminanse
+    // calculate scotopic luminance
     if (XYZ[0] > threshold)
     {
       // normal flow

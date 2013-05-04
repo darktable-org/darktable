@@ -43,7 +43,7 @@ typedef enum dt_dev_pixelpipe_change_t
 {
   DT_DEV_PIPE_UNCHANGED   = 0,  // no event
   DT_DEV_PIPE_TOP_CHANGED = 1,  // only params of top element changed
-  DT_DEV_PIPE_REMOVE      = 2,  // possibly emlements of the pipe have to be removed
+  DT_DEV_PIPE_REMOVE      = 2,  // possibly elements of the pipe have to be removed
   DT_DEV_PIPE_SYNCH       = 3   // all nodes up to end need to be synched, but no removal of module pieces is necessary
 }
 dt_dev_pixelpipe_change_t;

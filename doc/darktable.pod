@@ -23,7 +23,7 @@ and B<Mac OS X> in the lines of B<Adobe Lightroom> and B<Apple Aperture>.
 
 The application is designed to ease editing and consistent processing of large 
 photo sessions and provides a easy to use digital light-table and a set 
-of sophisticated postprocessing tools.
+of sophisticated post-processing tools.
 
 Most processing is done in 32-bit floating point per channel mode in device independent 
 B<CIE L*a*b*> color space. B<darktable> is also fully color managed, which gives 

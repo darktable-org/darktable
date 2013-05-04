@@ -267,7 +267,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
   while(iter++ < 1000);
   if (iter >= 1000) return 8;
 
-  //be carrefull to the gnd direction
+  //be careful to the gnd direction
   if (pts[2]-pts[0] > 0 && v>M_PI*0.5) v = v-M_PI;
   if (pts[2]-pts[0] > 0 && v<-M_PI*0.5) v = M_PI+v;
 

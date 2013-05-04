@@ -245,7 +245,7 @@ void _sync_list(gpointer *data, gpointer *user_data)
 
   if(img->exists == 0)
   {
-    //remove filie
+    //remove file
     dt_image_remove(img->id);
     return;
   }
@@ -665,7 +665,7 @@ _show_filmroll_present(GtkTreeViewColumn *column,
 static GtkTreeStore *
 _folder_tree ()
 {
-  /* intialize the tree store */
+  /* initialize the tree store */
   sqlite3_stmt *stmt;
 //  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder,external_drive from film_rolls order by folder desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select folder from film_rolls order by folder desc", -1, &stmt, NULL);
@@ -998,7 +998,7 @@ static void _lib_folders_update_collection(const gchar *filmroll)
     g_free(complete_query);
   }
 
-  /* raise signal of collection change, only if this is an orginal */
+  /* raise signal of collection change, only if this is an original */
   if (!darktable.collection->clone)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }

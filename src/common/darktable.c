@@ -159,14 +159,14 @@ void _dt_sigsegv_handler(int param)
       else
       {
         delete_file = TRUE;
-        g_printerr("an error occured while trying to execute gdb. please check if gdb is installed on your system.\n");
+        g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your system.\n");
       }
     }
   }
   else
   {
     delete_file = TRUE;
-    g_printerr("an error occured while trying to execute gdb.\n");
+    g_printerr("an error occurred while trying to execute gdb.\n");
   }
 
   if(fout != STDOUT_FILENO)
@@ -445,7 +445,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
         else if(!strcmp(argv[k+1], "memory"))     darktable.unmuted |= DT_DEBUG_MEMORY; // some stats on mem usage now and then.
         else if(!strcmp(argv[k+1], "lighttable")) darktable.unmuted |= DT_DEBUG_LIGHTTABLE; // lighttable related stuff.
         else if(!strcmp(argv[k+1], "nan"))        darktable.unmuted |= DT_DEBUG_NAN; // check for NANs when processing the pipe.
-        else if(!strcmp(argv[k+1], "masks"))        darktable.unmuted |= DT_DEBUG_MASKS; // masks reated stuff.
+        else if(!strcmp(argv[k+1], "masks"))      darktable.unmuted |= DT_DEBUG_MASKS; // masks related stuff.
         else if(!strcmp(argv[k+1], "lua"))        darktable.unmuted |= DT_DEBUG_LUA; // lua errors are reported on console
         else return usage(argv[0]);
         k ++;
@@ -513,7 +513,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   char filename[DT_MAX_PATH_LEN];
   snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
 
-  // intialize the config backend. this needs to be done first...
+  // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   memset(darktable.conf, 0, sizeof(dt_conf_t));
   dt_conf_init(darktable.conf, filename);
@@ -621,7 +621,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.collection_listeners = NULL;
   darktable.collection = dt_collection_new(NULL);
 
-  /* initialize sellection */
+  /* initialize selection */
   darktable.selection = dt_selection_new();
 
   /* capabilities set to NULL */

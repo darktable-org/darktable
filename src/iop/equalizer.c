@@ -191,7 +191,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   for(int k=(int)MIN(pipe->iwidth*pipe->iscale,pipe->iheight*pipe->iscale); k; k>>=1) l++;
   d->num_levels = MIN(DT_IOP_EQUALIZER_MAX_LEVEL, l);
 #ifdef HAVE_GEGL
-#error "gegl version not implemeted!"
+#error "gegl version not implemented!"
   piece->input = piece->output = gegl_node_new_child(pipe->gegl, "operation", "gegl:dt-contrast-curve", "sampling-points", 65535, "curve", d->curve[0], NULL);
   d->num_levels = 1;
 #endif

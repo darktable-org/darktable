@@ -293,7 +293,7 @@ dt_ctl_get_display_profile_colord_callback(GObject *source, GAsyncResult *res, g
 void dt_ctl_set_display_profile()
 {
   if(!dt_control_running()) return;
-  // make sure that noone gets a broken profile
+  // make sure that no one gets a broken profile
   // FIXME: benchmark if the try is really needed when moving/resizing the window. Maybe we can just lock it and block
   if(pthread_rwlock_trywrlock(&darktable.control->xprofile_lock))
     return; // we are already updating the profile. Or someone is reading right now. Too bad we can't distinguish that. Whatever ...
@@ -464,7 +464,7 @@ void dt_control_init(dt_control_t *s)
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
 
-  // intialize static mutex
+  // initialize static mutex
   dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
 
   // s->last_expose_time = dt_get_wtime();
@@ -1016,13 +1016,13 @@ int32_t dt_control_run_job(dt_control_t *s)
   /* unlock the queue */
   dt_pthread_mutex_unlock(&s->queue_mutex);
 
-  /* push background job on reserved backgruond worker */
+  /* push background job on reserved background worker */
   if(bj)
   {
     dt_control_add_job_res(s,bj,DT_CTL_WORKER_7);
     g_free (bj);
   }
-  /* dont continue if we dont have have a job to execute */
+  /* don't continue if we don't have have a job to execute */
   if(!j)
     return -1;
 
@@ -1269,7 +1269,7 @@ void *dt_control_expose(void *voidptr)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
-  //create a gtk-independant surface to draw on
+  //create a gtk-independent surface to draw on
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -1567,7 +1567,7 @@ gboolean dt_control_gdk_lock()
   if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
     return FALSE;
 
-  /* if we dont have any managed locks just lock and return */
+  /* if we don't have any managed locks just lock and return */
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
   if(!_control_gdk_lock_threads)
     goto lock_and_return;
@@ -1752,7 +1752,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     char key[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
 
-    /* do nothing if in collaps panel state
+    /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
     g_snprintf(key, 512, "%s/ui/panel_collaps_state",cv->module_name);
     if (dt_conf_get_int(key))

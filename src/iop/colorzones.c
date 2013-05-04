@@ -357,7 +357,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   }
   d->channel = (dt_iop_colorzones_channel_t)default_params->channel;
 #ifdef HAVE_GEGL
-#error "gegl version not implemeted!"
+#error "gegl version not implemented!"
 #endif
 }
 
@@ -685,7 +685,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
           }
           break;
       }
-      // gammut mapping magic from iop/exposure.c:
+      // gamut mapping magic from iop/exposure.c:
       const float Lwhite = 100.0f, Lclip = 20.0f;
       const float Lcap  = fminf(100.0, Lab.L);
       const float clip  = 1.0 - (Lcap - L0)*(1.0/100.0)*fminf(Lwhite-Lclip, fmaxf(0.0, Lab.L - Lclip))/(Lwhite-Lclip);

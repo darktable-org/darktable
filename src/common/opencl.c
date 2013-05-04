@@ -217,7 +217,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
     if(!strncasecmp(vendor, "NVIDIA", 6))
     {
-      // very lame attemt to detect support for atomic float add in global memory.
+      // very lame attempt to detect support for atomic float add in global memory.
       // we need compute model sm_20, but let's try for all nvidia devices :(
       cl->dev[dev].nvidia_sm_20 = dt_nvidia_gpu_supports_sm_20(infostr);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] device %d `%s' %s sm_20 support.\n", k, infostr, cl->dev[dev].nvidia_sm_20 ? "has" : "doesn't have");
@@ -350,7 +350,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
         if(!programname || programname[0] == '\0' || prog < 0)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformated entry in programs.conf `%s'; ignoring it!\n", confentry);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_init] malformed entry in programs.conf `%s'; ignoring it!\n", confentry);
           continue;
         }
 
@@ -502,7 +502,7 @@ int dt_opencl_finish(const int devid)
   cl_int err = (cl->dlocl->symbols->dt_clFinish)(cl->dev[devid].cmd_queue);
 
   // take the opportunity to release some event handles, but without printing
-  // sumary statistics
+  // summary statistics
   cl_int success = dt_opencl_events_flush(devid, 0);
 
   return (err == CL_SUCCESS && success == CL_COMPLETE);
@@ -1688,7 +1688,7 @@ void dt_opencl_events_wait_for(const int devid)
 
   if (*eventlist==NULL || *numevents==0) return; // nothing to do
 
-  // check if last event slot was acutally used and correct numevents if needed
+  // check if last event slot was actually used and correct numevents if needed
   if (!memcmp((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event)))
   {
     (*numevents)--;

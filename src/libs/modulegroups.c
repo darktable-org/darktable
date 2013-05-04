@@ -41,7 +41,7 @@ dt_lib_modulegroups_t;
 
 /* toggle button callback */
 static void _lib_modulegroups_toggle(GtkWidget *button,gpointer data);
-/* helper function to update iop module view dependen on group */
+/* helper function to update iop module view depending on group */
 static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self);
 
 /* modulergroups proxy set group function
@@ -248,7 +248,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         case DT_MODULEGROUP_NONE:
         {
-          /* show all exept hidden ones */
+          /* show all except hidden ones */
           if((module->state != dt_iop_state_HIDDEN || module->enabled) &&
               (!(module->flags() & IOP_FLAGS_DEPRECATED)))
             gtk_widget_show(w);
@@ -321,7 +321,7 @@ static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
   /* this is a proxy function so it might be called from another thread */
   gboolean i_own_lock = dt_control_gdk_lock();
 
-  /* if no change just update visibilility */
+  /* if no change just update visibility */
   if(d->current == group)
   {
     _lib_modulegroups_update_iop_visibility(self);
@@ -344,7 +344,7 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   if (_lib_modulegroups_test(self, d->current, module->groups()))
     return;
 
-  /* lets find the group which is not favorit/acive pipe */
+  /* lets find the group which is not favorite/active pipe */
   for(int k=DT_MODULEGROUP_BASIC; k<DT_MODULEGROUP_SIZE; k++)
   {
     if (_lib_modulegroups_test(self, k, module->groups()))

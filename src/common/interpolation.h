@@ -87,7 +87,7 @@ dt_interpolation_compute_sample(
  *
  * This function computes a full 4 component pixel. This helps a bit speedwise
  * as interpolation coordinates are supposed to be the same for all components.
- * Thus we can share horizontal and vertical interpolation kernels accross all
+ * Thus we can share horizontal and vertical interpolation kernels across all
  * components
  *
  * NB: a pixel is to be four floats big in stride

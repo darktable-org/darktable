@@ -747,7 +747,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float weight=0.0;
       float dith=0.0;
 
-      if( cplen>=dscale ) // pixel is outside the inner vingette circle, lets calculate weight of vignette
+      if( cplen>=dscale ) // pixel is outside the inner vignette circle, lets calculate weight of vignette
       {
         weight=((cplen-dscale)/fscale);
         if (weight >= 1.0)
@@ -1156,7 +1156,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->saturation), "tooltip-text", _("strength of effect on saturation"), (char *)NULL);
   g_object_set(G_OBJECT(g->center_x), "tooltip-text", _("horizontal offset of center of the effect"), (char *)NULL);
   g_object_set(G_OBJECT(g->center_y), "tooltip-text", _("vertical offset of center of the effect"), (char *)NULL);
-  g_object_set(G_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or elipse\n2 produces a diamond"), (char *)NULL);
+  g_object_set(G_OBJECT(g->shape), "tooltip-text", _("shape factor\n0 produces a rectangle\n1 produces a circle or ellipse\n2 produces a diamond"), (char *)NULL);
   g_object_set(G_OBJECT(g->autoratio), "tooltip-text", _("enable to have the ratio automatically follow the image size"), (char *)NULL);
   g_object_set(G_OBJECT(g->whratio), "tooltip-text", _("width-to-height ratio"), (char *)NULL);
   g_object_set(G_OBJECT(g->dithering), "tooltip-text", _("add some level of random noise to prevent banding"), (char *)NULL);
