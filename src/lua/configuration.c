@@ -20,13 +20,14 @@
 #include "lua/lua.h"
 
 
-int dt_lua_init_configuration(lua_State*L){
+int dt_lua_init_configuration(lua_State*L)
+{
   char tmp_path[PATH_MAX];
 
   dt_lua_push_darktable_lib(L);
 
   dt_lua_goto_subtable(L,"configuration");
-  // build the table containing the configuration info 
+  // build the table containing the configuration info
 
   lua_pushstring(L,"tmp_dir");
   dt_loc_get_tmp_dir(tmp_path, PATH_MAX);
@@ -57,7 +58,7 @@ int dt_lua_init_configuration(lua_State*L){
 
   lua_pop(L,-1); //remove the configuration table from the stack
   return 0;
-  
+
 }
 
 

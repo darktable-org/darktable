@@ -410,7 +410,7 @@ kmeans(const float *col, const int width, const int height, const int n, float m
         var_out[j+1][0] = var_out[j][0];
         var_out[j+1][1] = var_out[j][1];
         weight_out[j+1] = weight_out[j];
-         
+
         mean_out[j][0] = temp_mean[0];
         mean_out[j][1] = temp_mean[1];
         var_out[j][0] = temp_var[0];
@@ -1002,7 +1002,7 @@ gui_post_expose (struct dt_iop_module_t *self, cairo_t *cr, int32_t fwidth, int3
     kmeans(buffer, width, height, p->n, p->target_mean, p->target_var, p->target_weight);
 
     p->flag |= HAS_TARGET;
-  }   
+  }
 
   free(buffer);
 

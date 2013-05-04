@@ -127,12 +127,12 @@ static void _on_bus_acquired (GDBusConnection *connection, const gchar *name, gp
   dt_dbus_t *dbus = (dt_dbus_t*)user_data;
 
   dbus->registration_id = g_dbus_connection_register_object(connection,
-                                                            "/darktable",
-                                                            dbus->introspection_data->interfaces[0],
-                                                            &interface_vtable,
-                                                            dbus,  /* user_data */
-                                                            NULL,  /* user_data_free_func */
-                                                            NULL); /* GError** */
+                          "/darktable",
+                          dbus->introspection_data->interfaces[0],
+                          &interface_vtable,
+                          dbus,  /* user_data */
+                          NULL,  /* user_data_free_func */
+                          NULL); /* GError** */
 
   if(dbus->registration_id == 0)
     dbus->connected = 0; // technically we are connected, but we are not exporting anything. or something like that

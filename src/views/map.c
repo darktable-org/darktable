@@ -85,7 +85,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context, GtkDragResult result, dt_view_t *self);
 static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
-                       guint target_type, guint time, gpointer data);
+    guint target_type, guint time, gpointer data);
 
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
@@ -150,15 +150,15 @@ void init(dt_view_t *self)
       dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
 
     lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                            "map-source", map_source,
-                            "proxy-uri",g_getenv("http_proxy"),
-                            NULL);
+                             "map-source", map_source,
+                             "proxy-uri",g_getenv("http_proxy"),
+                             NULL);
 
     GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
     gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(lib->map) ,TRUE, TRUE, 0);
 
     lib->osd = g_object_new (OSM_TYPE_GPS_MAP_OSD,
-                                          "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
+                             "show-scale",TRUE, "show-coordinates",TRUE, "show-dpad",TRUE, "show-zoom",TRUE, NULL);
 
     if(dt_conf_get_bool("plugins/map/show_map_osd"))
     {
@@ -555,8 +555,8 @@ void init_key_accels(dt_view_t *self)
 }
 
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
-    GObject *acceleratable, guint keyval,
-    GdkModifierType modifier, gpointer data)
+                                        GObject *acceleratable, guint keyval,
+                                        GdkModifierType modifier, gpointer data)
 {
   if (keyval == GDK_z)
     dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
@@ -735,7 +735,7 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
 
 static void
 _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
-                                guint target_type, guint time, dt_view_t *self)
+                           guint target_type, guint time, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t*)self->data;
 
@@ -762,7 +762,7 @@ _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelect
 }
 
 static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *selection_data,
-                       guint target_type, guint time, gpointer data)
+    guint target_type, guint time, gpointer data)
 {
   dt_view_t *self = (dt_view_t*)data;
   dt_map_t *lib = (dt_map_t*)self->data;

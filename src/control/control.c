@@ -401,7 +401,7 @@ void dt_control_create_database_schema()
                         "(id integer primary key, datetime_accessed char(20), "
 //                        "folder varchar(1024), external_drive varchar(1024))",
                         "folder varchar(1024))",
-                         NULL, NULL, NULL);
+                        NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table images (id integer primary key autoincrement, group_id integer, film_id integer, "
                         "width int, height int, filename varchar, maker varchar, model varchar, "
@@ -669,10 +669,10 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "alter table images add column lightmap blob",
                    NULL, NULL, NULL);
-/*      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table film_rolls add column external_drive varchar(1024)",
-                   NULL, NULL, NULL);
-*/
+      /*      sqlite3_exec(dt_database_get(darktable.db),
+                         "alter table film_rolls add column external_drive varchar(1024)",
+                         NULL, NULL, NULL);
+      */
       sqlite3_exec(dt_database_get(darktable.db),
                    "create index if not exists group_id_index on images (group_id)",
                    NULL, NULL, NULL);
@@ -731,10 +731,10 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_name varchar(256)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-      
+
       //add columns for masks clone source
       sqlite3_exec(dt_database_get(darktable.db), "alter table mask add column source blob", NULL, NULL, NULL);
-      
+
       // and the color matrix
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
       // and the colorspace as specified in some image types
@@ -806,7 +806,8 @@ void dt_control_quit()
     dt_ctl_switch_mode_to(DT_LIBRARY);
 
 #ifdef USE_LUA
-  if(darktable.lua_state) {
+  if(darktable.lua_state)
+  {
     lua_close(darktable.lua_state);
     darktable.lua_state = NULL;
   }

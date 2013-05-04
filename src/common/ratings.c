@@ -32,9 +32,9 @@ void dt_ratings_apply_to_image (int imgid, int rating)
   // synch through:
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
   dt_image_cache_read_release(darktable.image_cache, image);
-  
+
   dt_collection_hint_message(darktable.collection);
- }
+}
 
 void dt_ratings_apply_to_selection (int rating)
 {

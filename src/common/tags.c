@@ -264,7 +264,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
       while(*e == ' ' && *e != '\0') e++;
       if(*e)
       {
-      // add the tag to the image
+        // add the tag to the image
         guint tagid = 0;
         dt_tag_new(e,&tagid);
         dt_tag_attach(tagid, imgid);

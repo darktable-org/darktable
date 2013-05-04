@@ -491,11 +491,13 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   fclose(f);
 }
 
-static inline int get_visible_storage_size() {
+static inline int get_visible_storage_size()
+{
   return sizeof(dt_imageio_gallery_t) - 2*sizeof(void *) - 1024;
 }
 
-void init(dt_imageio_module_storage_t *self) {
+void init(dt_imageio_module_storage_t *self)
+{
 }
 void*
 get_params(dt_imageio_module_storage_t *self, int* size)

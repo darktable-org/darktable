@@ -1083,6 +1083,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     }
   }
 
+
   dt_bauhaus_combobox_set(bd->blend_modes_combo, blend_mode_number);
 
   dt_bauhaus_combobox_set(bd->masks_combine_combo, g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine)));

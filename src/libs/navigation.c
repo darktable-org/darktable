@@ -138,7 +138,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
-  
+
   const int inset = DT_NAVIGATION_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
 
@@ -235,7 +235,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_text_extents(cr,zoomline,&ext);
       h = d->zoom_h = ext.height;
       w = d->zoom_w = ext.width;
-      
+
       cairo_move_to(cr,width-w-h*1.1,0);
       cairo_show_text(cr, zoomline);
       cairo_stroke(cr);
@@ -254,12 +254,12 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       w = h*1.5;
       float sp = h*0.6;
       d->zoom_w = w + sp;
-      
+
       cairo_move_to(cr,width-w-h-sp,-1.0*h);
       cairo_rectangle(cr,width-w-h-sp,-1.0*h,w,h);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.2);
       cairo_fill(cr);
-      
+
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_move_to(cr,width-w*0.8-h-sp,-1.0*h);
       cairo_line_to(cr,width-w-h-sp,-1.0*h);
@@ -278,7 +278,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_line_to(cr,width-w*0.2-h-sp,-1.0*h);
       cairo_stroke(cr);
     }
-      
+
     cairo_move_to(cr, width-0.95*h, -0.9*h);
     cairo_line_to(cr, width-0.05*h, -0.9*h);
     cairo_line_to(cr, width-0.5*h, -0.1*h);
@@ -375,7 +375,7 @@ static void _zoom_preset_change(int val)
     scale = 2.0f;
     zoom = DT_ZOOM_FREE;
   }
-  
+
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   DT_CTL_SET_GLOBAL(dev_zoom, zoom);
@@ -406,7 +406,7 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
-  
+
   int w = widget->allocation.width;
   int h = widget->allocation.height;
   if (event->x >= w-2*DT_NAVIGATION_INSET-d->zoom_h-d->zoom_w && event->y <= w-2*DT_NAVIGATION_INSET && event->y >= h-2*DT_NAVIGATION_INSET-d->zoom_h && event->y <= h-2*DT_NAVIGATION_INSET)
@@ -414,26 +414,26 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
     //we show the zoom menu
     GtkWidget *menu = gtk_menu_new();
     GtkWidget *item;
-  
+
     item = gtk_menu_item_new_with_label(_("small"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_mini), self);
     gtk_menu_append(menu, item);
-  
+
     item = gtk_menu_item_new_with_label(_("fit to screen"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_fit), self);
     gtk_menu_append(menu, item);
-  
+
     item = gtk_menu_item_new_with_label(_("100%"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_1), self);
     gtk_menu_append(menu, item);
-  
+
     item = gtk_menu_item_new_with_label(_("200%"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_2), self);
     gtk_menu_append(menu, item);
-  
+
     gtk_widget_show_all(menu);
     gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
-    
+
     return TRUE;
   }
   d->dragging = 1;

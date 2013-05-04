@@ -170,7 +170,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     const __m128 clipm = _mm_set1_ps(clip);
 #ifdef _OPENMP
-      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+    #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
@@ -191,7 +191,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -211,9 +211,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             // go for all 9 neighbours
             float accum[3] = {0.0f, 0.0f, 0.0f};
             int cnt[3] = {0, 0, 0};
-            for(int jj=-1;jj<=1;jj++)
+            for(int jj=-1; jj<=1; jj++)
             {
-              for(int ii=-1;ii<=1;ii++)
+              for(int ii=-1; ii<=1; ii++)
               {
                 const float val = in[jj*roi_out->width + ii];
                 if(val > clip)
@@ -227,7 +227,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
             if(cnt[0] && cnt[1] && cnt[2])
             {
               out[0] = 0.0f;
-              for(int c=0;c<3;c++)
+              for(int c=0; c<3; c++)
                 out[0] += accum[c]/cnt[c];
             }
             else out[0] = clip;
@@ -245,13 +245,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float *const out = (float *)ovoid;
       float *const in  = (float *)ivoid;
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none)
+      #pragma omp parallel for schedule(static) default(none)
 #endif
       for(int j=0; j<n; j+=4)
         _mm_stream_ps(out+j, _mm_min_ps(clipm, _mm_load_ps(in+j)));
       _mm_sfence();
       // lets see if there's a non-multiple of four rest to process:
-      if(n & 3) for(int j=n&~3u;j<n;j++) out[j] = MIN(clip, in[j]);
+      if(n & 3) for(int j=n&~3u; j<n; j++) out[j] = MIN(clip, in[j]);
       break;
     }
   }
@@ -385,7 +385,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
   g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against"
-        " magenta highlights (you shouldn't ever need to touch this)"), (char *)NULL);
+               " magenta highlights (you shouldn't ever need to touch this)"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
 

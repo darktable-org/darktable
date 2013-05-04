@@ -189,7 +189,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     }
     else if(c == dirname) // foo
     {
-      c[0] = '.'; c[1] = '\0';
+      c[0] = '.';
+      c[1] = '\0';
     }
 
     if(g_mkdir_with_parents(dirname, 0755))
@@ -255,7 +256,8 @@ failed:
   return 0;
 }
 
-void init(dt_imageio_module_storage_t *self) {
+void init(dt_imageio_module_storage_t *self)
+{
 }
 
 void*

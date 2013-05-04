@@ -201,7 +201,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 
   dt_tag_detach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
-  
+
   dt_collection_hint_message(darktable.collection);
 }
 
@@ -276,7 +276,7 @@ entry_activated (GtkButton *button, gpointer user_data)
   update(self, 1);
   update(self, 0);
   gtk_entry_set_text(d->entry, "");
-  
+
   dt_collection_hint_message(darktable.collection);
 }
 

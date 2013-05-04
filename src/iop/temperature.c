@@ -134,7 +134,8 @@ convert_k_to_rgb (float T, float *rgb)
    * The generalization to 2000K < T < 4000K and the blackbody fits
    * are my own and should be taken with a grain of salt.
    */
-  const double XYZ_to_RGB[3][3] = {
+  const double XYZ_to_RGB[3][3] =
+  {
     { 3.24071,	-0.969258,  0.0556352 },
     { -1.53726,	1.87599,    -0.203996 },
     { -0.498571,	0.0415557,  1.05707 }
@@ -143,11 +144,16 @@ convert_k_to_rgb (float T, float *rgb)
   int c;
   double xD, yD, X, Y, Z, max;
   // Fit for CIE Daylight illuminant
-  if (T <= 4000) {
+  if (T <= 4000)
+  {
     xD = 0.27475e9 / (T * T * T) - 0.98598e6 / (T * T) + 1.17444e3 / T + 0.145986;
-  } else if (T <= 7000) {
+  }
+  else if (T <= 7000)
+  {
     xD = -4.6070e9 / (T * T * T) + 2.9678e6 / (T * T) + 0.09911e3 / T + 0.244063;
-  } else {
+  }
+  else
+  {
     xD = -2.0064e9 / (T * T * T) + 1.9018e6 / (T * T) + 0.24748e3 / T + 0.237040;
   }
   yD = -3 * xD * xD + 2.87 * xD - 0.275;
@@ -164,7 +170,8 @@ convert_k_to_rgb (float T, float *rgb)
   Y = 1;
   Z = (1 - xD - yD) / yD;
   max = 0;
-  for (c = 0; c < 3; c++) {
+  for (c = 0; c < 3; c++)
+  {
     rgb[c] = X * XYZ_to_RGB[0][c] + Y * XYZ_to_RGB[1][c] + Z * XYZ_to_RGB[2][c];
     if (rgb[c] > max) max = rgb[c];
   }
@@ -226,7 +233,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       // process aligned pixels with SSE
       for( ; i < roi_out->width - 3 ; i+=4,out+=4,in+=4)
       {
-         _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
+        _mm_stream_ps(out,_mm_mul_ps(coeffs,_mm_set_ps(in[3],in[2],in[1],in[0])));
       }
 
       // process the rest
@@ -587,7 +594,7 @@ temp_changed(dt_iop_module_t *self)
   // apply green tint
   p->coeffs[1] /= tint;
   // relative to daylight wb:
-  for(int k=0;k<3;k++) p->coeffs[k] = g->daylight_wb[k]/p->coeffs[k];
+  for(int k=0; k<3; k++) p->coeffs[k] = g->daylight_wb[k]/p->coeffs[k];
   // normalize:
   p->coeffs[0] /= p->coeffs[1];
   p->coeffs[2] /= p->coeffs[1];
@@ -714,7 +721,7 @@ void gui_init (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 
-  for(int k=0;k<3;k++) g->daylight_wb[k] = 1.0f;
+  for(int k=0; k<3; k++) g->daylight_wb[k] = 1.0f;
   g->scale_tint  = dt_bauhaus_slider_new_with_range(self,0.1, 8.0, .01,1.0,3);
   g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0);
   g->scale_r     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[0],3);

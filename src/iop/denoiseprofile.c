@@ -93,12 +93,15 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
   {
     dt_iop_denoiseprofile_params_t *o = (dt_iop_denoiseprofile_params_t *)old_params;
     dt_iop_denoiseprofile_params_t *n = (dt_iop_denoiseprofile_params_t *)new_params;
-    if (old_version == 1) {
-        // one more parameter and changed parameters in case we autodetected a profile
-        memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
-        n->mode = MODE_NLMEANS;
-    } else {
-        memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t));
+    if (old_version == 1)
+    {
+      // one more parameter and changed parameters in case we autodetected a profile
+      memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t) - sizeof(uint32_t));
+      n->mode = MODE_NLMEANS;
+    }
+    else
+    {
+      memcpy(n, o, sizeof(dt_iop_denoiseprofile_params_t));
     }
     // autodetect current profile:
     if (!self->dev)
@@ -208,28 +211,30 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
 static inline void
 precondition(
-    const float *const in,
-    float *const buf,
-    const int wd,
-    const int ht,
-    const float a[3],
-    const float b[3])
+  const float *const in,
+  float *const buf,
+  const int wd,
+  const int ht,
+  const float a[3],
+  const float b[3])
 {
-  const float sigma2[3] = {
+  const float sigma2[3] =
+  {
     (b[0]/a[0])*(b[0]/a[0]),
     (b[1]/a[1])*(b[1]/a[1]),
-    (b[2]/a[1])*(b[2]/a[1])};
+    (b[2]/a[1])*(b[2]/a[1])
+  };
 
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) shared(a)
+  #  pragma omp parallel for schedule(static) default(none) shared(a)
 #endif
   for(int j=0; j<ht; j++)
   {
     float *buf2 = buf + 4*j*wd;
     const float *in2 = in + 4*j*wd;
-    for(int i=0;i<wd;i++)
+    for(int i=0; i<wd; i++)
     {
-      for(int c=0;c<3;c++)
+      for(int c=0; c<3; c++)
       {
         buf2[c] = in2[c] / a[c];
         const float d = fmaxf(0.0f, buf2[c] + 3./8. + sigma2[c]);
@@ -243,26 +248,28 @@ precondition(
 
 static inline void
 backtransform(
-    float *const buf,
-    const int wd,
-    const int ht,
-    const float a[3],
-    const float b[3])
+  float *const buf,
+  const int wd,
+  const int ht,
+  const float a[3],
+  const float b[3])
 {
-  const float sigma2[3] = {
+  const float sigma2[3] =
+  {
     (b[0]/a[0])*(b[0]/a[0]),
     (b[1]/a[1])*(b[1]/a[1]),
-    (b[2]/a[1])*(b[2]/a[1])};
+    (b[2]/a[1])*(b[2]/a[1])
+  };
 
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) shared(a)
+  #  pragma omp parallel for schedule(static) default(none) shared(a)
 #endif
   for(int j=0; j<ht; j++)
   {
     float *buf2 = buf + 4*j*wd;
-    for(int i=0;i<wd;i++)
+    for(int i=0; i<wd; i++)
     {
-      for(int c=0;c<3;c++)
+      for(int c=0; c<3; c++)
       {
         const float x = buf2[c];
         // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
@@ -497,12 +504,12 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
 // =====================================================================================
 
 void process_wavelets(
-    struct dt_iop_module_t *self,
-    dt_dev_pixelpipe_iop_t *piece,
-    void *ivoid,
-    void *ovoid,
-    const dt_iop_roi_t *roi_in,
-    const dt_iop_roi_t *roi_out)
+  struct dt_iop_module_t *self,
+  dt_dev_pixelpipe_iop_t *piece,
+  void *ivoid,
+  void *ovoid,
+  const dt_iop_roi_t *roi_in,
+  const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -529,37 +536,43 @@ void process_wavelets(
   float *buf[max_max_scale];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
-  for(int k=0;k<max_scale;k++)
+  for(int k=0; k<max_scale; k++)
     buf[k] = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
   tmp = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
-  const float wb[3] = {
+  const float wb[3] =
+  {
     // twice as many samples in green channel:
     2.0f*piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
-    2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
+    2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale)
+  };
   // only use green channel + wb for now:
-  const float aa[3] = {
+  const float aa[3] =
+  {
     d->a[1]*wb[0],
     d->a[1]*wb[1],
-    d->a[1]*wb[2]};
-  const float bb[3] = {
+    d->a[1]*wb[2]
+  };
+  const float bb[3] =
+  {
     d->b[1]*wb[0],
     d->b[1]*wb[1],
-    d->b[1]*wb[2]};
+    d->b[1]*wb[2]
+  };
 
   const int width = roi_in->width, height = roi_in->height;
   precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
 # if 0 // DEBUG: see what variance we have after transform
-    if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      const int n = width*height;
-      FILE *f = fopen("/tmp/transformed.pfm", "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(int k=0;k<n;k++)
-        fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
-      fclose(f);
-    }
+  if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    const int n = width*height;
+    FILE *f = fopen("/tmp/transformed.pfm", "wb");
+    fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+    for(int k=0; k<n; k++)
+      fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
+    fclose(f);
+  }
 #endif
   buf1 = (float *)ovoid;
   buf2 = tmp;
@@ -580,13 +593,13 @@ void process_wavelets(
       snprintf(filename, 512, "/tmp/coarse_%d.pfm", scale);
       FILE *f = fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(int k=0;k<n;k++)
+      for(int k=0; k<n; k++)
         fwrite(buf2+4*k, sizeof(float), 3, f);
       fclose(f);
       snprintf(filename, 512, "/tmp/detail_%d.pfm", scale);
       f = fopen(filename, "wb");
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(int k=0;k<n;k++)
+      for(int k=0; k<n; k++)
         fwrite(buf[scale]+4*k, sizeof(float), 3, f);
       fclose(f);
     }
@@ -609,19 +622,23 @@ void process_wavelets(
     // TODO: parallelize!
     float sum_y2[3] = {0.0f};
     const int n = width*height;
-    for(int k=0;k<n;k++)
-      for(int c=0;c<3;c++)
+    for(int k=0; k<n; k++)
+      for(int c=0; c<3; c++)
         sum_y2[c] += buf[scale][4*k+c]*buf[scale][4*k+c];
 
     const float sb2 = sigma_band*sigma_band;
-    const float var_y[3] = {
+    const float var_y[3] =
+    {
       sum_y2[0]/(n-1.0f),
       sum_y2[1]/(n-1.0f),
-      sum_y2[2]/(n-1.0f)};
-    const float std_x[3] = {
+      sum_y2[2]/(n-1.0f)
+    };
+    const float std_x[3] =
+    {
       sqrtf(MAX(1e-6f, var_y[0] - sb2)),
       sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-      sqrtf(MAX(1e-6f, var_y[2] - sb2))};
+      sqrtf(MAX(1e-6f, var_y[2] - sb2))
+    };
     // add 8.0 here because it seemed a little weak
     const float adjt = 8.0f;
     const float thrs[4] = { adjt * sb2/std_x[0], adjt * sb2/std_x[1], adjt * sb2/std_x[2], 0.0f};
@@ -642,7 +659,7 @@ void process_wavelets(
 
   backtransform((float *)ovoid, width, height, aa, bb);
 
-  for(int k=0;k<max_scale;k++)
+  for(int k=0; k<max_scale; k++)
     free(buf[k]);
   free(tmp);
 
@@ -651,12 +668,12 @@ void process_wavelets(
 }
 
 void process_nlmeans(
-    struct dt_iop_module_t *self,
-    dt_dev_pixelpipe_iop_t *piece,
-    void *ivoid,
-    void *ovoid,
-    const dt_iop_roi_t *roi_in,
-    const dt_iop_roi_t *roi_out)
+  struct dt_iop_module_t *self,
+  dt_dev_pixelpipe_iop_t *piece,
+  void *ivoid,
+  void *ovoid,
+  const dt_iop_roi_t *roi_in,
+  const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
@@ -675,18 +692,24 @@ void process_nlmeans(
   memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
   float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
 
-  const float wb[3] = {
+  const float wb[3] =
+  {
     piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
-    piece->pipe->processed_maximum[2]*d->strength*(scale*scale)};
-  const float aa[3] = {
+    piece->pipe->processed_maximum[2]*d->strength*(scale*scale)
+  };
+  const float aa[3] =
+  {
     d->a[1]*wb[0],
     d->a[1]*wb[1],
-    d->a[1]*wb[2]};
-  const float bb[3] = {
+    d->a[1]*wb[2]
+  };
+  const float bb[3] =
+  {
     d->b[1]*wb[0],
     d->b[1]*wb[1],
-    d->b[1]*wb[2]};
+    d->b[1]*wb[2]
+  };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
@@ -701,7 +724,7 @@ void process_nlmeans(
       // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else we will add up errors)
       // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more memory
 #ifdef _OPENMP
-#  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
+      #  pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, roi_out, roi_in, in, ovoid, Sa)
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
@@ -896,26 +919,34 @@ int process_nlmeans_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   const float norm = 0.015f/(2*P+1);
 
 
-  const float wb[4] = {
+  const float wb[4] =
+  {
     piece->pipe->processed_maximum[0]*d->strength,
     piece->pipe->processed_maximum[1]*d->strength,
     piece->pipe->processed_maximum[2]*d->strength,
-    0.0f};
-  const float aa[4] = {
+    0.0f
+  };
+  const float aa[4] =
+  {
     d->a[1]*wb[0],
     d->a[1]*wb[1],
     d->a[1]*wb[2],
-    1.0f};
-  const float bb[4] = {
+    1.0f
+  };
+  const float bb[4] =
+  {
     d->b[1]*wb[0],
     d->b[1]*wb[1],
     d->b[1]*wb[2],
-    1.0f};
-  const float sigma2[4] = {
+    1.0f
+  };
+  const float sigma2[4] =
+  {
     (bb[0]/aa[0])*(bb[0]/aa[0]),
     (bb[1]/aa[1])*(bb[1]/aa[1]),
     (bb[2]/aa[1])*(bb[2]/aa[1]),
-    0.0f};
+    0.0f
+  };
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if (dev_tmp == NULL) goto error;
@@ -1109,7 +1140,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   cl_mem dev_detail[max_max_scale];
-  for(int k=0;k<max_scale;k++) dev_detail[k] = NULL;
+  for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
 
   // prepare local work group
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
@@ -1163,26 +1194,34 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const float wb[4] = {
+  const float wb[4] =
+  {
     2.0f*piece->pipe->processed_maximum[0]*d->strength*(scale*scale),
     piece->pipe->processed_maximum[1]*d->strength*(scale*scale),
     2.0f*piece->pipe->processed_maximum[2]*d->strength*(scale*scale),
-    0.0f};
-  const float aa[4] = {
+    0.0f
+  };
+  const float aa[4] =
+  {
     d->a[1]*wb[0],
     d->a[1]*wb[1],
     d->a[1]*wb[2],
-    1.0f};
-  const float bb[4] = {
+    1.0f
+  };
+  const float bb[4] =
+  {
     d->b[1]*wb[0],
     d->b[1]*wb[1],
     d->b[1]*wb[2],
-    1.0f};
-  const float sigma2[4] = {
+    1.0f
+  };
+  const float sigma2[4] =
+  {
     (bb[0]/aa[0])*(bb[0]/aa[0]),
     (bb[1]/aa[1])*(bb[1]/aa[1]),
     (bb[2]/aa[1])*(bb[2]/aa[1]),
-    0.0f};
+    0.0f
+  };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
@@ -1276,7 +1315,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
 
     for(int k = 0; k < reducesize; k++)
     {
-      for(int c=0;c<3;c++)
+      for(int c=0; c<3; c++)
       {
         sum_y [c] += sumsum[4*(2*k)+c];
         sum_y2[c] += sumsum[4*(2*k+1)+c];
@@ -1288,14 +1327,18 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     const int n = width*height;
     const float mean_y[3] = { sum_y[0]/n, sum_y[1]/n, sum_y[2]/n };
 
-    const float var_y[3] = {
+    const float var_y[3] =
+    {
       sum_y2[0]/(n-1.0f) - mean_y[0]*mean_y[0],
       sum_y2[1]/(n-1.0f) - mean_y[1]*mean_y[1],
-      sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]};
-    const float std_x[3] = {
+      sum_y2[2]/(n-1.0f) - mean_y[2]*mean_y[2]
+    };
+    const float std_x[3] =
+    {
       sqrtf(MAX(1e-6f, var_y[0] - sb2)),
       sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-      sqrtf(MAX(1e-6f, var_y[2] - sb2))};
+      sqrtf(MAX(1e-6f, var_y[2] - sb2))
+    };
     // add 8.0 here because it seemed a little weak
     const float adjt = 8.0f;
 
@@ -1376,12 +1419,12 @@ int process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_
 #endif  // HAVE_OPENCL
 
 void process(
-    struct dt_iop_module_t *self,
-    dt_dev_pixelpipe_iop_t *piece,
-    void *ivoid,
-    void *ovoid,
-    const dt_iop_roi_t *roi_in,
-    const dt_iop_roi_t *roi_out)
+  struct dt_iop_module_t *self,
+  dt_dev_pixelpipe_iop_t *piece,
+  void *ivoid,
+  void *ovoid,
+  const dt_iop_roi_t *roi_in,
+  const dt_iop_roi_t *roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)
@@ -1408,7 +1451,7 @@ void reload_defaults(dt_iop_module_t *module)
     strncpy(name, _(g->interpolated.name), 512);
 
     const int iso = module->dev->image_storage.exif_iso;
-    for(int i=1;i<g->profile_cnt;i++)
+    for(int i=1; i<g->profile_cnt; i++)
     {
       if(g->profiles[i-1]->iso == iso)
       {
@@ -1427,7 +1470,7 @@ void reload_defaults(dt_iop_module_t *module)
         break;
       }
       if(g->profiles[i-1]->iso < iso &&
-         g->profiles[i]->iso > iso)
+          g->profiles[i]->iso > iso)
       {
         dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
         // signal later autodetection in commit_params:
@@ -1437,7 +1480,7 @@ void reload_defaults(dt_iop_module_t *module)
       }
     }
     dt_bauhaus_combobox_add(g->profile, name);
-    for(int i=0;i<g->profile_cnt;i++)
+    for(int i=0; i<g->profile_cnt; i++)
     {
       dt_bauhaus_combobox_add(g->profile, g->profiles[i]->name);
     }
@@ -1445,7 +1488,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
-    for(int k=0;k<3;k++)
+    for(int k=0; k<3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
@@ -1518,7 +1561,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
   dt_noiseprofile_t interpolated = dt_noiseprofiles[0]; // default to generic poissonian
 
   const int iso = self->dev->image_storage.exif_iso;
-  for(int i=1;i<profile_cnt;i++)
+  for(int i=1; i<profile_cnt; i++)
   {
     if(profiles[i-1]->iso == iso)
     {
@@ -1531,7 +1574,7 @@ static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t 
       break;
     }
     if(profiles[i-1]->iso < iso &&
-       profiles[i]->iso > iso)
+        profiles[i]->iso > iso)
     {
       dt_noiseprofile_interpolate(profiles[i-1], profiles[i], &interpolated);
       break;
@@ -1556,7 +1599,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
     // this is partially duplicated code and data because we are not allowed to access
     // gui_data here ..
     dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
-    for(int k=0;k<3;k++)
+    for(int k=0; k<3; k++)
     {
       d->a[k] = interpolated.a[k];
       d->b[k] = interpolated.b[k];
@@ -1583,7 +1626,7 @@ profile_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   const dt_noiseprofile_t *profile = &(g->interpolated);
   if(i > 0) profile = g->profiles[i-1];
-  for(int k=0;k<3;k++)
+  for(int k=0; k<3; k++)
   {
     p->a[k] = profile->a[k];
     p->b[k] = profile->b[k];
@@ -1639,10 +1682,10 @@ void gui_update(dt_iop_module_t *self)
   }
   else
   {
-    for(int i=0;i<g->profile_cnt;i++)
+    for(int i=0; i<g->profile_cnt; i++)
     {
       if(!memcmp(g->profiles[i]->a, p->a, sizeof(float)*3) &&
-         !memcmp(g->profiles[i]->b, p->b, sizeof(float)*3))
+          !memcmp(g->profiles[i]->b, p->b, sizeof(float)*3))
       {
         dt_bauhaus_combobox_set(g->profile, i+1);
         break;

@@ -379,8 +379,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
   const float w = preview ? dev->preview_pipe->processed_width  : dev->pipe->processed_width;
   const float h = preview ? dev->preview_pipe->processed_height : dev->pipe->processed_height;
   const float ps = dev->pipe->backbuf_width ?
-  dev->pipe->processed_width/(float)dev->preview_pipe->processed_width :
-dev->preview_pipe->iscale / dev->preview_downsampling;
+                   dev->pipe->processed_width/(float)dev->preview_pipe->processed_width :
+                   dev->preview_pipe->iscale / dev->preview_downsampling;
 
   switch(zoom)
   {
@@ -419,7 +419,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
   dt_masks_read_forms(dev);
   dev->form_visible = NULL;
-  
+
   dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
@@ -538,7 +538,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       memcpy(hist->params, module->params, module->params_size);
 
       if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-      memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
+        memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
       // if the user changed stuff and the module is still not enabled, do it:
       if(!hist->enabled && !module->enabled)
@@ -755,21 +755,21 @@ auto_apply_presets(dt_develop_t *dev)
 
   // cleanup
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-      "delete from memory.history",
-      NULL, NULL, NULL);
+                        "delete from memory.history",
+                        NULL, NULL, NULL);
   const char *preset_table[2] = {"presets", "legacy_presets"};
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
   snprintf(query, 1024,
-      "insert into memory.history select ?1, 0, op_version, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name "
-      "from %s where autoapply=1 and "
-                              "?2 like model and ?3 like maker and ?4 like lens and "
-                              "?5 between iso_min and iso_max and "
-                              "?6 between exposure_min and exposure_max and "
-                              "?7 between aperture_min and aperture_max and "
-                              "?8 between focal_length_min and focal_length_max and "
-                              "(isldr = 0 or isldr=?9) order by writeprotect desc, "
-                              "length(model), length(maker), length(lens)", preset_table[legacy]);
+           "insert into memory.history select ?1, 0, op_version, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name "
+           "from %s where autoapply=1 and "
+           "?2 like model and ?3 like maker and ?4 like lens and "
+           "?5 between iso_min and iso_max and "
+           "?6 between exposure_min and exposure_max and "
+           "?7 between aperture_min and aperture_max and "
+           "?8 between focal_length_min and focal_length_max and "
+           "(isldr = 0 or isldr=?9) order by writeprotect desc, "
+           "length(model), length(maker), length(lens)", preset_table[legacy]);
   // query for all modules at once:
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -790,8 +790,8 @@ auto_apply_presets(dt_develop_t *dev)
     int cnt = 0;
     // count what we found:
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-        "select count(*) from memory.history",
-        -1, &stmt, NULL);
+                                "select count(*) from memory.history",
+                                -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       // if there is anything..
@@ -800,8 +800,8 @@ auto_apply_presets(dt_develop_t *dev)
       // fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid, cnt, legacy);
       // advance the current history by that amount:
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "update history set num=num+?1 where imgid=?2",
-          -1, &stmt, NULL);
+                                  "update history set num=num+?1 where imgid=?2",
+                                  -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
@@ -810,9 +810,9 @@ auto_apply_presets(dt_develop_t *dev)
         // and finally prepend the rest with increasing numbers (starting at 0)
         sqlite3_finalize(stmt);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-            "insert into history select imgid, rowid-1, module, operation, op_params, enabled, "
-            "blendop_params, blendop_version, multi_priority, multi_name from memory.history",
-          -1, &stmt, NULL);
+                                    "insert into history select imgid, rowid-1, module, operation, op_params, enabled, "
+                                    "blendop_params, blendop_version, multi_priority, multi_name from memory.history",
+                                    -1, &stmt, NULL);
         sqlite3_step(stmt);
       }
     }
@@ -841,7 +841,7 @@ void dt_dev_read_history(dt_develop_t *dev)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-      "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name from history where imgid = ?1 order by num", -1, &stmt, NULL);
+                              "select imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name from history where imgid = ?1 order by num", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
   dev->history_end = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -936,8 +936,8 @@ void dt_dev_read_history(dt_develop_t *dev)
     else
     {
       memcpy(hist->blend_params, hist->module->default_blendop_params, sizeof(dt_develop_blend_params_t));
-    }    
-    
+    }
+
     if(hist->module->version() != modversion || hist->module->params_size != sqlite3_column_bytes(stmt, 4) ||
         strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op))
     {
@@ -959,7 +959,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     {
       memcpy(hist->params, sqlite3_column_blob(stmt, 4), hist->module->params_size);
     }
-    
+
     // make sure that always-on modules are always on. duh.
     if(hist->module->default_enabled == 1 && hist->module->hide_enable_button == 1)
     {
@@ -1326,7 +1326,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
     modules = g_list_next(modules);
   }
 
-    if(dev->gui_attached && del)
+  if(dev->gui_attached && del)
   {
     /* signal that history has changed */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);

@@ -21,53 +21,62 @@
 #include <string.h>
 #include "control/conf.h"
 
-static const char *pref_type_name[] = {
-"string",
-"bool",
-"integer",
+static const char *pref_type_name[] =
+{
+  "string",
+  "bool",
+  "integer",
   NULL
 };
 
-typedef enum {
+typedef enum
+{
   pref_string,
   pref_bool,
   pref_int,
 } pref_type;
 
 
-typedef struct pref_element{
+typedef struct pref_element
+{
   char*script;
   char*name;
   char* label;
   char* tooltip;
   pref_type type;
-  union {
-    struct {
+  union
+  {
+    struct
+    {
       char *default_value;
     } string_data;
-    struct {
+    struct
+    {
       gboolean default_value;
     } bool_data;
-    struct {
+    struct
+    {
       int min;
       int max;
       int default_value;
     } int_data;
   } ;
   struct pref_element* next;
-  // ugly hack, written every time the dialog is displayed and unused when not displayed 
+  // ugly hack, written every time the dialog is displayed and unused when not displayed
   // value is set when window is created, it is correct when window is destroyed, but is invalid out of that context
   GtkWidget * widget;
 
 } pref_element;
 
-static void destroy_pref_element(pref_element*elt) {
+static void destroy_pref_element(pref_element*elt)
+{
   free(elt->script);
   free(elt->name);
   free(elt->label);
   free(elt->tooltip);
   // don't free the widget field
-  switch(elt->type) {
+  switch(elt->type)
+  {
     case pref_string:
       free(elt->string_data.default_value);
       break;
@@ -81,11 +90,13 @@ static void destroy_pref_element(pref_element*elt) {
 
 static pref_element* pref_list=NULL;
 
-static void get_pref_name(char *tgt,size_t size,const char*script,const char*name) {
-    snprintf(tgt,size,"lua/%s/%s",script,name);
+static void get_pref_name(char *tgt,size_t size,const char*script,const char*name)
+{
+  snprintf(tgt,size,"lua/%s/%s",script,name);
 }
 
-static int register_pref(lua_State*L){
+static int register_pref(lua_State*L)
+{
   // to avoid leaks, we need to first get all params (which could raise errors) then alloc and fill the struct
   // this is complicated, but needed
   pref_element * built_elt = malloc(sizeof(pref_element));
@@ -104,7 +115,8 @@ static int register_pref(lua_State*L){
   const char* type_name = lua_tostring(L,cur_param);
   if(!type_name) goto error;
   for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0){
+    if (strcmp(pref_type_name[i], type_name) == 0)
+    {
       built_elt->type =i;
       break;
     }
@@ -121,7 +133,8 @@ static int register_pref(lua_State*L){
 
   char pref_name[1024];
   get_pref_name(pref_name,1024,built_elt->script,built_elt->name);
-  switch(built_elt->type) {
+  switch(built_elt->type)
+  {
     case pref_string:
       if(!lua_isstring(L,cur_param)) goto error;
       built_elt->string_data.default_value = strdup(lua_tostring(L,cur_param));
@@ -161,20 +174,23 @@ error:
   destroy_pref_element(built_elt);
   return luaL_argerror(L,cur_param,NULL);
 }
-static int read_pref(lua_State*L){
+static int read_pref(lua_State*L)
+{
   const char *script = luaL_checkstring(L,1);
   const char *name = luaL_checkstring(L,2);
   const char* type_name = luaL_checkstring(L,3);
   int i;
   for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0){
+    if (strcmp(pref_type_name[i], type_name) == 0)
+    {
       break;
     }
   if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
 
   char pref_name[1024];
   get_pref_name(pref_name,1024,script,name);
-  switch(i) {
+  switch(i)
+  {
     case pref_string:
       lua_pushstring(L,dt_conf_get_string(pref_name));
       break;
@@ -188,20 +204,23 @@ static int read_pref(lua_State*L){
   return 1;
 }
 
-static int write_pref(lua_State*L){
+static int write_pref(lua_State*L)
+{
   const char *script = luaL_checkstring(L,1);
   const char *name = luaL_checkstring(L,2);
   const char* type_name = luaL_checkstring(L,3);
   int i;
   for (i=0; pref_type_name[i]; i++)
-    if (strcmp(pref_type_name[i], type_name) == 0){
+    if (strcmp(pref_type_name[i], type_name) == 0)
+    {
       break;
     }
   if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
 
   char pref_name[1024];
   get_pref_name(pref_name,1024,script,name);
-  switch(i) {
+  switch(i)
+  {
     case pref_string:
       dt_conf_set_string(pref_name,luaL_checkstring(L,4));
       break;
@@ -217,22 +236,25 @@ static int write_pref(lua_State*L){
 }
 
 
-static void callback_string(GtkWidget *widget, pref_element*cur_elt ) {
+static void callback_string(GtkWidget *widget, pref_element*cur_elt )
+{
   char pref_name[1024];
   get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
   dt_conf_set_string(pref_name,gtk_entry_get_text(GTK_ENTRY(widget)));
 }
-static void callback_bool(GtkWidget *widget, pref_element*cur_elt ) {
+static void callback_bool(GtkWidget *widget, pref_element*cur_elt )
+{
   char pref_name[1024];
   get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
   dt_conf_set_bool(pref_name,gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
-static void callback_int(GtkWidget *widget, pref_element*cur_elt ) {
+static void callback_int(GtkWidget *widget, pref_element*cur_elt )
+{
   char pref_name[1024];
   get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
   dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
-  
+
 static void response_callback_string(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
 {
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -311,7 +333,8 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
   gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("lua options")));
 
   pref_element* cur_elt = pref_list;
-  while(cur_elt) {
+  while(cur_elt)
+  {
     char pref_name[1024];
     get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
     label = gtk_label_new(cur_elt->label);
@@ -319,7 +342,8 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), label);
-    switch(cur_elt->type) {
+    switch(cur_elt->type)
+    {
       case pref_string:
         cur_elt->widget = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
@@ -355,8 +379,9 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
   }
 }
 
-int dt_lua_init_preferences(lua_State * L) {
-	
+int dt_lua_init_preferences(lua_State * L)
+{
+
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"preferences");
 

@@ -108,10 +108,10 @@ enum
   NUM_COLS
 } ;
 static void image_renderer_function (GtkTreeViewColumn *col,
-    GtkCellRenderer   *renderer,
-    GtkTreeModel      *model,
-    GtkTreeIter       *iter,
-    gpointer           user_data)
+                                     GtkCellRenderer   *renderer,
+                                     GtkTreeModel      *model,
+                                     GtkTreeIter       *iter,
+                                     gpointer           user_data)
 {
   GdkImage * pixbuf;
   dt_iop_module_t *module;
@@ -122,10 +122,10 @@ static void image_renderer_function (GtkTreeViewColumn *col,
   g_object_unref(pixbuf);
 }
 static void favorite_renderer_function (GtkTreeViewColumn *col,
-    GtkCellRenderer   *renderer,
-    GtkTreeModel      *model,
-    GtkTreeIter       *iter,
-    gpointer           user_data)
+                                        GtkCellRenderer   *renderer,
+                                        GtkTreeModel      *model,
+                                        GtkTreeIter       *iter,
+                                        gpointer           user_data)
 {
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
@@ -134,10 +134,10 @@ static void favorite_renderer_function (GtkTreeViewColumn *col,
   g_object_set(renderer,"pixbuf",module->state==dt_iop_state_FAVORITE?fav_pixbuf:NULL,NULL);
 }
 static void text_renderer_function (GtkTreeViewColumn *col,
-    GtkCellRenderer   *renderer,
-    GtkTreeModel      *model,
-    GtkTreeIter       *iter,
-    gpointer           user_data)
+                                    GtkCellRenderer   *renderer,
+                                    GtkTreeModel      *model,
+                                    GtkTreeIter       *iter,
+                                    gpointer           user_data)
 {
   dt_iop_module_t *module;
   gtk_tree_model_get(model, iter, COL_MODULE, &module, -1);
@@ -174,7 +174,7 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   guchar* data = cairo_image_surface_get_data(fav_cst);
   dt_draw_cairo_to_gdk_pixbuf(data, ICON_SIZE, ICON_SIZE);
   ((dt_lib_modulelist_t*)self->data)->fav_pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE, 8, ICON_SIZE,
-    ICON_SIZE, cairo_image_surface_get_stride(fav_cst), NULL, NULL);
+      ICON_SIZE, cairo_image_surface_get_stride(fav_cst), NULL, NULL);
   g_object_set(fav_renderer,"cell-background-gdk",&style->bg[GTK_STATE_ACTIVE],NULL);
   g_object_set(fav_renderer,"width",gdk_pixbuf_get_width(((dt_lib_modulelist_t*)self->data)->fav_pixbuf),NULL);
 
@@ -191,27 +191,27 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
   col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
   if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               0,
-                                               "favorite",
-                                               fav_renderer,
-                                               favorite_renderer_function,
-                                               NULL,NULL);
+      0,
+      "favorite",
+      fav_renderer,
+      favorite_renderer_function,
+      NULL,NULL);
   col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
   if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               1,
-                                               "image",
-                                               pix_renderer,
-                                               image_renderer_function,
-                                               NULL,NULL);
+      1,
+      "image",
+      pix_renderer,
+      image_renderer_function,
+      NULL,NULL);
   col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 2);
   if(col) gtk_tree_view_remove_column(GTK_TREE_VIEW(view), col);
   gtk_tree_view_insert_column_with_data_func (GTK_TREE_VIEW (view),
-                                               2,
-                                               "name",
-                                               text_renderer,
-                                               text_renderer_function,
-                                               NULL,NULL);
+      2,
+      "name",
+      text_renderer,
+      text_renderer_function,
+      NULL,NULL);
 
   /* go thru list of iop modules and add them to the list */
   GList *modules = g_list_last(darktable.develop->iop);
@@ -231,9 +231,9 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
       GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
-          COL_IMAGE, pixbuf,
-          COL_MODULE,module,
-          -1);
+                          COL_IMAGE, pixbuf,
+                          COL_MODULE,module,
+                          -1);
       g_object_unref (pixbuf);
     }
 

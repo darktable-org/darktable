@@ -566,8 +566,8 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  
-    if(!d->lens->Maker || d->crop <= 0.0f) return 0;
+
+  if(!d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->iwidth, orig_h = piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -576,11 +576,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
                    modifier, d->lens, LF_PF_F32,
                    d->focal, d->aperture,
                    d->distance, d->scale,
-                   d->target_geom, d->modify_flags, !d->inverse);  
+                   d->target_geom, d->modify_flags, !d->inverse);
   float *buf = malloc(2*3*sizeof(float));
-  
+
   for (int i=0; i<points_count*2; i+=2)
-  {  
+  {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       lf_modifier_apply_subpixel_geometry_distortion (modifier, points[i], points[i+1], 1, 1, buf);
@@ -590,13 +590,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   }
   free(buf);
   lf_modifier_destroy(modifier);
-  
+
   return 1;
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-    if(!d->lens->Maker || d->crop <= 0.0f) return 0;
+  if(!d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->iwidth, orig_h = piece->iheight;
   lfModifier *modifier = lf_modifier_new(d->lens, d->crop, orig_w, orig_h);
@@ -605,11 +605,11 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
                    modifier, d->lens, LF_PF_F32,
                    d->focal, d->aperture,
                    d->distance, d->scale,
-                   d->target_geom, d->modify_flags, d->inverse);  
+                   d->target_geom, d->modify_flags, d->inverse);
   float *buf = malloc(2*3*sizeof(float));
-  
+
   for (int i=0; i<points_count*2; i+=2)
-  {  
+  {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       lf_modifier_apply_subpixel_geometry_distortion (modifier, points[i], points[i+1], 1, 1, buf);
@@ -1375,7 +1375,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_object_set(G_OBJECT(w), "tooltip-text", _("focal length (mm)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->focal, 10.0), p->focal);
   dt_bauhaus_combobox_add(w, txt);
-  for(int k=0;k<fli-ffi;k++)
+  for(int k=0; k<fli-ffi; k++)
   {
     snprintf(txt, sizeof (txt), "%.*f", precision(focal_values[ffi+k], 10.0), focal_values[ffi+k]);
     dt_bauhaus_combobox_add(w, txt);
@@ -1403,7 +1403,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
   dt_bauhaus_combobox_add(w, txt);
-  for(size_t k=0;k<fli-ffi;k++)
+  for(size_t k=0; k<fli-ffi; k++)
   {
     snprintf(txt, sizeof (txt), "%.*f", precision(aperture_values[ffi+k], 10.0), aperture_values[ffi+k]);
     dt_bauhaus_combobox_add(w, txt);
@@ -1420,7 +1420,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   snprintf(txt, sizeof (txt), "%.*f", precision(p->distance, 10.0), p->distance);
   dt_bauhaus_combobox_add(w, txt);
   float val = 0.25f;
-  for(int k=0;k<25;k++)
+  for(int k=0; k<25; k++)
   {
     if(val > 1000.0f) val = 1000.0f;
     snprintf(txt, sizeof (txt), "%.*f", precision(val, 10.0), val);

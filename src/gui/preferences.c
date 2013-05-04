@@ -102,7 +102,7 @@ static void tree_selection_changed(GtkTreeSelection *selection, gpointer data);
 static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
                                gpointer data);
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
-                               gpointer data);
+                                       gpointer data);
 static gboolean prefix_search(GtkTreeModel *model, gint column,
                               const gchar *key, GtkTreeIter *iter, gpointer d);
 
@@ -1034,7 +1034,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 }
 
 static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
-    gpointer data)
+                                       gpointer data)
 {
 
   GtkTreeModel *model = (GtkTreeModel*)data;
@@ -1060,19 +1060,20 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
     gchar *name;
     GdkPixbuf *editable;
     gtk_tree_model_get(model, &iter,
-        P_ROWID_COLUMN, &rowid,
-        P_NAME_COLUMN, &name,
-        P_EDITABLE_COLUMN, &editable,
-        -1);
-    if(editable == NULL) {
+                       P_ROWID_COLUMN, &rowid,
+                       P_NAME_COLUMN, &name,
+                       P_EDITABLE_COLUMN, &editable,
+                       -1);
+    if(editable == NULL)
+    {
       sqlite3_stmt *stmt;
 
       GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
       GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
-          GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_MESSAGE_QUESTION,
-          GTK_BUTTONS_YES_NO,
-          _("do you really want to delete the preset `%s'?"), name);
+                          GTK_DIALOG_DESTROY_WITH_PARENT,
+                          GTK_MESSAGE_QUESTION,
+                          GTK_BUTTONS_YES_NO,
+                          _("do you really want to delete the preset `%s'?"), name);
       gtk_window_set_title(GTK_WINDOW (dialog), _("delete preset?"));
       if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
       {
@@ -1118,7 +1119,8 @@ static void import_export(GtkButton *button, gpointer data)
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser),
         TRUE);
     gchar* exported_path = dt_conf_get_string("ui_last/exported_path");
-    if(exported_path != NULL) {
+    if(exported_path != NULL)
+    {
       gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(chooser),
         exported_path);
@@ -1147,7 +1149,8 @@ static void import_export(GtkButton *button, gpointer data)
                 NULL);
 
     gchar* import_path = dt_conf_get_string("ui_last/import_path");
-    if(import_path != NULL) {
+    if(import_path != NULL)
+    {
       gtk_file_chooser_set_current_folder(
         GTK_FILE_CHOOSER(chooser),
         import_path);

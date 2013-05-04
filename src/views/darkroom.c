@@ -546,7 +546,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   }
 
   //cleanup visible masks
-  if (!dev->form_gui) 
+  if (!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
@@ -555,7 +555,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dev->form_visible = NULL;
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
-  
+
   select_this_image(imgid);
 
   while(dev->history)
@@ -679,7 +679,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   }
 
   dt_dev_masks_list_change(dev);
-  
+
   /* last set the group to update visibility of iop modules for new pipe */
   dt_dev_modulegroups_set(dev,dt_conf_get_int("plugins/darkroom/groups"));
 
@@ -1037,7 +1037,7 @@ static gboolean _overexposed_toggle_callback(GtkAccelGroup *accel_group,
 
 void enter(dt_view_t *self)
 {
-   
+
   /* connect to ui pipe finished signal for redraw */
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,G_CALLBACK(_darkroom_ui_pipe_finish_signal_callback),
@@ -1045,7 +1045,7 @@ void enter(dt_view_t *self)
 
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  if (!dev->form_gui) 
+  if (!dev->form_gui)
   {
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
@@ -1095,16 +1095,16 @@ void enter(dt_view_t *self)
     // the button
     dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(dev->overexposed.button), "tooltip-text", _("toggle over/under exposed indication\nright click for options"),
-                (char *)NULL);
+                 (char *)NULL);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "clicked",
-                      G_CALLBACK (_overexposed_quickbutton_clicked),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_clicked),
+                     dev);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "button-press-event",
-                      G_CALLBACK (_overexposed_quickbutton_pressed),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_pressed),
+                     dev);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "button-release-event",
-                      G_CALLBACK (_overexposed_quickbutton_released),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_released),
+                     dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button);
 
     // and the popup window
@@ -1239,7 +1239,7 @@ void enter(dt_view_t *self)
     g_free(active_plugin);
   }
   dt_dev_masks_list_change(dev);
-  
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
@@ -1563,7 +1563,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   float oldscale = scale;
-  
+
   // offset from center now (current zoom_{x,y} points there)
   float mouse_off_x = x - .5*dev->width, mouse_off_y = y - .5*dev->height;
   zoom_x += mouse_off_x/(procw*scale);
@@ -1588,7 +1588,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if ((scale-1.0)*(oldscale-1.0)<0) scale = 1.0f;
   if ((scale-fitscale)*(oldscale-fitscale)<0) scale = fitscale;
   scale = fmaxf(fminf(scale,2.0f),0.5*fitscale);
-  
+
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;

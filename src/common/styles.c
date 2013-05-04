@@ -231,8 +231,8 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
-        G_CALLBACK(_apply_style_shortcut_callback),
-        tmp_name, _destroy_style_shortcut_callback);
+                G_CALLBACK(_apply_style_shortcut_callback),
+                tmp_name, _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
   }
 
@@ -295,15 +295,15 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
 
     dt_styles_save_to_file(newname,stylesdir,FALSE);
 
-      char tmp_accel[1024];
-      gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
-      snprintf(tmp_accel,1024,"styles/Apply %s",newname);
-      dt_accel_register_global( tmp_accel, 0, 0);
-      GClosure *closure;
-      closure = g_cclosure_new(
-          G_CALLBACK(_apply_style_shortcut_callback),
-          tmp_name, _destroy_style_shortcut_callback);
-      dt_accel_connect_global(tmp_accel, closure);
+    char tmp_accel[1024];
+    gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
+    snprintf(tmp_accel,1024,"styles/Apply %s",newname);
+    dt_accel_register_global( tmp_accel, 0, 0);
+    GClosure *closure;
+    closure = g_cclosure_new(
+                G_CALLBACK(_apply_style_shortcut_callback),
+                tmp_name, _destroy_style_shortcut_callback);
+    dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"),newname);
   }
 }
@@ -315,7 +315,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
   sqlite3_stmt *stmt;
 
   /* first create the style header */
-  if (!dt_styles_create_style_header(name,description) ) return FALSE; 
+  if (!dt_styles_create_style_header(name,description) ) return FALSE;
 
   if ((id=dt_styles_get_id_by_name(name)) != 0)
   {
@@ -553,7 +553,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         gboolean has_multi_name = FALSE;
 
         if (multi_name && strlen(multi_name)>0 && strcmp(multi_name,"0")!=0)
-            has_multi_name = TRUE;
+          has_multi_name = TRUE;
 
         if (has_multi_name)
           g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),multi_name,(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));

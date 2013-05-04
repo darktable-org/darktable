@@ -33,7 +33,7 @@ int dt_lua_push_darktable_lib(lua_State* L);
 
 /**
   (-1,+1)
-  check that the top of the stack is a table, creates or find a subtable named "name", 
+  check that the top of the stack is a table, creates or find a subtable named "name",
   adds it on top of the stack, and remove the previous table
 
   used to easily do a tree organisation of objects

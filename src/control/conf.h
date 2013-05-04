@@ -155,7 +155,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename)
   char line[1024];
   int read = 0;
   int defaults = 0;
-  for(int i=0;i<2;i++)
+  for(int i=0; i<2; i++)
   {
     // TODO: read default darktablerc into ->defaults and other into ->table!
     if(!i)

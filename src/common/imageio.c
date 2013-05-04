@@ -331,7 +331,7 @@ dt_imageio_open_raw(
   if(img->filters)
   {
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
+    #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
 #endif
     for(int k=0; k<img->width*img->height; k++)
       ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
@@ -650,8 +650,8 @@ int dt_imageio_export_with_flags(
 
   // get only once at the beginning, in case the user changes it on the way:
   const gboolean high_quality_processing = ((format_params->max_width  == 0 || format_params->max_width  >= pipe.processed_width ) &&
-                                       (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? FALSE :
-                                      high_quality;
+      (format_params->max_height == 0 || format_params->max_height >= pipe.processed_height)) ? FALSE :
+      high_quality;
   const int width  = high_quality_processing ? 0 : format_params->max_width;
   const int height = high_quality_processing ? 0 : format_params->max_height;
   const double scalex = width  > 0 ? fminf(width /(double)pipe.processed_width,  1.0) : 1.0;
@@ -767,8 +767,9 @@ int dt_imageio_export_with_flags(
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   free(moutbuf);
-  
-  if(!thumbnail_export) {
+
+  if(!thumbnail_export)
+  {
     dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,imgid,filename);
   }
   return res;

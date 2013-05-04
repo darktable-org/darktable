@@ -364,11 +364,11 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
   /* Produce the dialog */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW(win),
-                                          GTK_DIALOG_DESTROY_WITH_PARENT,
-                                          GTK_MESSAGE_QUESTION,
-                                          GTK_BUTTONS_YES_NO,
-                                          "_(There are %d new images and %d deleted images. Do you want to sync this folder?)", count_new,
-                                          count_missing);
+                      GTK_DIALOG_DESTROY_WITH_PARENT,
+                      GTK_MESSAGE_QUESTION,
+                      GTK_BUTTONS_YES_NO,
+                      "_(There are %d new images and %d deleted images. Do you want to sync this folder?)", count_new,
+                      count_missing);
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
   {
@@ -415,11 +415,11 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
   gchar *new_path = NULL;
 
   filechooser = gtk_file_chooser_dialog_new (_("search filmroll"),
-                         GTK_WINDOW (win),
-                         GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                         (char *)NULL);
+                GTK_WINDOW (win),
+                GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                (char *)NULL);
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
@@ -581,18 +581,18 @@ view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event, gpointer userd
      *   exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
     if (gtk_tree_selection_count_selected_rows(selection)  <= 1)
     {
-       GtkTreePath *path;
+      GtkTreePath *path;
 
-       /* Get tree path for row that was clicked */
-       if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
-                                         (gint) event->x,
-                                         (gint) event->y,
-                                         &path, NULL, NULL, NULL))
-       {
-         gtk_tree_selection_unselect_all(selection);
-         gtk_tree_selection_select_path(selection, path);
-         gtk_tree_path_free(path);
-       }
+      /* Get tree path for row that was clicked */
+      if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview),
+                                        (gint) event->x,
+                                        (gint) event->y,
+                                        &path, NULL, NULL, NULL))
+      {
+        gtk_tree_selection_unselect_all(selection);
+        gtk_tree_selection_select_path(selection, path);
+        gtk_tree_path_free(path);
+      }
     }
     view_popup_menu(treeview, event, userdata);
 
@@ -643,10 +643,10 @@ _filmroll_is_present(const gchar *path)
 
 static void
 _show_filmroll_present(GtkTreeViewColumn *column,
-                  GtkCellRenderer   *renderer,
-                  GtkTreeModel      *model,
-                  GtkTreeIter       *iter,
-                  gpointer          user_data)
+                       GtkCellRenderer   *renderer,
+                       GtkTreeModel      *model,
+                       GtkTreeIter       *iter,
+                       gpointer          user_data)
 {
   gchar *path, *pch;
   gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &path, -1);
@@ -693,7 +693,7 @@ _folder_tree ()
     //current = iter; // This needs to be deleted if the following code is enabled
 #if 0
     int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),NULL);
-    for (int k=0;k<children;k++)
+    for (int k=0; k<children; k++)
     {
       if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, NULL, k))
       {
@@ -724,7 +724,7 @@ _folder_tree ()
       found = FALSE;
       int children = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store),level>0?&current:NULL);
       /* find child with name, if not found create and continue */
-      for (int k=0;k<children;k++)
+      for (int k=0; k<children; k++)
       {
         if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &iter, level>0?&current:NULL, k))
         {
@@ -756,9 +756,9 @@ _folder_tree ()
         int count = _count_images(pth2);
         gtk_tree_store_insert(store, &iter, level>0?&current:NULL,0);
         gtk_tree_store_set(store, &iter, DT_LIB_COLLECT_COL_TEXT, pch[level],
-                                         DT_LIB_COLLECT_COL_PATH, pth2,
-                                         DT_LIB_COLLECT_COL_COUNT, count,
-                                         DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+                           DT_LIB_COLLECT_COL_PATH, pth2,
+                           DT_LIB_COLLECT_COL_COUNT, count,
+                           DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
         current = iter;
       }
 
@@ -1203,7 +1203,7 @@ list_view (dt_lib_collect_rule_t *dr)
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-    // We shouldn't ever be here
+      // We shouldn't ever be here
       break;
 
     case DT_COLLECTION_PROP_DAY:
@@ -1480,7 +1480,7 @@ row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_
 
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-     item == DT_COLLECTION_PROP_FOLDERS)    // or folders
+      item == DT_COLLECTION_PROP_FOLDERS)    // or folders
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
   else
     gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1527,7 +1527,7 @@ entry_activated (GtkWidget *entry, dt_lib_collect_rule_t *d)
       gchar *text;
       const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->combo));
       if(item == DT_COLLECTION_PROP_FILMROLL || // get full path for film rolls
-         item == DT_COLLECTION_PROP_FOLDERS)    // or folders
+          item == DT_COLLECTION_PROP_FOLDERS)    // or folders
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
       else
         gtk_tree_model_get (model, &iter, DT_LIB_COLLECT_COL_TEXT, &text, -1);
@@ -1950,24 +1950,24 @@ gui_init (dt_lib_module_t *self)
   _lib_collect_gui_update(self);
 
   dt_control_signal_connect(darktable.signals,
-                           DT_SIGNAL_COLLECTION_CHANGED,
-                           G_CALLBACK(collection_updated),
-                           self);
+                            DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(collection_updated),
+                            self);
 
   dt_control_signal_connect(darktable.signals,
-                           DT_SIGNAL_FILMROLLS_CHANGED,
-                           G_CALLBACK(filmrolls_updated),
-                           self);
+                            DT_SIGNAL_FILMROLLS_CHANGED,
+                            G_CALLBACK(filmrolls_updated),
+                            self);
 
   dt_control_signal_connect(darktable.signals,
-                           DT_SIGNAL_FILMROLLS_IMPORTED,
-                           G_CALLBACK(filmrolls_imported),
-                           self);
+                            DT_SIGNAL_FILMROLLS_IMPORTED,
+                            G_CALLBACK(filmrolls_imported),
+                            self);
 
   dt_control_signal_connect(darktable.signals,
-                           DT_SIGNAL_FILMROLLS_REMOVED,
-                           G_CALLBACK(filmrolls_removed),
-                           self);
+                            DT_SIGNAL_FILMROLLS_REMOVED,
+                            G_CALLBACK(filmrolls_removed),
+                            self);
 }
 
 void

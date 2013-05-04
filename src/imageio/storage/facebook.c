@@ -41,7 +41,8 @@ DT_MODULE(1)
 #define FB_GRAPH_BASE_URL "https://graph.facebook.com/"
 #define FB_API_KEY "315766121847254"
 
-#define FB_IMAGE_MAX_SIZE 960
+//facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
+#define FB_IMAGE_MAX_SIZE 2048
 
 #define MSGCOLOR_RED "#e07f7f"
 #define MSGCOLOR_GREEN "#7fe07f"
@@ -89,7 +90,8 @@ typedef enum FBAlbumPrivacyPolicy
 /**
  * Represents informations about an album
  */
-typedef struct FBAlbum {
+typedef struct FBAlbum
+{
   gchar *id;
   gchar *name;
   FBAlbumPrivacyPolicy privacy;
@@ -112,7 +114,8 @@ void fb_album_destroy(FBAlbum *album)
 /**
  * Represents informations about an account
  */
-typedef struct FBAccountInfo {
+typedef struct FBAccountInfo
+{
   gchar *id;
   gchar *username;
   gchar *token;
@@ -330,7 +333,8 @@ static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable 
   return respobj;
 }
 
-typedef struct {
+typedef struct
+{
   struct curl_httppost *formpost;
   struct curl_httppost *lastptr;
 } HttppostFormList;
@@ -338,25 +342,25 @@ typedef struct {
 static void fb_query_post_add_form_arguments(const gchar *key, const gchar *value, HttppostFormList *formlist)
 {
   curl_formadd(&(formlist->formpost),
-    &(formlist->lastptr),
-    CURLFORM_COPYNAME, key,
-    CURLFORM_COPYCONTENTS, value,
-    CURLFORM_END);
+               &(formlist->lastptr),
+               CURLFORM_COPYNAME, key,
+               CURLFORM_COPYCONTENTS, value,
+               CURLFORM_END);
 }
 
 static void fb_query_post_add_file_arguments(const gchar *key, const gchar *value, HttppostFormList *formlist)
 {
   curl_formadd(&(formlist->formpost),
-    &(formlist->lastptr),
-    CURLFORM_COPYNAME, key,
-    CURLFORM_COPYCONTENTS, value,
-    CURLFORM_END);
+               &(formlist->lastptr),
+               CURLFORM_COPYNAME, key,
+               CURLFORM_COPYCONTENTS, value,
+               CURLFORM_END);
 
   curl_formadd(&(formlist->formpost),
-    &(formlist->lastptr),
-    CURLFORM_COPYNAME, key,
-    CURLFORM_FILE, value,
-    CURLFORM_END);
+               &(formlist->lastptr),
+               CURLFORM_COPYNAME, key,
+               CURLFORM_FILE, value,
+               CURLFORM_END);
 }
 
 /**
@@ -383,10 +387,10 @@ static JsonObject *fb_query_post(FBContext *ctx, const gchar *method, GHashTable
   formlist.lastptr = NULL;
 
   curl_formadd(&(formlist.formpost),
-    &(formlist.lastptr),
-    CURLFORM_COPYNAME, "access_token",
-    CURLFORM_COPYCONTENTS, ctx->token,
-    CURLFORM_END);
+               &(formlist.lastptr),
+               CURLFORM_COPYNAME, "access_token",
+               CURLFORM_COPYCONTENTS, ctx->token,
+               CURLFORM_END);
   if (args != NULL)
     g_hash_table_foreach(args, (GHFunc)fb_query_post_add_form_arguments, &formlist);
 
@@ -458,7 +462,8 @@ static GList *fb_get_album_list(FBContext *ctx, gboolean* ok)
 
     const char* id = json_object_get_string_member(obj, "id");
     const char* name = json_object_get_string_member(obj, "name");
-    if (id == NULL || name == NULL) {
+    if (id == NULL || name == NULL)
+    {
       fb_album_destroy(album);
       goto error;
     }
@@ -602,10 +607,10 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkDialog *fb_auth_dialog = GTK_DIALOG(gtk_message_dialog_new (GTK_WINDOW (window),
-                                  GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  GTK_MESSAGE_QUESTION,
-                                  GTK_BUTTONS_OK_CANCEL,
-                                  _("Facebook authentication")));
+                                         GTK_DIALOG_DESTROY_WITH_PARENT,
+                                         GTK_MESSAGE_QUESTION,
+                                         GTK_BUTTONS_OK_CANCEL,
+                                         _("Facebook authentication")));
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (fb_auth_dialog),
       "%s\n\n%s", text1, text2);
 
@@ -630,8 +635,8 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
     if (replyurl == NULL || g_strcmp0(replyurl, "") == 0)
     {
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(fb_auth_dialog),
-                                                 "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED "\" ><small>%s</small></span>",
-                                                 text1, text2, _("please enter the validation url"));
+          "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED "\" ><small>%s</small></span>",
+          text1, text2, _("please enter the validation url"));
       continue;
     }
     token = fb_extract_token_from_url(replyurl);
@@ -639,11 +644,11 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
       break;
     else
       gtk_message_dialog_format_secondary_markup(
-            GTK_MESSAGE_DIALOG(fb_auth_dialog),
-            "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>",
-            text1, text2,
-            _("the given url is not valid, it should look like: "),
-              FB_WS_BASE_URL"connect/login_success.html?...");
+        GTK_MESSAGE_DIALOG(fb_auth_dialog),
+        "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>",
+        text1, text2,
+        _("the given url is not valid, it should look like: "),
+        FB_WS_BASE_URL"connect/login_success.html?...");
   }
   gtk_widget_destroy(GTK_WIDGET(fb_auth_dialog));
 
@@ -660,7 +665,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   json_parser_load_from_data(parser, value, strlen(value), NULL);
   JsonNode *root = json_parser_get_root(parser);
   JsonObject *obj = json_node_get_object(root);
-  
+
   // root can be null while parsing the account info
   if (root)
   {
@@ -842,8 +847,8 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
   //check selected token if we akready have one
   if (ctx->token != NULL && !fb_test_auth_token(ctx))
   {
-      g_free(ctx->token);
-      ctx->token = NULL;
+    g_free(ctx->token);
+    ctx->token = NULL;
   }
 
   if(ctx->token == NULL)
@@ -881,8 +886,8 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
         if (g_strcmp0(uid, accountinfo->id) == 0)
         {
           gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
-                                           COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
-                                           -1);
+                             COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
+                             -1);
           updated = TRUE;
           break;
         }
@@ -892,8 +897,8 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
       {
         gtk_list_store_append(model, &iter);
         gtk_list_store_set(model, &iter, COMBO_USER_MODEL_NAME_COL, accountinfo->username,
-                                         COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
-                                         COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
+                           COMBO_USER_MODEL_TOKEN_COL, accountinfo->token,
+                           COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
       }
       gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
       //we have to re-set the current token here since ui_combo_username_changed is called
@@ -962,7 +967,7 @@ static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_face
   ui->connected = FALSE;
   gtk_button_set_label(ui->button_login, _("login"));
   if (ui->facebook_api->token != NULL)
-  g_free(ui->facebook_api->token);
+    g_free(ui->facebook_api->token);
   ui->facebook_api->token = NULL;
   ui_reset_albums_creation(ui);
 }
@@ -1173,7 +1178,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   }
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  //facebook doesn't allow picture bigger than 960x960 px
+  //facebook doesn't allow pictures bigger than FB_IMAGE_MAX_SIZExFB_IMAGE_MAX_SIZE px
   if (fdata->max_height == 0 || fdata->max_height > FB_IMAGE_MAX_SIZE)
     fdata->max_height = FB_IMAGE_MAX_SIZE;
   if (fdata->max_width == 0 || fdata->max_width > FB_IMAGE_MAX_SIZE)
@@ -1242,7 +1247,8 @@ int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_d
 }
 
 
-void init(dt_imageio_module_storage_t *self) {
+void init(dt_imageio_module_storage_t *self)
+{
 }
 void *get_params(struct dt_imageio_module_storage_t *self, int *size)
 {

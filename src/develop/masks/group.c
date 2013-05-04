@@ -23,7 +23,7 @@
 #include "common/debug.h"
 
 static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up, uint32_t state,
-                                          dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+    dt_masks_form_t *form, dt_masks_form_gui_t *gui)
 {
   if (gui->group_edited >=0)
   {
@@ -38,7 +38,7 @@ static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 }
 
 static int dt_group_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
-                                          dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+    dt_masks_form_t *form, dt_masks_form_gui_t *gui)
 {
   if (gui->group_edited != gui->group_selected)
   {
@@ -66,7 +66,7 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module,float p
 }
 
 static int dt_group_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
-                                          dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+    dt_masks_form_t *form, dt_masks_form_gui_t *gui)
 {
   if (gui->group_edited >= 0)
   {
@@ -87,7 +87,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
   float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
-  
+
   //if a form is in edit mode, we first execute the corresponding event
   if (gui->group_edited >= 0)
   {
@@ -102,7 +102,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     //if a point is in state editing, then we don't want that another form can be selected
     if (gui->point_edited >= 0) return 0;
   }
-  
+
   //now we check if we are near a form
   GList *fpts = g_list_first(form->points);
   int pos = 0;
@@ -163,23 +163,23 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   {
     for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
-  
+
   for (int yy=MAX(*posy,0); yy<MIN(ht,(*posy)+(*height)); yy++)
   {
     for (int xx=0; xx<MIN((*posx),wt); xx++) buf[yy*wt+xx] = 1.0f;
     for (int xx=MAX((*posx),0); xx<MIN(wt,(*posx)+(*width)); xx++) buf[yy*wt+xx] = 1.0f-(*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
     for (int xx=MAX((*posx)+(*width),0); xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
-  
+
   for (int yy=MAX((*posy)+(*height),0); yy<ht; yy++)
   {
     for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
   }
-  
+
   //we free the old buffer
   free(*buffer);
   (*buffer) = buf;
-  
+
   //we return correct values for positions;
   *posx = *posy = 0;
   *width = wt;
@@ -200,7 +200,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   int ok[nb];
   int states[nb];
   float op[nb];
-  
+
   //and we get all masks
   GList *fpts = g_list_first(form->points);
   int pos = 0;
@@ -227,7 +227,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     pos++;
   }
   if (nb_ok == 0) return 0;
-  
+
   //now we get the min, max, width, heigth of the final mask
   int l,r,t,b;
   l = t = INT_MAX;
@@ -243,10 +243,10 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *posy = t;
   *width = r-l;
   *height = b-t;
-  
+
   //we allocate the buffer
   *buffer = malloc(sizeof(float)*(r-l)*(b-t));
-  
+
   //and we copy each buffer inside, row by row
   for (int i=0; i<nb; i++)
   {
@@ -312,49 +312,49 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
         }
       }
     }
-    
+
     //and we free the buffer
     free(bufs[i]);
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
   }
-  
+
   return 1;
 }
 
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *roi, float scale)
 {
   double start2 = dt_get_wtime();
-  
+
   if (!form) return 0;
   float *mask = *buffer;
   //we first reset the buffer to 0
   memset(mask,0,roi[2]*roi[3]*sizeof(float));
-  
+
   //we get the mask
   float *fm = NULL;
   int fx,fy,fw,fh;
   if (!dt_masks_get_mask(module,piece,form,&fm,&fw,&fh,&fx,&fy)) return 0;
-  
+
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks] get all masks took %0.04f sec\n", dt_get_wtime()-start2);
   start2 = dt_get_wtime();
-  
+
   //we don't want row which are outisde the roi_out
   int fxx = fx*scale;
   int fww = fw*scale;
   int fyy = fy*scale;
   int fhh = fh*scale;
   if (fxx>roi[0]+roi[2]) return 1;
-  
+
   if (fxx<roi[0]) fww += fxx-roi[0], fxx=roi[0];
   if (fww+fxx>=roi[0]+roi[2]) fww = roi[0]+roi[2]-fxx-1;
-  
+
   //we adjust to avoid rounding errors
   if (fyy/scale-fy<0) fyy++, fhh--;
   if (fxx/scale-fx<0) fxx++, fww--;
   if ((fyy+fhh)/scale-fy>=fh) fhh--;
   if ((fxx+fww)/scale-fx>=fw) fww--;
-  
+
   //we apply the mask row by row
   for (int yy=fyy; yy<fyy+fhh; yy++)
   {
@@ -366,12 +366,12 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
       mask[(yy-roi[1])*roi[2]+xx-roi[0]] = fmaxf(mask[(yy-roi[1])*roi[2]+xx-roi[0]],fm[a*fw+b-fx]);
     }
   }
-  
+
   //we free the mask
   free(fm);
-  
+
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks] scale all masks took %0.04f sec\n", dt_get_wtime()-start2);
-  
+
   return 1;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

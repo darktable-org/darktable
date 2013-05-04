@@ -295,7 +295,7 @@ get_output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpi
 // helper to get per module histogram
 static void
 histogram_collect(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
-                 float **histogram, float *histogram_max)
+                  float **histogram, float *histogram_max)
 {
   if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
 
@@ -370,7 +370,7 @@ histogram_collect(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_
 // as long as we work on small image sizes like in image preview
 static void
 histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                 float **histogram, float *histogram_max)
+                     float **histogram, float *histogram_max)
 {
   if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
   if(*histogram == NULL) return;
@@ -513,7 +513,7 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 // as long as we work on small image sizes like in image preview
 static void
 pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                 float *picked_color, float *picked_color_min, float *picked_color_max)
+                    float *picked_color, float *picked_color_min, float *picked_color_max)
 {
   int box[4];
   size_t origin[3];
@@ -651,7 +651,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
-         pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
+          pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
       }
@@ -689,8 +689,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     // optimized branch (for mipf-preview):
     else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) &&
-        roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
-        pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+            roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
+            pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
       // reserve new cache line: output
@@ -1511,7 +1511,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         }
         if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
         if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module->name(), 
+        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module->name(),
                 min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1874,8 +1874,8 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, dt_develop_t *de
 }
 
 void dt_dev_pixelpipe_disable_after(
-    dt_dev_pixelpipe_t *pipe,
-    const char *op)
+  dt_dev_pixelpipe_t *pipe,
+  const char *op)
 {
   GList *nodes = g_list_last(pipe->nodes);
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
@@ -1892,8 +1892,8 @@ void dt_dev_pixelpipe_disable_after(
 }
 
 void dt_dev_pixelpipe_disable_before(
-    dt_dev_pixelpipe_t *pipe,
-    const char *op)
+  dt_dev_pixelpipe_t *pipe,
+  const char *op)
 {
   GList *nodes = pipe->nodes;
   dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;

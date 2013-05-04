@@ -204,9 +204,9 @@ static void clear_button_clicked(GtkButton *button, gpointer user_data)
 static void write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
- 
+
   int32_t mouse_over_id;
- 
+
   mouse_over_id = dt_view_get_image_to_act_on();
 
   gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
