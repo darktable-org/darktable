@@ -513,7 +513,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
     fprintf(stderr,"[dt_styles_save_to_file] Error creating the xml writer\n, path: %s", stylename);
     return;
   }
-  rc = xmlTextWriterStartDocument(writer, NULL, "ISO-8859-1", NULL);
+  rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
   if (rc < 0)
   {
     fprintf(stderr,"[dt_styles_save_to_file]: Error on encoding setting");
