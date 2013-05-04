@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/debug.h"
 #include "common/utility.h"
+#include "common/imageio_storage.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -391,7 +392,7 @@ END:
 }
 
 void
-finalize_store(dt_imageio_module_storage_t *self, void *dd)
+finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
   char filename[DT_MAX_PATH_LEN];
@@ -519,7 +520,7 @@ get_params(dt_imageio_module_storage_t *self)
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)params;
   dt_variables_params_destroy(d->vp);
@@ -527,7 +528,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
 }
 
 int
-set_params(dt_imageio_module_storage_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)params;

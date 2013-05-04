@@ -140,7 +140,7 @@ typedef struct dt_imageio_module_storage_t
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
   /* called once at the end (after exporting all images), if implemented. */
-  int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  void (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
   size_t (*params_size)   (struct dt_imageio_module_storage_t *self);
   void* (*get_params)   (struct dt_imageio_module_storage_t *self);

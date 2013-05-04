@@ -30,6 +30,7 @@
 #include "gui/gtkentry.h"
 #include "dtgtk/button.h"
 #include "dtgtk/paint.h"
+#include "common/imageio_storage.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -281,7 +282,7 @@ get_params(dt_imageio_module_storage_t *self)
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
   dt_variables_params_destroy(d->vp);
@@ -289,7 +290,7 @@ free_params(dt_imageio_module_storage_t *self, void *params)
 }
 
 int
-set_params(dt_imageio_module_storage_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;

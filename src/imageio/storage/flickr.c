@@ -27,6 +27,7 @@
 #include "common/tags.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/metadata.h"
+#include "common/imageio_storage.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -860,7 +861,7 @@ get_params(dt_imageio_module_storage_t *self)
 }
 
 int
-set_params(dt_imageio_module_storage_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   // gui stuff not updated, as sensitive user data is not stored in the preset.
@@ -877,7 +878,7 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)params;
 
