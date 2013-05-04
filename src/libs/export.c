@@ -91,8 +91,12 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   // TODO: pass the relevant values directly, not using the conf ...
   int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
   int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
-  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
-  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+  g_free(format_name);
+  g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char* tmp = dt_conf_get_string("plugins/lighttable/export/style");
   if (tmp)
@@ -127,8 +131,10 @@ gui_reset (dt_lib_module_t *self)
   gtk_spin_button_set_value(d->height,  dt_conf_get_int("plugins/lighttable/export/height"));
 
   // Set storage
-  int k = dt_conf_get_int ("plugins/lighttable/export/storage");
-  gtk_combo_box_set_active(d->storage, k);
+  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+  g_free(storage_name);
+  gtk_combo_box_set_active(d->storage, storage_index);
 
   gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   // iccprofile
@@ -174,34 +180,35 @@ gui_reset (dt_lib_module_t *self)
 static void
 set_format_by_name (dt_lib_export_t *d, const char *name)
 {
-  // Find index of selected format plugin among all existing plugins
-  int k=-1;
+  // Find the selected format plugin among all existing plugins
+  dt_imageio_module_format_t *module = NULL;
   GList *it = g_list_first(darktable.imageio->plugins_format);
   if( it != NULL )
     do
     {
-      k++;
       if( strcmp(  ((dt_imageio_module_format_t *)it->data)->name(),name) == 0 ||
-          strcmp(  ((dt_imageio_module_format_t *)it->data)->plugin_name,name) == 0) break;
+          strcmp(  ((dt_imageio_module_format_t *)it->data)->plugin_name,name) == 0)
+      {
+        module = (dt_imageio_module_format_t*)it->data;
+        break;
+      }
     }
     while( ( it = g_list_next(it) ) );
 
+  if(!module) return;
+
   // Store the new format
-  dt_conf_set_int ("plugins/lighttable/export/format", k);
-  it = g_list_nth(darktable.imageio->plugins_format, k);
-  if(it)
+  dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
+
+  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
+  if(old != module->widget)
   {
-    dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
-    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->format_box));
-    if(old != module->widget)
-    {
-      if(old) gtk_container_remove(d->format_box, old);
-      if(module->widget) gtk_container_add(d->format_box, module->widget);
-    }
-    gtk_widget_show_all(GTK_WIDGET(d->format_box));
-    if(!darktable.gui->reset && _combo_box_set_active_text( d->format, module->name() ) == FALSE )
-      gtk_combo_box_set_active( d->format, 0);
+    if(old) gtk_container_remove(d->format_box, old);
+    if(module->widget) gtk_container_add(d->format_box, module->widget);
   }
+  gtk_widget_show_all(GTK_WIDGET(d->format_box));
+  if(!darktable.gui->reset && _combo_box_set_active_text( d->format, module->name() ) == FALSE )
+    gtk_combo_box_set_active( d->format, 0);
 
   // Let's also update combination of storage/format dimension restrictions
   _update_dimensions( d );
@@ -218,10 +225,12 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
 
 void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *height)
 {
-  int k = dt_conf_get_int("plugins/lighttable/export/storage");
-  dt_imageio_module_storage_t *storage = (dt_imageio_module_storage_t *)g_list_nth_data(darktable.imageio->plugins_storage, k);
-  k = dt_conf_get_int("plugins/lighttable/export/format");
-  dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)g_list_nth_data(darktable.imageio->plugins_format, k);
+  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  g_free(storage_name);
+  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  g_free(format_name);
   if( storage && format )
   {
     uint32_t fw,fh,sw,sh;
@@ -250,51 +259,56 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
 {
   int k=-1;
   GList *it = g_list_first(darktable.imageio->plugins_storage);
+  dt_imageio_module_storage_t *module = NULL;
   if( it != NULL )
     do
     {
       k++;
       if( strcmp(  ((dt_imageio_module_storage_t *)it->data)->name(((dt_imageio_module_storage_t *)it->data)),name) == 0 ||
-          strcmp(  ((dt_imageio_module_storage_t *)it->data)->plugin_name,name) == 0) break;
+          strcmp(  ((dt_imageio_module_storage_t *)it->data)->plugin_name,name) == 0)
+      {
+        module = (dt_imageio_module_storage_t*)it->data;
+        break;
+      }
     }
     while( ( it = g_list_next(it) ) );
-  if(it)
+
+  if(!module) return;
+
+  if(!darktable.gui->reset) gtk_combo_box_set_active(d->storage, k);
+  dt_conf_set_string("plugins/lighttable/export/storage_name", module->plugin_name);
+  GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
+  if(old != module->widget)
   {
-    if(!darktable.gui->reset) gtk_combo_box_set_active(d->storage, k);
-    dt_conf_set_int ("plugins/lighttable/export/storage", k);
-    dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    GtkWidget *old = gtk_bin_get_child(GTK_BIN(d->storage_box));
-    if(old != module->widget)
-    {
-      if(old) gtk_container_remove(d->storage_box, old);
-      if(module->widget) gtk_container_add(d->storage_box, module->widget);
-    }
-
-    // Check if plugin recommends a max dimension and set
-    // if not implemnted the stored conf values are used..
-    uint32_t w=0,h=0;
-    w = dt_conf_get_int("plugins/lighttable/export/width");
-    h = dt_conf_get_int("plugins/lighttable/export/height");
-    module->recommended_dimension( module, &w, &h );
-    // Set the recommended dimension, prevent signal changed...
-    g_signal_handlers_block_by_func( d->width, width_changed, (gpointer)0 );
-    g_signal_handlers_block_by_func( d->height, height_changed, (gpointer)0 );
-    gtk_spin_button_set_value( d->width, w );
-    gtk_spin_button_set_value( d->height, h );
-    g_signal_handlers_unblock_by_func( d->width, width_changed, (gpointer)0 );
-    g_signal_handlers_unblock_by_func( d->height, height_changed, (gpointer)0 );
-
-    // Let's update formats combobox with supported formats of selected storage module...
-    _update_formats_combobox( d );
-
-    // Lets try to set selected format if fail select first in list..
-    k = dt_conf_get_int("plugins/lighttable/export/format");
-    GList *it = g_list_nth(darktable.imageio->plugins_format, k);
-    if( it==NULL || _combo_box_set_active_text( d->format, ((dt_imageio_module_format_t *)it->data)->name() ) == FALSE )
-      gtk_combo_box_set_active( d->format, 0);
-
-    gtk_widget_show_all(GTK_WIDGET(d->storage_box));
+    if(old) gtk_container_remove(d->storage_box, old);
+    if(module->widget) gtk_container_add(d->storage_box, module->widget);
   }
+
+  // Check if plugin recommends a max dimension and set
+  // if not implemnted the stored conf values are used..
+  uint32_t w=0,h=0;
+  w = dt_conf_get_int("plugins/lighttable/export/width");
+  h = dt_conf_get_int("plugins/lighttable/export/height");
+  module->recommended_dimension( module, &w, &h );
+  // Set the recommended dimension, prevent signal changed...
+  g_signal_handlers_block_by_func( d->width, width_changed, (gpointer)0 );
+  g_signal_handlers_block_by_func( d->height, height_changed, (gpointer)0 );
+  gtk_spin_button_set_value( d->width, w );
+  gtk_spin_button_set_value( d->height, h );
+  g_signal_handlers_unblock_by_func( d->width, width_changed, (gpointer)0 );
+  g_signal_handlers_unblock_by_func( d->height, height_changed, (gpointer)0 );
+
+  // Let's update formats combobox with supported formats of selected storage module...
+  _update_formats_combobox( d );
+
+  // Lets try to set selected format if fail select first in list..
+  gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  g_free(format_name);
+  if( format==NULL || _combo_box_set_active_text( d->format, format->name() ) == FALSE )
+    gtk_combo_box_set_active( d->format, 0);
+
+  gtk_widget_show_all(GTK_WIDGET(d->storage_box));
 }
 
 static void
@@ -381,8 +395,9 @@ void _update_formats_combobox(dt_lib_export_t *d)
   gtk_list_store_clear( GTK_LIST_STORE(gtk_combo_box_get_model(d->format) ) );
 
   // Get current selected storage
-  int k = dt_conf_get_int("plugins/lighttable/export/storage");
-  dt_imageio_module_storage_t *storage = (dt_imageio_module_storage_t *)g_list_nth_data(darktable.imageio->plugins_storage, k);
+  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  g_free(storage_name);
 
   // Add supported formats to combobox
   GList *it = darktable.imageio->plugins_format;
@@ -690,10 +705,11 @@ get_params (dt_lib_module_t *self, int *size)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(!mformat || !mstorage) return NULL;
 
-  int32_t fsize = 0, ssize = 0;
   // size will be only as large as to remove random pointers from params (stored at the end).
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &fsize);
-  void *sdata = mstorage->get_params(mstorage, &ssize);
+  size_t fsize = mformat->params_size(mformat);
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+  size_t  ssize = mstorage->params_size(mstorage);
+  void *sdata = mstorage->get_params(mstorage);
   // we allow null pointers (plugin not ready for export in current state), and just dont copy back the settings later:
   if(!sdata) ssize = 0;
   if(!fdata) fsize = 0;

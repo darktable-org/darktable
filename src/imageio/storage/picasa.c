@@ -28,6 +28,7 @@
 #include "common/tags.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/metadata.h"
+#include "common/imageio_storage.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -1529,21 +1530,26 @@ cleanup:
 }
 
 
-int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
+void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
   gdk_threads_enter();
   dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
   ui_reset_albums_creation(ui);
   ui_refresh_albums(ui);
   gdk_threads_leave();
-  return 1;
 }
 
+
+size_t
+params_size(dt_imageio_module_storage_t *self)
+{
+  return  sizeof(PicasaContext) - 8*sizeof(void *);
+}
 
 void init(dt_imageio_module_storage_t *self)
 {
 }
-void *get_params(struct dt_imageio_module_storage_t *self, int *size)
+void *get_params(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_picasa_gui_data_t *ui = (dt_storage_picasa_gui_data_t*)self->gui_data;
   if(ui->picasa_api == NULL || ui->picasa_api->token == NULL)
@@ -1551,7 +1557,6 @@ void *get_params(struct dt_imageio_module_storage_t *self, int *size)
     return NULL;
   }
   PicasaContext *p = (PicasaContext*)g_malloc0(sizeof(PicasaContext));
-  *size = sizeof(PicasaContext) - 8*sizeof(void *);
 
   p->curl_ctx = ui->picasa_api->curl_ctx;
   p->json_parser = ui->picasa_api->json_parser;
@@ -1607,8 +1612,7 @@ void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_dat
 
 int set_params(struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != sizeof(PicasaContext) - 8*sizeof(void *))
-    return 1;
+  if(size != params_size(self)) return 1;
 
   PicasaContext *d = (PicasaContext *) params;
   dt_storage_picasa_gui_data_t *g = (dt_storage_picasa_gui_data_t *)self->gui_data;

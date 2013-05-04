@@ -27,6 +27,7 @@
 #include "common/tags.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/metadata.h"
+#include "common/imageio_storage.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <stdio.h>
@@ -745,15 +746,20 @@ cleanup:
   return result;
 }
 
+size_t
+params_size(dt_imageio_module_storage_t *self)
+{
+  return sizeof(int64_t);
+}
+
 void init(dt_imageio_module_storage_t *self)
 {
 }
 void*
-get_params(dt_imageio_module_storage_t *self, int *size)
+get_params(dt_imageio_module_storage_t *self)
 {
   // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
   // TODO: if a hash to encrypted data is stored here, return only this size and store it at the beginning of the struct!
-  *size = sizeof(int64_t);
   dt_storage_flickr_gui_data_t *ui =(dt_storage_flickr_gui_data_t *)self->gui_data;
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)g_malloc(sizeof(dt_storage_flickr_params_t));
   if(!d) return NULL;
@@ -848,7 +854,6 @@ get_params(dt_imageio_module_storage_t *self, int *size)
   {
     set_status(ui,_("not authenticated"), "#e07f7f");
     gtk_widget_set_sensitive(GTK_WIDGET( ui->comboBox1 ) ,FALSE);
-    dt_control_log(_("Flickr account not authenticated"));
     g_free(d);
     return NULL;
   }
@@ -856,9 +861,9 @@ get_params(dt_imageio_module_storage_t *self, int *size)
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != sizeof(int64_t)) return 1;
+  if(size != params_size(self)) return 1;
   // gui stuff not updated, as sensitive user data is not stored in the preset.
   // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
   return 0;
@@ -873,7 +878,7 @@ int supported(dt_imageio_module_storage_t *storage, dt_imageio_module_format_t *
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_storage_flickr_params_t *d = (dt_storage_flickr_params_t *)params;
 

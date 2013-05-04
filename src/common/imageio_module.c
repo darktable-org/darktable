@@ -86,6 +86,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "mime",                         (gpointer)&(module->mime)))                         goto error;
   if(!g_module_symbol(module->module, "extension",                    (gpointer)&(module->extension)))                    goto error;
   if(!g_module_symbol(module->module, "dimension",                    (gpointer)&(module->dimension)))                    module->dimension = _default_format_dimension;
+  if(!g_module_symbol(module->module, "params_size",                   (gpointer)&(module->params_size)))                   goto error;
   if(!g_module_symbol(module->module, "get_params",                   (gpointer)&(module->get_params)))                   goto error;
   if(!g_module_symbol(module->module, "free_params",                  (gpointer)&(module->free_params)))                  goto error;
   if(!g_module_symbol(module->module, "set_params",                   (gpointer)&(module->set_params)))                   goto error;
@@ -93,12 +94,6 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
   if(!g_module_symbol(module->module, "flags",                        (gpointer)&(module->flags)))                        module->flags = _default_format_flags;
   if(!g_module_symbol(module->module, "levels",                       (gpointer)&(module->levels)))                       module->levels = _default_format_levels;
-
-  if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
-  if(!g_module_symbol(module->module, "decompress",                   (gpointer)&(module->decompress)))                   module->decompress = NULL;
-  if(!g_module_symbol(module->module, "compress",                     (gpointer)&(module->compress)))                     module->compress = NULL;
-
-  if(!g_module_symbol(module->module, "read_header",                  (gpointer)&(module->read_header)))                  module->read_header = NULL;
   if(!g_module_symbol(module->module, "read_image",                   (gpointer)&(module->read_image)))                   module->read_image = NULL;
 
   module->init(module);
@@ -182,6 +177,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   goto error;
 
   if(!g_module_symbol(module->module, "store",                  (gpointer)&(module->store)))                  goto error;
+  if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))             goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
   if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
@@ -269,25 +265,32 @@ dt_imageio_cleanup (dt_imageio_t *iio)
 dt_imageio_module_format_t *dt_imageio_get_format()
 {
   dt_imageio_t *iio = darktable.imageio;
-  int k = dt_conf_get_int ("plugins/lighttable/export/format");
-  GList *it = g_list_nth(iio->plugins_format, k);
-  if(!it) it = iio->plugins_format;
-  return (dt_imageio_module_format_t *)it->data;
+  gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  g_free(format_name);
+  // if the format from the config isn't available default to jpeg, if that's not available either just use the first we have
+  if(!format) format = dt_imageio_get_format_by_name("jpeg");
+  if(!format) format = iio->plugins_format->data;
+  return format;
 }
 
 dt_imageio_module_storage_t *dt_imageio_get_storage()
 {
   dt_imageio_t *iio = darktable.imageio;
-  int k = dt_conf_get_int ("plugins/lighttable/export/storage");
-  GList *it = g_list_nth(iio->plugins_storage, k);
-  if(!it) it = iio->plugins_storage;
-  return (dt_imageio_module_storage_t *)it->data;
+  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  g_free(storage_name);
+  // if the storage from the config isn't available default to disk, if that's not available either just use the first we have
+  if(!storage) storage = dt_imageio_get_storage_by_name("disk");
+  if(!storage) storage = iio->plugins_storage->data;
+  return storage;
 }
 
 dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
 {
   dt_imageio_t *iio = darktable.imageio;
   GList *it = iio->plugins_format;
+  if(!name) return NULL;
   while(it)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
@@ -301,6 +304,7 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
 {
   dt_imageio_t *iio = darktable.imageio;
   GList *it = iio->plugins_storage;
+  if(!name) return NULL;
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;

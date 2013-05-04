@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/debug.h"
 #include "common/utility.h"
+#include "common/imageio_storage.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -374,7 +375,7 @@ END:
 }
 
 void
-finalize_store(dt_imageio_module_storage_t *self, void *dd)
+finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)dd;
   char filename[DT_MAX_PATH_LEN];
@@ -418,16 +419,20 @@ finalize_store(dt_imageio_module_storage_t *self, void *dd)
   fclose(f);
 }
 
+size_t
+params_size(dt_imageio_module_storage_t *self)
+{
+  return sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - 1024;
+}
+
 void init(dt_imageio_module_storage_t *self)
 {
 }
 void*
-get_params(dt_imageio_module_storage_t *self, int* size)
+get_params(dt_imageio_module_storage_t *self)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)malloc(sizeof(dt_imageio_latex_t));
   memset(d, 0, sizeof(dt_imageio_latex_t));
-  // have to return the size of the struct to store (i.e. without all the variable pointers at the end)
-  *size = sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - 1024;
   latex_t *g = (latex_t *)self->gui_data;
   d->vp = NULL;
   d->l = NULL;
@@ -442,7 +447,7 @@ get_params(dt_imageio_module_storage_t *self, int* size)
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)params;
   dt_variables_params_destroy(d->vp);
@@ -450,9 +455,9 @@ free_params(dt_imageio_module_storage_t *self, void *params)
 }
 
 int
-set_params(dt_imageio_module_storage_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != sizeof(dt_imageio_latex_t) - 2*sizeof(void *) - 1024) return 1;
+  if(size != params_size(self)) return 1;
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)params;
   latex_t *g = (latex_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);

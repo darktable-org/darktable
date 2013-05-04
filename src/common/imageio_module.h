@@ -77,7 +77,8 @@ typedef struct dt_imageio_module_format_t
   void (*cleanup)    (struct dt_imageio_module_format_t *self);
 
   /* gets the current export parameters from gui/conf and stores in this struct for later use. */
-  void* (*get_params)   (struct dt_imageio_module_format_t *self, int *size);
+  size_t (*params_size) (struct dt_imageio_module_format_t *self);
+  void* (*get_params)   (struct dt_imageio_module_format_t *self);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
   /* resets the gui to the paramters as given here. return != 0 on fail. */
   int   (*set_params)   (struct dt_imageio_module_format_t *self, const void *params, const int size);
@@ -88,14 +89,6 @@ typedef struct dt_imageio_module_format_t
   const char* (*extension) (dt_imageio_module_data_t *data);
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
   int (*dimension)    (struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
-
-  // optional: functions operating in memory, not on files:
-  /* reads the header and fills width/height in data struct. */
-  int (*decompress_header)(const void *in, size_t length, dt_imageio_module_data_t *data);
-  /* reads the whole image to the out buffer, which has to be large enough. */
-  int (*decompress)(dt_imageio_module_data_t *data, uint8_t *out);
-  /* compresses in to out buffer. out buffer must be large enough. returns actual data length. */
-  int (*compress)(dt_imageio_module_data_t *data, const uint8_t *in, uint8_t *out);
 
   // writing functions:
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
@@ -108,10 +101,6 @@ typedef struct dt_imageio_module_format_t
   // sometimes we want to tell the world about what we can do
   int (*flags)(dt_imageio_module_data_t *data);
 
-  // reading functions:
-  /* read header from file, get width and height */
-  int (*read_header)(const char *filename, dt_imageio_module_data_t *data);
-  /* reads the image to the (sufficiently allocated) buffer, closes file. */
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
 }
 dt_imageio_module_format_t;
@@ -151,9 +140,10 @@ typedef struct dt_imageio_module_storage_t
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality);
   /* called once at the end (after exporting all images), if implemented. */
-  int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
+  void (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
-  void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
+  size_t (*params_size)   (struct dt_imageio_module_storage_t *self);
+  void* (*get_params)   (struct dt_imageio_module_storage_t *self);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
 }

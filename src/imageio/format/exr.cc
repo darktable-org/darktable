@@ -1,20 +1,20 @@
 /*
-    This file is part of darktable,
-    copyright (c) 2010-2011 Henrik Andersson.
+   This file is part of darktable,
+   copyright (c) 2010-2011 Henrik Andersson.
 
-    darktable is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   darktable is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    darktable is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   darktable is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
-*/
+   You should have received a copy of the GNU General Public License
+   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "common/darktable.h"
 #include "common/exif.h"
@@ -23,6 +23,7 @@
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_exr.hh"
+#include "common/imageio_format.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -43,12 +44,12 @@ extern "C"
 
   DT_MODULE(1)
 
-  typedef struct dt_imageio_exr_t
-  {
-    int max_width, max_height;
-    int width, height;
-    char style[128];
-  }
+    typedef struct dt_imageio_exr_t
+    {
+      int max_width, max_height;
+      int width, height;
+      char style[128];
+    }
   dt_imageio_exr_t;
 
   void init(dt_imageio_module_format_t *self)
@@ -58,8 +59,10 @@ extern "C"
 
   void cleanup(dt_imageio_module_format_t *self) {}
 
-  int write_image (dt_imageio_exr_t *exr, const char *filename, const float *in, void *exif, int exif_len, int imgid)
+  int write_image (dt_imageio_module_data_t *tmp, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
   {
+    dt_imageio_exr_t * exr = (dt_imageio_exr_t*) tmp;
+    const float * in = (const float *) in_tmp;
     Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
     header.insert("comment",Imf::StringAttribute("Developed using Darktable "PACKAGE_VERSION));
@@ -102,27 +105,32 @@ extern "C"
     return 0;
   }
 
+  size_t
+    params_size(dt_imageio_module_format_t *self)
+    {
+      return sizeof(dt_imageio_module_data_t);
+    }
+
   void*
-  get_params(dt_imageio_module_format_t *self, int *size)
-  {
-    *size = sizeof(dt_imageio_module_data_t);
-    dt_imageio_exr_t *d = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
-    memset(d,0,sizeof(dt_imageio_exr_t));
-    return d;
-  }
+    get_params(dt_imageio_module_format_t *self)
+    {
+      dt_imageio_exr_t *d = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+      memset(d,0,sizeof(dt_imageio_exr_t));
+      return d;
+    }
 
   void
-  free_params(dt_imageio_module_format_t *self, void *params)
-  {
-    free(params);
-  }
+    free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
+    {
+      free(params);
+    }
 
   int
-  set_params(dt_imageio_module_format_t *self, void *params, int size)
-  {
-    if(size != sizeof(dt_imageio_module_data_t)) return 1;
-    return 0;
-  }
+    set_params(dt_imageio_module_format_t *self, const void *params, const int size)
+    {
+      if(size != (int)params_size(self)) return 1;
+      return 0;
+    }
 
   int bpp(dt_imageio_module_data_t *p)
   {
@@ -135,24 +143,24 @@ extern "C"
   }
 
   const char*
-  mime(dt_imageio_module_data_t *data)
-  {
-    return "image/openexr";
-  }
+    mime(dt_imageio_module_data_t *data)
+    {
+      return "image/openexr";
+    }
 
   const char*
-  extension(dt_imageio_module_data_t *data)
-  {
-    return "exr";
-  }
+    extension(dt_imageio_module_data_t *data)
+    {
+      return "exr";
+    }
 
   const char*
-  name ()
-  {
-    return _("openexr");
-  }
+    name ()
+    {
+      return _("openexr");
+    }
 
-// TODO: some quality/compression stuff?
+  // TODO: some quality/compression stuff?
   void gui_init    (dt_imageio_module_format_t *self) {}
   void gui_cleanup (dt_imageio_module_format_t *self) {}
   void gui_reset   (dt_imageio_module_format_t *self) {}

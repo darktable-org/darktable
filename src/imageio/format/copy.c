@@ -24,11 +24,12 @@
 #include "common/imageio_module.h"
 #include "common/exif.h"
 #include "common/debug.h"
+#include "common/imageio_format.h"
 
 DT_MODULE(1)
 
 // FIXME: we can't rely on darktable to avoid file overwriting -- it doesn't know the filename (extension).
-int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint16_t *in, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *ppm, const char *filename, const void *in, void *exif, int exif_len, int imgid)
 {
   int status = 1;
   char *sourcefile = NULL;
@@ -99,25 +100,30 @@ END:
   return status;
 }
 
-void*
-get_params(dt_imageio_module_format_t *self, int *size)
+size_t
+params_size(dt_imageio_module_format_t *self)
 {
-  *size = sizeof(dt_imageio_module_data_t);
+  return sizeof(dt_imageio_module_data_t);
+}
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
   dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)malloc(sizeof(dt_imageio_module_data_t));
   memset(d,0,sizeof(dt_imageio_module_data_t));
   return d;
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
-  if(size != sizeof(dt_imageio_module_data_t)) return 1;
+  if(size != params_size(self)) return 1;
   return 0;
 }
 

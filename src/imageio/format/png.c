@@ -26,6 +26,7 @@
 #include "common/colorspaces.h"
 #include "control/conf.h"
 #include "dtgtk/slider.h"
+#include "common/imageio_format.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <png.h>
@@ -122,8 +123,9 @@ static void PNGwriteRawProfile(png_struct *ping,
 }
 
 int
-write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
+  dt_imageio_png_t*p=(dt_imageio_png_t*)p_tmp;
   const int width = p->width, height = p->height;
   const uint8_t *in = (uint8_t *)in_void;
   FILE *f = fopen(filename, "wb");
@@ -205,8 +207,9 @@ write_image (dt_imageio_png_t *p, const char *filename, const void *in_void, voi
   return 0;
 }
 
-int read_header(const char *filename, dt_imageio_png_t *png)
+int read_header(const char *filename, dt_imageio_module_data_t *p_tmp)
 {
+  dt_imageio_png_t*png=(dt_imageio_png_t*)p_tmp;
   png->f = fopen(filename, "rb");
 
   if(!png->f) return 1;
@@ -299,8 +302,9 @@ int dt_imageio_png_read_assure_8(dt_imageio_png_t *png)
 }
 #endif
 
-int read_image (dt_imageio_png_t *png, uint8_t *out)
+int read_image (dt_imageio_module_data_t *p_tmp, uint8_t *out)
 {
+  dt_imageio_png_t*png=(dt_imageio_png_t*)p_tmp;
   if (setjmp(png_jmpbuf(png->png_ptr)))
   {
     fclose(png->f);
@@ -326,10 +330,15 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
   return 0;
 }
 
-void*
-get_params(dt_imageio_module_format_t *self, int *size)
+size_t
+params_size(dt_imageio_module_format_t *self)
 {
-  *size = sizeof(dt_imageio_module_data_t) + sizeof(int);
+  return sizeof(dt_imageio_module_data_t) + sizeof(int);
+}
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
   memset(d, 0, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
@@ -339,15 +348,15 @@ get_params(dt_imageio_module_format_t *self, int *size)
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
-  if(size != sizeof(dt_imageio_module_data_t) + sizeof(int)) return 1;
+  if(size != params_size(self)) return 1;
   dt_imageio_png_t *d = (dt_imageio_png_t *)params;
   dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
@@ -356,18 +365,18 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
   return 0;
 }
 
-int bpp(dt_imageio_png_t *p)
+int bpp(dt_imageio_module_data_t *p)
 {
-  return p->bpp;
+  return ((dt_imageio_png_t *)p)->bpp;
 }
 
-int levels(dt_imageio_png_t *p)
+int levels(dt_imageio_module_data_t *p)
 {
-  return IMAGEIO_RGB | (p->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
+  return IMAGEIO_RGB | (((dt_imageio_png_t *)p)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
 const char*
-mime(dt_imageio_png_t *data)
+mime(dt_imageio_module_data_t *data)
 {
   return "image/png";
 }

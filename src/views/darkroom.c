@@ -31,6 +31,7 @@
 #include "develop/masks.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_module.h"
 #include "common/debug.h"
 #include "common/tags.h"
 #include "common/styles.h"
@@ -822,8 +823,12 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   /* export current image */
   int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
   int max_height = dt_conf_get_int ("plugins/lighttable/export/height");
-  int format_index = dt_conf_get_int ("plugins/lighttable/export/format");
-  int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
+  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
+  int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+  g_free(format_name);
+  g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   dt_control_export(dt_collection_get_selected(darktable.collection),max_width, max_height, format_index, storage_index, high_quality,style);

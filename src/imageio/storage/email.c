@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_storage.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
@@ -121,34 +122,39 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   return 0;
 }
 
+size_t
+params_size(dt_imageio_module_storage_t *self)
+{
+  return sizeof(dt_imageio_email_t) - sizeof(GList *);
+}
+
 void init(dt_imageio_module_storage_t *self)
 {
 }
 
 void*
-get_params(dt_imageio_module_storage_t *self, int *size)
+get_params(dt_imageio_module_storage_t *self)
 {
-  *size = sizeof(dt_imageio_email_t) - sizeof(GList *);
   dt_imageio_email_t *d = (dt_imageio_email_t *)g_malloc(sizeof(dt_imageio_email_t));
   memset( d,0,sizeof( dt_imageio_email_t));
   return d;
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != sizeof(dt_imageio_email_t) - sizeof(GList *)) return 1;
+  if(size != params_size(self)) return 1;
   return 0;
 }
 
 void
-free_params(dt_imageio_module_storage_t *self, void *params)
+free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 void
-finalize_store(dt_imageio_module_storage_t *self, void *params)
+finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)params;
 
