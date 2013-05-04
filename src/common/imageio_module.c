@@ -265,25 +265,32 @@ dt_imageio_cleanup (dt_imageio_t *iio)
 dt_imageio_module_format_t *dt_imageio_get_format()
 {
   dt_imageio_t *iio = darktable.imageio;
-  int k = dt_conf_get_int ("plugins/lighttable/export/format");
-  GList *it = g_list_nth(iio->plugins_format, k);
-  if(!it) it = iio->plugins_format;
-  return (dt_imageio_module_format_t *)it->data;
+  gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
+  dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
+  g_free(format_name);
+  // if the format from the config isn't available default to jpeg, if that's not available either just use the first we have
+  if(!format) format = dt_imageio_get_format_by_name("jpeg");
+  if(!format) format = iio->plugins_format->data;
+  return format;
 }
 
 dt_imageio_module_storage_t *dt_imageio_get_storage()
 {
   dt_imageio_t *iio = darktable.imageio;
-  int k = dt_conf_get_int ("plugins/lighttable/export/storage");
-  GList *it = g_list_nth(iio->plugins_storage, k);
-  if(!it) it = iio->plugins_storage;
-  return (dt_imageio_module_storage_t *)it->data;
+  gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
+  dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
+  g_free(storage_name);
+  // if the storage from the config isn't available default to disk, if that's not available either just use the first we have
+  if(!storage) storage = dt_imageio_get_storage_by_name("disk");
+  if(!storage) storage = iio->plugins_storage->data;
+  return storage;
 }
 
 dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
 {
   dt_imageio_t *iio = darktable.imageio;
   GList *it = iio->plugins_format;
+  if(!name) return NULL;
   while(it)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
@@ -297,6 +304,7 @@ dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
 {
   dt_imageio_t *iio = darktable.imageio;
   GList *it = iio->plugins_storage;
+  if(!name) return NULL;
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
