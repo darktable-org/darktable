@@ -65,6 +65,8 @@ void dtgtk_cairo_paint_flip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 void dtgtk_cairo_paint_switch(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a plusminus icon */
 void dtgtk_cairo_paint_plusminus(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a invert icon */
+void dtgtk_cairo_paint_invert(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color rect icon */
 void dtgtk_cairo_paint_color(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a eye icon */
