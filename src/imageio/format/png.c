@@ -326,10 +326,15 @@ int read_image (dt_imageio_png_t *png, uint8_t *out)
   return 0;
 }
 
-void*
-get_params(dt_imageio_module_format_t *self, int *size)
+size_t
+params_size(dt_imageio_module_format_t *self)
 {
-  *size = sizeof(dt_imageio_module_data_t) + sizeof(int);
+  return sizeof(dt_imageio_module_data_t) + sizeof(int);
+}
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
   dt_imageio_png_t *d = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
   memset(d, 0, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
@@ -347,7 +352,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_module_data_t) + sizeof(int)) return 1;
+  if(size != params_size(self)) return 1;
   dt_imageio_png_t *d = (dt_imageio_png_t *)params;
   dt_imageio_png_gui_t *g = (dt_imageio_png_gui_t *)self->gui_data;
   if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);

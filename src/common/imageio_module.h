@@ -77,7 +77,8 @@ typedef struct dt_imageio_module_format_t
   void (*cleanup)    (struct dt_imageio_module_format_t *self);
 
   /* gets the current export parameters from gui/conf and stores in this struct for later use. */
-  void* (*get_params)   (struct dt_imageio_module_format_t *self, int *size);
+  size_t (*params_size) (struct dt_imageio_module_format_t *self);
+  void* (*get_params)   (struct dt_imageio_module_format_t *self);
   void  (*free_params)  (struct dt_imageio_module_format_t *self, dt_imageio_module_data_t *data);
   /* resets the gui to the paramters as given here. return != 0 on fail. */
   int   (*set_params)   (struct dt_imageio_module_format_t *self, const void *params, const int size);
@@ -153,7 +154,8 @@ typedef struct dt_imageio_module_storage_t
   /* called once at the end (after exporting all images), if implemented. */
   int (*finalize_store) (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
-  void* (*get_params)   (struct dt_imageio_module_storage_t *self, int *size);
+  size_t (*params_size)   (struct dt_imageio_module_storage_t *self);
+  void* (*get_params)   (struct dt_imageio_module_storage_t *self);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
 }

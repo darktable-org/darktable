@@ -99,10 +99,15 @@ END:
   return status;
 }
 
-void*
-get_params(dt_imageio_module_format_t *self, int *size)
+size_t
+params_size(dt_imageio_module_format_t *self)
 {
-  *size = sizeof(dt_imageio_module_data_t);
+  return sizeof(dt_imageio_module_data_t);
+}
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
   dt_imageio_module_data_t *d = (dt_imageio_module_data_t *)malloc(sizeof(dt_imageio_module_data_t));
   memset(d,0,sizeof(dt_imageio_module_data_t));
   return d;
@@ -117,7 +122,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_module_data_t)) return 1;
+  if(size != params_size(self)) return 1;
   return 0;
 }
 

@@ -198,7 +198,6 @@ int main(int argc, char *arg[])
     ext = "jpeg";
 
   // init the export data structures
-  int size = 0, dat_size = 0;
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
   dt_imageio_module_data_t *sdata, *fdata;
@@ -210,7 +209,7 @@ int main(int argc, char *arg[])
     exit(1);
   }
 
-  sdata = storage->get_params(storage, &size);
+  sdata = storage->get_params(storage);
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
@@ -229,7 +228,7 @@ int main(int argc, char *arg[])
     exit(1);
   }
 
-  fdata = format->get_params(format, &dat_size);
+  fdata = format->get_params(format);
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));

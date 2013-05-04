@@ -483,10 +483,15 @@ int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, v
   return ((rc == 1) ? 0 : 1);
 }
 
-void*
-get_params(dt_imageio_module_format_t *self, int *size)
+size_t
+params_size(dt_imageio_module_format_t *self)
 {
-  *size = sizeof(dt_imageio_j2k_t);
+  return sizeof(dt_imageio_j2k_t);
+}
+
+void*
+get_params(dt_imageio_module_format_t *self)
+{
   dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
   memset(d, 0, sizeof(dt_imageio_j2k_t));
   d->bpp = 16; // can be 8, 12 or 16
@@ -506,7 +511,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_j2k_t)) return 1;
+  if(size != params_size(self)) return 1;
   dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)params;
   dt_imageio_j2k_gui_t *g = (dt_imageio_j2k_gui_t *)self->gui_data;
   if(d->format == JP2_CFMT) gtk_toggle_button_set_active(g->jp2, TRUE);

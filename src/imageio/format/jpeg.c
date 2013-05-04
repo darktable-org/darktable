@@ -578,11 +578,16 @@ int read_image (dt_imageio_jpeg_t *jpg, uint8_t *out)
   return 0;
 }
 
+size_t
+params_size(dt_imageio_module_format_t *self)
+{
+  return sizeof(dt_imageio_module_data_t) + sizeof(int);
+}
+
 void*
-get_params(dt_imageio_module_format_t *self, int *size)
+get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  *size = sizeof(dt_imageio_module_data_t) + sizeof(int);
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
   memset(d,0,sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
@@ -599,7 +604,7 @@ free_params(dt_imageio_module_format_t *self, void *params)
 int
 set_params(dt_imageio_module_format_t *self, void *params, int size)
 {
-  if(size != sizeof(dt_imageio_module_data_t) + sizeof(int)) return 1;
+  if(size != params_size(self)) return 1;
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(g->quality, d->quality);

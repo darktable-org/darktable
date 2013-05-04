@@ -904,7 +904,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_export_t *settings = (dt_control_export_t*)t1->data;
   GList *t = t1->index;
   const int total = g_list_length(t);
-  int size = 0;
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
@@ -923,7 +922,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   else h=sh<fh?sh:fh;
 
   // get shared storage param struct (global sequence counter, one picasa connection etc)
-  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage, &size);
+  dt_imageio_module_data_t *sdata = mstorage->get_params(mstorage);
   if(sdata == NULL)
   {
     dt_control_log(_("failed to get parameters from storage module `%s', aborting export.."), mstorage->name(mstorage));
@@ -948,14 +947,14 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-  #pragma omp parallel default(none) private(imgid, size) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel default(none) private(imgid) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #else
-  #pragma omp parallel private(imgid, size) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
+  #pragma omp parallel private(imgid) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #endif
   {
 #endif
     // get a thread-safe fdata struct (one jpeg struct per thread etc):
-    dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &size);
+    dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
     fdata->max_width = settings->max_width;
     fdata->max_height = settings->max_height;
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;

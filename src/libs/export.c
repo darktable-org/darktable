@@ -690,10 +690,11 @@ get_params (dt_lib_module_t *self, int *size)
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
   if(!mformat || !mstorage) return NULL;
 
-  int32_t fsize = 0, ssize = 0;
   // size will be only as large as to remove random pointers from params (stored at the end).
-  dt_imageio_module_data_t *fdata = mformat->get_params(mformat, &fsize);
-  void *sdata = mstorage->get_params(mstorage, &ssize);
+  size_t fsize = mformat->params_size(mformat);
+  dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+  size_t  ssize = mstorage->params_size(mstorage);
+  void *sdata = mstorage->get_params(mstorage);
   // we allow null pointers (plugin not ready for export in current state), and just dont copy back the settings later:
   if(!sdata) ssize = 0;
   if(!fdata) fsize = 0;

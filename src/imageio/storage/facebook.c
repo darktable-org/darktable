@@ -1246,13 +1246,18 @@ int finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_d
   return 1;
 }
 
+size_t
+params_size(dt_imageio_module_storage_t *self)
+{
+  return sizeof(gint64);
+}
+
 
 void init(dt_imageio_module_storage_t *self)
 {
 }
-void *get_params(struct dt_imageio_module_storage_t *self, int *size)
+void *get_params(struct dt_imageio_module_storage_t *self)
 {
-  *size = sizeof(gint64);
   dt_storage_facebook_gui_data_t *ui = (dt_storage_facebook_gui_data_t*)self->gui_data;
   if(ui->facebook_api == NULL || ui->facebook_api->token == NULL)
   {
@@ -1305,8 +1310,7 @@ void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_dat
 
 int set_params(struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != sizeof(gint64))
-    return 1;
+  if(size != params_size(self)) return 1;
   // gui stuff not updated, as sensitive user data is not stored in the preset.
   // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
   return 0;
