@@ -830,6 +830,9 @@ int dt_exif_read_blob(
     // needs to be reset, even in dng mode, as the buffers are flipped during raw import
     exifData["Exif.Image.Orientation"] = uint16_t(1);
 
+    // get rid of thumbnails
+    Exiv2::ExifThumb(exifData).erase();
+
     // ufraw-style exif stripping:
     Exiv2::ExifData::iterator pos;
     /* Delete original TIFF data, which is irrelevant*/
