@@ -90,14 +90,6 @@ typedef struct dt_imageio_module_format_t
   /* get storage max supported image dimension, return 0 if no dimension restrictions exists. */
   int (*dimension)    (struct dt_imageio_module_format_t *self, uint32_t *width, uint32_t *height);
 
-  // optional: functions operating in memory, not on files:
-  /* reads the header and fills width/height in data struct. */
-  int (*decompress_header)(const void *in, size_t length, dt_imageio_module_data_t *data);
-  /* reads the whole image to the out buffer, which has to be large enough. */
-  int (*decompress)(dt_imageio_module_data_t *data, uint8_t *out);
-  /* compresses in to out buffer. out buffer must be large enough. returns actual data length. */
-  int (*compress)(dt_imageio_module_data_t *data, const uint8_t *in, uint8_t *out);
-
   // writing functions:
   /* bits per pixel and color channel we want to write: 8: char x3, 16: uint16_t x3, 32: float x3. */
   int (*bpp)(dt_imageio_module_data_t *data);
@@ -109,10 +101,6 @@ typedef struct dt_imageio_module_format_t
   // sometimes we want to tell the world about what we can do
   int (*flags)(dt_imageio_module_data_t *data);
 
-  // reading functions:
-  /* read header from file, get width and height */
-  int (*read_header)(const char *filename, dt_imageio_module_data_t *data);
-  /* reads the image to the (sufficiently allocated) buffer, closes file. */
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
 }
 dt_imageio_module_format_t;

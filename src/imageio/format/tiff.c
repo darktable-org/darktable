@@ -26,6 +26,7 @@
 #include "common/exif.h"
 #include "common/colorspaces.h"
 #include "control/conf.h"
+#include "common/imageio_format.h"
 #define DT_TIFFIO_STRIPE 64
 
 DT_MODULE(1)
@@ -47,8 +48,9 @@ typedef struct dt_imageio_tiff_gui_t
 dt_imageio_tiff_gui_t;
 
 
-int write_image (dt_imageio_tiff_t *d, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
+  dt_imageio_tiff_t *d=(dt_imageio_tiff_t*)d_tmp;
   // Fetch colorprofile into buffer if wanted
   uint8_t *profile = NULL;
   uint32_t profile_len = 0;
@@ -195,13 +197,13 @@ get_params(dt_imageio_module_format_t *self)
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
@@ -212,14 +214,14 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
   return 0;
 }
 
-int bpp(dt_imageio_tiff_t *p)
+int bpp(dt_imageio_module_data_t *p)
 {
-  return p->bpp;
+  return ((dt_imageio_tiff_t*)p)->bpp;
 }
 
-int levels(dt_imageio_tiff_t *p)
+int levels(dt_imageio_module_data_t *p)
 {
-  return IMAGEIO_RGB | (p->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
+  return IMAGEIO_RGB | (((dt_imageio_tiff_t*)p)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
 }
 
 const char*

@@ -23,11 +23,13 @@
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_format.h"
 
 DT_MODULE(1)
 
-int write_image (dt_imageio_module_data_t *pfm, const char *filename, const float *in, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *pfm, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
 {
+  const float *in = (const float*)in_tmp;
   int status = 0;
   FILE *f = fopen(filename, "wb");
   if(f)
@@ -62,13 +64,13 @@ get_params(dt_imageio_module_format_t *self)
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void* params, int size)
+set_params(dt_imageio_module_format_t *self, const void* params, int size)
 {
   if(size != params_size(self)) return 1;
   return 0;

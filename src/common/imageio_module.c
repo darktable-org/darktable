@@ -94,12 +94,6 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   if(!g_module_symbol(module->module, "bpp",                          (gpointer)&(module->bpp)))                          goto error;
   if(!g_module_symbol(module->module, "flags",                        (gpointer)&(module->flags)))                        module->flags = _default_format_flags;
   if(!g_module_symbol(module->module, "levels",                       (gpointer)&(module->levels)))                       module->levels = _default_format_levels;
-
-  if(!g_module_symbol(module->module, "decompress_header",            (gpointer)&(module->decompress_header)))            module->decompress_header = NULL;
-  if(!g_module_symbol(module->module, "decompress",                   (gpointer)&(module->decompress)))                   module->decompress = NULL;
-  if(!g_module_symbol(module->module, "compress",                     (gpointer)&(module->compress)))                     module->compress = NULL;
-
-  if(!g_module_symbol(module->module, "read_header",                  (gpointer)&(module->read_header)))                  module->read_header = NULL;
   if(!g_module_symbol(module->module, "read_image",                   (gpointer)&(module->read_image)))                   module->read_image = NULL;
 
   module->init(module);

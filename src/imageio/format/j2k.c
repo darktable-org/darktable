@@ -60,6 +60,7 @@
 #include "common/imageio.h"
 #include "control/conf.h"
 #include "dtgtk/slider.h"
+#include "common/imageio_format.h"
 
 #include <openjpeg.h>
 
@@ -295,8 +296,10 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
   parameters->cp_disto_alloc = 1;
 }
 
-int write_image (dt_imageio_j2k_t *j2k, const char *filename, const float *in, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
 {
+  const float * in = (const float *)in_tmp;
+  dt_imageio_j2k_t * j2k = (dt_imageio_j2k_t*)j2k_tmp;
   opj_cparameters_t parameters;     /* compression parameters */
   float *rates = NULL;
   opj_event_mgr_t event_mgr;        /* event manager */
@@ -503,13 +506,13 @@ get_params(dt_imageio_module_format_t *self)
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)params;
@@ -521,26 +524,27 @@ set_params(dt_imageio_module_format_t *self, void *params, int size)
   return 0;
 }
 
-int bpp(dt_imageio_j2k_t *p)
+int bpp(dt_imageio_module_data_t *p)
 {
   return 32;
 }
 
-int levels(dt_imageio_j2k_t *p)
+int levels(dt_imageio_module_data_t *p)
 {
   // TODO: adapt as soon as this module supports various bitdepths
   return IMAGEIO_RGB|IMAGEIO_INT12;
 }
 
 const char*
-mime(dt_imageio_j2k_t *data)
+mime(dt_imageio_module_data_t *data)
 {
   return "image/jp2";
 }
 
 const char*
-extension(dt_imageio_j2k_t *data)
+extension(dt_imageio_module_data_t *data_tmp)
 {
+  dt_imageio_j2k_t*data=(dt_imageio_j2k_t*)data_tmp;
   if(data->format == J2K_CFMT)
     return "j2k";
   else

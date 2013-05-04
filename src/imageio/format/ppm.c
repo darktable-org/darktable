@@ -22,14 +22,16 @@
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
+#include "common/imageio_format.h"
 
 DT_MODULE(1)
 
 void init(dt_imageio_module_format_t *self) {}
 void cleanup(dt_imageio_module_format_t *self) {}
 
-int write_image (dt_imageio_module_data_t *ppm, const char *filename, const uint16_t *in, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *ppm, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
 {
+  const uint16_t* in = (const uint16_t*) in_tmp;
   int status=0;
   uint16_t *row=(uint16_t*)in;
   uint16_t swapped[3];
@@ -68,13 +70,13 @@ get_params(dt_imageio_module_format_t *self)
 }
 
 void
-free_params(dt_imageio_module_format_t *self, void *params)
+free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
   free(params);
 }
 
 int
-set_params(dt_imageio_module_format_t *self, void *params, int size)
+set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
   if(size != params_size(self)) return 1;
   return 0;
