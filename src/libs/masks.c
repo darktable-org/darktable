@@ -87,23 +87,6 @@ typedef enum dt_masks_tree_cols_t
 }
 dt_masks_tree_cols_t;
 
-static void _reset_show_masks_icons()
-{
-  GList *modules = g_list_first(darktable.develop->iop);
-  while (modules)
-  {
-    dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
-    if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
-    {
-      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-      bd->masks_shown = 0;
-      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
-      gtk_widget_queue_draw (bd->masks_combo);
-    }
-    modules = g_list_next(modules);
-  }
-}
-
 static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
 {
   //we create the new form
@@ -664,7 +647,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
 {
   if (self->gui_reset) return;
   //we reset all "show mask" icon of iops
-  _reset_show_masks_icons();
+  dt_masks_reset_show_masks_icons();
 
   //if selection empty, we hide all
   int nb = gtk_tree_selection_count_selected_rows(selection);

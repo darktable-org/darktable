@@ -178,6 +178,8 @@ void dt_masks_update_image(dt_develop_t *dev);
 /** function used to manipulate forms for masks */
 void dt_masks_init_formgui(dt_develop_t *dev);
 void dt_masks_change_form_gui(dt_masks_form_t *newform);
+void dt_masks_reset_form_gui(void);
+void dt_masks_reset_show_masks_icons(void);
 
 int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, int which);
 int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, double y, int which, uint32_t state);

@@ -633,6 +633,15 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
   dt_control_queue_redraw_center();
 }
 
+static void
+_blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+{
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  dt_masks_iop_edit_toggle_callback(widget, self);
+}
+
+
 static gboolean
 _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
 {
@@ -1014,9 +1023,13 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
   else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
-  dt_bauhaus_combobox_set(bd->masks_combo,0);
+  dt_bauhaus_combobox_set(bd->masks_combo, 0);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
+#if 0
   if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
   else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+#endif
 
   //update buttons status
   int b1=0,b2=0;
@@ -1038,6 +1051,8 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
   /* create and add masks support if module supports it */
   if (bd->masks_support)
   {
+    const int bs = 14;
+
     bd->masks_combo_ids = NULL;
     bd->masks_shown = 0;
 
@@ -1047,21 +1062,28 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->masks_combo, _("masks"));
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
-    dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
     g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
-    g_signal_connect (G_OBJECT (bd->masks_combo), "quad-pressed", G_CALLBACK (dt_masks_iop_edit_toggle_callback), module);
-    dt_bauhaus_combobox_add_populate_fct(bd->masks_combo,dt_masks_iop_combo_populate);
+    dt_bauhaus_combobox_add_populate_fct(bd->masks_combo, dt_masks_iop_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
+
+    bd->masks_edit = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect(G_OBJECT(bd->masks_edit), "button-press-event", G_CALLBACK(_blendop_masks_show_and_edit), module);
+    g_object_set(G_OBJECT(bd->masks_edit), "tooltip-text", _("show and edit mask elements"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_edit), bs, bs);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_edit, FALSE, FALSE, 0);
 
     bd->masks_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_circle), "button-press-event", G_CALLBACK(_blendop_masks_add_circle), module);
     g_object_set(G_OBJECT(bd->masks_circle), "tooltip-text", _("add circular shape"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_circle), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_circle, FALSE, FALSE, 0);
 
     bd->masks_curve = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_curve, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_curve), "button-press-event", G_CALLBACK(_blendop_masks_add_curve), module);
     g_object_set(G_OBJECT(bd->masks_curve), "tooltip-text", _("add curve shape"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_curve), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_curve), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_curve, FALSE, FALSE, 0);
 
@@ -1229,6 +1251,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
+    const int bs = 14;
+
     module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
     memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
@@ -1430,12 +1454,14 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->showmask = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(bd->showmask), "tooltip-text", _("display mask"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->showmask), bs, bs);
     g_signal_connect (G_OBJECT(bd->showmask), "toggled",
                       G_CALLBACK (_blendop_blendif_showmask_toggled), module);
 
 
     bd->suppress = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(bd->suppress), "tooltip-text", _("temporarily switch off blend mask. only for module in focus"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->suppress), bs, bs);
     g_signal_connect (G_OBJECT(bd->suppress), "toggled",
                       G_CALLBACK (_blendop_blendif_suppress_toggled), module);
 

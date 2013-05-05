@@ -578,6 +578,36 @@ void dt_masks_change_form_gui(dt_masks_form_t *newform)
   darktable.develop->form_visible = newform;
 }
 
+void dt_masks_reset_form_gui(void)
+{
+  darktable.develop->form_visible = NULL;
+  dt_masks_init_formgui(darktable.develop);
+  dt_iop_module_t *m = darktable.develop->gui_module;
+  if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+  {
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
+    bd->masks_shown = 0;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+  }
+}
+
+void dt_masks_reset_show_masks_icons(void)
+{
+  GList *modules = g_list_first(darktable.develop->iop);
+  while (modules)
+  {
+    dt_iop_module_t *m = (dt_iop_module_t *)modules->data;
+    if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+    {
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
+      bd->masks_shown = 0;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+    }
+    modules = g_list_next(modules);
+  }
+}
+
+
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
 {
   if (!module) return;
@@ -593,8 +623,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
   }
   if (!(module->flags()&IOP_FLAGS_NO_MASKS))
   {
-    if (value) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
-    else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), value);
     bd->masks_shown = value;
     gtk_widget_queue_draw(bd->masks_combo);
   }
@@ -739,10 +768,10 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   //we ensure that the module has focus
   dt_iop_module_t *module = *m;
   dt_iop_request_focus(module);
-  dt_masks_form_t *mgrp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+  //dt_masks_form_t *mgrp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  int nbf = 0;
-  if (mgrp) nbf = g_list_length(mgrp->points);
+  //int nbf = 0;
+  //if (mgrp) nbf = g_list_length(mgrp->points);
 
   //we determine a higher approx of the entry number
   int nbe = 5+g_list_length(darktable.develop->forms)+g_list_length(darktable.develop->iop);
@@ -761,6 +790,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   int pos = 0;
   cids[pos++] = 0;  //nothing to do for the first entry (already here)
 
+#if 0
   //delete all masks
   if (nbf>0)
   {
@@ -773,6 +803,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   cids[pos++] = -2000001;
   dt_bauhaus_combobox_add(combo,_("add curve shape"));
   cids[pos++] = -2000002;
+#endif
 
   //add existing shapes
   GList *forms = g_list_first(darktable.develop->forms);
@@ -920,8 +951,7 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
   else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
 
   dt_bauhaus_combobox_set(bd->masks_combo,0);
-  if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
-  else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
 }
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)

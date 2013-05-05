@@ -1718,16 +1718,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
 
     /*reset mask view */
-    darktable.develop->form_visible = NULL;
-    dt_masks_init_formgui(darktable.develop);
-    dt_iop_module_t *m = darktable.develop->gui_module;
-    if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
-    {
-      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-      bd->masks_shown = 0;
-      dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
-      dt_dev_masks_selection_change(darktable.develop,0,FALSE);
-    }
+    dt_masks_reset_form_gui();
   }
 
   darktable.develop->gui_module = module;
