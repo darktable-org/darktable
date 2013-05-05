@@ -531,15 +531,21 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
           dt_image_cache_read_release(darktable.image_cache, cgroup_img);
         }
         group_id = id;
-      } else {
+      }
+      else
+      {
         dt_image_cache_read_release(darktable.image_cache, cother_img);
         group_id = other_id;
       }
       g_free(other_basename);
-    } else {
+    }
+    else
+    {
       group_id = id;
     }
-  } else {
+  }
+  else
+  {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select group_id from images where film_id = ?1 and filename like ?2 and id != ?3", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, sql_pattern, -1, SQLITE_TRANSIENT);

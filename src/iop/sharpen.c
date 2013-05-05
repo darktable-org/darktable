@@ -88,7 +88,9 @@ flags ()
 void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t)
-    { 2.0, 0.5, 0.5 };
+  {
+    2.0, 0.5, 0.5
+  };
   // add the preset.
   dt_gui_presets_add_generic(_("sharpen"), self->op, self->version(), &tmp, sizeof(dt_iop_sharpen_params_t), 1);
   // restrict to raw images

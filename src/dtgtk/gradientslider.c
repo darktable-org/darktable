@@ -404,7 +404,7 @@ static void _gradient_slider_destroy(GtkObject *object)
   {
     g_list_foreach(DTGTK_GRADIENT_SLIDER(object)->colors, (GFunc)g_free, NULL);
     g_list_free(DTGTK_GRADIENT_SLIDER(object)->colors);
-    DTGTK_GRADIENT_SLIDER(object)->colors = NULL;    
+    DTGTK_GRADIENT_SLIDER(object)->colors = NULL;
   }
 
   klass = gtk_type_class(gtk_widget_get_type());

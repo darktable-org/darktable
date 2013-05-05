@@ -358,7 +358,7 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
     }
     else if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Contact")))
-         != iptcData.end() )
+              != iptcData.end() )
     {
       std::string str = pos->print(/*&iptcData*/);
       dt_metadata_set(img->id, "Xmp.dc.creator", str.c_str());
@@ -440,13 +440,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       img->exif_focus_distance = (0.01 * pow(10, value/40));
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.NikonLd3.FocusDistance")))
-         != exifData.end() && pos->size())
+              != exifData.end() && pos->size())
     {
       float value = pos->toFloat();
       img->exif_focus_distance = (0.01 * pow(10, value/40));
     }
     else if ( (pos=Exiv2::subjectDistance(exifData))
-         != exifData.end() && pos->size())
+              != exifData.end() && pos->size())
     {
       img->exif_focus_distance = pos->toFloat ();
     }
@@ -514,8 +514,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
     else if ((((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-             ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
-	      ) && pos->size())
+              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
+             ) && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -654,12 +654,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       int is_1_65 = -1, is_2_65 = -1; // -1: not found, 0: some random type, 1: D65
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant1")))
-	   != exifData.end() && pos->size())
+           != exifData.end() && pos->size())
       {
         is_1_65 = (pos->toLong() == 21)?1:0;
       }
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.CalibrationIlluminant2")))
-	   != exifData.end() && pos->size())
+           != exifData.end() && pos->size())
       {
         is_2_65 = (pos->toLong() == 21)?1:0;
       }
@@ -689,7 +689,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     //          + Exif.Iop.InteroperabilityIndex of 'R03' -> AdobeRGB
     //          + Exif.Iop.InteroperabilityIndex of 'R98' -> sRGB
     if (dt_image_is_ldr(img) && (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.ColorSpace")))
-	!= exifData.end() && pos->size())
+        != exifData.end() && pos->size())
     {
       int colorspace = pos->toLong();
       if(colorspace == 0x01)
@@ -699,7 +699,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       else if(colorspace == 0xffff)
       {
         if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Iop.InteroperabilityIndex")))
-	     != exifData.end() && pos->size())
+             != exifData.end() && pos->size())
         {
           std::string interop_index = pos->toString();
           if(interop_index == "R03")
@@ -724,8 +724,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       sprintf(img->exif_lens, "(unknown)");
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
       {
-	std::string str = pos->print(&exifData);
-	sprintf(img->exif_lens, "%s", str.c_str());
+        std::string str = pos->print(&exifData);
+        sprintf(img->exif_lens, "%s", str.c_str());
       }
     };
 
@@ -831,13 +831,13 @@ int dt_exif_write_blob(uint8_t *blob,uint32_t size, const char* path)
 }
 
 int dt_exif_read_blob(
-    uint8_t    *buf,
-    const char *path,
-    const int   imgid,
-    const int   sRGB,
-    const int   out_width,
-    const int   out_height,
-    const int   dng_mode)
+  uint8_t    *buf,
+  const char *path,
+  const int   imgid,
+  const int   sRGB,
+  const int   out_width,
+  const int   out_height,
+  const int   dng_mode)
 {
   try
   {
@@ -1401,7 +1401,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           if (multi_priority != xmpData.end() && multi_priority->count() > i)  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
           if(multi_name != xmpData.end() && multi_name->size() > 0 &&
-             multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
+              multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
           {
             const char *mname = multi_name->toString(i).c_str();
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
@@ -1745,13 +1745,13 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
 }
 
 int dt_exif_thumbnail(
-    const char *filename,
-    uint8_t    *out,
-    uint32_t    width,
-    uint32_t    height,
-    int         orientation,
-    uint32_t   *wd,
-    uint32_t   *ht)
+  const char *filename,
+  uint8_t    *out,
+  uint32_t    width,
+  uint32_t    height,
+  int         orientation,
+  uint32_t   *wd,
+  uint32_t   *ht)
 {
   // fprintf(stderr, "[exif] trying to load thumbnail `%s'!\n", filename);
   try
@@ -1771,7 +1771,7 @@ int dt_exif_thumbnail(
     int y_beg = 0, y_end = 0;
     Exiv2::ExifData::const_iterator pos;
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Canon.ThumbnailImageValidArea")))
-        != exifData.end() && pos->size() && pos->count() == 4)
+         != exifData.end() && pos->size() && pos->count() == 4)
     {
       // pos->toLong(0); // x bounds. we ignore those because canon doesn't seem
       // to set them.
@@ -1785,7 +1785,8 @@ int dt_exif_thumbnail(
       // don't upsample those:
       if((uint32_t)jpg.width < width || (uint32_t)jpg.height < height) return 1;
       if(!y_beg && !y_end)
-      { // if those weren't set, do it now:
+      {
+        // if those weren't set, do it now:
         y_beg = 0;
         y_end = jpg.height - 1;
       }

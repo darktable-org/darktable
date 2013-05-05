@@ -1060,16 +1060,16 @@ void enter(dt_view_t *self)
     // the button
     dev->overexposed.button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overexposed, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(dev->overexposed.button), "tooltip-text", _("toggle over/under exposed indication\nright click for options"),
-                (char *)NULL);
+                 (char *)NULL);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "clicked",
-                      G_CALLBACK (_overexposed_quickbutton_clicked),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_clicked),
+                     dev);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "button-press-event",
-                      G_CALLBACK (_overexposed_quickbutton_pressed),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_pressed),
+                     dev);
     g_signal_connect(G_OBJECT (dev->overexposed.button), "button-release-event",
-                      G_CALLBACK (_overexposed_quickbutton_released),
-                      dev);
+                     G_CALLBACK (_overexposed_quickbutton_released),
+                     dev);
     dt_view_manager_module_toolbox_add(darktable.view_manager, dev->overexposed.button);
 
     // and the popup window
@@ -1511,7 +1511,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
   float oldscale = scale;
-  
+
   // offset from center now (current zoom_{x,y} points there)
   float mouse_off_x = x - .5*dev->width, mouse_off_y = y - .5*dev->height;
   zoom_x += mouse_off_x/(procw*scale);
@@ -1536,7 +1536,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if ((scale-1.0)*(oldscale-1.0)<0) scale = 1.0f;
   if ((scale-fitscale)*(oldscale-fitscale)<0) scale = fitscale;
   scale = fmaxf(fminf(scale,2.0f),0.5*fitscale);
-  
+
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;

@@ -1038,7 +1038,7 @@ dt_mipmap_cache_get_matching_size(
   {
     // find closest l1 norm:
     int32_t new_error = cache->mip[k].max_width + cache->mip[k].max_height
-                             - width - height;
+                        - width - height;
     // and allow the first one to be larger in pixel size to override the smaller mip
     if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
     {
@@ -1202,7 +1202,7 @@ _init_8(
 
   // first try exif thumbnail, that's smaller and thus faster to load:
   if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") &&
-     !dt_exif_thumbnail(filename, buf, wd, ht, orientation, width, height))
+      !dt_exif_thumbnail(filename, buf, wd, ht, orientation, width, height))
   {
     res = 0;
   }

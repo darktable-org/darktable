@@ -231,8 +231,8 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
-        G_CALLBACK(_apply_style_shortcut_callback),
-        tmp_name, _destroy_style_shortcut_callback);
+                G_CALLBACK(_apply_style_shortcut_callback),
+                tmp_name, _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
   }
 
@@ -295,15 +295,15 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
 
     dt_styles_save_to_file(newname,stylesdir,FALSE);
 
-      char tmp_accel[1024];
-      gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
-      snprintf(tmp_accel,1024,"styles/Apply %s",newname);
-      dt_accel_register_global( tmp_accel, 0, 0);
-      GClosure *closure;
-      closure = g_cclosure_new(
-          G_CALLBACK(_apply_style_shortcut_callback),
-          tmp_name, _destroy_style_shortcut_callback);
-      dt_accel_connect_global(tmp_accel, closure);
+    char tmp_accel[1024];
+    gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
+    snprintf(tmp_accel,1024,"styles/Apply %s",newname);
+    dt_accel_register_global( tmp_accel, 0, 0);
+    GClosure *closure;
+    closure = g_cclosure_new(
+                G_CALLBACK(_apply_style_shortcut_callback),
+                tmp_name, _destroy_style_shortcut_callback);
+    dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"),newname);
   }
 }

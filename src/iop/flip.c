@@ -133,7 +133,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   float x,y;
 
   for (int i=0; i<points_count*2; i+=2)
-  {  
+  {
     x = points[i];
     y = points[i+1];
     if(d->orientation & 2) y = piece->buf_in.height - points[i+1];
@@ -143,11 +143,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
       float yy = y;
       y = x;
       x = yy;
-    }    
+    }
     points[i] = x;
     points[i+1] = y;
   }
-  
+
   return 1;
 }
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
@@ -158,7 +158,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   float x,y;
 
   for (int i=0; i<points_count*2; i+=2)
-  {  
+  {
     if(d->orientation & 4)
     {
       y = points[i];
@@ -174,7 +174,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     points[i] = x;
     points[i+1] = y;
   }
-  
+
   return 1;
 }
 

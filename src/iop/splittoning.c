@@ -293,9 +293,9 @@ compress_callback (GtkWidget* slider, gpointer user_data)
 
 static inline void
 update_colorpicker_fg(
-    GtkWidget* colorpicker,
-    float hue,
-    float sat)
+  GtkWidget* colorpicker,
+  float hue,
+  float sat)
 {
   float rgb[3];
   GdkColor c;
@@ -308,8 +308,8 @@ update_colorpicker_fg(
 
 static inline void
 update_saturation_slider_end_color(
-    GtkWidget* slider,
-    float hue)
+  GtkWidget* slider,
+  float hue)
 {
   float rgb[3];
   hsl2rgb(rgb, hue, 1.0, 0.5);

@@ -224,10 +224,10 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
         //show error dialog
         GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
         GtkWidget *dlg_changename = gtk_message_dialog_new (GTK_WINDOW(window),
-                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_WARNING,
-                                   GTK_BUTTONS_OK,
-                                   _("please give preset a name"));
+                                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                                    GTK_MESSAGE_WARNING,
+                                    GTK_BUTTONS_OK,
+                                    _("please give preset a name"));
 
         gtk_window_set_title(GTK_WINDOW (dlg_changename), _("unnamed preset"));
 
@@ -574,7 +574,7 @@ menuitem_update_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   // commit all the module fields
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set operation=?1, op_version=?2, op_params=?3, enabled=?4, "
-     "blendop_params=?5, blendop_version=?6 where name=?7", -1, &stmt, NULL);
+                              "blendop_params=?5, blendop_version=?6 where name=?7", -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -845,8 +845,8 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
       if (darktable.gui->last_preset && found)
       {
         char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>",
-            _("update preset"),
-            darktable.gui->last_preset);
+                                               _("update preset"),
+                                               darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), module);

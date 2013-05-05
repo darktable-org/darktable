@@ -77,7 +77,8 @@ const char uf_manual_wb[] = N_("Manual WB");
 const char uf_camera_wb[] = N_("Camera WB");
 const char uf_auto_wb[] = N_("Auto WB");
 
-const wb_data wb_preset[] = {
+const wb_data wb_preset[] =
+{
 
 
   { "Canon", "PowerShot A630", Daylight, 0,	{ 1.831422, 1, 1.245671, 0 } },

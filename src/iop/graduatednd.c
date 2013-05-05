@@ -128,10 +128,10 @@ typedef struct dt_iop_graduatednd_gui_data_t
   GtkWidget  *label1,*label2,*label3,*label5,*label6;            			      // density, compression, rotation, hue, saturation
   GtkWidget *scale1,*scale2,*scale3;        // density, compression, rotation
   GtkWidget *gslider1, *gslider2; // hue, saturation
-  
+
   int selected;
   int dragging;
-  
+
   gboolean define;
   float xa,ya,xb,yb,oldx,oldy;
 }
@@ -195,16 +195,16 @@ typedef struct dt_iop_vector_2d_t
 static float dist_seg (float xa,float ya,float xb,float yb,float xc,float yc)
 {
   if (xa==xb && ya==yb) return (xc-xa)*(xc-xa)+(yc-ya)*(yc-ya);
- 
+
   float sx=xb-xa;
   float sy=yb-ya;
-   
+
   float ux=xc-xa;
   float uy=yc-ya;
-   
+
   float dp=sx*ux+sy*uy;
   if (dp<0) return (xc-xa)*(xc-xa)+(yc-ya)*(yc-ya);
-   
+
   float sn2 = sx*sx+sy*sy;
   if (dp>sn2) return (xc-xb)*(xc-xb)+(yc-yb)*(yc-yb);
 
@@ -217,22 +217,23 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
 {
   //we want absolute positions
   float pts[4] = {xa*self->dev->preview_pipe->backbuf_width, ya*self->dev->preview_pipe->backbuf_height,
-                  xb*self->dev->preview_pipe->backbuf_width, yb*self->dev->preview_pipe->backbuf_height};
+                  xb*self->dev->preview_pipe->backbuf_width, yb*self->dev->preview_pipe->backbuf_height
+                 };
   dt_dev_distort_backtransform(self->dev,pts,2);
   pts[0] /= self->dev->preview_pipe->iwidth;
   pts[2] /= self->dev->preview_pipe->iwidth;
   pts[1] /= self->dev->preview_pipe->iheight;
   pts[3] /= self->dev->preview_pipe->iheight;
-  
+
   //we first need to find the rotation angle
   //weird dichotomic solution : we may use something more cool ...
   float v1=-M_PI;
   float v2=M_PI;
   float sinv,cosv,r1,r2,v,r;
-  
+
   sinv = sinf(v1), cosv = cosf(v1);
   r1 = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
-  
+
   //we search v2 so r2 as not the same sign as r1
   float pas = M_PI/16.0;
   do
@@ -241,8 +242,9 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
     sinv = sinf(v2), cosv = cosf(v2);
     r2 = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
     if (r1*r2 < 0) break;
-  } while (v2 <= M_PI);
-  
+  }
+  while (v2 <= M_PI);
+
   if (v2 == M_PI) return 9;
 
   int iter = 0;
@@ -251,34 +253,35 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
     v = (v1+v2)/2.0;
     sinv = sinf(v), cosv = cosf(v);
     r = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
-    
+
     if (r < 0.01 && r > -0.01) break;
-    
+
     if (r*r2 < 0) v1 = v;
     else
     {
       r2 = r;
       v2 = v;
     }
-    
-  } while(iter++ < 1000);
+
+  }
+  while(iter++ < 1000);
   if (iter >= 1000) return 8;
-  
+
   //be carrefull to the gnd direction
   if (pts[2]-pts[0] > 0 && v>M_PI*0.5) v = v-M_PI;
   if (pts[2]-pts[0] > 0 && v<-M_PI*0.5) v = M_PI+v;
-  
+
   if (pts[2]-pts[0] <0 && v<M_PI*0.5 && v>=0) v = v-M_PI;
   if (pts[2]-pts[0] <0 && v>-M_PI*0.5 && v<0) v = v+M_PI;
-  
+
   *rotation = -v*180.0/M_PI;
-  
+
   //and now we go for the offset (more easy)
   sinv=sinf(v);
   cosv=cosf(v);
   float ofs = -2.0*sinv*pts[0] + sinv - cosv + 1.0 + 2.0*cosv*pts[1];
   *offset = ofs*50.0;
-  
+
   return 1;
 }
 
@@ -335,13 +338,13 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
       yy1 = b;
       xx1=0;
     }
-    
+
     //we want extremities not to be on image border
     xx2 -= (xx2-xx1)*0.1;
     xx1 += (xx2-xx1)*0.1;
     yy2 -= (yy2-yy1)*0.1;
     yy1 += (yy2-yy1)*0.1;
-    
+
     //now we have to decide which point is where, depending of the angle
     /*xx1 /= wd;
     xx2 /= wd;
@@ -383,7 +386,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
         pts[1] = yy2;
       }
     }
-}
+  }
   //now we want that points to take care of distort modules
   if (!dt_dev_distort_transform(self->dev,pts,2)) return 0;
   *xa = pts[0]/self->dev->preview_pipe->backbuf_width;
@@ -413,21 +416,21 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
-  
+
   //we get the extremities of the line
   if (g->define == 0)
   {
     if (!set_points_from_grad(self,&g->xa,&g->ya,&g->xb,&g->yb,p->rotation,p->offset)) return;
     g->define = 1;
   }
-  
+
   float xa = g->xa*wd, xb = g->xb*wd, ya = g->ya*ht, yb = g->yb*ht;
   //the lines
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
   if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, 5.0/zoom_scale);
   else                           cairo_set_line_width(cr, 3.0/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
-  
+
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
   cairo_stroke(cr);
@@ -438,7 +441,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
   cairo_stroke(cr);
-  
+
   //the extremities
   float x1,y1,x2,y2;
   float l = sqrt((xb-xa)*(xb-xa)+(yb-ya)*(yb-ya));
@@ -460,7 +463,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   if(g->selected == 1 || g->dragging == 1) cairo_set_source_rgba(cr, .3, .3, .3, 1.0);
   else                           cairo_set_source_rgba(cr, .3, .3, .3, .5);
   cairo_stroke(cr);
-  
+
   x1 = xb-(xb-xa)*ext/l;
   y1 = yb-(yb-ya)*ext/l;
   x2 = (xb+x1)/2.0;
@@ -492,7 +495,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  
+
   //are we dragging something ?
   if (g->dragging > 0)
   {
@@ -547,9 +550,9 @@ button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int 
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  
+
   if (which == 3)
-  {   
+  {
     g->dragging = 2;
     g->xa = pzx;
     g->ya = pzy;
@@ -583,12 +586,12 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
     pzx += 0.5f;
     pzy += 0.5f;
-    
+
     float r=0.0,o=0.0;
     //float pts[4];
     //dt_dev_distort_backtransform(self->dev,pts,2);
     set_grad_from_points(self,g->xa,g->ya,g->xb,g->yb,&r, &o);
-    
+
     //if this is a "line dragging, we reset extremities, to be sure they are not outside the image
     if (g->dragging == 3) set_points_from_grad(self,&g->xa,&g->ya,&g->xb,&g->yb,r,o);
     self->dt->gui->reset = 1;
@@ -596,11 +599,11 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
     //dt_bauhaus_slider_set(g->scale4,o);
     self->dt->gui->reset = 0;
     p->rotation = r;
-    p->offset = o;      
+    p->offset = o;
     g->dragging = 0;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
-  
+
   g->dragging = 0;
   return 0;
 }
@@ -667,7 +670,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float c = 1.0f + 1000.0f*powf(4.0, compression);
 #endif
 
-  
+
   if (data->density > 0)
   {
 #ifdef _OPENMP
@@ -936,7 +939,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale3, p->rotation);
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
-  
+
   //float wd = self->dev->preview_pipe->backbuf_width;
   //float ht = self->dev->preview_pipe->backbuf_height;
   g->define = 0;
@@ -1033,7 +1036,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (rotation_callback), self);
-                    
+
   /* add widgets to ui */
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

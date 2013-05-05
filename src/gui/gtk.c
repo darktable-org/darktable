@@ -463,11 +463,11 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   dt_control_expose(NULL);
   if(darktable.gui->pixmap)
     gdk_draw_drawable(da->window,
-                    da->style->fg_gc[GTK_WIDGET_STATE(da)], darktable.gui->pixmap,
-                    // Only copy the area that was exposed.
-                    event->area.x, event->area.y,
-                    event->area.x, event->area.y,
-                    event->area.width, event->area.height);
+                      da->style->fg_gc[GTK_WIDGET_STATE(da)], darktable.gui->pixmap,
+                      // Only copy the area that was exposed.
+                      event->area.x, event->area.y,
+                      event->area.x, event->area.y,
+                      event->area.width, event->area.height);
 
   if(darktable.lib->proxy.colorpicker.module)
   {

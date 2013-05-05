@@ -99,9 +99,9 @@ dt_control_signal_t *dt_control_signal_init()
   /* create the signals */
   for (int k=0; k<DT_SIGNAL_COUNT; k++)
     g_signal_newv(_signal_description[k].name, _signal_type, G_SIGNAL_RUN_LAST,0,
-        _signal_description[k].accumulator,_signal_description[k].accu_data,
-        _signal_description[k].c_marshaller,_signal_description[k].return_type,
-        _signal_description[k].n_params,_signal_description[k].param_types);
+                  _signal_description[k].accumulator,_signal_description[k].accu_data,
+                  _signal_description[k].c_marshaller,_signal_description[k].return_type,
+                  _signal_description[k].n_params,_signal_description[k].param_types);
 
   return ctlsig;
 }

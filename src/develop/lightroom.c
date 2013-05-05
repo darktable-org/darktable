@@ -262,7 +262,10 @@ char *dt_get_lightroom_xmp(int imgid)
   // Look for extension
   char *pos = strrchr(pathname, '.');
 
-  if (pos==NULL) { return NULL; }
+  if (pos==NULL)
+  {
+    return NULL;
+  }
 
   // If found, replace extension with xmp
   strncpy(pos+1, "xmp", 4);
@@ -280,15 +283,15 @@ static float get_interpolate (lr2dt_t lr2dt_table[], float value)
   while (lr2dt_table[k+1].lr < value) k++;
 
   return lr2dt_table[k].dt +
-    ((value - lr2dt_table[k].lr)
-     / (lr2dt_table[k+1].lr - lr2dt_table[k].lr))
-    * (lr2dt_table[k+1].dt - lr2dt_table[k].dt);
+         ((value - lr2dt_table[k].lr)
+          / (lr2dt_table[k+1].lr - lr2dt_table[k].lr))
+         * (lr2dt_table[k+1].dt - lr2dt_table[k].dt);
 }
 
 static float lr2dt_blacks(float value)
 {
   lr2dt_t lr2dt_blacks_table[] =
-    {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
+  {{-100, 0.020}, {-50, 0.005}, {0, 0}, {50, -0.005}, {100, -0.010}};
 
   return get_interpolate (lr2dt_blacks_table, value);
 }
@@ -296,7 +299,7 @@ static float lr2dt_blacks(float value)
 static float lr2dt_exposure(float value)
 {
   lr2dt_t lr2dt_exposure_table[] =
-    {{-5, -4.5}, {0, 0}, {5, 4.5}};
+  {{-5, -4.5}, {0, 0}, {5, 4.5}};
 
   return get_interpolate (lr2dt_exposure_table, value);
 }
@@ -304,7 +307,7 @@ static float lr2dt_exposure(float value)
 static float lr2dt_vignette_gain(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{-100, -1}, {-50, -0.7}, {0, 0}, {50, 0.5}, {100, 1}};
+  {{-100, -1}, {-50, -0.7}, {0, 0}, {50, 0.5}, {100, 1}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
@@ -312,7 +315,7 @@ static float lr2dt_vignette_gain(float value)
 static float lr2dt_vignette_midpoint(float value)
 {
   lr2dt_t lr2dt_vignette_table[] =
-    {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
+  {{0, 74}, {4, 75}, {25, 85}, {50, 100}, {100, 100}};
 
   return get_interpolate (lr2dt_vignette_table, value);
 }
@@ -320,7 +323,7 @@ static float lr2dt_vignette_midpoint(float value)
 static float lr2dt_grain_amount(float value)
 {
   lr2dt_t lr2dt_grain_table[] =
-    {{0, 0}, {25, 20}, {50, 40}, {100, 80}};
+  {{0, 0}, {25, 20}, {50, 40}, {100, 80}};
 
   return get_interpolate (lr2dt_grain_table, value);
 }
@@ -328,7 +331,7 @@ static float lr2dt_grain_amount(float value)
 static float lr2dt_grain_frequency(float value)
 {
   lr2dt_t lr2dt_grain_table[] =
-    {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
+  {{0, 100}, {50, 100}, {75, 400}, {100, 800}};
 
   return get_interpolate (lr2dt_grain_table, value) / 53.3;
 }
@@ -336,7 +339,7 @@ static float lr2dt_grain_frequency(float value)
 static float lr2dt_splittoning_balance(float value)
 {
   lr2dt_t lr2dt_splittoning_table[] =
-    {{-100, 100}, {0, 0}, {100, 0}};
+  {{-100, 100}, {0, 0}, {100, 0}};
 
   return get_interpolate (lr2dt_splittoning_table, value);
 }
@@ -344,7 +347,7 @@ static float lr2dt_splittoning_balance(float value)
 static float lr2dt_clarity(float value)
 {
   lr2dt_t lr2dt_clarity_table[] =
-    {{-100, -.650}, {0, 0}, {100, .650}};
+  {{-100, -.650}, {0, 0}, {100, .650}};
 
   return get_interpolate (lr2dt_clarity_table, value);
 }
@@ -529,7 +532,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     custom = 3
   } lr_curve_kind_t;
 
-  #define MAX_PTS 20
+#define MAX_PTS 20
   dt_iop_tonecurve_params_t ptc;
   memset(&ptc, 0, sizeof(ptc));
   int ptc_value[4] = {0, 0, 0, 0};
@@ -1354,8 +1357,8 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     char message[512];
 
     g_snprintf
-      (message, 512,
-       ngettext("%s has been imported", "%s have been imported", n_import), imported);
+    (message, 512,
+     ngettext("%s has been imported", "%s have been imported", n_import), imported);
     dt_control_log(message);
 
     if (!iauto)

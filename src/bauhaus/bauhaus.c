@@ -158,14 +158,14 @@ set_indicator_color(cairo_t *cr, int sensitive)
 
 static int
 show_pango_text(
-    cairo_t *cr,
-    char *text,
-    float x_pos,
-    float y_pos,
-    float max_width,
-    gboolean right_aligned,
-    gboolean sensitive,
-    gboolean indicator)
+  cairo_t *cr,
+  char *text,
+  float x_pos,
+  float y_pos,
+  float max_width,
+  gboolean right_aligned,
+  gboolean sensitive,
+  gboolean indicator)
 {
   PangoLayout *layout;
 
@@ -1208,8 +1208,8 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
       // only set to what's in the filtered list.
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       int active = darktable.bauhaus->end_mouse_y >= 0
-        ? (darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space()))
-        : d->active;
+                   ? (darktable.bauhaus->end_mouse_y / (widget->allocation.height + get_line_space()))
+                   : d->active;
       GList *it = d->labels;
       int k = 0, i = 0, kk = 0, match = 1;
 
@@ -1801,7 +1801,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
               (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
       {
         darktable.bauhaus->keys_cnt -= (darktable.bauhaus->keys+darktable.bauhaus->keys_cnt) -
-                                        g_utf8_prev_char(darktable.bauhaus->keys+darktable.bauhaus->keys_cnt);
+                                       g_utf8_prev_char(darktable.bauhaus->keys+darktable.bauhaus->keys_cnt);
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }

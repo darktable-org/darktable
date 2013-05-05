@@ -111,7 +111,7 @@ void dt_colorlabels_toggle_label (const int imgid, const int color)
     sqlite3_finalize(stmt2);
   }
   sqlite3_finalize(stmt);
-  
+
   dt_collection_hint_message(darktable.collection);
 }
 
@@ -121,9 +121,9 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
 {
   const long int mode = (long int)data;
   int32_t selected;
- 
-  selected = dt_view_get_image_to_act_on(); 
-  
+
+  selected = dt_view_get_image_to_act_on();
+
   if(selected <= 0)
   {
     switch(mode)

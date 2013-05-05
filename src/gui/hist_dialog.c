@@ -81,20 +81,20 @@ _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_gui_hist_dialog_
 {
   switch(response_id)
   {
-  case GTK_RESPONSE_CANCEL:
-    break;
+    case GTK_RESPONSE_CANCEL:
+      break;
 
-  case GTK_RESPONSE_YES:
-    _gui_hist_set_items (g, TRUE);
-    break;
+    case GTK_RESPONSE_YES:
+      _gui_hist_set_items (g, TRUE);
+      break;
 
-  case GTK_RESPONSE_NONE:
-    _gui_hist_set_items (g, FALSE);
-    break;
+    case GTK_RESPONSE_NONE:
+      _gui_hist_set_items (g, FALSE);
+      break;
 
-  case GTK_RESPONSE_OK:
-    g->selops = _gui_hist_get_active_items(g);
-    break;
+    case GTK_RESPONSE_OK:
+      g->selops = _gui_hist_get_active_items(g);
+      break;
   }
 }
 
@@ -146,19 +146,19 @@ int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GtkDialog *dialog = GTK_DIALOG
-    (gtk_dialog_new_with_buttons
-     (_("select parts"),
-      GTK_WINDOW(window),
-      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
-      GTK_STOCK_SELECT_ALL,
-      GTK_RESPONSE_YES,
-      GTK_STOCK_CLEAR,
-      GTK_RESPONSE_NONE,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_OK,
-      NULL));
+                      (gtk_dialog_new_with_buttons
+                       (_("select parts"),
+                        GTK_WINDOW(window),
+                        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                        GTK_STOCK_CANCEL,
+                        GTK_RESPONSE_CANCEL,
+                        GTK_STOCK_SELECT_ALL,
+                        GTK_RESPONSE_YES,
+                        GTK_STOCK_CLEAR,
+                        GTK_RESPONSE_NONE,
+                        GTK_STOCK_OK,
+                        GTK_RESPONSE_OK,
+                        NULL));
 
   GtkContainer *content_area = GTK_CONTAINER (gtk_dialog_get_content_area (GTK_DIALOG (dialog)));
   GtkWidget *alignment = gtk_alignment_new (0.5, 0.5, 1.0, 1.0);

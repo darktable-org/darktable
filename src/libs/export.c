@@ -93,7 +93,8 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   int storage_index = dt_conf_get_int ("plugins/lighttable/export/storage");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char* tmp = dt_conf_get_string("plugins/lighttable/export/style");
-  if (tmp) {
+  if (tmp)
+  {
     strncpy (style, tmp, 128);
     g_free(tmp);
   }
@@ -692,7 +693,8 @@ get_params (dt_lib_module_t *self, int *size)
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
 
-  if (fdata) {
+  if (fdata)
+  {
     strncpy(fdata->style, style, 128);
   }
 

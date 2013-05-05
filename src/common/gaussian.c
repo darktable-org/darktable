@@ -27,8 +27,8 @@
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 #define BLOCKSIZE 32
 
-static 
-void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3, 
+static
+void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a0, float *a1, float *a2, float *a3,
                           float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
@@ -83,9 +83,9 @@ void compute_gauss_params(const float sigma, dt_gaussian_order_t order, float *a
 
 size_t
 dt_gaussian_memory_use(
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const int channels)    // channels per pixel
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const int channels)    // channels per pixel
 {
   size_t mem_use = width*height*channels*sizeof(float);
 #ifdef HAVE_OPENCL
@@ -96,9 +96,9 @@ dt_gaussian_memory_use(
 
 size_t
 dt_gaussian_singlebuffer_size(
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const int channels)    // channels per pixel
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const int channels)    // channels per pixel
 {
   size_t mem_use = width*height*channels*sizeof(float);
 #ifdef HAVE_OPENCL
@@ -110,13 +110,13 @@ dt_gaussian_singlebuffer_size(
 
 dt_gaussian_t *
 dt_gaussian_init(
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const int channels,    // channels per pixel
-    const float *max,      // maximum allowed values per channel for clamping
-    const float *min,      // minimum allowed values per channel for clamping
-    const float sigma,     // gaussian sigma
-    const int order)       // order of gaussian blur
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const int channels,    // channels per pixel
+  const float *max,      // maximum allowed values per channel for clamping
+  const float *min,      // minimum allowed values per channel for clamping
+  const float sigma,     // gaussian sigma
+  const int order)       // order of gaussian blur
 {
   dt_gaussian_t *g = (dt_gaussian_t *)malloc(sizeof(dt_gaussian_t));
   if(!g) return NULL;
@@ -154,9 +154,9 @@ error:
 
 void
 dt_gaussian_blur(
-    dt_gaussian_t *g,
-    float    *in,
-    float    *out)
+  dt_gaussian_t *g,
+  float    *in,
+  float    *out)
 {
 
   const int width = g->width;
@@ -196,7 +196,7 @@ dt_gaussian_blur(
       yp[k] = yb[k];
       xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
     }
- 
+
     for(int j=0; j<height; j++)
     {
       int offset = (i + j * width)*ch;
@@ -228,14 +228,14 @@ dt_gaussian_blur(
       int offset = (i + j * width)*ch;
 
       for(int k=0; k<ch; k++)
-      {      
+      {
         xc[k] = CLAMPF(in[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
         yn[k] = yc[k];
 
         temp[offset+k] += yc[k];
@@ -267,7 +267,7 @@ dt_gaussian_blur(
       yp[k] = yb[k];
       xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
     }
- 
+
     for(int i=0; i<width; i++)
     {
       int offset = (i + j * width)*ch;
@@ -299,14 +299,14 @@ dt_gaussian_blur(
       int offset = (i + j * width)*ch;
 
       for(int k=0; k<ch; k++)
-      {      
+      {
         xc[k] = CLAMPF(temp[offset+k], Labmin[k], Labmax[k]);
 
         yc[k] = (a2 * xn[k]) + (a3 * xa[k]) - (b1 * yn[k]) - (b2 * ya[k]);
 
-        xa[k] = xn[k]; 
-        xn[k] = xc[k]; 
-        ya[k] = yn[k]; 
+        xa[k] = xn[k];
+        xn[k] = xc[k];
+        ya[k] = yn[k];
         yn[k] = yc[k];
 
         out[offset+k] += yc[k];
@@ -319,9 +319,9 @@ dt_gaussian_blur(
 
 void
 dt_gaussian_blur_4c(
-    dt_gaussian_t *g,
-    float    *in,
-    float    *out)
+  dt_gaussian_t *g,
+  float    *in,
+  float    *out)
 {
 
   const int width = g->width;
@@ -361,7 +361,7 @@ dt_gaussian_blur_4c(
     yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
     yp = yb;
 
- 
+
     for(int j=0; j<height; j++)
     {
       int offset = (i + j * width)*ch;
@@ -370,8 +370,8 @@ dt_gaussian_blur_4c(
 
 
       yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                 _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
 
       _mm_store_ps(temp+offset, yc);
 
@@ -394,13 +394,13 @@ dt_gaussian_blur_4c(
       xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
 
       yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                 _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
 
 
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
+      xa = xn;
+      xn = xc;
+      ya = yn;
       yn = yc;
 
       _mm_store_ps(temp+offset, _mm_add_ps(_mm_load_ps(temp+offset), yc));
@@ -428,7 +428,7 @@ dt_gaussian_blur_4c(
     yb = _mm_mul_ps(_mm_set_ps1(coefp), xp);
     yp = yb;
 
- 
+
     for(int i=0; i<width; i++)
     {
       int offset = (i + j * width)*ch;
@@ -436,8 +436,8 @@ dt_gaussian_blur_4c(
       xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
 
       yc = _mm_add_ps(_mm_mul_ps(xc, _mm_set_ps1(a0)),
-           _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
-           _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xp, _mm_set_ps1(a1)),
+                                 _mm_add_ps(_mm_mul_ps(yp, _mm_set_ps1(b1)), _mm_mul_ps(yb, _mm_set_ps1(b2)))));
 
       _mm_store_ps(out+offset, yc);
 
@@ -460,13 +460,13 @@ dt_gaussian_blur_4c(
       xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
 
       yc = _mm_add_ps(_mm_mul_ps(xn, _mm_set_ps1(a2)),
-           _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
-           _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
+                      _mm_sub_ps(_mm_mul_ps(xa, _mm_set_ps1(a3)),
+                                 _mm_add_ps(_mm_mul_ps(yn, _mm_set_ps1(b1)), _mm_mul_ps(ya, _mm_set_ps1(b2)))));
 
 
-      xa = xn; 
-      xn = xc; 
-      ya = yn; 
+      xa = xn;
+      xn = xc;
+      ya = yn;
       yn = yc;
 
       _mm_store_ps(out+offset, _mm_add_ps(_mm_load_ps(out+offset), yc));
@@ -477,7 +477,7 @@ dt_gaussian_blur_4c(
 
 void
 dt_gaussian_free(
-    dt_gaussian_t *g)
+  dt_gaussian_t *g)
 {
   if(!g) return;
   free(g->buf);
@@ -503,7 +503,7 @@ dt_gaussian_init_cl_global()
 
 void
 dt_gaussian_free_cl(
-    dt_gaussian_cl_t *g)
+  dt_gaussian_cl_t *g)
 {
   if(!g) return;
   // be sure we're done with the memory:
@@ -519,17 +519,17 @@ dt_gaussian_free_cl(
 
 dt_gaussian_cl_t *
 dt_gaussian_init_cl(
-    const int devid,
-    const int width,       // width of input image
-    const int height,      // height of input image
-    const int channels,    // channels per pixel
-    const float *max,      // maximum allowed values per channel for clamping
-    const float *min,      // minimum allowed values per channel for clamping
-    const float sigma,     // gaussian sigma
-    const int order)       // order of gaussian blur
+  const int devid,
+  const int width,       // width of input image
+  const int height,      // height of input image
+  const int channels,    // channels per pixel
+  const float *max,      // maximum allowed values per channel for clamping
+  const float *min,      // minimum allowed values per channel for clamping
+  const float sigma,     // gaussian sigma
+  const int order)       // order of gaussian blur
 {
   assert(channels == 1 || channels == 4);
-  
+
   if(!(channels == 1 || channels == 4)) return NULL;
 
   dt_gaussian_cl_t *g = (dt_gaussian_cl_t *)malloc(sizeof(dt_gaussian_cl_t));
@@ -560,21 +560,21 @@ dt_gaussian_init_cl(
   size_t workgroupsize = 0;          // the maximum number of items in a work group
   unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
-   
+
   // make sure blocksize is not too large
   int kernel_gaussian_transpose = (channels == 1) ? g->global->kernel_gaussian_transpose_1c : g->global->kernel_gaussian_transpose_4c;
   size_t blocksize = 64;
   int blockwd;
   int blockht;
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
-     dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
+      dt_opencl_get_kernel_work_group_size(devid, kernel_gaussian_transpose, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] 
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1]
           || blocksize*blocksize > workgroupsize || blocksize*(blocksize+1)*channels*sizeof(float) > localmemsize)
     {
       if(blocksize == 1) break;
-      blocksize >>= 1;    
+      blocksize >>= 1;
     }
 
     blockwd = blockht = blocksize;
@@ -618,9 +618,9 @@ error:
 
 cl_int
 dt_gaussian_blur_cl(
-    dt_gaussian_cl_t *g,
-    cl_mem           dev_in,
-    cl_mem           dev_out)
+  dt_gaussian_cl_t *g,
+  cl_mem           dev_in,
+  cl_mem           dev_out)
 {
   cl_int err = -999;
   const int devid = g->devid;
@@ -755,7 +755,7 @@ dt_gaussian_blur_cl(
 
 void
 dt_gaussian_free_cl_global(
-    dt_gaussian_cl_global_t *g)
+  dt_gaussian_cl_global_t *g)
 {
   if(!g) return;
   // destroy kernels

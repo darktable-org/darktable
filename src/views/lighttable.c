@@ -139,7 +139,7 @@ typedef enum direction
   PGUP = 8,
   PGDOWN = 9,
   CENTER = 10
-}direction;
+} direction;
 
 void switch_layout_to(dt_library_t *lib, int new_layout)
 {
@@ -167,49 +167,49 @@ static void move_view(dt_library_t *lib, direction dir)
   switch (dir)
   {
     case UP:
-      {
-        if (lib->offset >= 1)
-          lib->offset = lib->offset - iir;
-      }
-      break;
+    {
+      if (lib->offset >= 1)
+        lib->offset = lib->offset - iir;
+    }
+    break;
     case DOWN:
-      {
-        lib->offset = lib->offset + iir;
-        while(lib->offset >= lib->collection_count)
-          lib->offset -= iir;
-      }
-      break;
+    {
+      lib->offset = lib->offset + iir;
+      while(lib->offset >= lib->collection_count)
+        lib->offset -= iir;
+    }
+    break;
     case PGUP:
-      {
-          //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
-          lib->offset -= 4*iir;
-          while(lib->offset < 0)
-            lib->offset += iir;
-      }
-      break;
+    {
+      //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
+      lib->offset -= 4*iir;
+      while(lib->offset < 0)
+        lib->offset += iir;
+    }
+    break;
     case PGDOWN:
-      {
-        //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
-        lib->offset += 4*iir;
-        while(lib->offset >= lib->collection_count)
-          lib->offset -= iir;
-      }
-      break;
+    {
+      //TODO: this behavior has not been changed, but it really ought to be fixed so it scrolls a full page up or down.
+      lib->offset += 4*iir;
+      while(lib->offset >= lib->collection_count)
+        lib->offset -= iir;
+    }
+    break;
     case TOP:
-      {
-        lib->offset = 0;
-      }
-      break;
+    {
+      lib->offset = 0;
+    }
+    break;
     case BOTTOM:
-      {
-        lib->offset = lib->collection_count - iir;
-      }
-      break;
+    {
+      lib->offset = lib->collection_count - iir;
+    }
+    break;
     case CENTER:
-      {
-        lib->offset -= lib->offset % iir;
-      }
-      break;
+    {
+      lib->offset -= lib->offset % iir;
+    }
+    break;
     default:
       break;
   }
@@ -235,7 +235,7 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
   if (zoom_anchor_image > lib->collection_count)
     zoom_anchor_image = lib->collection_count;
 
-    // make sure that we don't try to zoom around an image that doesn't exist
+  // make sure that we don't try to zoom around an image that doesn't exist
   if (zoom_anchor_image < 0)
     zoom_anchor_image = 0;
 
@@ -435,9 +435,9 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   if(!lib->statements.main_query)
     return;
 
-   /* safety check added to be able to work with zoom slider. The
-   * communication between zoom slider and lighttable should be handled
-   * differently (i.e. this is a clumsy workaround) */
+  /* safety check added to be able to work with zoom slider. The
+  * communication between zoom slider and lighttable should be handled
+  * differently (i.e. this is a clumsy workaround) */
   if (lib->images_in_row != iir && lib->first_visible_filemanager < 0)
     lib->offset = lib->first_visible_filemanager = 0;
 
@@ -958,81 +958,83 @@ failure:
  */
 void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-    dt_library_t *lib = (dt_library_t *)self->data;
-    int offset = 0;
-    if(lib->track >  2) offset++;
-    if(lib->track < -2) offset--;
-    lib->track = 0;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int offset = 0;
+  if(lib->track >  2) offset++;
+  if(lib->track < -2) offset--;
+  lib->track = 0;
 
-    if (offset) {
-      /* If more than one image is selected, iterate over these. */
-      /* If only one image is selected, scroll through all known images. */
+  if (offset)
+  {
+    /* If more than one image is selected, iterate over these. */
+    /* If only one image is selected, scroll through all known images. */
 
-      int sel_img_count = 0;
-      {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1, &stmt, NULL);
-        if (sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          sel_img_count = sqlite3_column_int(stmt, 0);
-        }
-        sqlite3_finalize(stmt);
-      }
-
-      const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
-
-      /* Build outer select criteria */
-      gchar *filter_criteria = g_strdup_printf(
-            "inner join images on s1.id=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
-            img->filename,
-            (offset > 0) ? ">" : "<",
-            lib->full_preview_id,
-            (offset > 0) ? ">" : "<",
-            img->filename,
-            (offset > 0) ? "" : "DESC",
-            (offset > 0) ? "" : "DESC");
-
-      dt_image_cache_read_release(darktable.image_cache, img);
-
+    int sel_img_count = 0;
+    {
       sqlite3_stmt *stmt;
-      gchar *stmt_string = NULL;
-      if (sel_img_count > 1)
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select COUNT(*) from selected_images", -1, &stmt, NULL);
+      if (sqlite3_step(stmt) == SQLITE_ROW)
       {
-        stmt_string = g_strdup_printf(
-            "select images.id as id from (select imgid as id from selected_images) as s1 %s",
-            filter_criteria);
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
+        sel_img_count = sqlite3_column_int(stmt, 0);
       }
-      else
-      {
-        /* We need to augment the current main query a bit to fetch the
-         * row we need. */
-        const char *main_query = sqlite3_sql(lib->statements.main_query);
-        stmt_string = g_strdup_printf(
-                "select images.id as id from (%s) as s1 %s",
-                main_query, filter_criteria);
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-
-      }
-      g_free(stmt_string);
-      g_free(filter_criteria);
-
-      if(sqlite3_step(stmt) == SQLITE_ROW) {
-        lib->full_preview_id = sqlite3_column_int(stmt, 0);
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->full_preview_id);
-      }
-
       sqlite3_finalize(stmt);
     }
 
-    lib->image_over = DT_VIEW_DESERT;
-    cairo_set_source_rgb (cr, .1, .1, .1);
-    cairo_paint(cr);
-    dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, lib->full_preview_id);
+
+    /* Build outer select criteria */
+    gchar *filter_criteria = g_strdup_printf(
+                               "inner join images on s1.id=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
+                               img->filename,
+                               (offset > 0) ? ">" : "<",
+                               lib->full_preview_id,
+                               (offset > 0) ? ">" : "<",
+                               img->filename,
+                               (offset > 0) ? "" : "DESC",
+                               (offset > 0) ? "" : "DESC");
+
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    sqlite3_stmt *stmt;
+    gchar *stmt_string = NULL;
+    if (sel_img_count > 1)
+    {
+      stmt_string = g_strdup_printf(
+                      "select images.id as id from (select imgid as id from selected_images) as s1 %s",
+                      filter_criteria);
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
+    }
+    else
+    {
+      /* We need to augment the current main query a bit to fetch the
+       * row we need. */
+      const char *main_query = sqlite3_sql(lib->statements.main_query);
+      stmt_string = g_strdup_printf(
+                      "select images.id as id from (%s) as s1 %s",
+                      main_query, filter_criteria);
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+
+    }
+    g_free(stmt_string);
+    g_free(filter_criteria);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      lib->full_preview_id = sqlite3_column_int(stmt, 0);
+      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->full_preview_id);
+    }
+
+    sqlite3_finalize(stmt);
+  }
+
+  lib->image_over = DT_VIEW_DESERT;
+  cairo_set_source_rgb (cr, .1, .1, .1);
+  cairo_paint(cr);
+  dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
@@ -1095,7 +1097,7 @@ go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
   if (layout == 1)
     move_view(lib, BOTTOM);
   else
-     lib->offset = 0x1fffffff;
+    lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1146,8 +1148,8 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 
 static gboolean
 realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                             guint keyval, GdkModifierType modifier,
-                             gpointer data)
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1183,13 +1185,13 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
         dt_ratings_apply_to_selection(num);
       else
         dt_ratings_apply_to_image(mouse_over_id, num);
-        //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
+      //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
       break;
     }
     default:
       break;
 
-    dt_control_queue_redraw_center();
+      dt_control_queue_redraw_center();
   }
   return TRUE;
 }
@@ -1317,7 +1319,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
       if(zoom < 1)
         zoom = 1;
       else if (layout == 1)
-       zoom_around_image(lib, x, y, self->width, self->height, zoom+1, zoom);
+        zoom_around_image(lib, x, y, self->width, self->height, zoom+1, zoom);
     }
     else
     {

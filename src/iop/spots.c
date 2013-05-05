@@ -301,7 +301,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // we don't modify most of the image:
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(d,out,in,roi_in,roi_out)
+  #pragma omp parallel for schedule(static) default(none) shared(d,out,in,roi_in,roi_out)
 #endif
   for (int k=0; k<roi_out->height; k++)
   {

@@ -272,11 +272,11 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
         CameraFile *destination;
         const char *output_path = _dispatch_request_image_path(c, camera);
         if(!output_path)
-	  output_path="/tmp";
+          output_path="/tmp";
 
-	const char *fname = _dispatch_request_image_filename(c, fp.name,cam);
-	if(!fname)
-	  break;
+        const char *fname = _dispatch_request_image_filename(c, fp.name,cam);
+        if(!fname)
+          break;
 
         char *output = g_build_filename (output_path,fname,(char *)NULL);
 
@@ -801,7 +801,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
 
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname)
-	continue;
+        continue;
 
       char *output = g_build_filename(output_path,fname,(char *)NULL);
 
@@ -865,13 +865,16 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_PREVIEW,preview,c->gpcontext) < GP_OK )
           {
             // No preview for file lets check image size to se if we should download full image for preview...
-            if( cfi.file.size > 0  && cfi.file.size < 512000 ) {
+            if( cfi.file.size > 0  && cfi.file.size < 512000 )
+            {
               if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_NORMAL,preview,c->gpcontext) < GP_OK )
               {
                 preview=NULL;
                 dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive preview of file %s\n",filename);
               }
-            } else if (!strncmp(c->active_camera->port, "disk:", 5)) {
+            }
+            else if (!strncmp(c->active_camera->port, "disk:", 5))
+            {
               int ret;
               char fullpath[512];
               snprintf(fullpath,512,"%s/%s/%s",c->active_camera->port+5, path, filename);

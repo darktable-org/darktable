@@ -360,11 +360,11 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     g_object_set_data (G_OBJECT (renderer), "column", (gint *)DT_STYLE_ITEMS_COL_ENABLED);
     g_signal_connect (renderer, "toggled", G_CALLBACK (_gui_styles_item_new_toggled), sd);
     gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (sd->items_new),
-                                                 -1, _("include"),
-                                                 renderer,
-                                                 "active",
-                                                 DT_STYLE_ITEMS_COL_ENABLED,
-                                                 NULL);
+        -1, _("include"),
+        renderer,
+        "active",
+        DT_STYLE_ITEMS_COL_ENABLED,
+        NULL);
   }
 
   /* update */
@@ -376,12 +376,12 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
     g_signal_connect (renderer, "toggled", G_CALLBACK (_gui_styles_update_toggled), sd);
 
     gtk_tree_view_insert_column_with_attributes
-      (GTK_TREE_VIEW (sd->items),
-       -1, _("update"),
-       renderer,
-       "active",
-       DT_STYLE_ITEMS_COL_UPDATE,
-       NULL);
+    (GTK_TREE_VIEW (sd->items),
+     -1, _("update"),
+     renderer,
+     "active",
+     DT_STYLE_ITEMS_COL_UPDATE,
+     NULL);
   }
 
   /* name */
@@ -396,11 +396,11 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
       NULL);
   if (edit)
     gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (sd->items_new),
-      -1, _("item"),
-      renderer,
-      "text",
-      DT_STYLE_ITEMS_COL_NAME,
-      NULL);
+        -1, _("item"),
+        renderer,
+        "text",
+        DT_STYLE_ITEMS_COL_NAME,
+        NULL);
 
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection(GTK_TREE_VIEW(sd->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model (GTK_TREE_VIEW(sd->items), GTK_TREE_MODEL(liststore));
