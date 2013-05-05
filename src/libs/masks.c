@@ -694,8 +694,8 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
           {
             dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
             bd->masks_shown = 1;
-            dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
-            gtk_widget_queue_draw (bd->masks_combo);
+            GTK_TOGGLE_BUTTON(bd->masks_edit)->active = 1;
+            gtk_widget_queue_draw (bd->masks_edit);
           }
         }
       }
