@@ -20,14 +20,16 @@
 
 
 /** runs a command in the DT lua environement, command in any valid lua string */
-void dt_lua_dostring(lua_State *L,const char* command);
+int dt_lua_dostring(lua_State *L,const char* command);
 
 /** executes a CFunction through dt_lua_do_chunk, no parameter, no result */
-void dt_lua_protect_call(lua_State *L,lua_CFunction func);
+int dt_lua_protect_call(lua_State *L,lua_CFunction func);
 
 /** runs the content of a file */
-void dt_lua_dofile(lua_State *L,const char* filename);
+int dt_lua_dofile(lua_State *L,const char* filename);
 
+/** directly run a lua chunk */
+int dt_lua_do_chunk(lua_State *L,int nargs,int nresults);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

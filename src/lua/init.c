@@ -27,6 +27,7 @@
 #include "lua/print.h"
 #include "lua/types.h"
 #include "lua/modules.h"
+#include "lua/storage.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -54,6 +55,7 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_preferences,
   dt_lua_init_database,
   dt_lua_init_gui,
+  dt_lua_init_storages,
   NULL
 };
 
