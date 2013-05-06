@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-05 16:04+0200\n"
-"PO-Revision-Date: 2013-05-06 17:14+0200\n"
+"POT-Creation-Date: 2013-05-06 17:16+0200\n"
+"PO-Revision-Date: 2013-05-06 17:17+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -860,7 +860,9 @@ msgstr "kopierar %d bilder"
 #: ../src/control/jobs/control_jobs.c:928
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr "misslyckades att hämta parametrar från lagringsmodul `%s', avbryter exporten.."
+msgstr ""
+"misslyckades att hämta parametrar från lagringsmodul `%s', avbryter "
+"exporten.."
 
 #: ../src/control/jobs/control_jobs.c:932
 #, c-format
@@ -1024,7 +1026,7 @@ msgid "double click to reset"
 msgstr "dubbelklicka för återställning"
 
 #: ../src/develop/blend_gui.c:1027 ../src/develop/blend_gui.c:1065
-#: ../src/develop/masks/masks.c:951
+#: ../src/develop/masks/masks.c:936
 msgid "no mask used"
 msgstr "ingen markering används"
 
@@ -1042,8 +1044,7 @@ msgid "add circular shape"
 msgstr "lägg till cirkel"
 
 #: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:534
-#: ../src/develop/masks/masks.c:804 ../src/libs/masks.c:777
-#: ../src/libs/masks.c:800 ../src/libs/masks.c:1344
+#: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
 msgstr "lägg till kurva"
 
@@ -1071,7 +1072,9 @@ msgstr "ridad och parametermarkering"
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
-msgstr "slå på blandningsläge: över hela bilden, med ritad markering, med parametermarkering, eller en kombination av båda"
+msgstr ""
+"slå på blandningsläge: över hela bilden, med ritad markering, med "
+"parametermarkering, eller en kombination av båda"
 
 #: ../src/develop/blend_gui.c:1307
 msgid "blend mode"
@@ -1221,7 +1224,9 @@ msgstr "inneslutande & inverterad"
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
-msgstr "hur individuella ritad markering samt olika kanaler i parametermarkering ska kombineras"
+msgstr ""
+"hur individuella ritad markering samt olika kanaler i parametermarkering ska "
+"kombineras"
 
 #: ../src/develop/blend_gui.c:1434
 msgid "invert mask"
@@ -7628,30 +7633,21 @@ msgstr "återställ"
 msgid "could not allocate buffer for blending"
 msgstr "kunde inte tilldela buffert för blandning"
 
-#: ../src/develop/masks/masks.c:797
-msgid "don't use masks"
-msgstr "använd inte masker"
+#: ../src/develop/masks/masks.c:826 ../src/libs/masks.c:804
+msgid "add existing shape"
+msgstr "lägg till existerande form"
 
-#. add new shapes
-#: ../src/develop/masks/masks.c:802
-msgid "add circle shape"
-msgstr "lägg till cirkelform"
+#: ../src/develop/masks/masks.c:853
+msgid "use same shapes as"
+msgstr "använd samma form som"
 
-#: ../src/develop/masks/masks.c:844
-msgid "<add existing shape"
-msgstr "<lägg till existerande form"
-
-#: ../src/develop/masks/masks.c:869
-msgid "<use same shapes as"
-msgstr "<använd samma form som"
+#: ../src/develop/masks/masks.c:933
+msgid "shapes used"
+msgstr "använd form"
 
 #: ../src/libs/masks.c:54
 msgid "mask manager"
 msgstr "maskhanterare"
-
-#: ../src/libs/masks.c:804
-msgid "add existing shape"
-msgstr "lägg till existerande form"
 
 #: ../src/libs/masks.c:870
 msgid "delete this shape"
@@ -7688,6 +7684,15 @@ msgstr "läge : uteslutning"
 #: ../src/libs/masks.c:1339
 msgid "created shapes"
 msgstr "skapa former"
+
+#~ msgid "don't use masks"
+#~ msgstr "använd inte masker"
+
+#~ msgid "add circle shape"
+#~ msgstr "lägg till cirkelform"
+
+#~ msgid "<add existing shape"
+#~ msgstr "<lägg till existerande form"
 
 #~ msgid "only, if.."
 #~ msgstr "enbart om.."
