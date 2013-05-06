@@ -87,7 +87,17 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
   float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
+  
+  //we first don't do anything if we are inside a scrolling session
 
+  if (gui->scrollx != 0.0f && gui->scrolly != 0.0f)
+  {
+    float as2 = 0.015f/zoom_scale;
+    if ((gui->scrollx-pzx < as2 && gui->scrollx-pzx > -as2) &&
+        (gui->scrolly-pzy < as2 && gui->scrolly-pzy > -as2)) return 1;
+    gui->scrollx = gui->scrolly = 0.0f;
+  }
+  
   //if a form is in edit mode, we first execute the corresponding event
   if (gui->group_edited >= 0)
   {

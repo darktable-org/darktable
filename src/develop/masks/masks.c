@@ -506,10 +506,14 @@ int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, do
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-
-  if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,0.0,0.0,up,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_mouse_scrolled(module,0.0,0.0,up,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,0.0,0.0,up,state,form,gui);
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+  
+  if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,pzx,pzy,up,state,form,gui);
 
   return 0;
 }
@@ -560,6 +564,7 @@ void dt_masks_init_formgui(dt_develop_t *dev)
   dev->form_gui->points = NULL;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
   dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
+  dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
   dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected = dev->form_gui->point_selected = dev->form_gui->feather_selected = -1;

@@ -121,7 +121,7 @@ typedef struct dt_masks_form_gui_t
   GList *points;  //list of dt_masks_form_gui_points_t
 
   //values for mouse positions, etc...
-  float posx, posy, dx, dy;
+  float posx, posy, dx, dy, scrollx,scrolly;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;

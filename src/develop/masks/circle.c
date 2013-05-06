@@ -96,6 +96,12 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
 {
   if (gui->form_selected)
   {
+    //we register the current position
+    if (gui->scrollx == 0.0f && gui->scrolly == 0.0f)
+    {
+      gui->scrollx = pzx;
+      gui->scrolly = pzy;
+    }
     if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
       //we try to change the opacity
