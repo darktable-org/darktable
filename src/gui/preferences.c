@@ -1343,6 +1343,7 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
 
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
+  /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -1350,6 +1351,7 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->maker = GTK_ENTRY(gtk_entry_new());
+  /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
@@ -1357,6 +1359,7 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
   g->lens  = GTK_ENTRY(gtk_entry_new());
+  /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
