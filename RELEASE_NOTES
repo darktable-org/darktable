@@ -10,3 +10,41 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+
+New noise profiles
+ * Canon EOS 450D / Kiss X2
+ * Canon EOS 1100D / REBEL T3
+ * Canon EOS 1D Mark II
+ * Canon EOS 1D Mark III
+ * All Canon Model names are now recognized, e.g. Canon EOS 350D and Canon EOS 350D DIGITAL and Canon EOS DIGITAL REBEL XT and Canon EOS Kiss Digital N point to the same camera.
+ * Olympus E-520
+ * Olympus E-1
+ * Pentax K-30
+ * Additional data for Pentax K-5 II
+ * Nikon D7100
+ * Sony A57
+
+White balances, color matrices:
+ * Fix issues with different camera model names for various Canon cameras (see above)
+ * White balance for Panasonic DMC-GH2
+
+Bugfixes:
+ * new RawSpeed version r537
+ * Facebook export now allows HQ images (up to 2048px)
+ * Blend mode "vividlight" should work for NaNs
+ * Whitebalance is now relative to daylight, not to camera white balance
+ * Only one temperature slider in white balance
+ * Some fixes to the zoom behaviour in darkroom mode
+ * New lensfun geometries now supported (with lensfun >= 0.2.7)
+ * More coherent bauhaus UI for the split toning module
+ * the color transfer module is now marked as deprecated. Will be superseeded by color mapping in the next major release.
+ * Fix possible deadlock, possible memory leak and null pointer dereference
+ * Status message in top bar should be updated more frequently now
+ * Some more elaborate status messages: 
+   * if lens/camera not found in the lens correction module
+   * if export failed
+ * Option for parallell export threads removed from config, too dangerous
+ * Option for thumbnail cache now specified in MB
+ * Updated purge_non_existing_images.sh script
+ * CLI option -d nan gives per-module output of NaN values
+ * Some minor renamings, typo fixings...
