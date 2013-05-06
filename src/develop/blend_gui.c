@@ -1022,14 +1022,16 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
     snprintf(txt,512,"%d shapes used",g_list_length(grp->points));
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
-  else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
+  else
+  {
+    dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
+    bd->masks_shown = 0;
+    //reset the gui
+    dt_masks_set_edit_mode(module, FALSE);
+  }
   dt_bauhaus_combobox_set(bd->masks_combo, 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
-#if 0
-  if (bd->masks_shown) dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, CPF_ACTIVE);
-  else dt_bauhaus_widget_set_quad_paint(bd->masks_combo, dtgtk_cairo_paint_masks_eye, 0);
-#endif
 
   //update buttons status
   int b1=0,b2=0;

@@ -623,9 +623,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
   }
   if (!(module->flags()&IOP_FLAGS_NO_MASKS))
   {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), value);
     bd->masks_shown = value;
-    gtk_widget_queue_draw(bd->masks_combo);
   }
   dt_masks_change_form_gui(grp);
   if (value && form) dt_dev_masks_selection_change(darktable.develop,form->formid,FALSE);
@@ -768,10 +766,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   //we ensure that the module has focus
   dt_iop_module_t *module = *m;
   dt_iop_request_focus(module);
-  //dt_masks_form_t *mgrp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  //int nbf = 0;
-  //if (mgrp) nbf = g_list_length(mgrp->points);
 
   //we determine a higher approx of the entry number
   int nbe = 5+g_list_length(darktable.develop->forms)+g_list_length(darktable.develop->iop);
@@ -790,20 +785,6 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
   int pos = 0;
   cids[pos++] = 0;  //nothing to do for the first entry (already here)
 
-#if 0
-  //delete all masks
-  if (nbf>0)
-  {
-    dt_bauhaus_combobox_add(combo,_("don't use masks"));
-    cids[pos++] = -1000000;
-  }
-
-  //add new shapes
-  dt_bauhaus_combobox_add(combo,_("add circle shape"));
-  cids[pos++] = -2000001;
-  dt_bauhaus_combobox_add(combo,_("add curve shape"));
-  cids[pos++] = -2000002;
-#endif
 
   //add existing shapes
   GList *forms = g_list_first(darktable.develop->forms);
@@ -841,7 +822,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
     {
       if (nb==0)
       {
-        dt_bauhaus_combobox_add(combo,_("<add existing shape"));
+        char str2[256] = "<";
+        strcat(str2,_("add existing shape"));
+        dt_bauhaus_combobox_add(combo,str2);
         cids[pos++] = 0;  //nothing to do
       }
       dt_bauhaus_combobox_add(combo,str);
@@ -866,7 +849,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       {
         if (nb==0)
         {
-          dt_bauhaus_combobox_add(combo,_("<use same shapes as"));
+          char str2[256] = "<";
+          strcat(str2,_("use same shapes as"));
+          dt_bauhaus_combobox_add(combo,str2);
           cids[pos++] = 0;  //nothing to do
         }
         char str[256] = "";
@@ -945,7 +930,7 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
   if (nb>0)
   {
     char txt[512];
-    snprintf(txt,512,"%d shapes used",nb);
+    snprintf(txt,512,"%d %s",nb,_("shapes used"));
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
   else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));

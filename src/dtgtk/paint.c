@@ -378,21 +378,30 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_set_source_rgba(cr, 1,1,1,0.8);
 
   if( !(flags&CPF_ACTIVE) )
-    cairo_set_source_rgba(cr, 1,1,1,0.15);
+    cairo_set_source_rgba(cr, 1,1,1,0.25);
 
-  cairo_new_sub_path (cr);
-  cairo_arc (cr, 0.5, 0.5, 0.1,0, 6.2832);
+  double dashed[] = {0.2, 0.2};
+  int len  = sizeof(dashed) / sizeof(dashed[0]);
+  cairo_set_dash(cr, dashed, len, 0);
+  
+  cairo_arc (cr, 0.75, 0.75, 0.75, 2.8, 4.7124);
+  cairo_set_line_width(cr,0.1);
   cairo_stroke(cr);
-
-  cairo_translate(cr, 0,0.20);
-  cairo_save(cr);
-  cairo_scale(cr,1.0,0.60);
-  cairo_new_sub_path (cr);
-  cairo_arc (cr, 0.5, 0.5, 0.45, 0, 6.2832);
-  cairo_restore(cr);
+  
+  cairo_move_to(cr,0.4,0.1);
+  cairo_line_to(cr,0.3,0.8);
+  cairo_line_to(cr,0.55,0.716667);
+  cairo_line_to(cr,0.65,1.016667);
+  cairo_line_to(cr,0.75,0.983333);  
+  cairo_line_to(cr,0.65,0.683333);
+  cairo_line_to(cr,0.9,0.6);
+  cairo_line_to(cr,0.4,0.1);
+  
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, 0,0,0,0.8);
+  cairo_set_dash(cr, dashed, 0, 0);
   cairo_stroke(cr);
-  cairo_identity_matrix(cr);
-
+  
   cairo_identity_matrix(cr);
 }
 
