@@ -157,4 +157,4 @@ src/views/view.c
 src/develop/blend.c
 src/develop/masks/masks.c
 src/libs/masks.c
-
+src/lua/preferences.c
