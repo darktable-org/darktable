@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2013-04-22 14:21+0100\n"
+"POT-Creation-Date: 2013-05-07 11:23+0100\n"
+"PO-Revision-Date: 2013-05-07 11:29+0100\n"
 "Last-Translator: Jose Carlos <jcrc@portugalmail.com>\n"
 "Language-Team: \n"
 "Language: pt_PT\n"
@@ -851,10 +851,10 @@ msgid "copying %d images"
 msgstr "copiando %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:928
-#, fuzzy, c-format
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"falha ao obter parâmetros do módulo de armazenamento, abortando a "
+"falha ao obter parâmetros do módulo de armazenamento  `%s', abortando a "
 "exportação..."
 
 #: ../src/control/jobs/control_jobs.c:932
@@ -1002,7 +1002,7 @@ msgstr "reiniciar parâmetros da máscara de mistura"
 
 #: ../src/develop/blend_gui.c:918
 msgid "invert all channel's polarities"
-msgstr ""
+msgstr "inverter polaridade em todos os canais"
 
 #: ../src/develop/blend_gui.c:929 ../src/develop/blend_gui.c:932
 msgid "toggle polarity. best seen by enabling 'display mask'"
@@ -1031,7 +1031,7 @@ msgstr "máscaras"
 
 #: ../src/develop/blend_gui.c:1073
 msgid "show and edit mask elements"
-msgstr ""
+msgstr "mostrar e editar os elementos da máscara"
 
 #: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:541
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
@@ -1052,23 +1052,24 @@ msgid "uniformly"
 msgstr "uniformemente"
 
 #: ../src/develop/blend_gui.c:1285
-#, fuzzy
 msgid "drawn mask"
-msgstr "exibir máscara"
+msgstr "máscara desenhada"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
-msgstr ""
+msgstr "máscara parametrizada"
 
 #: ../src/develop/blend_gui.c:1297
 msgid "drawn & parametric mask"
-msgstr ""
+msgstr "máscara desenhada e parametrizada"
 
 #: ../src/develop/blend_gui.c:1302
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
+"activar mistura: uniformemente, com máscara desenhada, com máscara "
+"parametrizada ou combinação de ambas"
 
 #: ../src/develop/blend_gui.c:1307
 msgid "blend mode"
@@ -1079,9 +1080,8 @@ msgid "normal"
 msgstr "normal"
 
 #: ../src/develop/blend_gui.c:1312
-#, fuzzy
 msgid "normal bounded"
-msgstr "sem limite"
+msgstr "limite normal"
 
 #: ../src/develop/blend_gui.c:1315 ../src/libs/live_view.c:386
 msgid "lighten"
@@ -1172,21 +1172,20 @@ msgid "choose blending mode"
 msgstr "escolher modo de mistura"
 
 #: ../src/develop/blend_gui.c:1383
-#, fuzzy
 msgid "difference (deprecated)"
-msgstr "diferença"
+msgstr "diferença (obsoleto)"
 
 #: ../src/develop/blend_gui.c:1388
 msgid "inverse (deprecated)"
-msgstr ""
+msgstr "inverso (obsoleto)"
 
 #: ../src/develop/blend_gui.c:1393
 msgid "normal (deprecated)"
-msgstr ""
+msgstr "normal (obsoleto)"
 
 #: ../src/develop/blend_gui.c:1398
 msgid "unbounded (deprecated)"
-msgstr ""
+msgstr "sem limite (obsoleto)"
 
 #: ../src/develop/blend_gui.c:1404 ../src/iop/watermark.c:1049
 msgid "opacity"
@@ -1197,46 +1196,44 @@ msgid "set the opacity of the blending"
 msgstr "definir a opacidade da mistura"
 
 #: ../src/develop/blend_gui.c:1413
-#, fuzzy
 msgid "combine masks"
-msgstr "não usar máscaras"
+msgstr "combinar máscaras"
 
 #: ../src/develop/blend_gui.c:1415
-#, fuzzy
 msgid "exclusive"
-msgstr "exclusion"
+msgstr "exclusivo"
 
 #: ../src/develop/blend_gui.c:1418
-#, fuzzy
 msgid "inclusive"
-msgstr "incluir"
+msgstr "inclusivo"
 
 #: ../src/develop/blend_gui.c:1421
 msgid "exclusive & inverted"
-msgstr ""
+msgstr "exclusiva & invertida"
 
 #: ../src/develop/blend_gui.c:1424
 msgid "inclusive & inverted"
-msgstr ""
+msgstr "inclusiva & invertida"
 
 #: ../src/develop/blend_gui.c:1428
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
+"como combinar uma máscara desenhada  com diferentes canais de uma máscara "
+"parametrizada"
 
 #: ../src/develop/blend_gui.c:1434
-#, fuzzy
 msgid "invert mask"
-msgstr "inverter"
+msgstr "inverter máscara"
 
 #: ../src/develop/blend_gui.c:1443
 msgid "apply mask in normal or inverted mode"
-msgstr ""
+msgstr "aplicar máscara em modo normal ou invertido"
 
 #: ../src/develop/blend_gui.c:1450
 msgid "mask blur"
-msgstr "máscara de desfocagem"
+msgstr "desfocagem da máscara"
 
 #: ../src/develop/blend_gui.c:1452
 msgid "radius for gaussian blur of blend mask"
@@ -1247,10 +1244,9 @@ msgid "display mask"
 msgstr "exibir máscara"
 
 #: ../src/develop/blend_gui.c:1465
-#, fuzzy
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
-"temporariamente desligar a máscara de mistura. apenas para o módulo em foco."
+"temporariamente desligar a máscara de mistura. apenas para o módulo em foco"
 
 #: ../src/develop/develop.c:953
 #, c-format
@@ -1565,11 +1561,12 @@ msgstr "cópia de segurança externa"
 
 #: ../src/gui/camera_import_dialog.c:385
 msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
+"external backup is an option to automatic do a backup of the imported "
+"image(s) to another physical location, when activated it does looks for "
+"specified backup foldername of mounted devices on your system... each found "
+"folder is used as basedirectory in the above storage structure and when a "
+"image are downloaded from camera it is replicated to found backup "
+"destinations."
 msgstr ""
 "cópia de segurança externa é uma opção para fazer automaticamente uma cópia "
 "de segurança das imagens importadas, numa outra localização física; quando "
@@ -4364,7 +4361,6 @@ msgid "camera/lens not found - please select manually"
 msgstr "câmara/lente não encontrada - por favor seleccione manualmente"
 
 #: ../src/iop/lens.c:1283
-#, fuzzy
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "tente localizar a sua câmara/lente nos dois menus acima"
 
@@ -4477,20 +4473,19 @@ msgstr "equirectangular"
 
 #: ../src/iop/lens.c:1845
 msgid "orthographic"
-msgstr ""
+msgstr "ortográfica"
 
 #: ../src/iop/lens.c:1846
 msgid "stereographic"
-msgstr ""
+msgstr "estereográfica"
 
 #: ../src/iop/lens.c:1847
 msgid "equisolid angle"
-msgstr ""
+msgstr "ângulo equisólido"
 
 #: ../src/iop/lens.c:1848
-#, fuzzy
 msgid "thoby fish-eye"
-msgstr "olho de peixe"
+msgstr "thoby olho de peixe"
 
 #: ../src/iop/lens.c:1856
 msgid "auto scale"
@@ -7654,7 +7649,6 @@ msgid "redo"
 msgstr "refazer"
 
 #: ../src/develop/blend.c:1767 ../src/develop/blend.c:1967
-#, fuzzy
 msgid "could not allocate buffer for blending"
 msgstr "não foi possível alocar buffer para a mistura"
 
@@ -7663,14 +7657,12 @@ msgid "add existing shape"
 msgstr "adicionar forma existente"
 
 #: ../src/develop/masks/masks.c:858
-#, fuzzy
 msgid "use same shapes as"
-msgstr "<use same shapes as"
+msgstr "usar forma igual a"
 
 #: ../src/develop/masks/masks.c:938
-#, fuzzy
 msgid "shapes used"
-msgstr "forma"
+msgstr "formas usadas"
 
 #: ../src/libs/masks.c:54
 msgid "mask manager"
@@ -7685,9 +7677,8 @@ msgid "remove from group"
 msgstr "remover do grupo"
 
 #: ../src/libs/masks.c:884
-#, fuzzy
 msgid "group the forms"
-msgstr "agrupas as formas"
+msgstr "agrupar as formas"
 
 #: ../src/libs/masks.c:893
 msgid "use inversed shape"
@@ -7714,9 +7705,17 @@ msgid "created shapes"
 msgstr "formas criadas"
 
 #: ../src/lua/preferences.c:333
-#, fuzzy
 msgid "lua options"
-msgstr "opções de interface gráfica"
+msgstr "opções lua"
+
+#~ msgid "don't use masks"
+#~ msgstr "não usar máscaras"
+
+#~ msgid "add circle shape"
+#~ msgstr "adicionar forma circular"
+
+#~ msgid "<add existing shape"
+#~ msgstr "<adicionar forma existente"
 
 #~ msgid "only, if.."
 #~ msgstr "apenas se..."
@@ -7729,12 +7728,6 @@ msgstr "opções de interface gráfica"
 
 #~ msgid "Flickr account not authenticated"
 #~ msgstr "Flickr account not authenticated"
-
-#~ msgid "add circle shape"
-#~ msgstr "adicionar forma circular"
-
-#~ msgid "<add existing shape"
-#~ msgstr "<adicionar forma existente"
 
 #~ msgid "export multiple images in parallel"
 #~ msgstr "exportar várias imagens em paralelo"
