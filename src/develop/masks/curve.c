@@ -1599,6 +1599,7 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     int seg = 1, seg2 = 0;
     for (int i=nb*3; i<gpt->points_count; i++)
     {
+      cairo_line_to(cr,gpt->points[i*2]+dx,gpt->points[i*2+1]+dy);
       //we decide to hightlight the form segment by segment
       if (gpt->points[i*2+1] == gpt->points[seg*6+3] && gpt->points[i*2] == gpt->points[seg*6+2])
       {
@@ -1614,8 +1615,8 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         //and we update the segment number
         seg = (seg+1)%nb;
         seg2++;
+        cairo_move_to(cr,gpt->points[i*2]+dx,gpt->points[i*2+1]+dy);
       }
-      cairo_line_to(cr,gpt->points[i*2]+dx,gpt->points[i*2+1]+dy);
     }
   }
 
