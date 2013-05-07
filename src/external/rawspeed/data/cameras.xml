@@ -1858,7 +1858,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="155" white="4095"/>
 		<Sensor black="165" white="4095" iso_list="6400"/>
 		<Sensor black="165" white="2900" iso_list="12800"/>
@@ -1867,6 +1867,54 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
+        <Camera make="Panasonic" model = "DMC-GH3" mode="3:2">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">GREEN</Color>
+                        <Color x="1" y="0">BLUE</Color>
+                        <Color x="0" y="1">RED</Color>
+                        <Color x="1" y="1">GREEN</Color>
+                </CFA>
+                <Crop x="0" y="0" width="-192" height="0"/>
+                <Sensor black="155" white="4095"/>
+                <Sensor black="165" white="4095" iso_list="6400"/>
+                <Sensor black="165" white="2900" iso_list="12800"/>
+                <Sensor black="170" white="1800" iso_list="25600"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
+        <Camera make="Panasonic" model = "DMC-GH3" mode="16:9">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">GREEN</Color>
+                        <Color x="1" y="0">BLUE</Color>
+                        <Color x="0" y="1">RED</Color>
+                        <Color x="1" y="1">GREEN</Color>
+                </CFA>
+                <Crop x="0" y="0" width="-192" height="0"/>
+                <Sensor black="155" white="4095"/>
+                <Sensor black="165" white="4095" iso_list="6400"/>
+                <Sensor black="165" white="2900" iso_list="12800"/>
+                <Sensor black="170" white="1800" iso_list="25600"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
+        <Camera make="Panasonic" model = "DMC-GH3" mode="1:1">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">GREEN</Color>
+                        <Color x="1" y="0">BLUE</Color>
+                        <Color x="0" y="1">RED</Color>
+                        <Color x="1" y="1">GREEN</Color>
+                </CFA>
+                <Crop x="0" y="0" width="0" height="0"/>
+                <Sensor black="155" white="4095"/>
+                <Sensor black="165" white="4095" iso_list="6400"/>
+                <Sensor black="165" white="2900" iso_list="12800"/>
+                <Sensor black="170" white="1800" iso_list="25600"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
 	<!-- Default Guess -->
 	<Camera make="Panasonic" model = "DMC-GH3">
 		<CFA width="2" height="2">
