@@ -634,11 +634,11 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
 }
 
 static void
-_blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+_blendop_masks_show_and_edit(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
-  dt_masks_iop_edit_toggle_callback(widget, self);
+  dt_masks_iop_edit_toggle_callback(togglebutton, self);
 }
 
 
@@ -1061,7 +1061,7 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *hbox = gtk_hbox_new(FALSE, 0);
 
     bd->masks_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_combo, _("masks"));
+    dt_bauhaus_widget_set_label(bd->masks_combo, _("drawn mask"));
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
     g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
@@ -1069,7 +1069,7 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
 
     bd->masks_edit = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-    g_signal_connect(G_OBJECT(bd->masks_edit), "button-press-event", G_CALLBACK(_blendop_masks_show_and_edit), module);
+    g_signal_connect(G_OBJECT(bd->masks_edit), "toggled", G_CALLBACK(_blendop_masks_show_and_edit), module);
     g_object_set(G_OBJECT(bd->masks_edit), "tooltip-text", _("show and edit mask elements"), (char *)NULL);
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_edit), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);

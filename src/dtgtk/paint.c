@@ -375,10 +375,9 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_scale(cr,s,s);
   cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  cairo_set_source_rgba(cr, 1,1,1,0.8);
 
-  if( !(flags&CPF_ACTIVE) )
-    cairo_set_source_rgba(cr, 1,1,1,0.25);
+  if( (flags&CPF_ACTIVE) )
+    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
 
   double dashed[] = {0.2, 0.2};
   int len  = sizeof(dashed) / sizeof(dashed[0]);
@@ -396,11 +395,7 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_line_to(cr,0.65,0.683333);
   cairo_line_to(cr,0.9,0.6);
   cairo_line_to(cr,0.4,0.1);
-  
   cairo_fill(cr);
-  cairo_set_source_rgba(cr, 0,0,0,0.8);
-  cairo_set_dash(cr, dashed, 0, 0);
-  cairo_stroke(cr);
   
   cairo_identity_matrix(cr);
 }

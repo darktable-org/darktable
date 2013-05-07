@@ -194,7 +194,7 @@ void dt_masks_gui_form_test_create (dt_masks_form_t *form, dt_masks_form_gui_t *
 void dt_masks_gui_form_save_creation (struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui);
 void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 
-void dt_masks_iop_edit_toggle_callback(GtkWidget *widget, struct dt_iop_module_t *module);
+void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_iop_module_t *module);
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
