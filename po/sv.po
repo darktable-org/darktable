@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2013-05-06 17:17+0200\n"
+"PO-Revision-Date: 2013-05-07 15:06+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -245,14 +245,13 @@ msgid "core options"
 msgstr "grundinställningar"
 
 #: ../build/src/preferences_gen.h:1337
-#, fuzzy
 msgid "memory in megabytes to use for mipmap cache"
-msgstr "minnesallokering i bytes för mipmap cache"
+msgstr "minne i megabyte att användas till mipmap cache"
 
 #: ../build/src/preferences_gen.h:1352
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%<PRId64>'"
-msgstr "dubbelklicka för att återställa till `%d'"
+msgstr "dubbelklicka för att återställa till `%<PRId64>'"
 
 #: ../build/src/preferences_gen.h:1362
 msgid "number of background threads"
@@ -272,32 +271,23 @@ msgid "host memory limit (in MB) for tiling"
 msgstr "minnesbegränsning i MB för tiling"
 
 #: ../build/src/preferences_gen.h:1403
-#, fuzzy
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
-msgstr ""
-"detta värde kontrollerar hur mycket (i MB) minne en modul kan använda vid "
-"bearbetning av bild, lägre värde tvingar minneshungriga moduler att använda "
-"'tiled' bearbetning. sätt detta till 0 och ingen begränsning används. värde "
-"under 500 kommer att hanteras som 500."
+msgstr "detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden under 500 kommer att hanteras som 500 (kräver omstart)."
 
 #: ../build/src/preferences_gen.h:1410
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "mängd minne (i MB) för en enkel buffer vid tiling"
 
 #: ../build/src/preferences_gen.h:1428
-#, fuzzy
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
-msgstr ""
-"ett positivt tal större än noll anger mängden minne (i MB) som tiling\n"
-"får uppta för en bild-buffer.  detta går före heuristik baserad på\n"
-"host_memory_limit.  kräver en omstart."
+msgstr "ett positivt tal över noll anger den minsta mängden minne (i MB) som 'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på host_memory_limit (kräver en omstart)."
 
 #: ../build/src/preferences_gen.h:1435
 msgid "write sidecar file for each image"
@@ -328,14 +318,12 @@ msgid "not available on this system"
 msgstr "ej tillgängligt på detta system"
 
 #: ../build/src/preferences_gen.h:1477
-#, fuzzy
 msgid "always try to use littlecms2"
-msgstr "använd alltid lcms2 vid export"
+msgstr "försök alltid använda littlecms2"
 
 #: ../build/src/preferences_gen.h:1489
-#, fuzzy
 msgid "this is significantly slower as the default."
-msgstr "detta tar längre tid men ökar kvaliteten på den exporterade bilden."
+msgstr "detta är märkbart långsammare än standardvalet."
 
 #: ../build/src/preferences_gen.h:1496
 msgid "do high quality resampling during export"
@@ -7678,9 +7666,8 @@ msgid "created shapes"
 msgstr "skapa former"
 
 #: ../src/lua/preferences.c:333
-#, fuzzy
 msgid "lua options"
-msgstr "gränssnittsinställningar"
+msgstr "lua-inställningar"
 
 #~ msgid " (needs a restart)"
 #~ msgstr " (kräver omstart)"
