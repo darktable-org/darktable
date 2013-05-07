@@ -80,9 +80,9 @@ void dt_lua_register_type_callback_type_internal(lua_State* L,const char* type_n
   dt_lua_register_type_callback_number_internal(L,#type_name,index,newindex,length)
 void dt_lua_register_type_callback_number_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction length);
 /// register a special handler for unhandled entries
-#define dt_lua_register_type_callback_default(L,type_name,index,newindex) \
-  dt_lua_register_type_callback_default_internal(L,#type_name,index,newindex)
-void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex);
+#define dt_lua_register_type_callback_default(L,type_name,index,newindex,next) \
+  dt_lua_register_type_callback_default_internal(L,#type_name,index,newindex,next)
+void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next);
 /// pop the top of the stack, register it as a const returned for the entry
 #define dt_lua_register_type_callback_stack(L,type_name,name) \
   dt_lua_register_type_callback_stack_internal(L,#type_name,name)

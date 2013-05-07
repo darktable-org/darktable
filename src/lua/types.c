@@ -91,24 +91,61 @@ int dt_lua_autotype_next(lua_State *L)
     {
       lua_pop(L,1);
       lua_pushnumber(L,key);
-      luaL_getmetafield(L,-2,"__index");
-      lua_pushvalue(L,-3);
       lua_pushnumber(L,key);
-      lua_call(L,2,1);
+      lua_gettable(L,-3);
       return 2;
     }
   }
-  int top = lua_gettop(L);
+  // stack at this point : {object,key} (key is nil if it was length)
+  int key_in_get = false;
   luaL_getmetafield(L,-2,"__get");
-  lua_pushvalue(L,-2);
-  int nresults = lua_next(L,-2);
-  lua_remove(L,top);
-  lua_remove(L,top);
-  if(!nresults) return 0;
-  lua_pushvalue(L,-3);
-  lua_pushvalue(L,-3);
-  lua_call(L,2,1);
-  return 2;
+  if(lua_isnil(L,-2)) {
+      key_in_get = true;
+  } else {
+    lua_pushvalue(L,-2);
+    lua_gettable(L,-2);
+    if(lua_isnil(L,-1)) {
+      key_in_get = false;
+      lua_pop(L,2);
+    } else {
+      key_in_get = true;
+      lua_pop(L,1);
+    }
+  }
+  if(key_in_get) {
+    lua_pushvalue(L,-2);
+    if(lua_next(L,-2)) {
+      // we have a next
+      lua_pop(L,1);
+      lua_remove(L,-2);
+      lua_remove(L,-2);
+      lua_pushvalue(L,-1);
+      lua_gettable(L,-3);
+      return 2;
+    } else {
+      // key was the last for __get
+      lua_pop(L,2);
+      lua_pushnil(L);
+    }
+  }
+  // stack at this point : {object,key} (key is nil if it was the last of __get)
+  if(luaL_getmetafield(L,-2,"__default_next")) {
+    lua_pushvalue(L,-3);
+    lua_pushvalue(L,-3);
+    lua_call(L,2,2);
+    if(!lua_isnil(L,-1)) {
+      lua_remove(L,-3);
+      // we have a next
+      return 2;
+    } else {
+      // we don't have a next, 
+      lua_remove(L,-3);
+      lua_remove(L,-3);
+      return 1;
+    }
+  } else {
+    return 1;
+  }
 }
 
 
@@ -154,7 +191,7 @@ int dt_lua_autotype_newindex(lua_State *L)
   int pos_set = lua_gettop(L); // points at __get
   lua_pushvalue(L,-3);
   lua_gettable(L,-2);
-  if(lua_isnil(L,-1) && lua_isnumber(L,-4) && luaL_getmetafield(L,-5,"__number_index"))
+  if(lua_isnil(L,-1) && lua_isnumber(L,-4) && luaL_getmetafield(L,-5,"__number_newindex"))
   {
     lua_remove(L,-2);
   }
@@ -250,17 +287,23 @@ void dt_lua_register_type_callback_number_internal(lua_State* L,const char* type
   lua_setfield(L,-2,"__number_index");
   lua_pushcfunction(L,newindex);
   lua_setfield(L,-2,"__number_newindex");
-  lua_pushcfunction(L,length);
-  lua_setfield(L,-2,"__len");
+  if(length) {
+    lua_pushcfunction(L,length);
+    lua_setfield(L,-2,"__len");
+  }
 }
 
-void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex)
+void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
 {
   luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
   lua_pushcfunction(L,index);
   lua_setfield(L,-2,"__default_index");
   lua_pushcfunction(L,newindex);
   lua_setfield(L,-2,"__default_newindex");
+  if(next) {
+    lua_pushcfunction(L,next);
+    lua_setfield(L,-2,"__default_next");
+  }
 }
 
 

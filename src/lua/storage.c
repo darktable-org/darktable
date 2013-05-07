@@ -175,6 +175,45 @@ static int extra_data_newindex(lua_State *L)
   return 0;
 }
 
+static int extra_data_length(lua_State *L)
+{
+  void * udata;
+  luaL_getmetafield(L,-1,"__luaA_Type");
+  luaA_Type type = lua_tointeger(L,-1);
+  lua_pop(L,1);
+  luaA_to_typeid(L,type,&udata,-1);
+  lua_pushlightuserdata(L,udata);
+  lua_gettable(L,LUA_REGISTRYINDEX);
+  lua_len(L,-1);
+  return 1;
+}
+
+static int extra_data_next(lua_State *L)
+{
+  void * udata;
+  luaL_getmetafield(L,-2,"__luaA_Type");
+  luaA_Type type = lua_tointeger(L,-1);
+  lua_pop(L,1);
+  luaA_to_typeid(L,type,&udata,-2);
+  lua_pushlightuserdata(L,udata);
+  lua_gettable(L,LUA_REGISTRYINDEX);
+  lua_pushvalue(L,-2);
+  if(lua_next(L,-2)) {
+    while(lua_isnumber(L,-2) ){
+      // skip all numbers, they were handled separately
+      lua_pop(L,1);
+      lua_next(L,-2);
+    }
+    lua_remove(L,-4);
+    lua_remove(L,-4);
+    return 2;
+  } else {
+    lua_pop(L,2);
+    lua_pushnil(L);
+    return 1;
+  }
+}
+
 static int register_storage(lua_State *L)
 {
   lua_settop(L,4);
@@ -213,7 +252,8 @@ static int register_storage(lua_State *L)
   char tmp[1024];
   snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
   storage->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,tmp,sizeof(void*));
-  dt_lua_register_type_callback_default_internal(L,tmp,extra_data_index,extra_data_newindex);
+  dt_lua_register_type_callback_default_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_next);
+  dt_lua_register_type_callback_number_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_length);
   luaA_struct_typeid(darktable.lua_state,luaA_type_find(tmp));
   dt_lua_register_storage_internal(darktable.lua_state,storage,tmp);
 
