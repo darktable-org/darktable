@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-06 21:32+0200\n"
+"POT-Creation-Date: 2013-05-07 18:50+0200\n"
 "PO-Revision-Date: 2013-05-07 15:22+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
@@ -275,7 +275,11 @@ msgid ""
 "during image processing. lower values will force memory hungry modules to "
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
-msgstr "detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden under 500 kommer att hanteras som 500 (kräver omstart)."
+msgstr ""
+"detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid "
+"bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta "
+"bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden "
+"under 500 kommer att hanteras som 500 (kräver omstart)."
 
 #: ../build/src/preferences_gen.h:1410
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -286,7 +290,10 @@ msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
-msgstr "ett positivt tal över noll anger den minsta mängden minne (i MB) som 'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på host_memory_limit (kräver en omstart)."
+msgstr ""
+"ett positivt tal över noll anger den minsta mängden minne (i MB) som "
+"'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på "
+"host_memory_limit (kräver en omstart)."
 
 #: ../build/src/preferences_gen.h:1435
 msgid "write sidecar file for each image"
@@ -842,7 +849,9 @@ msgstr "kopierar %d bilder"
 #: ../src/control/jobs/control_jobs.c:936
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr "misslyckades att hämta parametrar från lagringsmodul `%s', avbryter exporten.."
+msgstr ""
+"misslyckades att hämta parametrar från lagringsmodul `%s', avbryter "
+"exporten.."
 
 #: ../src/control/jobs/control_jobs.c:940
 #, c-format
