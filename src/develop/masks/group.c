@@ -238,7 +238,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   }
   if (nb_ok == 0) return 0;
 
-  //now we get the min, max, width, heigth of the final mask
+  //now we get the min, max, width, height of the final mask
   int l,r,t,b;
   l = t = INT_MAX;
   r = b = INT_MIN;
@@ -349,7 +349,7 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks] get all masks took %0.04f sec\n", dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
-  //we don't want row which are outisde the roi_out
+  //we don't want row which are outside the roi_out
   int fxx = fx*scale;
   int fww = fw*scale;
   int fyy = fy*scale;

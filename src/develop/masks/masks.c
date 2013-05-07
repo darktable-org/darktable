@@ -246,7 +246,7 @@ dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id)
 
 void dt_masks_read_forms(dt_develop_t *dev)
 {
-  //first we have to remove all existant entries from the list
+  //first we have to remove all existing entries from the list
   if (dev->forms)
   {
     GList *forms = g_list_first(dev->forms);

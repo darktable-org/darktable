@@ -793,7 +793,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
   GtkWidget *pluginui_frame = gtk_frame_new(NULL);
   GtkWidget *pluginui = gtk_event_box_new();
 
-  /* steup the header box */
+  /* setup the header box */
   gtk_container_add(GTK_CONTAINER(header_evb), header);
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press), module);
 

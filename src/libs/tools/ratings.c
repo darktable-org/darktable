@@ -42,7 +42,7 @@ static gboolean _lib_ratings_motion_notify_callback(GtkWidget *widget, GdkEventM
 static gboolean _lib_ratings_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 /* button press handler */
 static gboolean _lib_ratings_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
-/* button release hadnler */
+/* button release handler */
 static gboolean _lib_ratings_button_release_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 const char* name()
@@ -80,7 +80,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   memset(d,0,sizeof(dt_lib_ratings_t));
 
-  /* create a centered drawingarea wthin a alignment */
+  /* create a centered drawing area within a alignment */
   self->widget = gtk_alignment_new(0.5, 0.5, 0, 0);
 
   GtkWidget *da = gtk_drawing_area_new();

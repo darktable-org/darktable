@@ -3,7 +3,7 @@
 
 #include "common/darktable.h"
 #include <gtk/gtk.h>
-/** array of names and constant to ease lable manipulation */
+/** array of names and constant to ease label manipulation */
 typedef enum dt_colorlables_enum
 {
   DT_COLORLABELS_RED,

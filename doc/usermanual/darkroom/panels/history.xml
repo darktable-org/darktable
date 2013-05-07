@@ -33,7 +33,7 @@
 		</para>
 		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
                 lets you create a new style for applying your history stack to other images.
-                Use the first line of the popup dialog window to name your style and the second to add a 
+		 Use the first line of the pop-up dialog window to name your style and the second to add a
                 searchable description. You are prompted for which of the current history stack modules to include in the style.</para> 
 
                 <para>Once created styles are then managed and applied to other images in the lighttable's <emphasis>styles</emphasis> panel

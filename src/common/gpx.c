@@ -97,7 +97,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
     goto error;
 
 
-  /* clenup and return gpx context */
+  /* cleanup and return gpx context */
   g_markup_parse_context_free(ctx);
 
   return gpx;
@@ -223,7 +223,7 @@ void _gpx_parser_start_element(GMarkupParseContext *ctx,
 
     }
     else
-      fprintf(stderr,"broken gpx file, trkpt element doesnt have lon/lat attributes\n");
+      fprintf(stderr,"broken gpx file, trkpt element doesn't have lon/lat attributes\n");
 
     gpx->current_parser_element = GPX_PARSER_ELEMENT_TRKPT;
   }

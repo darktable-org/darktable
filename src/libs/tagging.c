@@ -571,7 +571,7 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
 
   // the order is:
   // if(zoom == 1) => currently shown image
-  // else if(selection not empty) => slected images
+  // else if(selection not empty) => selected images
   // else if(cursor over image) => hovered image
   // else => return
   if(zoom == 1 || dt_collection_get_selected_count(darktable.collection) == 0)

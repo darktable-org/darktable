@@ -411,7 +411,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(data, ivoid, ovoid, roi_out, roi_in) schedule(static)
 #endif
-  // subtract blurred image, if diff > thrs, add *amount to orginal image
+  // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j=0; j<roi_out->height; j++)
   {
     float *in  = (float *)ivoid + j*ch*roi_out->width;

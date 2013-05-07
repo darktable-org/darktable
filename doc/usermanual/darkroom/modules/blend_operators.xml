@@ -97,7 +97,7 @@
 
 	        <sect4><title>blend if</title>
         	        <para>Most modules offer additional control with a user-defined blend mask. In order to activate these
-        	              controls you need to switch from <quote>blend uniformily</quote> to <quote>blend only, if..</quote>. More details on conditional blending
+			      controls you need to switch from <quote>blend uniformly</quote> to <quote>blend only, if..</quote>. More details on conditional blending
         	              are given in a separate chapter (<xref linkend="conditional_blending"/>).
         	        </para>
 	        </sect4>

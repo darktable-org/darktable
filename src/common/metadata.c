@@ -189,7 +189,7 @@ static GList* dt_metadata_get_xmp(int id, const char* key, uint32_t* count)
 /*
 	Dear Mister Dijkstra,
 	I hereby make a formal apology for using goto statements in the following
-	function. While I am fully aware that I will rot in the deepest hells for
+	function. While I am fully aware that I will rot in the deepest hell's for
 	this ultimate sin and that I'm not worth to be called a "programmer" from
 	now on, I have one excuse to bring up: I never did so before, and this way
 	the code gets a lot smaller and less repetitive. And since you are dead

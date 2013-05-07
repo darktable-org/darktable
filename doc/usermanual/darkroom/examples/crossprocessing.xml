@@ -18,7 +18,7 @@
 			</informaltable>
 			
 		<para>The standard way for doing digital cross-processing is to use a channel curve tool but darktable lacks this tool
-			for the moment and another way to accomodiate the effect is used.
+			for the moment and another way to accommodate the effect is used.
 		</para>
 	</sect3>
 	<sect3 status="final"><title>Procedure</title>
@@ -40,7 +40,7 @@
 			<listitem><para>Color cast</para>
 				<para>This step changes the color cast as the base for the effect using the <emphasis>channel mixer</emphasis> module
                                       (<xref linkend="channel_mixer"/>).
-						You might later again return to this and finetune the colorcast of the final result.
+						You might later again return to this and fine-tune the color cast of the final result.
 				</para>
 				<orderedlist>
 					<listitem><para>Enable the channel mixer module</para></listitem>

@@ -157,7 +157,7 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
 // destroys all allocated data.
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe);
 
-// flushes all cached data. usefull if input pixels unexpectedly change.
+// flushes all cached data. useful if input pixels unexpectedly change.
 void dt_dev_pixelpipe_flush_caches(dt_dev_pixelpipe_t *pipe);
 
 // wrapper for cleanup_nodes, create_nodes, synch_all and synch_top, decides upon changed event which one to take on. also locks dev->history_mutex.
@@ -178,7 +178,7 @@ int dt_dev_pixelpipe_process_no_gamma(dt_dev_pixelpipe_t *pipe, struct dt_develo
 
 // disable given op and all that comes after it in the pipe:
 void dt_dev_pixelpipe_disable_after(dt_dev_pixelpipe_t *pipe, const char *op);
-// disable given op andn all that comes before it in the pipe:
+// disable given op and all that comes before it in the pipe:
 void dt_dev_pixelpipe_disable_before(dt_dev_pixelpipe_t *pipe, const char *op);
 
 

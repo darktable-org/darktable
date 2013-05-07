@@ -25,7 +25,7 @@ typedef struct dt_gui_hist_dialog_t
   int copied_imageid;
 } dt_gui_hist_dialog_t;
 
-/** shows a dialog for creating a new style, w if not null is a wigdet to
+/** shows a dialog for creating a new style, w if not null is a widget to
     change the sensitive state depending on the dialog response.  */
 int dt_gui_hist_dialog_new (dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy);
 

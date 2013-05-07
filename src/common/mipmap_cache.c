@@ -1071,7 +1071,7 @@ _init_f(
 {
   const uint32_t wd = *width, ht = *height;
 
-  /* do not even try to process file if it isnt available */
+  /* do not even try to process file if it isn't available */
   char filename[2048] = {0};
   dt_image_full_path(imgid, filename, 2048);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))

@@ -65,7 +65,7 @@ typedef struct _lib_location_result_t
 
 #define LIMIT_RESULT 5
 
-/* entry value commited, perform a search */
+/* entry value committed, perform a search */
 static void _lib_location_entry_activated (GtkButton *button, gpointer user_data);
 
 static gboolean _lib_location_result_item_activated (GtkButton *button, GdkEventButton *ev, gpointer user_data);
@@ -407,7 +407,7 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   place->lon = NAN;
   place->lat = NAN;
 
-  /* handle the element atttribute values */
+  /* handle the element attribute values */
   const gchar **aname = attribute_names;
   const gchar **avalue = attribute_values;
   if (*aname)

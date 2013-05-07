@@ -210,7 +210,7 @@ dt_collection_set_query_flags(const dt_collection_t *collection, uint32_t flags)
 void
 dt_collection_set_extended_where(const dt_collection_t *collection,gchar *extended_where)
 {
-  /* free extended where if alread exists */
+  /* free extended where if already exists */
   if (collection->where_ext)
     g_free (collection->where_ext);
 
@@ -644,7 +644,7 @@ dt_collection_update_query(const dt_collection_t *collection)
   }
 
 
-  /* raise signal of collection change, only if this is an orginal */
+  /* raise signal of collection change, only if this is an original */
   if (!collection->clone)
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 

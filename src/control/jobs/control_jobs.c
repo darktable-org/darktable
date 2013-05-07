@@ -475,7 +475,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 
     /* convert exif datetime
        TODO: exiv2 dates should be iso8601 and we are probably doing some ugly
-       convertion before inserting into database.
+       conversion before inserting into database.
      */
     gint year;
     gint month;

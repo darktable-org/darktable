@@ -77,7 +77,7 @@ typedef struct dt_camera_t
 
   /** Live view */
   gboolean is_live_viewing;
-  /** The last preview image fromthe camera */
+  /** The last preview image from the camera */
   GdkPixbuf *live_view_pixbuf;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
@@ -119,8 +119,8 @@ typedef enum dt_camera_error_t
 {
   /** Locking camera failed. \remarks This means that camera control is busy and locking failed. */
   CAMERA_LOCK_FAILED,
-  /**  Camera conenction is broken and unuseable.
-  \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host application should remove all references of camera pointer and disallow any opertations onto it.
+  /**  Camera connection is broken and unusable.
+  \remarks Beyond this message references to dt_camera_t pointer is invalid, which means that the host application should remove all references of camera pointer and disallow any operations onto it.
    */
   CAMERA_CONNECTION_BROKEN
 }
@@ -174,14 +174,14 @@ typedef struct dt_camctl_listener_t
 
   /** Invoked when a value of a property is changed. */
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
-  /** Invoked when accesibility of a property is changed. */
+  /** Invoked when accessibility of a property is changed. */
   void (*camera_property_accessibility_changed)(const dt_camera_t *camera,const char *name,gboolean read_only,void *data);
 
   /** Invoked from dt_camctl_detect_cameras() when a new camera is connected */
   void (*camera_connected)(const dt_camera_t *camera,void *data);
-  /** Invoked from dt_camctl_detect_cameras() when a new camera is disconnected, or when connection is broken and camera is unuseable */
+  /** Invoked from dt_camctl_detect_cameras() when a new camera is disconnected, or when connection is broken and camera is unusable */
   void (*camera_disconnected)(const dt_camera_t *camera,void *data);
-  /** Invoked when a error occured \see dt_camera_error_t */
+  /** Invoked when a error occurred \see dt_camera_error_t */
   void (*camera_error)(const dt_camera_t *camera,dt_camera_error_t error,void *data);
 } dt_camctl_listener_t;
 
@@ -216,7 +216,7 @@ void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Enables/Disables the tether mode on camera. */
 void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean enable);
-/** travers filesystem on camera an retreives previews of images */
+/** traverse filesystem on camera an retrieves previews of images */
 void dt_camctl_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,const dt_camera_t *cam);
 /** Imports the images in list from specified camera */
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,gboolean delete_orginals);
@@ -233,16 +233,16 @@ const char *dt_camctl_camera_get_model(const dt_camctl_t *c,const dt_camera_t *c
 /** Set a property value \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 void dt_camctl_camera_set_property_string(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const char *value);
 void dt_camctl_camera_set_property_int(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name, const int value);
-/** Get a property value from chached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
+/** Get a property value from cached configuration. \param cam Pointer to dt_camera_t if NULL the camctl->active_camera is used. */
 const char*dt_camctl_camera_get_property(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 /** Check if property exists. */
 int dt_camctl_camera_property_exists(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
-/** Get first choice availble for named property. */
+/** Get first choice available for named property. */
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
-/** Get next choice availble for named property. */
+/** Get next choice available for named property. */
 const char *dt_camctl_camera_property_get_next_choice(const dt_camctl_t *c,const dt_camera_t *cam,const char *property_name);
 
-/** build a popupmenu with all properties available */
+/** build a popup menu with all properties available */
 void dt_camctl_camera_build_property_menu (const dt_camctl_t *c,const dt_camera_t *cam,GtkMenu **menu, GCallback item_activate, gpointer user_data);
 
 #endif

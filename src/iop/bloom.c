@@ -198,7 +198,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
 
-  /* screen blend lightness with orginal */
+  /* screen blend lightness with original */
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data,blurlightness) schedule(static)

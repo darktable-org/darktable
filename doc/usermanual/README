@@ -38,7 +38,7 @@ make
 Building the final usermanual
 ---------------------------------------------------------
 Generating a final usermanual which would not include the sections with status "draft" this
-is for producing a manual for ditribution...
+is for producing a manual for distribution...
 
 make darktable-usermanual-final.pdf
 

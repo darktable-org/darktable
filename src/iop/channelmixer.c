@@ -128,7 +128,7 @@ groups ()
   return IOP_GROUP_COLOR;
 }
 
-#if 0 // BAUHAUS doesnt support keyaccels yet...
+#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));

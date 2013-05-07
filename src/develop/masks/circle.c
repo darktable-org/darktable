@@ -538,7 +538,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
 
 static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
-  //we get the cicle values
+  //we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *) (g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
@@ -586,7 +586,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
 
 static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
-  //we get the cicle values
+  //we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *) (g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
@@ -643,7 +643,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] circle area took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
-  //we get the cicle values
+  //we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *) (g_list_first(form->points)->data);
 
   //we create a buffer of points with all points in the area

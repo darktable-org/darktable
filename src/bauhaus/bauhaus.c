@@ -1616,7 +1616,7 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   // gtk_widget_get_window will return null if not shown yet.
   // it is needed for gdk_window_move, and gtk_window move will
   // sometimes be ignored. this is why we always call both...
-  // we also don't want to show befor move, as this results in noticable flickering.
+  // we also don't want to show before move, as this results in noticeable flickering.
   GdkWindow *window = gtk_widget_get_window(darktable.bauhaus->popup_window);
   if(window) gdk_window_move(window, wx, wy);
   gtk_window_move(GTK_WINDOW(darktable.bauhaus->popup_window), wx, wy);

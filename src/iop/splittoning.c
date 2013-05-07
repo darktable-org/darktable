@@ -58,7 +58,7 @@ typedef struct dt_iop_splittoning_gui_data_t
 {
   GtkWidget *scale1,*scale2;       							//  balance, compress
   GtkDarktableButton *colorpick1,*colorpick2;	   					// shadow, highlight
-  GtkWidget *gslider1,*gslider2,*gslider3,*gslider4;		//highligh hue, highlight saturation, shadow hue, shadow saturation
+  GtkWidget *gslider1,*gslider2,*gslider3,*gslider4;		//highlight hue, highlight saturation, shadow hue, shadow saturation
 }
 dt_iop_splittoning_gui_data_t;
 
@@ -600,7 +600,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the balance of center of splittoning"), (char *)NULL);
-  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compress the effect on highlighs/shadows and\npreserve midtones"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compress the effect on highlights/shadows and\npreserve midtones"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (hue_callback), self);

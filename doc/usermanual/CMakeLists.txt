@@ -72,7 +72,7 @@ if(can_build_usermanual)
 		add_custom_command(
 			OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg"
 			COMMAND convert -resize ${TARGET_MEDIA_RESIZE} -quality ${TARGET_MEDIA_COMPRESSION_QUALITY} -filter Lanczos ${CMAKE_CURRENT_SOURCE_DIR}/${image}.png ${CMAKE_CURRENT_BINARY_DIR}/media/${new_image}.jpg
-			COMMENT "Tranforming image ${image}.png into media target" VERBATIM
+			COMMENT "Transforming image ${image}.png into media target" VERBATIM
 		)
 	endforeach()
 	add_custom_target(target_media_images DEPENDS  ${TARGET_MEDIA_IMAGES})

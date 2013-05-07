@@ -199,7 +199,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   }
   else if( g_strcmp0(variable,"$(LABELS)") == 0 && (got_value=TRUE) )
   {
-    //TODO: currently we concatenate all the color labels with a ',' as a seeparator. Maybe it's better to only use the first/last label?
+    //TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to only use the first/last label?
     unsigned int count = 0;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", &count);
     res = g_list_first(res);

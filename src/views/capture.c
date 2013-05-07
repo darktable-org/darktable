@@ -221,7 +221,7 @@ const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char
   dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
   gchar *file = g_strdup(dt_variables_get_result(cv->vp));
 
-  // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
+  // Start check if file exist if it does, increase sequence and check again til we know that file doesn't exists..
   gchar *fullfile = g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
 
   if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )

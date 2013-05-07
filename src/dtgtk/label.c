@@ -97,7 +97,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
-  // Formating the display of text and draw it...
+  // Formatting the display of text and draw it...
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget,NULL);
   pango_layout_set_font_description(layout,style->font_desc);

@@ -1836,7 +1836,7 @@ post_process_collect_info:
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      /* raise preview pipe finised signal */
+      /* raise preview pipe finished signal */
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 
     }

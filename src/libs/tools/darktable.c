@@ -77,7 +77,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   memset(d,0,sizeof(dt_lib_darktable_t));
 
-  /* create drawingarea */
+  /* create drawing area */
   self->widget = gtk_event_box_new();
 
   /* connect callbacks */

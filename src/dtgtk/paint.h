@@ -124,19 +124,19 @@ void dtgtk_cairo_paint_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 /** paint a duplicate/multi instance indicator */
 void dtgtk_cairo_paint_multiinstance(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
-/** paint active modulgroup icon */
+/** paint active modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_active(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint favorites modulgroup icon */
+/** paint favorites modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_favorites(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint basic modulgroup icon */
+/** paint basic modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_basic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint tone modulgroup icon */
+/** paint tone modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_tone(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint color modulgroup icon */
+/** paint color modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_color(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint correct modulgroup icon */
+/** paint correct modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_correct(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
-/** paint effect modulgroup icon */
+/** paint effect modulegroup icon */
 void dtgtk_cairo_paint_modulegroup_effect(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags);
 
 /** paint the pin for map thumbnails */

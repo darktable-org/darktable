@@ -82,7 +82,7 @@ fi
 
 auto_set_profiling_dir "-d"
 
-# Check for exising input images.
+# Check for existing input images.
 list_input_images
 
 # Take the required shots.

@@ -35,7 +35,7 @@
 #include <ctype.h>
 
 // copy here the iop params struct with the actual version. This is so to
-// be as independant as possible of any iop evolutions. Indeed, we create
+// be as independent as possible of any iop evolutions. Indeed, we create
 // the iop params into the database for a specific version. We then ask
 // for a reload of the history parameter. If the iop has evolved since then
 // the legacy circuitry will be called to convert the parameters.

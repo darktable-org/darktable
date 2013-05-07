@@ -61,7 +61,7 @@
 <!-- Examples -->
 <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- Toubleshooting -->
+<!-- Troubleshooting -->
 <xi:include href="troubleshoot.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </chapter>

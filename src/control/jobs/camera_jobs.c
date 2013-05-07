@@ -86,7 +86,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
     {
       // Add value to list
       values = g_list_append(values, g_strdup(value));
-      // Check if current values is the same as orginal value, then lets store item ptr
+      // Check if current values is the same as original value, then lets store item ptr
       if (strcmp(value,cvalue) == 0)
         orginal_value = g_list_last(values)->data;
     }
@@ -94,7 +94,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
   else
   {
-    /* if this was an itended bracket capture bail out */
+    /* if this was an intended bracket capture bail out */
     if(t->brackets)
     {
       dt_control_log(_("please set your camera to manual mode first!"));
@@ -133,7 +133,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
         }
       }
 
-      // set the time property for bracked capture
+      // set the time property for bracketed capture
       if (t->brackets && current_value)
         dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
 
@@ -144,7 +144,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
     }
 
-    // lets reset to orginal value before continue
+    // lets reset to original value before continue
     if (t->brackets)
     {
       current_value = g_list_find(values,orginal_value);
@@ -328,7 +328,7 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
   dt_variables_expand( t->vp, t->filename, TRUE );
   gchar *file = dt_variables_get_result(t->vp);
 
-  // Start check if file exist if it does, increase sequence and check again til we know that file doesnt exists..
+  // Start check if file exist if it does, increase sequence and check again til we know that file doesn't exists..
   gchar *prev_filename;
   gchar *fullfile;
   prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S,

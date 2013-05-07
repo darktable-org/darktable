@@ -294,7 +294,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
       sqlite3_finalize(stmt);
     }
 
-    //rename accerelartors
+    //rename accelerators
     char path[1024];
     snprintf(path,1024,"%s/%s",_("preset"),g->original_name);
     dt_accel_rename_preset_iop(g->module,path,gtk_entry_get_text(g->name));

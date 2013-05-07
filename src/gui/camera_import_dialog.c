@@ -179,7 +179,7 @@ _update_example(_camera_import_dialog_t *dialog)
 
   // then set result set
   gtk_label_set_text(GTK_LABEL(dialog->settings.example),str);
-  // Clenaup
+  // Cleanup
   g_free(path);
   g_free(fixed_path);
   g_free(ep);
@@ -412,7 +412,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
 
 
-  // THE NOTEBOOOK
+  // THE NOTEBOOK
   data->notebook=gtk_notebook_new();
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("images")));
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->settings.page,gtk_label_new(_("settings")));
@@ -524,7 +524,7 @@ static void _control_status(dt_camctl_status_t status,void *user_data)
 static void _preview_job_state_changed(dt_job_t *job,int state)
 {
   _camera_import_dialog_t *data=(_camera_import_dialog_t*)job->user_data;
-  /* store job reference if needed for cancelation */
+  /* store job reference if needed for cancellation */
   if(  state == DT_JOB_STATE_RUNNING )
     data->preview_job = job;
   else if (state == DT_JOB_STATE_FINISHED)
@@ -666,7 +666,7 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
     }
   }
 
-  // Destory and quit
+  // Destroy and quit
   gtk_widget_destroy (data->dialog);
 }
 

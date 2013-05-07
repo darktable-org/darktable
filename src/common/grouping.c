@@ -45,7 +45,7 @@ dt_grouping_remove_from_group(int image_id)
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, image_id);
   if(img->group_id == image_id)
   {
-    // get a new group_id for all the others in the group. also write it to the dt_image_t sturct.
+    // get a new group_id for all the others in the group. also write it to the dt_image_t struct.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1 and id != ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->group_id);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, image_id);
