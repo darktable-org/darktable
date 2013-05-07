@@ -43,9 +43,15 @@ local function introspect_metatable(object,indent,name,known,ancestors)
 	local metatable = getmetatable(object);
 	if metatable ==  nil then return "" end
 	local result = indent..name..".metatable"
-	table.insert(ancestors,name)
-	result = result..introspect_body(metatable,indent..indent_string,"metatable","metatable",known,ancestors)
-	table.remove(ancestors);
+	if known[metatable] then
+		table.insert(ancestors,name)
+		result = result..introspect_body(metatable,indent..indent_string,"metatable","known",known,ancestors)
+		table.remove(ancestors);
+	else
+		table.insert(ancestors,name)
+		result = result..introspect_body(metatable,indent..indent_string,"metatable","metatable",known,ancestors)
+		table.remove(ancestors);
+	end
 	return result
 end
 
