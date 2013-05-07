@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-06 21:41+0200\n"
+"POT-Creation-Date: 2013-05-07 10:04+0200\n"
 "PO-Revision-Date: 2013-05-06 21:42+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -1024,7 +1024,7 @@ msgid "double click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
 #: ../src/develop/blend_gui.c:1027 ../src/develop/blend_gui.c:1065
-#: ../src/develop/masks/masks.c:936
+#: ../src/develop/masks/masks.c:941
 msgid "no mask used"
 msgstr "aucun masque utilisé"
 
@@ -7738,15 +7738,15 @@ msgstr "refaire"
 msgid "could not allocate buffer for blending"
 msgstr "impossible d'allouer la mémoire pour la fusion"
 
-#: ../src/develop/masks/masks.c:826 ../src/libs/masks.c:804
+#: ../src/develop/masks/masks.c:831 ../src/libs/masks.c:804
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:853
+#: ../src/develop/masks/masks.c:858
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
-#: ../src/develop/masks/masks.c:933
+#: ../src/develop/masks/masks.c:938
 msgid "shapes used"
 msgstr "formes utilisées"
 

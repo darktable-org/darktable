@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-06 18:30+0200\n"
+"POT-Creation-Date: 2013-05-07 10:04+0200\n"
 "PO-Revision-Date: 2013-04-06 16:27+0200\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <da@li.org>\n"
@@ -26,7 +26,7 @@ msgstr "bredde af sidepanelerne i pixels"
 #: ../build/src/preferences_gen.h:1148 ../build/src/preferences_gen.h:1191
 #: ../build/src/preferences_gen.h:1215 ../build/src/preferences_gen.h:1289
 #: ../build/src/preferences_gen.h:1376 ../build/src/preferences_gen.h:1400
-#: ../build/src/preferences_gen.h:1425
+#: ../build/src/preferences_gen.h:1425 ../src/lua/preferences.c:368
 #, fuzzy, c-format
 msgid "double click to reset to `%d'"
 msgstr "dobbeltklik for at nulstille til `%s'"
@@ -51,7 +51,8 @@ msgstr "brug ikke indbygget preview-jpeg men halv-størrelse raw"
 #: ../build/src/preferences_gen.h:1463 ../build/src/preferences_gen.h:1486
 #: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1524
 #: ../build/src/preferences_gen.h:1556 ../build/src/preferences_gen.h:1591
-#: ../build/src/preferences_gen.h:1623
+#: ../build/src/preferences_gen.h:1623 ../src/lua/preferences.c:351
+#: ../src/lua/preferences.c:359
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dobbeltklik for at nulstille til `%s'"
@@ -962,7 +963,7 @@ msgid "double click to reset"
 msgstr "dobbeltklik for at nulstille"
 
 #: ../src/develop/blend_gui.c:1027 ../src/develop/blend_gui.c:1065
-#: ../src/develop/masks/masks.c:936
+#: ../src/develop/masks/masks.c:941
 msgid "no mask used"
 msgstr ""
 
@@ -1776,45 +1777,45 @@ msgid "name"
 msgstr "navn"
 
 #. exif
-#: ../src/gui/preferences.c:437 ../src/gui/preferences.c:1352
+#: ../src/gui/preferences.c:437 ../src/gui/preferences.c:1353
 #: ../src/gui/presets.c:420 ../src/libs/metadata_view.c:82
 msgid "model"
 msgstr "model"
 
-#: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1359
+#: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1361
 #: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:83
 msgid "maker"
 msgstr ""
 
-#: ../src/gui/preferences.c:451 ../src/gui/preferences.c:1366
+#: ../src/gui/preferences.c:451 ../src/gui/preferences.c:1369
 #: ../src/gui/presets.c:434 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:84
 msgid "lens"
 msgstr "objektiv"
 
 #. iso
-#: ../src/gui/preferences.c:458 ../src/gui/preferences.c:1373
+#: ../src/gui/preferences.c:458 ../src/gui/preferences.c:1376
 #: ../src/gui/presets.c:441 ../src/libs/camera.c:597 ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:89
 msgid "iso"
 msgstr "iso"
 
 #. exposure
-#: ../src/gui/preferences.c:465 ../src/gui/preferences.c:1386
+#: ../src/gui/preferences.c:465 ../src/gui/preferences.c:1389
 #: ../src/gui/presets.c:454 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:86
 msgid "exposure"
 msgstr "eksponering"
 
 #. aperture
-#: ../src/gui/preferences.c:472 ../src/gui/preferences.c:1401
+#: ../src/gui/preferences.c:472 ../src/gui/preferences.c:1404
 #: ../src/gui/presets.c:469 ../src/libs/camera.c:549 ../src/libs/camera.c:558
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:85
 msgid "aperture"
 msgstr "blænde"
 
 #. focal length
-#: ../src/gui/preferences.c:479 ../src/gui/preferences.c:1416
+#: ../src/gui/preferences.c:479 ../src/gui/preferences.c:1419
 #: ../src/gui/presets.c:484 ../src/libs/camera.c:568
 #: ../src/libs/metadata_view.c:87
 msgid "focal length"
@@ -1909,50 +1910,50 @@ msgid ""
 "preset."
 msgstr ""
 
-#: ../src/gui/preferences.c:1351 ../src/gui/presets.c:419
-#, c-format
+#: ../src/gui/preferences.c:1352 ../src/gui/presets.c:419
+#, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/preferences.c:1358 ../src/gui/presets.c:426
-#, c-format
+#: ../src/gui/preferences.c:1360 ../src/gui/presets.c:426
+#, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/preferences.c:1365 ../src/gui/presets.c:433
-#, c-format
+#: ../src/gui/preferences.c:1368 ../src/gui/presets.c:433
+#, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr ""
 
-#: ../src/gui/preferences.c:1377 ../src/gui/presets.c:445
+#: ../src/gui/preferences.c:1380 ../src/gui/presets.c:445
 msgid "minimum iso value"
 msgstr "minimum iso-værdi"
 
-#: ../src/gui/preferences.c:1381 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1384 ../src/gui/presets.c:449
 msgid "maximum iso value"
 msgstr "maksimum iso-værdi"
 
-#: ../src/gui/preferences.c:1391 ../src/gui/presets.c:459
+#: ../src/gui/preferences.c:1394 ../src/gui/presets.c:459
 msgid "minimum exposure time"
 msgstr "minimum eksponeringstid"
 
-#: ../src/gui/preferences.c:1392 ../src/gui/presets.c:460
+#: ../src/gui/preferences.c:1395 ../src/gui/presets.c:460
 msgid "maximum exposure time"
 msgstr "maksimum eksponeringstid"
 
-#: ../src/gui/preferences.c:1406 ../src/gui/presets.c:474
+#: ../src/gui/preferences.c:1409 ../src/gui/presets.c:474
 msgid "minimum aperture value"
 msgstr "minimum blændeværdi"
 
-#: ../src/gui/preferences.c:1407 ../src/gui/presets.c:475
+#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:475
 msgid "maximum aperture value"
 msgstr "maksimum blændeværdi"
 
-#: ../src/gui/preferences.c:1423 ../src/gui/presets.c:491
+#: ../src/gui/preferences.c:1426 ../src/gui/presets.c:491
 msgid "minimum focal length"
 msgstr "minimum brændvidde"
 
-#: ../src/gui/preferences.c:1424 ../src/gui/presets.c:492
+#: ../src/gui/preferences.c:1427 ../src/gui/presets.c:492
 msgid "maximum focal length"
 msgstr "maksimum brændvidde"
 
@@ -2179,7 +2180,7 @@ msgstr "kunne ikke eksportere til fil `%s'!"
 #: ../src/imageio/storage/gallery.c:356 ../src/imageio/storage/latex.c:339
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr "%d/%d eksporteret til `%s'"
+msgstr "%d/%d eksporteret til `%s%s'"
 
 #: ../src/imageio/storage/email.c:54
 msgid "send as email"
@@ -7435,15 +7436,15 @@ msgstr ""
 msgid "could not allocate buffer for blending"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:826 ../src/libs/masks.c:804
+#: ../src/develop/masks/masks.c:831 ../src/libs/masks.c:804
 msgid "add existing shape"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:853
+#: ../src/develop/masks/masks.c:858
 msgid "use same shapes as"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:933
+#: ../src/develop/masks/masks.c:938
 msgid "shapes used"
 msgstr ""
 
@@ -7490,6 +7491,11 @@ msgstr ""
 #, fuzzy
 msgid "created shapes"
 msgstr "opret ny stil"
+
+#: ../src/lua/preferences.c:333
+#, fuzzy
+msgid "lua options"
+msgstr "gui-indstillinger"
 
 #~ msgid " (needs a restart) "
 #~ msgstr " (genstart nødvendig) "
