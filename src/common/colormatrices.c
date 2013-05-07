@@ -149,6 +149,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // Robert Park, ColorChecker Passport, strobe, well lit
   { "NIKON D7000",                  { 744919, 228027, -46982}, { 454605, 1326797,  -33585}, {-132294, -467194, 985611}, {609375, 629852, 515625}},
 
+  // Jessica Smith, Wolf Faust IT8, direct sunlight, well lit
+  { "NIKON D80",                    { 893585, 348816, -39719}, { 363037, 1246628,  -80994}, { 11658, -286819, 1169052}, {694489, 710114, 562363}},
+
   // Henrik Andersson, Homebrew ColorChecker, strobe, well lit
   { "NIKON D90",                    { 855072, 361176,  22751}, { 177414,  963577, -241501}, { 28931, -229019, 1123062}, {751816, 781677, 650024}},
 
