@@ -812,8 +812,8 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      float amount = 1.05;
-      if (up) amount = 0.95;
+      float amount = 1.03;
+      if (up) amount = 0.97;
       int nb = g_list_length(form->points);
       if (gui->border_selected)
       {
@@ -1036,6 +1036,12 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
     }
     else if (gui->point_selected >= 0)
     {
+      //we register the current position to avoid accidental move
+      if (gui->point_edited<0 && gui->scrollx == 0.0f && gui->scrolly == 0.0f)
+      {
+        gui->scrollx = pzx;
+        gui->scrolly = pzy;
+      }
       gui->point_edited = gui->point_dragging  = gui->point_selected;
       gpt->clockwise = _curve_is_clockwise(form);
       dt_control_queue_redraw_center();
@@ -1204,6 +1210,12 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
   {
     dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->point_dragging);
     gui->point_dragging = -1;
+    if (gui->scrollx != 0.0f || gui->scrolly != 0.0f)
+    {
+      gui->scrollx = gui->scrolly = 0;
+      return 1;
+    }
+    gui->scrollx = gui->scrolly = 0;
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = {pzx*wd,pzy*ht};

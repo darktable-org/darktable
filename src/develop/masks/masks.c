@@ -132,7 +132,7 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
       //we create a new group
       if (form->type & DT_MASKS_CLONE) grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
       else grp = dt_masks_create(DT_MASKS_GROUP);
-      snprintf(grp->name,128,"grp %s",module->name());
+      snprintf(grp->name,128,"grp %s %s",module->name(),module->multi_name);
       _check_id(grp);
       darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
       module->blend_params->mask_id = grpid = grp->formid;
