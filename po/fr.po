@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2013-05-06 21:42+0100\n"
+"POT-Creation-Date: 2013-05-08 21:19+0200\n"
+"PO-Revision-Date: 2013-05-08 21:20+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1028,20 +1028,20 @@ msgstr "double-cliquer pour réinitialiser"
 msgid "no mask used"
 msgstr "aucun masque utilisé"
 
-#: ../src/develop/blend_gui.c:1064
-msgid "masks"
-msgstr "masques"
+#: ../src/develop/blend_gui.c:1064 ../src/develop/blend_gui.c:1285
+msgid "drawn mask"
+msgstr "masque dessiné"
 
 #: ../src/develop/blend_gui.c:1073
 msgid "show and edit mask elements"
 msgstr "montre et édite les masques"
 
-#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:541
+#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:539
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
 msgid "add circular shape"
 msgstr "ajouter un masque circulaire"
 
-#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:534
+#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:532
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
 msgstr "ajouter un masque courbe"
@@ -1053,10 +1053,6 @@ msgstr "fusion"
 #: ../src/develop/blend_gui.c:1280
 msgid "uniformly"
 msgstr "uniforme"
-
-#: ../src/develop/blend_gui.c:1285
-msgid "drawn mask"
-msgstr "masque dessiné"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
@@ -1436,7 +1432,7 @@ msgstr "modifier"
 
 #: ../src/gui/accelerators.c:701 ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
-msgstr "supprimer les pré-réglages pour les modules obsolètes"
+msgstr "suppression du pré-réglages pour le module obsolète"
 
 #: ../src/gui/camera_import_dialog.c:236
 msgid "store value as default"
@@ -5057,9 +5053,19 @@ msgstr ""
 msgid "spot removal"
 msgstr "correction des taches"
 
-#: ../src/iop/spots.c:528
+#: ../src/iop/spots.c:525
 msgid "number of strokes:"
 msgstr "nombre de corrections :"
+
+#: ../src/iop/spots.c:528
+msgid ""
+"click on a shape and drag on canvas.\n"
+"use the mouse wheel to adjust size.\n"
+"right click to remove a shape."
+msgstr ""
+"cliquer sur une forme pour la déplacer.\n"
+"défiler à la souris pour ajuster la taille.\n"
+"clic-droit pour supprimer."
 
 #: ../src/iop/temperature.c:78
 msgctxt "modulename"
@@ -7794,6 +7800,9 @@ msgstr "masques existants"
 msgid "lua options"
 msgstr "options lua"
 
+#~ msgid "masks"
+#~ msgstr "masques"
+
 #~ msgid "don't use masks"
 #~ msgstr "ne pas utiliser de masque"
 
@@ -7829,15 +7838,6 @@ msgstr "options lua"
 
 #~ msgid " (needs a restart) "
 #~ msgstr "(nécessite un redémarrage)"
-
-#~ msgid ""
-#~ "click on a spot and drag on canvas to heal.\n"
-#~ "use the mouse wheel to adjust size.\n"
-#~ "right click to remove a stroke."
-#~ msgstr ""
-#~ "cliquer sur une tache et glisser pour réparer.\n"
-#~ "défiler à la souris pour ajuster la taille.\n"
-#~ "clic-droit pour supprimer."
 
 #~ msgid "spot removal only supports up to 32 spots"
 #~ msgstr "la correction des taches ne peut traiter que jusqu'à 32 taches"
