@@ -1947,7 +1947,8 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 
   //we allocate the buffer
   *buffer = malloc((*width)*(*height)*sizeof(float));
-
+  memset(*buffer,0,(*width)*(*height)*sizeof(float));
+  
   //we write all the point around the curve into the buffer
   int nbp = border_count;
   int lastx,lasty,lasty2,nx;
