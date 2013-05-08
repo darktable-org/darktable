@@ -521,13 +521,11 @@ void gui_init (dt_iop_module_t *self)
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
   self->widget = gtk_vbox_new(FALSE, 5);
-  //GtkWidget *label = gtk_label_new(_("click on a spot and drag on canvas to heal.\nuse the mouse wheel to adjust size.\nright click to remove a stroke."));
-  //gtk_misc_set_alignment(GTK_MISC(label), 0.0f, 0.5f);
-  //gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   GtkWidget * hbox = gtk_hbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("number of strokes:"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
   g->label = GTK_LABEL(gtk_label_new("-1"));
+  g_object_set(G_OBJECT(hbox), "tooltip-text", _("click on a shape and drag on canvas.\nuse the mouse wheel to adjust size.\nright click to remove a shape."), (char *)NULL);
 
   g->bt_curve = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_curve, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_curve), "button-press-event", G_CALLBACK(_add_curve), self);
