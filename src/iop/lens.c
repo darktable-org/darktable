@@ -100,6 +100,31 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "tca B", GTK_WIDGET(g->tca_b));
 }
 
+
+static char*
+_lens_sanitize(const char *orig_lens)
+{
+  char *found_or = strstr(orig_lens, " or ");
+
+  if (found_or)
+  {
+    size_t pos = (size_t)(found_or - orig_lens);
+
+    char *new_lens = (char*) malloc(pos+1);
+
+    strncpy(new_lens, orig_lens, pos);
+    new_lens[pos] = '\0';
+
+    return new_lens;
+  }
+  else
+  {
+    char *new_lens = strdup(orig_lens);
+    return new_lens;
+  }
+}
+
+
 void
 process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -823,7 +848,7 @@ void reload_defaults(dt_iop_module_t *module)
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
-  g_strlcpy(tmp.lens, img->exif_lens, 52);
+  g_strlcpy(tmp.lens, _lens_sanitize(img->exif_lens), 52);
   g_strlcpy(tmp.camera, img->exif_model, 52);
   tmp.crop     = img->exif_crop;
   tmp.aperture = img->exif_aperture;
