@@ -1036,6 +1036,31 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
     }
     else if (gui->point_selected >= 0)
     {
+      //if ctrl is pressed, we change the type of point
+      if (gui->point_edited==gui->point_selected && ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+      {
+        dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->point_edited);
+        if (point->state != DT_MASKS_POINT_STATE_NORMAL)
+        {
+          point->state = DT_MASKS_POINT_STATE_NORMAL;
+          _curve_init_ctrl_points(form);
+        }
+        else
+        {
+          point->ctrl1[0] = point->ctrl2[0] = point->corner[0];
+          point->ctrl1[1] = point->ctrl2[1] = point->corner[1];
+          point->state = DT_MASKS_POINT_STATE_USER;
+        }
+        dt_masks_write_form(form,darktable.develop);
+      
+        //we recreate the form points
+        dt_masks_gui_form_remove(form,gui,index);
+        dt_masks_gui_form_create(form,gui,index);
+        gpt->clockwise = _curve_is_clockwise(form);
+        //we save the move
+        dt_masks_update_image(darktable.develop);
+        return 1;
+      }
       //we register the current position to avoid accidental move
       if (gui->point_edited<0 && gui->scrollx == 0.0f && gui->scrolly == 0.0f)
       {
