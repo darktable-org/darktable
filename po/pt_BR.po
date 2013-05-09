@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 20:08+0200\n"
-"PO-Revision-Date: 2013-05-07 20:21+0100\n"
+"POT-Creation-Date: 2013-05-09 16:22+0200\n"
+"PO-Revision-Date: 2013-05-09 16:23+0100\n"
 "Last-Translator: Guilherme Brondani Torri <guitorri@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1013,20 +1013,20 @@ msgstr "clique duplo para redefinir"
 msgid "no mask used"
 msgstr "nenhuma máscara utilizada"
 
-#: ../src/develop/blend_gui.c:1064
-msgid "masks"
-msgstr "máscaras"
+#: ../src/develop/blend_gui.c:1064 ../src/develop/blend_gui.c:1285
+msgid "drawn mask"
+msgstr "desenhar máscara"
 
 #: ../src/develop/blend_gui.c:1073
 msgid "show and edit mask elements"
 msgstr "mostrar e editar elementos de máscara"
 
-#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:541
+#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:539
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
 msgid "add circular shape"
 msgstr "adicionar formato circular"
 
-#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:534
+#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:532
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
 msgstr "adiciona forma de curva"
@@ -1038,10 +1038,6 @@ msgstr "mesclar"
 #: ../src/develop/blend_gui.c:1280
 msgid "uniformly"
 msgstr "uniforme"
-
-#: ../src/develop/blend_gui.c:1285
-msgid "drawn mask"
-msgstr "desenhar máscara"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
@@ -3068,7 +3064,7 @@ msgid "destination"
 msgstr "destino"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:1019
 #: ../src/iop/colorzones.c:1055 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3357,20 +3353,24 @@ msgid "color correction"
 msgstr "correção de cor"
 
 #: ../src/iop/colorcorrection.c:95
+msgid "warm tone"
+msgstr "tom quente"
+
+#: ../src/iop/colorcorrection.c:102
 msgid "warming filter"
 msgstr "filtro de aquecimento"
 
-#: ../src/iop/colorcorrection.c:102
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "filtro de resfriamento"
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -3378,7 +3378,7 @@ msgstr ""
 "arraste a linha para divisão de tons. claro significa realces, escuro "
 "significa sombras. use a roda do mouse para mudar a saturação."
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr "escolha de saturação global"
 
@@ -5009,9 +5009,19 @@ msgstr ""
 msgid "spot removal"
 msgstr "remoção de mancha"
 
-#: ../src/iop/spots.c:528
+#: ../src/iop/spots.c:525
 msgid "number of strokes:"
 msgstr "número de traços:"
+
+#: ../src/iop/spots.c:528
+msgid ""
+"click on a shape and drag on canvas.\n"
+"use the mouse wheel to adjust size.\n"
+"right click to remove a shape."
+msgstr ""
+"clique em uma forma e arraste na tela.\n"
+"use a roda do mouse para ajustar o tamanho.\n"
+"clique direito para remover a forma."
 
 #: ../src/iop/temperature.c:78
 msgctxt "modulename"
@@ -7680,6 +7690,9 @@ msgstr "opções lua"
 msgid "double click to reset to `%d'"
 msgstr "clique duplo para redefinir para `%d'"
 
+#~ msgid "masks"
+#~ msgstr "máscaras"
+
 #, fuzzy
 #~ msgid "(needs a restart)"
 #~ msgstr "(é necessário reiniciar) "
@@ -7714,15 +7727,6 @@ msgstr "clique duplo para redefinir para `%d'"
 
 #~ msgid "select the saturation highlights tone"
 #~ msgstr "seleciona a saturação para os realces"
-
-#~ msgid ""
-#~ "click on a spot and drag on canvas to heal.\n"
-#~ "use the mouse wheel to adjust size.\n"
-#~ "right click to remove a stroke."
-#~ msgstr ""
-#~ "clique em uma mancha e arraste na tela para curar.\n"
-#~ "use a roda do mouse para ajustar o tamanho.\n"
-#~ "clique direito para remover traços."
 
 #~ msgid "spot removal only supports up to 32 spots"
 #~ msgstr "remoção de manchas suporta até 32 manchas"
