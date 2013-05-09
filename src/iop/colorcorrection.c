@@ -87,17 +87,24 @@ void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_colorcorrection_params_t p;
 
-  p.hia = -0.95f;
-  p.loa = 3.55f;
-  p.hib = 4.5f;
+  p.loa = 0.0f;
   p.lob = 0.0f;
+  p.hia = 0.0f;
+  p.hib = 3.0f;
+  p.saturation = 1.0f;
+  dt_gui_presets_add_generic(_("warm tone"), self->op, self->version(), &p, sizeof(p), 1);
+
+  p.loa = 3.55f;
+  p.lob = 0.0f;
+  p.hia = -0.95f;
+  p.hib = 4.5f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("warming filter"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.hia = 0.95f;
   p.loa = -3.55f;
-  p.hib = -4.5f;
   p.lob = -0.0f;
+  p.hia = 0.95f;
+  p.hib = -4.5f;
   p.saturation = 1.0f;
   dt_gui_presets_add_generic(_("cooling filter"), self->op, self->version(), &p, sizeof(p), 1);
 }
