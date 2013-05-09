@@ -837,7 +837,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.x[atrous_Lt][k] = k/(BANDS-1.0);
     p.x[atrous_ct][k] = k/(BANDS-1.0);
     p.y[atrous_Lt][k] = .0f;
-    p.y[atrous_ct][k] = .3f*k/(float)BANDS;
+    p.y[atrous_ct][k] = fmaxf(0.0f, (.60f*k/(float)BANDS) - 0.30f);
   }
   dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
