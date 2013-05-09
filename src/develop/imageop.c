@@ -55,7 +55,7 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED, DEVELOP_BLEND_NORMAL, 100.0f, DEVELOP_COMBINE_NORM_EXCL, 0, 0, 0.0f,
+static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED, DEVELOP_BLEND_NORMAL2, 100.0f, DEVELOP_COMBINE_NORM_EXCL, 0, 0, 0.0f,
   { 0, 0, 0, 0 },
   {
     0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
