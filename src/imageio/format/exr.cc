@@ -128,7 +128,7 @@ extern "C"
   int
     set_params(dt_imageio_module_format_t *self, const void *params, const int size)
     {
-      if(size != (int)params_size(self)) return 1;
+      if(size != (int)self->params_size(self)) return 1;
       return 0;
     }
 

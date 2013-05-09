@@ -863,7 +863,7 @@ get_params(dt_imageio_module_storage_t *self)
 int
 set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
   // gui stuff not updated, as sensitive user data is not stored in the preset.
   // TODO: store name/hash in kwallet/etc module and get encrypted stuff from there!
   return 0;
