@@ -1612,7 +1612,7 @@ void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_dat
 
 int set_params(struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
 
   PicasaContext *d = (PicasaContext *) params;
   dt_storage_picasa_gui_data_t *g = (dt_storage_picasa_gui_data_t *)self->gui_data;

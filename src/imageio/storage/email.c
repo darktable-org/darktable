@@ -143,7 +143,7 @@ get_params(dt_imageio_module_storage_t *self)
 int
 set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
   return 0;
 }
 

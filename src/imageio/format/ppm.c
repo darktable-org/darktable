@@ -78,7 +78,7 @@ free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 int
 set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
   return 0;
 }
 
