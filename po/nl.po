@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2013-04-23 20:14+0100\n"
+"POT-Creation-Date: 2013-05-09 19:12+0200\n"
+"PO-Revision-Date: 2013-05-09 19:29+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -838,11 +838,11 @@ msgid "copying %d images"
 msgstr "kopieer %d afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:928
-#, fuzzy, c-format
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"het ophalen van de instellingen van de opslag module is mislukt, het "
-"exporteren wordt afgebroken"
+"het opvragen instellingen van de opslag module `%s' is mislukt, het "
+"exporteren is gestopt"
 
 #: ../src/control/jobs/control_jobs.c:932
 #, c-format
@@ -985,11 +985,11 @@ msgstr "kies een kleursectie in de afbeelding"
 
 #: ../src/develop/blend_gui.c:915
 msgid "reset blend mask settings"
-msgstr "herstel instellingen voor mengen masker "
+msgstr "herstel instellingen voor mengen masker"
 
 #: ../src/develop/blend_gui.c:918
 msgid "invert all channel's polarities"
-msgstr ""
+msgstr "keer alle kanaal polariteiten om"
 
 #: ../src/develop/blend_gui.c:929 ../src/develop/blend_gui.c:932
 msgid "toggle polarity. best seen by enabling 'display mask'"
@@ -1013,63 +1013,58 @@ msgstr "dubbelklikken is resetten"
 msgid "no mask used"
 msgstr "geen maskers "
 
-#: ../src/develop/blend_gui.c:1064
-msgid "masks"
-msgstr "maskers"
+#: ../src/develop/blend_gui.c:1064 ../src/develop/blend_gui.c:1285
+msgid "drawn mask"
+msgstr "vector masker"
 
 #: ../src/develop/blend_gui.c:1073
 msgid "show and edit mask elements"
-msgstr ""
+msgstr "toon en bewerk masker"
 
-#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:541
+#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:539
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
 msgid "add circular shape"
-msgstr "gebruik cirkelvorm"
+msgstr "toevoegen cirkelvorm"
 
-#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:534
+#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:532
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
-msgstr "vectorvorm toevoegen"
+msgstr "toevoegen vectorvorm"
 
 #: ../src/develop/blend_gui.c:1275
 msgid "blend"
-msgstr "meng"
+msgstr "mengen"
 
 #: ../src/develop/blend_gui.c:1280
 msgid "uniformly"
 msgstr "geheel"
 
-#: ../src/develop/blend_gui.c:1285
-#, fuzzy
-msgid "drawn mask"
-msgstr "toon masker"
-
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
-msgstr ""
+msgstr "parametrisch masker"
 
 #: ../src/develop/blend_gui.c:1297
 msgid "drawn & parametric mask"
-msgstr ""
+msgstr "vector & parametrisch masker"
 
 #: ../src/develop/blend_gui.c:1302
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
+"activeer mengen; geheel, vector masker, parametrisch masker of in combinatie"
 
 #: ../src/develop/blend_gui.c:1307
 msgid "blend mode"
-msgstr "mengmethode"
+msgstr "overvloei modus"
 
 #: ../src/develop/blend_gui.c:1309 ../src/libs/live_view.c:377
 msgid "normal"
 msgstr "normaal"
 
 #: ../src/develop/blend_gui.c:1312
-#, fuzzy
 msgid "normal bounded"
-msgstr "onbegrensd"
+msgstr "normaal begrensd"
 
 #: ../src/develop/blend_gui.c:1315 ../src/libs/live_view.c:386
 msgid "lighten"
@@ -1157,27 +1152,23 @@ msgstr "aanpassen kleur"
 
 #: ../src/develop/blend_gui.c:1375
 msgid "choose blending mode"
-msgstr "kies mengmethode"
+msgstr "kies overvloei modus"
 
 #: ../src/develop/blend_gui.c:1383
-#, fuzzy
 msgid "difference (deprecated)"
-msgstr "(verouderd)"
+msgstr "verschil (verouderd)"
 
 #: ../src/develop/blend_gui.c:1388
-#, fuzzy
 msgid "inverse (deprecated)"
-msgstr "(verouderd)"
+msgstr "geïnverteerd (verouderd)"
 
 #: ../src/develop/blend_gui.c:1393
-#, fuzzy
 msgid "normal (deprecated)"
-msgstr "(verouderd)"
+msgstr "normaal (verouderd)"
 
 #: ../src/develop/blend_gui.c:1398
-#, fuzzy
 msgid "unbounded (deprecated)"
-msgstr "(verouderd)"
+msgstr "ongebonden (verouderd)"
 
 #: ../src/develop/blend_gui.c:1404 ../src/iop/watermark.c:1049
 msgid "opacity"
@@ -1185,62 +1176,61 @@ msgstr "dekking"
 
 #: ../src/develop/blend_gui.c:1407
 msgid "set the opacity of the blending"
-msgstr "bepaal dekking voor menging"
+msgstr "bepaal de transparantie bij overvloeien"
 
 #: ../src/develop/blend_gui.c:1413
-#, fuzzy
 msgid "combine masks"
-msgstr "gebruik geen maskers"
+msgstr "combineer maskers"
 
 #: ../src/develop/blend_gui.c:1415
-#, fuzzy
 msgid "exclusive"
-msgstr "uitsluiten"
+msgstr "exclusief"
 
 #: ../src/develop/blend_gui.c:1418
-#, fuzzy
 msgid "inclusive"
-msgstr "voeg toe"
+msgstr "inclusief"
 
 #: ../src/develop/blend_gui.c:1421
 msgid "exclusive & inverted"
-msgstr ""
+msgstr "exclusief & omgekeerd"
 
 #: ../src/develop/blend_gui.c:1424
 msgid "inclusive & inverted"
-msgstr ""
+msgstr "inclusief & omgekeerd"
 
 #: ../src/develop/blend_gui.c:1428
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
+"hoe te combineren individueel vector masker en verschillende parametrisch "
+"masker kanalen"
 
 #: ../src/develop/blend_gui.c:1434
-#, fuzzy
 msgid "invert mask"
-msgstr "keer om"
+msgstr "masker omkeren"
 
 #: ../src/develop/blend_gui.c:1443
 msgid "apply mask in normal or inverted mode"
-msgstr ""
+msgstr "pas het masker in omgekeerde vorm toe"
 
 #: ../src/develop/blend_gui.c:1450
 msgid "mask blur"
-msgstr "masker onscherpte"
+msgstr "doezelen"
 
 #: ../src/develop/blend_gui.c:1452
 msgid "radius for gaussian blur of blend mask"
-msgstr "de straal voor gaussianse onscherpte"
+msgstr "de te gebruiken straal voor doezelen"
 
 #: ../src/develop/blend_gui.c:1458
 msgid "display mask"
 msgstr "toon masker"
 
 #: ../src/develop/blend_gui.c:1465
-#, fuzzy
 msgid "temporarily switch off blend mask. only for module in focus"
-msgstr "gedeeltelijk mengen tijdelijk uitzetten, geldt alleen voor deze module"
+msgstr ""
+"masker menging tijdelijk uitzetten\n"
+"geldt alleen voor de module nu in beeld"
 
 #: ../src/develop/develop.c:953
 #, c-format
@@ -2553,7 +2543,7 @@ msgstr "equalizer"
 #: ../src/iop/atrous.c:131 ../src/iop/soften.c:105
 msgctxt "accel"
 msgid "mix"
-msgstr "mix"
+msgstr "aanmaak"
 
 #: ../src/iop/atrous.c:773
 msgid "enhance coarse"
@@ -3076,7 +3066,7 @@ msgid "destination"
 msgstr "bestemming"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:1019
 #: ../src/iop/colorzones.c:1055 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3366,20 +3356,24 @@ msgid "color correction"
 msgstr "kleur correctie"
 
 #: ../src/iop/colorcorrection.c:95
-msgid "warming filter"
+msgid "warm tone"
 msgstr "warm filter"
 
 #: ../src/iop/colorcorrection.c:102
+msgid "warming filter"
+msgstr "warm filter"
+
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "koud filter"
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -3387,7 +3381,7 @@ msgstr ""
 "sleep de lijn voor split toning. Helder betekend hooglichten, donker "
 "betekend schaduwen. gebruik het muiswiel om de verzadiging te wijzigen."
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr "kies globale verzadiging"
 
@@ -3556,8 +3550,8 @@ msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
 msgstr ""
-"bepaad hoe clusters in kaart worden gebracht; lage waarden op kleur "
-"nabijheid, hoge waarden op kleurdominatie"
+"bepaald hoe clusters in kaart worden gebracht; lage waarden op kleur "
+"nabijheid, hoge waarden op kleurdominantie"
 
 #: ../src/iop/colormapping.c:1106
 msgid "histogram equalization"
@@ -4060,8 +4054,8 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"de bias voor tonemapper stuurt de lineariteit, hoe hoger hoe meer details in "
-"de schaduwkleuren"
+"de bias voor tonemapper beïnvloed de lineariteit, hoe hoger hoe meer details "
+"in de schaduwkleuren"
 
 #: ../src/iop/globaltonemap.c:642
 msgid "target"
@@ -4166,7 +4160,7 @@ msgstr "draaiing van het filter -180 tot 180 graden"
 
 #: ../src/iop/graduatednd.c:1056
 msgid "select the hue tone of filter"
-msgstr "bepaal de tint voor het filter"
+msgstr "bepaal de tint van het filter"
 
 #: ../src/iop/graduatednd.c:1067
 msgid "select the saturation of filter"
@@ -4357,9 +4351,8 @@ msgid "camera/lens not found - please select manually"
 msgstr "camera/lens is niet gevonden, selecteer handmatig"
 
 #: ../src/iop/lens.c:1283
-#, fuzzy
 msgid "try to locate your camera/lens in the above two menus"
-msgstr "lokaliseer uw camera/lens in bovenvermelde menu's"
+msgstr "zoek zo mogelijk uw camera/lens in bovenvermelde menu's"
 
 #: ../src/iop/lens.c:1328
 #, c-format
@@ -4442,7 +4435,7 @@ msgstr "correcties"
 
 #: ../src/iop/lens.c:1822
 msgid "which corrections to apply"
-msgstr "welke correcties toepassen"
+msgstr "toe te passen correcties"
 
 #: ../src/iop/lens.c:1837
 msgid "geometry"
@@ -4470,20 +4463,19 @@ msgstr "equidistante cilinderprojectie"
 
 #: ../src/iop/lens.c:1845
 msgid "orthographic"
-msgstr ""
+msgstr "orthographic"
 
 #: ../src/iop/lens.c:1846
 msgid "stereographic"
-msgstr ""
+msgstr "stereographic"
 
 #: ../src/iop/lens.c:1847
 msgid "equisolid angle"
-msgstr ""
+msgstr "equisolid angle"
 
 #: ../src/iop/lens.c:1848
-#, fuzzy
 msgid "thoby fish-eye"
-msgstr "fish-eye"
+msgstr "thoby fish-eye"
 
 #: ../src/iop/lens.c:1856
 msgid "auto scale"
@@ -5026,9 +5018,19 @@ msgstr ""
 msgid "spot removal"
 msgstr "spots verwijderen"
 
-#: ../src/iop/spots.c:528
+#: ../src/iop/spots.c:525
 msgid "number of strokes:"
-msgstr "aantal stroken:"
+msgstr "aantal lijnen:"
+
+#: ../src/iop/spots.c:528
+msgid ""
+"click on a shape and drag on canvas.\n"
+"use the mouse wheel to adjust size.\n"
+"right click to remove a shape."
+msgstr ""
+"klik op een masker sleep het over het canvas\n"
+"bepaal met het muiswiel de afmeting\n"
+"klik rechts om een lijn te verwijderen"
 
 #: ../src/iop/temperature.c:78
 msgctxt "modulename"
@@ -5525,7 +5527,7 @@ msgstr "camera instellingen"
 #: ../src/libs/camera.c:107
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr " afbeelding(en )opnemen"
+msgstr " afbeelding(en) opnemen"
 
 #: ../src/libs/camera.c:145
 msgid "toggle view property in center view"
@@ -6818,7 +6820,7 @@ msgstr "modules om kleuren te corrigeren"
 
 #: ../src/libs/modulegroups.c:133
 msgid "tone group"
-msgstr "toon groep"
+msgstr "modules om tonen te beïnvloeden"
 
 #: ../src/libs/modulegroups.c:138
 msgid "effect group"
@@ -7654,14 +7656,12 @@ msgid "add existing shape"
 msgstr "bestaande vorm toevoegen"
 
 #: ../src/develop/masks/masks.c:858
-#, fuzzy
 msgid "use same shapes as"
-msgstr "<gebruik dezelfde vormen als"
+msgstr "gebruik dezelfde vorm als"
 
 #: ../src/develop/masks/masks.c:938
-#, fuzzy
 msgid "shapes used"
-msgstr "vorm"
+msgstr "gebruikte vormen"
 
 #: ../src/libs/masks.c:54
 msgid "mask manager"
@@ -7704,9 +7704,20 @@ msgid "created shapes"
 msgstr "gecreëerde vormen"
 
 #: ../src/lua/preferences.c:333
-#, fuzzy
 msgid "lua options"
-msgstr "gui opties"
+msgstr "lua opties"
+
+#~ msgid "masks"
+#~ msgstr "maskers"
+
+#~ msgid "don't use masks"
+#~ msgstr "gebruik geen maskers"
+
+#~ msgid "add circle shape"
+#~ msgstr "toevoegen cirkelvorm"
+
+#~ msgid "<add existing shape"
+#~ msgstr "<bestaande vorm toevoegen"
 
 #~ msgid "only, if.."
 #~ msgstr "gedeeltelijk"
@@ -7719,12 +7730,6 @@ msgstr "gui opties"
 
 #~ msgid "Flickr account not authenticated"
 #~ msgstr "Flickr account niet aangemeld"
-
-#~ msgid "add circle shape"
-#~ msgstr "toevoegen cirkelvorm"
-
-#~ msgid "<add existing shape"
-#~ msgstr "<bestaande vorm toevoegen"
 
 #~ msgid " (needs a restart) "
 #~ msgstr "(opnieuw opstarten vereist)"
@@ -7750,15 +7755,6 @@ msgstr "gui opties"
 
 #~ msgid "select the saturation highlights tone"
 #~ msgstr "bepaal verzadiging voor hooglichten"
-
-#~ msgid ""
-#~ "click on a spot and drag on canvas to heal.\n"
-#~ "use the mouse wheel to adjust size.\n"
-#~ "right click to remove a stroke."
-#~ msgstr ""
-#~ "klik op een spot en sleep om te herstellen\n"
-#~ "bepaal met het muiswiel de afmeting\n"
-#~ "klik rechts om een lijn te verwijderen"
 
 #~ msgid "spot removal only supports up to 32 spots"
 #~ msgstr "er worden maximaal 32 spots verwijderd"
