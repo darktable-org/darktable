@@ -199,7 +199,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          if(in[0] <= clip || i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
+          if(in[0] < clip-0.001f || i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
           {
             // fast path for well-exposed pixels.
             out[0] = in[0];
@@ -216,19 +216,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
               for(int ii=-1; ii<=1; ii++)
               {
                 const float val = in[jj*roi_out->width + ii];
-                if(val > clip)
-                {
-                  const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
-                  accum[c] += lum[c] * val;
-                  cnt[c] ++;
-                }
+                const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
+                accum[c] += val;
+                cnt[c] ++;
               }
             }
             if(cnt[0] && cnt[1] && cnt[2])
             {
               out[0] = 0.0f;
               for(int c=0; c<3; c++)
-                out[0] += accum[c]/cnt[c];
+                out[0] += lum[c]*accum[c]/cnt[c];
             }
             else out[0] = clip;
           }
