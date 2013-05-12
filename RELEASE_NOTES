@@ -10,6 +10,7 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+The development team decided to exclude translations which are not properly finished from releases. The corresponding PO files will however stay in the git master version. The selection will be done based on the percentage of translated and fuzzy strings since we are lacking detailed knowledge about the languages in question.
 
 New noise profiles
  * Canon EOS 450D / Kiss X2
@@ -19,6 +20,8 @@ New noise profiles
  * All Canon Model names are now recognized, e.g. Canon EOS 350D and Canon EOS 350D DIGITAL and Canon EOS DIGITAL REBEL XT and Canon EOS Kiss Digital N point to the same camera.
  * Olympus E-520
  * Olympus E-1
+ * Olympus E-3
+ * Olympus E-P2
  * Pentax K-30
  * Additional data for Pentax K-5 II
  * Nikon D7100
@@ -30,6 +33,7 @@ White balances, color matrices:
 
 Bugfixes:
  * new RawSpeed version r537
+ * Compatible with openEXR 2.0
  * Facebook export now allows HQ images (up to 2048px)
  * Blend mode "vividlight" should work for NaNs
  * Whitebalance is now relative to daylight, not to camera white balance
