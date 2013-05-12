@@ -317,7 +317,9 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module,float
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = {pzx*wd+gui->dx,pzy*ht+gui->dy};
+    
     dt_dev_distort_backtransform(darktable.develop,pts,1);
+    
     form->source[0] = pts[0]/darktable.develop->preview_pipe->iwidth;
     form->source[1] = pts[1]/darktable.develop->preview_pipe->iheight;
     dt_masks_write_form(form,darktable.develop);
@@ -451,39 +453,46 @@ static void dt_circle_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_f
   {
     float radius = fabs(gpt->points[2] - gpt->points[0]);
 
+    
     // compute the dest inner circle intersection with the line from source center to dest center.
-    float cdx = gpt->source[0] - gpt->points[0];
-    float cdy = gpt->source[1] - gpt->points[1];
-    float cangle = atan(cdx / cdy);
+    float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
+    float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
 
-    if (cdy>0) cangle = (M_PI/2) - cangle;
-    else cangle = -(M_PI/2) - cangle;
-
-    // (arrowx,arrowy) is the point of intersection, we move it (factor 1.11) a bit farther than the
-    // inner circle to avoid superposition.
-    float arrowx = gpt->points[0] + 1.11 * radius * cos (cangle);
-    float arrowy = gpt->points[1] + 1.11 * radius * sin (cangle);
-
-    cairo_move_to(cr,gpt->source[0]+dxs,gpt->source[1]+dys); // source center
-    cairo_line_to(cr,arrowx+dx,arrowy+dy); // dest border
-    // then draw to line for the arrow itself
-    const float arrow_scale = 1.5;
-    cairo_line_to(cr,gpt->points[0] + arrow_scale * radius * cos (cangle+(0.06*arrow_scale))+dx,
-                  gpt->points[1] + arrow_scale * radius * sin (cangle+(0.06*arrow_scale))+dy);
-    cairo_move_to(cr,arrowx+dx,arrowy+dy);
-    cairo_line_to(cr,gpt->points[0] + arrow_scale * radius * cos (cangle-(0.06*arrow_scale))+dx,
-                  gpt->points[1] + arrow_scale * radius * sin (cangle-(0.06*arrow_scale))+dy);
-
-    cairo_set_dash(cr, dashed, 0, 0);
-    if ((gui->group_selected == index) && (gui->form_selected || gui->form_dragging)) cairo_set_line_width(cr, 2.5/zoom_scale);
-    else                                     cairo_set_line_width(cr, 1.5/zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_stroke_preserve(cr);
-    if ((gui->group_selected == index) && (gui->form_selected || gui->form_dragging)) cairo_set_line_width(cr, 1.0/zoom_scale);
-    else                                     cairo_set_line_width(cr, 0.5/zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    cairo_stroke(cr);
-
+    //we don't draw the line if source==point
+    if (cdx != 0.0 && cdy != 0.0)
+    { 
+      cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
+      float cangle = atan(cdx / cdy);
+  
+      if (cdy>0) cangle = (M_PI/2) - cangle;
+      else cangle = -(M_PI/2) - cangle;
+  
+      // (arrowx,arrowy) is the point of intersection, we move it (factor 1.11) a bit farther than the
+      // inner circle to avoid superposition.
+      float arrowx = gpt->points[0] + 1.11 * radius * cos (cangle) + dx;
+      float arrowy = gpt->points[1] + 1.11 * radius * sin (cangle) + dy;
+  
+      cairo_move_to(cr,gpt->source[0]+dxs,gpt->source[1]+dys); // source center
+      cairo_line_to(cr,arrowx,arrowy); // dest border
+      // then draw to line for the arrow itself
+      const float arrow_scale = 8.0;
+      cairo_move_to(cr,arrowx + arrow_scale * cos (cangle+(0.4)),
+                    arrowy + arrow_scale * sin (cangle+(0.4)));
+      cairo_line_to(cr,arrowx,arrowy);
+      cairo_line_to(cr,arrowx + arrow_scale * cos (cangle-(0.4)),
+                    arrowy + arrow_scale * sin (cangle-(0.4)));
+  
+      cairo_set_dash(cr, dashed, 0, 0);
+      if ((gui->group_selected == index) && (gui->form_selected || gui->form_dragging)) cairo_set_line_width(cr, 2.5/zoom_scale);
+      else                                     cairo_set_line_width(cr, 1.5/zoom_scale);
+      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      cairo_stroke_preserve(cr);
+      if ((gui->group_selected == index) && (gui->form_selected || gui->form_dragging)) cairo_set_line_width(cr, 1.0/zoom_scale);
+      else                                     cairo_set_line_width(cr, 0.5/zoom_scale);
+      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      cairo_stroke(cr);
+    }
+    
     //we draw the source
     cairo_set_dash(cr, dashed, 0, 0);
     if ((gui->group_selected == index) && (gui->form_selected || gui->form_dragging)) cairo_set_line_width(cr, 2.5/zoom_scale);
