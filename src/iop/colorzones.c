@@ -434,7 +434,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.50;
   p.equalizer_x[DT_IOP_COLORZONES_C][4] = 0.51;
   p.equalizer_x[DT_IOP_COLORZONES_C][6] = 15./16.;
-  dt_gui_presets_add_generic(_("red black white"), self->op, 2, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("red black white"), self->op, 3, &p, sizeof(p), 1);
 
   // black white and skin tones
 
@@ -452,7 +452,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.25f;
   p.equalizer_x[DT_IOP_COLORZONES_C][1] = 0.16f;
   p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.3f;
-  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, 2, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("black white and skin tones"), self->op, 3, &p, sizeof(p), 1);
 
   // polarizing filter
 
@@ -470,7 +470,7 @@ void init_presets (dt_iop_module_so_t *self)
     p.equalizer_y[DT_IOP_COLORZONES_C][k] += (k-2.5)/(DT_IOP_COLORZONES_BANDS-2.0) * 0.25;
   for(int k=4; k<DT_IOP_COLORZONES_BANDS; k++)
     p.equalizer_y[DT_IOP_COLORZONES_L][k] -= (k-3.5)/(DT_IOP_COLORZONES_BANDS-3.0) * 0.35;
-  dt_gui_presets_add_generic(_("polarizing filter"), self->op, 2, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("polarizing filter"), self->op, 3, &p, sizeof(p), 1);
 
   // natural skin tone
 
@@ -498,7 +498,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.equalizer_y[DT_IOP_COLORZONES_C][6] = 0.468932;
   p.equalizer_x[DT_IOP_COLORZONES_C][7] = 1.000000;
   p.equalizer_y[DT_IOP_COLORZONES_C][7] = 0.468932;
-  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 2, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 3, &p, sizeof(p), 1);
 
   // black and white film
 
@@ -526,7 +526,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.equalizer_y[DT_IOP_COLORZONES_L][6] = 0.613040;
   p.equalizer_x[DT_IOP_COLORZONES_L][7] = 1.000000;
   p.equalizer_y[DT_IOP_COLORZONES_L][7] = 0.613040;
-  dt_gui_presets_add_generic(_("black & white film"), self->op, 2, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("black & white film"), self->op, 3, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
