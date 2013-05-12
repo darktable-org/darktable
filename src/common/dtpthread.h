@@ -75,6 +75,16 @@ dt_pthread_mutex_init_with_caller(dt_pthread_mutex_t *mutex, const pthread_mutex
 {
   memset(mutex, 0x0, sizeof(dt_pthread_mutex_t));
   snprintf(mutex->name, 256, "%s:%d (%s)", file, line, function);
+#if defined(__OpenBSD__)
+  if (attr == NULL) {
+    pthread_mutexattr_t a;
+    pthread_mutexattr_init(&a);
+    pthread_mutexattr_settype(&a, PTHREAD_MUTEX_NORMAL);
+    const int ret = pthread_mutex_init(&(mutex->mutex), &a);
+    pthread_mutexattr_destroy(&a);
+    return ret;
+  }
+#endif
   const int ret = pthread_mutex_init(&(mutex->mutex), attr);
   return ret;
 }
