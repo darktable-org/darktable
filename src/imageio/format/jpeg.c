@@ -472,7 +472,7 @@ free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 int
 set_params(dt_imageio_module_format_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
   dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)params;
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
   dtgtk_slider_set_value(g->quality, d->quality);

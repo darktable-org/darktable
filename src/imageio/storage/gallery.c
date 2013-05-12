@@ -530,7 +530,7 @@ free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 int
 set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != params_size(self)) return 1;
+  if(size != self->params_size(self)) return 1;
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)params;
   gallery_t *g = (gallery_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
