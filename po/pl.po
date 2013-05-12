@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3+\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 18:50+0200\n"
-"PO-Revision-Date: 2013-04-28 18:58+0100\n"
+"POT-Creation-Date: 2013-05-12 19:03+0200\n"
+"PO-Revision-Date: 2013-05-12 19:03+0100\n"
 "Last-Translator: Artur de Sousa Rocha <adsr@poczta.onet.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: \n"
@@ -494,7 +494,7 @@ msgstr "błąd przy wczytywaniu katalogu `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "format pliku `%s' jest nieznany!"
 
-#: ../src/common/darktable.c:338 ../src/libs/import.c:711
+#: ../src/common/darktable.c:338 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr "błąd przy wczytywaniu pliku `%s'"
@@ -558,7 +558,7 @@ msgstr "obraz `%s' jest niedostępny!"
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1462
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1780
-#: ../src/iop/lens.c:1707 ../src/libs/export.c:159 ../src/libs/export.c:162
+#: ../src/iop/lens.c:1732 ../src/libs/export.c:159 ../src/libs/export.c:162
 #: ../src/libs/export.c:595 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
@@ -573,7 +573,7 @@ msgstr "nie można znaleźć stylu '%s' do zastosowania przy eksporcie."
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
-msgstr "ogólny poissona"
+msgstr "rozkład poissona"
 
 #: ../src/common/ratings.c:45
 #, c-format
@@ -862,10 +862,10 @@ msgid "copying %d images"
 msgstr "kopiowanie %d zdjęć"
 
 #: ../src/control/jobs/control_jobs.c:936
-#, fuzzy, c-format
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"nie udało się pobrać parametrów z modułu przechowywania, przerywanie "
+"nie udało się pobrać parametrów z modułu przechowywania `%s', przerywanie "
 "eksportowania.."
 
 #: ../src/control/jobs/control_jobs.c:940
@@ -1030,7 +1030,7 @@ msgstr "zresetuj ustawienia maski mieszania"
 
 #: ../src/develop/blend_gui.c:852
 msgid "temporarily switch off blend mask. only for module in focus."
-msgstr "tymczasowo wyłącz maskę mieszania. tylko dla wskazanego modułu."
+msgstr "tymczasowo wyłącz maskę mieszania. tylko dla bieżącego modułu."
 
 #: ../src/develop/blend_gui.c:864 ../src/develop/blend_gui.c:867
 msgid "toggle polarity. best seen by enabling 'display mask'"
@@ -1059,7 +1059,7 @@ msgstr "kliknij dwukrotnie aby zresetować"
 
 #: ../src/develop/blend_gui.c:907
 msgid "radius for gaussian blur of blend mask"
-msgstr "promień rozmycia gaussa maski mieszania"
+msgstr "promień rozmycia gaussa dla maski mieszania"
 
 #: ../src/develop/blend_gui.c:1030 ../src/libs/live_view.c:377
 msgid "normal"
@@ -1219,7 +1219,7 @@ msgstr "funkcja %s jest wyłączona"
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:487 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "ustawienie zapisane"
@@ -1274,9 +1274,9 @@ msgstr "nie można odnaleźć pliku xmp z lightrooma!"
 msgid "`%s' not a lightroom xmp!"
 msgstr "`%s' nie jest plikiem xmp z lightrooma!"
 
-#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:515
 msgid "tags"
-msgstr "tagi"
+msgstr "etykiety"
 
 #: ../src/develop/lightroom.c:1333 ../src/libs/tools/filter.c:128
 msgid "rating"
@@ -1406,11 +1406,11 @@ msgid "general"
 msgstr "ogólne"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:398
+#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:402
 msgid "ignore jpeg files"
 msgstr "pomijaj pliki jpeg"
 
-#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:399
+#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:403
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -2682,7 +2682,7 @@ msgstr "szczegół"
 
 #: ../src/iop/bilateral.cc:72
 msgid "denoise (bilateral filter)"
-msgstr "odszumianie (bilateral filter)"
+msgstr "odszumianie (filtr bilateralny)"
 
 #: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:102 ../src/iop/shadhi.c:148
 #: ../src/iop/sharpen.c:104
@@ -2812,7 +2812,7 @@ msgstr "wybór koloru linii ramki"
 
 #. add import singel image buttons
 #: ../src/iop/borders.c:983 ../src/iop/clipping.c:1740
-#: ../src/libs/import.c:814
+#: ../src/libs/import.c:818
 msgid "image"
 msgstr "obraz"
 
@@ -2995,7 +2995,7 @@ msgid "destination"
 msgstr "cel"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
 #: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3121,7 +3121,7 @@ msgstr "proszę kliknąć prawym przyciskiem na obrazie i narysować prostą lin
 
 #: ../src/iop/clipping.c:1719
 msgid "keystone"
-msgstr "trapez"
+msgstr "korekta perspektywy"
 
 #: ../src/iop/clipping.c:1724
 msgid "set perspective correction for your image"
@@ -3227,7 +3227,7 @@ msgstr "części złotej spirali"
 msgid "golden spiral"
 msgstr "złota spirala"
 
-#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1713
+#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1738
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "wszystkie"
@@ -3282,20 +3282,24 @@ msgid "color correction"
 msgstr "korekcja koloru"
 
 #: ../src/iop/colorcorrection.c:95
+msgid "warm tone"
+msgstr "ciepłe tony"
+
+#: ../src/iop/colorcorrection.c:102
 msgid "warming filter"
 msgstr "filtr ogrzewający"
 
-#: ../src/iop/colorcorrection.c:102
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "filtr schładzający"
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "nasycenie"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -3303,7 +3307,7 @@ msgstr ""
 "przeciągaj linię tonowania. jasny punkt określa światła, ciemny punkt "
 "określa cienie. użyj kółka myszy aby zmienić nasycenie."
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr "ustawienie nasycenia ogólnego"
 
@@ -3606,7 +3610,7 @@ msgid "amaze (slow)"
 msgstr "amaze (wolne)"
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:378
 msgid "method"
 msgstr "metoda"
 
@@ -3682,7 +3686,7 @@ msgstr "metoda dopasowania kanału zielonego"
 
 #: ../src/iop/denoiseprofile.c:129
 msgid "denoise (profiled)"
-msgstr "odszumienie (profilowane)"
+msgstr "odszumianie (profilowane)"
 
 #: ../src/iop/denoiseprofile.c:1461 ../src/iop/denoiseprofile.c:1469
 #, c-format
@@ -3694,7 +3698,7 @@ msgstr "znaleziono dopasowanie dla iso %d"
 msgid "interpolated from iso %d and %d"
 msgstr "interpolowane z iso %d i %d"
 
-#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1868
+#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1893
 msgid "mode"
 msgstr "tryb"
 
@@ -3704,7 +3708,7 @@ msgstr "rozmiar łatki"
 
 #: ../src/iop/denoiseprofile.c:1717
 msgid "non-local means"
-msgstr "non-local means"
+msgstr "średnie nielokalne"
 
 #: ../src/iop/denoiseprofile.c:1718
 msgid "wavelets"
@@ -3719,8 +3723,8 @@ msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
-"metoda odszumiania. non-local means działa najlepiej dla trybu mieszania "
-"`jansość', falki działa najlepiej dla trybu mieszania `kolor'"
+"metoda odszumiania. `średnie nielokalne' działa najlepiej dla trybu "
+"mieszania `jansość', `falki' działa najlepiej dla trybu mieszania `kolor'"
 
 #: ../src/iop/denoiseprofile.c:1721
 msgid "radius of the patches to match. increase for more sharpness"
@@ -4040,19 +4044,19 @@ msgstr "siła zastosowanego ziarna"
 msgid "highlight reconstruction"
 msgstr "ratowanie prześwietleń"
 
-#: ../src/iop/highlights.c:382
+#: ../src/iop/highlights.c:379
 msgid "clip highlights"
 msgstr "przycinanie świateł"
 
-#: ../src/iop/highlights.c:383
+#: ../src/iop/highlights.c:380
 msgid "reconstruct in LCh"
 msgstr "rekonstrukcja w LCh"
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:381
 msgid "highlight reconstruction method"
 msgstr "metoda ratowania prześwietleń"
 
-#: ../src/iop/highlights.c:387
+#: ../src/iop/highlights.c:384
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -4060,7 +4064,7 @@ msgstr ""
 "ręczne ustawienie progu odcinania świateł dla magenty (nigdy nie powinno być "
 "konieczności zmiany tego)"
 
-#: ../src/iop/highlights.c:389
+#: ../src/iop/highlights.c:386
 msgid "clipping threshold"
 msgstr "próg odcinania"
 
@@ -4186,7 +4190,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "wybierz korekcje"
 
-#: ../src/iop/lens.c:1052
+#: ../src/iop/lens.c:1077
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4199,15 +4203,15 @@ msgstr ""
 "mocowanie:\t\t%s\n"
 "mnożnik ogniskowej:\t%.1f"
 
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1308
 msgid "camera/lens not found - please select manually"
 msgstr "aparat/obiektyw nie rozpoznany - wybierz ręcznie"
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1310
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "spróbuj wyszukać aparat/obiektyw w powyższych menu"
 
-#: ../src/iop/lens.c:1330
+#: ../src/iop/lens.c:1355
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4226,153 +4230,152 @@ msgstr ""
 "typ:\t\t%s\n"
 "mocowania:\t\t%s"
 
-#: ../src/iop/lens.c:1376
+#: ../src/iop/lens.c:1401
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1377
+#: ../src/iop/lens.c:1402
 msgid "focal length (mm)"
 msgstr "długość ogniskowej (mm)"
 
-#: ../src/iop/lens.c:1404
+#: ../src/iop/lens.c:1429
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1405
+#: ../src/iop/lens.c:1430
 msgid "f-number (aperture)"
 msgstr "liczba przysłony"
 
-#: ../src/iop/lens.c:1420
+#: ../src/iop/lens.c:1445
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1421
+#: ../src/iop/lens.c:1446
 msgid "distance to subject"
 msgstr "odległość do fotografowanego obiektu"
 
-#: ../src/iop/lens.c:1719
+#: ../src/iop/lens.c:1744
 msgid "distortion & TCA"
 msgstr "zniekształcenie i TCA"
 
-#: ../src/iop/lens.c:1725
+#: ../src/iop/lens.c:1750
 msgid "distortion & vignetting"
 msgstr "zniekształcenie i winietowanie"
 
-#: ../src/iop/lens.c:1731
+#: ../src/iop/lens.c:1756
 msgid "TCA & vignetting"
 msgstr "TCA i winietowanie"
 
-#: ../src/iop/lens.c:1737
+#: ../src/iop/lens.c:1762
 msgid "only distortion"
 msgstr "tylko zniekształcenie"
 
-#: ../src/iop/lens.c:1743
+#: ../src/iop/lens.c:1768
 msgid "only TCA"
 msgstr "tylko TCA"
 
-#: ../src/iop/lens.c:1749
+#: ../src/iop/lens.c:1774
 msgid "only vignetting"
 msgstr "tylko winietowanie"
 
-#: ../src/iop/lens.c:1772
+#: ../src/iop/lens.c:1797
 msgid "find camera"
 msgstr "znajdź aparat"
 
-#: ../src/iop/lens.c:1789
+#: ../src/iop/lens.c:1814
 msgid "find lens"
 msgstr "znajdź obiektyw"
 
-#: ../src/iop/lens.c:1822
+#: ../src/iop/lens.c:1847
 msgid "corrections"
 msgstr "korekcje"
 
-#: ../src/iop/lens.c:1824
+#: ../src/iop/lens.c:1849
 msgid "which corrections to apply"
 msgstr "jaką korekcję zastosować"
 
-#: ../src/iop/lens.c:1839
+#: ../src/iop/lens.c:1864
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:1841
+#: ../src/iop/lens.c:1866
 msgid "target geometry"
 msgstr "geometria docelowa"
 
-#: ../src/iop/lens.c:1842
+#: ../src/iop/lens.c:1867
 msgid "rectilinear"
 msgstr "prostoliniowa"
 
-#: ../src/iop/lens.c:1843
+#: ../src/iop/lens.c:1868
 msgid "fish-eye"
 msgstr "rybie oko"
 
-#: ../src/iop/lens.c:1844
+#: ../src/iop/lens.c:1869
 msgid "panoramic"
 msgstr "panoramiczna"
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1870
 msgid "equirectangular"
 msgstr "cylindryczna"
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1872
 msgid "orthographic"
-msgstr ""
+msgstr "rzut prostokątny"
 
-#: ../src/iop/lens.c:1848
+#: ../src/iop/lens.c:1873
 msgid "stereographic"
-msgstr ""
+msgstr "rzut stereograficzny"
 
-#: ../src/iop/lens.c:1849
+#: ../src/iop/lens.c:1874
 msgid "equisolid angle"
-msgstr ""
+msgstr "rzut wiernokątowy"
 
-#: ../src/iop/lens.c:1850
-#, fuzzy
+#: ../src/iop/lens.c:1875
 msgid "thoby fish-eye"
-msgstr "rybie oko"
+msgstr "rybie oko thoby"
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1883
 msgid "auto scale"
 msgstr "skaluj automatycznie"
 
-#: ../src/iop/lens.c:1859 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1884 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1018
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/lens.c:1870
+#: ../src/iop/lens.c:1895
 msgid "correct distortions or apply them"
 msgstr "skoryguj zniekształcenia lub zastosuj je"
 
-#: ../src/iop/lens.c:1871
+#: ../src/iop/lens.c:1896
 msgid "correct"
 msgstr "korekcja"
 
-#: ../src/iop/lens.c:1872
+#: ../src/iop/lens.c:1897
 msgid "distort"
 msgstr "zniekształcenie"
 
-#: ../src/iop/lens.c:1879
+#: ../src/iop/lens.c:1904
 msgid "transversal chromatic aberration red"
 msgstr "poprzeczna aberracja chromatyczna czerwieni"
 
-#: ../src/iop/lens.c:1880
+#: ../src/iop/lens.c:1905
 msgid "tca red"
 msgstr "tca czerwony"
 
-#: ../src/iop/lens.c:1885
+#: ../src/iop/lens.c:1910
 msgid "transversal chromatic aberration blue"
 msgstr "poprzeczna aberracja chromatyczna niebieskiego"
 
-#: ../src/iop/lens.c:1886
+#: ../src/iop/lens.c:1911
 msgid "tca blue"
 msgstr "tca niebieski"
 
-#: ../src/iop/lens.c:1893
+#: ../src/iop/lens.c:1918
 msgid "corrections done: "
 msgstr "zastosowane korekcje: "
 
-#: ../src/iop/lens.c:1894
+#: ../src/iop/lens.c:1919
 msgid "which corrections have actually been done"
 msgstr "jaka korekcja została zastosowana"
 
@@ -4514,11 +4517,11 @@ msgstr "gaussa"
 
 #: ../src/iop/lowpass.c:528 ../src/iop/shadhi.c:645
 msgid "bilateral filter"
-msgstr "filtr obustronny"
+msgstr "filtr bilateralny"
 
 #: ../src/iop/lowpass.c:534
 msgid "radius of gaussian/bilateral blur"
-msgstr "promień rozmycia gaussa/obustronnego"
+msgstr "promień rozmycia gaussa/bilateralnego"
 
 #: ../src/iop/lowpass.c:535
 msgid "contrast of lowpass filter"
@@ -4556,7 +4559,7 @@ msgstr "światła"
 
 #: ../src/iop/nlmeans.c:81
 msgid "denoise (non-local means)"
-msgstr "odszumianie (non-local means)"
+msgstr "odszumianie (średnie nielokalne)"
 
 #: ../src/iop/nlmeans.c:114
 msgctxt "accel"
@@ -4590,7 +4593,7 @@ msgstr "ustalony profil wejściowy"
 
 #: ../src/iop/profile_gamma.c:122 ../src/iop/tonecurve.c:242
 msgid "linear"
-msgstr "liniowa"
+msgstr "korekcja liniowa"
 
 #: ../src/iop/profile_gamma.c:123
 msgid "linear part"
@@ -4602,11 +4605,11 @@ msgstr "gamma"
 
 #: ../src/iop/profile_gamma.c:137
 msgid "gamma exponential factor"
-msgstr "czynnik wykładniczy gamma"
+msgstr "współczynnik wykładniczy gamma"
 
 #: ../src/iop/rawdenoise.c:60
 msgid "raw denoise"
-msgstr "odszumienie surowe"
+msgstr "odszumianie (raw)"
 
 #: ../src/iop/rawdenoise.c:82
 msgctxt "accel"
@@ -4715,7 +4718,7 @@ msgstr "zasięg przestrzenny"
 
 #: ../src/iop/shadhi.c:674
 msgid "filter to use for softening. bilateral avoids halos"
-msgstr "filtr używany do zmiękczenia. obustronny nie daje efektu halo"
+msgstr "filtr używany do zmiękczenia. bilateralny nie daje efektu halo"
 
 #: ../src/iop/shadhi.c:675
 msgid ""
@@ -5153,7 +5156,7 @@ msgstr ""
 "parametr kształtu\n"
 "0 tworzy prostokąt\n"
 "1 tworzy koło lub elipsę\n"
-"2 tworzy diament"
+"2 tworzy romb"
 
 #: ../src/iop/vignette.c:1160
 msgid "enable to have the ratio automatically follow the image size"
@@ -5620,17 +5623,17 @@ msgstr "historia"
 msgid "description"
 msgstr "opis"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:493
+#: ../src/libs/collect.h:40 ../src/libs/import.c:497
 #: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:96
 msgid "creator"
 msgstr "twórca"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/collect.h:41 ../src/libs/import.c:503
 #: ../src/libs/metadata.c:342
 msgid "publisher"
 msgstr "wydawca"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/collect.h:42 ../src/libs/import.c:509
 #: ../src/libs/metadata.c:355
 msgid "rights"
 msgstr "uprawnienia"
@@ -5698,7 +5701,7 @@ msgid "xmp sidecar files"
 msgstr "poboczne pliki xmp"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:684 ../src/libs/styles.c:280
 msgid "all files"
 msgstr "wszystkie pliki"
 
@@ -6204,112 +6207,117 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "rozgrupuj"
 
-#: ../src/libs/import.c:84
+#: ../src/libs/import.c:85
 msgid "import"
 msgstr "import"
 
-#: ../src/libs/import.c:105
+#: ../src/libs/import.c:106
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "wyszukaj urządzenia"
 
-#: ../src/libs/import.c:106
+#: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importuj z aparatu"
 
-#: ../src/libs/import.c:107
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "robienie zdjęć"
 
-#: ../src/libs/import.c:108
+#: ../src/libs/import.c:109
 msgctxt "accel"
 msgid "import image"
 msgstr "importuj obraz"
 
+#: ../src/libs/import.c:110
+msgctxt "accel"
+msgid "import folder"
+msgstr "importuj katalog"
+
 #. add the rescan button
-#: ../src/libs/import.c:187
+#: ../src/libs/import.c:191
 msgid "scan for devices"
 msgstr "wyszukaj urządzenia"
 
-#: ../src/libs/import.c:190
+#: ../src/libs/import.c:194
 msgid "scan for newly attached devices"
 msgstr "wyszukuje nowo dołączone urządzenia"
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "urządzenie \"%s\" podłączone do portu \"%s\"."
 
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:230
 msgid "import from camera"
 msgstr "importuj z aparatu"
 
-#: ../src/libs/import.c:231
+#: ../src/libs/import.c:235
 msgid "tethered shoot"
 msgstr "robienie zdjęć"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:253
+#: ../src/libs/import.c:257
 msgid "no supported devices found"
 msgstr "nie znaleziono obsługiwanych urządzeń"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:372
+#: ../src/libs/import.c:376
 msgid "import options"
 msgstr "opcje importu"
 
 #. recursive opening.
-#: ../src/libs/import.c:392
+#: ../src/libs/import.c:396
 msgid "import directories recursively"
 msgstr "rekurencyjnie importuj katalogi"
 
-#: ../src/libs/import.c:393
+#: ../src/libs/import.c:397
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "rekurencyjne importowanie podkatalogów. każdy katalog trafia do nowej rolki "
 "filmu."
 
-#: ../src/libs/import.c:407
+#: ../src/libs/import.c:411
 msgid "apply metadata on import"
 msgstr "zastosuj metadane podczas importu"
 
-#: ../src/libs/import.c:408
+#: ../src/libs/import.c:412
 msgid "apply some metadata to all newly imported images."
 msgstr "stosuje wybrane metadane do nowo-importowanych obrazów."
 
-#: ../src/libs/import.c:435
+#: ../src/libs/import.c:439
 msgid "comma separated list of tags"
 msgstr "lista etykiet oddzielonych przecinkami"
 
-#: ../src/libs/import.c:650
+#: ../src/libs/import.c:654
 msgid "import image"
 msgstr "importuj obraz"
 
-#: ../src/libs/import.c:675
+#: ../src/libs/import.c:679
 msgid "supported images"
 msgstr "obsługiwane obrazy"
 
-#: ../src/libs/import.c:725
+#: ../src/libs/import.c:729
 msgid "file has unknown format!"
 msgstr "format pliku jest nieznany!"
 
-#: ../src/libs/import.c:743
+#: ../src/libs/import.c:747
 msgid "import film"
 msgstr "importuj rolkę filmu"
 
-#: ../src/libs/import.c:817
+#: ../src/libs/import.c:821
 msgid "select one or more images to import"
 msgstr "wybiera jeden lub więcej obrazów do zaimportowania"
 
 #. adding the import folder button
-#: ../src/libs/import.c:826
+#: ../src/libs/import.c:830
 msgid "folder"
 msgstr "katalog"
 
-#: ../src/libs/import.c:830
+#: ../src/libs/import.c:834
 msgid "select a folder to import as film roll"
 msgstr "wybiera katalog do zaimportowania jako rolkę filmu"
 
@@ -7460,11 +7468,79 @@ msgctxt "accel"
 msgid "redo"
 msgstr "powtórz"
 
+#~ msgid "invert all channel's polarities"
+#~ msgstr "odwróć polaryzacje wszystkich kanałów"
+
 #~ msgid "no mask used"
 #~ msgstr "nie użyto maski"
 
 #~ msgid "masks"
 #~ msgstr "maski"
+
+#~ msgid "show and edit mask elements"
+#~ msgstr "pokaż i edytuj elementy maski"
+
+#~ msgid "add circular shape"
+#~ msgstr "dodaj koło"
+
+#~ msgid "add curve shape"
+#~ msgstr "dodaj krzywą"
+
+#~ msgid "drawn mask"
+#~ msgstr "maska rysowana"
+
+#~ msgid "parametric mask"
+#~ msgstr "maska parametryczna"
+
+#~ msgid "drawn & parametric mask"
+#~ msgstr "maska rysowana i parametryczna"
+
+#~ msgid ""
+#~ "activate blending: uniformly, with drawn mask, with parametric mask, or "
+#~ "combination of both"
+#~ msgstr ""
+#~ "włącz mieszanie: jednorodnie, z maską rysowaną, z maską parametryczną lub "
+#~ "kombinacją obu"
+
+#~ msgid "difference (deprecated)"
+#~ msgstr "różnica (zdezaktualizowane)"
+
+#~ msgid "inverse (deprecated)"
+#~ msgstr "odwrócony (zdezaktualizowane)"
+
+#~ msgid "normal (deprecated)"
+#~ msgstr "zwykły (zdezaktualizowane)"
+
+#~ msgid "unbounded (deprecated)"
+#~ msgstr "nieograniczony (zdezaktualizowane)"
+
+#~ msgid "combine masks"
+#~ msgstr "łącz maski"
+
+#~ msgid "exclusive"
+#~ msgstr "z wyłączeniem"
+
+#~ msgid "inclusive"
+#~ msgstr "łącznie"
+
+#~ msgid "exclusive & inverted"
+#~ msgstr "z wyłączeniem i odwróceniem"
+
+#~ msgid "inclusive & inverted"
+#~ msgstr "łącznie i z odwróceniem"
+
+#~ msgid ""
+#~ "how to combine individual drawn mask and different channels of parametric "
+#~ "mask"
+#~ msgstr ""
+#~ "sposób łączenia pojedynczej maski rysowanej z różnymi kanałami masek "
+#~ "parametrycznych"
+
+#~ msgid "invert mask"
+#~ msgstr "odwróć maskę"
+
+#~ msgid "apply mask in normal or inverted mode"
+#~ msgstr "zastosuj maskę w trybie zwykłym lub odwróconym"
 
 #~ msgid "color mapping"
 #~ msgstr "mapowanie kolorów"
@@ -7520,12 +7596,6 @@ msgstr "powtórz"
 #~ msgid "level of histogram equalization"
 #~ msgstr "poziom wyrównania histogramu"
 
-#~ msgid "add curve shape"
-#~ msgstr "dodaj krzywą"
-
-#~ msgid "add circular shape"
-#~ msgstr "dodaj koło"
-
 #~ msgid "larger border"
 #~ msgstr "dłuższa krawędź"
 
@@ -7549,6 +7619,60 @@ msgstr "powtórz"
 
 #~ msgid "200%"
 #~ msgstr "200%"
+
+#~ msgid "could not allocate buffer for blending"
+#~ msgstr "alokacja bufora dla mieszania nie powiodła się"
+
+#~ msgid "add existing shape"
+#~ msgstr "dodaj istniejący kształt"
+
+#~ msgid "use same shapes as"
+#~ msgstr "użyj tych kształtów, co"
+
+#~ msgid "shapes used"
+#~ msgstr "kształtów w użyciu"
+
+#~ msgid "mask manager"
+#~ msgstr "menadżer masek"
+
+#~ msgid "delete this shape"
+#~ msgstr "usuń ten kształt"
+
+#~ msgid "remove from group"
+#~ msgstr "usuń z grupy"
+
+#~ msgid "group the forms"
+#~ msgstr "zgrupuj formy"
+
+#~ msgid "use inversed shape"
+#~ msgstr "użyj odwróconego kształtu"
+
+#~ msgid "mode : union"
+#~ msgstr "tryb : suma"
+
+#~ msgid "mode : intersection"
+#~ msgstr "tryb : przecięcie"
+
+#~ msgid "mode : difference"
+#~ msgstr "tryb : różnica"
+
+#~ msgid "mode : exclusion"
+#~ msgstr "tryb : wykluczenie"
+
+#~ msgid "created shapes"
+#~ msgstr "utworzone kształty"
+
+#~ msgid "lua options"
+#~ msgstr "opcje lua"
+
+#~ msgid "don't use masks"
+#~ msgstr "nie używaj masek"
+
+#~ msgid "add circle shape"
+#~ msgstr "dodaj koło"
+
+#~ msgid "<add existing shape"
+#~ msgstr "<dodaj istniejący kształt"
 
 #~ msgid " (needs a restart)"
 #~ msgstr "(wymagany restart)"
@@ -8143,9 +8267,6 @@ msgstr "powtórz"
 #~ msgid "loading image %s"
 #~ msgstr "wczytywanie obrazu %s"
 
-#~ msgid " (deprecated)"
-#~ msgstr "(zdezaktualizowane)"
-
 #~ msgid "<span color=\"#7f7f7f\"><big><b>light table mode</b></big></span>"
 #~ msgstr ""
 #~ "<span color=\"#7f7f7f\"><big><b>tryb stół podświetlany</b></big></span>"
@@ -8424,9 +8545,6 @@ msgstr "powtórz"
 #~ "do you really want to remove this film roll and all its images from the "
 #~ "collection?"
 #~ msgstr "usunąć tę rolkę filmu i wszystkie jej obrazy z kolekcji?"
-
-#~ msgid "remove film roll?"
-#~ msgstr "usunąć rolkę filmu?"
 
 #~ msgid "all film rolls"
 #~ msgstr "wszystkie rolki filmu"
