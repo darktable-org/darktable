@@ -27,6 +27,19 @@
 #include "develop/masks/circle.c"
 #include "develop/masks/curve.c"
 #include "develop/masks/group.c"
+
+static void _set_hinter_message(dt_masks_form_gui_t *gui)
+{
+  char msg[256] = "";
+  if (gui->creation) strcat(msg,_("ctrl+click to add a sharp node"));
+  else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between curve/sharp node"));
+  else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
+  else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
+  else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+  
+  dt_control_hinter_message(darktable.control,msg);
+}
+
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
 {
   if (g_list_length(gui->points) == index)
@@ -464,11 +477,14 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   pzx += 0.5f;
   pzy += 0.5f;
 
-  if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
+  int rep = 0;
+  if (form->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_CURVE) rep = dt_curve_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
 
-  return 0;
+  if (gui) _set_hinter_message(gui);
+  
+  return rep;
 }
 int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, double y, int which, uint32_t state)
 {
