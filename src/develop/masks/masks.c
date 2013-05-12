@@ -36,7 +36,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui)
   else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
   else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
   else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
-  
+
   dt_control_hinter_message(darktable.control,msg);
 }
 
@@ -483,7 +483,7 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
 
   if (gui) _set_hinter_message(gui);
-  
+
   return rep;
 }
 int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, double y, int which, uint32_t state)
@@ -526,7 +526,7 @@ int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, do
   dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  
+
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_CURVE) return dt_curve_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,pzx,pzy,up,state,form,gui);
@@ -951,7 +951,7 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
   if (nb>0)
   {
     char txt[512];
-    snprintf(txt,512,"%d %s",nb,_("shapes used"));
+    snprintf(txt,512,ngettext("%d shape used", "%d shapes used", nb), nb);
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
   else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
