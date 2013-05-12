@@ -33,6 +33,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
 #endif
@@ -106,6 +107,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import image"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "import folder"), GDK_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -116,6 +118,8 @@ void connect_key_accels(dt_lib_module_t *self)
                               GTK_WIDGET(d->scan_devices));
   dt_accel_connect_button_lib(self, "import image",
                               GTK_WIDGET(d->import_file));
+  dt_accel_connect_button_lib(self, "import folder",
+                              GTK_WIDGET(d->import_directory));
   if(d->tethered_shoot)
     dt_accel_connect_button_lib(self, "tethered shoot",
                                 GTK_WIDGET(d->tethered_shoot));
