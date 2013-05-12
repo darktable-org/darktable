@@ -1870,7 +1870,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
   if (e->button == 1)
   {
     /* handle shiftclick on expander, hide all except this */
-    if ((e->state & GDK_SHIFT_MASK))
+    if (!dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
       int current_group = dt_dev_modulegroups_get(module->dev);
       GList *iop = g_list_first(module->dev->iop);

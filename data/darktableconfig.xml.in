@@ -910,6 +910,20 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>lighttable/ui/single_module</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>expand a single lighttable module at a time</shortdescription>
+    <longdescription>this option toggles the behavior of shift clicking in lighttable mode</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>darkroom/ui/single_module</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>expand a single darkroom module at a time</shortdescription>
+    <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
     <type>int</type>
