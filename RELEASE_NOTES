@@ -30,6 +30,7 @@ New noise profiles
 White balances, color matrices:
  * Fix issues with different camera model names for various Canon cameras (see above)
  * White balance for Panasonic DMC-GH2
+ * Updates whitebalance list with the latest version of UFRaw's cvs version
 
 Bugfixes:
  * new RawSpeed version r537
@@ -37,6 +38,7 @@ Bugfixes:
  * Facebook export now allows HQ images (up to 2048px)
  * Blend mode "vividlight" should work for NaNs
  * Whitebalance is now relative to daylight, not to camera white balance
+ * Now importing folder via key accel is supported.
  * Only one temperature slider in white balance
  * Some fixes to the zoom behaviour in darkroom mode
  * New lensfun geometries now supported (with lensfun >= 0.2.7)
