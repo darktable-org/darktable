@@ -744,7 +744,7 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     if(!module->expandable()) return FALSE;
 
     /* handle shiftclick on expander, hide all except this */
-    if ((e->state & GDK_SHIFT_MASK))
+    if (!dt_conf_get_bool("lighttable/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
       GList *it = g_list_first(darktable.lib->plugins);
       uint32_t container = module->container();
