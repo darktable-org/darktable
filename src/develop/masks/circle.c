@@ -247,6 +247,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
       gui2->posy = pzy*darktable.develop->preview_pipe->backbuf_height;
       gui2->dx = 0.0;
       gui2->dy = 0.0;
+      gui2->scrollx = pzx;
+      gui2->scrolly = pzy;
     }
     return 1;
   }
@@ -312,16 +314,25 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module,float
   {
     //we end the form dragging
     gui->source_dragging = FALSE;
-
-    //we change the center value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
-    float pts[2] = {pzx*wd+gui->dx,pzy*ht+gui->dy};
-    
-    dt_dev_distort_backtransform(darktable.develop,pts,1);
-    
-    form->source[0] = pts[0]/darktable.develop->preview_pipe->iwidth;
-    form->source[1] = pts[1]/darktable.develop->preview_pipe->iheight;
+    if (gui->scrollx != 0.0 || gui->scrolly != 0.0)
+    {
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *) (g_list_first(form->points)->data);
+      form->source[0] = circle->center[0] + circle->radius;
+      form->source[1] = circle->center[1] - circle->radius;
+      gui->scrollx = gui->scrolly = 0.0;
+    }
+    else
+    {
+      //we change the center value
+      float wd = darktable.develop->preview_pipe->backbuf_width;
+      float ht = darktable.develop->preview_pipe->backbuf_height;
+      float pts[2] = {pzx*wd+gui->dx,pzy*ht+gui->dy};
+      
+      dt_dev_distort_backtransform(darktable.develop,pts,1);
+      
+      form->source[0] = pts[0]/darktable.develop->preview_pipe->iwidth;
+      form->source[1] = pts[1]/darktable.develop->preview_pipe->iheight;
+    }
     dt_masks_write_form(form,darktable.develop);
 
     //we recreate the form points
