@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-12 21:08+0200\n"
-"PO-Revision-Date: 2013-05-12 21:09+0200\n"
+"PO-Revision-Date: 2013-05-12 21:12+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -3268,7 +3268,7 @@ msgstr "färgkorrigering"
 
 #: ../src/iop/colorcorrection.c:95
 msgid "warm tone"
-msgstr "värmande ton"
+msgstr "varm ton"
 
 #: ../src/iop/colorcorrection.c:102
 msgid "warming filter"
