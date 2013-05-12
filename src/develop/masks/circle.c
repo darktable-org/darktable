@@ -34,7 +34,7 @@ static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t
   //we first check if we are inside the source form
   if (gpt->source_count>6)
   {
-    for (int i=2; i<gpt->source_count; i++)
+    for (int i=1; i<gpt->source_count; i++)
     {
       int yy = (int) gpt->source[i*2+1];
       if (yy != last && yy == y)
@@ -56,7 +56,7 @@ static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t
 
   //we check if it's inside borders
   nb=0;
-  for (int i=2; i<gpt->border_count; i++)
+  for (int i=1; i<gpt->border_count; i++)
   {
     int yy = (int) gpt->border[i*2+1];
     if (yy != last && yy == y)
@@ -78,7 +78,7 @@ static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t
   //and we check if it's inside form
   nb = 0;
   last = -9999;
-  for (int i=2; i<gpt->points_count; i++)
+  for (int i=1; i<gpt->points_count; i++)
   {
     int yy = (int) gpt->points[i*2+1];
     if (yy != last && yy == y)
