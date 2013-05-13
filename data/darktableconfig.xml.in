@@ -440,7 +440,7 @@
     <type>int</type>
     <default>1000</default>
     <shortdescription>maximum height of image drawing area</shortdescription>
-    <longdescription>maximum height of the image drawing area in dakroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
+    <longdescription>maximum height of the image drawing area in darkroom mode. adjust to your screen\n(needs a restart and will invalidate current thumbnail caches).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>cache_compression</name>
