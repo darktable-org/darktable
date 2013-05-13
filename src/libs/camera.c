@@ -499,7 +499,7 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT( lib->gui.sb1), "tooltip-text", _("the count of seconds before actually doing a capture"), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.sb2), "tooltip-text", _("the amount of images to capture in a sequence,\nyou can use this in conjunction with delayed mode to create stop-motion sequences."), (char *)NULL);
   g_object_set(G_OBJECT( lib->gui.sb3), "tooltip-text", _("the amount of brackets on each side of centered shoot, amount of images = (brackets*2)+1."), (char *)NULL);
-  g_object_set(G_OBJECT( lib->gui.sb4), "tooltip-text", _("the amount of steps per bracket, steps is camera configurable and usally 3 steps per stop\nwith other words, 3 steps is 1EV exposure step between brackets."), (char *)NULL);
+  g_object_set(G_OBJECT( lib->gui.sb4), "tooltip-text", _("the amount of steps per bracket, steps is camera configurable and usually 3 steps per stop\nwith other words, 3 steps is 1EV exposure step between brackets."), (char *)NULL);
 
   g_signal_connect(G_OBJECT(lib->gui.tb1), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
   g_signal_connect(G_OBJECT(lib->gui.tb2), "clicked", G_CALLBACK(_toggle_capture_mode_clicked), lib);
