@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 19:22+0200\n"
-"PO-Revision-Date: 2013-05-12 21:19+0200\n"
+"POT-Creation-Date: 2013-05-13 23:22+0200\n"
+"PO-Revision-Date: 2013-05-13 23:30+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -290,7 +290,11 @@ msgid ""
 "during image processing. lower values will force memory hungry modules to "
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500. needs a restart."
-msgstr "detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden under 500 kommer att hanteras som 500. kräver omstart."
+msgstr ""
+"detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid "
+"bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta "
+"bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden "
+"under 500 kommer att hanteras som 500. kräver omstart."
 
 #: ../build/src/preferences_gen.h:1461
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -301,7 +305,10 @@ msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit. needs a restart."
-msgstr "ett positivt tal över noll anger den minsta mängden minne (i MB) som 'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på host_memory_limit. kräver en omstart."
+msgstr ""
+"ett positivt tal över noll anger den minsta mängden minne (i MB) som "
+"'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på "
+"host_memory_limit. kräver en omstart."
 
 #: ../build/src/preferences_gen.h:1486
 msgid "write sidecar file for each image"
@@ -1277,12 +1284,12 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2025
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2025
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
@@ -1292,7 +1299,7 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
 #: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
-#: ../src/libs/lib.c:320 ../src/libs/lib.c:971
+#: ../src/libs/lib.c:320 ../src/libs/lib.c:976
 msgid "preset"
 msgstr "förinställning"
 
@@ -1322,16 +1329,16 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:1990
+#: ../src/develop/imageop.c:1995
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:1999 ../src/libs/lib.c:830
+#: ../src/develop/imageop.c:2004 ../src/libs/lib.c:835
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:2008 ../src/gui/preferences.c:403
-#: ../src/libs/lib.c:843
+#: ../src/develop/imageop.c:2013 ../src/gui/preferences.c:403
+#: ../src/libs/lib.c:848
 msgid "presets"
 msgstr "fördefinierade"
 
@@ -5611,13 +5618,12 @@ msgstr ""
 
 #: ../src/libs/camera.c:502
 msgid ""
-"the amount of steps per bracket, steps is camera configurable and usally 3 "
+"the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"antal steg för exponeringsstege, oftast är ett steg storlek konfigurerbart i "
-"kameran och brukar vara 3 steg per EV, med andra ord 3 steg är 1EV "
-"exponeringssteg mellan bilder i exponeringsstegen. "
+"antal steg för exponeringsstege, dessa steg går att konfigurera i kameran, och brukar vara 3 steg per exponeringssteg\n"
+"med andra ord är 3 steg 1EV exponeringssteg mellan bilder i exponeringsstegen."
 
 #: ../src/libs/camera.c:516
 msgid "properties"
