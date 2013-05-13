@@ -1450,6 +1450,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
     {
       int current_group = dt_dev_modulegroups_get(module->dev);
       GList *iop = g_list_first(module->dev->iop);
+      gboolean all_other_closed = TRUE;
       while (iop)
       {
         dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
@@ -1463,14 +1464,18 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
         if(module->state == dt_iop_state_FAVORITE)
           additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
 
-        /* if module is the current, always expand it */
-        if (m == module)
-          dt_iop_gui_set_expanded(m, TRUE);
-        else if ((current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+        if (m != module && (current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+        {
+          all_other_closed = all_other_closed && !m->expanded;
           dt_iop_gui_set_expanded(m, FALSE);
+        }
 
         iop = g_list_next(iop);
       }
+      if(all_other_closed)
+        dt_iop_gui_set_expanded(module, !module->expanded);
+      else
+        dt_iop_gui_set_expanded(module, TRUE);
     }
     else
     {
