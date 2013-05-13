@@ -6,16 +6,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 18:50+0200\n"
-"PO-Revision-Date: 2011-02-14 23:06+0700\n"
-"Last-Translator: Phondanai Khanti <phondanai@gmail.com>\n"
+"POT-Creation-Date: 2013-05-13 07:38-0400\n"
+"PO-Revision-Date: 2013-05-12 22:05-0500\n"
+"Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Lokalize 1.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: ../build/src/preferences_gen.h:877
 msgid "gui options"
@@ -31,18 +31,17 @@ msgstr "ขนาดของพาเนลด้านข้างเป็น
 #: ../build/src/preferences_gen.h:1215 ../build/src/preferences_gen.h:1289
 #: ../build/src/preferences_gen.h:1376 ../build/src/preferences_gen.h:1400
 #: ../build/src/preferences_gen.h:1425
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%d'"
-msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%s'"
+msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%d'"
 
 #: ../build/src/preferences_gen.h:897 ../build/src/preferences_gen.h:1355
-#, fuzzy
 msgid "(needs a restart)"
 msgstr "(ต้องเริ่มโปรแกรมใหม่)"
 
 #: ../build/src/preferences_gen.h:904
 msgid "don't use embedded preview jpeg but half-size raw"
-msgstr ""
+msgstr "ไม่ใช้งานแสดงตัวอย่างเอ็มเบ็ดเด็ด jpeg แต่ใช้ภาพขนาดครึ่งหนึ่งของ raw"
 
 #: ../build/src/preferences_gen.h:913 ../build/src/preferences_gen.h:932
 #: ../build/src/preferences_gen.h:951 ../build/src/preferences_gen.h:970
@@ -67,41 +66,36 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:923
-#, fuzzy
 msgid "ask before removing images from database"
-msgstr "ถามก่อนเอารูปออก"
+msgstr "ถามก่อนเอารูปออกจากฐานข้อมูล"
 
 #: ../build/src/preferences_gen.h:935
 msgid "always ask the user before any image is removed from db."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกเอาออกจากฐานข้อมูล"
 
 #: ../build/src/preferences_gen.h:942
-#, fuzzy
 msgid "ask before erasing images from disk"
-msgstr "ถามก่อนเอารูปออก"
+msgstr "ถามก่อนเอารูปออกจากฮาร์ดดิสก์ไดรฟ์"
 
 #: ../build/src/preferences_gen.h:954
 msgid "always ask the user before any image file is deleted."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกลบ"
 
 #: ../build/src/preferences_gen.h:961
-#, fuzzy
 msgid "ask before moving images from film roll folder"
-msgstr "ถามก่อนเอารูปออก"
+msgstr "ถามก่อนเอารูปออกโฟลเดอร์ฟิล์มม้วน"
 
 #: ../build/src/preferences_gen.h:973
-#, fuzzy
 msgid "always ask the user before any image file is moved."
-msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกลบ"
+msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกย้าย"
 
 #: ../build/src/preferences_gen.h:980
 msgid "ask before copying images to new film roll folder"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:992
-#, fuzzy
 msgid "always ask the user before any image file is copied."
-msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกลบ"
+msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกคัดลอก"
 
 #: ../build/src/preferences_gen.h:999
 msgid "number of folder levels to show in lists"
@@ -114,9 +108,8 @@ msgid ""
 msgstr "จำนวนระดับของโฟลเดอร์ที่แสดงในชื่อม้วนฟิล์ม, เริ่มจากขวา"
 
 #: ../build/src/preferences_gen.h:1023
-#, fuzzy
 msgid "ignore jpeg images when importing film rolls"
-msgstr "กำหนดเรตติ้งเมื่อนำเข้าม้วนฟิล์ม"
+msgstr "ไม่นำภาพ jpeg เข้าม้วนฟิล์ม"
 
 #: ../build/src/preferences_gen.h:1035
 msgid ""
@@ -125,9 +118,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:1042
-#, fuzzy
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "กำหนดเรตติ้งเมื่อนำเข้าม้วนฟิล์ม"
+msgstr "รวมรูปจากไดเร็คทอรีย์ย่อย เมื่อนำเข้าม้วนฟิล์ม"
 
 #: ../build/src/preferences_gen.h:1060
 msgid "creator to be applied when importing"
@@ -150,19 +142,16 @@ msgid "initial import rating"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:1151
-#, fuzzy
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "กำหนดเรตติ้งเมื่อนำเข้าม้วนฟิล์ม"
+msgstr "กำหนดเรตติ้งเริ่มต้นเมื่อนำเข้าม้วนฟิล์ม"
 
 #: ../build/src/preferences_gen.h:1158
-#, fuzzy
 msgid "enable filmstrip"
-msgstr "เปิดใช้ filmstip ในโหมด darkroom"
+msgstr "เปิดใช้ filmstip"
 
 #: ../build/src/preferences_gen.h:1170
-#, fuzzy
 msgid "enable the filmstrip in darkroom and tethering modes."
-msgstr "เปิดใช้ filmstip ในโหมด darkroom"
+msgstr "เปิดใช้ filmstip ในโหมด darkroom และ โหมด tethering"
 
 #: ../build/src/preferences_gen.h:1177
 msgid "maximum width of image drawing area"
@@ -229,9 +218,9 @@ msgid "memory in megabytes to use for mipmap cache"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:1352
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%<PRId64>'"
-msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%s'"
+msgstr "ดับเบิ้ลคลิกเพื่อปรับค่ากลับสู่ `%<PRId64>'"
 
 #: ../build/src/preferences_gen.h:1362
 msgid "number of background threads"
@@ -311,9 +300,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:1515
-#, fuzzy
 msgid "dithering for darkroom mode"
-msgstr "สลับไปโหมด darkroom"
+msgstr "ใข้ dithering ในโหมด darkroom"
 
 #: ../build/src/preferences_gen.h:1527
 msgid ""
@@ -323,9 +311,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:1534
-#, fuzzy
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "สลับไปโหมด darkroom"
+msgstr "ใข้ demosaicing ในการขยายภาพ ในโหมด darkroom"
 
 #: ../build/src/preferences_gen.h:1559
 msgid ""
@@ -430,11 +417,11 @@ msgid "altered"
 msgstr ""
 
 #: ../src/common/collection.c:660
-#, fuzzy, c-format
+#, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] "เลือกรูปภาพทั้งหมดในชุดปัจจุบัน (ctrl-a)"
-msgstr[1] "เลือกรูปภาพทั้งหมดในชุดปัจจุบัน (ctrl-a)"
+msgstr[0] "เลือก %d รูปจาก %d รูปของชุดนี้"
+msgstr[1] "เลือก %d รูปจาก %d รูปของชุดนี้"
 
 #: ../src/common/darktable.c:286
 #, c-format
@@ -451,7 +438,7 @@ msgstr ""
 msgid "file `%s' has unknown format!"
 msgstr ""
 
-#: ../src/common/darktable.c:338 ../src/libs/import.c:711
+#: ../src/common/darktable.c:338 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr ""
@@ -462,16 +449,15 @@ msgid "ERROR : invalid temporary directory : %s\n"
 msgstr ""
 
 #: ../src/common/film.c:361
-#, fuzzy
 msgid "no supported images were found to be imported"
-msgstr "ไม่เจออุปกรณ์ที่รองรับ"
+msgstr "ไม่พบภาพที่จะนำเข้าได้"
 
 #: ../src/common/film.c:373
-#, fuzzy, c-format
+#, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
-msgstr[0] "ส่งออก %d รูปภาพ.."
-msgstr[1] "ส่งออก %d รูปภาพ.."
+msgstr[0] "นำเข้า %d รูป"
+msgstr[1] "นำเข้า %d รูป"
 
 #: ../src/common/history.c:139
 msgid "you need to copy history from an image before you paste it onto another"
@@ -513,7 +499,7 @@ msgstr ""
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1462
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1780
-#: ../src/iop/lens.c:1707 ../src/libs/export.c:159 ../src/libs/export.c:162
+#: ../src/iop/lens.c:1732 ../src/libs/export.c:159 ../src/libs/export.c:162
 #: ../src/libs/export.c:595 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
@@ -531,23 +517,22 @@ msgid "generic poissonian"
 msgstr ""
 
 #: ../src/common/ratings.c:45
-#, fuzzy, c-format
+#, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "ส่งออก %d รูปภาพ.."
-msgstr[1] "ส่งออก %d รูปภาพ.."
+msgstr[0] "ปฏิเสธ %d รูป"
+msgstr[1] "ปฏิเสธ %d รูป"
 
 #: ../src/common/ratings.c:47
-#, fuzzy, c-format
+#, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
-msgstr[0] "ส่งออก %d รูปภาพ.."
-msgstr[1] "ส่งออก %d รูปภาพ.."
+msgstr[0] "ใช้การจัดอันดับ %d กับ %d รูป"
+msgstr[1] "ใช้การจัดอันดับ %d กับ %d รูป"
 
 #: ../src/common/ratings.c:71
-#, fuzzy
 msgid "no images selected to apply rating"
-msgstr "ไม่มีรูปที่ถูกเลือก!"
+msgstr "ไม่มีรูปที่ถูกเลือกสำหรับการจัดอันดับ"
 
 #: ../src/common/styles.c:110
 #, c-format
@@ -576,12 +561,12 @@ msgid "style file for %s exists"
 msgstr "สไตล์สำหรับ %s มีอยู่แล้ว"
 
 #: ../src/common/styles.c:683
-#, fuzzy, c-format
+#, c-format
 msgid "style %s was successfully saved"
 msgstr "สไตล์ %s ถูกบันทึกสำเร็จแล้ว"
 
 #: ../src/common/styles.c:876
-#, fuzzy, c-format
+#, c-format
 msgid "style %s was successfully imported"
 msgstr "สไตล์ %s ถูกนำเข้าสำเร็จแล้ว"
 
@@ -704,33 +689,32 @@ msgid "applied matched gpx location onto %d image(s)"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:679
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
 "do you really want to remove %d selected images from the collection?"
-msgstr[0] "คุณต้องการจะเอารูปที่เลือกทั้งหมดออกจากชุด?"
-msgstr[1] "คุณต้องการจะเอารูปที่เลือกทั้งหมดออกจากชุด?"
+msgstr[0] "คุณต้องการจะเอา %d รูปที่เลือกออกจากชุดหรือไม่?"
+msgstr[1] "คุณต้องการจะเอา %d รูปที่เลือกออกจากชุดหรือไม่?"
 
 #: ../src/control/jobs/control_jobs.c:682
 msgid "remove images?"
 msgstr "เอารูปภาพออก?"
 
 #: ../src/control/jobs/control_jobs.c:708
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
 "do you really want to physically delete %d selected images from disk?"
-msgstr[0] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
-msgstr[1] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
+msgstr[0] "คุณต้องจะลบ %d รูปจากดิสก์หรือไม่?"
+msgstr[1] "คุณต้องจะลบ %d รูปจากดิสก์หรือไม่?"
 
 #: ../src/control/jobs/control_jobs.c:711
 msgid "delete images?"
 msgstr "ลบรูปภาพ"
 
 #: ../src/control/jobs/control_jobs.c:744
-#, fuzzy
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr "การนำเข้ารูปภาพจากกล้องเป็นม้วนฟิล์มล้มเหลว, การนำเข้าถูกยกเลิก"
+msgstr "การสร้างม้วนฟิล์มล้มเหลว, การย้ายถูกยกเลิก"
 
 #: ../src/control/jobs/control_jobs.c:776
 #: ../src/control/jobs/control_jobs.c:833 ../src/imageio/storage/disk.c:67
@@ -741,56 +725,58 @@ msgid "select directory"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:799
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
 "(all unselected duplicates will be moved along)"
 msgid_plural ""
 "do you really want to physically move %d selected images to %s?\n"
 "(all unselected duplicates will be moved along)"
-msgstr[0] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
-msgstr[1] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
+msgstr[0] ""
+"คุณต้องจะคัดย้าย %d รูปไปที่ %s หรือไม่?\n"
+"(รูปที่ไม่ถูกเลือกจะถูกย้ายไปด้วย)"
+msgstr[1] ""
+"คุณต้องจะคัดย้าย %d รูปไปที่ %s หรือไม่?\n"
+"(รูปที่ไม่ถูกเลือกจะถูกย้ายไปด้วย)"
 
 #: ../src/control/jobs/control_jobs.c:803
-#, fuzzy
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "เอารูปภาพออก?"
-msgstr[1] "เอารูปภาพออก?"
+msgstr[0] "ต้องการจะย้ายรูปหรือไม่?"
+msgstr[1] "ต้องการจะย้ายรูปหรือไม่?"
 
 #: ../src/control/jobs/control_jobs.c:856
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
-msgstr[0] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
-msgstr[1] "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
+msgstr[0] "คุณต้องจะคัดลอก %d รูปไปที่ %s หรือไม่?"
+msgstr[1] "คุณต้องจะคัดลอก %d รูปไปที่ %s หรือไม่?"
 
 #: ../src/control/jobs/control_jobs.c:859
-#, fuzzy
 msgid "copy image?"
 msgid_plural "copy images?"
-msgstr[0] "รูปภาพกำพร้า"
-msgstr[1] "รูปภาพกำพร้า"
+msgstr[0] "คัดลอกรูป?"
+msgstr[1] "คัดลอกรูป?"
 
 #: ../src/control/jobs/control_jobs.c:898
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d image"
-msgstr "ส่งออก %d รูปภาพ.."
+msgstr "กำลังย้าย %d รูปภาพ"
 
 #: ../src/control/jobs/control_jobs.c:898
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d images"
-msgstr "ส่งออก %d รูปภาพ.."
+msgstr "กำลังย้าย %d รูปภาพ"
 
 #: ../src/control/jobs/control_jobs.c:904
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d image"
-msgstr "ส่งออก %d รูปภาพ.."
+msgstr "กำลังคัดลอก %d รูปภาพ"
 
 #: ../src/control/jobs/control_jobs.c:904
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d images"
-msgstr "ส่งออก %d รูปภาพ.."
+msgstr "กำลังคัดลอก %d รูปภาพ"
 
 #: ../src/control/jobs/control_jobs.c:936
 #, c-format
@@ -971,7 +957,6 @@ msgid "enable conditional blending"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:903 ../src/develop/blend_gui.c:904
-#, fuzzy
 msgid "double click to reset"
 msgstr "ดับเบิ้ลคลิก เพื่อกลับค่าเดิม"
 
@@ -988,9 +973,8 @@ msgid "inverse"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1034 ../src/libs/live_view.c:386
-#, fuzzy
 msgid "lighten"
-msgstr "ความสูง"
+msgstr "เบาลง"
 
 #: ../src/develop/blend_gui.c:1036 ../src/libs/live_view.c:385
 msgid "darken"
@@ -1005,9 +989,8 @@ msgid "average"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1042
-#, fuzzy
 msgid "addition"
-msgstr "รายละเอียด"
+msgstr "รายละเอียดเพิ่มเติม"
 
 #: ../src/develop/blend_gui.c:1044
 msgid "subtract"
@@ -1018,9 +1001,8 @@ msgid "difference"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1048 ../src/libs/live_view.c:383
-#, fuzzy
 msgid "screen"
-msgstr "เขียว"
+msgstr "หน้าจอ"
 
 #: ../src/develop/blend_gui.c:1050 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
@@ -1032,9 +1014,8 @@ msgid "softlight"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1054
-#, fuzzy
 msgid "hardlight"
-msgstr "ความสูง"
+msgstr "แสงแรง"
 
 #: ../src/develop/blend_gui.c:1056
 msgid "vividlight"
@@ -1114,14 +1095,12 @@ msgid "new instance"
 msgstr ""
 
 #: ../src/develop/imageop.c:1139
-#, fuzzy
 msgid "move up"
-msgstr "เอาออก"
+msgstr "เลื่อนขึ้น"
 
 #: ../src/develop/imageop.c:1145
-#, fuzzy
 msgid "move down"
-msgstr "เอาออก"
+msgstr "เลื่อนลง"
 
 #. delete
 #: ../src/develop/imageop.c:1151 ../src/libs/image.c:143
@@ -1143,7 +1122,7 @@ msgstr ""
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:487 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr ""
@@ -1198,7 +1177,7 @@ msgstr ""
 msgid "`%s' not a lightroom xmp!"
 msgstr ""
 
-#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:515
 msgid "tags"
 msgstr ""
 
@@ -1212,16 +1191,15 @@ msgstr ""
 
 #: ../src/develop/lightroom.c:1351 ../src/libs/collect.h:37
 #: ../src/libs/tools/filter.c:130
-#, fuzzy
 msgid "color label"
-msgstr "สี"
+msgstr "ป้ายสี"
 
 #: ../src/develop/lightroom.c:1361
-#, fuzzy, c-format
+#, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
-msgstr[0] "สไตล์ %s ถูกนำเข้าสำเร็จแล้ว"
-msgstr[1] "สไตล์ %s ถูกนำเข้าสำเร็จแล้ว"
+msgstr[0] "%s ถูกนำเข้าสำเร็จแล้ว"
+msgstr[1] "%s ถูกนำเข้าสำเร็จแล้ว"
 
 #: ../src/develop/tiling.c:805 ../src/develop/tiling.c:1101
 #, c-format
@@ -1247,10 +1225,9 @@ msgstr ""
 #: ../src/gui/accelerators.c:70 ../src/gui/accelerators.c:93
 #: ../src/gui/accelerators.c:111 ../src/gui/accelerators.c:116
 #: ../src/gui/accelerators.c:121 ../src/gui/accelerators.c:126
-#, fuzzy
 msgctxt "accel"
 msgid "image operations"
-msgstr "ข้อมูลรูปภาพ"
+msgstr "ตัวดำเนินงานของภาพ"
 
 #: ../src/gui/accelerators.c:54 ../src/gui/accelerators.c:102
 msgctxt "accel"
@@ -1274,7 +1251,6 @@ msgstr ""
 
 #: ../src/gui/accelerators.c:71 ../src/gui/accelerators.c:129
 #: ../src/libs/styles.c:71
-#, fuzzy
 msgctxt "accel"
 msgid "edit"
 msgstr "แก้ไข"
@@ -1300,7 +1276,6 @@ msgid "cancel"
 msgstr "ยกเลิก"
 
 #: ../src/gui/camera_import_dialog.c:267
-#, fuzzy
 msgctxt "camera import"
 msgid "import"
 msgstr "นำเข้า"
@@ -1333,11 +1308,11 @@ msgid "general"
 msgstr "ทั่วไป"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:398
+#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:402
 msgid "ignore jpeg files"
 msgstr "ไม่สนใจแฟ้ม jpeg"
 
-#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:399
+#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:403
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -1471,10 +1446,9 @@ msgstr ""
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:871
-#, fuzzy
 msgctxt "accel"
 msgid "capture view"
-msgstr "รูรับแสง"
+msgstr "จับภาพ"
 
 #: ../src/gui/gtk.c:872
 msgctxt "accel"
@@ -1674,9 +1648,8 @@ msgid "module"
 msgstr ""
 
 #: ../src/gui/preferences.c:425
-#, fuzzy
 msgid "name"
-msgstr "ชื่อแฟ้ม"
+msgstr "ชื่อ"
 
 #. exif
 #: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1348
@@ -1743,13 +1716,11 @@ msgstr ""
 
 #. Adding the restore defaults button
 #: ../src/gui/preferences.c:592
-#, fuzzy
 msgid "default"
-msgstr "(ปริยาย)"
+msgstr "ค่าเริ่มต้น"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:601
-#, fuzzy
 msgctxt "preferences"
 msgid "import"
 msgstr "นำเข้า"
@@ -1767,25 +1738,22 @@ msgstr ""
 
 #: ../src/gui/preferences.c:1071 ../src/gui/presets.c:191
 #: ../src/libs/lib.c:315
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "คุณต้องการจะลบรูปที่เลือกทั้งหมดออกจากดิสก์?"
+msgstr "คุณต้องการจะลบค่าที่ตั้งไว้ '%s'?"
 
 #: ../src/gui/preferences.c:1072 ../src/gui/presets.c:192
 #: ../src/libs/lib.c:316
-#, fuzzy
 msgid "delete preset?"
-msgstr "ลบแท็ก?"
+msgstr "ลบค่าที่ตั้งไว้"
 
 #: ../src/gui/preferences.c:1108
-#, fuzzy
 msgid "select file to export"
-msgstr "เลือกม้วนฟิล์ม"
+msgstr "เลือกรูปภาพที่จะส่งออก"
 
 #: ../src/gui/preferences.c:1139
-#, fuzzy
 msgid "select file to import"
-msgstr "เลือกหนึ่งหรือหลาายรูปภาพที่จะนำเขา"
+msgstr "เลือกรูปภาพที่จะนำเขา"
 
 #: ../src/gui/preferences.c:1189
 msgid ""
@@ -1893,9 +1861,8 @@ msgid ""
 msgstr ""
 
 #: ../src/gui/presets.c:258 ../src/libs/lib.c:141
-#, fuzzy
 msgid "overwrite preset?"
-msgstr "เขียนทับ"
+msgstr "เขียนทับค่าที่ตั้งไว้"
 
 #: ../src/gui/presets.c:394 ../src/libs/lib.c:230
 msgid "name of the preset"
@@ -1918,9 +1885,8 @@ msgid "store new preset.."
 msgstr ""
 
 #: ../src/gui/presets.c:848 ../src/libs/lib.c:464
-#, fuzzy
 msgid "update preset"
-msgstr "ลบแท็ก?"
+msgstr "ปรับปรุงค่าที่ตั้งไว้"
 
 #: ../src/gui/styles_dialog.c:284
 #, c-format
@@ -1928,9 +1894,8 @@ msgid "edit style"
 msgstr "แก้ไขสไตล์"
 
 #: ../src/gui/styles_dialog.c:288
-#, fuzzy
 msgid "duplicate style"
-msgstr "แก้ไขสไตล์"
+msgstr "คัดลอกสไตล์"
 
 #: ../src/gui/styles_dialog.c:289
 msgid "creates a duplicate of the style before applying changes"
@@ -1954,9 +1919,8 @@ msgid "include"
 msgstr ""
 
 #: ../src/gui/styles_dialog.c:380
-#, fuzzy
 msgid "update"
-msgstr "วันที่/เวลา"
+msgstr "ปรับปรุง"
 
 #: ../src/gui/styles_dialog.c:392 ../src/gui/styles_dialog.c:399
 #: ../src/gui/hist_dialog.c:192
@@ -1968,9 +1932,8 @@ msgid "can't create style out of unaltered image"
 msgstr ""
 
 #: ../src/gui/hist_dialog.c:150
-#, fuzzy
 msgid "select parts"
-msgstr "เลือกทั้งหมด"
+msgstr "เลือกบางส่วน"
 
 #: ../src/gui/hist_dialog.c:228
 msgid "can't copy history out of unaltered image"
@@ -2009,9 +1972,8 @@ msgid "quality"
 msgstr "คุณภาพ"
 
 #: ../src/imageio/format/j2k.c:596
-#, fuzzy
 msgid "dcp mode"
-msgstr "รุ่น"
+msgstr "โหมด dcp"
 
 #: ../src/imageio/format/j2k.c:602
 msgid "cinema2k, 24fps"
@@ -2094,9 +2056,8 @@ msgid "send as email"
 msgstr "ส่งเป็นอีเมล"
 
 #: ../src/imageio/storage/email.c:156
-#, fuzzy
 msgid "images exported from darktable"
-msgstr "นำเข้าจากกล้อง"
+msgstr "รูปภาพได้ถูกส่งออกแลัว"
 
 #: ../src/imageio/storage/facebook.c:241
 #, c-format
@@ -2206,9 +2167,8 @@ msgid "unable to create album, no title provided"
 msgstr ""
 
 #: ../src/imageio/storage/facebook.c:1206 ../src/imageio/storage/picasa.c:1499
-#, fuzzy
 msgid "unable to create album"
-msgstr "สร้างอัลบั้มใหม่"
+msgstr "สร้างอัลบั้มใหม่ไม่ได้"
 
 #: ../src/imageio/storage/facebook.c:1216 ../src/imageio/storage/picasa.c:1509
 msgid "unable to export photo to webalbum"
@@ -2216,9 +2176,9 @@ msgstr ""
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/facebook.c:1233
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to facebook webalbum"
-msgstr "%d/%d ถูกส่งออกไปยัง `%s%s'"
+msgstr "%d/%d ถูกส่งออกไปยัง facebook แลัว "
 
 #: ../src/imageio/storage/flickr.c:115
 #, c-format
@@ -2329,9 +2289,8 @@ msgid "website gallery"
 msgstr ""
 
 #: ../src/imageio/storage/gallery.c:173
-#, fuzzy
 msgid "enter the title of the website"
-msgstr "ป้อนชื่อสำหรับสไตล์ใหม่"
+msgstr "ป้อนชื่อของเว็บไซต์"
 
 #: ../src/imageio/storage/latex.c:70
 msgid "latex book template"
@@ -2363,9 +2322,8 @@ msgid "private"
 msgstr ""
 
 #: ../src/imageio/storage/picasa.c:1357
-#, fuzzy
 msgid "public"
-msgstr "อัลบั้มสาธารณะ"
+msgstr "สาธารณะ"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/picasa.c:1526
@@ -2591,28 +2549,24 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:102 ../src/iop/shadhi.c:148
 #: ../src/iop/sharpen.c:104
-#, fuzzy
 msgctxt "accel"
 msgid "radius"
 msgstr "รัศมี"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
 #: ../src/iop/temperature.c:98
-#, fuzzy
 msgctxt "accel"
 msgid "red"
 msgstr "แดง"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
 #: ../src/iop/temperature.c:99
-#, fuzzy
 msgctxt "accel"
 msgid "green"
 msgstr "เขียว"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
 #: ../src/iop/temperature.c:100
-#, fuzzy
 msgctxt "accel"
 msgid "blue"
 msgstr "น้ำเงิน"
@@ -2639,22 +2593,19 @@ msgid "radius"
 msgstr "รัศมี"
 
 #: ../src/iop/bloom.c:80 ../src/iop/soften.c:102
-#, fuzzy
 msgctxt "accel"
 msgid "size"
 msgstr "ขนาด"
 
 #: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "threshold"
-msgstr "เธรด"
+msgstr "เกณฑ์ภาพ"
 
 #: ../src/iop/bloom.c:82 ../src/iop/grain.c:325 ../src/iop/hotpixels.c:85
-#, fuzzy
 msgctxt "accel"
 msgid "strength"
-msgstr "ระยะโฟกัส"
+msgstr "ความแรงของภาพ"
 
 #: ../src/iop/bloom.c:336 ../src/iop/soften.c:576 ../src/libs/camera.c:627
 msgid "size"
@@ -2715,25 +2666,22 @@ msgid "15:10 postcard black"
 msgstr ""
 
 #: ../src/iop/borders.c:796
-#, fuzzy
 msgid "select border color"
-msgstr "เลือกโทนสี"
+msgstr "เลือกสีขอบ"
 
 #: ../src/iop/borders.c:833
-#, fuzzy
 msgid "select frame line color"
-msgstr "เลือกโทนสี"
+msgstr "เลือกสีเฟรม"
 
 #. add import singel image buttons
 #: ../src/iop/borders.c:983 ../src/iop/clipping.c:1740
-#: ../src/libs/import.c:814
+#: ../src/libs/import.c:818
 msgid "image"
 msgstr "รูปภาพ"
 
 #: ../src/iop/borders.c:984
-#, fuzzy
 msgid "3:1"
-msgstr "3:2"
+msgstr "3:1"
 
 #: ../src/iop/borders.c:985
 msgid "95:33"
@@ -2812,14 +2760,12 @@ msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr ""
 
 #: ../src/iop/borders.c:1065 ../src/iop/flip.c:81
-#, fuzzy
 msgid "orientation"
-msgstr "ตัวเลือกหลัก"
+msgstr "การวางภาพ"
 
 #: ../src/iop/borders.c:1067
-#, fuzzy
 msgid "portrait"
-msgstr "นำเข้า"
+msgstr "แนวตั้ง"
 
 #: ../src/iop/borders.c:1068
 msgid "landscape"
@@ -2874,9 +2820,8 @@ msgid "pick border color from image"
 msgstr ""
 
 #: ../src/iop/borders.c:1119
-#, fuzzy
 msgid "frame line color"
-msgstr "เลือกโทนสี"
+msgstr "สีเฟรม"
 
 #: ../src/iop/borders.c:1122
 msgid "pick frame line color from image"
@@ -2902,12 +2847,11 @@ msgid "channel mixer"
 msgstr ""
 
 #: ../src/iop/channelmixer.c:436
-#, fuzzy
 msgid "destination"
-msgstr "รายละเอียด"
+msgstr "ปลายทาง"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
 #: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3006,9 +2950,8 @@ msgid "old system"
 msgstr ""
 
 #: ../src/iop/clipping.c:1467
-#, fuzzy
 msgid "correction applied"
-msgstr "กลุ่มความถูกต้อง"
+msgstr "ได้ทำการแก้ไขแลัว"
 
 #: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1779
 #: ../src/libs/live_view.c:335
@@ -3041,18 +2984,16 @@ msgid "set perspective correction for your image"
 msgstr ""
 
 #: ../src/iop/clipping.c:1729
-#, fuzzy
 msgid "automatic cropping"
-msgstr "อัตโนมัติ"
+msgstr "คร็อปภาพโดยอัตโนมัติ"
 
 #: ../src/iop/clipping.c:1730
 msgid "no"
 msgstr ""
 
 #: ../src/iop/clipping.c:1731
-#, fuzzy
 msgid "yes"
-msgstr "สไตล์"
+msgstr "ใช่"
 
 #: ../src/iop/clipping.c:1732
 msgid "automatically crop to avoid black edges"
@@ -3142,7 +3083,7 @@ msgstr ""
 msgid "golden spiral"
 msgstr ""
 
-#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1713
+#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1738
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr ""
@@ -3157,7 +3098,6 @@ msgid "commit"
 msgstr ""
 
 #: ../src/iop/clipping.c:2797
-#, fuzzy
 msgctxt "accel"
 msgid "angle"
 msgstr "มุม"
@@ -3173,10 +3113,9 @@ msgid "green vs magenta"
 msgstr ""
 
 #: ../src/iop/colorcontrast.c:108
-#, fuzzy
 msgctxt "accel"
 msgid "blue vs yellow"
-msgstr "เหลือง"
+msgstr "สีฟ้า vs สีเหลือง"
 
 #: ../src/iop/colorcontrast.c:332
 msgid "green vs magenta"
@@ -3187,9 +3126,8 @@ msgid "steepness of the a* curve in Lab"
 msgstr ""
 
 #: ../src/iop/colorcontrast.c:342
-#, fuzzy
 msgid "blue vs yellow"
-msgstr "เหลือง"
+msgstr "สีฟ้า vs สีเหลือง"
 
 #: ../src/iop/colorcontrast.c:345
 msgid "steepness of the b* curve in Lab"
@@ -3200,26 +3138,30 @@ msgid "color correction"
 msgstr ""
 
 #: ../src/iop/colorcorrection.c:95
-msgid "warming filter"
+msgid "warm tone"
 msgstr ""
 
 #: ../src/iop/colorcorrection.c:102
+msgid "warming filter"
+msgstr ""
+
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr ""
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr ""
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr ""
 
@@ -3256,9 +3198,8 @@ msgid "alternate color matrix"
 msgstr ""
 
 #: ../src/iop/colorin.c:752 ../src/iop/colorin.c:784
-#, fuzzy
 msgid "sRGB (e.g. jpg)"
-msgstr "srgb (เช่น jpg)"
+msgstr "sRGB (เช่น jpg)"
 
 #: ../src/iop/colorin.c:754 ../src/iop/colorin.c:786 ../src/iop/colorout.c:921
 #: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
@@ -3295,9 +3236,8 @@ msgid "icc profiles in %s/color/in or %s/color/in"
 msgstr ""
 
 #: ../src/iop/colorize.c:73
-#, fuzzy
 msgid "colorize"
-msgstr "สี"
+msgstr "ใช้สี"
 
 #: ../src/iop/colorize.c:89
 msgctxt "accel"
@@ -3310,14 +3250,12 @@ msgid "source mix"
 msgstr ""
 
 #: ../src/iop/colorize.c:279 ../src/iop/splittoning.c:402
-#, fuzzy
 msgid "select tone color"
 msgstr "เลือกโทนสี"
 
 #: ../src/iop/colorize.c:424 ../src/iop/splittoning.c:549
-#, fuzzy
 msgid "select the hue tone"
-msgstr "ไม่เลือก"
+msgstr "เลือกโทนสี (hue)"
 
 #: ../src/iop/colorize.c:434
 msgid "select the saturation shadow tone"
@@ -3441,7 +3379,6 @@ msgid "acquire"
 msgstr ""
 
 #: ../src/iop/colortransfer.c:123 ../src/libs/metadata.c:275
-#, fuzzy
 msgctxt "accel"
 msgid "apply"
 msgstr "เริ่มใช้"
@@ -3523,7 +3460,7 @@ msgid "amaze (slow)"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:378
 msgid "method"
 msgstr "วิธีการ"
 
@@ -3555,9 +3492,8 @@ msgid "two times"
 msgstr ""
 
 #: ../src/iop/demosaic.c:1332
-#, fuzzy
 msgid "three times"
-msgstr "วันที่/เวลา"
+msgstr "สามครั้ง"
 
 #: ../src/iop/demosaic.c:1333
 msgid "four times"
@@ -3609,10 +3545,9 @@ msgstr ""
 msgid "interpolated from iso %d and %d"
 msgstr ""
 
-#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1868
-#, fuzzy
+#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1893
 msgid "mode"
-msgstr "รุ่น"
+msgstr "โหมด"
 
 #: ../src/iop/denoiseprofile.c:1714 ../src/iop/nlmeans.c:712
 msgid "patch size"
@@ -3718,16 +3653,14 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/exposure.c:59
-#, fuzzy
 msgctxt "accel"
 msgid "black"
 msgstr "สีดำ"
 
 #: ../src/iop/exposure.c:60 ../src/iop/relight.c:110
-#, fuzzy
 msgctxt "accel"
 msgid "exposure"
-msgstr "ส่งออก"
+msgstr "การเปิดรับแสง"
 
 #: ../src/iop/exposure.c:61
 msgctxt "accel"
@@ -3775,26 +3708,22 @@ msgid "rotate"
 msgstr ""
 
 #: ../src/iop/flip.c:436 ../src/libs/live_view.c:287
-#, fuzzy
 msgid "rotate 90 degrees ccw"
-msgstr "หมุนภาพที่เลือก 90 องศา ทวนเข็มนาฬิกา"
+msgstr "หมุนภาพทวนเข็มนาฬิกา 90 องศา "
 
 #: ../src/iop/flip.c:442 ../src/libs/live_view.c:288
-#, fuzzy
 msgid "rotate 90 degrees cw"
-msgstr "หมุนภาพที่เลือก 90 องศา ตามเข็มนาฬิกา"
+msgstr "หมุนภาพตามเข็มนาฬิกา 90 องศา "
 
 #: ../src/iop/flip.c:454 ../src/libs/live_view.c:162
-#, fuzzy
 msgctxt "accel"
 msgid "rotate 90 degrees ccw"
-msgstr "หมุนภาพที่เลือก 90 องศา ทวนเข็มนาฬิกา"
+msgstr "หมุนภาพทวนเข็มนาฬิกา 90 องศา "
 
 #: ../src/iop/flip.c:456 ../src/libs/live_view.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "rotate 90 degrees cw"
-msgstr "หมุนภาพที่เลือก 90 องศา ตามเข็มนาฬิกา"
+msgstr "หมุนภาพตามเข็มนาฬิกา 90 องศา "
 
 #: ../src/iop/gamma.c:38
 msgctxt "modulename"
@@ -3806,9 +3735,8 @@ msgid "global tonemap"
 msgstr ""
 
 #: ../src/iop/globaltonemap.c:620
-#, fuzzy
 msgid "operator"
-msgstr "ผู้สร้าง"
+msgstr "ตัวดำเนินการ"
 
 #: ../src/iop/globaltonemap.c:626
 msgid "the global tonemap operator"
@@ -3954,25 +3882,25 @@ msgstr ""
 msgid "highlight reconstruction"
 msgstr ""
 
-#: ../src/iop/highlights.c:382
+#: ../src/iop/highlights.c:379
 msgid "clip highlights"
 msgstr ""
 
-#: ../src/iop/highlights.c:383
+#: ../src/iop/highlights.c:380
 msgid "reconstruct in LCh"
 msgstr ""
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:381
 msgid "highlight reconstruction method"
 msgstr ""
 
-#: ../src/iop/highlights.c:387
+#: ../src/iop/highlights.c:384
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
 
-#: ../src/iop/highlights.c:389
+#: ../src/iop/highlights.c:386
 msgid "clipping threshold"
 msgstr ""
 
@@ -4038,9 +3966,8 @@ msgid "pick color of film material from image"
 msgstr ""
 
 #: ../src/iop/invert.c:154
-#, fuzzy
 msgid "select color of film material"
-msgstr "เลือกม้วนฟิล์ม"
+msgstr "เลือกสีของฟิล์ม"
 
 #: ../src/iop/invert.c:309
 msgid "color of film material"
@@ -4075,10 +4002,9 @@ msgid "find camera"
 msgstr ""
 
 #: ../src/iop/lens.c:76
-#, fuzzy
 msgctxt "accel"
 msgid "find lens"
-msgstr "เลนส์"
+msgstr "หาเลนส์"
 
 #: ../src/iop/lens.c:77
 msgctxt "accel"
@@ -4091,18 +4017,16 @@ msgid "camera model"
 msgstr ""
 
 #: ../src/iop/lens.c:79
-#, fuzzy
 msgctxt "accel"
 msgid "lens model"
-msgstr "รุ่น"
+msgstr "รุ่นของเลนส์"
 
 #: ../src/iop/lens.c:80
-#, fuzzy
 msgctxt "accel"
 msgid "select corrections"
-msgstr "ไม่เลือก"
+msgstr "เลือกการแก้ใข"
 
-#: ../src/iop/lens.c:1052
+#: ../src/iop/lens.c:1077
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4111,15 +4035,15 @@ msgid ""
 "crop factor:\t%.1f"
 msgstr ""
 
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1308
 msgid "camera/lens not found - please select manually"
 msgstr ""
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1310
 msgid "try to locate your camera/lens in the above two menus"
 msgstr ""
 
-#: ../src/iop/lens.c:1330
+#: ../src/iop/lens.c:1355
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4131,157 +4055,152 @@ msgid ""
 "mounts:\t\t%s"
 msgstr ""
 
-#: ../src/iop/lens.c:1376
+#: ../src/iop/lens.c:1401
 msgid "mm"
 msgstr "มม"
 
-#: ../src/iop/lens.c:1377
+#: ../src/iop/lens.c:1402
 msgid "focal length (mm)"
 msgstr "ระยะโฟกัส (มม)"
 
-#: ../src/iop/lens.c:1404
+#: ../src/iop/lens.c:1429
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1405
+#: ../src/iop/lens.c:1430
 msgid "f-number (aperture)"
 msgstr ""
 
-#: ../src/iop/lens.c:1420
+#: ../src/iop/lens.c:1445
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1421
+#: ../src/iop/lens.c:1446
 msgid "distance to subject"
 msgstr ""
 
-#: ../src/iop/lens.c:1719
+#: ../src/iop/lens.c:1744
 msgid "distortion & TCA"
 msgstr ""
 
-#: ../src/iop/lens.c:1725
+#: ../src/iop/lens.c:1750
 msgid "distortion & vignetting"
 msgstr ""
 
-#: ../src/iop/lens.c:1731
+#: ../src/iop/lens.c:1756
 msgid "TCA & vignetting"
 msgstr ""
 
-#: ../src/iop/lens.c:1737
+#: ../src/iop/lens.c:1762
 msgid "only distortion"
 msgstr ""
 
-#: ../src/iop/lens.c:1743
+#: ../src/iop/lens.c:1768
 msgid "only TCA"
 msgstr ""
 
-#: ../src/iop/lens.c:1749
+#: ../src/iop/lens.c:1774
 msgid "only vignetting"
 msgstr ""
 
-#: ../src/iop/lens.c:1772
+#: ../src/iop/lens.c:1797
 msgid "find camera"
 msgstr ""
 
-#: ../src/iop/lens.c:1789
+#: ../src/iop/lens.c:1814
 msgid "find lens"
 msgstr ""
 
-#: ../src/iop/lens.c:1822
-#, fuzzy
+#: ../src/iop/lens.c:1847
 msgid "corrections"
-msgstr "ตัวเลือกหลัก"
+msgstr "การแก้ใข"
 
-#: ../src/iop/lens.c:1824
-#, fuzzy
+#: ../src/iop/lens.c:1849
 msgid "which corrections to apply"
-msgstr "กลุ่มความถูกต้อง"
+msgstr "การแก้ใขที่จะใช้"
 
-#: ../src/iop/lens.c:1839
+#: ../src/iop/lens.c:1864
 msgid "geometry"
 msgstr ""
 
-#: ../src/iop/lens.c:1841
+#: ../src/iop/lens.c:1866
 msgid "target geometry"
 msgstr ""
 
-#: ../src/iop/lens.c:1842
+#: ../src/iop/lens.c:1867
 msgid "rectilinear"
 msgstr ""
 
-#: ../src/iop/lens.c:1843
+#: ../src/iop/lens.c:1868
 msgid "fish-eye"
 msgstr ""
 
-#: ../src/iop/lens.c:1844
+#: ../src/iop/lens.c:1869
 msgid "panoramic"
 msgstr ""
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1870
 msgid "equirectangular"
 msgstr ""
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1872
 msgid "orthographic"
 msgstr ""
 
-#: ../src/iop/lens.c:1848
+#: ../src/iop/lens.c:1873
 msgid "stereographic"
 msgstr ""
 
-#: ../src/iop/lens.c:1849
+#: ../src/iop/lens.c:1874
 msgid "equisolid angle"
 msgstr ""
 
-#: ../src/iop/lens.c:1850
+#: ../src/iop/lens.c:1875
 msgid "thoby fish-eye"
 msgstr ""
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1883
 msgid "auto scale"
 msgstr ""
 
-#: ../src/iop/lens.c:1859 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1884 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1018
 msgid "scale"
 msgstr ""
 
-#: ../src/iop/lens.c:1870
+#: ../src/iop/lens.c:1895
 msgid "correct distortions or apply them"
 msgstr ""
 
-#: ../src/iop/lens.c:1871
+#: ../src/iop/lens.c:1896
 msgid "correct"
 msgstr "ความถูกต้อง"
 
-#: ../src/iop/lens.c:1872
-#, fuzzy
+#: ../src/iop/lens.c:1897
 msgid "distort"
-msgstr "ประวัติ"
+msgstr "บิดเบือน"
 
-#: ../src/iop/lens.c:1879
+#: ../src/iop/lens.c:1904
 msgid "transversal chromatic aberration red"
 msgstr ""
 
-#: ../src/iop/lens.c:1880
+#: ../src/iop/lens.c:1905
 msgid "tca red"
 msgstr ""
 
-#: ../src/iop/lens.c:1885
+#: ../src/iop/lens.c:1910
 msgid "transversal chromatic aberration blue"
 msgstr ""
 
-#: ../src/iop/lens.c:1886
-#, fuzzy
+#: ../src/iop/lens.c:1911
 msgid "tca blue"
-msgstr "น้ำเงิน"
+msgstr "น้ำเงิน tca"
 
-#: ../src/iop/lens.c:1893
-#, fuzzy
+#: ../src/iop/lens.c:1918
 msgid "corrections done: "
-msgstr "กลุ่มความถูกต้อง"
+msgstr "ทำได้การแก้ไขแลัว"
 
-#: ../src/iop/lens.c:1894
+#: ../src/iop/lens.c:1919
 msgid "which corrections have actually been done"
 msgstr ""
 
@@ -4352,18 +4271,16 @@ msgid "night street dark"
 msgstr ""
 
 #: ../src/iop/lowlight.c:468
-#, fuzzy
 msgid "night"
-msgstr "ความสูง"
+msgstr "กลางคืน"
 
 #: ../src/iop/lowlight.c:616 ../src/iop/lowlight.c:620
 msgid "dark"
 msgstr ""
 
 #: ../src/iop/lowlight.c:623 ../src/iop/lowlight.c:627
-#, fuzzy
 msgid "bright"
-msgstr "ความสูง"
+msgstr "ความสว่าง"
 
 #: ../src/iop/lowlight.c:630 ../src/iop/lowlight.c:632
 msgid "day vision"
@@ -4540,7 +4457,6 @@ msgid "fill light"
 msgstr ""
 
 #: ../src/iop/relight.c:111
-#, fuzzy
 msgctxt "accel"
 msgid "width"
 msgstr "ความกว้าง"
@@ -4571,16 +4487,14 @@ msgid "shadows and highlights"
 msgstr ""
 
 #: ../src/iop/shadhi.c:146
-#, fuzzy
 msgctxt "accel"
 msgid "shadows"
 msgstr "เงา"
 
 #: ../src/iop/shadhi.c:147
-#, fuzzy
 msgctxt "accel"
 msgid "highlights"
-msgstr "ความสูง"
+msgstr "เน้น"
 
 #: ../src/iop/shadhi.c:149 ../src/iop/splittoning.c:107
 msgctxt "accel"
@@ -4615,9 +4529,8 @@ msgid "highlights color adjustment"
 msgstr ""
 
 #: ../src/iop/shadhi.c:671
-#, fuzzy
 msgid "correct shadows"
-msgstr "ความถูกต้อง"
+msgstr "แก้ความถูกต้องของเงา"
 
 #: ../src/iop/shadhi.c:672
 msgid "correct highlights"
@@ -4718,10 +4631,9 @@ msgid "pick secondary color"
 msgstr ""
 
 #: ../src/iop/splittoning.c:106
-#, fuzzy
 msgctxt "accel"
 msgid "balance"
-msgstr "สมดุลสีขาว"
+msgstr "สมดุลของสี"
 
 #. shadows: #ED7212
 #. highlights: #ECA413
@@ -4756,9 +4668,8 @@ msgid "chocolate brown"
 msgstr ""
 
 #: ../src/iop/splittoning.c:557
-#, fuzzy
 msgid "select the saturation tone"
-msgstr "ไม่เลือก"
+msgstr "เลือกความอิ่มตัวของสี"
 
 #: ../src/iop/splittoning.c:593
 msgid "balance"
@@ -4804,10 +4715,9 @@ msgid "tint"
 msgstr ""
 
 #: ../src/iop/temperature.c:97
-#, fuzzy
 msgctxt "accel"
 msgid "temperature"
-msgstr "รูรับแสง"
+msgstr "อุณหภูมิภาพ"
 
 #: ../src/iop/temperature.c:385
 msgid "camera white balance"
@@ -4826,9 +4736,8 @@ msgid "tint"
 msgstr ""
 
 #: ../src/iop/temperature.c:732
-#, fuzzy
 msgid "temperature"
-msgstr "รูรับแสง"
+msgstr "อุณหภูมิภาพ"
 
 #: ../src/iop/temperature.c:747
 msgid "choose white balance preset from camera"
@@ -4888,7 +4797,6 @@ msgid "tonecurve for b channel"
 msgstr ""
 
 #: ../src/iop/tonecurve.c:532
-#, fuzzy
 msgid "double click to reset curve"
 msgstr "ดับเบิ้ลคลิก เพื่อกลับค่าเดิม"
 
@@ -4963,10 +4871,9 @@ msgid "vignetting"
 msgstr ""
 
 #: ../src/iop/vignette.c:159
-#, fuzzy
 msgctxt "accel"
 msgid "fall-off strength"
-msgstr "ระยะโฟกัส"
+msgstr "ความเข้มของ fall-off"
 
 #: ../src/iop/vignette.c:162
 msgctxt "accel"
@@ -4998,19 +4905,16 @@ msgid "automatic ratio"
 msgstr ""
 
 #: ../src/iop/vignette.c:1117
-#, fuzzy
 msgid "automatic"
 msgstr "อัตโนมัติ"
 
 #: ../src/iop/vignette.c:1121
-#, fuzzy
 msgid "8-bit output"
-msgstr "8-บิต jpg"
+msgstr "เอาท์พุต 8-บิต"
 
 #: ../src/iop/vignette.c:1122
-#, fuzzy
 msgid "16-bit output"
-msgstr "16-บิต ppm"
+msgstr "เอาท์พุต 16-บิต"
 
 #: ../src/iop/vignette.c:1127
 msgid "fall-off strength"
@@ -5086,10 +4990,9 @@ msgid "refresh"
 msgstr ""
 
 #: ../src/iop/watermark.c:162
-#, fuzzy
 msgctxt "accel"
 msgid "opacity"
-msgstr "ความทึบ"
+msgstr "ความทึบแสง"
 
 #: ../src/iop/watermark.c:164
 msgctxt "accel"
@@ -5265,10 +5168,9 @@ msgid "camera settings"
 msgstr ""
 
 #: ../src/libs/camera.c:107
-#, fuzzy
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr "รูปภาพที่รองรับ"
+msgstr "ถ่ายภาพ"
 
 #: ../src/libs/camera.c:145
 msgid "toggle view property in center view"
@@ -5418,7 +5320,6 @@ msgid "collect images"
 msgstr ""
 
 #: ../src/libs/collect.c:417
-#, fuzzy
 msgid "search filmroll"
 msgstr "เลือกม้วนฟิล์ม"
 
@@ -5428,7 +5329,6 @@ msgid "Problem selecting new path for the filmroll in %s"
 msgstr ""
 
 #: ../src/libs/collect.c:544
-#, fuzzy
 msgid "search filmroll..."
 msgstr "เลือกม้วนฟิล์ม"
 
@@ -5437,7 +5337,6 @@ msgid "sync..."
 msgstr ""
 
 #: ../src/libs/collect.c:556
-#, fuzzy
 msgid "remove..."
 msgstr "เอาออก"
 
@@ -5492,7 +5391,6 @@ msgid "film roll"
 msgstr "ม้วนฟิล์ม"
 
 #: ../src/libs/collect.h:31
-#, fuzzy
 msgid "folders"
 msgstr "โฟลเดอร์"
 
@@ -5505,14 +5403,12 @@ msgid "tag"
 msgstr ""
 
 #: ../src/libs/collect.h:34
-#, fuzzy
 msgid "date"
-msgstr "วันที่/เวลา"
+msgstr "วัน"
 
 #: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:127
-#, fuzzy
 msgid "time"
-msgstr "วันที่/เวลา"
+msgstr "เวลา"
 
 #: ../src/libs/collect.h:36 ../src/libs/history.c:55
 msgid "history"
@@ -5522,25 +5418,24 @@ msgstr "ประวัติ"
 msgid "description"
 msgstr "รายละเอียด"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:493
+#: ../src/libs/collect.h:40 ../src/libs/import.c:497
 #: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:96
 msgid "creator"
 msgstr "ผู้สร้าง"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/collect.h:41 ../src/libs/import.c:503
 #: ../src/libs/metadata.c:342
 msgid "publisher"
 msgstr ""
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/collect.h:42 ../src/libs/import.c:509
 #: ../src/libs/metadata.c:355
 msgid "rights"
 msgstr ""
 
 #: ../src/libs/colorpicker.c:36
-#, fuzzy
 msgid "color picker"
-msgstr "กลุ่มสี"
+msgstr "ตัวเลือกสี"
 
 #: ../src/libs/colorpicker.c:61
 msgctxt "accel"
@@ -5600,7 +5495,7 @@ msgid "xmp sidecar files"
 msgstr ""
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:684 ../src/libs/styles.c:280
 msgid "all files"
 msgstr "แฟ้มทั้งหมด"
 
@@ -5616,9 +5511,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/copy_history.c:261
-#, fuzzy
 msgid "copy all"
-msgstr "คัดลอก"
+msgstr "คัดลอกทั้งหมด"
 
 #: ../src/libs/copy_history.c:263
 msgid ""
@@ -5647,9 +5541,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/copy_history.c:280
-#, fuzzy
 msgid "paste all"
-msgstr "เลือกทั้งหมด"
+msgstr "วางทั้งหมด"
 
 #: ../src/libs/copy_history.c:281
 msgid ""
@@ -5688,13 +5581,11 @@ msgid "write history stack and tags to xmp sidecar files"
 msgstr ""
 
 #: ../src/libs/copy_history.c:340
-#, fuzzy
 msgctxt "accel"
 msgid "copy all"
-msgstr "คัดลอก"
+msgstr "คัดลอกทั้งหมด"
 
 #: ../src/libs/copy_history.c:341
-#, fuzzy
 msgctxt "accel"
 msgid "copy"
 msgstr "คัดลอก"
@@ -5705,10 +5596,9 @@ msgid "discard"
 msgstr ""
 
 #: ../src/libs/copy_history.c:343
-#, fuzzy
 msgctxt "accel"
 msgid "paste all"
-msgstr "เลือกทั้งหมด"
+msgstr "วางทั้งหมด"
 
 #: ../src/libs/copy_history.c:344
 msgctxt "accel"
@@ -5789,7 +5679,6 @@ msgstr ""
 
 #. Add style combo
 #: ../src/libs/export.c:588
-#, fuzzy
 msgid "style"
 msgstr "สไตล์"
 
@@ -5804,7 +5693,6 @@ msgstr "ส่งออกโดยใช้การตั้งค่าปั
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:827 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1617
-#, fuzzy
 msgctxt "accel"
 msgid "export"
 msgstr "ส่งออก"
@@ -5814,9 +5702,8 @@ msgstr "ส่งออก"
 #. while(*n != '\n') n++; n++;
 #. return n;
 #: ../src/libs/file_manager.c:43 ../src/libs/tools/lighttable.c:98
-#, fuzzy
 msgid "file manager"
-msgstr "ชื่อแฟ้ม"
+msgstr "ผู้จัดการไฟล์"
 
 #: ../src/libs/file_manager.c:95
 msgid ""
@@ -5836,9 +5723,8 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/geotagging.c:427
-#, fuzzy
 msgid "open gpx file"
-msgstr "ไม่สนใจแฟ้ม jpeg"
+msgstr "เปิดแฟ้ม gpx"
 
 #: ../src/libs/geotagging.c:441
 msgid "GPS Data Exchange Format"
@@ -5869,9 +5755,8 @@ msgid "calculate the time offset from an image"
 msgstr ""
 
 #: ../src/libs/geotagging.c:598
-#, fuzzy
 msgid "apply time offset to selected images"
-msgstr "ลบฉลากออกจากรูปที่เลือกทั้งหมด"
+msgstr "ใช้ช่วงเวลาชดเชยกับภาพที่เลือก"
 
 #. gpx
 #: ../src/libs/geotagging.c:606
@@ -5879,9 +5764,8 @@ msgid "apply gpx track file"
 msgstr ""
 
 #: ../src/libs/geotagging.c:607
-#, fuzzy
 msgid "parses a gpx file and updates location of selected images"
-msgstr "ลบฉลากออกจากรูปที่เลือกทั้งหมด"
+msgstr "วาง gpx ไฟล์ และปรับปรุงที่ตั้งของรูปที่เลือก"
 
 #: ../src/libs/histogram.c:55
 msgid "histogram"
@@ -5959,9 +5843,8 @@ msgid "create a style from the current history stack"
 msgstr ""
 
 #: ../src/libs/history.c:184 ../src/libs/snapshots.c:382
-#, fuzzy
 msgid "original"
-msgstr "0 - ต้นฉบับ"
+msgstr "ต้นฉบับ"
 
 #: ../src/libs/image.c:49
 msgid "selected image[s]"
@@ -5980,14 +5863,12 @@ msgid "physically delete from disk"
 msgstr "ลบออกจากดิสก์"
 
 #: ../src/libs/image.c:152
-#, fuzzy
 msgid "move"
-msgstr "เอาออก"
+msgstr "ย้าย"
 
 #: ../src/libs/image.c:154
-#, fuzzy
 msgid "move to other folder"
-msgstr "เอาออกจากชุด"
+msgstr "ย้ายไปยังโฟลเดอร์อื่น"
 
 #: ../src/libs/image.c:160
 msgid "copy to other folder"
@@ -6026,9 +5907,8 @@ msgid "reset rotation to exif data"
 msgstr ""
 
 #: ../src/libs/image.c:206
-#, fuzzy
 msgid "group"
-msgstr "กลุ่มพื้นฐาน"
+msgstr "กลุ่ม"
 
 #: ../src/libs/image.c:208
 msgid "add selected images to expanded group or create a new one"
@@ -6039,39 +5919,33 @@ msgid "ungroup"
 msgstr ""
 
 #: ../src/libs/image.c:214
-#, fuzzy
 msgid "remove selected images from the group"
-msgstr "หมุนภาพที่เลือก 90 องศา ตามเข็มนาฬิกา"
+msgstr "เอาออกจากกลุ่ม"
 
 #: ../src/libs/image.c:230
-#, fuzzy
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "เอาออกจากชุด"
 
 #: ../src/libs/image.c:232
-#, fuzzy
 msgctxt "accel"
 msgid "delete from disk"
 msgstr "ลบออกจากดิสก์"
 
 #: ../src/libs/image.c:234
-#, fuzzy
 msgctxt "accel"
 msgid "rotate selected images 90 degrees cw"
-msgstr "หมุนภาพที่เลือก 90 องศา ตามเข็มนาฬิกา"
+msgstr "หมุนภาพตามเข็มนาฬิกาไป 90 องศา "
 
 #: ../src/libs/image.c:237
-#, fuzzy
 msgctxt "accel"
 msgid "rotate selected images 90 degrees ccw"
-msgstr "หมุนภาพที่เลือก 90 องศา ทวนเข็มนาฬิกา"
+msgstr "หมุนภาพทวนเข็มนาฬิกาไป 90 องศา "
 
 #: ../src/libs/image.c:239
-#, fuzzy
 msgctxt "accel"
 msgid "create hdr"
-msgstr "ผู้สร้าง"
+msgstr "สร้าง hdr"
 
 #: ../src/libs/image.c:240
 msgctxt "accel"
@@ -6079,130 +5953,130 @@ msgid "duplicate"
 msgstr ""
 
 #: ../src/libs/image.c:241
-#, fuzzy
 msgctxt "accel"
 msgid "reset rotation"
-msgstr "ตัวเลือกหลัก"
+msgstr "ตั้งค่าการหมุนใหม่"
 
 #. Grouping keys
 #: ../src/libs/image.c:243
-#, fuzzy
 msgctxt "accel"
 msgid "group"
-msgstr "กลุ่มพื้นฐาน"
+msgstr "กลุ่ม"
 
 #: ../src/libs/image.c:244
 msgctxt "accel"
 msgid "ungroup"
 msgstr ""
 
-#: ../src/libs/import.c:84
+#: ../src/libs/import.c:85
 msgid "import"
 msgstr "นำเข้า"
 
-#: ../src/libs/import.c:105
+#: ../src/libs/import.c:106
 msgctxt "accel"
 msgid "scan for devices"
 msgstr ""
 
-#: ../src/libs/import.c:106
-#, fuzzy
+#: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "import from camera"
 msgstr "นำเข้าจากกล้อง"
 
-#: ../src/libs/import.c:107
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr ""
 
-#: ../src/libs/import.c:108
-#, fuzzy
+#: ../src/libs/import.c:109
 msgctxt "accel"
 msgid "import image"
 msgstr "นำเข้ารูปภาพ"
 
+#: ../src/libs/import.c:110
+msgctxt "accel"
+msgid "import folder"
+msgstr "นำเข้าจากโฟลเดอร์"
+
 #. add the rescan button
-#: ../src/libs/import.c:187
+#: ../src/libs/import.c:191
 msgid "scan for devices"
 msgstr ""
 
-#: ../src/libs/import.c:190
+#: ../src/libs/import.c:194
 msgid "scan for newly attached devices"
 msgstr ""
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "อุปกรณ์ \"%s\" เชื่อมต่อบนพอร์ต \"%s\"."
 
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:230
 msgid "import from camera"
 msgstr "นำเข้าจากกล้อง"
 
-#: ../src/libs/import.c:231
+#: ../src/libs/import.c:235
 msgid "tethered shoot"
 msgstr ""
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:253
+#: ../src/libs/import.c:257
 msgid "no supported devices found"
 msgstr "ไม่เจออุปกรณ์ที่รองรับ"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:372
-#, fuzzy
+#: ../src/libs/import.c:376
 msgid "import options"
-msgstr "ตัวเลือกหลัก"
+msgstr "ตัวเลือกการนำเข้า"
 
 #. recursive opening.
-#: ../src/libs/import.c:392
+#: ../src/libs/import.c:396
 msgid "import directories recursively"
 msgstr ""
 
-#: ../src/libs/import.c:393
+#: ../src/libs/import.c:397
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 
-#: ../src/libs/import.c:407
+#: ../src/libs/import.c:411
 msgid "apply metadata on import"
 msgstr ""
 
-#: ../src/libs/import.c:408
+#: ../src/libs/import.c:412
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 
-#: ../src/libs/import.c:435
+#: ../src/libs/import.c:439
 msgid "comma separated list of tags"
 msgstr ""
 
-#: ../src/libs/import.c:650
+#: ../src/libs/import.c:654
 msgid "import image"
 msgstr "นำเข้ารูปภาพ"
 
-#: ../src/libs/import.c:675
+#: ../src/libs/import.c:679
 msgid "supported images"
 msgstr "รูปภาพที่รองรับ"
 
-#: ../src/libs/import.c:725
+#: ../src/libs/import.c:729
 msgid "file has unknown format!"
 msgstr ""
 
-#: ../src/libs/import.c:743
+#: ../src/libs/import.c:747
 msgid "import film"
 msgstr "นำเข้าฟิล์ม"
 
-#: ../src/libs/import.c:817
+#: ../src/libs/import.c:821
 msgid "select one or more images to import"
 msgstr "เลือกหนึ่งหรือหลาายรูปภาพที่จะนำเขา"
 
 #. adding the import folder button
-#: ../src/libs/import.c:826
+#: ../src/libs/import.c:830
 msgid "folder"
 msgstr "โฟลเดอร์"
 
-#: ../src/libs/import.c:830
+#: ../src/libs/import.c:834
 msgid "select a folder to import as film roll"
 msgstr "เลือกโฟลเดอร์ที่จะนำเข้ามาเป็นม้วนฟิล์ม"
 
@@ -6278,23 +6152,20 @@ msgid "move focus point out (big steps)"
 msgstr ""
 
 #: ../src/libs/live_view.c:355
-#, fuzzy
 msgid "selected image"
-msgstr "ลบรูปภาพ"
+msgstr "รูปที่เลือก"
 
 #: ../src/libs/live_view.c:356 ../src/libs/tools/filter.c:129
-#, fuzzy
 msgid "id"
-msgstr "d"
+msgstr ""
 
 #: ../src/libs/live_view.c:357
 msgid "overlay another image over the live view"
 msgstr ""
 
 #: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:77
-#, fuzzy
 msgid "image id"
-msgstr "รูปภาพ"
+msgstr "id ของรูป"
 
 #: ../src/libs/live_view.c:366
 msgid "enter image id of the overlay manually"
@@ -6305,9 +6176,8 @@ msgid "overlay mode"
 msgstr ""
 
 #: ../src/libs/live_view.c:378
-#, fuzzy
 msgid "xor"
-msgstr "ส่งออก"
+msgstr ""
 
 #: ../src/libs/live_view.c:379
 msgid "add"
@@ -6318,19 +6188,16 @@ msgid "saturate"
 msgstr ""
 
 #: ../src/libs/live_view.c:387
-#, fuzzy
 msgid "color dodge"
-msgstr "กลุ่มสี"
+msgstr ""
 
 #: ../src/libs/live_view.c:388
-#, fuzzy
 msgid "color burn"
-msgstr "กลุ่มสี"
+msgstr ""
 
 #: ../src/libs/live_view.c:389
-#, fuzzy
 msgid "hard light"
-msgstr "ความสูง"
+msgstr "แสงที่แรง"
 
 #: ../src/libs/live_view.c:390
 msgid "soft light"
@@ -6349,9 +6216,8 @@ msgid "hsl saturation"
 msgstr ""
 
 #: ../src/libs/live_view.c:395
-#, fuzzy
 msgid "hsl color"
-msgstr "สี"
+msgstr "สี hsl"
 
 #: ../src/libs/live_view.c:396
 msgid "hsl luminosity"
@@ -6374,14 +6240,12 @@ msgid "find location"
 msgstr ""
 
 #: ../src/libs/map_settings.c:37
-#, fuzzy
 msgid "map settings"
-msgstr "ตั้งค่า"
+msgstr "ตั้งค่าแผนที่"
 
 #: ../src/libs/map_settings.c:92
-#, fuzzy
 msgid "show osd"
-msgstr "แสดง %s"
+msgstr "แสดง osd"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
@@ -6479,7 +6343,6 @@ msgstr ""
 
 #. internal
 #: ../src/libs/metadata_view.c:76
-#, fuzzy
 msgid "filmroll"
 msgstr "ม้วนฟิล์ม"
 
@@ -6492,18 +6355,16 @@ msgid "focus distance"
 msgstr ""
 
 #: ../src/libs/metadata_view.c:90
-#, fuzzy
 msgid "datetime"
-msgstr "วันที่/เวลา"
+msgstr "วัน/เวลา"
 
 #: ../src/libs/metadata_view.c:92
 msgid "height"
 msgstr "ความสูง"
 
 #: ../src/libs/metadata_view.c:97
-#, fuzzy
 msgid "copyright"
-msgstr "คัดลอก"
+msgstr "สงวนลิขสิทธิ์"
 
 #. geotagging
 #: ../src/libs/metadata_view.c:100
@@ -6519,9 +6380,8 @@ msgid "image information"
 msgstr "ข้อมูลรูปภาพ"
 
 #: ../src/libs/modulegroups.c:69
-#, fuzzy
 msgid "modulegroups"
-msgstr "กลุ่มสี"
+msgstr "กลุ่มโมดูล"
 
 #: ../src/libs/modulegroups.c:108
 msgid "show modules explicit specified by user"
@@ -6544,9 +6404,8 @@ msgid "color group"
 msgstr "กลุ่มสี"
 
 #: ../src/libs/modulegroups.c:133
-#, fuzzy
 msgid "tone group"
-msgstr "กลุ่มความถูกต้อง"
+msgstr "กลุ่มสีเอิร์ธโทน"
 
 #: ../src/libs/modulegroups.c:138
 msgid "effect group"
@@ -6659,13 +6518,11 @@ msgid "styles"
 msgstr "สไตล์"
 
 #: ../src/libs/styles.c:68 ../src/libs/tagging.c:82
-#, fuzzy
 msgctxt "accel"
 msgid "delete"
 msgstr "ลบ"
 
 #: ../src/libs/styles.c:70
-#, fuzzy
 msgctxt "accel"
 msgid "import"
 msgstr "นำเข้า"
@@ -6697,9 +6554,8 @@ msgid "creates a duplicate of the image before applying style"
 msgstr ""
 
 #: ../src/libs/styles.c:384
-#, fuzzy
 msgid "create styles from history stack of selected images"
-msgstr "ลบฉลากออกจากรูปที่เลือกทั้งหมด"
+msgstr "สร้างสไตล์จากชุดประวัติศาสตร์ของภาพที่เลือก"
 
 #. edit
 #: ../src/libs/styles.c:388
@@ -6716,7 +6572,6 @@ msgstr ""
 
 #. import button
 #: ../src/libs/styles.c:402
-#, fuzzy
 msgctxt "styles"
 msgid "import"
 msgstr "นำเข้า"
@@ -6744,7 +6599,6 @@ msgid "detach"
 msgstr ""
 
 #: ../src/libs/tagging.c:81
-#, fuzzy
 msgctxt "accel"
 msgid "new"
 msgstr "ใหม่"
@@ -6816,9 +6670,8 @@ msgid "delete selected tag"
 msgstr ""
 
 #: ../src/libs/tools/colorlabels.c:38
-#, fuzzy
 msgid "colorlabels"
-msgstr "สี"
+msgstr "สีป้าย"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:69
@@ -6866,9 +6719,8 @@ msgid "clear all labels of selected images"
 msgstr "ลบฉลากออกจากรูปที่เลือกทั้งหมด"
 
 #: ../src/libs/tools/darktable.c:47
-#, fuzzy
 msgid "darktable"
-msgstr "เกี่ยวกับ darktable"
+msgstr ""
 
 #: ../src/libs/tools/darktable.c:170
 msgid "organize and develop images from digital cameras"
@@ -6896,7 +6748,7 @@ msgstr "* ผู้ร่วมสมทบงาน *"
 
 #: ../src/libs/tools/darktable.c:236
 msgid "translator-credits"
-msgstr "พรดนัย ขันติ"
+msgstr "ผู้แปล"
 
 #: ../src/libs/tools/filmstrip.c:135
 msgid "filmstrip"
@@ -6942,86 +6794,73 @@ msgstr ""
 
 #. setup history key accelerators
 #: ../src/libs/tools/filmstrip.c:171
-#, fuzzy
 msgctxt "accel"
 msgid "copy history"
-msgstr "ประวัติ"
+msgstr "สำเนาประวัติ"
 
 #: ../src/libs/tools/filmstrip.c:173
-#, fuzzy
 msgctxt "accel"
 msgid "copy history parts"
-msgstr "ประวัติ"
+msgstr "สำเนาส่วนของประวัติ"
 
 #: ../src/libs/tools/filmstrip.c:175
-#, fuzzy
 msgctxt "accel"
 msgid "paste history"
-msgstr "ประวัติ"
+msgstr "วางประวัติ"
 
 #: ../src/libs/tools/filmstrip.c:177
-#, fuzzy
 msgctxt "accel"
 msgid "paste history parts"
-msgstr "ประวัติ"
+msgstr "วางส่วนของประวัติ"
 
 #: ../src/libs/tools/filmstrip.c:179
-#, fuzzy
 msgctxt "accel"
 msgid "discard history"
-msgstr "ประวัติ"
+msgstr "ลบประวัติ"
 
 #: ../src/libs/tools/filmstrip.c:182
-#, fuzzy
 msgctxt "accel"
 msgid "duplicate image"
-msgstr "แก้ไขสไตล์"
+msgstr "คัดลอกภาพ"
 
 #. setup color label accelerators
 #. Color keys
 #: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1610
-#, fuzzy
 msgctxt "accel"
 msgid "color red"
-msgstr "สี"
+msgstr "สีแดง"
 
 #: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1611
-#, fuzzy
 msgctxt "accel"
 msgid "color yellow"
-msgstr "เหลือง"
+msgstr "สีเหลือง"
 
 #: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1612
-#, fuzzy
 msgctxt "accel"
 msgid "color green"
-msgstr "กลุ่มสี"
+msgstr "สีเขียว"
 
 #: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1613
-#, fuzzy
 msgctxt "accel"
 msgid "color blue"
-msgstr "กลุ่มสี"
+msgstr "สีฟ้า"
 
 #: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1614
-#, fuzzy
 msgctxt "accel"
 msgid "color purple"
-msgstr "กลุ่มสี"
+msgstr "สีม่วง"
 
 #. setup selection accelerators
 #. selection accels
 #: ../src/libs/tools/filmstrip.c:194 ../src/libs/tools/lighttable.c:147
-#, fuzzy
 msgctxt "accel"
 msgid "select all"
 msgstr "เลือกทั้งหมด"
 
 #: ../src/libs/tools/filmstrip.c:195 ../src/libs/tools/lighttable.c:149
-#, fuzzy
 msgctxt "accel"
 msgid "select none"
-msgstr "ไม่เลือก"
+msgstr "ไม่เลือกทั้งหมด"
 
 #: ../src/libs/tools/filmstrip.c:196 ../src/libs/tools/lighttable.c:151
 msgctxt "accel"
@@ -7029,16 +6868,14 @@ msgid "invert selection"
 msgstr ""
 
 #: ../src/libs/tools/filmstrip.c:197 ../src/libs/tools/lighttable.c:153
-#, fuzzy
 msgctxt "accel"
 msgid "select film roll"
 msgstr "เลือกม้วนฟิล์ม"
 
 #: ../src/libs/tools/filmstrip.c:198 ../src/libs/tools/lighttable.c:154
-#, fuzzy
 msgctxt "accel"
 msgid "select untouched"
-msgstr "ไม่เลือก"
+msgstr "เลือกรูปที่ยังไม่ได้แต่ง"
 
 #: ../src/libs/tools/filter.c:53
 msgid "filter"
@@ -7063,42 +6900,36 @@ msgstr ""
 
 #. sort by label
 #: ../src/libs/tools/filter.c:120
-#, fuzzy
 msgid "sort by"
-msgstr "เรียงลำดับรูปภาพตาม"
+msgstr "เรียงลำดับตาม"
 
 #: ../src/libs/tools/global_toolbox.c:43
-#, fuzzy
 msgid "preferences"
-msgstr "ปรับแต่ง darktable"
+msgstr "ตั้งค่าตัวเลือก"
 
 #: ../src/libs/tools/global_toolbox.c:79
 #: ../src/libs/tools/global_toolbox.c:113
-#, fuzzy
 msgid "expand grouped images"
-msgstr "รูปภาพกำพร้า"
+msgstr "เปิดกลุ่มรูปภาพ"
 
 #: ../src/libs/tools/global_toolbox.c:81
 #: ../src/libs/tools/global_toolbox.c:115
-#, fuzzy
 msgid "collapse grouped images"
-msgstr "รูปภาพที่รองรับ"
+msgstr "ปิดกลุ่มรูปภาพ"
 
 #: ../src/libs/tools/global_toolbox.c:91
 msgid "show global preferences"
 msgstr ""
 
 #: ../src/libs/tools/global_toolbox.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "grouping"
-msgstr "กลุ่มพื้นฐาน"
+msgstr "กลุ่ม"
 
 #: ../src/libs/tools/global_toolbox.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "preferences"
-msgstr "ปรับแต่ง darktable"
+msgstr "ตั้งค่าตัวเลือก"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -7138,9 +6969,8 @@ msgid "module toolbox"
 msgstr ""
 
 #: ../src/libs/tools/ratings.c:50
-#, fuzzy
 msgid "ratings"
-msgstr "ตั้งค่า"
+msgstr "จัดอันดับ"
 
 #: ../src/libs/tools/viewswitcher.c:46
 msgid "viewswitcher"
@@ -7190,7 +7020,7 @@ msgstr "ใช้สไตล์ `%s' กับรูปปัจจุบัน
 
 #: ../src/views/darkroom.c:903
 msgid "no styles have been created yet"
-msgstr "ยังไม่มีสไตล์ที่ถูกสร้าง"
+msgstr "ยังไม่มีสไตล์"
 
 #: ../src/views/darkroom.c:1042
 msgid "quick access to presets of your favorites"
@@ -7219,9 +7049,8 @@ msgid "red & blue"
 msgstr ""
 
 #: ../src/views/darkroom.c:1110
-#, fuzzy
 msgid "purple & green"
-msgstr "ม่วง"
+msgstr "ม่วง และ เขียว"
 
 #: ../src/views/darkroom.c:1112
 msgid "select colors to indicate over/under exposure"
@@ -7261,28 +7090,24 @@ msgstr ""
 
 #. Shortcut to skip images
 #: ../src/views/darkroom.c:1621
-#, fuzzy
 msgctxt "accel"
 msgid "image forward"
-msgstr "ข้อมูลรูปภาพ"
+msgstr "ไปภาพต่อไป"
 
 #: ../src/views/darkroom.c:1623
-#, fuzzy
 msgctxt "accel"
 msgid "image back"
-msgstr "รูปภาพ"
+msgstr "ไปภาพก่อนหน้า"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:1627
-#, fuzzy
 msgctxt "accel"
 msgid "overexposed"
-msgstr "ส่งออก"
+msgstr "ภาพสว่างมากเกิน"
 
 #: ../src/views/lighttable.c:407
-#, fuzzy
 msgid "there are no images in this collection"
-msgstr "เลือกรูปภาพทั้งหมดในชุดปัจจุบัน (ctrl-a)"
+msgstr "ไม่มี ภาพในชุดนี้"
 
 #: ../src/views/lighttable.c:409
 msgid "if you have not imported any images yet"
@@ -7372,6 +7197,46 @@ msgctxt "accel"
 msgid "redo"
 msgstr ""
 
+#~ msgid "color mapping"
+#~ msgstr "การจับคู่สี"
+
+#~ msgid "analyze this image as a source image"
+#~ msgstr "วิเคราะห์รูปภาพนี้โดยใช้เป็นแหล่งที่มา"
+
+#~ msgid "analyze this image as a target image"
+#~ msgstr "วิเคราะห์รูปภาพนี้โดยใช้เป็นเป้าหมาย"
+
+#~ msgid "color dominance"
+#~ msgstr "กลุ่มสีเด่น"
+
+#~ msgid "histogram equalization"
+#~ msgstr "ปรับอีควอไลเซอร์ฮิสโตแกรม"
+
+#~ msgctxt "size"
+#~ msgid "image"
+#~ msgstr "รูปภาพ"
+
+#~ msgid "smaller border"
+#~ msgstr "ขอบเล็กลง"
+
+#~ msgid "fit to screen"
+#~ msgstr "จัดให้พอดีกับหน้าจอ"
+
+#~ msgid "mask manager"
+#~ msgstr "ส่วนจัดการหน้ากาก"
+
+#~ msgid "delete this shape"
+#~ msgstr "ลบรูปร่างนี้"
+
+#~ msgid "remove from group"
+#~ msgstr "เอาออกจากกลุ่ม"
+
+#~ msgid "created shapes"
+#~ msgstr "รูปร่างถูกสร้างขึ้น"
+
+#~ msgid "lua options"
+#~ msgstr "ตัวเลือก lua"
+
 #~ msgid " (needs a restart) "
 #~ msgstr "(ต้องเริ่มโปรแกรมใหม่)"
 
@@ -7410,10 +7275,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "similar images"
 #~ msgstr "นำเข้ารูปภาพ"
-
-#, fuzzy
-#~ msgid "histogram weight"
-#~ msgstr "ฮิสโทแกรม"
 
 #~ msgid "ask before deleting images"
 #~ msgstr "ถามก่อนลบรูป"
