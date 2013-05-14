@@ -612,6 +612,7 @@ _blendop_masks_add_curve(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
+  self->request_color_pick = 0;
   //we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_CURVE);
   dt_masks_change_form_gui(form);
@@ -625,6 +626,7 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
+  self->request_color_pick = 0;
   //we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
   dt_masks_change_form_gui(spot);
@@ -638,6 +640,7 @@ _blendop_masks_show_and_edit(GtkToggleButton *togglebutton, dt_iop_module_t *sel
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
+  self->request_color_pick = 0;
   dt_masks_iop_edit_toggle_callback(togglebutton, self);
 }
 
