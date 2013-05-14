@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 20:16+0200\n"
-"PO-Revision-Date: 2013-05-12 21:33+0100\n"
+"POT-Creation-Date: 2013-05-14 08:56+0200\n"
+"PO-Revision-Date: 2013-05-14 09:16+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -180,13 +180,13 @@ msgstr "hauteur maximale des images (pixels)"
 
 #: ../build/src/preferences_gen.h:1268
 msgid ""
-"maximum height of the image drawing area in dakroom mode. adjust to your "
+"maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
 "hauteur maximale des images dans le mode chambre noire. ajuster à votre "
 "écran\n"
-"(nécessite un redémarrage et rend le cache caduque)"
+"(nécessite un redémarrage et rend le cache caduque)."
 
 #: ../build/src/preferences_gen.h:1275
 msgid "compression of thumbnail images"
@@ -1300,12 +1300,12 @@ msgstr "descendre"
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2025
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2020
+#: ../src/develop/imageop.c:1174 ../src/develop/imageop.c:2025
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -1315,7 +1315,7 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
 #: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
-#: ../src/libs/lib.c:320 ../src/libs/lib.c:971
+#: ../src/libs/lib.c:320 ../src/libs/lib.c:976
 msgid "preset"
 msgstr "pré-réglage"
 
@@ -1345,16 +1345,16 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1990
+#: ../src/develop/imageop.c:1995
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1999 ../src/libs/lib.c:830
+#: ../src/develop/imageop.c:2004 ../src/libs/lib.c:835
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:2008 ../src/gui/preferences.c:403
-#: ../src/libs/lib.c:843
+#: ../src/develop/imageop.c:2013 ../src/gui/preferences.c:403
+#: ../src/libs/lib.c:848
 msgid "presets"
 msgstr "pré-réglages"
 
@@ -5673,12 +5673,12 @@ msgstr ""
 
 #: ../src/libs/camera.c:502
 msgid ""
-"the amount of steps per bracket, steps is camera configurable and usally 3 "
+"the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"pas d'exposition, le pas étant configurable par le boîtier. La valeur "
-"habituelle est de 3 pas par \"stop\"\n"
+"pas d'exposition, le pas étant configurable par le boîtier et habituellement "
+"de 3 pas par \"stop\"\n"
 "autrement dit, 3 pas correspondent à 1 IL entre expositions."
 
 #: ../src/libs/camera.c:516
