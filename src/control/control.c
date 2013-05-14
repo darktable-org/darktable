@@ -809,6 +809,7 @@ void dt_control_quit()
   if(darktable.lua_state)
   {
     lua_close(darktable.lua_state);
+    luaA_close();
     darktable.lua_state = NULL;
   }
 #endif

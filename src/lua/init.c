@@ -19,8 +19,15 @@
 #include "lua/init.h"
 #include "lua/call.h"
 #include "lua/configuration.h"
+#include "lua/database.h"
+#include "lua/glist.h"
+#include "lua/gui.h"
+#include "lua/image.h"
 #include "lua/preferences.h"
 #include "lua/print.h"
+#include "lua/types.h"
+#include "lua/modules.h"
+#include "lua/storage.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -41,9 +48,14 @@ static int dt_luacleanup(lua_State*L)
  */
 static lua_CFunction init_funcs[] =
 {
+  dt_lua_init_glist,
+  dt_lua_init_image,
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,
+  dt_lua_init_database,
+  dt_lua_init_gui,
+  dt_lua_init_storages,
   NULL
 };
 
@@ -54,6 +66,7 @@ void dt_lua_init_early(lua_State*L)
     L= luaL_newstate();
   darktable.lua_state= L;
   luaL_openlibs(darktable.lua_state);
+  luaA_open();
   dt_lua_push_darktable_lib(L);
   // set the metatable
   lua_newtable(L);
@@ -63,6 +76,10 @@ void dt_lua_init_early(lua_State*L)
 
   lua_pop(L,1);
 
+  /* types need to be initialized early */
+  dt_lua_initialize_types(L);
+  /* modules need to be initialized before the are used */
+  dt_lua_init_modules(L);
 
 }
 

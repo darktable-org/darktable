@@ -167,10 +167,17 @@ if(USE_LUA)
 		FILE(GLOB SOURCE_FILES_LUA
 			"lua/call.c"
 			"lua/configuration.c"
+			"lua/database.c"
+			"lua/glist.c"
+			"lua/gui.c"
+			"lua/image.c"
 			"lua/init.c"
 			"lua/lua.c"
+			"lua/modules.c"
 			"lua/preferences.c"
 			"lua/print.c"
+			"lua/storage.c"
+			"lua/types.c"
 			)
 		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
 	else()
@@ -519,6 +526,17 @@ add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
+
+if(LUA52_FOUND)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
+endif(LUA52_FOUND)
+
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first

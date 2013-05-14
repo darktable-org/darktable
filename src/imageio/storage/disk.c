@@ -265,6 +265,9 @@ params_size(dt_imageio_module_storage_t *self)
 
 void init(dt_imageio_module_storage_t *self)
 {
+#ifdef USE_LUA
+  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_disk_t,filename,char_path_length);
+#endif
 }
 
 void*
