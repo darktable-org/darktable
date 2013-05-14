@@ -376,9 +376,9 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
   cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
 
-  if( (flags&CPF_ACTIVE) )
-    cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
-
+  if( (flags&CPF_ACTIVE) ) cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
+  else cairo_set_source_rgba(cr, 1.0,1.0,1.0,0.5);
+  
   double dashed[] = {0.2, 0.2};
   int len  = sizeof(dashed) / sizeof(dashed[0]);
   cairo_set_dash(cr, dashed, len, 0);

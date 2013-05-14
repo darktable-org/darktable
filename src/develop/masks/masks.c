@@ -622,7 +622,8 @@ void dt_masks_reset_show_masks_icons(void)
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
       bd->masks_shown = 0;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
+      GTK_TOGGLE_BUTTON(bd->masks_edit)->active = 0;
+      gtk_widget_queue_draw(bd->masks_edit);
     }
     modules = g_list_next(modules);
   }
