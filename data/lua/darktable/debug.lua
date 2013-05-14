@@ -19,11 +19,12 @@ local function header(object,indent,name,obj_expand_mode)
 	if name == nil then name = "" end
 	local obj_type = type(object)
 	local complement =""
-	if(obj_expand_mode == "constructor") then complement = complement..",constructor" end
-	if(obj_expand_mode == "member constructor") then complement = complement..",member constructor" end
 	local user_type = get_userdata_type(object);
 	if user_type then
 		complement = complement..","..user_type
+	end
+	if obj_type ~= "number" then
+		name = tostring(name)
 	end
 	return indent..name.." ("..obj_type..complement..")"
 end

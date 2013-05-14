@@ -24,6 +24,12 @@
 #include "common/image.h"
 #include "common/imageio.h"
 #include "lua/call.h"
+#include "lua/glist.h"
+
+typedef struct {
+  GList* imgids;
+  GList* file_names;
+} lua_storage_t;
 
 static const char* name_wrapper(const struct dt_imageio_module_storage_t *self)
 {
@@ -66,11 +72,22 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
     return 1;
   }
 
+  lua_storage_t *d = (lua_storage_t*) self_data;
+  d->imgids = g_list_prepend(d->imgids,(void*)(intptr_t)imgid);
+  d->file_names = g_list_prepend(d->file_names,complete_name);
+
+
+
   lua_State *L =darktable.lua_state;
 
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
   lua_getfield(L,-1,self->plugin_name);
   lua_getfield(L,-1,"store");
+
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,3);
+    return 1;
+  }
 
   luaA_push_typeid(L,self->parameter_lua_type,&self_data);
   luaA_push(L,dt_lua_image_t,&imgid);
@@ -92,18 +109,38 @@ extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
   lua_getfield(L,-1,self->plugin_name);
   lua_getfield(L,-1,"finalize_store");
+
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,3);
+    return;
+  }
+
   luaA_push_typeid(L,self->parameter_lua_type,&data);
-  dt_lua_do_chunk(L,1,1);
-  lua_toboolean(L,-1);
+
+  lua_storage_t *d = (lua_storage_t*) data;
+  GList* imgids =d->imgids;
+  GList* file_names = d->file_names;
+  lua_newtable(L);
+  while(imgids) {
+    luaA_push(L,dt_lua_image_t,&(imgids->data));
+    lua_pushstring(L,file_names->data);
+    lua_settable(L,-3);
+    imgids = g_list_next(imgids);
+    file_names = g_list_next(file_names);
+  }
+
+  dt_lua_do_chunk(L,2,0);
   lua_pop(L,2);
 }
 static size_t params_size_wrapper   (struct dt_imageio_module_storage_t *self)
 {
-  return sizeof(void*);
+  return sizeof(lua_storage_t);
 }
 static void* get_params_wrapper   (struct dt_imageio_module_storage_t *self)
 {
-  void *d = malloc(sizeof(void*));
+  lua_storage_t *d = malloc(sizeof(lua_storage_t));
+  d->imgids = NULL;
+  d->file_names = NULL;
   lua_pushlightuserdata(darktable.lua_state,d);
   lua_newtable(darktable.lua_state);
   lua_settable(darktable.lua_state,LUA_REGISTRYINDEX);
@@ -114,6 +151,9 @@ static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_
   lua_pushlightuserdata(darktable.lua_state,data);
   lua_pushnil(darktable.lua_state);
   lua_settable(darktable.lua_state,LUA_REGISTRYINDEX);
+  lua_storage_t *d = (lua_storage_t*) data;
+  g_list_free(d->imgids);
+  g_list_free_full(d->file_names,free);
   free(data);
 }
 static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, const void *params, const int size)
@@ -232,9 +272,11 @@ static int register_storage(lua_State *L)
   lua_pushvalue(L,2);
   lua_setfield(L,-2,"name");
 
-  luaL_checktype(L,3,LUA_TFUNCTION);
-  lua_pushvalue(L,3);
-  lua_setfield(L,-2,"store");
+  if(!lua_isnoneornil(L,3)) {
+    luaL_checktype(L,3,LUA_TFUNCTION);
+    lua_pushvalue(L,3);
+    lua_setfield(L,-2,"store");
+  }
 
   if(lua_isnil(L,4) )
   {
@@ -251,7 +293,7 @@ static int register_storage(lua_State *L)
 
   char tmp[1024];
   snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
-  storage->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,tmp,sizeof(void*));
+  storage->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,tmp,sizeof(lua_storage_t));
   dt_lua_register_type_callback_default_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_next);
   dt_lua_register_type_callback_number_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_length);
   luaA_struct_typeid(darktable.lua_state,luaA_type_find(tmp));
