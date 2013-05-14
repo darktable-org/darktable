@@ -1054,7 +1054,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
   g->sizeto = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->sizeto, _("image"));
+  dt_bauhaus_combobox_add(g->sizeto, NC_("size", "image"));
   dt_bauhaus_combobox_add(g->sizeto, _("larger border"));
   dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
