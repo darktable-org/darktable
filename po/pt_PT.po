@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 18:50+0200\n"
-"PO-Revision-Date: 2013-03-11 20:08+0100\n"
+"PO-Revision-Date: 2013-05-13 15:52+0100\n"
 "Last-Translator: Jose Carlos <jcrc@portugalmail.com>\n"
 "Language-Team: \n"
 "Language: pt_PT\n"
@@ -31,12 +31,11 @@ msgstr "tamanho dos painéis laterais em pixels"
 #: ../build/src/preferences_gen.h:1215 ../build/src/preferences_gen.h:1289
 #: ../build/src/preferences_gen.h:1376 ../build/src/preferences_gen.h:1400
 #: ../build/src/preferences_gen.h:1425
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%d'"
-msgstr "duplo click para redefinir `%s'"
+msgstr "duplo click para redefinir `%d'"
 
 #: ../build/src/preferences_gen.h:897 ../build/src/preferences_gen.h:1355
-#, fuzzy
 msgid "(needs a restart)"
 msgstr " (reínicio necessário)"
 
@@ -239,14 +238,13 @@ msgid "core options"
 msgstr "opções básicas"
 
 #: ../build/src/preferences_gen.h:1337
-#, fuzzy
 msgid "memory in megabytes to use for mipmap cache"
-msgstr "memória para usar como cache mipmap (em bytes)"
+msgstr "memória para usar como cache mipmap (em megabytes)"
 
 #: ../build/src/preferences_gen.h:1352
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%<PRId64>'"
-msgstr "duplo click para redefinir `%s'"
+msgstr "duplo click para redefinir `%<PRId64>'"
 
 #: ../build/src/preferences_gen.h:1362
 msgid "number of background threads"
@@ -265,11 +263,9 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1386
 msgid "host memory limit (in MB) for tiling"
-msgstr ""
-"memória limite do anfitrião para para processamento de ladrilhos (em MB)"
+msgstr "memória limite do anfitrião para processamento de ladrilhos (em MB)"
 
 #: ../build/src/preferences_gen.h:1403
-#, fuzzy
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -279,7 +275,7 @@ msgstr ""
 "esta variável controla a quantidade máxima de memória (em MB) que um módulo "
 "pode usar durante o processamento. valores baixos forçam módulos sedentos de "
 "memória a aumentar o número de ladrilhos. definindo 0 omite qualquer limite. "
-"valores abaixo de 500 serão tratados como 500. reinício necessário."
+"valores abaixo de 500 serão tratados como 500. (reinício necessário)."
 
 #: ../build/src/preferences_gen.h:1410
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -288,7 +284,6 @@ msgstr ""
 "de ladrilhos"
 
 #: ../build/src/preferences_gen.h:1428
-#, fuzzy
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -297,7 +292,7 @@ msgstr ""
 "se definida com valor positivo, esta variável define a quantidade mínima de "
 "memória (em MB) usada pelo processamento de ladrilhos para um único buffer "
 "de imagem. tem precedência sobre heurísticas baseadas em host_memory_limit. "
-"reinício necessário."
+"(reinício necessário)."
 
 #: ../build/src/preferences_gen.h:1435
 msgid "write sidecar file for each image"
@@ -328,14 +323,12 @@ msgid "not available on this system"
 msgstr "não disponível neste sistema"
 
 #: ../build/src/preferences_gen.h:1477
-#, fuzzy
 msgid "always try to use littlecms2"
-msgstr "usar sempre littlelcms2 durante a exportação"
+msgstr "tentar sempre usar littlecms2"
 
 #: ../build/src/preferences_gen.h:1489
-#, fuzzy
 msgid "this is significantly slower as the default."
-msgstr "isto é umas 28 vezes mais lento do que a opção por defeito."
+msgstr "isto é bastante mais lento do que a opção por defeito."
 
 #: ../build/src/preferences_gen.h:1496
 msgid "do high quality resampling during export"
@@ -586,14 +579,14 @@ msgstr "o estilo '%s' a aplicar durante a exportação não foi encontrado"
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
-msgstr ""
+msgstr "genérico"
 
 #: ../src/common/ratings.c:45
-#, fuzzy, c-format
+#, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "eliminando %d imagem"
-msgstr[1] "eliminando %d imagens"
+msgstr[0] "rejeitando %d imagem"
+msgstr[1] "rejeitando %d imagens"
 
 #: ../src/common/ratings.c:47
 #, c-format
@@ -839,30 +832,30 @@ msgstr[0] "copiar imagem?"
 msgstr[1] "copiar imagens?"
 
 #: ../src/control/jobs/control_jobs.c:898
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d image"
-msgstr "removendo %d imagem"
+msgstr "movendo %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:898
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d images"
-msgstr "removendo %d imagem"
+msgstr "movendo %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:904
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d image"
-msgstr "capturando %d imagem"
+msgstr "copiando %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:904
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d images"
-msgstr "capturando %d imagem"
+msgstr "copiando %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:936
-#, fuzzy, c-format
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"falha ao obter parâmetros do módulo de armazenamento, abortando a "
+"falha ao obter parâmetros do módulo de armazenamento `%s', abortando a "
 "exportação..."
 
 #: ../src/control/jobs/control_jobs.c:940
@@ -1482,11 +1475,12 @@ msgstr "cópia de segurança externa"
 
 #: ../src/gui/camera_import_dialog.c:385
 msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
+"external backup is an option to automatic do a backup of the imported "
+"image(s) to another physical location, when activated it does looks for "
+"specified backup foldername of mounted devices on your system... each found "
+"folder is used as basedirectory in the above storage structure and when a "
+"image are downloaded from camera it is replicated to found backup "
+"destinations."
 msgstr ""
 "cópia de segurança externa é uma opção para fazer automaticamente uma cópia "
 "de segurança das imagens importadas, numa outra localização física; quando "
@@ -2809,7 +2803,7 @@ msgstr "15:10 postal preto"
 
 #: ../src/iop/borders.c:796
 msgid "select border color"
-msgstr "selecionar cor da borda"
+msgstr "seleccionar cor da borda"
 
 #: ../src/iop/borders.c:833
 msgid "select frame line color"
@@ -2906,7 +2900,6 @@ msgid "orientation"
 msgstr "orientação"
 
 #: ../src/iop/borders.c:1067
-#, fuzzy
 msgid "portrait"
 msgstr "retrato"
 
@@ -3358,7 +3351,7 @@ msgstr "Adobe RGB (compatível)"
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
 #: ../src/libs/export.c:521
 msgid "linear RGB"
-msgstr "Linear RGB"
+msgstr "linear RGB"
 
 #: ../src/iop/colorin.c:758 ../src/iop/colorin.c:790
 msgid "linear infrared BGR"
@@ -3532,7 +3525,6 @@ msgid "apply"
 msgstr "aplicar"
 
 #: ../src/iop/colortransfer.c:647
-#, fuzzy
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -4021,7 +4013,7 @@ msgstr "rotação do filtro -180 a 180 graus"
 
 #: ../src/iop/graduatednd.c:1056
 msgid "select the hue tone of filter"
-msgstr "selecionar o tom do filtro"
+msgstr "seleccionar o tom do filtro"
 
 #: ../src/iop/graduatednd.c:1067
 msgid "select the saturation of filter"
@@ -4209,14 +4201,14 @@ msgstr ""
 
 #: ../src/iop/lens.c:1283
 msgid "camera/lens not found - please select manually"
-msgstr ""
+msgstr "câmara/lente não encontrada - por favor seleccione manualmente"
 
 #: ../src/iop/lens.c:1285
 msgid "try to locate your camera/lens in the above two menus"
-msgstr ""
+msgstr "tente localizar a sua câmara/lente nos dois menus acima"
 
 #: ../src/iop/lens.c:1330
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -4324,20 +4316,19 @@ msgstr "equirectangular"
 
 #: ../src/iop/lens.c:1847
 msgid "orthographic"
-msgstr ""
+msgstr "ortográfica"
 
 #: ../src/iop/lens.c:1848
 msgid "stereographic"
-msgstr ""
+msgstr "estereográfica"
 
 #: ../src/iop/lens.c:1849
 msgid "equisolid angle"
-msgstr ""
+msgstr "ângulo equisólido"
 
 #: ../src/iop/lens.c:1850
-#, fuzzy
 msgid "thoby fish-eye"
-msgstr "olho de peixe"
+msgstr "olho de peixe thoby"
 
 #: ../src/iop/lens.c:1858
 msgid "auto scale"
@@ -4852,9 +4843,8 @@ msgid "chocolate brown"
 msgstr "castanho chocolate"
 
 #: ../src/iop/splittoning.c:557
-#, fuzzy
 msgid "select the saturation tone"
-msgstr "seleccionar o tom de saturação das sombras"
+msgstr "seleccionar o tom de saturação"
 
 #: ../src/iop/splittoning.c:593
 msgid "balance"
@@ -4905,10 +4895,9 @@ msgid "tint"
 msgstr "tonalidade"
 
 #: ../src/iop/temperature.c:97
-#, fuzzy
 msgctxt "accel"
 msgid "temperature"
-msgstr "temperatura entrada"
+msgstr "temperatura"
 
 #: ../src/iop/temperature.c:385
 msgid "camera white balance"
@@ -4927,9 +4916,8 @@ msgid "tint"
 msgstr "tonalidade"
 
 #: ../src/iop/temperature.c:732
-#, fuzzy
 msgid "temperature"
-msgstr "temperatura entrada"
+msgstr "temperatura"
 
 #: ../src/iop/temperature.c:747
 msgid "choose white balance preset from camera"
@@ -5233,7 +5221,7 @@ msgstr "a escala da marca de água"
 #. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
 #. * Column 3 - WB name.
 #. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
-#. *	      It is enough to give only the extreme values, the other values
+#. *        It is enough to give only the extreme values, the other values
 #. *	      will be interpolated.
 #. * Column 5 - Channel multipliers.
 #. *

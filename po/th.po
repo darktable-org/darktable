@@ -6,11 +6,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-13 07:38-0400\n"
-"PO-Revision-Date: 2013-05-12 22:05-0500\n"
+"POT-Creation-Date: 2013-05-14 03:19-0400\n"
+"PO-Revision-Date: 2013-05-14 03:20-0500\n"
 "Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,7 +21,6 @@ msgid "gui options"
 msgstr "ตัวเลือกส่วนติดต่อผู้ใช้"
 
 #: ../build/src/preferences_gen.h:880
-#, fuzzy
 msgid "width of the side panels in pixels"
 msgstr "ขนาดของพาเนลด้านข้างเป็นพิกเซล"
 
@@ -64,6 +62,8 @@ msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
+"ถ้าต้องการประมวลผลข้อมูลดิบโดยตรงโดยไม่ใช้ jpg ที่ฝังมากับไฟล์ข้อมูลดิบ ให้เลือกตัวเลือกนี้\n"
+"การเลือกตัวเลือกนี้จะทำให้ทำงานช้าแต่จะได้ภาพการจัดการขนาดเล็กที่เป็นสี"
 
 #: ../build/src/preferences_gen.h:923
 msgid "ask before removing images from database"
@@ -91,7 +91,7 @@ msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อร�
 
 #: ../build/src/preferences_gen.h:980
 msgid "ask before copying images to new film roll folder"
-msgstr ""
+msgstr "ถามก่อนที่จะคัดลอกภาพไปยังโฟลเดอร์ฟิล์มม้วนใหม่"
 
 #: ../build/src/preferences_gen.h:992
 msgid "always ask the user before any image file is copied."
@@ -116,6 +116,8 @@ msgid ""
 "when having raw+jpeg images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all jpegs found."
 msgstr ""
+"ถ้าเลือกต้วเลือกนี้ จะทำให้โปรแกรมจะไม่นำเข้าภาพ jpg ในกรณีที่มีภาพดิบ และ jpg "
+"ที่อยู่ในไดเรกทอรีเดียวกัน "
 
 #: ../build/src/preferences_gen.h:1042
 msgid "recursive directory traversal when importing filmrolls"
@@ -123,23 +125,23 @@ msgstr "รวมรูปจากไดเร็คทอรีย์ย่อ
 
 #: ../build/src/preferences_gen.h:1060
 msgid "creator to be applied when importing"
-msgstr ""
+msgstr "ผู้สร้างจะถูกนำมาใช้เมื่อมีการนำเข้า"
 
 #: ../build/src/preferences_gen.h:1078
 msgid "publisher to be applied when importing"
-msgstr ""
+msgstr "ผู้ตีพิมพ์จะนำมาใช้เมื่อมีการนำเข้า"
 
 #: ../build/src/preferences_gen.h:1096
 msgid "rights to be applied when importing"
-msgstr ""
+msgstr "สิทธิที่จะใช้เมื่อมีการนำเข้า"
 
 #: ../build/src/preferences_gen.h:1114
 msgid "comma separated tags to be applied when importing"
-msgstr ""
+msgstr "แท็กแยกโดย ',' เพื่อจะนำมาใช้เมื่อนำเข้า"
 
 #: ../build/src/preferences_gen.h:1132
 msgid "initial import rating"
-msgstr ""
+msgstr "คะแนนที่จะใช้นำเข้าครั้งแรก"
 
 #: ../build/src/preferences_gen.h:1151
 msgid "initial star rating for all images when importing a filmroll"
@@ -155,7 +157,7 @@ msgstr "เปิดใช้ filmstip ในโหมด darkroom และ โ
 
 #: ../build/src/preferences_gen.h:1177
 msgid "maximum width of image drawing area"
-msgstr ""
+msgstr "ความกว้างของพื้นที่วาดภาพ"
 
 #: ../build/src/preferences_gen.h:1194
 msgid ""
@@ -163,10 +165,12 @@ msgid ""
 "screen\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
+"ความกว้างของพื้นที่วาดภาพในโหมดห้องมืด ปรับให้เข้ากับหน้าจอของคุณ \n"
+"(จำเป็นต้องรีสตาร์ทและจะยกเลิกแคชภาพปัจจุบัน)"
 
 #: ../build/src/preferences_gen.h:1201
 msgid "maximum height of image drawing area"
-msgstr ""
+msgstr "ความสูงของพื้นที่วาดภาพ"
 
 #: ../build/src/preferences_gen.h:1218
 msgid ""
@@ -174,16 +178,20 @@ msgid ""
 "screen\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
+"ความสูงของพื้นที่วาดภาพในโหมด dakroom ปรับให้เข้ากับหน้าจอของคุณ \n"
+"(จำเป็นต้องรีสตาร์ทและจะโยกเลิกแคชภาพปัจจุบัน)"
 
 #: ../build/src/preferences_gen.h:1225
 msgid "compression of thumbnail images"
-msgstr ""
+msgstr "การบีบอัดของภาพขนาดเล็ก"
 
 #: ../build/src/preferences_gen.h:1250
 msgid ""
 "off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high "
 "quality - dxt1, same memory as low quality variant but slower."
 msgstr ""
+"- ปิด ไม่ใช้การบีบอัดในหน่วยความจำ, ใช้ jpg บนดิสก์ มีคุณภาพต่ำ - dxt1 (รวดเร็ว) มีคุณภาพสูง "
+"- dxt1 ใช้หน่วยความจำเช่นเดียวกับตัวเลือกอื่นที่มีคุณภาพต่ำ แต่ช้ากว่า"
 
 #: ../build/src/preferences_gen.h:1257
 msgid "ask before deleting a tag"
@@ -191,23 +199,25 @@ msgstr "ถามก่อนลบแท็ค"
 
 #: ../build/src/preferences_gen.h:1275
 msgid "maximum number of images drawn on map"
-msgstr ""
+msgstr "จำนวนสูงสุดของภาพวาดบนแผนที่"
 
 #: ../build/src/preferences_gen.h:1292
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
 msgstr ""
+"จำนวนสูงสุดของภาพวาดใส่แท็กตำแหน่ง ที่อยู่บนแผนที่ การเพิ่มตัวเลขนี้จะทำให้การวาดแผนที่ช้าลง "
+"(จำเป็นต้องรีสตาร์ท)"
 
 #: ../build/src/preferences_gen.h:1299
 msgid "pretty print the image location"
-msgstr ""
+msgstr "แสดง ตำแหน่งของภาพอย่างสวยงาม"
 
 #: ../build/src/preferences_gen.h:1311
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
-msgstr ""
+msgstr "แสดงสถานที่ของภาพในโมดูลข้อมูลภาพ ในรูปแบบที่อ่านได้ง่ายขี้น "
 
 #: ../build/src/preferences_gen.h:1334
 msgid "core options"
@@ -215,7 +225,7 @@ msgstr "ตัวเลือกหลัก"
 
 #: ../build/src/preferences_gen.h:1337
 msgid "memory in megabytes to use for mipmap cache"
-msgstr ""
+msgstr "หน่วยความจำในเมกะไบต์จะใช้สำหรับการแคช mipmap"
 
 #: ../build/src/preferences_gen.h:1352
 #, c-format
@@ -224,7 +234,7 @@ msgstr "ดับเบิ้ลคลิกเพื่อปรับค่า
 
 #: ../build/src/preferences_gen.h:1362
 msgid "number of background threads"
-msgstr ""
+msgstr "จำนวนความคิดที่ทำงานในเบื้องหลัง"
 
 #: ../build/src/preferences_gen.h:1379
 msgid ""
@@ -7196,6 +7206,19 @@ msgstr ""
 msgctxt "accel"
 msgid "redo"
 msgstr ""
+
+#~ msgid "expand a single lighttable module at a time"
+#~ msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด lighttable"
+
+#~ msgid ""
+#~ "this option toggles the behavior of shift clicking in lighttable mode"
+#~ msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด lighttable"
+
+#~ msgid "expand a single darkroom module at a time"
+#~ msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด darkroom"
+
+#~ msgid "this option toggles the behavior of shift clicking in darkroom mode"
+#~ msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด darkroom"
 
 #~ msgid "color mapping"
 #~ msgstr "การจับคู่สี"
