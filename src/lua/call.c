@@ -28,15 +28,9 @@ static int dump_error(lua_State *L)
   return 1;
 }
 
-static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults)
+int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
 {
   int result;
-  if(loadresult)
-  {
-    dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
-    lua_pop(L,1);
-    return 0;
-  }
   lua_pushcfunction(L,dump_error);
   lua_insert(L,lua_gettop(L)-(nargs+1));
   result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
@@ -60,19 +54,31 @@ static int dt_lua_do_chunk(lua_State *L,int loadresult,int nargs,int nresults)
   return result;
 }
 
-void dt_lua_protect_call(lua_State *L,lua_CFunction func)
+int dt_lua_protect_call(lua_State *L,lua_CFunction func)
 {
   lua_pushcfunction(L,func);
-  dt_lua_do_chunk(L,0,0,0);
+  return dt_lua_do_chunk(L,0,0);
 }
-void dt_lua_dostring(lua_State *L,const char* command)
+int dt_lua_dostring(lua_State *L,const char* command)
 {
-  dt_lua_do_chunk(L,luaL_loadstring(darktable.lua_state, command),0,0);
+  if(luaL_loadstring(darktable.lua_state, command))
+  {
+    dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
+    lua_pop(L,1);
+    return -1;
+  }
+  return dt_lua_do_chunk(L,0,0);
 }
 
-void dt_lua_dofile(lua_State *L,const char* filename)
+int dt_lua_dofile(lua_State *L,const char* filename)
 {
-  dt_lua_do_chunk(L,luaL_loadfile(darktable.lua_state, filename),0,0);
+  if(luaL_loadfile(darktable.lua_state, filename))
+  {
+    dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
+    lua_pop(L,1);
+    return -1;
+  }
+  return dt_lua_do_chunk(L,0,0);
 }
 
 // closed on GC of the dt lib, usually when the lua interpreter closes
