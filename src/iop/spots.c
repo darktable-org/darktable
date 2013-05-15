@@ -545,6 +545,12 @@ void gui_init (dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 }
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  //hide the previous masks
+  dt_masks_reset_form_gui();
+}
+
 void gui_cleanup (dt_iop_module_t *self)
 {
   //dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
