@@ -96,7 +96,9 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   lua_pushnumber(L,num);
   lua_pushnumber(L,total);
   lua_pushboolean(L,high_quality);
-  dt_lua_do_chunk(L,7,1);
+  lua_pushlightuserdata(L,self_data);
+  lua_gettable(L,LUA_REGISTRYINDEX);
+  dt_lua_do_chunk(L,8,1);
   int result = lua_toboolean(L,-1);
   lua_pop(L,2);
   return result;
@@ -129,7 +131,10 @@ extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
     file_names = g_list_next(file_names);
   }
 
-  dt_lua_do_chunk(L,2,0);
+  lua_pushlightuserdata(L,data);
+  lua_gettable(L,LUA_REGISTRYINDEX);
+
+  dt_lua_do_chunk(L,3,0);
   lua_pop(L,2);
 }
 static size_t params_size_wrapper   (struct dt_imageio_module_storage_t *self)
@@ -186,7 +191,7 @@ static dt_imageio_module_storage_t ref_storage =
 };
 
 
-static int extra_data_index(lua_State *L)
+/*static int extra_data_index(lua_State *L)
 {
   void * udata;
   luaL_getmetafield(L,-2,"__luaA_Type");
@@ -252,7 +257,7 @@ static int extra_data_next(lua_State *L)
     lua_pushnil(L);
     return 1;
   }
-}
+}*/
 
 static int register_storage(lua_State *L)
 {
@@ -293,10 +298,10 @@ static int register_storage(lua_State *L)
 
   char tmp[1024];
   snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
-  storage->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,tmp,sizeof(lua_storage_t));
-  dt_lua_register_type_callback_default_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_next);
-  dt_lua_register_type_callback_number_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_length);
+  storage->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,tmp,storage->params_size(storage));
   luaA_struct_typeid(darktable.lua_state,luaA_type_find(tmp));
+  //dt_lua_register_type_callback_default_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_next);
+  //dt_lua_register_type_callback_number_internal(L,tmp,extra_data_index,extra_data_newindex,extra_data_length);
   dt_lua_register_storage_internal(darktable.lua_state,storage,tmp);
 
   dt_imageio_insert_storage(storage);
