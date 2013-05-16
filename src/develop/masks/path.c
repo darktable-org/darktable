@@ -23,8 +23,8 @@
 #include "develop/masks.h"
 #include "common/debug.h"
 
-/** get the point of the curve at pos t [0,1]  */
-static void _curve_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x, float p3y,
+/** get the point of the path at pos t [0,1]  */
+static void _path_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x, float p3y,
                           float t, float *x, float *y)
 {
   float a = (1-t)*(1-t)*(1-t);
@@ -35,12 +35,12 @@ static void _curve_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x,
   *y =  p0y*a + p1y*b + p2y*c + p3y*d;
 }
 
-/** get the point of the curve at pos t [0,1]  AND the corresponding border point */
-static void _curve_border_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x, float p3y,
+/** get the point of the path at pos t [0,1]  AND the corresponding border point */
+static void _path_border_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x, float p3y,
                                  float t, float rad, float *xc, float *yc, float *xb, float *yb)
 {
   //we get the point
-  _curve_get_XY(p0x,p0y,p1x,p1y,p2x,p2y,p3x,p3y,t,xc,yc);
+  _path_get_XY(p0x,p0y,p1x,p1y,p2x,p2y,p3x,p3y,t,xc,yc);
 
   //now we get derivative points
   float a = 3*(1-t)*(1-t);
@@ -65,7 +65,7 @@ static void _curve_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
 
 /** get feather extremity from the control point n°2 */
 /** the values should be in orthonormal space */
-static void _curve_ctrl2_to_feather(int ptx,int pty, int ctrlx, int ctrly, int *fx, int *fy, gboolean clockwise)
+static void _path_ctrl2_to_feather(int ptx,int pty, int ctrlx, int ctrly, int *fx, int *fy, gboolean clockwise)
 {
   if (clockwise)
   {
@@ -81,7 +81,7 @@ static void _curve_ctrl2_to_feather(int ptx,int pty, int ctrlx, int ctrly, int *
 
 /** get bezier control points from feather extremity */
 /** the values should be in orthonormal space */
-static void _curve_feather_to_ctrl(int ptx,int pty, int fx, int fy, int *ctrl1x, int *ctrl1y, int *ctrl2x, int *ctrl2y, gboolean clockwise)
+static void _path_feather_to_ctrl(int ptx,int pty, int fx, int fy, int *ctrl1x, int *ctrl1y, int *ctrl2x, int *ctrl2y, gboolean clockwise)
 {
   if (clockwise)
   {
@@ -100,7 +100,7 @@ static void _curve_feather_to_ctrl(int ptx,int pty, int fx, int fy, int *ctrl1x,
 }
 
 /** Get the control points of a segment to match exactly a catmull-rom spline */
-static void _curve_catmull_to_bezier(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
+static void _path_catmull_to_bezier(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
                                      float* bx1, float* by1, float* bx2, float* by2)
 {
   *bx1 = (-x1 + 6*x2 + x3) / 6;
@@ -110,7 +110,7 @@ static void _curve_catmull_to_bezier(float x1, float y1, float x2, float y2, flo
 }
 
 /** initialise all control points to eventually match a catmull-rom like spline */
-static void _curve_init_ctrl_points (dt_masks_form_t *form)
+static void _path_init_ctrl_points (dt_masks_form_t *form)
 {
   //if we have less that 3 points, what to do ??
   if (g_list_length(form->points) < 2) return;
@@ -118,7 +118,7 @@ static void _curve_init_ctrl_points (dt_masks_form_t *form)
   int nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
-    dt_masks_point_curve_t *point3 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+    dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
     //if the point as not be set manually, we redfine it
     if (point3->state & DT_MASKS_POINT_STATE_NORMAL)
     {
@@ -128,13 +128,13 @@ static void _curve_init_ctrl_points (dt_masks_form_t *form)
       k2 = (k-1)<0?nb-1:k-1;
       k4 = (k+1)%nb;
       k5 = (k+2)%nb;
-      dt_masks_point_curve_t *point1 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k1);
-      dt_masks_point_curve_t *point2 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k2);
-      dt_masks_point_curve_t *point4 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k4);
-      dt_masks_point_curve_t *point5 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k5);
+      dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k1);
+      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k2);
+      dt_masks_point_path_t *point4 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k4);
+      dt_masks_point_path_t *point5 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k5);
 
       float bx1,by1,bx2,by2;
-      _curve_catmull_to_bezier(point1->corner[0],point1->corner[1],
+      _path_catmull_to_bezier(point1->corner[0],point1->corner[1],
                                point2->corner[0],point2->corner[1],
                                point3->corner[0],point3->corner[1],
                                point4->corner[0],point4->corner[1],
@@ -143,7 +143,7 @@ static void _curve_init_ctrl_points (dt_masks_form_t *form)
       if (point2->ctrl2[1] == -1.0) point2->ctrl2[1] = by1;
       point3->ctrl1[0] = bx2;
       point3->ctrl1[1] = by2;
-      _curve_catmull_to_bezier(point2->corner[0],point2->corner[1],
+      _path_catmull_to_bezier(point2->corner[0],point2->corner[1],
                                point3->corner[0],point3->corner[1],
                                point4->corner[0],point4->corner[1],
                                point5->corner[0],point5->corner[1],
@@ -156,7 +156,7 @@ static void _curve_init_ctrl_points (dt_masks_form_t *form)
   }
 }
 
-static gboolean _curve_is_clockwise(dt_masks_form_t *form)
+static gboolean _path_is_clockwise(dt_masks_form_t *form)
 {
   if (g_list_length(form->points) > 2)
   {
@@ -165,8 +165,8 @@ static gboolean _curve_is_clockwise(dt_masks_form_t *form)
     for(int k = 0; k < nb; k++)
     {
       int k2 = (k+1)%nb;
-      dt_masks_point_curve_t *point1 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
-      dt_masks_point_curve_t *point2 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k2);
+      dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
+      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k2);
       //edge k
       sum += (point2->corner[0]-point1->corner[0])*(point2->corner[1]+point1->corner[1]);
     }
@@ -177,7 +177,7 @@ static gboolean _curve_is_clockwise(dt_masks_form_t *form)
 }
 
 /** fill eventual gaps between 2 points with a line */
-static int _curve_fill_gaps(int lastx, int lasty, int x, int y, int *points, int *pts_count)
+static int _path_fill_gaps(int lastx, int lasty, int x, int y, int *points, int *pts_count)
 {
   points[0] = x;
   points[1] = y;
@@ -248,7 +248,7 @@ static int _curve_fill_gaps(int lastx, int lasty, int x, int y, int *points, int
 
 /** fill the gap between 2 points with an arc of circle */
 /** this function is here because we can have gap in border, esp. if the corner is very sharp */
-static void _curve_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *curve, int *pos_curve, float *border, int *pos_border)
+static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *path, int *pos_path, float *border, int *pos_border)
 {
   //we want to find the start and end angles
   double a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
@@ -285,9 +285,9 @@ static void _curve_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   float aa = a1+incra;
   for (int i=1; i<l; i++)
   {
-    curve[*pos_curve] = cmax[0];
-    curve[*pos_curve+1] = cmax[1];
-    *pos_curve += 2;
+    path[*pos_path] = cmax[0];
+    path[*pos_path+1] = cmax[1];
+    *pos_path += 2;
     border[*pos_border] = cmax[0]+rr*cosf(aa);
     border[*pos_border+1] = cmax[1]+rr*sinf(aa);
     *pos_border += 2;
@@ -296,41 +296,41 @@ static void _curve_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   }
 }
 
-/** recursive function to get all points of the curve AND all point of the border */
+/** recursive function to get all points of the path AND all point of the border */
 /** the function take care to avoid big gaps between points */
-static void _curve_points_recurs(float *p1, float *p2,
-                                 double tmin, double tmax, float *curve_min, float *curve_max, float *border_min, float *border_max,
-                                 float *rcurve, float *rborder, float *curve, float *border, int *pos_curve, int *pos_border, int withborder)
+static void _path_points_recurs(float *p1, float *p2,
+                                 double tmin, double tmax, float *path_min, float *path_max, float *border_min, float *border_max,
+                                 float *rpath, float *rborder, float *path, float *border, int *pos_path, int *pos_border, int withborder)
 {
   //we calcul points if needed
-  if (curve_min[0] == -99999)
+  if (path_min[0] == -99999)
   {
-    _curve_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
-                         curve_min,curve_min+1,border_min,border_min+1);
+    _path_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
+                         path_min,path_min+1,border_min,border_min+1);
   }
-  if (curve_max[0] == -99999)
+  if (path_max[0] == -99999)
   {
-    _curve_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmax, p1[4]+(p2[4]-p1[4])*tmax*tmax*(3.0-2.0*tmax),
-                         curve_max,curve_max+1,border_max,border_max+1);
+    _path_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmax, p1[4]+(p2[4]-p1[4])*tmax*tmax*(3.0-2.0*tmax),
+                         path_max,path_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001) || ((int)curve_min[0]-(int)curve_max[0]<2 && (int)curve_min[0]-(int)curve_max[0]>-2 &&
-                               (int)curve_min[1]-(int)curve_max[1]<2 && (int)curve_min[1]-(int)curve_max[1]>-2 &&
+  if ((tmax-tmin < 0.0001) || ((int)path_min[0]-(int)path_max[0]<2 && (int)path_min[0]-(int)path_max[0]>-2 &&
+                               (int)path_min[1]-(int)path_max[1]<2 && (int)path_min[1]-(int)path_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
                                   (int)border_min[1]-(int)border_max[1]<2 && (int)border_min[1]-(int)border_max[1]>-2))))
   {
-    curve[*pos_curve] = curve_max[0];
-    curve[*pos_curve+1] = curve_max[1];
+    path[*pos_path] = path_max[0];
+    path[*pos_path+1] = path_max[1];
     if (withborder)
     {
       rborder[0] = border[*pos_border] = border_max[0];
       rborder[1] = border[*pos_border+1] = border_max[1];
       *pos_border += 2;
     }
-    *pos_curve += 2;
-    rcurve[0] = curve_max[0];
-    rcurve[1] = curve_max[1];
+    *pos_path += 2;
+    rpath[0] = path_max[0];
+    rpath[1] = path_max[1];
     return;
   }
 
@@ -338,12 +338,12 @@ static void _curve_points_recurs(float *p1, float *p2,
   double tx = (tmin+tmax)/2.0;
   float c[2] = {-99999,-99999}, b[2]= {-99999,-99999};
   float rc[2], rb[2];
-  _curve_points_recurs(p1,p2,tmin,tx,curve_min,c,border_min,b,rc,rb,curve,border,pos_curve,pos_border,withborder);
-  _curve_points_recurs(p1,p2,tx,tmax,rc,curve_max,rb,border_max,rcurve,rborder,curve,border,pos_curve,pos_border,withborder);
+  _path_points_recurs(p1,p2,tmin,tx,path_min,c,border_min,b,rc,rb,path,border,pos_path,pos_border,withborder);
+  _path_points_recurs(p1,p2,tx,tmax,rc,path_max,rb,border_max,rpath,rborder,path,border,pos_path,pos_border,withborder);
 }
 
-/** find all self intersections in a curve */
-static int _curve_find_self_intersection(int **inter, int nb_corners, float *border, int border_count)
+/** find all self intersections in a path */
+static int _path_find_self_intersection(int **inter, int nb_corners, float *border, int border_count)
 {
   int inter_count = 0;
 
@@ -406,7 +406,7 @@ static int _curve_find_self_intersection(int **inter, int nb_corners, float *bor
 
     if (inter_count >= nb_corners*4) break;
     //we want to be sure everything is continuous
-    _curve_fill_gaps(lastx,lasty,border[i*2],border[i*2+1],extra,&extra_count);
+    _path_fill_gaps(lastx,lasty,border[i*2],border[i*2+1],extra,&extra_count);
 
     //we now search intersections for all the point in extra
     for (int j=extra_count-1; j>=0; j--)
@@ -472,9 +472,9 @@ static int _curve_find_self_intersection(int **inter, int nb_corners, float *bor
   return inter_count;
 }
 
-/** get all points of the curve and the border */
+/** get all points of the path and the border */
 /** this take care of gaps and self-intersection and iop distortions */
-static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int prio_max, dt_dev_pixelpipe_t *pipe,
+static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int prio_max, dt_dev_pixelpipe_t *pipe,
                                     float **points, int *points_count, float **border, int *border_count, int source)
 {
   double start2 = dt_get_wtime();
@@ -493,13 +493,13 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   int nb = g_list_length(form->points);
   if (source && nb>0)
   {
-    dt_masks_point_curve_t *pt = (dt_masks_point_curve_t *)g_list_nth_data(form->points,0);
+    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points,0);
     dx = (pt->corner[0]-form->source[0])*wd;
     dy = (pt->corner[1]-form->source[1])*ht;
   }
   for(int k = 0; k < nb; k++)
   {
-    dt_masks_point_curve_t *pt = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
     (*points)[k*6] = pt->ctrl1[0]*wd-dx;
     (*points)[k*6+1] = pt->ctrl1[1]*ht-dy;
     (*points)[k*6+2] = pt->corner[0]*wd-dx;
@@ -524,10 +524,10 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   int pos = 6*nb;
   int posb = 6*nb;
   float *border_init = malloc(sizeof(float)*6*nb);
-  int cw = _curve_is_clockwise(form);
+  int cw = _path_is_clockwise(form);
   if (cw == 0) cw = -1;
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_points init took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points init took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //we render all segments
@@ -537,9 +537,9 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     border_init[k*6+2] = -posb;
     int k2 = (k+1)%nb;
     int k3 = (k+2)%nb;
-    dt_masks_point_curve_t *point1 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
-    dt_masks_point_curve_t *point2 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k2);
-    dt_masks_point_curve_t *point3 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k3);
+    dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
+    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k2);
+    dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k3);
     float p1[5] = {point1->corner[0]*wd-dx, point1->corner[1]*ht-dy, point1->ctrl2[0]*wd-dx, point1->ctrl2[1]*ht-dy, cw*point1->border[1]*MIN(wd,ht)};
     float p2[5] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl1[0]*wd-dx, point2->ctrl1[1]*ht-dy, cw*point2->border[0]*MIN(wd,ht)};
     float p3[5] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl2[0]*wd-dx, point2->ctrl2[1]*ht-dy, cw*point2->border[1]*MIN(wd,ht)};
@@ -551,14 +551,14 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     float bmax[2] = {-99999,-99999};
     float cmin[2] = {-99999,-99999};
     float cmax[2] = {-99999,-99999};
-    if (border) _curve_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
-    else _curve_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
+    if (border) _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
+    else _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
     //we check gaps in the border (sharp edges)
     if (border && ((*border)[posb-2]-rb[0] > 1 || (*border)[posb-2]-rb[0] < -1 || (*border)[posb-1]-rb[1] > 1 || (*border)[posb-1]-rb[1] < -1))
     {
       bmin[0] = (*border)[posb-2];
       bmin[1] = (*border)[posb-1];
-      //_curve_points_recurs_border_gaps(rc,bmin,rb,*points,&pos,*border,&posb);
+      //_path_points_recurs_border_gaps(rc,bmin,rb,*points,&pos,*border,&posb);
     }
     (*points)[pos++] = rc[0];
     (*points)[pos++] = rc[1];
@@ -587,22 +587,22 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     if (border && nb>=3)
     {
       //we get the next point (start of the next segment)
-      _curve_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0, p3[4],cmin,cmin+1,bmax,bmax+1);
+      _path_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0, p3[4],cmin,cmin+1,bmax,bmax+1);
       if (bmax[0] == -9999999.0f)
       {
-        _curve_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0.0001, p3[4],cmin,cmin+1,bmax,bmax+1);
+        _path_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0.0001, p3[4],cmin,cmin+1,bmax,bmax+1);
       }
       if (bmax[0]-rb[0] > 1 || bmax[0]-rb[0] < -1 || bmax[1]-rb[1] > 1 || bmax[1]-rb[1] < -1)
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
-        _curve_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb);
+        _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb);
       }
     }
   }
   *points_count = pos/2;
   if (border) *border_count = posb/2;
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_points point recurs %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points point recurs %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //we don't want the border to self-intersect
@@ -610,8 +610,8 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   int inter_count = 0;
   if (border)
   {
-    inter_count = _curve_find_self_intersection(&intersections,nb,*border,*border_count);
-    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_points self-intersect took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+    inter_count = _path_find_self_intersection(&intersections,nb,*border,*border_count);
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points self-intersect took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
   }
 
@@ -620,7 +620,7 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   {
     if (!border || dt_dev_distort_transform_plus(dev,pipe,0,prio_max,*border,*border_count))
     {
-      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_points transform took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points transform took %0.04f sec\n", form->name, dt_get_wtime()-start2);
       start2 = dt_get_wtime();
 
       //we don't want to copy the falloff points
@@ -650,7 +650,7 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         }
       }
 
-      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_points end took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime()-start2);
       start2 = dt_get_wtime();
 
       free(border_init);
@@ -671,8 +671,8 @@ static int _curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   return 0;
 }
 
-/** get the distance between point (x,y) and the curve */
-static void dt_curve_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
+/** get the distance between point (x,y) and the path */
+static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
 {
   if (!gui) return;
   //we first check if it's inside borders
@@ -721,7 +721,7 @@ static void dt_curve_get_distance(float x, int y, float as, dt_masks_form_gui_t 
         i = yy-1;
         continue;
       }
-      //we check if we are at a point were the curve change of direction
+      //we check if we are at a point were the path change of direction
       if (last2>0 && lastw>0 && lastw == last && yy != last)
       {
         if ((lastw-yy)*(lastw-last2)>0) nb++;
@@ -765,7 +765,7 @@ static void dt_curve_get_distance(float x, int y, float as, dt_masks_form_gui_t 
     }
     xx = (int) gpt->points[i*2];
     yy = (int) gpt->points[i*2+1];
-    //we check if we are at a point were the curve change of direction
+    //we check if we are at a point were the path change of direction
     if (last2>0 && lastw>0 && lastw == last && yy != last)
     {
       if ((lastw-yy)*(lastw-last2)>0) nb++;
@@ -789,12 +789,12 @@ static void dt_curve_get_distance(float x, int y, float as, dt_masks_form_gui_t 
   *inside = (nb & 1);
 }
 
-static int dt_curve_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count, float **border, int *border_count,int source)
+static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count, float **border, int *border_count,int source)
 {
-  return _curve_get_points_border(dev,form,999999,dev->preview_pipe,points,points_count,border,border_count,source);
+  return _path_get_points_border(dev,form,999999,dev->preview_pipe,points,points_count,border,border_count,source);
 }
 
-static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up, uint32_t state,
+static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (gui->form_selected)
@@ -819,19 +819,19 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         for(int k = 0; k < nb; k++)
         {
-          dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+          dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
           point->border[0] *= amount;
           point->border[1] *= amount;
         }
         if (form->type & DT_MASKS_CLONE)
         {
-          const float masks_border = dt_conf_get_float("plugins/darkroom/spots/curve_border");
-          dt_conf_set_float("plugins/darkroom/spots/curve_border", masks_border*amount);
+          const float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
+          dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border*amount);
         }
         else
         {
-          const float masks_border = dt_conf_get_float("plugins/darkroom/masks/curve/border");
-          dt_conf_set_float("plugins/darkroom/masks/curve/border", masks_border*amount);
+          const float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
+          dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border*amount);
         }
       }
       else
@@ -844,8 +844,8 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         for(int k = 0; k < nb; k++)
         {
           int k2 = (k+1)%nb;
-          dt_masks_point_curve_t *point1 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
-          dt_masks_point_curve_t *point2 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k2);
+          dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
+          dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k2);
           surf += point1->corner[0]*point2->corner[1] - point2->corner[0]*point1->corner[1];
 
           bx += (point1->corner[0] + point2->corner[0])*(point1->corner[0]*point2->corner[1] - point2->corner[0]*point1->corner[1]);
@@ -859,7 +859,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         {
           for(int k = 0; k < nb; k++)
           {
-            dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+            dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
             float l = (point->corner[0]-bx)*(point->corner[0]-bx) + (point->corner[1]-by)*(point->corner[1]-by);
             if ( l < 0.0005f) return 1;
           }
@@ -867,7 +867,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         //now we move each point
         for(int k = 0; k < nb; k++)
         {
-          dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+          dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
           float x = (point->corner[0]-bx)*amount;
           float y = (point->corner[1]-by)*amount;
 
@@ -887,7 +887,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         }
 
         //now the redraw/save stuff
-        _curve_init_ctrl_points(form);
+        _path_init_ctrl_points(form);
       }
 
       dt_masks_write_form(form,darktable.develop);
@@ -904,7 +904,7 @@ static int dt_curve_events_mouse_scrolled(struct dt_iop_module_t *module, float 
   return 0;
 }
 
-static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
+static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (type==GDK_2BUTTON_PRESS || type==GDK_3BUTTON_PRESS) return 1;
@@ -913,8 +913,8 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
   if (!gpt) return 0;
 
   float masks_border;
-  if (form->type & DT_MASKS_CLONE) masks_border = dt_conf_get_float("plugins/darkroom/spots/curve_border");
-  else masks_border = dt_conf_get_float("plugins/darkroom/masks/curve/border");
+  if (form->type & DT_MASKS_CLONE) masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
+  else masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
 
   if (gui->creation && (which == 3 || gui->creation_closing_form))
   {
@@ -932,13 +932,13 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
     {
       dt_iop_module_t *crea_module = gui->creation_module;
       //we delete last point (the one we are currently dragging)
-      dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_last(form->points)->data;
+      dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_last(form->points)->data;
       form->points = g_list_remove(form->points,point);
       free(point);
       point = NULL;
 
       gui->point_dragging = -1;
-      _curve_init_ctrl_points(form);
+      _path_init_ctrl_points(form);
 
       //we save the form and quit creation mode
       dt_masks_gui_form_save_creation(crea_module,form,gui);
@@ -961,7 +961,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
   {
     if (gui->creation)
     {
-      dt_masks_point_curve_t *bzpt = (dt_masks_point_curve_t *) (malloc(sizeof(dt_masks_point_curve_t)));
+      dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *) (malloc(sizeof(dt_masks_point_path_t)));
       int nb = g_list_length(form->points);
       //change the values
       float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -979,7 +979,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       //if that's the first point we should had another one as base point
       if (nb == 0)
       {
-        dt_masks_point_curve_t *bzpt2 = (dt_masks_point_curve_t *) (malloc(sizeof(dt_masks_point_curve_t)));
+        dt_masks_point_path_t *bzpt2 = (dt_masks_point_path_t *) (malloc(sizeof(dt_masks_point_path_t)));
         bzpt2->corner[0] = pts[0]/darktable.develop->preview_pipe->iwidth;
         bzpt2->corner[1] = pts[1]/darktable.develop->preview_pipe->iheight;
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
@@ -992,10 +992,10 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       }
       form->points = g_list_append(form->points,bzpt);
 
-      //if this is a ctrl click, the last creted point is a sharp one
+      //if this is a ctrl click, the last created point is a sharp one
       if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
-        dt_masks_point_curve_t *bzpt3 = g_list_nth_data(form->points,nb-1);
+        dt_masks_point_path_t *bzpt3 = g_list_nth_data(form->points,nb-1);
         bzpt3->ctrl1[0] = bzpt3->ctrl2[0] = bzpt3->corner[0];
         bzpt3->ctrl1[1] = bzpt3->ctrl2[1] = bzpt3->corner[1];
         bzpt3->state = DT_MASKS_POINT_STATE_USER;
@@ -1003,7 +1003,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
 
       gui->point_dragging = nb;
 
-      _curve_init_ctrl_points(form);
+      _path_init_ctrl_points(form);
 
       //we recreate the form points
       dt_masks_gui_form_remove(form,gui,index);
@@ -1039,11 +1039,11 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       //if ctrl is pressed, we change the type of point
       if (gui->point_edited==gui->point_selected && ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
       {
-        dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->point_edited);
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->point_edited);
         if (point->state != DT_MASKS_POINT_STATE_NORMAL)
         {
           point->state = DT_MASKS_POINT_STATE_NORMAL;
-          _curve_init_ctrl_points(form);
+          _path_init_ctrl_points(form);
         }
         else
         {
@@ -1052,11 +1052,11 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
           point->state = DT_MASKS_POINT_STATE_USER;
         }
         dt_masks_write_form(form,darktable.develop);
-      
+
         //we recreate the form points
         dt_masks_gui_form_remove(form,gui,index);
         dt_masks_gui_form_create(form,gui,index);
-        gpt->clockwise = _curve_is_clockwise(form);
+        gpt->clockwise = _path_is_clockwise(form);
         //we save the move
         dt_masks_update_image(darktable.develop);
         return 1;
@@ -1068,7 +1068,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
         gui->scrolly = pzy;
       }
       gui->point_edited = gui->point_dragging  = gui->point_selected;
-      gpt->clockwise = _curve_is_clockwise(form);
+      gpt->clockwise = _path_is_clockwise(form);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1090,8 +1090,8 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
       gui->point_edited = -1;
       if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
-        //we add a new point to the curve
-        dt_masks_point_curve_t *bzpt = (dt_masks_point_curve_t *) (malloc(sizeof(dt_masks_point_curve_t)));
+        //we add a new point to the path
+        dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *) (malloc(sizeof(dt_masks_point_path_t)));
         //change the values
         float wd = darktable.develop->preview_pipe->backbuf_width;
         float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -1104,7 +1104,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
         bzpt->border[0] = bzpt->border[1] = MAX(0.005f,masks_border);
         form->points = g_list_insert(form->points,bzpt,gui->seg_selected+1);
-        _curve_init_ctrl_points(form);
+        _path_init_ctrl_points(form);
         dt_masks_gui_form_remove(form,gui,index);
         dt_masks_gui_form_create(form,gui,index);
         gui->point_edited = gui->point_dragging  = gui->point_selected = gui->seg_selected+1;
@@ -1154,7 +1154,7 @@ static int dt_curve_events_button_pressed(struct dt_iop_module_t *module,float p
   return 0;
 }
 
-static int dt_curve_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
+static int dt_path_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (gui->creation) return 1;
@@ -1167,7 +1167,7 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
     gui->form_dragging = FALSE;
 
     //we get point0 new values
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_first(form->points)->data;
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_first(form->points)->data;
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = {pzx*wd+gui->dx,pzy*ht+gui->dy};
@@ -1179,7 +1179,7 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
     GList *points = g_list_first(form->points);
     while (points)
     {
-      point = (dt_masks_point_curve_t *)points->data;
+      point = (dt_masks_point_path_t *)points->data;
       point->corner[0] += dx;
       point->corner[1] += dy;
       point->ctrl1[0] += dx;
@@ -1226,14 +1226,14 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
   else if (gui->seg_dragging>=0)
   {
     gui->seg_dragging = -1;
-    gpt->clockwise = _curve_is_clockwise(form);
+    gpt->clockwise = _path_is_clockwise(form);
     dt_masks_write_form(form,darktable.develop);
     dt_masks_update_image(darktable.develop);
     return 1;
   }
   else if (gui->point_dragging >= 0)
   {
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->point_dragging);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->point_dragging);
     gui->point_dragging = -1;
     if (gui->scrollx != 0.0f || gui->scrolly != 0.0f)
     {
@@ -1255,14 +1255,14 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
     point->ctrl2[0] += dx;
     point->ctrl2[1] += dy;
 
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
 
     dt_masks_write_form(form,darktable.develop);
 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _curve_is_clockwise(form);
+    gpt->clockwise = _path_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1270,7 +1270,7 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
   }
   else if (gui->feather_dragging >= 0)
   {
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->feather_dragging);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_dragging);
     gui->feather_dragging = -1;
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -1278,7 +1278,7 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
     dt_dev_distort_backtransform(darktable.develop,pts,1);
 
     int p1x,p1y,p2x,p2y;
-    _curve_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
+    _path_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
                            &p1x,&p1y,&p2x,&p2y,gpt->clockwise);
     point->ctrl1[0] = (float)p1x/darktable.develop->preview_pipe->iwidth;
     point->ctrl1[1] = (float)p1y/darktable.develop->preview_pipe->iheight;
@@ -1287,14 +1287,14 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
 
     point->state = DT_MASKS_POINT_STATE_USER;
 
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
 
     dt_masks_write_form(form,darktable.develop);
 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _curve_is_clockwise(form);
+    gpt->clockwise = _path_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1342,14 +1342,14 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
     }
     form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
     gui->point_selected = -1;
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
 
     dt_masks_write_form(form,darktable.develop);
 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _curve_is_clockwise(form);
+    gpt->clockwise = _path_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1357,18 +1357,18 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
   }
   else if (gui->feather_selected>=0 && which == 3)
   {
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->feather_selected);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_selected);
     if (point->state != DT_MASKS_POINT_STATE_NORMAL)
     {
       point->state = DT_MASKS_POINT_STATE_NORMAL;
-      _curve_init_ctrl_points(form);
+      _path_init_ctrl_points(form);
 
       dt_masks_write_form(form,darktable.develop);
 
       //we recreate the form points
       dt_masks_gui_form_remove(form,gui,index);
       dt_masks_gui_form_create(form,gui,index);
-      gpt->clockwise = _curve_is_clockwise(form);
+      gpt->clockwise = _path_is_clockwise(form);
       //we save the move
       dt_masks_update_image(darktable.develop);
     }
@@ -1378,7 +1378,7 @@ static int dt_curve_events_button_released(struct dt_iop_module_t *module,float 
   return 0;
 }
 
-static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
+static int dt_path_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
   int32_t zoom, closeup;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -1408,7 +1408,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     }
 
     dt_dev_distort_backtransform(darktable.develop,pts,1);
-    dt_masks_point_curve_t *bzpt = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->point_dragging);
+    dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->point_dragging);
     pzx = pts[0]/darktable.develop->preview_pipe->iwidth;
     pzy = pts[1]/darktable.develop->preview_pipe->iheight;
     bzpt->ctrl1[0] += pzx - bzpt->corner[0];
@@ -1417,7 +1417,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     bzpt->ctrl2[1] += pzy - bzpt->corner[1];
     bzpt->corner[0] = pzx;
     bzpt->corner[1] = pzy;
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
@@ -1428,8 +1428,8 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
   {
     //we get point0 new values
     int pos2 = (gui->seg_dragging+1)%g_list_length(form->points);
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->seg_dragging);
-    dt_masks_point_curve_t *point2 = (dt_masks_point_curve_t *)g_list_nth_data(form->points,pos2);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->seg_dragging);
+    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points,pos2);
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = {pzx*wd+gui->dx,pzy*ht+gui->dy};
@@ -1451,7 +1451,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     point2->ctrl2[0] += dx;
     point2->ctrl2[1] += dy;
 
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
 
     dt_masks_write_form(form,darktable.develop);
 
@@ -1468,10 +1468,10 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = {pzx*wd,pzy*ht};
     dt_dev_distort_backtransform(darktable.develop,pts,1);
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,gui->feather_dragging);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_dragging);
 
     int p1x,p1y,p2x,p2y;
-    _curve_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
+    _path_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
                            &p1x,&p1y,&p2x,&p2y,gpt->clockwise);
     point->ctrl1[0] = (float)p1x/darktable.develop->preview_pipe->iwidth;
     point->ctrl1[1] = (float)p1y/darktable.develop->preview_pipe->iheight;
@@ -1479,7 +1479,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     point->ctrl2[1] = (float)p2y/darktable.develop->preview_pipe->iheight;
     point->state = DT_MASKS_POINT_STATE_USER;
 
-    _curve_init_ctrl_points(form);
+    _path_init_ctrl_points(form);
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
@@ -1503,7 +1503,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
 
     dt_dev_distort_backtransform(darktable.develop,pts,1);
 
-    dt_masks_point_curve_t *point = (dt_masks_point_curve_t *)g_list_nth_data(form->points,k);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
     float nx = point->corner[0]*darktable.develop->preview_pipe->iwidth;
     float ny = point->corner[1]*darktable.develop->preview_pipe->iheight;
     float nr = sqrtf((pts[0]-nx)*(pts[0]-nx) + (pts[1]-ny)*(pts[1]-ny));
@@ -1544,7 +1544,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     if (gpt->points[k*6+2]!=gpt->points[k*6+4] && gpt->points[k*6+3]!=gpt->points[k*6+5])
     {
       int ffx,ffy;
-      _curve_ctrl2_to_feather(gpt->points[k*6+2],gpt->points[k*6+3],gpt->points[k*6+4],gpt->points[k*6+5],&ffx,&ffy,gpt->clockwise);
+      _path_ctrl2_to_feather(gpt->points[k*6+2],gpt->points[k*6+3],gpt->points[k*6+4],gpt->points[k*6+5],&ffx,&ffy,gpt->clockwise);
       if (pzx-ffx>-as && pzx-ffx<as && pzy-ffy>-as && pzy-ffy<as)
       {
         gui->feather_selected = k;
@@ -1582,7 +1582,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
 
   //are we inside the form or the borders or near a segment ???
   int in, inb, near, ins;
-  dt_curve_get_distance(pzx,(int)pzy,as,gui,index,nb,&in,&inb,&near,&ins);
+  dt_path_get_distance(pzx,(int)pzy,as,gui,index,nb,&in,&inb,&near,&ins);
   gui->seg_selected = near;
   if (near<0)
   {
@@ -1606,7 +1606,7 @@ static int dt_curve_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
   return 1;
 }
 
-static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index, int nb)
+static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index, int nb)
 {
   double dashed[] = {4.0, 4.0};
   dashed[0] /= zoom_scale;
@@ -1627,7 +1627,7 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     dys = gui->posy + gui->dy - gpt->source[3];
   }
 
-  //draw curve
+  //draw path
   if (gpt->points_count > nb*3+6)
   {
     cairo_set_dash(cr, dashed, 0, 0);
@@ -1698,7 +1698,7 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     cairo_line_to(cr, gui->points[k*6+4]+dx,gui->points[k*6+5]+dy);
     cairo_stroke(cr);*/
     int ffx,ffy;
-    _curve_ctrl2_to_feather(gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy,gpt->points[k*6+4]+dx,gpt->points[k*6+5]+dy,&ffx,&ffy,gpt->clockwise);
+    _path_ctrl2_to_feather(gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy,gpt->points[k*6+4]+dx,gpt->points[k*6+5]+dy,&ffx,&ffy,gpt->clockwise);
     cairo_move_to(cr, gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy);
     cairo_line_to(cr,ffx,ffy);
     cairo_set_line_width(cr, 1.5/zoom_scale);
@@ -1749,7 +1749,7 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
 
-    //we draw the curve segment by segment
+    //we draw the path segment by segment
     for (int k=0; k<nb; k++)
     {
       //draw the point
@@ -1808,13 +1808,13 @@ static void dt_curve_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 }
 
-static int dt_curve_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
   if (!module) return 0;
   //we get buffers for all points
   float *points, *border;
   int points_count,border_count;
-  if (!_curve_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1)) return 0;
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -1828,7 +1828,7 @@ static int dt_curve_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
     float yy = border[i*2+1];
     if (xx == -999999)
     {
-      if (yy == -999999) break; //that means we have to skip the end of the border curve
+      if (yy == -999999) break; //that means we have to skip the end of the border path
       i = yy-1;
       continue;
     }
@@ -1839,7 +1839,7 @@ static int dt_curve_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   }
   for (int i=nb_corner*3; i < points_count; i++)
   {
-    //we look at the curve too
+    //we look at the path too
     float xx = points[i*2];
     float yy = points[i*2+1];
     xmin = fminf(xx,xmin);
@@ -1857,13 +1857,13 @@ static int dt_curve_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   return 1;
 }
 
-static int dt_curve_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
   if (!module) return 0;
   //we get buffers for all points
   float *points, *border;
   int points_count,border_count;
-  if (!_curve_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -1877,7 +1877,7 @@ static int dt_curve_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     float yy = border[i*2+1];
     if (xx == -999999)
     {
-      if (yy == -999999) break; //that means we have to skip the end of the border curve
+      if (yy == -999999) break; //that means we have to skip the end of the border path
       i = yy-1;
       continue;
     }
@@ -1888,7 +1888,7 @@ static int dt_curve_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   }
   for (int i=nb_corner*3; i < points_count; i++)
   {
-    //we look at the curve too
+    //we look at the path too
     float xx = points[i*2];
     float yy = points[i*2+1];
     xmin = fminf(xx,xmin);
@@ -1908,7 +1908,7 @@ static int dt_curve_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment */
-static void _curve_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw)
+static void _path_falloff(float **buffer, int *p0, int *p1, int posx, int posy, int bw)
 {
   //segment length
   int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
@@ -1928,7 +1928,7 @@ static void _curve_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
   }
 }
 
-static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *width, int *height, int *posx, int *posy)
+static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *width, int *height, int *posx, int *posy)
 {
   if (!module) return 0;
   double start = dt_get_wtime();
@@ -1937,9 +1937,9 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   //we get buffers for all points
   float *points, *border;
   int points_count,border_count;
-  if (!_curve_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve points took %0.04f sec\n", form->name, dt_get_wtime()-start);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
 
   //now we want to find the area, so we search min/max points
@@ -1954,7 +1954,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     float yy = border[i*2+1];
     if (xx == -999999)
     {
-      if (yy == -999999) break; //that means we have to skip the end of the border curve
+      if (yy == -999999) break; //that means we have to skip the end of the border path
       i = yy-1;
       continue;
     }
@@ -1965,7 +1965,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   }
   for (int i=nb_corner*3; i < points_count; i++)
   {
-    //we look at the curve too
+    //we look at the path too
     float xx = points[i*2];
     float yy = points[i*2+1];
     xmin = fminf(xx,xmin);
@@ -1979,14 +1979,14 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *posx = xmin-2;
   *posy = ymin-2;
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //we allocate the buffer
   *buffer = malloc((*width)*(*height)*sizeof(float));
   memset(*buffer,0,(*width)*(*height)*sizeof(float));
-  
-  //we write all the point around the curve into the buffer
+
+  //we write all the point around the path into the buffer
   int nbp = border_count;
   int lastx,lasty,lasty2,nx;
   if (nbp>2)
@@ -2032,7 +2032,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
           lasty = yy-1;
         }
       }
-      //if we change the direction of the curve (in y), then we add a extra point
+      //if we change the direction of the path (in y), then we add a extra point
       if ((lasty-lasty2)*(lasty-yy)>0)
       {
         (*buffer)[(lasty-(*posy))*(*width)+lastx+1-(*posx)] = 1.0f;
@@ -2063,7 +2063,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       if (ii != i) break;
     }
   }
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_fill draw curve took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   for (int yy=0; yy<hb; yy++)
@@ -2077,7 +2077,7 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     }
   }
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //now we fill the falloff
@@ -2103,18 +2103,18 @@ static int dt_curve_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     //and we draw the falloff
     if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
     {
-      _curve_falloff(buffer,p0,p1,*posx,*posy,*width);
+      _path_falloff(buffer,p0,p1,*posx,*posy,*width);
       last0[0] = p0[0], last0[1] = p0[1];
       last1[0] = p1[0], last1[1] = p1[1];
     }
   }
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
 
   free(points);
   free(border);
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] curve fill buffer took %0.04f sec\n", form->name, dt_get_wtime()-start);
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name, dt_get_wtime()-start);
 
   return 1;
 }

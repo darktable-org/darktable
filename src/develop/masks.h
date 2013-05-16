@@ -33,7 +33,7 @@ typedef enum dt_masks_type_t
 {
   DT_MASKS_NONE = 0, // keep first
   DT_MASKS_CIRCLE = 1,
-  DT_MASKS_CURVE = 2,
+  DT_MASKS_PATH = 2,
   DT_MASKS_GROUP = 4,
   DT_MASKS_CLONE = 8
 }
@@ -64,8 +64,8 @@ typedef struct dt_masks_point_circle_t
 }
 dt_masks_point_circle_t;
 
-/** structure used to store 1 point for a curve form */
-typedef struct dt_masks_point_curve_t
+/** structure used to store 1 point for a path form */
+typedef struct dt_masks_point_path_t
 {
   float corner[2];
   float ctrl1[2];
@@ -73,7 +73,7 @@ typedef struct dt_masks_point_curve_t
   float border[2];
   dt_masks_points_states_t state;
 }
-dt_masks_point_curve_t;
+dt_masks_point_path_t;
 
 /** structure used to store all forms's id for a group */
 typedef struct dt_masks_point_group_t

@@ -39,7 +39,7 @@ typedef struct dt_lib_masks_t
 {
   /* vbox with managed history items */
   GtkWidget *hbox;
-  GtkWidget *bt_circle, *bt_curve;
+  GtkWidget *bt_circle, *bt_path;
   GtkWidget *treeview;
   GtkWidget *scroll_window;
 
@@ -110,17 +110,17 @@ static void _bt_add_circle (GtkWidget *widget, GdkEventButton *e, dt_iop_module_
   }
   else _tree_add_circle(NULL,NULL);
 }
-static void _tree_add_curve(GtkButton *button, dt_iop_module_t *module)
+static void _tree_add_path(GtkButton *button, dt_iop_module_t *module)
 {
   //we create the new form
-  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CURVE);
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_PATH);
   dt_masks_change_form_gui(spot);
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
-static void _bt_add_curve (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *module)
+static void _bt_add_path (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *module)
 {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
@@ -131,7 +131,7 @@ static void _bt_add_curve (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t
     dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
   }
-  else _tree_add_curve(NULL,NULL);
+  else _tree_add_path(NULL,NULL);
 }
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
@@ -774,8 +774,8 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
       gtk_menu_append(menu, item);
 
-      item = gtk_menu_item_new_with_label(_("add curve shape"));
-      g_signal_connect(item, "activate",(GCallback) _tree_add_curve, module);
+      item = gtk_menu_item_new_with_label(_("add path shape"));
+      g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
       gtk_menu_append(menu, item);
       gtk_menu_append(menu, gtk_separator_menu_item_new());
     }
@@ -797,8 +797,8 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
         g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
         gtk_menu_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add curve shape"));
-        g_signal_connect(item, "activate",(GCallback) _tree_add_curve, module);
+        item = gtk_menu_item_new_with_label(_("add path shape"));
+        g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
         gtk_menu_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add existing shape"));
@@ -1106,7 +1106,7 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   //if (lm->treeview) gtk_widget_destroy(lm->treeview);
   //we set the add shape icons inactive
   GTK_TOGGLE_BUTTON(lm->bt_circle)->active = FALSE;
-  GTK_TOGGLE_BUTTON(lm->bt_curve)->active = FALSE;
+  GTK_TOGGLE_BUTTON(lm->bt_path)->active = FALSE;
 
   GtkTreeStore *treestore;
   //we store : text ; *module ; groupid ; formid
@@ -1339,12 +1339,12 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label = gtk_label_new(_("created shapes"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 
-  d->bt_curve = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_curve, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  g_signal_connect(G_OBJECT(d->bt_curve), "button-press-event", G_CALLBACK(_bt_add_curve), NULL);
-  g_object_set(G_OBJECT(d->bt_curve), "tooltip-text", _("add curve shape"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_curve), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(d->bt_curve),bs,bs);
-  gtk_box_pack_end (GTK_BOX (hbox),d->bt_curve,FALSE,FALSE,0);
+  d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), NULL);
+  g_object_set(G_OBJECT(d->bt_path), "tooltip-text", _("add path shape"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(d->bt_path),bs,bs);
+  gtk_box_pack_end (GTK_BOX (hbox),d->bt_path,FALSE,FALSE,0);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), NULL);

@@ -378,25 +378,25 @@ void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint fl
 
   if( (flags&CPF_ACTIVE) ) cairo_set_source_rgba(cr, 1.0,1.0,1.0,1.0);
   else cairo_set_source_rgba(cr, 1.0,1.0,1.0,0.5);
-  
+
   double dashed[] = {0.2, 0.2};
   int len  = sizeof(dashed) / sizeof(dashed[0]);
   cairo_set_dash(cr, dashed, len, 0);
-  
+
   cairo_arc (cr, 0.75, 0.75, 0.75, 2.8, 4.7124);
   cairo_set_line_width(cr,0.1);
   cairo_stroke(cr);
-  
+
   cairo_move_to(cr,0.4,0.1);
   cairo_line_to(cr,0.3,0.8);
   cairo_line_to(cr,0.55,0.716667);
   cairo_line_to(cr,0.65,1.016667);
-  cairo_line_to(cr,0.75,0.983333);  
+  cairo_line_to(cr,0.75,0.983333);
   cairo_line_to(cr,0.65,0.683333);
   cairo_line_to(cr,0.9,0.6);
   cairo_line_to(cr,0.4,0.1);
   cairo_fill(cr);
-  
+
   cairo_identity_matrix(cr);
 }
 
@@ -413,7 +413,7 @@ void dtgtk_cairo_paint_masks_circle(cairo_t *cr,gint x,gint y,gint w,gint h,gint
   cairo_stroke(cr);
   cairo_identity_matrix(cr);
 }
-void dtgtk_cairo_paint_masks_curve(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+void dtgtk_cairo_paint_masks_path(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));

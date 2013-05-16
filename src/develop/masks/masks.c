@@ -25,14 +25,14 @@
 #include "common/mipmap_cache.h"
 
 #include "develop/masks/circle.c"
-#include "develop/masks/curve.c"
+#include "develop/masks/path.c"
 #include "develop/masks/group.c"
 
 static void _set_hinter_message(dt_masks_form_gui_t *gui)
 {
   char msg[256] = "";
   if (gui->creation) strcat(msg,_("ctrl+click to add a sharp node"));
-  else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between curve/sharp node"));
+  else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between smooth/sharp node"));
   else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
   else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
   else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
@@ -130,8 +130,8 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
 
   int nb = g_list_length(darktable.develop->forms);
 
-  if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,128,"circle #%d",nb);
-  else if (form->type & DT_MASKS_CURVE) snprintf(form->name,128,"curve #%d",nb);
+  if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,128,_("circle #%d"),nb);
+  else if (form->type & DT_MASKS_PATH) snprintf(form->name,128,_("path #%d"),nb);
 
   dt_masks_write_form(form,darktable.develop);
 
@@ -182,9 +182,9 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
       else return 1;
     }
   }
-  else if (form->type & DT_MASKS_CURVE)
+  else if (form->type & DT_MASKS_PATH)
   {
-    return dt_curve_get_points_border(dev,form, points, points_count, border, border_count,source);
+    return dt_path_get_points_border(dev,form, points, points_count, border, border_count,source);
   }
   return 0;
 }
@@ -195,9 +195,9 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   {
     return dt_circle_get_area(module,piece,form,width,height,posx,posy);
   }
-  else if (form->type & DT_MASKS_CURVE)
+  else if (form->type & DT_MASKS_PATH)
   {
-    return dt_curve_get_area(module,piece,form,width,height,posx,posy);
+    return dt_path_get_area(module,piece,form,width,height,posx,posy);
   }
   return 0;
 }
@@ -208,9 +208,9 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   {
     return dt_circle_get_source_area(module,piece,form,width,height,posx,posy);
   }
-  else if (form->type & DT_MASKS_CURVE)
+  else if (form->type & DT_MASKS_PATH)
   {
-    return dt_curve_get_source_area(module,piece,form,width,height,posx,posy);
+    return dt_path_get_source_area(module,piece,form,width,height,posx,posy);
   }
   return 0;
 }
@@ -221,9 +221,9 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   {
     return dt_circle_get_mask(module,piece,form,buffer,width,height,posx,posy);
   }
-  else if (form->type & DT_MASKS_CURVE)
+  else if (form->type & DT_MASKS_PATH)
   {
-    return dt_curve_get_mask(module,piece,form,buffer,width,height,posx,posy);
+    return dt_path_get_mask(module,piece,form,buffer,width,height,posx,posy);
   }
   else if (form->type & DT_MASKS_GROUP)
   {
@@ -302,10 +302,10 @@ void dt_masks_read_forms(dt_develop_t *dev)
       memcpy(circle, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_circle_t));
       form->points = g_list_append(form->points,circle);
     }
-    else if(form->type & DT_MASKS_CURVE)
+    else if(form->type & DT_MASKS_PATH)
     {
-      dt_masks_point_curve_t *ptbuf = (dt_masks_point_curve_t *)malloc(nb_points*sizeof(dt_masks_point_curve_t));
-      memcpy(ptbuf, sqlite3_column_blob(stmt, 5), nb_points*sizeof(dt_masks_point_curve_t));
+      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb_points*sizeof(dt_masks_point_path_t));
+      memcpy(ptbuf, sqlite3_column_blob(stmt, 5), nb_points*sizeof(dt_masks_point_path_t));
       for (int i=0; i<nb_points; i++)
         form->points = g_list_append(form->points,ptbuf+i);
     }
@@ -351,19 +351,19 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
   }
-  else if (form->type & DT_MASKS_CURVE)
+  else if (form->type & DT_MASKS_PATH)
   {
     int nb = g_list_length(form->points);
-    dt_masks_point_curve_t *ptbuf = (dt_masks_point_curve_t *)malloc(nb*sizeof(dt_masks_point_curve_t));
+    dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
     {
-      dt_masks_point_curve_t *pt = (dt_masks_point_curve_t *)points->data;
+      dt_masks_point_path_t *pt = (dt_masks_point_path_t *)points->data;
       ptbuf[pos++] = *pt;
       points = g_list_next(points);
     }
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb*sizeof(dt_masks_point_curve_t), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb*sizeof(dt_masks_point_path_t), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
@@ -419,19 +419,19 @@ void dt_masks_write_forms(dt_develop_t *dev)
       sqlite3_step (stmt);
       sqlite3_finalize (stmt);
     }
-    else if (form->type & DT_MASKS_CURVE)
+    else if (form->type & DT_MASKS_PATH)
     {
       int nb = g_list_length(form->points);
-      dt_masks_point_curve_t *ptbuf = (dt_masks_point_curve_t *)malloc(nb*sizeof(dt_masks_point_curve_t));
+      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
       {
-        dt_masks_point_curve_t *pt = (dt_masks_point_curve_t *)points->data;
+        dt_masks_point_path_t *pt = (dt_masks_point_path_t *)points->data;
         ptbuf[pos++] = *pt;
         points = g_list_next(points);
       }
-      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb*sizeof(dt_masks_point_curve_t), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb*sizeof(dt_masks_point_path_t), SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
       sqlite3_step (stmt);
       sqlite3_finalize (stmt);
@@ -479,7 +479,7 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
 
   int rep = 0;
   if (form->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) rep = dt_curve_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
 
   if (gui) _set_hinter_message(gui);
@@ -496,7 +496,7 @@ int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, d
   pzy += 0.5f;
 
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) return dt_path_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_released(module,pzx,pzy,which,state,form,gui);
 
   return 0;
@@ -512,7 +512,7 @@ int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, do
   pzy += 0.5f;
 
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_pressed(module,pzx,pzy,which,type,state,form,gui);
 
   return 0;
@@ -528,7 +528,7 @@ int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, do
   pzy += 0.5f;
 
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_CURVE) return dt_curve_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) return dt_path_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,pzx,pzy,up,state,form,gui);
 
   return 0;
@@ -570,7 +570,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
 
   //draw form
   if (form->type & DT_MASKS_CIRCLE) dt_circle_events_post_expose(cr,zoom_scale,gui,0);
-  else if (form->type & DT_MASKS_CURVE) dt_curve_events_post_expose(cr,zoom_scale,gui,0,g_list_length(form->points));
+  else if (form->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,0,g_list_length(form->points));
   else if (form->type & DT_MASKS_GROUP) dt_group_events_post_expose(cr,zoom_scale,form,gui);
 }
 
@@ -694,12 +694,12 @@ static void _menu_add_circle(struct dt_iop_module_t *module)
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
 }
-static void _menu_add_curve(struct dt_iop_module_t *module)
+static void _menu_add_path(struct dt_iop_module_t *module)
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(module);
   //we create the new form
-  dt_masks_form_t *form = dt_masks_create(DT_MASKS_CURVE);
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
   dt_masks_change_form_gui(form);
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
@@ -913,8 +913,8 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
     }
     else if (val == -2000002)
     {
-      //add a curve shape
-      _menu_add_curve(module);
+      //add a path shape
+      _menu_add_path(module);
     }
     else if (val < 0)
     {
@@ -1181,9 +1181,9 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
     {
       pos += sizeof(dt_masks_point_circle_t);
     }
-    else if (form->type & DT_MASKS_CURVE)
+    else if (form->type & DT_MASKS_PATH)
     {
-      pos += sizeof(dt_masks_point_curve_t);
+      pos += sizeof(dt_masks_point_path_t);
     }
     forms = g_list_next(forms);
   }
@@ -1227,10 +1227,10 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
       memcpy(str+pos, forms->data, sizeof(dt_masks_point_circle_t));
       pos += sizeof(dt_masks_point_circle_t);
     }
-    else if (form->type & DT_MASKS_CURVE)
+    else if (form->type & DT_MASKS_PATH)
     {
-      memcpy(str+pos, forms->data, sizeof(dt_masks_point_curve_t));
-      pos += sizeof(dt_masks_point_curve_t);
+      memcpy(str+pos, forms->data, sizeof(dt_masks_point_path_t));
+      pos += sizeof(dt_masks_point_path_t);
     }
     forms = g_list_next(forms);
   }

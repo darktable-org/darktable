@@ -1819,7 +1819,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/spots/curve_border</name>
+    <name>plugins/darkroom/spots/path_border</name>
     <type>float</type>
     <default>0.05</default>
     <shortdescription/>
@@ -2006,7 +2006,7 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/masks/curve/border</name>
+    <name>plugins/darkroom/masks/path/border</name>
     <type>float</type>
     <default>0.05</default>
     <shortdescription/>

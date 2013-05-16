@@ -42,7 +42,7 @@ dt_iop_spots_params_t;
 typedef struct dt_iop_spots_gui_data_t
 {
   GtkLabel *label;
-  GtkWidget *bt_curve, *bt_circle;
+  GtkWidget *bt_path, *bt_circle;
 }
 dt_iop_spots_gui_data_t;
 
@@ -151,7 +151,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
   }
 }
 
-static void _add_curve(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+static void _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
   {
@@ -166,7 +166,7 @@ static void _add_curve(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *se
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   //we create the new form
-  dt_masks_form_t *form = dt_masks_create(DT_MASKS_CURVE|DT_MASKS_CLONE);
+  dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH|DT_MASKS_CLONE);
   dt_masks_change_form_gui(form);
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
@@ -378,9 +378,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         //now we search the delta with the source
         int dx,dy;
         dx=dy=0;
-        if (form->type & DT_MASKS_CURVE)
+        if (form->type & DT_MASKS_PATH)
         {
-          dt_masks_point_curve_t *pt = (dt_masks_point_curve_t *)g_list_nth_data(form->points,0);
+          dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points,0);
           dx = pt->corner[0]*roi_in->scale*piece->buf_in.width - form->source[0]*roi_in->scale*piece->buf_in.width;
           dy = pt->corner[1]*roi_in->scale*piece->buf_in.height - form->source[1]*roi_in->scale*piece->buf_in.height;
         }
@@ -508,10 +508,10 @@ void gui_update (dt_iop_module_t *self)
   if (self->dev->form_gui && self->dev->form_visible && self->dev->form_gui->creation && self->dev->form_gui->creation_module == self)
   {
     if (self->dev->form_visible->type & DT_MASKS_CIRCLE) b1=1;
-    else if (self->dev->form_visible->type & DT_MASKS_CURVE) b2=1;
+    else if (self->dev->form_visible->type & DT_MASKS_PATH) b2=1;
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), b1);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_curve), b2);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), b2);
 }
 
 void gui_init (dt_iop_module_t *self)
@@ -527,12 +527,12 @@ void gui_init (dt_iop_module_t *self)
   g->label = GTK_LABEL(gtk_label_new("-1"));
   g_object_set(G_OBJECT(hbox), "tooltip-text", _("click on a shape and drag on canvas.\nuse the mouse wheel to adjust size.\nright click to remove a shape."), (char *)NULL);
 
-  g->bt_curve = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_curve, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-  g_signal_connect(G_OBJECT(g->bt_curve), "button-press-event", G_CALLBACK(_add_curve), self);
-  g_object_set(G_OBJECT(g->bt_curve), "tooltip-text", _("add curve shape"), (char *)NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_curve), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_curve),bs,bs);
-  gtk_box_pack_end (GTK_BOX (hbox),g->bt_curve,FALSE,FALSE,0);
+  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(_add_path), self);
+  g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path shape"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_path),bs,bs);
+  gtk_box_pack_end (GTK_BOX (hbox),g->bt_path,FALSE,FALSE,0);
 
   g->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);
