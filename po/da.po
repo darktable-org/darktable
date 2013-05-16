@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-16 20:07+0200\n"
-"PO-Revision-Date: 2013-05-16 19:09+0200\n"
+"POT-Creation-Date: 2013-05-16 20:38+0200\n"
+"PO-Revision-Date: 2013-05-16 20:24+0200\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <da@li.org>\n"
 "Language: da_DK\n"
@@ -177,7 +177,6 @@ msgid "maximum height of image drawing area"
 msgstr "maksimal højde af billedområde"
 
 #: ../build/src/preferences_gen.h:1218
-#, fuzzy
 msgid ""
 "maximum height of the image drawing area in dakroom mode. adjust to your "
 "screen\n"
@@ -987,7 +986,7 @@ msgstr "ensartet"
 
 #: ../src/develop/blend_gui.c:823
 msgid "only, if.."
-msgstr ""
+msgstr "kun, hvis.."
 
 #: ../src/develop/blend_gui.c:843 ../src/iop/colorzones.c:984
 #: ../src/iop/tonecurve.c:513
@@ -1003,7 +1002,6 @@ msgid "reset blend mask settings"
 msgstr "nulstil blend-maske-indstillinger"
 
 #: ../src/develop/blend_gui.c:852
-#, fuzzy
 msgid "temporarily switch off blend mask. only for module in focus."
 msgstr "slå midlertidigt blend-maske fra. kun for modul i fokus"
 
@@ -1025,7 +1023,7 @@ msgstr "maskeudjævning"
 
 #: ../src/develop/blend_gui.c:902
 msgid "enable conditional blending"
-msgstr ""
+msgstr "aktivér betinget blending"
 
 #: ../src/develop/blend_gui.c:903 ../src/develop/blend_gui.c:904
 msgid "double click to reset"
@@ -1040,7 +1038,6 @@ msgid "normal"
 msgstr "normal"
 
 #: ../src/develop/blend_gui.c:1032
-#, fuzzy
 msgid "inverse"
 msgstr "invertér"
 
@@ -1130,9 +1127,8 @@ msgid "coloradjustment"
 msgstr "farveændring"
 
 #: ../src/develop/blend_gui.c:1072
-#, fuzzy
 msgid "unbounded"
-msgstr "normal begrænset"
+msgstr "ubegrænset"
 
 #: ../src/develop/blend_gui.c:1084
 msgid "blend mode"
@@ -4852,15 +4848,14 @@ msgid "spot removal"
 msgstr "spotfjernelse"
 
 #: ../src/iop/spots.c:468
-#, fuzzy
 msgid ""
 "click on a spot and drag on canvas to heal.\n"
 "use the mouse wheel to adjust size.\n"
 "right click to remove a stroke."
 msgstr ""
-"klik på en form og træk over lærredet.\n"
+"klik på et spot og træk over lærredet for at hele.\n"
 "brug musehjulet for at justere størrelse.\n"
-"højreklik for at fjerne form."
+"højreklik for at fjerne et strøg."
 
 #: ../src/iop/spots.c:472
 msgid "number of strokes:"
@@ -4868,7 +4863,7 @@ msgstr "antal strøg:"
 
 #: ../src/iop/spots.c:706
 msgid "spot removal only supports up to 32 spots"
-msgstr ""
+msgstr "spotfjernelse understøtter kun op til 32 spots"
 
 #: ../src/iop/temperature.c:78
 msgctxt "modulename"
@@ -5425,7 +5420,6 @@ msgstr ""
 "(brackets*2)+1."
 
 #: ../src/libs/camera.c:502
-#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usally 3 "
 "steps per stop\n"
