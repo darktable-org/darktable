@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-15 11:33+0200\n"
-"PO-Revision-Date: 2013-05-15 11:44+0900\n"
+"POT-Creation-Date: 2013-05-16 10:38+0900\n"
+"PO-Revision-Date: 2013-05-16 10:40+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: Japanese\n"
@@ -3236,9 +3236,8 @@ msgid "color correction"
 msgstr "カラー調整"
 
 #: ../src/iop/colorcorrection.c:95
-#, fuzzy
 msgid "warm tone"
-msgstr "ウォーム・フィルタ"
+msgstr "ウォーム・トーン"
 
 #: ../src/iop/colorcorrection.c:102
 msgid "warming filter"
@@ -6183,10 +6182,9 @@ msgid "import image"
 msgstr "画像をインポート"
 
 #: ../src/libs/import.c:110
-#, fuzzy
 msgctxt "accel"
 msgid "import folder"
-msgstr "フィルムをインポート"
+msgstr "インポート フォルダ"
 
 #. add the rescan button
 #: ../src/libs/import.c:191
