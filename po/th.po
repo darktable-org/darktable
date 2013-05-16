@@ -6,10 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-14 03:19-0400\n"
-"PO-Revision-Date: 2013-05-14 03:20-0500\n"
+"POT-Creation-Date: 2013-05-15 23:57-0400\n"
+"PO-Revision-Date: 2013-05-15 23:33-0500\n"
 "Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -173,6 +174,7 @@ msgid "maximum height of image drawing area"
 msgstr "ความสูงของพื้นที่วาดภาพ"
 
 #: ../build/src/preferences_gen.h:1218
+#, fuzzy
 msgid ""
 "maximum height of the image drawing area in dakroom mode. adjust to your "
 "screen\n"
@@ -242,10 +244,13 @@ msgid ""
 "during import. the cache will grow to a maximum of twice this number of full "
 "resolution image buffers (needs a restart)."
 msgstr ""
+"ในช่องนี้เป็นตัวอย่างจำนวน การคิด (thread) ที่ใช้ในการสร้างภาพขนาดเล็กระหว่างการนำเข้า "
+"จำนวนแคชสูงสุดจะเติบโตเป็นสองเท่าของจำนวนบัฟเฟอร์ ของภาพความละเอียดเต็ม "
+"(จำเป็นต้องเรื่มต้นใหม่)"
 
 #: ../build/src/preferences_gen.h:1386
 msgid "host memory limit (in MB) for tiling"
-msgstr ""
+msgstr "ขีด จำกัด ของพื้นที่หน่วยความจำ (MB) สำหรับการ titling"
 
 #: ../build/src/preferences_gen.h:1403
 msgid ""
@@ -254,10 +259,15 @@ msgid ""
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
 msgstr ""
+"ตัวแปรนี้ควบคุมจำนวนสูงสุดของหน่วยความจำ (เมกะไบต์) "
+"ที่โมดูลอาจจะใช้ในระหว่างการประมวลผลภาพ "
+"การทั่งค่าที่ต่ำจะบังคับให้โมดูลใช้หน่วยความจำมากในการประมวลผลภาพ มีการเพิ่มจำนวนของ tile "
+"มากขึ้น ถ้าการตั้งค่าเป็น 0 จำกัดจะยกเลิกไป ถ้าค่าต่ำกว่า 500 จะถือว่าเป็น 500 "
+"(จำเป็นต้องเรื่มต้นใหม่)"
 
 #: ../build/src/preferences_gen.h:1410
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr ""
+msgstr "จำนวนหน่วยความจำขั้นต่ำ (MB) สำหรับบัฟเฟอร์ของ tiling"
 
 #: ../build/src/preferences_gen.h:1428
 msgid ""
@@ -265,42 +275,47 @@ msgid ""
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
 msgstr ""
+"ถ้าตัวเลขมากกว่า 0 จะเป็นการกำหนดต่าขั้นต่ำของหน่วยความจำ (MD) ที่การทำ tiling "
+"จะใช้ในการจัดการรูปภาพ,ค่านี้จะถูกนำไปใช้เหนือค่าที่ได้จากการคาดคะเนโดยใช้ "
+"host_memory_limit (จำเป็นต้องรีสตาร์ท)"
 
 #: ../build/src/preferences_gen.h:1435
 msgid "write sidecar file for each image"
-msgstr ""
+msgstr "สร้างไฟล์ sidecar สำหรับภาพแต่ละภาพ"
 
 #: ../build/src/preferences_gen.h:1447
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
-msgstr ""
+msgstr "แฟ้มสำรองการเปลี่ยนแปลงของภาพเล่านี้สามารถ นำไปใช้กับฐานข้อมูลอื่นๆได้อีก"
 
 #: ../build/src/preferences_gen.h:1454
 msgid "activate opencl support"
-msgstr ""
+msgstr "เปิดการสนับสนุน OpenCL"
 
 #: ../build/src/preferences_gen.h:1466
 msgid ""
 "if found, use opencl runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
+"ถ้าตรวจพบ OpenCL ให้ใช้ OpenCL ในการประมวลผลเพื่อเป็นการเพิ่มประสิทธิภาพ "
+"ตัวเลือกนี้สามารถเปลี่ยแปรงได้ตลอดเวลา"
 
 #: ../build/src/preferences_gen.h:1470
 msgid "not available on this system"
-msgstr ""
+msgstr "ไม่ได้มีอยู่ในระบบนี้"
 
 #: ../build/src/preferences_gen.h:1477
 msgid "always try to use littlecms2"
-msgstr ""
+msgstr "ให้ลองใช้ littlecms2 ตลอด"
 
 #: ../build/src/preferences_gen.h:1489
 msgid "this is significantly slower as the default."
-msgstr ""
+msgstr "ค่าเริ่มตันนี่จะทำให้ช้ากว่า"
 
 #: ../build/src/preferences_gen.h:1496
 msgid "do high quality resampling during export"
-msgstr ""
+msgstr "ใช้การสุ่มตัวอย่างที่มีคุณภาพสูง ในการส่งภาพออก"
 
 #: ../build/src/preferences_gen.h:1508
 msgid ""
@@ -308,6 +323,8 @@ msgid ""
 "very end. this can result in better quality sometimes, but will always be "
 "slower."
 msgstr ""
+"ภาพจะถูกประมวลผลในความละเอียดเต็มรูปแบบก่อนและจะทำการย่อขนานในตอนท้าย "
+"การทำเช่นนี้จะส่งผลให้มีคุณภาพของภาพดีขึ้นในบางครั้ง แต่มักจะทำงานช้า"
 
 #: ../build/src/preferences_gen.h:1515
 msgid "dithering for darkroom mode"
@@ -330,64 +347,70 @@ msgid ""
 "but not as sharp. middle ground is using ppg + interpolation modes specified "
 "below, full will use exactly the settings for full-size export."
 msgstr ""
+"การสอดแทรกในขญะทีไม่ได้ดูภาพ 01:01 ใน Darkroom: bilinear จะเร็วทีสุด แต่ไม่ชัดคม, "
+"middle ground จะใช้ ppg และการสอดแทรกที่ระบุไว้ด้านล่าง, "
+"เต็มรูปแบบจะใช้การตั้งค่าสำหรับการส่งออกของภาพขนาดเติม."
 
 #: ../build/src/preferences_gen.h:1566
 msgid "pixel interpolator"
-msgstr ""
+msgstr "การสอดแทรกของจุด"
 
 #: ../build/src/preferences_gen.h:1594
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
+"การสอดแทรกของจุดที่ใช้ในการหมุนและการแก้ไข้เลนส์ (bilinear, bicubic, lanczos2, "
+"lanczos3)."
 
 #: ../build/src/preferences_gen.h:1601
 msgid "password storage backend to use"
-msgstr ""
+msgstr "รหัสผ่านเพื่อใช้สำหรับ ในระบบจัดเก็บรหัสผ่าน"
 
 #: ../build/src/preferences_gen.h:1626
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
-msgstr ""
+msgstr "ระบบจัดเก็บรหัสผ่าน: ไม่ใช้, kwallet, พวงกุญแจของ gnome"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to api restrictions we currently cannot set the bpp to"
-msgstr ""
+msgstr "สิ่งที่ต้องทำ: ขออภัยเนื่องจากข้อ จำกัด API เรายังไม่สามารถตั้งค่า bpp ได้"
 
 #: ../src/cli/main.c:109
 msgid "Unknown option for --hq"
-msgstr ""
+msgstr "ไม่รู้จักตัวเลือก -hq"
 
 #: ../src/cli/main.c:148
 msgid "output file already exists, it will get renamed"
-msgstr ""
+msgstr "ไฟล์ที่ส่งออกมีอยู่แล้ว และจะได้รับการเปลี่ยนชื่อ"
 
 #: ../src/cli/main.c:164
 #, c-format
 msgid "error: can't open file %s"
-msgstr ""
+msgstr "ข้อผิดพลาด: ไม่สามารถเปิดไฟล์ %s"
 
 #: ../src/cli/main.c:188
 msgid "empty history stack"
-msgstr ""
+msgstr "กองประวัติศาสตร์ว่างเปล่า"
 
 #: ../src/cli/main.c:209
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
 msgstr ""
+"ไม่สามารถหาโมดูลการจัดเก็บดิสก์ โปรดตรวจสอบการติดตั้งของคุณบางสิ่งบางอย่างอาจไม่ถุกต้อง"
 
 #: ../src/cli/main.c:216
 msgid "failed to get parameters from storage module, aborting export ..."
-msgstr ""
+msgstr "ล้มเหลวในการรับขอมูลจากโมดูลการจัดเก็บ ยกเลิกการส่งออก ..."
 
 #: ../src/cli/main.c:227
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr ""
+msgstr "ไม่รู้จักส่วนขยาย '.%s'"
 
 #: ../src/cli/main.c:235
 msgid "failed to get parameters from format module, aborting export ..."
-msgstr ""
+msgstr "ล้มเหลวในการรับขอมูลจากโมดูลการจัดรูปแบบ ยกเลิกการส่งออก ..."
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:964
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
@@ -424,7 +447,7 @@ msgstr "ม่วง"
 #: ../src/common/collection.c:465 ../src/libs/collect.c:1123
 #: ../src/libs/collect.c:1125
 msgid "altered"
-msgstr ""
+msgstr "ถูกเปลี่ยน"
 
 #: ../src/common/collection.c:660
 #, c-format
@@ -436,27 +459,27 @@ msgstr[1] "เลือก %d รูปจาก %d รูปของชุด�
 #: ../src/common/darktable.c:286
 #, c-format
 msgid "found strange path `%s'"
-msgstr ""
+msgstr "พบเส้นทางแปลก `%s'"
 
 #: ../src/common/darktable.c:304
 #, c-format
 msgid "error loading directory `%s'"
-msgstr ""
+msgstr "มีข้อผิดพลาดในการโหลดไดเรกทอรี `%s'"
 
 #: ../src/common/darktable.c:324
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr ""
+msgstr "ไม่รู้จักรูปแบบของไฟล์ `%s'!"
 
 #: ../src/common/darktable.c:338 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
-msgstr ""
+msgstr "มีข้อผิดพลาดในการโหลดไฟล์ `%s'"
 
 #: ../src/common/darktable.c:478
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
-msgstr ""
+msgstr "ข้อผิดพลาด: มีความไม่ถูกต้องในไดเรกทอรีชั่วคราว: %s\n"
 
 #: ../src/common/film.c:361
 msgid "no supported images were found to be imported"
@@ -471,7 +494,7 @@ msgstr[1] "นำเข้า %d รูป"
 
 #: ../src/common/history.c:139
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr ""
+msgstr "คุณต้องการคัดลอกประวัติจากภาพก่อนที่คุณจะวางมันลงในภาพอื่นได้"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
@@ -497,11 +520,13 @@ msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
 msgstr ""
+"ไม่สามารถจัดหาหน่วยความจำสำหรับการส่งออกได้, กรุณาลดจำนวนการคิด (theads) "
+"ที่ใช้ในการส่งออกหรือซื้อหน่วยความจำเพิ่มเติม"
 
 #: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1103
 #, c-format
 msgid "image `%s' is not available!"
-msgstr ""
+msgstr "ไม่สามารถใช้ภาพ '%s` ได้!"
 
 #. If a style is to be applied during export, add the iop params into the history
 #. set export style to "none" by default
@@ -514,12 +539,12 @@ msgstr ""
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
-msgstr ""
+msgstr "ไม่มี"
 
 #: ../src/common/imageio.c:572
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr ""
+msgstr "ไม่สามารถหา '% s' สไตล์เพื่อนำไปใช้ในระหว่างการส่งออก"
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
@@ -563,7 +588,7 @@ msgstr "ไม่มีรูปที่ถูกเลือก!"
 #: ../src/common/styles.c:630
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr ""
+msgstr "ล้มเหลวในการเขียนทับแฟ้มสำหรับสไตล์ %s"
 
 #: ../src/common/styles.c:636
 #, c-format
@@ -598,12 +623,12 @@ msgstr "กำลังนำเข้ารูปภาพ %s"
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "จับภาพได้ %d ภาพ"
+msgstr[1] "จับภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/camera_jobs.c:100
 msgid "please set your camera to manual mode first!"
-msgstr ""
+msgstr "กรุณาตั้งค่ากล้องของคุณไปที่โหมดปรับด้วยตนเองก่อน!"
 
 #: ../src/control/jobs/camera_jobs.c:292
 #, c-format
@@ -614,7 +639,7 @@ msgstr "%d/%d ถูกนำเข้าไปยัง %s"
 msgid ""
 "Couldn't expand to a uniq filename for import, please check your import "
 "settings."
-msgstr ""
+msgstr "ไม่สามารถสร้างชื่อไฟล์ที่ไม่ช้ำกันได้สำหรับการนำเข้า  โปรดตรวจสอบการตั้งค่าการนำของคุณ"
 
 #: ../src/control/jobs/camera_jobs.c:386
 msgid "starting to import images from camera"
@@ -623,7 +648,7 @@ msgstr "กำลังเริ่มนำเข้ารูปภาพจา
 #: ../src/control/jobs/camera_jobs.c:406
 #, c-format
 msgid "failed to create import path `%s', import aborted."
-msgstr ""
+msgstr "ไม่สามารถสร้าง path '%s' สำหรับการนำเข้าได้ ยกเลิกการนำเข้า"
 
 #: ../src/control/jobs/camera_jobs.c:415
 #, c-format
@@ -640,12 +665,12 @@ msgstr "การนำเข้ารูปภาพจากกล้องเ
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "รวมรูปภาพได้ %d ภาพ"
+msgstr[1] "รวมรูปภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:148
 msgid "exposure bracketing only works on raw images"
-msgstr ""
+msgstr "ถ่ายภาพคร่อมใช้งานได้เฉพาะกับภาพดิบ"
 
 #: ../src/control/jobs/control_jobs.c:157
 #, c-format
@@ -659,39 +684,39 @@ msgstr "รูปภาพต้องมีขนาดเท่ากัน!"
 #: ../src/control/jobs/control_jobs.c:251
 #, c-format
 msgid "wrote merged hdr `%s'"
-msgstr ""
+msgstr "รวมภาพ HDR '%s' เสริฐแลัว"
 
 #: ../src/control/jobs/control_jobs.c:277
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ทำซ้ำภาพได้ %d ภาพ "
+msgstr[1] "ทำซ้ำภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:302
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "พลิกรูปภาพได้ %d ภาพ"
+msgstr[1] "พลิกรูปภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:325
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "เอาภาพออกได้ %d ภาพ"
+msgstr[1] "เอาภาพออกได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:376
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ลบภาพได้ %d ภาพ"
+msgstr[1] "ลบภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:461
 msgid "failed to parse gpx file"
-msgstr ""
+msgstr "ไม่สามารถตีความไฟล์ gps ได้"
 
 #: ../src/control/jobs/control_jobs.c:528
 #, c-format
@@ -732,7 +757,7 @@ msgstr "การสร้างม้วนฟิล์มล้มเหลว
 #: ../src/imageio/storage/gallery.c:161 ../src/imageio/storage/latex.c:78
 #: ../src/imageio/storage/latex.c:161 ../src/libs/styles.c:240
 msgid "select directory"
-msgstr ""
+msgstr "เลือกไดเรกทอรี"
 
 #: ../src/control/jobs/control_jobs.c:799
 #, c-format
@@ -791,7 +816,7 @@ msgstr "กำลังคัดลอก %d รูปภาพ"
 #: ../src/control/jobs/control_jobs.c:936
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr ""
+msgstr "ไม่สามารถรับขอมูลจากโมดูลการจัดเก็บ '%s' ได้, ยกเลิกการส่งออก ..."
 
 #: ../src/control/jobs/control_jobs.c:940
 #, c-format
@@ -811,7 +836,7 @@ msgstr[1] "ส่งออก %d รูปภาพ ไปที่ %s"
 #: ../src/control/jobs/control_jobs.c:1006 ../src/views/darkroom.c:457
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr ""
+msgstr "ไม่สามารถใช้งานภาพ %s ได้ในขณะนี้"
 
 #: ../src/control/jobs/control_jobs.c:1087
 #, c-format
