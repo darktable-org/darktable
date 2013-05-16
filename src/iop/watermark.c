@@ -1027,9 +1027,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  self->widget = gtk_hbox_new(FALSE,0);
-  GtkWidget *vbox = gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   GtkWidget *label1 = dtgtk_reset_label_new(_("marker"), self, &p->filename, sizeof(char)*64);
   GtkWidget *label4 = dtgtk_reset_label_new(_("alignment"), self, &p->alignment, sizeof(int));
@@ -1041,7 +1039,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->dtbutton1),FALSE,FALSE,0);
-  gtk_box_pack_start(GTK_BOX(vbox),GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
@@ -1050,8 +1048,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
   dt_bauhaus_widget_set_label(g->scale2,_("scale"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
   g->sizeto = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_add(g->sizeto, C_("size", "image"));
@@ -1059,7 +1057,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
   dt_bauhaus_widget_set_label(g->sizeto,_("scale on"));
-  gtk_box_pack_start(GTK_BOX(vbox), g->sizeto, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sizeto, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
 
   // Create the 3x3 gtk table toggle button table...
@@ -1074,7 +1072,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *hbox2 = gtk_hbox_new(FALSE,0);
   gtk_box_pack_start(GTK_BOX(hbox2),GTK_WIDGET(label4),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox2), GTK_WIDGET(bat), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->xoffset, 3);
@@ -1083,8 +1081,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale4 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->yoffset, 3);
   dt_bauhaus_slider_set_format(g->scale4, "%.3f");
   dt_bauhaus_widget_set_label(g->scale4,_("y offset"));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 
 
   // Let's add some tooltips and hook up some signals...

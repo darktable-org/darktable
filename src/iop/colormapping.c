@@ -1049,7 +1049,7 @@ gui_init(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
 
-  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
 
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
