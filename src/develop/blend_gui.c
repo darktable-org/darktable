@@ -779,7 +779,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
-  bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  bd->blendif_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_BAUHAUS_SPACE));
 
   /* create and add blendif support if module supports it */
   if (bd->blendif_support)
@@ -1052,7 +1052,7 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
 
-  bd->masks_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
+  bd->masks_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_BAUHAUS_SPACE));
 
   /* create and add masks support if module supports it */
   if (bd->masks_support)
@@ -1471,13 +1471,15 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT(bd->suppress), "toggled",
                       G_CALLBACK (_blendop_blendif_suppress_toggled), module);
 
+    GtkWidget *box = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(box), TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->masks_modes_combo), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_combo), TRUE, TRUE, 0);
 
-    bd->top_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    bd->top_box = GTK_VBOX(gtk_vbox_new(FALSE,DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->blend_modes_combo, TRUE, TRUE,0);
     gtk_box_pack_start(GTK_BOX(bd->top_box), bd->opacity_slider, TRUE, TRUE,0);
-    gtk_box_pack_start(GTK_BOX(iopw), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->top_box), TRUE, TRUE, 0);
 
     dt_iop_gui_init_masks(GTK_VBOX(iopw), module);
     dt_iop_gui_init_blendif(GTK_VBOX(iopw), module);
@@ -1486,7 +1488,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), bd->radius_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->suppress), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(bd->showmask), FALSE, FALSE, 0);
-    bd->bottom_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_GUI_IOP_MODULE_CONTROL_SPACING));
+    bd->bottom_box = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_combine_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), GTK_WIDGET(bd->masks_invert_combo), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->bottom_box), hbox, TRUE, TRUE, 0);

@@ -2039,7 +2039,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
 
   /* add the blending ui if supported */
-  GtkWidget * iopw = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
+  GtkWidget * iopw = gtk_vbox_new(FALSE, 3 * DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 
