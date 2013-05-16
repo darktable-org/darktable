@@ -770,11 +770,11 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
 
     if (nb==0)
     {
-      item = gtk_menu_item_new_with_label(_("add circular shape"));
+      item = gtk_menu_item_new_with_label(_("add circle"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
       gtk_menu_append(menu, item);
 
-      item = gtk_menu_item_new_with_label(_("add path shape"));
+      item = gtk_menu_item_new_with_label(_("add path"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
       gtk_menu_append(menu, item);
       gtk_menu_append(menu, gtk_separator_menu_item_new());
@@ -793,11 +793,11 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,grpid);
       if (grp && (grp->type & DT_MASKS_GROUP))
       {
-        item = gtk_menu_item_new_with_label(_("add circular shape"));
+        item = gtk_menu_item_new_with_label(_("add circle"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
         gtk_menu_append(menu, item);
 
-        item = gtk_menu_item_new_with_label(_("add path shape"));
+        item = gtk_menu_item_new_with_label(_("add path"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
         gtk_menu_append(menu, item);
 
@@ -1341,14 +1341,14 @@ void gui_init(dt_lib_module_t *self)
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), NULL);
-  g_object_set(G_OBJECT(d->bt_path), "tooltip-text", _("add path shape"), (char *)NULL);
+  g_object_set(G_OBJECT(d->bt_path), "tooltip-text", _("add path"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_path),bs,bs);
   gtk_box_pack_end (GTK_BOX (hbox),d->bt_path,FALSE,FALSE,0);
 
   d->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), NULL);
-  g_object_set(G_OBJECT(d->bt_circle), "tooltip-text", _("add circular shape"), (char *)NULL);
+  g_object_set(G_OBJECT(d->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(d->bt_circle),bs,bs);
   gtk_box_pack_end (GTK_BOX (hbox),d->bt_circle,FALSE,FALSE,0);

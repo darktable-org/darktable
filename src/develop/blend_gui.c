@@ -1022,7 +1022,8 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
   {
     char txt[512];
-    snprintf(txt,512,"%d shapes used",g_list_length(grp->points));
+    int n = g_list_length(grp->points);
+    snprintf(txt,512,ngettext("%d shape used", "%d shapes used", n), n);
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
   else
@@ -1080,14 +1081,14 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
 
     bd->masks_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_circle), "button-press-event", G_CALLBACK(_blendop_masks_add_circle), module);
-    g_object_set(G_OBJECT(bd->masks_circle), "tooltip-text", _("add circular shape"), (char *)NULL);
+    g_object_set(G_OBJECT(bd->masks_circle), "tooltip-text", _("add circle"), (char *)NULL);
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_circle), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_circle, FALSE, FALSE, 0);
 
     bd->masks_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_path), "button-press-event", G_CALLBACK(_blendop_masks_add_path), module);
-    g_object_set(G_OBJECT(bd->masks_path), "tooltip-text", _("add path shape"), (char *)NULL);
+    g_object_set(G_OBJECT(bd->masks_path), "tooltip-text", _("add path"), (char *)NULL);
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_path), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_path), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_path, FALSE, FALSE, 0);
