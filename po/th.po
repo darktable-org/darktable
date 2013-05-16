@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-14 02:50-0400\n"
-"PO-Revision-Date: 2013-05-14 02:50-0500\n"
+"POT-Creation-Date: 2013-05-15 23:44-0400\n"
+"PO-Revision-Date: 2013-05-15 23:33-0500\n"
 "Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
@@ -261,10 +261,13 @@ msgid ""
 "during import. the cache will grow to a maximum of twice this number of full "
 "resolution image buffers (needs a restart)."
 msgstr ""
+"ในช่องนี้เป็นตัวอย่างจำนวน การคิด (thread) ที่ใช้ในการสร้างภาพขนาดเล็กระหว่างการนำเข้า "
+"จำนวนแคชสูงสุดจะเติบโตเป็นสองเท่าของจำนวนบัฟเฟอร์ ของภาพความละเอียดเต็ม "
+"(จำเป็นต้องเรื่มต้นใหม่)"
 
 #: ../build/src/preferences_gen.h:1474
 msgid "host memory limit (in MB) for tiling"
-msgstr ""
+msgstr "ขีด จำกัด ของพื้นที่หน่วยความจำ (MB) สำหรับการ titling"
 
 #: ../build/src/preferences_gen.h:1491
 msgid ""
@@ -273,10 +276,15 @@ msgid ""
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
 msgstr ""
+"ตัวแปรนี้ควบคุมจำนวนสูงสุดของหน่วยความจำ (เมกะไบต์) "
+"ที่โมดูลอาจจะใช้ในระหว่างการประมวลผลภาพ "
+"การทั่งค่าที่ต่ำจะบังคับให้โมดูลใช้หน่วยความจำมากในการประมวลผลภาพ มีการเพิ่มจำนวนของ tile "
+"มากขึ้น ถ้าการตั้งค่าเป็น 0 จำกัดจะยกเลิกไป ถ้าค่าต่ำกว่า 500 จะถือว่าเป็น 500 "
+"(จำเป็นต้องเรื่มต้นใหม่)"
 
 #: ../build/src/preferences_gen.h:1498
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr ""
+msgstr "จำนวนหน่วยความจำขั้นต่ำ (MB) สำหรับบัฟเฟอร์ของ tiling"
 
 #: ../build/src/preferences_gen.h:1516
 msgid ""
@@ -284,42 +292,47 @@ msgid ""
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
 msgstr ""
+"ถ้าตัวเลขมากกว่า 0 จะเป็นการกำหนดต่าขั้นต่ำของหน่วยความจำ (MD) ที่การทำ tiling "
+"จะใช้ในการจัดการรูปภาพ,ค่านี้จะถูกนำไปใช้เหนือค่าที่ได้จากการคาดคะเนโดยใช้ "
+"host_memory_limit (จำเป็นต้องรีสตาร์ท)"
 
 #: ../build/src/preferences_gen.h:1523
 msgid "write sidecar file for each image"
-msgstr ""
+msgstr "สร้างไฟล์ sidecar สำหรับภาพแต่ละภาพ"
 
 #: ../build/src/preferences_gen.h:1535
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
-msgstr ""
+msgstr "แฟ้มสำรองการเปลี่ยนแปลงของภาพเล่านี้สามารถ นำไปใช้กับฐานข้อมูลอื่นๆได้อีก"
 
 #: ../build/src/preferences_gen.h:1542
 msgid "activate opencl support"
-msgstr ""
+msgstr "เปิดการสนับสนุน OpenCL"
 
 #: ../build/src/preferences_gen.h:1554
 msgid ""
 "if found, use opencl runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
+"ถ้าตรวจพบ OpenCL ให้ใช้ OpenCL ในการประมวลผลเพื่อเป็นการเพิ่มประสิทธิภาพ "
+"ตัวเลือกนี้สามารถเปลี่ยแปรงได้ตลอดเวลา"
 
 #: ../build/src/preferences_gen.h:1558
 msgid "not available on this system"
-msgstr ""
+msgstr "ไม่ได้มีอยู่ในระบบนี้"
 
 #: ../build/src/preferences_gen.h:1565
 msgid "always try to use littlecms2"
-msgstr ""
+msgstr "ให้ลองใช้ littlecms2 ตลอด"
 
 #: ../build/src/preferences_gen.h:1577
 msgid "this is significantly slower as the default."
-msgstr ""
+msgstr "ค่าเริ่มตันนี่จะทำให้ช้ากว่า"
 
 #: ../build/src/preferences_gen.h:1584
 msgid "do high quality resampling during export"
-msgstr ""
+msgstr "ใช้การสุ่มตัวอย่างที่มีคุณภาพสูง ในการส่งภาพออก"
 
 #: ../build/src/preferences_gen.h:1596
 msgid ""
@@ -327,6 +340,8 @@ msgid ""
 "very end. this can result in better quality sometimes, but will always be "
 "slower."
 msgstr ""
+"ภาพจะถูกประมวลผลในความละเอียดเต็มรูปแบบก่อนและจะทำการย่อขนานในตอนท้าย "
+"การทำเช่นนี้จะส่งผลให้มีคุณภาพของภาพดีขึ้นในบางครั้ง แต่มักจะทำงานช้า"
 
 #: ../build/src/preferences_gen.h:1603
 msgid "dithering for darkroom mode"
@@ -349,64 +364,70 @@ msgid ""
 "but not as sharp. middle ground is using ppg + interpolation modes specified "
 "below, full will use exactly the settings for full-size export."
 msgstr ""
+"การสอดแทรกในขญะทีไม่ได้ดูภาพ 01:01 ใน Darkroom: bilinear จะเร็วทีสุด แต่ไม่ชัดคม, "
+"middle ground จะใช้ ppg และการสอดแทรกที่ระบุไว้ด้านล่าง, "
+"เต็มรูปแบบจะใช้การตั้งค่าสำหรับการส่งออกของภาพขนาดเติม."
 
 #: ../build/src/preferences_gen.h:1654
 msgid "pixel interpolator"
-msgstr ""
+msgstr "การสอดแทรกของจุด"
 
 #: ../build/src/preferences_gen.h:1682
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
+"การสอดแทรกของจุดที่ใช้ในการหมุนและการแก้ไข้เลนส์ (bilinear, bicubic, lanczos2, "
+"lanczos3)."
 
 #: ../build/src/preferences_gen.h:1689
 msgid "password storage backend to use"
-msgstr ""
+msgstr "รหัสผ่านเพื่อใช้สำหรับ ในระบบจัดเก็บรหัสผ่าน"
 
 #: ../build/src/preferences_gen.h:1714
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
-msgstr ""
+msgstr "ระบบจัดเก็บรหัสผ่าน: ไม่ใช้, kwallet, พวงกุญแจของ gnome"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to api restrictions we currently cannot set the bpp to"
-msgstr ""
+msgstr "สิ่งที่ต้องทำ: ขออภัยเนื่องจากข้อ จำกัด API เรายังไม่สามารถตั้งค่า bpp ได้"
 
 #: ../src/cli/main.c:109
 msgid "Unknown option for --hq"
-msgstr ""
+msgstr "ไม่รู้จักตัวเลือก -hq"
 
 #: ../src/cli/main.c:148
 msgid "output file already exists, it will get renamed"
-msgstr ""
+msgstr "ไฟล์ที่ส่งออกมีอยู่แล้ว และจะได้รับการเปลี่ยนชื่อ"
 
 #: ../src/cli/main.c:164
 #, c-format
 msgid "error: can't open file %s"
-msgstr ""
+msgstr "ข้อผิดพลาด: ไม่สามารถเปิดไฟล์ %s"
 
 #: ../src/cli/main.c:188
 msgid "empty history stack"
-msgstr ""
+msgstr "กองประวัติศาสตร์ว่างเปล่า"
 
 #: ../src/cli/main.c:208
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
 msgstr ""
+"ไม่สามารถหาโมดูลการจัดเก็บดิสก์ โปรดตรวจสอบการติดตั้งของคุณบางสิ่งบางอย่างอาจไม่ถุกต้อง"
 
 #: ../src/cli/main.c:215
 msgid "failed to get parameters from storage module, aborting export ..."
-msgstr ""
+msgstr "ล้มเหลวในการรับขอมูลจากโมดูลการจัดเก็บ ยกเลิกการส่งออก ..."
 
 #: ../src/cli/main.c:226
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr ""
+msgstr "ไม่รู้จักส่วนขยาย '.%s'"
 
 #: ../src/cli/main.c:234
 msgid "failed to get parameters from format module, aborting export ..."
-msgstr ""
+msgstr "ล้มเหลวในการรับขอมูลจากโมดูลการจัดรูปแบบ ยกเลิกการส่งออก ..."
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:974
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
@@ -443,7 +464,7 @@ msgstr "ม่วง"
 #: ../src/common/collection.c:465 ../src/libs/collect.c:1123
 #: ../src/libs/collect.c:1125
 msgid "altered"
-msgstr ""
+msgstr "ถูกเปลี่ยน"
 
 #: ../src/common/collection.c:660
 #, c-format
@@ -455,27 +476,27 @@ msgstr[1] "เลือก %d รูปจาก %d รูปของชุด�
 #: ../src/common/darktable.c:287
 #, c-format
 msgid "found strange path `%s'"
-msgstr ""
+msgstr "พบเส้นทางแปลก `%s'"
 
 #: ../src/common/darktable.c:305
 #, c-format
 msgid "error loading directory `%s'"
-msgstr ""
+msgstr "มีข้อผิดพลาดในการโหลดไดเรกทอรี `%s'"
 
 #: ../src/common/darktable.c:325
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr ""
+msgstr "ไม่รู้จักรูปแบบของไฟล์ `%s'!"
 
 #: ../src/common/darktable.c:339 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
-msgstr ""
+msgstr "มีข้อผิดพลาดในการโหลดไฟล์ `%s'"
 
 #: ../src/common/darktable.c:481
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
-msgstr ""
+msgstr "ข้อผิดพลาด: มีความไม่ถูกต้องในไดเรกทอรีชั่วคราว: %s\n"
 
 #: ../src/common/film.c:361
 msgid "no supported images were found to be imported"
@@ -490,20 +511,20 @@ msgstr[1] "นำเข้า %d รูป"
 
 #: ../src/common/history.c:139
 msgid "you need to copy history from an image before you paste it onto another"
-msgstr ""
+msgstr "คุณต้องการคัดลอกประวัติจากภาพก่อนที่คุณจะวางมันลงในภาพอื่นได้"
 
 #: ../src/common/history.c:263 ../src/common/history.c:264
 #: ../src/common/history.c:280 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1439
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1442
 #: ../src/develop/develop.c:1113 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "เปิด"
 
 #: ../src/common/history.c:263 ../src/common/history.c:264
 #: ../src/common/history.c:280 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1277
-#: ../src/develop/blend_gui.c:1436 ../src/develop/develop.c:1113
-#: ../src/imageio/format/j2k.c:618 ../src/iop/demosaic.c:1329
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1280
+#: ../src/develop/blend_gui.c:1439 ../src/develop/develop.c:1113
+#: ../src/imageio/format/j2k.c:631 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
@@ -518,11 +539,13 @@ msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
 msgstr ""
+"ไม่สามารถจัดหาหน่วยความจำสำหรับการส่งออกได้, กรุณาลดจำนวนการคิด (theads) "
+"ที่ใช้ในการส่งออกหรือซื้อหน่วยความจำเพิ่มเติม"
 
 #: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1103
 #, c-format
 msgid "image `%s' is not available!"
-msgstr ""
+msgstr "ไม่สามารถใช้ภาพ '%s` ได้!"
 
 #. If a style is to be applied during export, add the iop params into the history
 #. set export style to "none" by default
@@ -535,12 +558,12 @@ msgstr ""
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
-msgstr ""
+msgstr "ไม่มี"
 
 #: ../src/common/imageio.c:572
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr ""
+msgstr "ไม่สามารถหา '% s' สไตล์เพื่อนำไปใช้ในระหว่างการส่งออก"
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
@@ -584,7 +607,7 @@ msgstr "ไม่มีรูปที่ถูกเลือก!"
 #: ../src/common/styles.c:646
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr ""
+msgstr "ล้มเหลวในการเขียนทับแฟ้มสำหรับสไตล์ %s"
 
 #: ../src/common/styles.c:652
 #, c-format
@@ -596,11 +619,11 @@ msgstr "สไตล์สำหรับ %s มีอยู่แล้ว"
 msgid "style %s was successfully imported"
 msgstr "สไตล์ %s ถูกนำเข้าสำเร็จแล้ว"
 
-#: ../src/control/control.c:1371 ../src/control/control.c:1374
+#: ../src/control/control.c:1372 ../src/control/control.c:1375
 msgid "working.."
 msgstr "กำลังทำงาน.."
 
-#: ../src/control/control.c:1455
+#: ../src/control/control.c:1456
 #, c-format
 msgid "switch to %s mode"
 msgstr "สลับไปโหมด %s"
@@ -614,12 +637,12 @@ msgstr "กำลังนำเข้ารูปภาพ %s"
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "จับภาพได้ %d ภาพ"
+msgstr[1] "จับภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/camera_jobs.c:100
 msgid "please set your camera to manual mode first!"
-msgstr ""
+msgstr "กรุณาตั้งค่ากล้องของคุณไปที่โหมดปรับด้วยตนเองก่อน!"
 
 #: ../src/control/jobs/camera_jobs.c:292
 #, c-format
@@ -630,7 +653,7 @@ msgstr "%d/%d ถูกนำเข้าไปยัง %s"
 msgid ""
 "Couldn't expand to a uniq filename for import, please check your import "
 "settings."
-msgstr ""
+msgstr "ไม่สามารถสร้างชื่อไฟล์ที่ไม่ช้ำกันได้สำหรับการนำเข้า  โปรดตรวจสอบการตั้งค่าการนำของคุณ"
 
 #: ../src/control/jobs/camera_jobs.c:386
 msgid "starting to import images from camera"
@@ -639,7 +662,7 @@ msgstr "กำลังเริ่มนำเข้ารูปภาพจา
 #: ../src/control/jobs/camera_jobs.c:406
 #, c-format
 msgid "failed to create import path `%s', import aborted."
-msgstr ""
+msgstr "ไม่สามารถสร้าง path '%s' สำหรับการนำเข้าได้ ยกเลิกการนำเข้า"
 
 #: ../src/control/jobs/camera_jobs.c:415
 #, c-format
@@ -656,12 +679,12 @@ msgstr "การนำเข้ารูปภาพจากกล้องเ
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "รวมรูปภาพได้ %d ภาพ"
+msgstr[1] "รวมรูปภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:141
 msgid "exposure bracketing only works on raw images"
-msgstr ""
+msgstr "ถ่ายภาพคร่อมใช้งานได้เฉพาะกับภาพดิบ"
 
 #: ../src/control/jobs/control_jobs.c:150
 #, c-format
@@ -675,39 +698,39 @@ msgstr "รูปภาพต้องมีขนาดเท่ากัน!"
 #: ../src/control/jobs/control_jobs.c:244
 #, c-format
 msgid "wrote merged hdr `%s'"
-msgstr ""
+msgstr "รวมภาพ HDR '%s' เสริฐแลัว"
 
 #: ../src/control/jobs/control_jobs.c:270
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ทำซ้ำภาพได้ %d ภาพ "
+msgstr[1] "ทำซ้ำภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:295
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "พลิกรูปภาพได้ %d ภาพ"
+msgstr[1] "พลิกรูปภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:318
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "เอาภาพออกได้ %d ภาพ"
+msgstr[1] "เอาภาพออกได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:369
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "ลบภาพได้ %d ภาพ"
+msgstr[1] "ลบภาพได้ %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:454
 msgid "failed to parse gpx file"
-msgstr ""
+msgstr "ไม่สามารถตีความไฟล์ gps ได้"
 
 #: ../src/control/jobs/control_jobs.c:521
 #, c-format
@@ -748,7 +771,7 @@ msgstr "การสร้างม้วนฟิล์มล้มเหลว
 #: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
 #: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
-msgstr ""
+msgstr "เลือกไดเรกทอรี"
 
 #: ../src/control/jobs/control_jobs.c:792
 #, c-format
@@ -807,7 +830,7 @@ msgstr "กำลังคัดลอก %d รูปภาพ"
 #: ../src/control/jobs/control_jobs.c:928
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr ""
+msgstr "ไม่สามารถรับขอมูลจากโมดูลการจัดเก็บ '%s' ได้, ยกเลิกการส่งออก ..."
 
 #: ../src/control/jobs/control_jobs.c:932
 #, c-format
@@ -827,7 +850,7 @@ msgstr[1] "ส่งออก %d รูปภาพ ไปที่ %s"
 #: ../src/control/jobs/control_jobs.c:998 ../src/views/darkroom.c:470
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr ""
+msgstr "ไม่สามารถใช้งานภาพ %s ได้ในขณะนี้"
 
 #: ../src/control/jobs/control_jobs.c:1076
 #, c-format
@@ -841,83 +864,83 @@ msgstr[1] ""
 msgid "added time offset to %d image(s)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:788
 msgid "sliders for L channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:788
 msgid "sliders for a channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:788
 msgid "sliders for b channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:788
 msgid "sliders for chroma channel (of LCh)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:785
+#: ../src/develop/blend_gui.c:788
 msgid "sliders for hue channel (of LCh)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " g "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " R "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " G "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " B "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " H "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " S "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:786
+#: ../src/develop/blend_gui.c:789
 msgid " L "
 msgstr ""
 
-#: ../src/develop/blend_gui.c:787
+#: ../src/develop/blend_gui.c:790
 msgid "sliders for gray value"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:787
+#: ../src/develop/blend_gui.c:790
 msgid "sliders for red channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:787
+#: ../src/develop/blend_gui.c:790
 msgid "sliders for green channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:787
+#: ../src/develop/blend_gui.c:790
 msgid "sliders for blue channel"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:788
+#: ../src/develop/blend_gui.c:791
 msgid "sliders for hue channel (of HSL)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:788
+#: ../src/develop/blend_gui.c:791
 msgid "sliders for chroma channel (of HSL)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:788
+#: ../src/develop/blend_gui.c:791
 msgid "sliders for value channel (of HSL)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:791
+#: ../src/develop/blend_gui.c:794
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -925,7 +948,7 @@ msgid ""
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:793
+#: ../src/develop/blend_gui.c:796
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -933,251 +956,251 @@ msgid ""
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:912 ../src/iop/colorzones.c:1029
+#: ../src/develop/blend_gui.c:915 ../src/iop/colorzones.c:1029
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:915
+#: ../src/develop/blend_gui.c:918
 msgid "reset blend mask settings"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:918
+#: ../src/develop/blend_gui.c:921
 msgid "invert all channel's polarities"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:929 ../src/develop/blend_gui.c:932
+#: ../src/develop/blend_gui.c:932 ../src/develop/blend_gui.c:935
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:941
+#: ../src/develop/blend_gui.c:944
 msgid "output"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:955
 msgid "input"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:963 ../src/develop/blend_gui.c:964
+#: ../src/develop/blend_gui.c:966 ../src/develop/blend_gui.c:967
 msgid "double click to reset"
 msgstr "ดับเบิ้ลคลิก เพื่อกลับค่าเดิม"
 
-#: ../src/develop/blend_gui.c:1027 ../src/develop/blend_gui.c:1065
-#: ../src/develop/masks/masks.c:957
+#: ../src/develop/blend_gui.c:1030 ../src/develop/blend_gui.c:1068
+#: ../src/develop/masks/masks.c:958
 msgid "no mask used"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1064 ../src/develop/blend_gui.c:1285
+#: ../src/develop/blend_gui.c:1067 ../src/develop/blend_gui.c:1288
 msgid "drawn mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1073
+#: ../src/develop/blend_gui.c:1076
 msgid "show and edit mask elements"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:539
+#: ../src/develop/blend_gui.c:1083 ../src/iop/spots.c:539
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
 msgid "add circular shape"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:532
+#: ../src/develop/blend_gui.c:1090 ../src/iop/spots.c:532
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1275
+#: ../src/develop/blend_gui.c:1278
 msgid "blend"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1280
+#: ../src/develop/blend_gui.c:1283
 msgid "uniformly"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1291
+#: ../src/develop/blend_gui.c:1294
 msgid "parametric mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1297
+#: ../src/develop/blend_gui.c:1300
 msgid "drawn & parametric mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1302
+#: ../src/develop/blend_gui.c:1305
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1307
+#: ../src/develop/blend_gui.c:1310
 msgid "blend mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1309 ../src/libs/live_view.c:377
+#: ../src/develop/blend_gui.c:1312 ../src/libs/live_view.c:377
 msgid "normal"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1312
+#: ../src/develop/blend_gui.c:1315
 msgid "normal bounded"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1315 ../src/libs/live_view.c:386
+#: ../src/develop/blend_gui.c:1318 ../src/libs/live_view.c:386
 msgid "lighten"
 msgstr "เบาลง"
 
-#: ../src/develop/blend_gui.c:1318 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1321 ../src/libs/live_view.c:385
 msgid "darken"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1321 ../src/libs/live_view.c:382
+#: ../src/develop/blend_gui.c:1324 ../src/libs/live_view.c:382
 msgid "multiply"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1324
+#: ../src/develop/blend_gui.c:1327
 msgid "average"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1327
+#: ../src/develop/blend_gui.c:1330
 msgid "addition"
 msgstr "รายละเอียดเพิ่มเติม"
 
-#: ../src/develop/blend_gui.c:1330
+#: ../src/develop/blend_gui.c:1333
 msgid "subtract"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1333 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1336 ../src/libs/live_view.c:391
 msgid "difference"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1336 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1339 ../src/libs/live_view.c:383
 msgid "screen"
 msgstr "หน้าจอ"
 
-#: ../src/develop/blend_gui.c:1339 ../src/libs/live_view.c:353
+#: ../src/develop/blend_gui.c:1342 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1342
+#: ../src/develop/blend_gui.c:1345
 msgid "softlight"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1345
+#: ../src/develop/blend_gui.c:1348
 msgid "hardlight"
 msgstr "แสงแรง"
 
-#: ../src/develop/blend_gui.c:1348
+#: ../src/develop/blend_gui.c:1351
 msgid "vividlight"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1351
+#: ../src/develop/blend_gui.c:1354
 msgid "linearlight"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1354
+#: ../src/develop/blend_gui.c:1357
 msgid "pinlight"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1357 ../src/iop/channelmixer.c:439
+#: ../src/develop/blend_gui.c:1360 ../src/iop/channelmixer.c:439
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1018
 #: ../src/iop/colorzones.c:1056
 msgid "lightness"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1360 ../src/iop/atrous.c:1419
+#: ../src/develop/blend_gui.c:1363 ../src/iop/atrous.c:1419
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
 msgstr ""
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:1363 ../src/iop/channelmixer.c:437
+#: ../src/develop/blend_gui.c:1366 ../src/iop/channelmixer.c:437
 #: ../src/iop/colorize.c:417 ../src/iop/colorzones.c:1020
 #: ../src/iop/colorzones.c:1054 ../src/iop/graduatednd.c:1049
 #: ../src/iop/splittoning.c:542
 msgid "hue"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1366
+#: ../src/develop/blend_gui.c:1369
 msgid "color"
 msgstr "สี"
 
-#: ../src/develop/blend_gui.c:1369
+#: ../src/develop/blend_gui.c:1372
 msgid "coloradjustment"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1375
+#: ../src/develop/blend_gui.c:1378
 msgid "choose blending mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1383
+#: ../src/develop/blend_gui.c:1386
 msgid "difference (deprecated)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1388
+#: ../src/develop/blend_gui.c:1391
 msgid "inverse (deprecated)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1393
+#: ../src/develop/blend_gui.c:1396
 msgid "normal (deprecated)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1398
+#: ../src/develop/blend_gui.c:1401
 msgid "unbounded (deprecated)"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1404 ../src/iop/watermark.c:1049
+#: ../src/develop/blend_gui.c:1407 ../src/iop/watermark.c:1049
 msgid "opacity"
 msgstr "ความทึบ"
 
-#: ../src/develop/blend_gui.c:1407
+#: ../src/develop/blend_gui.c:1410
 msgid "set the opacity of the blending"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1413
+#: ../src/develop/blend_gui.c:1416
 msgid "combine masks"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1415
+#: ../src/develop/blend_gui.c:1418
 msgid "exclusive"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1418
+#: ../src/develop/blend_gui.c:1421
 msgid "inclusive"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1421
+#: ../src/develop/blend_gui.c:1424
 msgid "exclusive & inverted"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1424
+#: ../src/develop/blend_gui.c:1427
 msgid "inclusive & inverted"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1428
+#: ../src/develop/blend_gui.c:1431
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1434
+#: ../src/develop/blend_gui.c:1437
 msgid "invert mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1443
+#: ../src/develop/blend_gui.c:1446
 msgid "apply mask in normal or inverted mode"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1450
+#: ../src/develop/blend_gui.c:1453
 msgid "mask blur"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1452
+#: ../src/develop/blend_gui.c:1455
 msgid "radius for gaussian blur of blend mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1458
+#: ../src/develop/blend_gui.c:1461
 msgid "display mask"
 msgstr ""
 
-#: ../src/develop/blend_gui.c:1465
+#: ../src/develop/blend_gui.c:1468
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 
@@ -2065,40 +2088,40 @@ msgstr ""
 msgid "openexr"
 msgstr "openexr"
 
-#: ../src/imageio/format/j2k.c:557
+#: ../src/imageio/format/j2k.c:570
 msgid "jpeg 2000"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:592
+#: ../src/imageio/format/j2k.c:605
 msgid "jp2"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:597
+#: ../src/imageio/format/j2k.c:610
 msgid "j2k"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:604 ../src/imageio/format/jpeg.c:542
+#: ../src/imageio/format/j2k.c:617 ../src/imageio/format/jpeg.c:547
 #: ../src/libs/camera.c:617
 msgid "quality"
 msgstr "คุณภาพ"
 
-#: ../src/imageio/format/j2k.c:613
+#: ../src/imageio/format/j2k.c:626
 msgid "dcp mode"
 msgstr "โหมด dcp"
 
-#: ../src/imageio/format/j2k.c:619
+#: ../src/imageio/format/j2k.c:632
 msgid "cinema2k, 24fps"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:620
+#: ../src/imageio/format/j2k.c:633
 msgid "cinema2k, 48fps"
 msgstr ""
 
-#: ../src/imageio/format/j2k.c:621
+#: ../src/imageio/format/j2k.c:634
 msgid "cinema4k, 24fps"
 msgstr ""
 
-#: ../src/imageio/format/jpeg.c:522
+#: ../src/imageio/format/jpeg.c:527
 msgid "8-bit jpg"
 msgstr "8-บิต jpg"
 
@@ -2110,11 +2133,11 @@ msgstr ""
 msgid "8/16-bit png"
 msgstr "8/16-บิต png"
 
-#: ../src/imageio/format/png.c:414 ../src/imageio/format/tiff.c:263
+#: ../src/imageio/format/png.c:420 ../src/imageio/format/tiff.c:268
 msgid "8-bit"
 msgstr "8-บิต"
 
-#: ../src/imageio/format/png.c:419 ../src/imageio/format/tiff.c:268
+#: ../src/imageio/format/png.c:425 ../src/imageio/format/tiff.c:273
 msgid "16-bit"
 msgstr "16-บิต"
 
@@ -7426,15 +7449,15 @@ msgstr ""
 msgid "ctrl+scroll to set shape opacity"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:847 ../src/libs/masks.c:804
+#: ../src/develop/masks/masks.c:848 ../src/libs/masks.c:804
 msgid "add existing shape"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:874
+#: ../src/develop/masks/masks.c:875
 msgid "use same shapes as"
 msgstr ""
 
-#: ../src/develop/masks/masks.c:954
+#: ../src/develop/masks/masks.c:955
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
