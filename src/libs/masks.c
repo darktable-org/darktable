@@ -161,7 +161,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   //we create the new group
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name,128,"group #%d",g_list_length(darktable.develop->forms));
+  snprintf(grp->name,128,_("group #%d"),g_list_length(darktable.develop->forms));
 
   //we add all selected forms to this group
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
