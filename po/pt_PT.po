@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable\n"
+"Project-Id-Version: darktable 1.2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 18:50+0200\n"
-"PO-Revision-Date: 2013-05-13 15:52+0100\n"
+"POT-Creation-Date: 2013-05-15 13:23+0100\n"
+"PO-Revision-Date: 2013-05-16 20:21+0100\n"
 "Last-Translator: Jose Carlos <jcrc@portugalmail.com>\n"
 "Language-Team: \n"
 "Language: pt_PT\n"
@@ -24,7 +24,7 @@ msgstr "opções de interface gráfica"
 
 #: ../build/src/preferences_gen.h:880
 msgid "width of the side panels in pixels"
-msgstr "tamanho dos painéis laterais em pixels"
+msgstr "tamanho dos painéis laterais em pixeis"
 
 #: ../build/src/preferences_gen.h:894 ../build/src/preferences_gen.h:1013
 #: ../build/src/preferences_gen.h:1148 ../build/src/preferences_gen.h:1191
@@ -500,7 +500,7 @@ msgstr "erro a carregar directório `%s'"
 msgid "file `%s' has unknown format!"
 msgstr "ficheiro `%s' tem um formato desconhecido!"
 
-#: ../src/common/darktable.c:338 ../src/libs/import.c:711
+#: ../src/common/darktable.c:338 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erro a  carregar ficheiro `%s'"
@@ -564,7 +564,7 @@ msgstr "imagem `%s' não está disponível!"
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1462
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1780
-#: ../src/iop/lens.c:1707 ../src/libs/export.c:159 ../src/libs/export.c:162
+#: ../src/iop/lens.c:1732 ../src/libs/export.c:159 ../src/libs/export.c:162
 #: ../src/libs/export.c:595 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
@@ -973,7 +973,7 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"ajustes baseados em entradas recebidas por este módulo:\n"
+"ajuste baseado em entradas recebidas por este módulo:\n"
 "* variação definida por marcadores superiores: misturar completamente\n"
 "* variação definida por marcadores inferiores: não misturar de maneira "
 "nenhuma\n"
@@ -987,10 +987,12 @@ msgid ""
 "* range defined by lower markers: do not blend at all\n"
 "* range between adjacent upper/lower markers: blend gradually"
 msgstr ""
-"adjustment based on unblended output of this module:\n"
-"* range defined by upper markers: blend fully\n"
-"* range defined by lower markers: do not blend at all\n"
-"* range between adjacent upper/lower markers: blend gradually"
+"ajuste baseado na saída sem mistura deste módulo:\n"
+"* variação definida por marcadores superiores: misturar completamente\n"
+"* variação definida por marcadores inferiores: não misturar de maneira "
+"nenhuma\n"
+"* variação entre marcadores superiores/inferiores adjacentes: misturar "
+"gradualmente"
 
 #: ../src/develop/blend_gui.c:821
 msgid "blend"
@@ -1208,7 +1210,7 @@ msgstr "%s está desactivado"
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:487 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "predefinição"
@@ -1263,7 +1265,7 @@ msgstr "não foi encontrado o xmp lightroom!"
 msgid "`%s' not a lightroom xmp!"
 msgstr "`%s' não é um xmp lightroom!"
 
-#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:515
 msgid "tags"
 msgstr "etiquetas"
 
@@ -1396,11 +1398,11 @@ msgid "general"
 msgstr "geral"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:398
+#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:402
 msgid "ignore jpeg files"
 msgstr "ignorar ficheiros jpg"
 
-#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:399
+#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:403
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -1654,7 +1656,7 @@ msgstr "$(FILE_NAME) - nome base da imagem de entrada"
 #: ../src/gui/gtkentry.c:196 ../src/imageio/storage/gallery.c:129
 #: ../src/imageio/storage/latex.c:129
 msgid "$(FILE_EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - extenção do ficheiro da imagem de entrada"
+msgstr "$(FILE_EXTENSION) - extensão do ficheiro da imagem de entrada"
 
 #: ../src/gui/gtkentry.c:197 ../src/imageio/storage/gallery.c:130
 #: ../src/imageio/storage/latex.c:130
@@ -2205,23 +2207,24 @@ msgstr ""
 msgid ""
 "step 2: paste your browser url and click the ok button once you are done."
 msgstr ""
-"step 2: paste your browser url and click the ok button once you are done."
+"passo 2: cole o endereço do navegador e clique no botão OK quando tiver "
+"terminado."
 
 #: ../src/imageio/storage/facebook.c:613
 msgid "Facebook authentication"
-msgstr "Facebook authentication"
+msgstr "autenticação Facebook"
 
 #: ../src/imageio/storage/facebook.c:619 ../src/imageio/storage/picasa.c:850
 msgid "url:"
-msgstr "url:"
+msgstr "endereço:"
 
 #: ../src/imageio/storage/facebook.c:639 ../src/imageio/storage/picasa.c:870
 msgid "please enter the validation url"
-msgstr "please enter the validation url"
+msgstr "insira o endereço de validação"
 
 #: ../src/imageio/storage/facebook.c:650 ../src/imageio/storage/picasa.c:882
 msgid "the given url is not valid, it should look like: "
-msgstr "the given url is not valid, it should look like: "
+msgstr "o endereço inserido não é válido, deve parecer-se com:"
 
 #: ../src/imageio/storage/facebook.c:756 ../src/imageio/storage/picasa.c:1013
 msgid "new account"
@@ -2233,7 +2236,7 @@ msgstr "outra conta"
 
 #: ../src/imageio/storage/facebook.c:794 ../src/imageio/storage/picasa.c:1050
 msgid "unable to retreive the album list"
-msgstr "unable to retreive the album list"
+msgstr "incapaz de recuperar a lista de álbuns"
 
 #: ../src/imageio/storage/facebook.c:802 ../src/imageio/storage/flickr.c:387
 #: ../src/imageio/storage/flickr.c:415 ../src/imageio/storage/picasa.c:1058
@@ -2256,7 +2259,7 @@ msgstr "login"
 
 #: ../src/imageio/storage/facebook.c:1005
 msgid "facebook webalbum"
-msgstr "web álbum facebook"
+msgstr "álbum web Facebook"
 
 #. create labels
 #. xmp
@@ -2308,7 +2311,7 @@ msgstr "impossível exportar foto para o álbum web"
 #: ../src/imageio/storage/facebook.c:1233
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
-msgstr "%d/%d exportado para o álbum web do facebook"
+msgstr "%d/%d exportado para o álbum web do Facebook"
 
 #: ../src/imageio/storage/flickr.c:115
 #, c-format
@@ -2321,9 +2324,9 @@ msgid ""
 "have to login into your flickr account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your flickr account there and authorize darktable to "
-"upload photos before continuing."
+"passo 1: uma nova janela ou separador do seu navegador deve ter sido aberta. "
+"Aí terá que entrar na sua conta flickr e autorizar darktable a enviar fotos, "
+"antes de continuar."
 
 #: ../src/imageio/storage/flickr.c:191
 msgid "step 2: click the ok button once you are done."
@@ -2369,7 +2372,7 @@ msgstr "click login para começar"
 
 #: ../src/imageio/storage/flickr.c:514
 msgid "my new photoset"
-msgstr "my new photoset"
+msgstr "meu novo photoset"
 
 #: ../src/imageio/storage/flickr.c:515
 msgid "exported from darktable"
@@ -2381,7 +2384,7 @@ msgstr "refrescar lista de álbuns"
 
 #: ../src/imageio/storage/flickr.c:526
 msgid "Flickr login"
-msgstr "Flickr login"
+msgstr "flickr login"
 
 #: ../src/imageio/storage/flickr.c:533
 msgid "export tags"
@@ -2389,7 +2392,7 @@ msgstr "exportar etiquetas"
 
 #: ../src/imageio/storage/flickr.c:537
 msgid "you"
-msgstr "you"
+msgstr "eu"
 
 #: ../src/imageio/storage/flickr.c:538
 msgid "friends"
@@ -2405,7 +2408,7 @@ msgstr "amigos + família"
 
 #: ../src/imageio/storage/flickr.c:541
 msgid "everyone"
-msgstr "everyone"
+msgstr "todos"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/flickr.c:743
@@ -2415,24 +2418,24 @@ msgstr "%d/%d exportado para o álbum web do flickr"
 
 #: ../src/imageio/storage/flickr.c:848
 msgid "Flickr account not authenticated"
-msgstr "Flickr account not authenticated"
+msgstr "conta flickr não autenticada"
 
 #: ../src/imageio/storage/gallery.c:70
 msgid "website gallery"
-msgstr "website gallery"
+msgstr "galeria website"
 
 #: ../src/imageio/storage/gallery.c:173
 msgid "enter the title of the website"
-msgstr "enter the title of the website"
+msgstr "insira o título do site"
 
 #: ../src/imageio/storage/latex.c:70
 msgid "latex book template"
-msgstr "latex book template"
+msgstr "modelo livro latex"
 
 #. TODO: support title, author, subject, keywords (collect tags?)
 #: ../src/imageio/storage/latex.c:174
 msgid "enter the title of the book"
-msgstr "enter the title of the book"
+msgstr "insira o título do livro"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/picasa.c:833
@@ -2811,7 +2814,7 @@ msgstr "seleccione a cor da linha da moldura"
 
 #. add import singel image buttons
 #: ../src/iop/borders.c:983 ../src/iop/clipping.c:1740
-#: ../src/libs/import.c:814
+#: ../src/libs/import.c:818
 msgid "image"
 msgstr "imagem"
 
@@ -2993,7 +2996,7 @@ msgid "destination"
 msgstr "destino"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
 #: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3200,7 +3203,7 @@ msgstr "exibir linhas de guia para ajudar a composição"
 
 #: ../src/iop/clipping.c:1781 ../src/libs/live_view.c:337
 msgid "horizontally"
-msgstr "horizeontalmente"
+msgstr "horizontalmente"
 
 #: ../src/iop/clipping.c:1782 ../src/libs/live_view.c:338
 msgid "vertically"
@@ -3226,7 +3229,7 @@ msgstr "espiral áurea em seccções "
 msgid "golden spiral"
 msgstr "espiral áurea"
 
-#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1713
+#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1738
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "todas"
@@ -3281,20 +3284,24 @@ msgid "color correction"
 msgstr "correcção de cor"
 
 #: ../src/iop/colorcorrection.c:95
+msgid "warm tone"
+msgstr "tom quente"
+
+#: ../src/iop/colorcorrection.c:102
 msgid "warming filter"
 msgstr "filtro quente"
 
-#: ../src/iop/colorcorrection.c:102
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "filtro frio"
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
@@ -3302,7 +3309,7 @@ msgstr ""
 "arraste a linha para split toning. claro significa altas luzes, escuro "
 "significa sombras. use a roda do rato para alterar a saturação. "
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr "definir a saturação global"
 
@@ -3378,7 +3385,7 @@ msgstr "perfis icc em %s/color/in ou %s/color/in"
 
 #: ../src/iop/colorize.c:73
 msgid "colorize"
-msgstr "colorizar"
+msgstr "colorir"
 
 #: ../src/iop/colorize.c:89
 msgctxt "accel"
@@ -3536,7 +3543,7 @@ msgstr ""
 
 #: ../src/iop/colortransfer.c:673
 msgid "number of clusters to find in image"
-msgstr "número de clusters a procurar na imagem"
+msgstr "número de conjuntos a procurar na imagem"
 
 #: ../src/iop/colortransfer.c:677
 msgid "acquire"
@@ -3604,7 +3611,7 @@ msgid "amaze (slow)"
 msgstr "amaze (lento)"
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:378
 msgid "method"
 msgstr "método"
 
@@ -3692,7 +3699,7 @@ msgstr "correspondência encontrada para %d ISO"
 msgid "interpolated from iso %d and %d"
 msgstr "interpolado a partir de ISO %d e %d"
 
-#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1868
+#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1893
 msgid "mode"
 msgstr "modo"
 
@@ -4040,19 +4047,19 @@ msgstr "força do grão aplicado"
 msgid "highlight reconstruction"
 msgstr "reconstrução de altas luzes"
 
-#: ../src/iop/highlights.c:382
+#: ../src/iop/highlights.c:379
 msgid "clip highlights"
 msgstr "corte de altas luzes"
 
-#: ../src/iop/highlights.c:383
+#: ../src/iop/highlights.c:380
 msgid "reconstruct in LCh"
 msgstr "reconstruir em LCh"
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:381
 msgid "highlight reconstruction method"
 msgstr "médodo de reconstrução de altas luzes"
 
-#: ../src/iop/highlights.c:387
+#: ../src/iop/highlights.c:384
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -4060,7 +4067,7 @@ msgstr ""
 "ajustar manualmente o limite de recorte contra as altas luzes magenta (nunca "
 "deveria ter que alterar isto)"
 
-#: ../src/iop/highlights.c:389
+#: ../src/iop/highlights.c:386
 msgid "clipping threshold"
 msgstr "limite de corte"
 
@@ -4186,7 +4193,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "seleccionar correcções"
 
-#: ../src/iop/lens.c:1052
+#: ../src/iop/lens.c:1077
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4199,15 +4206,15 @@ msgstr ""
 "encaixe:\t\t%s\n"
 "factor de recorte:\t%.1f"
 
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1308
 msgid "camera/lens not found - please select manually"
 msgstr "câmara/lente não encontrada - por favor seleccione manualmente"
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1310
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "tente localizar a sua câmara/lente nos dois menus acima"
 
-#: ../src/iop/lens.c:1330
+#: ../src/iop/lens.c:1355
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4226,152 +4233,152 @@ msgstr ""
 "tipo:\t\t%s\n"
 "encaixe:\t\t%s"
 
-#: ../src/iop/lens.c:1376
+#: ../src/iop/lens.c:1401
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1377
+#: ../src/iop/lens.c:1402
 msgid "focal length (mm)"
 msgstr "distância focal (mm)"
 
-#: ../src/iop/lens.c:1404
+#: ../src/iop/lens.c:1429
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1405
+#: ../src/iop/lens.c:1430
 msgid "f-number (aperture)"
 msgstr "f-number (abertura)"
 
-#: ../src/iop/lens.c:1420
+#: ../src/iop/lens.c:1445
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1421
+#: ../src/iop/lens.c:1446
 msgid "distance to subject"
 msgstr "distância ao objecto"
 
-#: ../src/iop/lens.c:1719
+#: ../src/iop/lens.c:1744
 msgid "distortion & TCA"
 msgstr "distorção & TCA"
 
-#: ../src/iop/lens.c:1725
+#: ../src/iop/lens.c:1750
 msgid "distortion & vignetting"
 msgstr "distorção & vinheta"
 
-#: ../src/iop/lens.c:1731
+#: ../src/iop/lens.c:1756
 msgid "TCA & vignetting"
 msgstr "TCA & vinheta"
 
-#: ../src/iop/lens.c:1737
+#: ../src/iop/lens.c:1762
 msgid "only distortion"
 msgstr "apenas distorção"
 
-#: ../src/iop/lens.c:1743
+#: ../src/iop/lens.c:1768
 msgid "only TCA"
 msgstr "apenas TCA"
 
-#: ../src/iop/lens.c:1749
+#: ../src/iop/lens.c:1774
 msgid "only vignetting"
 msgstr "apenas vinheta"
 
-#: ../src/iop/lens.c:1772
+#: ../src/iop/lens.c:1797
 msgid "find camera"
 msgstr "encontrar câmara"
 
-#: ../src/iop/lens.c:1789
+#: ../src/iop/lens.c:1814
 msgid "find lens"
 msgstr "encontrar lente"
 
-#: ../src/iop/lens.c:1822
+#: ../src/iop/lens.c:1847
 msgid "corrections"
 msgstr "correcções"
 
-#: ../src/iop/lens.c:1824
+#: ../src/iop/lens.c:1849
 msgid "which corrections to apply"
 msgstr "quais correcções a aplicar"
 
-#: ../src/iop/lens.c:1839
+#: ../src/iop/lens.c:1864
 msgid "geometry"
 msgstr "geometria"
 
-#: ../src/iop/lens.c:1841
+#: ../src/iop/lens.c:1866
 msgid "target geometry"
 msgstr "geometria de destino"
 
-#: ../src/iop/lens.c:1842
+#: ../src/iop/lens.c:1867
 msgid "rectilinear"
 msgstr "rectilinear"
 
-#: ../src/iop/lens.c:1843
+#: ../src/iop/lens.c:1868
 msgid "fish-eye"
 msgstr "olho de peixe"
 
-#: ../src/iop/lens.c:1844
+#: ../src/iop/lens.c:1869
 msgid "panoramic"
 msgstr "panorâmica"
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1870
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1872
 msgid "orthographic"
 msgstr "ortográfica"
 
-#: ../src/iop/lens.c:1848
+#: ../src/iop/lens.c:1873
 msgid "stereographic"
 msgstr "estereográfica"
 
-#: ../src/iop/lens.c:1849
+#: ../src/iop/lens.c:1874
 msgid "equisolid angle"
 msgstr "ângulo equisólido"
 
-#: ../src/iop/lens.c:1850
+#: ../src/iop/lens.c:1875
 msgid "thoby fish-eye"
 msgstr "olho de peixe thoby"
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1883
 msgid "auto scale"
 msgstr "escala automática"
 
-#: ../src/iop/lens.c:1859 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1884 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1018
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/lens.c:1870
+#: ../src/iop/lens.c:1895
 msgid "correct distortions or apply them"
 msgstr "corrigir distorções ou aplicá-las"
 
-#: ../src/iop/lens.c:1871
+#: ../src/iop/lens.c:1896
 msgid "correct"
 msgstr "corrigir"
 
-#: ../src/iop/lens.c:1872
+#: ../src/iop/lens.c:1897
 msgid "distort"
 msgstr "distorcer"
 
-#: ../src/iop/lens.c:1879
+#: ../src/iop/lens.c:1904
 msgid "transversal chromatic aberration red"
 msgstr "aberração cromática transversal vermelho"
 
-#: ../src/iop/lens.c:1880
+#: ../src/iop/lens.c:1905
 msgid "tca red"
 msgstr "tca vermelho"
 
-#: ../src/iop/lens.c:1885
+#: ../src/iop/lens.c:1910
 msgid "transversal chromatic aberration blue"
 msgstr "aberração cromática transversal azul"
 
-#: ../src/iop/lens.c:1886
+#: ../src/iop/lens.c:1911
 msgid "tca blue"
 msgstr "tca azul"
 
-#: ../src/iop/lens.c:1893
+#: ../src/iop/lens.c:1918
 msgid "corrections done: "
 msgstr "correcções efectuadas"
 
-#: ../src/iop/lens.c:1894
+#: ../src/iop/lens.c:1919
 msgid "which corrections have actually been done"
 msgstr "quais as correcções que realmente foram efectuadas"
 
@@ -5399,7 +5406,7 @@ msgstr "contar"
 
 #: ../src/libs/camera.c:456
 msgid "brackets"
-msgstr "'bracktes'"
+msgstr "'brackets'"
 
 #: ../src/libs/camera.c:457
 msgid "bkt. steps"
@@ -5621,17 +5628,17 @@ msgstr "historial"
 msgid "description"
 msgstr "descrição"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:493
+#: ../src/libs/collect.h:40 ../src/libs/import.c:497
 #: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:96
 msgid "creator"
 msgstr "criador"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/collect.h:41 ../src/libs/import.c:503
 #: ../src/libs/metadata.c:342
 msgid "publisher"
 msgstr "editor"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/collect.h:42 ../src/libs/import.c:509
 #: ../src/libs/metadata.c:355
 msgid "rights"
 msgstr "direitos"
@@ -5698,7 +5705,7 @@ msgid "xmp sidecar files"
 msgstr "ficheiros sidecar xmp"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:684 ../src/libs/styles.c:280
 msgid "all files"
 msgstr "todos os ficheiros"
 
@@ -6221,112 +6228,117 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "desagrupar"
 
-#: ../src/libs/import.c:84
+#: ../src/libs/import.c:85
 msgid "import"
 msgstr "importar"
 
-#: ../src/libs/import.c:105
+#: ../src/libs/import.c:106
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "procurar dispositivos"
 
-#: ../src/libs/import.c:106
+#: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importar da câmara"
 
-#: ../src/libs/import.c:107
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "captura"
 
-#: ../src/libs/import.c:108
+#: ../src/libs/import.c:109
 msgctxt "accel"
 msgid "import image"
 msgstr "importar imagem"
 
+#: ../src/libs/import.c:110
+msgctxt "accel"
+msgid "import folder"
+msgstr "importar pasta"
+
 #. add the rescan button
-#: ../src/libs/import.c:187
+#: ../src/libs/import.c:191
 msgid "scan for devices"
 msgstr "procurar dispositivos"
 
-#: ../src/libs/import.c:190
+#: ../src/libs/import.c:194
 msgid "scan for newly attached devices"
 msgstr "procurar dispositivos ligados recentemente"
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "dispositivo  \"%s\" ligado na porta \"%s\"."
 
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:230
 msgid "import from camera"
 msgstr "importar da câmara"
 
-#: ../src/libs/import.c:231
+#: ../src/libs/import.c:235
 msgid "tethered shoot"
 msgstr "captura"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:253
+#: ../src/libs/import.c:257
 msgid "no supported devices found"
 msgstr "não foram encontrados dispositivos suportados"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:372
+#: ../src/libs/import.c:376
 msgid "import options"
 msgstr "opções de importação"
 
 #. recursive opening.
-#: ../src/libs/import.c:392
+#: ../src/libs/import.c:396
 msgid "import directories recursively"
 msgstr "importar directórios recursivamente"
 
-#: ../src/libs/import.c:393
+#: ../src/libs/import.c:397
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "importar subdirectórios recursivamente, cada directório vai para um novo "
 "rolo de filme."
 
-#: ../src/libs/import.c:407
+#: ../src/libs/import.c:411
 msgid "apply metadata on import"
 msgstr "aplicar metadados na importação"
 
-#: ../src/libs/import.c:408
+#: ../src/libs/import.c:412
 msgid "apply some metadata to all newly imported images."
 msgstr "aplicar alguns metadados a todas imagens importadas recentemente"
 
-#: ../src/libs/import.c:435
+#: ../src/libs/import.c:439
 msgid "comma separated list of tags"
 msgstr "lista de etiquetas, separadas por vírgulas"
 
-#: ../src/libs/import.c:650
+#: ../src/libs/import.c:654
 msgid "import image"
 msgstr "importar imagem"
 
-#: ../src/libs/import.c:675
+#: ../src/libs/import.c:679
 msgid "supported images"
 msgstr "imagens suportadas"
 
-#: ../src/libs/import.c:725
+#: ../src/libs/import.c:729
 msgid "file has unknown format!"
 msgstr "o formato do ficheiro é desconhecido!"
 
-#: ../src/libs/import.c:743
+#: ../src/libs/import.c:747
 msgid "import film"
 msgstr "importar filme"
 
-#: ../src/libs/import.c:817
+#: ../src/libs/import.c:821
 msgid "select one or more images to import"
 msgstr "seleccionar uma ou mais imagens a importar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:826
+#: ../src/libs/import.c:830
 msgid "folder"
 msgstr "pasta"
 
-#: ../src/libs/import.c:830
+#: ../src/libs/import.c:834
 msgid "select a folder to import as film roll"
 msgstr "seleccione uma pasta a importar como rolo de filme"
 
