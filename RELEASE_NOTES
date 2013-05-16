@@ -12,6 +12,10 @@ The release team should empty this file after each release.
 
 The development team decided to exclude translations which are not properly finished from releases. The corresponding PO files will however stay in the git master version. The selection will be done based on the percentage of translated and fuzzy strings since we are lacking detailed knowledge about the languages in question.
 
+Translation changes:
+ * New translation: Danish
+ * Some translations have been removed from the release due to missing strings
+
 New noise profiles
  * Canon EOS 450D / Kiss X2
  * Canon EOS 1100D / REBEL T3
@@ -37,6 +41,7 @@ Bugfixes:
  * Compatible with openEXR 2.0
  * Facebook export now allows HQ images (up to 2048px)
  * Blend mode "vividlight" should work for NaNs
+ * Fix compile issues for OpenBSD
  * Whitebalance is now relative to daylight, not to camera white balance
  * Now importing folder via key accel is supported.
  * Only one temperature slider in white balance
