@@ -752,19 +752,28 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
   int seg = 1;
   nb=0;
   last = last2 = lastw = -9999;
+
+  float as1 = 2.0*as*as;
+  float as2 = 1600.0*as1;
+  int near2 = 0;
   for (int i=corner_count*3; i<gpt->points_count; i++)
   {
     if (gpt->points[i*2+1] == gpt->points[seg*6+3] && gpt->points[i*2] == gpt->points[seg*6+2])
     {
       seg=(seg+1)%corner_count;
     }
-    if (gpt->points[i*2]-x < as && gpt->points[i*2]-x > -as && gpt->points[i*2+1]-y < as && gpt->points[i*2+1]-y > -as)
-    {
-      if (seg == 0) *near = corner_count-1;
-      else *near = seg-1;
-    }
+    float dd = (gpt->points[i*2]-x)*(gpt->points[i*2]-x)+(gpt->points[i*2+1]-y)*(gpt->points[i*2+1]-y);
     xx = (int) gpt->points[i*2];
     yy = (int) gpt->points[i*2+1];
+    if (dd<as2)
+    {
+      near2 = 1;
+      if (dd<as1)
+      {
+        if (seg == 0) *near = corner_count-1;
+        else *near = seg-1;
+      }
+    }
     //we check if we are at a point were the path change of direction
     if (last2>0 && lastw>0 && lastw == last && yy != last)
     {
@@ -786,7 +795,16 @@ static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *
   yy = (int) gpt->points[corner_count*6+1];
   if ((yy-last>1 || yy-last<-1) && ((yy<last && y<last && y>yy) || (yy>last && last>0 && y>last && y<yy)) && xx>x) nb++;
 
-  *inside = (nb & 1);
+  if (nb & 1)
+  {
+    if (near2) *inside = 1;
+    else
+    {
+      *inside = 0;
+      *inside_border = 0;
+    }
+  }
+  else *inside = 0;
 }
 
 static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count, float **border, int *border_count,int source)
