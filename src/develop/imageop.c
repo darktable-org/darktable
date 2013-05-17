@@ -1051,9 +1051,8 @@ dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 }
 
 static void
-dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
+dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
-  dt_iop_module_t *base = (dt_iop_module_t *)user_data;
   //first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,-1);
   if (!module) return;
@@ -1078,7 +1077,11 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_init(module);
-    dt_iop_reload_defaults(module);
+    if(copy_params)
+      memcpy(module->params, base->params, module->params_size);
+    else
+      dt_iop_reload_defaults(module);
+
 
     /* update ui to default params*/
     dt_iop_gui_update(module);
@@ -1124,6 +1127,18 @@ dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
 }
 
 static void
+dt_iop_gui_copy_callback(GtkButton *button, gpointer user_data)
+{
+  dt_iop_gui_duplicate(user_data, FALSE);
+}
+
+static void
+dt_iop_gui_duplicate_callback(GtkButton *button, gpointer user_data)
+{
+  dt_iop_gui_duplicate(user_data, TRUE);
+}
+
+static void
 dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1134,6 +1149,11 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
 
   item = gtk_menu_item_new_with_label(_("new instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a new instance of this module to the pipe"), (char *)NULL);
+  g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_copy_callback), module);
+  gtk_menu_append(menu, item);
+
+  item = gtk_menu_item_new_with_label(_("duplicate instance"));
+  //g_object_set(G_OBJECT(item), "tooltip-text", _("add a copy of this instance to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_duplicate_callback), module);
   gtk_menu_append(menu, item);
 
