@@ -172,7 +172,7 @@ static int image_index(lua_State *L)
       break;
     }
     case ID:
-      lua_pushinteger(L,my_image->height);
+      lua_pushinteger(L,my_image->id);
       break;
     case CREATOR:
     {
