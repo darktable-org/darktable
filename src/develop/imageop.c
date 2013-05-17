@@ -1098,6 +1098,12 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 
   }
 
+  if(dt_conf_get_bool("darkroom/ui/single_module"))
+  {
+    dt_iop_gui_set_expanded(base, FALSE);
+    dt_iop_gui_set_expanded(module, TRUE);
+  }
+
   /* setup key accelerators */
   module->accel_closures = NULL;
   if(module->connect_key_accels)
