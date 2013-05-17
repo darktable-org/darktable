@@ -345,7 +345,8 @@ static int colorlabel_index(lua_State *L)
 {
   int imgid;
   luaA_to(L,dt_lua_image_t,&imgid,-2);
-  lua_pushboolean(L,dt_colorlabels_check_label(imgid,lua_tointeger(L,-1)));
+  int colorlabel_index = luaL_checkoption(L,-1,NULL,dt_colorlabels_name);
+  lua_pushboolean(L,dt_colorlabels_check_label(imgid,colorlabel_index));
   return 1;
 }
 
@@ -353,13 +354,14 @@ static int colorlabel_newindex(lua_State *L)
 {
   int imgid;
   luaA_to(L,dt_lua_image_t,&imgid,-3);
+  int colorlabel_index = luaL_checkoption(L,-2,NULL,dt_colorlabels_name);
   if(lua_toboolean(L,-1))   // no testing of type so we can benefit from all types of values
   {
-    dt_colorlabels_set_label(imgid,lua_tointeger(L,-2));
+    dt_colorlabels_set_label(imgid,colorlabel_index);
   }
   else
   {
-    dt_colorlabels_remove_label(imgid,lua_tointeger(L,-2));
+    dt_colorlabels_remove_label(imgid,colorlabel_index);
   }
   return 0;
 }
