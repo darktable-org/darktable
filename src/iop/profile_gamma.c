@@ -96,6 +96,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     in += ch;
     out += ch;
   }
+
+  if(piece->pipe->mask_display)
+    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 }
 
 void init(dt_iop_module_t *module)
