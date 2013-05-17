@@ -64,6 +64,41 @@ void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
   to_char_num(L,type_id,c_out,index,DT_MAX_PATH_LEN);
 }
 
+int dt_lua_autotype_inext(lua_State *L)
+{
+  luaL_getmetafield(L,-2,"__len");
+  lua_pushvalue(L,-3);
+  lua_call(L,1,1);
+  int length = lua_tonumber(L,-1);
+  lua_pop(L,1);
+  int key;
+  if(length == 0) {
+    lua_pop(L,1);
+    lua_pushnil(L);
+    return 1;
+  }else if(lua_isnil(L,-1)) {
+    key = 1;
+    lua_pop(L,1);
+    lua_pushnumber(L,key);
+    lua_pushnumber(L,key);
+    lua_gettable(L,-3);
+    return 2;
+  } else if(luaL_checknumber(L,-1) < length) {
+    key = lua_tonumber(L,-1) +1;
+    lua_pop(L,1);
+    lua_pushnumber(L,key);
+    lua_pushnumber(L,key);
+    lua_gettable(L,-3);
+    return 2;
+  } else  {
+    // we reached the end of ipairs
+    lua_pop(L,1);
+    lua_pushnil(L);
+    return 1;
+  }
+}
+
+
 int dt_lua_autotype_next(lua_State *L)
 {
   if(luaL_getmetafield(L,-2,"__len") )
@@ -149,6 +184,14 @@ int dt_lua_autotype_next(lua_State *L)
 }
 
 
+
+int dt_lua_autotype_ipairs(lua_State *L)
+{
+  luaL_getmetafield(L,-1,"__inext");
+  lua_pushvalue(L,-2);
+  lua_pushnil(L); // index set to null for reset
+  return 3;
+}
 
 int dt_lua_autotype_pairs(lua_State *L)
 {
@@ -291,6 +334,12 @@ void dt_lua_register_type_callback_number_internal(lua_State* L,const char* type
     lua_pushcfunction(L,length);
     lua_setfield(L,-2,"__len");
   }
+  lua_pushcfunction(L,dt_lua_autotype_ipairs);
+  lua_setfield(L,-2,"__ipairs");
+
+  lua_pushcfunction(L,dt_lua_autotype_inext);
+  lua_setfield(L,-2,"__inext");
+
 }
 
 void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
