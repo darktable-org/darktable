@@ -29,40 +29,37 @@ local function header(object,indent,name,obj_expand_mode)
 	return indent..name.." ("..obj_type..complement..")"
 end
 
-local function expand_mode(object,indent,name,known,ancestors)
-	local obj_expand_mode = type(object)
-	if obj_expand_mod == "nil" then return nil end
-	if known[object] then
-		return "known"
+local function key(object) 
+	local user_type = get_userdata_type(object);
+	if not user_type then
+		return object
 	end
-	return obj_expand_mode
+	if user_type == "dt_lua_image_t" then
+		return "dt_lua_image_t"..object.id
+	end
+	return object
 end
-
 local function introspect_metatable(object,indent,name,known,ancestors)
 	if not M.debug then return "" end
 	if name == nil then name = "(unknown)" end
 	local metatable = getmetatable(object);
 	if metatable ==  nil then return "" end
 	local result = indent..name..".metatable"
-	if known[metatable] then
-		table.insert(ancestors,name)
-		result = result..introspect_body(metatable,indent..indent_string,"metatable","known",known,ancestors)
-		table.remove(ancestors);
-	else
-		table.insert(ancestors,name)
-		result = result..introspect_body(metatable,indent..indent_string,"metatable","metatable",known,ancestors)
-		table.remove(ancestors);
-	end
+	table.insert(ancestors,name)
+	result = result..introspect_body(metatable,indent..indent_string,"metatable",known,ancestors)
+	table.remove(ancestors);
 	return result
 end
 
 
-introspect_body = function (object,indent,name,obj_expand_mode,known,ancestors)
+introspect_body = function (object,indent,name,known,ancestors)
 	if name == nil then name = "(unknown)" end
 	local result = ""
 	if #indent > 10*#indent_string then
 		return "max depth\n"
 	end
+	local obj_expand_mode = type(object)
+	-- simple types
 	if obj_expand_mode == "nil" then
 		return "\n"
 	elseif obj_expand_mode == "number" then
@@ -71,8 +68,13 @@ introspect_body = function (object,indent,name,obj_expand_mode,known,ancestors)
 		return " : \""..object.."\"\n"
 	elseif obj_expand_mode == "boolean" then
 		return  " : "..tostring(object).."\n"
-	elseif obj_expand_mode == "table" then
-		known[object]= table.concat(ancestors,".").."."..name;
+	end
+	-- complex types
+	if known[key(object)] then
+		return ": "..known[key(object)].."\n";
+	end
+	known[key(object)]= table.concat(ancestors,".").."."..name;
+	if obj_expand_mode == "table" then
 		if next(object) == nil then return " : empty\n" end
 		result = " :\n"
 		for k,v in pairs(object) do
@@ -83,13 +85,10 @@ introspect_body = function (object,indent,name,obj_expand_mode,known,ancestors)
 		result = result..introspect_metatable(object,indent..indent_string,name,known,ancestors)
 		return result;
 	elseif obj_expand_mode == "function" then
-		known[object]= table.concat(ancestors,".").."."..name;
 		return "\n"
 	elseif obj_expand_mode == "thread" then
-		known[object]= table.concat(ancestors,".").."."..name;
 		return "\n"
 	elseif obj_expand_mode == "userdata" then
-		known[object]= table.concat(ancestors,".").."."..name;
 		local metatable = getmetatable(object);
 		if metatable and metatable.__tostring then 
 			result = result.. " : "..tostring(object).."\n"
@@ -105,35 +104,22 @@ introspect_body = function (object,indent,name,obj_expand_mode,known,ancestors)
 		end
 		result = result..introspect_metatable(object,indent..indent_string,name,known,ancestors)
 		return result
-	elseif obj_expand_mode == "metatable" then
-		known[object]= table.concat(ancestors,".").."."..name
-		if next(object) == nil then 
-			return " : empty\n" 
-		end
-		result = " :\n"
-		for k,v in pairs(object) do
-			table.insert(ancestors,name)
-			result = result..introspect_internal(v,indent..indent_string,k,known,ancestors)
-			table.remove(ancestors);
-		end
-		return result;
-
-	elseif obj_expand_mode == "known" then
-		return ": "..known[object].."\n";
 	end
 	error("unknown type of object")
 
 end
 
 introspect_internal = function(object,indent,name,known,ancestors)
-	local obj_expand_mode =  expand_mode(object,indent,name,known,ancestors);
-	local result = header(object,indent,name,obj_expand_mode)
-	return result..introspect_body(object,indent,name,obj_expand_mode,known,ancestors)
+	local result = header(object,indent,name)
+	return result..introspect_body(object,indent,name,known,ancestors)
 end
 
 
 
 function M.dump(object,name) 
+	if name == nil or name == "" then
+		name = "toplevel"
+	end
 	return introspect_internal(object,"",name,{},{})
 end
 
