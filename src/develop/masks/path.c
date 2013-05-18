@@ -395,7 +395,7 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
-  int extra[1000];
+  int extra[10000];
   int extra_count = 0;
 
   for (int ii=nb_corners*3; ii < border_count; ii++)
@@ -931,8 +931,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
   if (!gpt) return 0;
 
   float masks_border;
-  if (form->type & DT_MASKS_CLONE) masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
-  else masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
+  if (form->type & DT_MASKS_CLONE) masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/path_border"),0.5f);
+  else masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"),0.5f);
 
   if (gui->creation && (which == 3 || gui->creation_closing_form))
   {

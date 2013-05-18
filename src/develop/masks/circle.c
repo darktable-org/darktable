@@ -186,8 +186,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
 
     if (form->type & DT_MASKS_CLONE)
     {
-      const float spots_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
-      const float spots_border = dt_conf_get_float("plugins/darkroom/spots/circle_border");
+      const float spots_size = MIN(0.5f,dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+      const float spots_border = MIN(0.5f,dt_conf_get_float("plugins/darkroom/spots/circle_border"));
       circle->radius = MAX(0.01f, spots_size);
       circle->border = MAX(0.005f, spots_border);
       form->source[0] = circle->center[0] + 0.02f;
@@ -195,8 +195,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
     }
     else
     {
-      const float circle_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
-      const float circle_border = dt_conf_get_float("plugins/darkroom/masks/circle/border");
+      const float circle_size = MIN(0.5f,dt_conf_get_float("plugins/darkroom/masks/circle/size"));
+      const float circle_border = MIN(0.5f,dt_conf_get_float("plugins/darkroom/masks/circle/border"));
       circle->radius = MAX(0.01f, circle_size);
       circle->border = MAX(0.005f, circle_border);
       // not used for masks
