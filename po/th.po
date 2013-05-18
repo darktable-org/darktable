@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-15 23:44-0400\n"
-"PO-Revision-Date: 2013-05-15 23:33-0500\n"
+"POT-Creation-Date: 2013-05-18 03:09-0400\n"
+"PO-Revision-Date: 2013-05-18 03:03-0500\n"
 "Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
@@ -176,6 +176,7 @@ msgid "maximum height of image drawing area"
 msgstr "ความสูงของพื้นที่วาดภาพ"
 
 #: ../build/src/preferences_gen.h:1268
+#, fuzzy
 msgid ""
 "maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -353,6 +354,8 @@ msgid ""
 "activated (default for new images). switch this to off if you can accept "
 "display banding and prefer to have a slightly faster processing speed."
 msgstr ""
+"การแสดงภาพในส่วนกลางจะถูก dither ถ้าเลือกตัวเลือกนี้และ โมดูล dithering เป็ดใช้งาน. "
+"ถ้าต้องการแสดงผลแบบปรกติหรือต้องการให้มีความเร็วในการประมวลเร็วขึ้นเล็กน้อยให้ ปิดตัวเลือกนี้"
 
 #: ../build/src/preferences_gen.h:1622
 msgid "demosaicing for zoomed out darkroom mode"
@@ -568,7 +571,7 @@ msgstr "ไม่สามารถหา '% s' สไตล์เพื่อ�
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
-msgstr ""
+msgstr "Poissonian แบบทั่วไป"
 
 #: ../src/common/ratings.c:45
 #, c-format
@@ -689,7 +692,7 @@ msgstr "ถ่ายภาพคร่อมใช้งานได้เฉพ
 #: ../src/control/jobs/control_jobs.c:150
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr ""
+msgstr "ไม่สามารถหาบัฟเฟอร์จากภาพดิบ '%s' ได้"
 
 #: ../src/control/jobs/control_jobs.c:169
 msgid "images have to be of same size!"
@@ -735,7 +738,7 @@ msgstr "ไม่สามารถตีความไฟล์ gps ได้"
 #: ../src/control/jobs/control_jobs.c:521
 #, c-format
 msgid "applied matched gpx location onto %d image(s)"
-msgstr ""
+msgstr "ใช้การหาตำเหน่งแบบ GPX บน %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:672
 #, c-format
@@ -856,89 +859,89 @@ msgstr "ไม่สามารถใช้งานภาพ %s ได้ใ�
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
+msgstr[1] "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:1096
 #, c-format
 msgid "added time offset to %d image(s)"
-msgstr ""
+msgstr "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
 
 #: ../src/develop/blend_gui.c:788
 msgid "sliders for L channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง L"
 
 #: ../src/develop/blend_gui.c:788
 msgid "sliders for a channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง a"
 
 #: ../src/develop/blend_gui.c:788
 msgid "sliders for b channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง b"
 
 #: ../src/develop/blend_gui.c:788
 msgid "sliders for chroma channel (of LCh)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง ความเข้มของสีจาก LCH"
 
 #: ../src/develop/blend_gui.c:788
 msgid "sliders for hue channel (of LCh)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง สีจาก LCH"
 
 #: ../src/develop/blend_gui.c:789
 msgid " g "
-msgstr ""
+msgstr "g"
 
 #: ../src/develop/blend_gui.c:789
 msgid " R "
-msgstr ""
+msgstr "R"
 
 #: ../src/develop/blend_gui.c:789
 msgid " G "
-msgstr ""
+msgstr "G"
 
 #: ../src/develop/blend_gui.c:789
 msgid " B "
-msgstr ""
+msgstr "B"
 
 #: ../src/develop/blend_gui.c:789
 msgid " H "
-msgstr ""
+msgstr "H"
 
 #: ../src/develop/blend_gui.c:789
 msgid " S "
-msgstr ""
+msgstr "S"
 
 #: ../src/develop/blend_gui.c:789
 msgid " L "
-msgstr ""
+msgstr "L"
 
 #: ../src/develop/blend_gui.c:790
 msgid "sliders for gray value"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับค่าสีเทา"
 
 #: ../src/develop/blend_gui.c:790
 msgid "sliders for red channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีแดง"
 
 #: ../src/develop/blend_gui.c:790
 msgid "sliders for green channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีเขียว"
 
 #: ../src/develop/blend_gui.c:790
 msgid "sliders for blue channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีน้ำเงิน"
 
 #: ../src/develop/blend_gui.c:791
 msgid "sliders for hue channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีของ HSL"
 
 #: ../src/develop/blend_gui.c:791
 msgid "sliders for chroma channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องความเข้มของสีของ HSL"
 
 #: ../src/develop/blend_gui.c:791
 msgid "sliders for value channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับค่าช่องจาก HSL"
 
 #: ../src/develop/blend_gui.c:794
 msgid ""
@@ -959,27 +962,27 @@ msgstr ""
 #: ../src/develop/blend_gui.c:915 ../src/iop/colorzones.c:1029
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
-msgstr ""
+msgstr "เลือกสี GUI จากภาพ"
 
 #: ../src/develop/blend_gui.c:918
 msgid "reset blend mask settings"
-msgstr ""
+msgstr "ตั้งค่าหน้ากากผสมผสานใหม่"
 
 #: ../src/develop/blend_gui.c:921
 msgid "invert all channel's polarities"
-msgstr ""
+msgstr "พลิกกลับขั้วของช่องทางทั้งหมด"
 
 #: ../src/develop/blend_gui.c:932 ../src/develop/blend_gui.c:935
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr ""
+msgstr "สลับขั้ว, จะเห็นที่ดีที่สุดให้เปิดใช้งาน 'หน้ากากจอแสดงผล'"
 
 #: ../src/develop/blend_gui.c:944
 msgid "output"
-msgstr ""
+msgstr "เอาท์พุต"
 
 #: ../src/develop/blend_gui.c:955
 msgid "input"
-msgstr ""
+msgstr "อินพุต"
 
 #: ../src/develop/blend_gui.c:966 ../src/develop/blend_gui.c:967
 msgid "double click to reset"
@@ -988,59 +991,62 @@ msgstr "ดับเบิ้ลคลิก เพื่อกลับค่�
 #: ../src/develop/blend_gui.c:1030 ../src/develop/blend_gui.c:1068
 #: ../src/develop/masks/masks.c:958
 msgid "no mask used"
-msgstr ""
+msgstr "ไม่ใช้หน้ากาก"
 
 #: ../src/develop/blend_gui.c:1067 ../src/develop/blend_gui.c:1288
 msgid "drawn mask"
-msgstr ""
+msgstr "หน้ากากที่วาดไว้"
 
 #: ../src/develop/blend_gui.c:1076
 msgid "show and edit mask elements"
-msgstr ""
+msgstr "แสดงและแก้ไของค์ประกอบหน้ากาก"
 
 #: ../src/develop/blend_gui.c:1083 ../src/iop/spots.c:539
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
+#, fuzzy
 msgid "add circular shape"
-msgstr ""
+msgstr "เพิ่มโค้ง"
 
 #: ../src/develop/blend_gui.c:1090 ../src/iop/spots.c:532
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
 msgid "add curve shape"
-msgstr ""
+msgstr "เพิ่มโค้ง"
 
 #: ../src/develop/blend_gui.c:1278
 msgid "blend"
-msgstr ""
+msgstr "การผสมผสาน"
 
 #: ../src/develop/blend_gui.c:1283
 msgid "uniformly"
-msgstr ""
+msgstr "เหมือนๆกัน"
 
 #: ../src/develop/blend_gui.c:1294
 msgid "parametric mask"
-msgstr ""
+msgstr "หน้ากากของตัวแปร"
 
 #: ../src/develop/blend_gui.c:1300
 msgid "drawn & parametric mask"
-msgstr ""
+msgstr "หน้ากากของตัวแปรและการวาด"
 
 #: ../src/develop/blend_gui.c:1305
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
 msgstr ""
+"เปิดใช้งานการผสม: อย่างเท่าเทียมกัน, รวมกับหน้ากากของการวาด, รวมกับหน้ากากของตัวแปร, "
+"หรือรวมทั้งสองอย่าง"
 
 #: ../src/develop/blend_gui.c:1310
 msgid "blend mode"
-msgstr ""
+msgstr "โหมดผสมผสาน"
 
 #: ../src/develop/blend_gui.c:1312 ../src/libs/live_view.c:377
 msgid "normal"
-msgstr ""
+msgstr "ปกติ"
 
 #: ../src/develop/blend_gui.c:1315
 msgid "normal bounded"
-msgstr ""
+msgstr "ขอบเขตปกติ"
 
 #: ../src/develop/blend_gui.c:1318 ../src/libs/live_view.c:386
 msgid "lighten"
@@ -1048,15 +1054,15 @@ msgstr "เบาลง"
 
 #: ../src/develop/blend_gui.c:1321 ../src/libs/live_view.c:385
 msgid "darken"
-msgstr ""
+msgstr "ดำลง"
 
 #: ../src/develop/blend_gui.c:1324 ../src/libs/live_view.c:382
 msgid "multiply"
-msgstr ""
+msgstr "คูณ"
 
 #: ../src/develop/blend_gui.c:1327
 msgid "average"
-msgstr ""
+msgstr "เฉลี่ย"
 
 #: ../src/develop/blend_gui.c:1330
 msgid "addition"
@@ -1064,11 +1070,11 @@ msgstr "รายละเอียดเพิ่มเติม"
 
 #: ../src/develop/blend_gui.c:1333
 msgid "subtract"
-msgstr ""
+msgstr "ลบออก"
 
 #: ../src/develop/blend_gui.c:1336 ../src/libs/live_view.c:391
 msgid "difference"
-msgstr ""
+msgstr "ต่าง"
 
 #: ../src/develop/blend_gui.c:1339 ../src/libs/live_view.c:383
 msgid "screen"
@@ -1077,11 +1083,11 @@ msgstr "หน้าจอ"
 #: ../src/develop/blend_gui.c:1342 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
-msgstr ""
+msgstr "ซ้อนทับ"
 
 #: ../src/develop/blend_gui.c:1345
 msgid "softlight"
-msgstr ""
+msgstr "แสงนุ่ม"
 
 #: ../src/develop/blend_gui.c:1348
 msgid "hardlight"
@@ -1089,11 +1095,11 @@ msgstr "แสงแรง"
 
 #: ../src/develop/blend_gui.c:1351
 msgid "vividlight"
-msgstr ""
+msgstr "แสงสดใส"
 
 #: ../src/develop/blend_gui.c:1354
 msgid "linearlight"
-msgstr ""
+msgstr "แสงกระจาย"
 
 #: ../src/develop/blend_gui.c:1357
 msgid "pinlight"
@@ -1103,12 +1109,12 @@ msgstr ""
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:1018
 #: ../src/iop/colorzones.c:1056
 msgid "lightness"
-msgstr ""
+msgstr "ความสว่าง"
 
 #: ../src/develop/blend_gui.c:1363 ../src/iop/atrous.c:1419
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
-msgstr ""
+msgstr "ความเข้มของสี"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/develop/blend_gui.c:1366 ../src/iop/channelmixer.c:437
@@ -1116,7 +1122,7 @@ msgstr ""
 #: ../src/iop/colorzones.c:1054 ../src/iop/graduatednd.c:1049
 #: ../src/iop/splittoning.c:542
 msgid "hue"
-msgstr ""
+msgstr "สี"
 
 #: ../src/develop/blend_gui.c:1369
 msgid "color"
@@ -1124,27 +1130,27 @@ msgstr "สี"
 
 #: ../src/develop/blend_gui.c:1372
 msgid "coloradjustment"
-msgstr ""
+msgstr "การปรับสี"
 
 #: ../src/develop/blend_gui.c:1378
 msgid "choose blending mode"
-msgstr ""
+msgstr "เลือกโหมดการผสมผสาน"
 
 #: ../src/develop/blend_gui.c:1386
 msgid "difference (deprecated)"
-msgstr ""
+msgstr "ความแตกต่าง (จะเลิกใช้แล้ว)"
 
 #: ../src/develop/blend_gui.c:1391
 msgid "inverse (deprecated)"
-msgstr ""
+msgstr "ย้อนกลับ (จะเเลิกใช้แล้ว)"
 
 #: ../src/develop/blend_gui.c:1396
 msgid "normal (deprecated)"
-msgstr ""
+msgstr "ปกติ (จะเลิกใช้แล้ว)"
 
 #: ../src/develop/blend_gui.c:1401
 msgid "unbounded (deprecated)"
-msgstr ""
+msgstr "ไม่กำหนดขอบเขต (จะเลิกใช้แล้ว)"
 
 #: ../src/develop/blend_gui.c:1407 ../src/iop/watermark.c:1049
 msgid "opacity"
@@ -1152,19 +1158,19 @@ msgstr "ความทึบ"
 
 #: ../src/develop/blend_gui.c:1410
 msgid "set the opacity of the blending"
-msgstr ""
+msgstr "ตั้งความทึบของการผสม"
 
 #: ../src/develop/blend_gui.c:1416
 msgid "combine masks"
-msgstr ""
+msgstr "รวมหน้ากาก"
 
 #: ../src/develop/blend_gui.c:1418
 msgid "exclusive"
-msgstr ""
+msgstr "เป็นพิเศษ"
 
 #: ../src/develop/blend_gui.c:1421
 msgid "inclusive"
-msgstr ""
+msgstr "รวมทั้ง"
 
 #: ../src/develop/blend_gui.c:1424
 msgid "exclusive & inverted"
@@ -7507,6 +7513,18 @@ msgstr "รูปร่างถูกสร้างขึ้น"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "ตัวเลือก lua"
+
+#, fuzzy
+#~ msgid "add circle"
+#~ msgstr "เพิ่มวงกลม"
+
+#, fuzzy
+#~ msgid "duplicate instance"
+#~ msgstr "คัดลอกสไตล์"
+
+#, fuzzy
+#~ msgid "group #%d"
+#~ msgstr "กลุ่ม"
 
 #~ msgid " (needs a restart) "
 #~ msgstr "(ต้องเริ่มโปรแกรมใหม่)"
