@@ -248,24 +248,21 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, int *points, int 
 
 /** fill the gap between 2 points with an arc of circle */
 /** this function is here because we can have gap in border, esp. if the corner is very sharp */
-static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *path, int *pos_path, float *border, int *pos_border)
+static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *path, int *pos_path, float *border, int *pos_border, gboolean clockwise)
 {
   //we want to find the start and end angles
   double a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
   double a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
   if (a1==a2) return;
 
-  //if a1 and a2 are not the same sign, we have to be sure that we turn in the correct direction
-  if (a1*a2 < 0)
+  //we have to be sure that we turn in the correct direction
+  if (a2<a1 && clockwise)
   {
-    double a3 = atan2(bmin2[1]-cmax[1],bmin2[0]-cmax[0]);
-    double d = a1-a3;
-    if ((a2-a1)*d<0)
-    {
-      //changer le signe du négatif
-      if (a1<0) a1 += 2*M_PI;
-      else a2 += 2*M_PI;
-    }
+    a2 += 2*M_PI;
+  }
+  if (a2>a1 && !clockwise)
+  {
+    a1 += 2*M_PI;
   }
 
   //we dertermine start and end radius too
@@ -595,7 +592,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       if (bmax[0]-rb[0] > 1 || bmax[0]-rb[0] < -1 || bmax[1]-rb[1] > 1 || bmax[1]-rb[1] < -1)
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
-        _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb);
+        _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb,_path_is_clockwise(form));
       }
     }
   }
