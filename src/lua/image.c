@@ -25,6 +25,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
+#include "common/grouping.h"
 #include "metadata_gen.h"
 
 /***********************************************************************
@@ -85,6 +86,7 @@ typedef enum
   TITLE,
   DESCRIPTION,
   RIGHTS,
+  GROUP_LEADER,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -101,6 +103,7 @@ const char *image_fields_name[] =
   "title",
   "description",
   "rights",
+  "group_leader",
   NULL
 };
 
@@ -117,42 +120,42 @@ static int image_index(lua_State *L)
   switch(luaL_checkoption(L,-1,NULL,image_fields_name))
   {
     case PATH:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select folder from images, film_rolls where "
-                                  "images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      else
-      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+            "select folder from images, film_rolls where "
+            "images.film_id = film_rolls.id and images.id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        else
+        {
+          sqlite3_finalize(stmt);
+          releasereadimage(L,my_image);
+          return luaL_error(L,"should never happen");
+        }
         sqlite3_finalize(stmt);
-        releasereadimage(L,my_image);
-        return luaL_error(L,"should never happen");
+        break;
       }
-      sqlite3_finalize(stmt);
-      break;
-    }
     case DUP_INDEX:
-    {
-      // get duplicate suffix
-      int version = 0;
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select count(id) from images where filename in "
-                                  "(select filename from images where id = ?1) and film_id in "
-                                  "(select film_id from images where id = ?1) and id < ?1",
-                                  -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-        version = sqlite3_column_int(stmt, 0);
-      sqlite3_finalize(stmt);
-      lua_pushinteger(L,version);
-      break;
-    }
+      {
+        // get duplicate suffix
+        int version = 0;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+            "select count(id) from images where filename in "
+            "(select filename from images where id = ?1) and film_id in "
+            "(select film_id from images where id = ?1) and id < ?1",
+            -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          version = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+        lua_pushinteger(L,version);
+        break;
+      }
     case IS_LDR:
       lua_pushboolean(L,dt_image_is_ldr(my_image));
       break;
@@ -163,107 +166,112 @@ static int image_index(lua_State *L)
       lua_pushboolean(L,dt_image_is_raw(my_image));
       break;
     case RATING:
-    {
-      int score = my_image->flags & 0x7;
-      if(score >6) score=5;
-      if(score ==6) score=-1;
+      {
+        int score = my_image->flags & 0x7;
+        if(score >6) score=5;
+        if(score ==6) score=-1;
 
-      lua_pushinteger(L,score);
-      break;
-    }
+        lua_pushinteger(L,score);
+        break;
+      }
     case ID:
       lua_pushinteger(L,my_image->id);
       break;
     case CREATOR:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
       {
-        lua_pushstring(L,"");
-      }
-      else
-      {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      sqlite3_finalize(stmt);
-      break;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_CREATOR);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lua_pushstring(L,"");
+        }
+        else
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-    }
+      }
     case PUBLISHER:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
       {
-        lua_pushstring(L,"");
-      }
-      else
-      {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      sqlite3_finalize(stmt);
-      break;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_PUBLISHER);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lua_pushstring(L,"");
+        }
+        else
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-    }
+      }
     case TITLE:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
       {
-        lua_pushstring(L,"");
-      }
-      else
-      {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      sqlite3_finalize(stmt);
-      break;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_TITLE);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lua_pushstring(L,"");
+        }
+        else
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-    }
+      }
     case DESCRIPTION:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
       {
-        lua_pushstring(L,"");
-      }
-      else
-      {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      sqlite3_finalize(stmt);
-      break;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_DESCRIPTION);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lua_pushstring(L,"");
+        }
+        else
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-    }
+      }
     case RIGHTS:
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
       {
-        lua_pushstring(L,"");
-      }
-      else
-      {
-        lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
-      }
-      sqlite3_finalize(stmt);
-      break;
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),"select value from meta_data where id = ?1 and key = ?2", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, my_image->id);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_METADATA_XMP_DC_RIGHTS);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          lua_pushstring(L,"");
+        }
+        else
+        {
+          lua_pushstring(L,(char *)sqlite3_column_text(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+        break;
 
-    }
+      }
+    case GROUP_LEADER:
+      {
+        luaA_push(L,dt_lua_image_t,&(my_image->group_id));
+        break;
+      }
     default:
       releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -294,23 +302,23 @@ static int image_newindex(lua_State *L)
   switch(luaL_checkoption(L,-2,NULL,image_fields_name))
   {
     case RATING:
-    {
-      int my_score = luaL_checkinteger(L,-1);
-      if(my_score > 5)
       {
-        releasewriteimage(L,my_image);
-        return luaL_error(L,"rating too high : %d",my_score);
+        int my_score = luaL_checkinteger(L,-1);
+        if(my_score > 5)
+        {
+          releasewriteimage(L,my_image);
+          return luaL_error(L,"rating too high : %d",my_score);
+        }
+        if(my_score == -1) my_score = 6;
+        if(my_score < -1)
+        {
+          releasewriteimage(L,my_image);
+          return luaL_error(L,"rating too low : %d",my_score);
+        }
+        my_image->flags &= ~0x7;
+        my_image->flags |= my_score;
+        break;
       }
-      if(my_score == -1) my_score = 6;
-      if(my_score < -1)
-      {
-        releasewriteimage(L,my_image);
-        return luaL_error(L,"rating too low : %d",my_score);
-      }
-      my_image->flags &= ~0x7;
-      my_image->flags |= my_score;
-      break;
-    }
 
     case CREATOR:
       dt_metadata_set(my_image->id,"Xmp.dc.creator",luaL_checkstring(L,-1));
@@ -385,6 +393,55 @@ static int image_tostring(lua_State *L)
   releasereadimage(L,my_image);
   return 1;
 }
+
+
+int group_with(lua_State *L) {
+  dt_lua_image_t first_image;
+  luaA_to(L,dt_lua_image_t,&first_image,1);
+  if(lua_isnoneornil(L,2)) {
+    dt_grouping_remove_from_group(first_image);
+    return 0;
+  }
+  dt_lua_image_t second_image;
+  luaA_to(L,dt_lua_image_t,&second_image,2);
+
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, second_image);
+  int group_id = cimg->group_id;
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+
+  dt_grouping_add_to_group(group_id,first_image);
+  return 0;
+}
+
+int make_group_leader(lua_State *L) {
+  dt_lua_image_t first_image;
+  luaA_to(L,dt_lua_image_t,&first_image,1);
+  dt_grouping_change_representative(first_image);
+  return 0;
+}
+
+
+int get_group(lua_State *L) {
+  dt_lua_image_t first_image;
+  luaA_to(L,dt_lua_image_t,&first_image,1);
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, first_image);
+  int group_id = cimg->group_id;
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from images where group_id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, group_id);
+  lua_newtable(L);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    luaA_push(L,dt_lua_image_t,&imgid);
+    luaL_ref(L,-2);
+  }
+  luaA_push(L,dt_lua_image_t,&group_id);
+  lua_setfield(L,-2,"leader");
+  return 1;
+}
+
 ///////////////
 // toplevel and common
 ///////////////
@@ -412,9 +469,15 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id",NULL) ; // make these fields read-only
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader",NULL) ; // make these fields read-only
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
+  lua_pushcfunction(L,group_with);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"group_with");
+  lua_pushcfunction(L,make_group_leader);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"make_group_leader");
+  lua_pushcfunction(L,get_group);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"get_group_members");
   luaL_getmetatable(L,"dt_lua_image_t");
   lua_pushcfunction(L,image_eq);
   lua_setfield(L,-2,"__eq");
