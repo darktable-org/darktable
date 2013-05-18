@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-15 23:57-0400\n"
-"PO-Revision-Date: 2013-05-15 23:33-0500\n"
+"POT-Creation-Date: 2013-05-18 03:15-0400\n"
+"PO-Revision-Date: 2013-05-18 03:03-0500\n"
 "Last-Translator: Anocha Yimsiriwattana <tawtao@gmail.com>\n"
 "Language-Team: American English <>\n"
 "Language: \n"
@@ -17,48 +17,49 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: ../build/src/preferences_gen.h:877
+#: ../build/src/preferences_gen.h:927
 msgid "gui options"
 msgstr "ตัวเลือกส่วนติดต่อผู้ใช้"
 
-#: ../build/src/preferences_gen.h:880
+#: ../build/src/preferences_gen.h:930
 msgid "width of the side panels in pixels"
 msgstr "ขนาดของพาเนลด้านข้างเป็นพิกเซล"
 
-#: ../build/src/preferences_gen.h:894 ../build/src/preferences_gen.h:1013
-#: ../build/src/preferences_gen.h:1148 ../build/src/preferences_gen.h:1191
-#: ../build/src/preferences_gen.h:1215 ../build/src/preferences_gen.h:1289
-#: ../build/src/preferences_gen.h:1376 ../build/src/preferences_gen.h:1400
-#: ../build/src/preferences_gen.h:1425
+#: ../build/src/preferences_gen.h:944 ../build/src/preferences_gen.h:1063
+#: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1241
+#: ../build/src/preferences_gen.h:1265 ../build/src/preferences_gen.h:1339
+#: ../build/src/preferences_gen.h:1464 ../build/src/preferences_gen.h:1488
+#: ../build/src/preferences_gen.h:1513
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%d'"
 
-#: ../build/src/preferences_gen.h:897 ../build/src/preferences_gen.h:1355
+#: ../build/src/preferences_gen.h:947 ../build/src/preferences_gen.h:1443
 msgid "(needs a restart)"
 msgstr "(ต้องเริ่มโปรแกรมใหม่)"
 
-#: ../build/src/preferences_gen.h:904
+#: ../build/src/preferences_gen.h:954
 msgid "don't use embedded preview jpeg but half-size raw"
 msgstr "ไม่ใช้งานแสดงตัวอย่างเอ็มเบ็ดเด็ด jpeg แต่ใช้ภาพขนาดครึ่งหนึ่งของ raw"
 
-#: ../build/src/preferences_gen.h:913 ../build/src/preferences_gen.h:932
-#: ../build/src/preferences_gen.h:951 ../build/src/preferences_gen.h:970
-#: ../build/src/preferences_gen.h:989 ../build/src/preferences_gen.h:1032
-#: ../build/src/preferences_gen.h:1051 ../build/src/preferences_gen.h:1069
-#: ../build/src/preferences_gen.h:1087 ../build/src/preferences_gen.h:1105
-#: ../build/src/preferences_gen.h:1123 ../build/src/preferences_gen.h:1167
-#: ../build/src/preferences_gen.h:1247 ../build/src/preferences_gen.h:1266
-#: ../build/src/preferences_gen.h:1308 ../build/src/preferences_gen.h:1444
-#: ../build/src/preferences_gen.h:1463 ../build/src/preferences_gen.h:1486
-#: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1524
-#: ../build/src/preferences_gen.h:1556 ../build/src/preferences_gen.h:1591
-#: ../build/src/preferences_gen.h:1623
+#: ../build/src/preferences_gen.h:963 ../build/src/preferences_gen.h:982
+#: ../build/src/preferences_gen.h:1001 ../build/src/preferences_gen.h:1020
+#: ../build/src/preferences_gen.h:1039 ../build/src/preferences_gen.h:1082
+#: ../build/src/preferences_gen.h:1101 ../build/src/preferences_gen.h:1119
+#: ../build/src/preferences_gen.h:1137 ../build/src/preferences_gen.h:1155
+#: ../build/src/preferences_gen.h:1173 ../build/src/preferences_gen.h:1217
+#: ../build/src/preferences_gen.h:1297 ../build/src/preferences_gen.h:1316
+#: ../build/src/preferences_gen.h:1358 ../build/src/preferences_gen.h:1377
+#: ../build/src/preferences_gen.h:1396 ../build/src/preferences_gen.h:1532
+#: ../build/src/preferences_gen.h:1551 ../build/src/preferences_gen.h:1574
+#: ../build/src/preferences_gen.h:1593 ../build/src/preferences_gen.h:1612
+#: ../build/src/preferences_gen.h:1644 ../build/src/preferences_gen.h:1679
+#: ../build/src/preferences_gen.h:1711
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "ดับเบิ้ลคลิกเพื่อกลับสู่ `%s'"
 
-#: ../build/src/preferences_gen.h:916
+#: ../build/src/preferences_gen.h:966
 msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -66,53 +67,53 @@ msgstr ""
 "ถ้าต้องการประมวลผลข้อมูลดิบโดยตรงโดยไม่ใช้ jpg ที่ฝังมากับไฟล์ข้อมูลดิบ ให้เลือกตัวเลือกนี้\n"
 "การเลือกตัวเลือกนี้จะทำให้ทำงานช้าแต่จะได้ภาพการจัดการขนาดเล็กที่เป็นสี"
 
-#: ../build/src/preferences_gen.h:923
+#: ../build/src/preferences_gen.h:973
 msgid "ask before removing images from database"
 msgstr "ถามก่อนเอารูปออกจากฐานข้อมูล"
 
-#: ../build/src/preferences_gen.h:935
+#: ../build/src/preferences_gen.h:985
 msgid "always ask the user before any image is removed from db."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกเอาออกจากฐานข้อมูล"
 
-#: ../build/src/preferences_gen.h:942
+#: ../build/src/preferences_gen.h:992
 msgid "ask before erasing images from disk"
 msgstr "ถามก่อนเอารูปออกจากฮาร์ดดิสก์ไดรฟ์"
 
-#: ../build/src/preferences_gen.h:954
+#: ../build/src/preferences_gen.h:1004
 msgid "always ask the user before any image file is deleted."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกลบ"
 
-#: ../build/src/preferences_gen.h:961
+#: ../build/src/preferences_gen.h:1011
 msgid "ask before moving images from film roll folder"
 msgstr "ถามก่อนเอารูปออกโฟลเดอร์ฟิล์มม้วน"
 
-#: ../build/src/preferences_gen.h:973
+#: ../build/src/preferences_gen.h:1023
 msgid "always ask the user before any image file is moved."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกย้าย"
 
-#: ../build/src/preferences_gen.h:980
+#: ../build/src/preferences_gen.h:1030
 msgid "ask before copying images to new film roll folder"
 msgstr "ถามก่อนที่จะคัดลอกภาพไปยังโฟลเดอร์ฟิล์มม้วนใหม่"
 
-#: ../build/src/preferences_gen.h:992
+#: ../build/src/preferences_gen.h:1042
 msgid "always ask the user before any image file is copied."
 msgstr "ถามผู้ใช้ก่อนเสมอ เมื่อรูปจะถูกคัดลอก"
 
-#: ../build/src/preferences_gen.h:999
+#: ../build/src/preferences_gen.h:1049
 msgid "number of folder levels to show in lists"
 msgstr "จำนวนระดับในโฟลเดอร์ จะที่จะแสดงในรายการ"
 
-#: ../build/src/preferences_gen.h:1016
+#: ../build/src/preferences_gen.h:1066
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr "จำนวนระดับของโฟลเดอร์ที่แสดงในชื่อม้วนฟิล์ม, เริ่มจากขวา"
 
-#: ../build/src/preferences_gen.h:1023
+#: ../build/src/preferences_gen.h:1073
 msgid "ignore jpeg images when importing film rolls"
 msgstr "ไม่นำภาพ jpeg เข้าม้วนฟิล์ม"
 
-#: ../build/src/preferences_gen.h:1035
+#: ../build/src/preferences_gen.h:1085
 msgid ""
 "when having raw+jpeg images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all jpegs found."
@@ -120,47 +121,47 @@ msgstr ""
 "ถ้าเลือกต้วเลือกนี้ จะทำให้โปรแกรมจะไม่นำเข้าภาพ jpg ในกรณีที่มีภาพดิบ และ jpg "
 "ที่อยู่ในไดเรกทอรีเดียวกัน "
 
-#: ../build/src/preferences_gen.h:1042
+#: ../build/src/preferences_gen.h:1092
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "รวมรูปจากไดเร็คทอรีย์ย่อย เมื่อนำเข้าม้วนฟิล์ม"
 
-#: ../build/src/preferences_gen.h:1060
+#: ../build/src/preferences_gen.h:1110
 msgid "creator to be applied when importing"
 msgstr "ผู้สร้างจะถูกนำมาใช้เมื่อมีการนำเข้า"
 
-#: ../build/src/preferences_gen.h:1078
+#: ../build/src/preferences_gen.h:1128
 msgid "publisher to be applied when importing"
 msgstr "ผู้ตีพิมพ์จะนำมาใช้เมื่อมีการนำเข้า"
 
-#: ../build/src/preferences_gen.h:1096
+#: ../build/src/preferences_gen.h:1146
 msgid "rights to be applied when importing"
 msgstr "สิทธิที่จะใช้เมื่อมีการนำเข้า"
 
-#: ../build/src/preferences_gen.h:1114
+#: ../build/src/preferences_gen.h:1164
 msgid "comma separated tags to be applied when importing"
 msgstr "แท็กแยกโดย ',' เพื่อจะนำมาใช้เมื่อนำเข้า"
 
-#: ../build/src/preferences_gen.h:1132
+#: ../build/src/preferences_gen.h:1182
 msgid "initial import rating"
 msgstr "คะแนนที่จะใช้นำเข้าครั้งแรก"
 
-#: ../build/src/preferences_gen.h:1151
+#: ../build/src/preferences_gen.h:1201
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "กำหนดเรตติ้งเริ่มต้นเมื่อนำเข้าม้วนฟิล์ม"
 
-#: ../build/src/preferences_gen.h:1158
+#: ../build/src/preferences_gen.h:1208
 msgid "enable filmstrip"
 msgstr "เปิดใช้ filmstip"
 
-#: ../build/src/preferences_gen.h:1170
+#: ../build/src/preferences_gen.h:1220
 msgid "enable the filmstrip in darkroom and tethering modes."
 msgstr "เปิดใช้ filmstip ในโหมด darkroom และ โหมด tethering"
 
-#: ../build/src/preferences_gen.h:1177
+#: ../build/src/preferences_gen.h:1227
 msgid "maximum width of image drawing area"
 msgstr "ความกว้างของพื้นที่วาดภาพ"
 
-#: ../build/src/preferences_gen.h:1194
+#: ../build/src/preferences_gen.h:1244
 msgid ""
 "maximum width of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -169,25 +170,25 @@ msgstr ""
 "ความกว้างของพื้นที่วาดภาพในโหมดห้องมืด ปรับให้เข้ากับหน้าจอของคุณ \n"
 "(จำเป็นต้องรีสตาร์ทและจะยกเลิกแคชภาพปัจจุบัน)"
 
-#: ../build/src/preferences_gen.h:1201
+#: ../build/src/preferences_gen.h:1251
 msgid "maximum height of image drawing area"
 msgstr "ความสูงของพื้นที่วาดภาพ"
 
-#: ../build/src/preferences_gen.h:1218
+#: ../build/src/preferences_gen.h:1268
 #, fuzzy
 msgid ""
-"maximum height of the image drawing area in dakroom mode. adjust to your "
+"maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
 "(needs a restart and will invalidate current thumbnail caches)."
 msgstr ""
 "ความสูงของพื้นที่วาดภาพในโหมด dakroom ปรับให้เข้ากับหน้าจอของคุณ \n"
 "(จำเป็นต้องรีสตาร์ทและจะโยกเลิกแคชภาพปัจจุบัน)"
 
-#: ../build/src/preferences_gen.h:1225
+#: ../build/src/preferences_gen.h:1275
 msgid "compression of thumbnail images"
 msgstr "การบีบอัดของภาพขนาดเล็ก"
 
-#: ../build/src/preferences_gen.h:1250
+#: ../build/src/preferences_gen.h:1300
 msgid ""
 "off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high "
 "quality - dxt1, same memory as low quality variant but slower."
@@ -195,15 +196,15 @@ msgstr ""
 "- ปิด ไม่ใช้การบีบอัดในหน่วยความจำ, ใช้ jpg บนดิสก์ มีคุณภาพต่ำ - dxt1 (รวดเร็ว) มีคุณภาพสูง "
 "- dxt1 ใช้หน่วยความจำเช่นเดียวกับตัวเลือกอื่นที่มีคุณภาพต่ำ แต่ช้ากว่า"
 
-#: ../build/src/preferences_gen.h:1257
+#: ../build/src/preferences_gen.h:1307
 msgid "ask before deleting a tag"
 msgstr "ถามก่อนลบแท็ค"
 
-#: ../build/src/preferences_gen.h:1275
+#: ../build/src/preferences_gen.h:1325
 msgid "maximum number of images drawn on map"
 msgstr "จำนวนสูงสุดของภาพวาดบนแผนที่"
 
-#: ../build/src/preferences_gen.h:1292
+#: ../build/src/preferences_gen.h:1342
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
@@ -211,34 +212,50 @@ msgstr ""
 "จำนวนสูงสุดของภาพวาดใส่แท็กตำแหน่ง ที่อยู่บนแผนที่ การเพิ่มตัวเลขนี้จะทำให้การวาดแผนที่ช้าลง "
 "(จำเป็นต้องรีสตาร์ท)"
 
-#: ../build/src/preferences_gen.h:1299
+#: ../build/src/preferences_gen.h:1349
 msgid "pretty print the image location"
 msgstr "แสดง ตำแหน่งของภาพอย่างสวยงาม"
 
-#: ../build/src/preferences_gen.h:1311
+#: ../build/src/preferences_gen.h:1361
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr "แสดงสถานที่ของภาพในโมดูลข้อมูลภาพ ในรูปแบบที่อ่านได้ง่ายขี้น "
 
-#: ../build/src/preferences_gen.h:1334
+#: ../build/src/preferences_gen.h:1368
+msgid "expand a single lighttable module at a time"
+msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด lighttable"
+
+#: ../build/src/preferences_gen.h:1380
+msgid "this option toggles the behavior of shift clicking in lighttable mode"
+msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด lighttable"
+
+#: ../build/src/preferences_gen.h:1387
+msgid "expand a single darkroom module at a time"
+msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด darkroom"
+
+#: ../build/src/preferences_gen.h:1399
+msgid "this option toggles the behavior of shift clicking in darkroom mode"
+msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด darkroom"
+
+#: ../build/src/preferences_gen.h:1422
 msgid "core options"
 msgstr "ตัวเลือกหลัก"
 
-#: ../build/src/preferences_gen.h:1337
+#: ../build/src/preferences_gen.h:1425
 msgid "memory in megabytes to use for mipmap cache"
 msgstr "หน่วยความจำในเมกะไบต์จะใช้สำหรับการแคช mipmap"
 
-#: ../build/src/preferences_gen.h:1352
+#: ../build/src/preferences_gen.h:1440
 #, c-format
 msgid "double click to reset to `%<PRId64>'"
 msgstr "ดับเบิ้ลคลิกเพื่อปรับค่ากลับสู่ `%<PRId64>'"
 
-#: ../build/src/preferences_gen.h:1362
+#: ../build/src/preferences_gen.h:1450
 msgid "number of background threads"
 msgstr "จำนวนความคิดที่ทำงานในเบื้องหลัง"
 
-#: ../build/src/preferences_gen.h:1379
+#: ../build/src/preferences_gen.h:1467
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -248,11 +265,11 @@ msgstr ""
 "จำนวนแคชสูงสุดจะเติบโตเป็นสองเท่าของจำนวนบัฟเฟอร์ ของภาพความละเอียดเต็ม "
 "(จำเป็นต้องเรื่มต้นใหม่)"
 
-#: ../build/src/preferences_gen.h:1386
+#: ../build/src/preferences_gen.h:1474
 msgid "host memory limit (in MB) for tiling"
 msgstr "ขีด จำกัด ของพื้นที่หน่วยความจำ (MB) สำหรับการ titling"
 
-#: ../build/src/preferences_gen.h:1403
+#: ../build/src/preferences_gen.h:1491
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -265,11 +282,11 @@ msgstr ""
 "มากขึ้น ถ้าการตั้งค่าเป็น 0 จำกัดจะยกเลิกไป ถ้าค่าต่ำกว่า 500 จะถือว่าเป็น 500 "
 "(จำเป็นต้องเรื่มต้นใหม่)"
 
-#: ../build/src/preferences_gen.h:1410
+#: ../build/src/preferences_gen.h:1498
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "จำนวนหน่วยความจำขั้นต่ำ (MB) สำหรับบัฟเฟอร์ของ tiling"
 
-#: ../build/src/preferences_gen.h:1428
+#: ../build/src/preferences_gen.h:1516
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -279,21 +296,21 @@ msgstr ""
 "จะใช้ในการจัดการรูปภาพ,ค่านี้จะถูกนำไปใช้เหนือค่าที่ได้จากการคาดคะเนโดยใช้ "
 "host_memory_limit (จำเป็นต้องรีสตาร์ท)"
 
-#: ../build/src/preferences_gen.h:1435
+#: ../build/src/preferences_gen.h:1523
 msgid "write sidecar file for each image"
 msgstr "สร้างไฟล์ sidecar สำหรับภาพแต่ละภาพ"
 
-#: ../build/src/preferences_gen.h:1447
+#: ../build/src/preferences_gen.h:1535
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
 msgstr "แฟ้มสำรองการเปลี่ยนแปลงของภาพเล่านี้สามารถ นำไปใช้กับฐานข้อมูลอื่นๆได้อีก"
 
-#: ../build/src/preferences_gen.h:1454
+#: ../build/src/preferences_gen.h:1542
 msgid "activate opencl support"
 msgstr "เปิดการสนับสนุน OpenCL"
 
-#: ../build/src/preferences_gen.h:1466
+#: ../build/src/preferences_gen.h:1554
 msgid ""
 "if found, use opencl runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -301,23 +318,23 @@ msgstr ""
 "ถ้าตรวจพบ OpenCL ให้ใช้ OpenCL ในการประมวลผลเพื่อเป็นการเพิ่มประสิทธิภาพ "
 "ตัวเลือกนี้สามารถเปลี่ยแปรงได้ตลอดเวลา"
 
-#: ../build/src/preferences_gen.h:1470
+#: ../build/src/preferences_gen.h:1558
 msgid "not available on this system"
 msgstr "ไม่ได้มีอยู่ในระบบนี้"
 
-#: ../build/src/preferences_gen.h:1477
+#: ../build/src/preferences_gen.h:1565
 msgid "always try to use littlecms2"
 msgstr "ให้ลองใช้ littlecms2 ตลอด"
 
-#: ../build/src/preferences_gen.h:1489
+#: ../build/src/preferences_gen.h:1577
 msgid "this is significantly slower as the default."
 msgstr "ค่าเริ่มตันนี่จะทำให้ช้ากว่า"
 
-#: ../build/src/preferences_gen.h:1496
+#: ../build/src/preferences_gen.h:1584
 msgid "do high quality resampling during export"
 msgstr "ใช้การสุ่มตัวอย่างที่มีคุณภาพสูง ในการส่งภาพออก"
 
-#: ../build/src/preferences_gen.h:1508
+#: ../build/src/preferences_gen.h:1596
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
@@ -326,22 +343,24 @@ msgstr ""
 "ภาพจะถูกประมวลผลในความละเอียดเต็มรูปแบบก่อนและจะทำการย่อขนานในตอนท้าย "
 "การทำเช่นนี้จะส่งผลให้มีคุณภาพของภาพดีขึ้นในบางครั้ง แต่มักจะทำงานช้า"
 
-#: ../build/src/preferences_gen.h:1515
+#: ../build/src/preferences_gen.h:1603
 msgid "dithering for darkroom mode"
 msgstr "ใข้ dithering ในโหมด darkroom"
 
-#: ../build/src/preferences_gen.h:1527
+#: ../build/src/preferences_gen.h:1615
 msgid ""
 "center view will be dithered if this option is on and module dithering is "
 "activated (default for new images). switch this to off if you can accept "
 "display banding and prefer to have a slightly faster processing speed."
 msgstr ""
+"การแสดงภาพในส่วนกลางจะถูก dither ถ้าเลือกตัวเลือกนี้และ โมดูล dithering เป็ดใช้งาน. "
+"ถ้าต้องการแสดงผลแบบปรกติหรือต้องการให้มีความเร็วในการประมวลเร็วขึ้นเล็กน้อยให้ ปิดตัวเลือกนี้"
 
-#: ../build/src/preferences_gen.h:1534
+#: ../build/src/preferences_gen.h:1622
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "ใข้ demosaicing ในการขยายภาพ ในโหมด darkroom"
 
-#: ../build/src/preferences_gen.h:1559
+#: ../build/src/preferences_gen.h:1647
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using ppg + interpolation modes specified "
@@ -351,11 +370,11 @@ msgstr ""
 "middle ground จะใช้ ppg และการสอดแทรกที่ระบุไว้ด้านล่าง, "
 "เต็มรูปแบบจะใช้การตั้งค่าสำหรับการส่งออกของภาพขนาดเติม."
 
-#: ../build/src/preferences_gen.h:1566
+#: ../build/src/preferences_gen.h:1654
 msgid "pixel interpolator"
 msgstr "การสอดแทรกของจุด"
 
-#: ../build/src/preferences_gen.h:1594
+#: ../build/src/preferences_gen.h:1682
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -363,11 +382,11 @@ msgstr ""
 "การสอดแทรกของจุดที่ใช้ในการหมุนและการแก้ไข้เลนส์ (bilinear, bicubic, lanczos2, "
 "lanczos3)."
 
-#: ../build/src/preferences_gen.h:1601
+#: ../build/src/preferences_gen.h:1689
 msgid "password storage backend to use"
 msgstr "รหัสผ่านเพื่อใช้สำหรับ ในระบบจัดเก็บรหัสผ่าน"
 
-#: ../build/src/preferences_gen.h:1626
+#: ../build/src/preferences_gen.h:1714
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "ระบบจัดเก็บรหัสผ่าน: ไม่ใช้, kwallet, พวงกุญแจของ gnome"
 
@@ -549,7 +568,7 @@ msgstr "ไม่สามารถหา '% s' สไตล์เพื่อ�
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
-msgstr ""
+msgstr "Poissonian แบบทั่วไป"
 
 #: ../src/common/ratings.c:45
 #, c-format
@@ -675,7 +694,7 @@ msgstr "ถ่ายภาพคร่อมใช้งานได้เฉพ
 #: ../src/control/jobs/control_jobs.c:157
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr ""
+msgstr "ไม่สามารถหาบัฟเฟอร์จากภาพดิบ '%s' ได้"
 
 #: ../src/control/jobs/control_jobs.c:176
 msgid "images have to be of same size!"
@@ -721,7 +740,7 @@ msgstr "ไม่สามารถตีความไฟล์ gps ได้"
 #: ../src/control/jobs/control_jobs.c:528
 #, c-format
 msgid "applied matched gpx location onto %d image(s)"
-msgstr ""
+msgstr "ใช้การหาตำเหน่งแบบ GPX บน %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:679
 #, c-format
@@ -842,89 +861,89 @@ msgstr "ไม่สามารถใช้งานภาพ %s ได้ใ�
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
+msgstr[1] "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
 
 #: ../src/control/jobs/control_jobs.c:1107
 #, c-format
 msgid "added time offset to %d image(s)"
-msgstr ""
+msgstr "กำลังเพิ่มเวลาเพื่อชดเชย บน %d ภาพ"
 
 #: ../src/develop/blend_gui.c:707
 msgid "sliders for L channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง L"
 
 #: ../src/develop/blend_gui.c:707
 msgid "sliders for a channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง a"
 
 #: ../src/develop/blend_gui.c:707
 msgid "sliders for b channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง b"
 
 #: ../src/develop/blend_gui.c:707
 msgid "sliders for chroma channel (of LCh)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง ความเข้มของสีจาก LCH"
 
 #: ../src/develop/blend_gui.c:707
 msgid "sliders for hue channel (of LCh)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่อง สีจาก LCH"
 
 #: ../src/develop/blend_gui.c:708
 msgid " g "
-msgstr ""
+msgstr "g"
 
 #: ../src/develop/blend_gui.c:708
 msgid " R "
-msgstr ""
+msgstr "R"
 
 #: ../src/develop/blend_gui.c:708
 msgid " G "
-msgstr ""
+msgstr "G"
 
 #: ../src/develop/blend_gui.c:708
 msgid " B "
-msgstr ""
+msgstr "B"
 
 #: ../src/develop/blend_gui.c:708
 msgid " H "
-msgstr ""
+msgstr "H"
 
 #: ../src/develop/blend_gui.c:708
 msgid " S "
-msgstr ""
+msgstr "S"
 
 #: ../src/develop/blend_gui.c:708
 msgid " L "
-msgstr ""
+msgstr "L"
 
 #: ../src/develop/blend_gui.c:709
 msgid "sliders for gray value"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับค่าสีเทา"
 
 #: ../src/develop/blend_gui.c:709
 msgid "sliders for red channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีแดง"
 
 #: ../src/develop/blend_gui.c:709
 msgid "sliders for green channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีเขียว"
 
 #: ../src/develop/blend_gui.c:709
 msgid "sliders for blue channel"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีน้ำเงิน"
 
 #: ../src/develop/blend_gui.c:710
 msgid "sliders for hue channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องสีของ HSL"
 
 #: ../src/develop/blend_gui.c:710
 msgid "sliders for chroma channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับช่องความเข้มของสีของ HSL"
 
 #: ../src/develop/blend_gui.c:710
 msgid "sliders for value channel (of HSL)"
-msgstr ""
+msgstr "ตัวเลื่อนสำหรับค่าช่องจาก HSL"
 
 #: ../src/develop/blend_gui.c:713
 msgid ""
@@ -944,11 +963,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:821
 msgid "blend"
-msgstr ""
+msgstr "การผสมผสาน"
 
 #: ../src/develop/blend_gui.c:822
 msgid "uniformly"
-msgstr ""
+msgstr "เหมือนๆกัน"
 
 #: ../src/develop/blend_gui.c:823
 msgid "only, if.."
@@ -957,7 +976,7 @@ msgstr ""
 #: ../src/develop/blend_gui.c:843 ../src/iop/colorzones.c:984
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
-msgstr ""
+msgstr "เลือกสี GUI จากภาพ"
 
 #: ../src/develop/blend_gui.c:846
 msgid "display mask"
@@ -965,7 +984,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:849
 msgid "reset blend mask settings"
-msgstr ""
+msgstr "ตั้งค่าหน้ากากผสมผสานใหม่"
 
 #: ../src/develop/blend_gui.c:852
 msgid "temporarily switch off blend mask. only for module in focus."
@@ -973,15 +992,15 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:864 ../src/develop/blend_gui.c:867
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr ""
+msgstr "สลับขั้ว, จะเห็นที่ดีที่สุดให้เปิดใช้งาน 'หน้ากากจอแสดงผล'"
 
 #: ../src/develop/blend_gui.c:876
 msgid "output"
-msgstr ""
+msgstr "เอาท์พุต"
 
 #: ../src/develop/blend_gui.c:887
 msgid "input"
-msgstr ""
+msgstr "อินพุต"
 
 #: ../src/develop/blend_gui.c:899
 msgid "mask blur"
@@ -1001,7 +1020,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1030 ../src/libs/live_view.c:377
 msgid "normal"
-msgstr ""
+msgstr "ปกติ"
 
 #: ../src/develop/blend_gui.c:1032
 msgid "inverse"
@@ -1013,15 +1032,15 @@ msgstr "เบาลง"
 
 #: ../src/develop/blend_gui.c:1036 ../src/libs/live_view.c:385
 msgid "darken"
-msgstr ""
+msgstr "ดำลง"
 
 #: ../src/develop/blend_gui.c:1038 ../src/libs/live_view.c:382
 msgid "multiply"
-msgstr ""
+msgstr "คูณ"
 
 #: ../src/develop/blend_gui.c:1040
 msgid "average"
-msgstr ""
+msgstr "เฉลี่ย"
 
 #: ../src/develop/blend_gui.c:1042
 msgid "addition"
@@ -1029,11 +1048,11 @@ msgstr "รายละเอียดเพิ่มเติม"
 
 #: ../src/develop/blend_gui.c:1044
 msgid "subtract"
-msgstr ""
+msgstr "ลบออก"
 
 #: ../src/develop/blend_gui.c:1046 ../src/libs/live_view.c:391
 msgid "difference"
-msgstr ""
+msgstr "ต่าง"
 
 #: ../src/develop/blend_gui.c:1048 ../src/libs/live_view.c:383
 msgid "screen"
@@ -1042,11 +1061,11 @@ msgstr "หน้าจอ"
 #: ../src/develop/blend_gui.c:1050 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
-msgstr ""
+msgstr "ซ้อนทับ"
 
 #: ../src/develop/blend_gui.c:1052
 msgid "softlight"
-msgstr ""
+msgstr "แสงนุ่ม"
 
 #: ../src/develop/blend_gui.c:1054
 msgid "hardlight"
@@ -1054,11 +1073,11 @@ msgstr "แสงแรง"
 
 #: ../src/develop/blend_gui.c:1056
 msgid "vividlight"
-msgstr ""
+msgstr "แสงสดใส"
 
 #: ../src/develop/blend_gui.c:1058
 msgid "linearlight"
-msgstr ""
+msgstr "แสงกระจาย"
 
 #: ../src/develop/blend_gui.c:1060
 msgid "pinlight"
@@ -1068,12 +1087,12 @@ msgstr ""
 #: ../src/iop/colorize.c:441 ../src/iop/colorzones.c:973
 #: ../src/iop/colorzones.c:1004
 msgid "lightness"
-msgstr ""
+msgstr "ความสว่าง"
 
 #: ../src/develop/blend_gui.c:1064 ../src/iop/atrous.c:1419
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
-msgstr ""
+msgstr "ความเข้มของสี"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/develop/blend_gui.c:1066 ../src/iop/channelmixer.c:437
@@ -1081,7 +1100,7 @@ msgstr ""
 #: ../src/iop/colorzones.c:1002 ../src/iop/graduatednd.c:1049
 #: ../src/iop/splittoning.c:542
 msgid "hue"
-msgstr ""
+msgstr "สี"
 
 #: ../src/develop/blend_gui.c:1068
 msgid "color"
@@ -1089,15 +1108,16 @@ msgstr "สี"
 
 #: ../src/develop/blend_gui.c:1070
 msgid "coloradjustment"
-msgstr ""
+msgstr "การปรับสี"
 
 #: ../src/develop/blend_gui.c:1072
+#, fuzzy
 msgid "unbounded"
-msgstr ""
+msgstr "ขอบเขตปกติ"
 
 #: ../src/develop/blend_gui.c:1084
 msgid "blend mode"
-msgstr ""
+msgstr "โหมดผสมผสาน"
 
 #: ../src/develop/blend_gui.c:1086 ../src/iop/watermark.c:1015
 msgid "opacity"
@@ -1105,11 +1125,11 @@ msgstr "ความทึบ"
 
 #: ../src/develop/blend_gui.c:1096
 msgid "set the opacity of the blending"
-msgstr ""
+msgstr "ตั้งความทึบของการผสม"
 
 #: ../src/develop/blend_gui.c:1097
 msgid "choose blending mode"
-msgstr ""
+msgstr "เลือกโหมดการผสมผสาน"
 
 #: ../src/develop/develop.c:932
 #, c-format
@@ -4450,19 +4470,19 @@ msgstr ""
 msgid "unbreak input profile"
 msgstr ""
 
-#: ../src/iop/profile_gamma.c:122 ../src/iop/tonecurve.c:242
+#: ../src/iop/profile_gamma.c:125 ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr ""
 
-#: ../src/iop/profile_gamma.c:123
+#: ../src/iop/profile_gamma.c:126
 msgid "linear part"
 msgstr ""
 
-#: ../src/iop/profile_gamma.c:136
+#: ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr ""
 
-#: ../src/iop/profile_gamma.c:137
+#: ../src/iop/profile_gamma.c:140
 msgid "gamma exponential factor"
 msgstr ""
 
@@ -7232,18 +7252,59 @@ msgctxt "accel"
 msgid "redo"
 msgstr ""
 
-#~ msgid "expand a single lighttable module at a time"
-#~ msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด lighttable"
+#~ msgid "invert all channel's polarities"
+#~ msgstr "พลิกกลับขั้วของช่องทางทั้งหมด"
+
+#~ msgid "no mask used"
+#~ msgstr "ไม่ใช้หน้ากาก"
+
+#~ msgid "drawn mask"
+#~ msgstr "หน้ากากที่วาดไว้"
+
+#~ msgid "show and edit mask elements"
+#~ msgstr "แสดงและแก้ไของค์ประกอบหน้ากาก"
+
+#, fuzzy
+#~ msgid "add circle"
+#~ msgstr "เพิ่มวงกลม"
+
+#~ msgid "parametric mask"
+#~ msgstr "หน้ากากของตัวแปร"
+
+#~ msgid "drawn & parametric mask"
+#~ msgstr "หน้ากากของตัวแปรและการวาด"
 
 #~ msgid ""
-#~ "this option toggles the behavior of shift clicking in lighttable mode"
-#~ msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด lighttable"
+#~ "activate blending: uniformly, with drawn mask, with parametric mask, or "
+#~ "combination of both"
+#~ msgstr ""
+#~ "เปิดใช้งานการผสม: อย่างเท่าเทียมกัน, รวมกับหน้ากากของการวาด, รวมกับหน้ากากของตัวแปร, "
+#~ "หรือรวมทั้งสองอย่าง"
 
-#~ msgid "expand a single darkroom module at a time"
-#~ msgstr "ขยายโมดูลเพียงโมดูลเดึยวในโหมด darkroom"
+#~ msgid "difference (deprecated)"
+#~ msgstr "ความแตกต่าง (จะเลิกใช้แล้ว)"
 
-#~ msgid "this option toggles the behavior of shift clicking in darkroom mode"
-#~ msgstr "ตัวเลือกนี้จะสลับพฤติกรรมของ shift-clicking ที่อยู่ในโหมด darkroom"
+#~ msgid "inverse (deprecated)"
+#~ msgstr "ย้อนกลับ (จะเเลิกใช้แล้ว)"
+
+#~ msgid "normal (deprecated)"
+#~ msgstr "ปกติ (จะเลิกใช้แล้ว)"
+
+#~ msgid "unbounded (deprecated)"
+#~ msgstr "ไม่กำหนดขอบเขต (จะเลิกใช้แล้ว)"
+
+#~ msgid "combine masks"
+#~ msgstr "รวมหน้ากาก"
+
+#~ msgid "exclusive"
+#~ msgstr "เป็นพิเศษ"
+
+#~ msgid "inclusive"
+#~ msgstr "รวมทั้ง"
+
+#, fuzzy
+#~ msgid "duplicate instance"
+#~ msgstr "คัดลอกสไตล์"
 
 #~ msgid "color mapping"
 #~ msgstr "การจับคู่สี"
@@ -7273,6 +7334,10 @@ msgstr ""
 #~ msgid "mask manager"
 #~ msgstr "ส่วนจัดการหน้ากาก"
 
+#, fuzzy
+#~ msgid "group #%d"
+#~ msgstr "กลุ่ม"
+
 #~ msgid "delete this shape"
 #~ msgstr "ลบรูปร่างนี้"
 
@@ -7284,6 +7349,9 @@ msgstr ""
 
 #~ msgid "lua options"
 #~ msgstr "ตัวเลือก lua"
+
+#~ msgid "add curve shape"
+#~ msgstr "เพิ่มโค้ง"
 
 #~ msgid " (needs a restart) "
 #~ msgstr "(ต้องเริ่มโปรแกรมใหม่)"
