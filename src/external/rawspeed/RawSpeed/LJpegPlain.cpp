@@ -40,14 +40,27 @@ LJpegPlain::~LJpegPlain(void) {
 }
 
 void LJpegPlain::decodeScan() {
+
+  // Fix for Canon 6D mRaw, which has flipped width & height for some part of the image
+  // We temporarily swap width and height for cropping.
+  if (mCanonFlipDim) {
+    uint32 w = frame.w;
+    frame.w = frame.h;
+    frame.h = w;
+  }
+
   // If image attempts to decode beyond the image bounds, strip it.
   if ((frame.w * frame.cps + offX * mRaw->getCpp()) > mRaw->dim.x * mRaw->getCpp())
     skipX = ((frame.w * frame.cps + offX * mRaw->getCpp()) - mRaw->dim.x * mRaw->getCpp()) / frame.cps;
   if (frame.h + offY > (uint32)mRaw->dim.y)
     skipY = frame.h + offY - mRaw->dim.y;
 
-//  _RPT1(0,"SlicesW:0x%x,\n",&slicesW);
-//  _RPT1(0,"Slices:%d\n",slicesW.size());
+  // Swap back (see above)
+  if (mCanonFlipDim) {
+    uint32 w = frame.w;
+    frame.w = frame.h;
+    frame.h = w;
+  }
 
   if (slicesW.empty())
     slicesW.push_back(frame.w*frame.cps);
@@ -74,6 +87,8 @@ void LJpegPlain::decodeScan() {
                    frame.compInfo[1].superH == 1 && frame.compInfo[1].superV == 1 &&
                    frame.compInfo[2].superH == 1 && frame.compInfo[2].superV == 1) {
           // Something like Cr2 sRaw2, use fast decoder
+          if (mCanonFlipDim)
+            ThrowRDE("LJpegDecompressor::decodeScan: Cannot flip non 4:2:2 subsampled images.");
           decodeScanLeft4_2_2();
           return;
         } else {
@@ -88,6 +103,9 @@ void LJpegPlain::decodeScan() {
   }
 
   if (pred == 1) {
+    if (mCanonFlipDim)
+      ThrowRDE("LJpegDecompressor::decodeScan: Cannot flip non subsampled images.");
+
     if (frame.cps == 2)
       decodeScanLeft2Comps();
     else if (frame.cps == 3)
@@ -287,9 +305,11 @@ void LJpegPlain::decodeScanLeft4_2_0() {
   mRaw->subsampling.y = 2;
 
   uchar8 *draw = mRaw->getData();
+  // Fix for Canon 6D mRaw, which has flipped width & height
+  uint32 real_h = mCanonFlipDim ? frame.w : frame.h;
 
   //Prepare slices (for CR2)
-  uint32 slices = (uint32)slicesW.size() * (frame.h - skipY) / 2;
+  uint32 slices = (uint32)slicesW.size() * (real_h - skipY) / 2;
   offset = new uint32[slices+1];
 
   uint32 t_y = 0;
@@ -307,7 +327,7 @@ void LJpegPlain::decodeScanLeft4_2_0() {
     offset[slice] = ((t_x + offX) * mRaw->getBpp() + ((offY + t_y) * mRaw->pitch)) | (t_s << 28);
     _ASSERTE((offset[slice]&0x0fffffff) < mRaw->pitch*mRaw->dim.y);
     t_y += 2;
-    if (t_y >= (frame.h - skipY)) {
+    if (t_y >= (real_h- skipY)) {
       t_y = 0;
       t_x += slice_width[t_s++];
     }
