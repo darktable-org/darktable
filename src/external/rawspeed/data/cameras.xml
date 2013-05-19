@@ -62,6 +62,24 @@
 ]>
 
 <Cameras>
+	<Camera make="Canon" model="Canon EOS 100D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="72" y="52" width="0" height="0"/>
+		<Sensor black="0" white="16383"/>
+		<BlackAreas>
+			<Vertical x="0" width="72"/>
+			<Horizontal y="8" height="44"/>
+		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS REBEL SL1</Alias>
+			<Alias>Canon EOS Kiss X7</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 20D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -355,7 +373,7 @@
 		</BlackAreas>
 	</Camera>
 	<!---Guess -->
-	<Camera make="Canon" model="Canon EOS 6D" mode="sRaw1">
+	<Camera make="Canon" model="Canon EOS 6D" mode="sRaw1" decoder_version="3">
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="48664"/>
 		<Hints>
@@ -1858,6 +1876,22 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
+		<Crop x="0" y="0" width="-194" height="0"/>
+		<Sensor black="155" white="4095"/>
+		<Sensor black="165" white="4095" iso_list="6400"/>
+		<Sensor black="165" white="2900" iso_list="12800"/>
+		<Sensor black="170" white="1800" iso_list="25600"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GH3" mode="3:2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
 		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="155" white="4095"/>
 		<Sensor black="165" white="4095" iso_list="6400"/>
@@ -1867,54 +1901,38 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
-        <Camera make="Panasonic" model = "DMC-GH3" mode="3:2">
-                <CFA width="2" height="2">
-                        <Color x="0" y="0">GREEN</Color>
-                        <Color x="1" y="0">BLUE</Color>
-                        <Color x="0" y="1">RED</Color>
-                        <Color x="1" y="1">GREEN</Color>
-                </CFA>
-                <Crop x="0" y="0" width="-192" height="0"/>
-                <Sensor black="155" white="4095"/>
-                <Sensor black="165" white="4095" iso_list="6400"/>
-                <Sensor black="165" white="2900" iso_list="12800"/>
-                <Sensor black="170" white="1800" iso_list="25600"/>
-                <Hints>
-                        <Hint name="zero_is_bad" value=""/>
-                </Hints>
-        </Camera>
-        <Camera make="Panasonic" model = "DMC-GH3" mode="16:9">
-                <CFA width="2" height="2">
-                        <Color x="0" y="0">GREEN</Color>
-                        <Color x="1" y="0">BLUE</Color>
-                        <Color x="0" y="1">RED</Color>
-                        <Color x="1" y="1">GREEN</Color>
-                </CFA>
-                <Crop x="0" y="0" width="-192" height="0"/>
-                <Sensor black="155" white="4095"/>
-                <Sensor black="165" white="4095" iso_list="6400"/>
-                <Sensor black="165" white="2900" iso_list="12800"/>
-                <Sensor black="170" white="1800" iso_list="25600"/>
-                <Hints>
-                        <Hint name="zero_is_bad" value=""/>
-                </Hints>
-        </Camera>
-        <Camera make="Panasonic" model = "DMC-GH3" mode="1:1">
-                <CFA width="2" height="2">
-                        <Color x="0" y="0">GREEN</Color>
-                        <Color x="1" y="0">BLUE</Color>
-                        <Color x="0" y="1">RED</Color>
-                        <Color x="1" y="1">GREEN</Color>
-                </CFA>
-                <Crop x="0" y="0" width="0" height="0"/>
-                <Sensor black="155" white="4095"/>
-                <Sensor black="165" white="4095" iso_list="6400"/>
-                <Sensor black="165" white="2900" iso_list="12800"/>
-                <Sensor black="170" white="1800" iso_list="25600"/>
-                <Hints>
-                        <Hint name="zero_is_bad" value=""/>
-                </Hints>
-        </Camera>
+	<Camera make="Panasonic" model = "DMC-GH3" mode="16:9">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-192" height="0"/>
+		<Sensor black="155" white="4095"/>
+		<Sensor black="165" white="4095" iso_list="6400"/>
+		<Sensor black="165" white="2900" iso_list="12800"/>
+		<Sensor black="170" white="1800" iso_list="25600"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GH3" mode="1:1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="155" white="4095"/>
+		<Sensor black="165" white="4095" iso_list="6400"/>
+		<Sensor black="165" white="2900" iso_list="12800"/>
+		<Sensor black="170" white="1800" iso_list="25600"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
 	<!-- Default Guess -->
 	<Camera make="Panasonic" model = "DMC-GH3">
 		<CFA width="2" height="2">
@@ -2793,7 +2811,7 @@
 		<BlackAreas>
 			<Vertical x="0" width="8"/>
 		</BlackAreas>
-	</Camera> 
+	</Camera>  	
 	<Camera make="PENTAX" model="PENTAX K-7">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
@@ -2969,6 +2987,16 @@
 		<Hints>
 			<Hint name="msb_override" value="false"/>
 		</Hints>    
+	</Camera>  
+	<Camera make="SAMSUNG" model="NX300" supported="no">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
 	</Camera>  
 	<Camera make="SAMSUNG" model="NX5">
 		<CFA width="2" height="2">
@@ -3302,6 +3330,16 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="520" white="16596"/>
+	</Camera>
+	<Camera make="SONY" model="SLT-A58">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-36" height="0"/>
 		<Sensor black="520" white="16596"/>
 	</Camera>
 	<Camera make="SONY" model="SLT-A65V">

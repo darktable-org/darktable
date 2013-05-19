@@ -91,6 +91,7 @@ LJpegDecompressor::LJpegDecompressor(FileMap* file, RawImage img):
   mDNGCompatible = false;
   slicesW.clear();
   mUseBigtable = false;
+  mCanonFlipDim = false;
 }
 
 LJpegDecompressor::~LJpegDecompressor(void) {
