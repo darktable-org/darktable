@@ -171,6 +171,7 @@ public:
   virtual void getSOF(SOFInfo* i, uint32 offset, uint32 size);
   bool mDNGCompatible;  // DNG v1.0.x compatibility
   bool mUseBigtable;    // Use only for large images
+  bool mCanonFlipDim;   // Fix Canon 6D mRaw where width/height is flipped
   virtual void addSlices(vector<int> slices) {slicesW=slices;};  // CR2 slices.
 protected:
   virtual void parseSOF(SOFInfo* i);

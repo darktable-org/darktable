@@ -28,7 +28,7 @@ namespace RawSpeed {
 
 Cr2Decoder::Cr2Decoder(TiffIFD *rootIFD, FileMap* file) :
     RawDecoder(file), mRootIFD(rootIFD) {
-  decoderVersion = 2;
+  decoderVersion = 3;
 }
 
 Cr2Decoder::~Cr2Decoder(void) {
@@ -82,6 +82,9 @@ RawImage Cr2Decoder::decodeRawInternal() {
 
   mRaw->dim = iPoint2D(slices[0].w, completeH);
 
+  // Fix for Canon 6D mRaw, which has flipped width & height for some part of the image
+  // In that case, we swap width and height, since this is the correct dimension
+  bool flipDims = false;
   if (raw->hasEntry((TiffTag)0xc6c5)) {
     ushort16 ss = raw->getEntry((TiffTag)0xc6c5)->getInt();
     // sRaw
@@ -89,6 +92,12 @@ RawImage Cr2Decoder::decodeRawInternal() {
       mRaw->dim.x /= 3;
       mRaw->setCpp(3);
       mRaw->isCFA = false;
+    }
+    flipDims = mRaw->dim.x < mRaw->dim.y;
+    if (flipDims) {
+      int w = mRaw->dim.x;
+      mRaw->dim.x = mRaw->dim.y;
+      mRaw->dim.y = w;
     }
   }
 
@@ -115,6 +124,7 @@ RawImage Cr2Decoder::decodeRawInternal() {
       LJpegPlain l(mFile, mRaw);
       l.addSlices(s_width);
       l.mUseBigtable = true;
+      l.mCanonFlipDim = flipDims;
       l.startDecoder(slice.offset, slice.count, 0, offY);
     } catch (RawDecoderException &e) {
       if (i == 0)

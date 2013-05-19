@@ -41,6 +41,7 @@ public:
 	~iPoint2D() {};
   uint32 area() const {return abs(x*y);}
   bool isThisInside(const iPoint2D &otherPoint) const {return (x<=otherPoint.x && y<=otherPoint.y); };
+  iPoint2D getSmallest(const iPoint2D &otherPoint) const { return iPoint2D(min(x, otherPoint.x), min(y, otherPoint.y)); };
   int x,y;
 };
 
@@ -72,12 +73,12 @@ public:
   int getWidth() const {return dim.x; }
   int getHeight() const {return dim.y; }
   iPoint2D getTopLeft() const {return pos; }
-  iPoint2D getBottomRight() const {return dim-pos;}
+  iPoint2D getBottomRight() const {return dim + pos;}
   /* Retains size */
   void setTopLeft(const iPoint2D& top_left) {pos = top_left;}
   /* Set BR  */
   void setBottomRightAbsolute(const iPoint2D& bottom_right) {dim = iPoint2D(bottom_right) - pos;};
-  void setAbsolute(int x1, int y1, int x2, int y2) {pos = iPoint2D(x1,y1); setBottomRightAbsolute(iPoint2D(x2,y2));};
+  void setAbsolute(int x1, int y1, int x2, int y2) {pos = iPoint2D(x1,y1); dim = iPoint2D(x2-x1,y2-y1);};
   void setAbsolute(const iPoint2D& top_left, const iPoint2D& bottom_right) {pos = top_left; setBottomRightAbsolute(bottom_right);};
   void setSize(const iPoint2D& size) {dim = size;};
   bool hasPositiveArea() const {return (dim.x > 0) && (dim.y > 0);};
@@ -103,7 +104,7 @@ public:
     iRectangle2D overlap;
     iPoint2D br1 = getBottomRight();
     iPoint2D br2 = other.getBottomRight();
-    overlap.setAbsolute(max(pos.x, other.pos.x), max(pos.y, other.pos.y), min(br1.x, br2.x), min(br2.y, br2.y));
+    overlap.setAbsolute(max(pos.x, other.pos.x), max(pos.y, other.pos.y), min(br1.x, br2.x), min(br1.y, br2.y));
     return overlap;
   };
   iRectangle2D combine(const iRectangle2D& other) const {
