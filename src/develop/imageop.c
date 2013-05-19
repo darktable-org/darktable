@@ -1078,7 +1078,19 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
   {
     module->gui_init(module);
     if(copy_params)
+    {
       memcpy(module->params, base->params, module->params_size);
+      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+      {
+        memcpy(module->blend_params, base->blend_params, sizeof(dt_develop_blend_params_t));
+        if (base->blend_params->mask_id>0)
+        {
+          module->blend_params->mask_id = 0;
+          dt_masks_iop_use_same_as(module,base);
+        }
+      }
+      dt_dev_add_history_item(module->dev, module, TRUE);
+    }
     else
       dt_iop_reload_defaults(module);
 
@@ -1116,6 +1128,8 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 
   //and we refresh the pipe
   dt_iop_request_focus(module);
+
+  dt_dev_masks_list_change(module->dev);
 
   if(module->dev->gui_attached)
   {

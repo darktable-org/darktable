@@ -738,7 +738,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   dt_dev_masks_list_change(darktable.develop);
   dt_masks_set_edit_mode(module,TRUE);
 }
-static void _menu_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
+void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
 {
   if (!module || !src) return;
 
@@ -754,7 +754,7 @@ static void _menu_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,128,"grp %s",module->name());
+    snprintf(grp->name,128,"grp %s %s",module->name(),module->multi_name);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -775,12 +775,6 @@ static void _menu_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
 
   //we save the group
   dt_masks_write_form(grp,darktable.develop);
-
-  //and we ensure that we are in edit mode
-  dt_dev_add_history_item(darktable.develop, module, TRUE);
-  dt_masks_iop_update(module);
-  dt_dev_masks_list_change(darktable.develop);
-  dt_masks_set_edit_mode(module,TRUE);
 }
 
 void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
@@ -923,7 +917,12 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
       if (val < g_list_length(module->dev->iop))
       {
         dt_iop_module_t *m = (dt_iop_module_t *)g_list_nth_data(module->dev->iop,val);
-        _menu_use_same_as(module,m);
+        dt_masks_iop_use_same_as(module,m);
+        //and we ensure that we are in edit mode
+        dt_dev_add_history_item(darktable.develop, module, TRUE);
+        dt_masks_iop_update(module);
+        dt_dev_masks_list_change(darktable.develop);
+        dt_masks_set_edit_mode(module,TRUE);
       }
     }
     else if (val > 0)
