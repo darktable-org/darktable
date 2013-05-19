@@ -1694,6 +1694,13 @@ dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module)
 static void
 dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 {
+  //if a drawn mask is set, remove it from the list
+  if (module->blend_params->mask_id>0)
+  {
+    dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
+    if (grp) dt_masks_form_remove(module,NULL,grp);
+    dt_dev_masks_list_change(module->dev);
+  }
   /* reset to default params */
   memcpy(module->params, module->default_params, module->params_size);
   memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));

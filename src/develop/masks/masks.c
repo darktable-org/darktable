@@ -670,7 +670,6 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, dt_iop_mod
 static void _menu_no_masks(struct dt_iop_module_t *module)
 {
   //we drop all the forms in the iop
-  //NOTE : maybe a little bit too definitive ? just add a state "not used" ?
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
   if (grp) dt_masks_form_remove(module,NULL,grp);
   module->blend_params->mask_id = 0;
