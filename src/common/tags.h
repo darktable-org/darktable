@@ -35,7 +35,7 @@ gboolean dt_tag_new(const char *name,guint *tagid);
 gboolean dt_tag_new_from_gui(const char *name,guint *tagid);
 
 /** get the name of specified id */
-const gchar *dt_tag_get_name(const guint tagid);
+gchar *dt_tag_get_name(const guint tagid);
 
 /** removes a tag from db and from assigned images. \param final TRUE actually performs the remove  \return the amount of images affected. */
 guint dt_tag_remove(const guint tagid, gboolean final);

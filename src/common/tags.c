@@ -126,7 +126,7 @@ guint dt_tag_remove(const guint tagid, gboolean final)
   return count;
 }
 
-const gchar *dt_tag_get_name(const guint tagid)
+gchar *dt_tag_get_name(const guint tagid)
 {
   int rt;
   char *name=NULL;

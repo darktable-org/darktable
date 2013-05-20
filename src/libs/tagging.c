@@ -312,7 +312,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   {
     GtkWidget *dialog;
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-    const gchar *tagname=dt_tag_get_name(tagid);
+    gchar *tagname=dt_tag_get_name(tagid);
     dialog = gtk_message_dialog_new(GTK_WINDOW(win),
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
@@ -323,6 +323,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
+    free(tagname);
   }
   if(res != GTK_RESPONSE_YES) return;
 
