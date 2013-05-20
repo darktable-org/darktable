@@ -177,6 +177,7 @@ if(USE_LUA)
 			"lua/preferences.c"
 			"lua/print.c"
 			"lua/storage.c"
+			"lua/tags.c"
 			"lua/types.c"
 			)
 		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})

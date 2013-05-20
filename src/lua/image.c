@@ -19,6 +19,7 @@
 #include "lua/image.h"
 #include "lua/types.h"
 #include "lua/glist.h"
+#include "lua/tags.h"
 #include "lua/database.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
@@ -478,6 +479,12 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"make_group_leader");
   lua_pushcfunction(L,get_group);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"get_group_members");
+  lua_pushcfunction(L,dt_lua_tag_attach);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"attach_tag");
+  lua_pushcfunction(L,dt_lua_tag_detach);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"detach_tag");
+  lua_pushcfunction(L,dt_lua_tag_get_attached);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"get_tags");
   luaL_getmetatable(L,"dt_lua_image_t");
   lua_pushcfunction(L,image_eq);
   lua_setfield(L,-2,"__eq");
