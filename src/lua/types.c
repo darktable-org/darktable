@@ -340,6 +340,8 @@ void dt_lua_register_type_callback_number_internal(lua_State* L,const char* type
   lua_pushcfunction(L,dt_lua_autotype_inext);
   lua_setfield(L,-2,"__inext");
 
+  lua_pop(L,1);
+
 }
 
 void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
