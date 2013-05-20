@@ -70,6 +70,12 @@ void dt_history_delete_on_image(int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from mask where imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+  
   remove_preset_flag(imgid);
 
   /* if current image in develop reload history */
