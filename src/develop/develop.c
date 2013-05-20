@@ -656,6 +656,10 @@ static void
 auto_apply_presets(const int imgid)
 {
   if(imgid <= 0) return;
+
+  // be extra sure that we don't mess up history in separate threads:
+  dt_pthread_mutex_lock(&darktable.db_insert);
+
   int run = 0;
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
   if(!(cimg->flags & DT_IMAGE_AUTO_PRESETS_APPLIED))
@@ -666,13 +670,12 @@ auto_apply_presets(const int imgid)
   if(!run || cimg->id <= 0)
   {
     dt_image_cache_read_release(darktable.image_cache, cimg);
+    dt_pthread_mutex_unlock(&darktable.db_insert);
     return;
   }
 
   // keep locked, we want to be alone messing with the history of the poor fellow:
   dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
-  // be extra sure that we don't mess up history in separate threads:
-  dt_pthread_mutex_lock(&darktable.db_insert);
 
   // cleanup
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
