@@ -64,7 +64,7 @@ int dt_lua_init_gui(lua_State * L)
   dt_lua_goto_subtable(L,"gui");
   lua_pushcfunction(L,selection_cb);
   lua_setfield(L,-2,"selection");
-  lua_pop(L,-1);
+  lua_pop(L,1);
   return 0;
 }
 

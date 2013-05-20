@@ -237,7 +237,7 @@ int dt_lua_init_modules(lua_State *L)
   luaA_push(L,dt_lua_module_storage_table_t,&tmp);
   lua_setfield(L,-2,"storage");
 
-  lua_pop(L,-1);
+  lua_pop(L,1);
 
   return 0;
 }

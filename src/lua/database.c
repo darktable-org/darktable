@@ -125,6 +125,7 @@ int dt_lua_init_database(lua_State * L)
   void * tmp= NULL;
   luaA_push(L,dt_lua_database_t,&tmp);
   lua_setfield(L,-2,"database");
+  lua_pop(L,1);
   return 0;
 }
 

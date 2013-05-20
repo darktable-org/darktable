@@ -394,7 +394,7 @@ int dt_lua_init_preferences(lua_State * L)
   lua_pushcfunction(L,write_pref);
   lua_setfield(L,-2,"write");
 
-  lua_pop(L,-1);
+  lua_pop(L,1);
   return 0;
 }
 

@@ -50,7 +50,7 @@ int dt_lua_init_print(lua_State*L)
   lua_pushcfunction(L,&lua_print_error);
   lua_settable(L,-3);
 
-  lua_pop(L,-1); //remove the configuration table from the stack
+  lua_pop(L,1); //remove the configuration table from the stack
   return 0;
 
 }
