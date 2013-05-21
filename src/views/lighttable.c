@@ -1569,7 +1569,7 @@ void init_key_accels(dt_view_t *self)
   // Initializing accelerators
 
   // Rating keys
-  dt_accel_register_view(self, NC_("accel", "rate desert"), GDK_0, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 0"), GDK_0, 0);
   dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_1, 0);
   dt_accel_register_view(self, NC_("accel", "rate 2"), GDK_2, 0);
   dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_3, 0);
@@ -1620,7 +1620,7 @@ void connect_key_accels(dt_view_t *self)
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
               (gpointer)DT_VIEW_DESERT, NULL);
-  dt_accel_connect_view(self, "rate desert", closure);
+  dt_accel_connect_view(self, "rate 0", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
               (gpointer)DT_VIEW_STAR_1, NULL);
