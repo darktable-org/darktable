@@ -1166,33 +1166,14 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
   long int num = (long int)data;
-  switch (num)
-  {
-    case DT_VIEW_REJECT:
-    case DT_VIEW_DESERT:
-    case DT_VIEW_STAR_1:
-    case DT_VIEW_STAR_2:
-    case DT_VIEW_STAR_3:
-    case DT_VIEW_STAR_4:
-    case DT_VIEW_STAR_5:
-    case 666:
-    {
-      int32_t mouse_over_id;
+  int32_t mouse_over_id;
 
-      mouse_over_id = dt_view_get_image_to_act_on();
+  mouse_over_id = dt_view_get_image_to_act_on();
 
-      if(mouse_over_id <= 0)
-        dt_ratings_apply_to_selection(num);
-      else
-        dt_ratings_apply_to_image(mouse_over_id, num);
-      //dt_control_log(ngettext("applying rating %d to %d image", "applying rating %d to %d images", 1), num, 1); //FIXME: Change the message after release
-      break;
-    }
-    default:
-      break;
-
-      dt_control_queue_redraw_center();
-  }
+  if(mouse_over_id <= 0)
+    dt_ratings_apply_to_selection(num);
+  else
+    dt_ratings_apply_to_image(mouse_over_id, num);
   return TRUE;
 }
 
