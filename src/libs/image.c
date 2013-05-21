@@ -236,7 +236,7 @@ void init_key_accels(dt_lib_module_t *self)
                         NC_("accel", "rotate selected images 90 degrees ccw"),
                         0, 0);
   dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_d, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_g, GDK_CONTROL_MASK);
