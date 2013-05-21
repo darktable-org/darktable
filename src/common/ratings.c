@@ -28,6 +28,8 @@ void dt_ratings_apply_to_image (int imgid, int rating)
 {
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
   dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
+  // one star is a toggle, so you can easily reject images by removing the last star:
+  if(((image->flags & 0x7) == 1) && (rating == 1)) rating = 0;
   image->flags = (image->flags & ~0x7) | (0x7 & rating);
   // synch through:
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
