@@ -158,7 +158,7 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   /* setup rating key accelerators */
-  dt_accel_register_lib(self, NC_("accel", "rate desert"), GDK_0, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_0, 0);
   dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_1, 0);
   dt_accel_register_lib(self, NC_("accel", "rate 2"), GDK_2, 0);
   dt_accel_register_lib(self, NC_("accel", "rate 3"), GDK_3, 0);
@@ -204,7 +204,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
   // Rating accels
   dt_accel_connect_lib(
-    self, "rate desert",
+    self, "rate 0",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
       (gpointer)DT_VIEW_DESERT,NULL));
