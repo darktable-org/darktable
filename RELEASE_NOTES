@@ -27,14 +27,18 @@ New noise profiles
  * Olympus E-3
  * Olympus E-P2
  * Pentax K-30
+ * Panasonic GH-2
+ * Panasonic DMZ-FZ18
  * Additional data for Pentax K-5 II
  * Nikon D7100
+ * Nikon D5200
  * Sony A57
 
 White balances, color matrices:
  * Fix issues with different camera model names for various Canon cameras (see above)
  * White balance for Panasonic DMC-GH2
  * Updates whitebalance list with the latest version of UFRaw's cvs version
+ * Whitebalances for Samsung NX5, NX10, NX11 (copied from NX100)
 
 Bugfixes:
  * new RawSpeed version r537
