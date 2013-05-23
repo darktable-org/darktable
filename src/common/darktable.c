@@ -361,6 +361,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */
 #endif
 
+  setlocale(LC_ALL, "");
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
