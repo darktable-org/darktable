@@ -17,7 +17,9 @@
  */
 #include "lua/modules.h"
 #include "lua/types.h"
+#include "lua/image.h"
 #include "control/conf.h"
+#include "common/imageio.h"
 typedef enum
 {
   GET_FORMAT_PLUGIN_NAME,
@@ -26,6 +28,7 @@ typedef enum
   GET_MIME,
   GET_MAX_WIDTH,
   GET_MAX_HEIGHT,
+  EXPORT,
   LAST_FORMAT_FIELD
 } format_fields;
 static const char *format_fields_name[] =
@@ -36,6 +39,7 @@ static const char *format_fields_name[] =
   "mime",
   "max_width",
   "max_height",
+  "write_image",
   NULL
 };
 
@@ -87,10 +91,42 @@ static int get_format_params(lua_State *L)
   return 1;
 }
 
+static int write_image(lua_State *L)
+{
+  /* check that param 1 is a module_format_t */
+  lua_getmetatable(L,1);
+  lua_getfield(L,-1,"__module_type");
+  if(strcmp(lua_tostring(L,-1),"format")) {
+    return luaL_argerror(L,1,"not a format description");
+  }
+  lua_pop(L,1);
+  lua_getfield(L,-1,"__luaA_Type");
+  luaA_Type format_type = luaL_checkint(L,-1);
+  lua_pop(L,1);
+  lua_getfield(L,-1,"__associated_object");
+  dt_imageio_module_format_t * format = lua_touserdata(L,-1);
+  lua_pop(L,2);
+  dt_imageio_module_data_t* fdata = format->get_params(format);
+  luaA_to_typeid(L,format_type,fdata,1);
+
+  /* check that param 2 is an image */
+  dt_lua_image_t imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,2);
+
+  /* check that param 3 is a string (filename) */
+  const char * filename = luaL_checkstring(L,3);
+
+  gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
+  lua_pushboolean(L,dt_imageio_export(imgid,filename,format,fdata,high_quality));
+  format->free_params(format,fdata);
+  return 1;
+}
 
 void dt_lua_register_format_internal(lua_State* L, dt_imageio_module_format_t* module, char*type_name)
 {
   dt_lua_register_type_callback_list_internal(L,type_name,format_index,NULL,format_fields_name);
+  lua_pushcfunction(L,write_image);
+  dt_lua_register_type_callback_stack_internal(L,type_name,"write_image");
   luaL_getmetatable(L,type_name);
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
