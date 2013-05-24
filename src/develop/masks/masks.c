@@ -1247,6 +1247,81 @@ void dt_masks_update_image(dt_develop_t *dev)
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
 }
+
+static void _cleanup_unused_recurs(dt_develop_t *dev, int formid, int *used, int nb)
+{
+  //first, we search for the formid in used table
+  for (int i=0; i<nb; i++)
+  {
+    if (used[i] == 0)
+    {
+      //we store the formid
+      used[i] = formid;
+      break;
+    }
+    if (used[i] == formid) break;
+  }
+  
+  //if the form is a group, we iterate throught the sub-forms
+  dt_masks_form_t *form = dt_masks_get_from_id(dev,formid);
+  if(form && (form->type & DT_MASKS_GROUP))
+  {
+    GList *grpts = g_list_first(form->points);
+    while(grpts)
+    {
+      dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)grpts->data;
+      _cleanup_unused_recurs(dev,grpt->formid,used,nb);
+      grpts = g_list_next(grpts);
+    }    
+  }
+}
+
+void dt_masks_cleanup_unused(dt_develop_t *dev)
+{
+  //we create a table to store the ids of used forms
+  int nbf = g_list_length(dev->forms);
+  int *used = malloc(nbf*sizeof(int));
+  memset(used,0,nbf*sizeof(int));
+  
+  //now we iterate throught all iop to find used forms
+  GList *iops = g_list_first(dev->iop);
+  while(iops)
+  {
+    dt_iop_module_t *m = (dt_iop_module_t *)iops->data;
+    if (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+    {
+      if (m->blend_params->mask_id > 0) _cleanup_unused_recurs(dev,m->blend_params->mask_id,used,nbf);
+    }
+    iops = g_list_next(iops);
+  }
+  
+  //and we delete all unused forms
+  GList *shapes = g_list_first(dev->forms);
+  while(shapes)
+  {
+    dt_masks_form_t *f = (dt_masks_form_t *)shapes->data;
+    int u = 0;
+    for (int i=0; i<nbf; i++)
+    {
+      if (used[i] == f->formid)
+      {
+        u = 1;
+        break;
+      }
+      if (used[i] == 0) break;
+    }
+    if (u == 0)
+    {
+      shapes = g_list_remove(shapes,f);
+      dt_masks_free_form(f);
+      continue;
+    }
+    shapes = g_list_next(shapes);
+  }
+  
+  //and we save all that
+  dt_masks_write_forms(dev);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

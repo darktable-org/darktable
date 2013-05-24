@@ -229,6 +229,12 @@ static void _set_iter_name(dt_lib_masks_t *lm, dt_masks_form_t *form, int state,
 
 }
 
+static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_masks_cleanup_unused(darktable.develop);
+  _lib_masks_recreate_list(self);
+}
+
 static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -917,6 +923,12 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       g_signal_connect(item, "activate",(GCallback) _tree_movedown, self);
       gtk_menu_append(menu, item);
     }
+    
+    gtk_menu_append(menu, gtk_separator_menu_item_new());
+    item = gtk_menu_item_new_with_label(_("cleanup unused shapes"));
+    g_signal_connect(item, "activate",(GCallback) _tree_cleanup, self);
+    gtk_menu_append(menu, item);
+      
     gtk_widget_show_all(menu);
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,0, gdk_event_get_time((GdkEvent*)event));
 
