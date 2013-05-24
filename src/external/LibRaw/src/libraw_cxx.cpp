@@ -796,8 +796,8 @@ int LibRaw::unpack(void)
                 S.iheight= S.height;
                 IO.shrink = 0;
                 // allocate image as temporary buffer, size 
-                imgdata.rawdata.raw_alloc = calloc(S.iwidth*S.iheight,sizeof(*imgdata.image));
-                imgdata.image = (ushort (*)[4]) imgdata.rawdata.raw_alloc;
+                imgdata.rawdata.raw_alloc = 0;
+                imgdata.image = (ushort (*)[4]) calloc(S.iwidth*S.iheight,sizeof(*imgdata.image));
             }
 
 
@@ -807,8 +807,8 @@ int LibRaw::unpack(void)
         // recover saved
         if( decoder_info.decoder_flags & LIBRAW_DECODER_LEGACY)
             {
-                imgdata.image = 0; 
-                imgdata.rawdata.color_image = (ushort (*)[4]) imgdata.rawdata.raw_alloc;
+              imgdata.rawdata.raw_alloc = imgdata.rawdata.color_image = imgdata.image;
+              imgdata.image = 0; 
             }
 
         // calculate channel maximum
