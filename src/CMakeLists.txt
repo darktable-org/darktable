@@ -168,6 +168,7 @@ if(USE_LUA)
 			"lua/call.c"
 			"lua/configuration.c"
 			"lua/database.c"
+			"lua/events.c"
 			"lua/glist.c"
 			"lua/gui.c"
 			"lua/image.c"
