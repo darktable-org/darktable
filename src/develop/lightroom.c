@@ -579,15 +579,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     xmlChar* value = xmlNodeListGetString(entryNode->doc, attribute->children, 1);
     if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropTop"))
-      pc.cy = atof((char *)value);
+      pc.cy = g_ascii_strtod((char *)value, NULL);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropRight"))
-      pc.cw = atof((char *)value);
+      pc.cw = g_ascii_strtod((char *)value, NULL);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropLeft"))
-      pc.cx = atof((char *)value);
+      pc.cx = g_ascii_strtod((char *)value, NULL);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropBottom"))
-      pc.ch = atof((char *)value);
+      pc.ch = g_ascii_strtod((char *)value, NULL);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "CropAngle"))
-      pc.angle = -atof((char *)value);
+      pc.angle = -g_ascii_strtod((char *)value, NULL);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageWidth"))
       iwidth = atoi((char *)value);
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ImageLength"))
@@ -617,7 +617,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Exposure2012"))
     {
-      float v = atof((char *)value);
+      float v = g_ascii_strtod((char *)value, NULL);
       if (v != 0.0)
       {
         has_exposure = TRUE;
@@ -690,15 +690,15 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricShadowSplit"))
     {
-      ptc_split[0] = atof((char *)value) / 100.0;
+      ptc_split[0] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricMidtoneSplit"))
     {
-      ptc_split[1] = atof((char *)value) / 100.0;
+      ptc_split[1] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ParametricHighlightSplit"))
     {
-      ptc_split[2] = atof((char *)value) / 100.0;
+      ptc_split[2] = g_ascii_strtod((char *)value, NULL) / 100.0;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "ToneCurveName2012"))
     {
@@ -909,7 +909,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "SplitToningBalance"))
     {
-      float v = atof((char *)value);
+      float v = g_ascii_strtod((char *)value, NULL);
       pst.balance = lr2dt_splittoning_balance(v);
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Clarity2012"))
