@@ -509,13 +509,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     }
 
     /* Read lens name */
-    if ( (pos=Exiv2::lensName(exifData)) != exifData.end() && pos->size())
-    {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
-    }
-    else if ((((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
-              ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
-             ) && pos->size())
+    if ((((pos = exifData.findKey(Exiv2::ExifKey("Exif.CanonCs.LensType"))) != exifData.end()) ||
+         ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
+        ) && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
@@ -529,6 +525,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
     }
 #endif
+    else if ( (pos=Exiv2::lensName(exifData)) != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+    }
 
 #if 0
     /* Read flash mode */
