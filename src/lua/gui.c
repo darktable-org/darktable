@@ -19,6 +19,8 @@
 #include "common/collection.h"
 #include "common/selection.h"
 #include "common/darktable.h"
+#include "control/control.h"
+#include "control/settings.h"
 #include "lua/gui.h"
 #include "lua/image.h"
 #include "lua/types.h"
@@ -55,15 +57,54 @@ static int selection_cb(lua_State *L)
   return 1;
 }
 
+static int hovered_cb(lua_State *L)
+{
+  int32_t mouse_over_id = -1;
+  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  if(mouse_over_id ==-1) {
+    lua_pushnil(L);
+  } else {
+    luaA_push(L,dt_lua_image_t,&mouse_over_id);
+  }
+  return 1;
+}
+
+static int act_on_cb(lua_State *L)
+{
+
+  int32_t imgid = dt_view_get_image_to_act_on();
+  lua_newtable(L);
+  if(imgid != -1) {
+    luaA_push(L,dt_lua_image_t,&imgid);
+    luaL_ref(L,-2);
+    return 1;
+  } else {
+    GList *image = dt_collection_get_selected(darktable.collection);
+    while(image)
+    {
+      luaA_push(L,dt_lua_image_t,&image->data);
+      luaL_ref(L,-2);
+      image = g_list_delete_link(image, image);
+    }
+    return 1;
+  }
+}
+
 
 int dt_lua_init_gui(lua_State * L)
 {
 
-  /* images */
   dt_lua_push_darktable_lib(L);
-  dt_lua_goto_subtable(L,"gui");
+  /* images */
+  typedef void* dt_lua_gui_lib;
+  void* tmp = NULL;
+  dt_lua_init_type(L,dt_lua_gui_lib);
   lua_pushcfunction(L,selection_cb);
-  lua_setfield(L,-2,"selection");
+  dt_lua_register_type_callback_stack(L,dt_lua_gui_lib,"selection");
+  dt_lua_register_type_callback(L,dt_lua_gui_lib,hovered_cb,NULL,"hovered",NULL);
+  dt_lua_register_type_callback(L,dt_lua_gui_lib,act_on_cb,NULL,"action_images",NULL);
+  luaA_push(L,dt_lua_gui_lib,&tmp);
+  lua_setfield(L,-2,"gui");
   lua_pop(L,1);
   return 0;
 }
