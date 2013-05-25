@@ -128,6 +128,9 @@ button_pressed (GtkButton *button, gpointer user_data)
   {
     dt_collection_deserialize(line);
     g_free(line);
+    // position will be updated when the list of recent collections is.
+    // that way it'll also catch cases when this is triggered by a signal,
+    // not only our button press here.
   }
 }
 
@@ -141,6 +144,11 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   char buf[bufsize];
   if(dt_collection_serialize(buf, bufsize)) return;
 
+  // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
+  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
+  uint32_t new_pos = 0;
+
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
   {
@@ -150,6 +158,8 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     if(!line) continue;
     if(!strcmp(line, buf))
     {
+      snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+      new_pos = dt_conf_get_int(confname);
       n = k;
       break;
     }
@@ -177,14 +187,19 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     {
       snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k-1);
       gchar *line1 = dt_conf_get_string(confname);
+      snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k-1);
+      uint32_t pos1 = dt_conf_get_int(confname);
       if(line1 && line1[0] != '\0')
       {
         snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
         dt_conf_set_string(confname, line1);
+        snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+        dt_conf_set_int(confname, pos1);
       }
       g_free(line1);
     }
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", new_pos);
   }
   // update button descriptions:
   for(int k=0; k<NUM_LINES; k++)
@@ -220,6 +235,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(d->item[k].button, FALSE);
     gtk_widget_set_visible(d->item[k].button, TRUE);
   }
+  dt_view_lighttable_set_position(darktable.view_manager, new_pos);
 }
 
 void
@@ -231,6 +247,8 @@ gui_reset (dt_lib_module_t *self)
   {
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
     dt_conf_set_string(confname, "");
+    snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+    dt_conf_set_int(confname, 0);
   }
   _lib_recentcollection_updated(NULL,self);
 }

@@ -203,7 +203,10 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
+      struct dt_view_t *view;
       void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
+      void (*set_position)(struct dt_view_t *view, uint32_t pos);
+      uint32_t (*get_position)(struct dt_view_t *view);
     } lighttable;
 
     /* tethering view proxy object */
@@ -327,6 +330,10 @@ int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
+/** set first visible image offset */
+void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
+/** read first visible image offset */
+uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm,int iid);
