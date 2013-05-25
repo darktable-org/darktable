@@ -270,14 +270,24 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   /* prepare a new main query statement for collection */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
 
-  /* set the centerview scroll to top */
-  if(instance != NULL)
-  {
-    lib->first_visible_filemanager = lib->offset = 0;
-    lib->offset_changed = TRUE;
-  }
-
   dt_control_queue_redraw_center();
+}
+
+static void _set_position(dt_view_t *self, uint32_t pos)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->first_visible_filemanager = lib->first_visible_zoomable = lib->offset = pos;
+  lib->offset_changed = TRUE;
+  dt_control_queue_redraw_center();
+}
+
+static uint32_t _get_position(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(lib->layout == 1)
+    return MAX(0, lib->first_visible_filemanager);
+  else
+    return MAX(0, lib->first_visible_zoomable);
 }
 
 void init(dt_view_t *self)
@@ -285,6 +295,10 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
   memset(self->data,0,sizeof(dt_library_t));
+
+  darktable.view_manager->proxy.lighttable.set_position = _set_position;
+  darktable.view_manager->proxy.lighttable.get_position = _get_position;
+  darktable.view_manager->proxy.lighttable.view = self;
 
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
