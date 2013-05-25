@@ -869,16 +869,8 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         bx /= 3.0*surf;
         by /= 3.0*surf;
 
-        //first, we have to be sure that the shape is not too small to be resized
-        if (amount < 1.0)
-        {
-          for(int k = 0; k < nb; k++)
-          {
-            dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
-            float l = (point->corner[0]-bx)*(point->corner[0]-bx) + (point->corner[1]-by)*(point->corner[1]-by);
-            if ( l < 0.0005f) return 1;
-          }
-        }
+        if (amount < 1.0 && surf < 0.00001) return 1;
+        
         //now we move each point
         for(int k = 0; k < nb; k++)
         {
