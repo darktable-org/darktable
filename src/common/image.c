@@ -92,6 +92,22 @@ dt_image_film_roll_name(const char *path)
   return folder;
 }
 
+void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char *f = (char *)sqlite3_column_text(stmt, 0);
+    snprintf(pathname, len, "%s", f);
+  }
+  sqlite3_finalize(stmt);
+  pathname[len-1] = '\0';
+}
+
+
 void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
 {
   sqlite3_stmt *stmt;
