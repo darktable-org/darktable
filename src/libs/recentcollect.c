@@ -19,10 +19,13 @@
 #include "common/collection.h"
 #include "control/conf.h"
 #include "control/signal.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "libs/lib.h"
 #include "libs/collect.h"
+
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -66,6 +69,33 @@ position ()
 {
   return 350;
 }
+
+static gboolean
+_goto_previous(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
+{
+  gchar *line = dt_conf_get_string("plugins/lighttable/recentcollect/line1");
+  if(line)
+  {
+    dt_collection_deserialize(line);
+    g_free(line);
+  }
+  return TRUE;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, N_("jump back to previous collection"),
+                        GDK_k, GDK_CONTROL_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_goto_previous), (gpointer)self, NULL);
+  dt_accel_connect_lib(self, "jump back to previous collection", closure);
+}
+
 
 static void
 pretty_print(char *buf, char *out)
