@@ -26,11 +26,13 @@
 #include "common/image_cache.h"
 #include "libs/lib.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #ifdef HAVE_MAP
 #include "osd-utils.h"
 #endif
 
 #include <sys/param.h>
+#include <gdk/gdkkeysyms.h>
 
 DT_MODULE(1)
 
@@ -342,10 +344,9 @@ fill_minuses:
 
 }
 
-static gboolean
-_filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+static void
+_jump_to()
 {
-  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
   int32_t imgid = -1;
   DT_CTL_GET_GLOBAL(imgid, lib_image_mouse_over_id);
   if(imgid == -1)
@@ -370,6 +371,22 @@ _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
     snprintf(collect, 1024, "1:0:0:%s$", path);
     dt_collection_deserialize(collect);
   }
+}
+
+static gboolean
+_filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+{
+  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  _jump_to();
+  return TRUE;
+}
+
+static gboolean
+_jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable,
+                           guint keyval, GdkModifierType modifier,
+                           gpointer data)
+{
+  _jump_to();
   return TRUE;
 }
 
@@ -379,6 +396,18 @@ static void _mouse_over_image_callback(gpointer instance,gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   if(dt_control_running())
     _metadata_view_update_values(self);
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, N_("jump to film roll"),
+                        GDK_j, GDK_CONTROL_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  GClosure *closure = g_cclosure_new(G_CALLBACK(_jump_to_accel), (gpointer)self, NULL);
+  dt_accel_connect_lib(self, "jump to film roll", closure);
 }
 
 void gui_init(dt_lib_module_t *self)
