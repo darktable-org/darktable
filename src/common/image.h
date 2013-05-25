@@ -125,6 +125,8 @@ int dt_image_is_raw(const dt_image_t *img);
 int dt_image_is_hdr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. */
 void dt_image_full_path(const int imgid, char *pathname, int len);
+/** returns the full directory of the associated film roll. */
+void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */

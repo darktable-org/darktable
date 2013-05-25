@@ -20,6 +20,7 @@
 #include "develop/develop.h"
 #include "common/metadata.h"
 #include "common/debug.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/image_cache.h"
@@ -201,6 +202,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     dt_image_film_roll(img, value, vl);
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
+    const int tp = 512;
+    char tooltip[tp];
+    snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
+    g_object_set(G_OBJECT(d->metadata[md_internal_filmroll]), "tooltip-text", tooltip, (char *)NULL);
 
     snprintf(value,vl,"%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
@@ -337,6 +342,37 @@ fill_minuses:
 
 }
 
+static gboolean
+_filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
+{
+  if(event->type != GDK_2BUTTON_PRESS) return FALSE;
+  int32_t imgid = -1;
+  DT_CTL_GET_GLOBAL(imgid, lib_image_mouse_over_id);
+  if(imgid == -1)
+  {
+    sqlite3_stmt *stmt;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select imgid from selected_images", -1, &stmt, NULL);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+      imgid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
+  if(imgid != -1)
+  {
+    const int len = 512;
+    char path[len];
+    const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_film_roll_directory(img, path, len);
+    dt_image_cache_read_release(darktable.image_cache, img);
+    char collect[1024];
+    snprintf(collect, 1024, "1:0:0:%s$", path);
+    dt_collection_deserialize(collect);
+  }
+  return TRUE;
+}
+
 /* calback for the mouse over image change signal */
 static void _mouse_over_image_callback(gpointer instance,gpointer user_data)
 {
@@ -358,12 +394,20 @@ void gui_init(dt_lib_module_t *self)
   /* intialize the metadata name/value labels */
   for (int k = 0; k < md_size; k++)
   {
+    GtkWidget *evb = gtk_event_box_new();
+    gtk_widget_set_name(evb, "brightbg");
     GtkLabel *name = GTK_LABEL(gtk_label_new(_md_labels[k]));
     d->metadata[k] = GTK_LABEL(gtk_label_new("-"));
+    gtk_container_add(GTK_CONTAINER(evb), GTK_WIDGET(d->metadata[k]));
+    if(k == md_internal_filmroll)
+    {
+      // film roll jump to:
+      g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+    }
     gtk_misc_set_alignment(GTK_MISC(name), 0.0, 0.5);
     gtk_misc_set_alignment(GTK_MISC(d->metadata[k]), 0.0, 0.5);
     gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(name), 0, 1, k, k+1, GTK_FILL, 0, 5, 0);
-    gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->metadata[k]), 1, 2, k, k+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
+    gtk_table_attach(GTK_TABLE(self->widget), evb, 1, 2, k, k+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   }
 
   /* lets signup for mouse over image change signals */

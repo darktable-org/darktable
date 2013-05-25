@@ -270,6 +270,7 @@ class "GtkWidget" style "clearlooks-default"
 class "GtkRange" style "clearlooks-scrollbar"
 widget "*.plugins_vbox.GtkEventBox" style "clearlooks-brightbg"
 widget "*.plugins_vbox_left.GtkEventBox" style "clearlooks-brightbg"
+widget "*.plugins_vbox_left.*.GtkTable.*" style "clearlooks-plugin"
 # widget "*.left_scrolled.GtkEventBox" style "clearlooks-brightbg"
 #widget "*.GtkEventBox.GtkVBox.GtkHBox.GtkButton" style "clearlooks-vbrightbg"
 
