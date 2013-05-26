@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-16 23:26+0200\n"
-"PO-Revision-Date: 2013-05-16 23:26+0100\n"
+"POT-Creation-Date: 2013-05-26 13:26+0200\n"
+"PO-Revision-Date: 2013-05-26 13:27+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -437,7 +437,7 @@ msgstr ""
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:964
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:733
+#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:735
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "Rot"
@@ -449,14 +449,14 @@ msgstr "Gelb"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:968
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:734
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:736
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "Grün"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:970
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:735
+#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:737
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
 msgid "blue"
 msgstr "Blau"
@@ -499,7 +499,7 @@ msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
 msgid "error loading file `%s'"
 msgstr "Fehler beim Laden von Datei ‚%s‘"
 
-#: ../src/common/darktable.c:478
+#: ../src/common/darktable.c:479
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEHLER : ungültiges temporäres Verzeichnis : %s\n"
@@ -523,13 +523,13 @@ msgstr ""
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/develop.c:1109 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1112 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "ein"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1109
+#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1112
 #: ../src/imageio/format/j2k.c:601 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -576,21 +576,21 @@ msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
 msgid "generic poissonian"
 msgstr "generische Poisson-Verteilung"
 
-#: ../src/common/ratings.c:45
+#: ../src/common/ratings.c:47
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "%d Bild abgelehnt"
 msgstr[1] "%d Bilder abgelehnt"
 
-#: ../src/common/ratings.c:47
+#: ../src/common/ratings.c:49
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "wende Bewertung %d auf %d Bild an"
 msgstr[1] "wende Bewertung %d auf %d Bilder an"
 
-#: ../src/common/ratings.c:71
+#: ../src/common/ratings.c:73
 msgid "no images selected to apply rating"
 msgstr "kein Bild ausgewählt um Bewertung anzuwenden"
 
@@ -1166,7 +1166,7 @@ msgstr "Deckkraft des Überblendens anpassen"
 msgid "choose blending mode"
 msgstr "Modus des Überblendens wählen"
 
-#: ../src/develop/develop.c:932
+#: ../src/develop/develop.c:935
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
@@ -1195,7 +1195,7 @@ msgstr "abwärtsschieben"
 
 #. delete
 #: ../src/develop/imageop.c:1151 ../src/libs/image.c:143
-#: ../src/libs/styles.c:395 ../src/libs/tagging.c:487
+#: ../src/libs/styles.c:395 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "löschen"
 
@@ -1213,7 +1213,7 @@ msgstr "%s ist ausgeschaltet"
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:747 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "Voreinstellung"
@@ -2711,19 +2711,19 @@ msgid "radius"
 msgstr "Radius"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:100
 msgctxt "accel"
 msgid "red"
 msgstr "Rot"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:101
 msgctxt "accel"
 msgid "green"
 msgstr "Grün"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:102
 msgctxt "accel"
 msgid "blue"
 msgstr "Blau"
@@ -4629,19 +4629,19 @@ msgstr "Überbelichtet"
 msgid "unbreak input profile"
 msgstr "Eingabeprofil korrigieren"
 
-#: ../src/iop/profile_gamma.c:122 ../src/iop/tonecurve.c:242
+#: ../src/iop/profile_gamma.c:125 ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "linear"
 
-#: ../src/iop/profile_gamma.c:123
+#: ../src/iop/profile_gamma.c:126
 msgid "linear part"
 msgstr "linearer Teil"
 
-#: ../src/iop/profile_gamma.c:136
+#: ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr "Gamma"
 
-#: ../src/iop/profile_gamma.c:137
+#: ../src/iop/profile_gamma.c:140
 msgid "gamma exponential factor"
 msgstr "Gamma-Exponent"
 
@@ -4927,55 +4927,55 @@ msgstr "Anzahl Korrekturen:"
 msgid "spot removal only supports up to 32 spots"
 msgstr "Fleckenentfernung unterstützt nur 32 Flecken"
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:80
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Weißabgleich"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:385
+#: ../src/iop/temperature.c:387
 msgid "camera white balance"
 msgstr "Weißabgleich der Kamera"
 
-#: ../src/iop/temperature.c:386
+#: ../src/iop/temperature.c:388
 msgid "spot white balance"
 msgstr "Weißabgleich manuell setzen"
 
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:389
 msgid "passthrough"
 msgstr "Durchschleifen"
 
-#: ../src/iop/temperature.c:731
+#: ../src/iop/temperature.c:733
 msgid "tint"
 msgstr "Farbton"
 
-#: ../src/iop/temperature.c:732
+#: ../src/iop/temperature.c:734
 msgid "temperature"
 msgstr "Farbtemperatur"
 
-#: ../src/iop/temperature.c:747
+#: ../src/iop/temperature.c:749
 msgid "choose white balance preset from camera"
 msgstr "aus den Weißabgleichsvorgaben der Kamera wählen"
 
-#: ../src/iop/temperature.c:750
+#: ../src/iop/temperature.c:752
 msgid "finetune"
 msgstr "anpassen"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:753
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f Mired"
 
-#: ../src/iop/temperature.c:755
+#: ../src/iop/temperature.c:757
 msgid "fine tune white balance preset"
 msgstr "Weißabgleichsvorgabe feinabstimmen"
 
@@ -6954,7 +6954,7 @@ msgstr[1] ""
 msgid "delete tag?"
 msgstr "Tag löschen?"
 
-#: ../src/libs/tagging.c:416
+#: ../src/libs/tagging.c:417
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -6962,27 +6962,27 @@ msgstr ""
 "angehängte Tags,\n"
 "Doppelklick zum Entfernen"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:424
 msgid "attach"
 msgstr "anhängen"
 
-#: ../src/libs/tagging.c:425
+#: ../src/libs/tagging.c:426
 msgid "attach tag to all selected images"
 msgstr "Tag an alle ausgewählten Bilder anhängen"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:431
 msgid "detach"
 msgstr "entfernen"
 
-#: ../src/libs/tagging.c:432
+#: ../src/libs/tagging.c:433
 msgid "detach tag from all selected images"
 msgstr "Tag von allen ausgewählten Bildern entfernen"
 
-#: ../src/libs/tagging.c:445
+#: ../src/libs/tagging.c:446
 msgid "enter tag name"
 msgstr "Tag-Name eingeben"
 
-#: ../src/libs/tagging.c:473
+#: ../src/libs/tagging.c:474
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -6990,11 +6990,11 @@ msgstr ""
 "verwandte Tags,\n"
 "Doppelklick zum Anhängen"
 
-#: ../src/libs/tagging.c:480
+#: ../src/libs/tagging.c:481
 msgid "new"
 msgstr "neu"
 
-#: ../src/libs/tagging.c:482
+#: ../src/libs/tagging.c:483
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -7002,7 +7002,7 @@ msgstr ""
 "neuen Tag mit dem einge-\n"
 "gebenen Namen erstellen"
 
-#: ../src/libs/tagging.c:489
+#: ../src/libs/tagging.c:490
 msgid "delete selected tag"
 msgstr "ausgewählten Tag löschen"
 
@@ -7096,37 +7096,37 @@ msgstr "Filmstreifen"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1591
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1572
 msgctxt "accel"
 msgid "rate desert"
 msgstr "kein Stern"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1592
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1573
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 Stern"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1593
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1574
 msgctxt "accel"
 msgid "rate 2"
-msgstr "2 Stern"
+msgstr "2 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1594
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1575
 msgctxt "accel"
 msgid "rate 3"
-msgstr "3 Stern"
+msgstr "3 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1595
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1576
 msgctxt "accel"
 msgid "rate 4"
-msgstr "4 Stern"
+msgstr "4 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1596
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1577
 msgctxt "accel"
 msgid "rate 5"
-msgstr "5 Stern"
+msgstr "5 Sterne"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1597
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1578
 msgctxt "accel"
 msgid "rate reject"
 msgstr "abgelehnt"
@@ -7164,27 +7164,27 @@ msgstr "Bild duplizieren"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1591
 msgctxt "accel"
 msgid "color red"
 msgstr "Farbmarkierung Rot"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1592
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Farbmarkierung Gelb"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1612
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1593
 msgctxt "accel"
 msgid "color green"
 msgstr "Farbmarkierung Grün"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1613
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1594
 msgctxt "accel"
 msgid "color blue"
 msgstr "Farbmarkierung Blau"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1614
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1595
 msgctxt "accel"
 msgid "color purple"
 msgstr "Farbmarkierung Violett"
@@ -7471,59 +7471,59 @@ msgid "or add images in the collection module in the left panel"
 msgstr "oder Bilder links im Sammlungs-Plugin hinzufügen."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1600
+#: ../src/views/lighttable.c:1581
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigiere hoch"
 
-#: ../src/views/lighttable.c:1602
+#: ../src/views/lighttable.c:1583
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigiere runter"
 
-#: ../src/views/lighttable.c:1604
+#: ../src/views/lighttable.c:1585
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigiere Seite hoch"
 
-#: ../src/views/lighttable.c:1606
+#: ../src/views/lighttable.c:1587
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigiere Seite runter"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1617
+#: ../src/views/lighttable.c:1598
 msgctxt "accel"
 msgid "scroll up"
 msgstr "scrolle nach oben"
 
-#: ../src/views/lighttable.c:1619
+#: ../src/views/lighttable.c:1600
 msgctxt "accel"
 msgid "scroll down"
 msgstr "scrolle nach unten"
 
-#: ../src/views/lighttable.c:1621
+#: ../src/views/lighttable.c:1602
 msgctxt "accel"
 msgid "scroll left"
 msgstr "scrolle nach links"
 
-#: ../src/views/lighttable.c:1623
+#: ../src/views/lighttable.c:1604
 msgctxt "accel"
 msgid "scroll right"
 msgstr "scrolle nach rechts"
 
-#: ../src/views/lighttable.c:1625
+#: ../src/views/lighttable.c:1606
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scrolle in die Mitte"
 
-#: ../src/views/lighttable.c:1627
+#: ../src/views/lighttable.c:1608
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Bilder wieder am Raster ausrichten"
 
 #. Preview key
-#: ../src/views/lighttable.c:1631
+#: ../src/views/lighttable.c:1612
 msgctxt "accel"
 msgid "preview"
 msgstr "Vorschau"
