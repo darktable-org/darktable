@@ -223,11 +223,11 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   if (g_strcmp0(name, newname))
   {
     char tmp_accel[1024];
-    snprintf(tmp_accel, 1024, "styles/Apply %s", name);
+    snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
 
     gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
-    snprintf(tmp_accel, 1024, "styles/Apply %s", newname);
+    snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -297,7 +297,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
 
     char tmp_accel[1024];
     gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
-    snprintf(tmp_accel,1024,"styles/Apply %s",newname);
+    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -358,7 +358,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 
     char tmp_accel[1024];
     gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
-    snprintf(tmp_accel,1024,"styles/Apply %s",name);
+    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),name);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -486,7 +486,7 @@ dt_styles_delete_by_name(const char *name)
     sqlite3_finalize (stmt);
 
     char tmp_accel[1024];
-    snprintf(tmp_accel,1024,"styles/Apply %s",name);
+    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),name);
     dt_accel_deregister_global(tmp_accel);
   }
 }
@@ -997,7 +997,7 @@ void init_styles_key_accels()
     {
       dt_style_t *style = (dt_style_t *)result->data;
       char tmp_accel[1024];
-      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),style->name);
       dt_accel_register_global( tmp_accel, 0, 0);
 
       g_free(style->name);
@@ -1021,7 +1021,7 @@ void connect_styles_key_accels()
                   G_CALLBACK(_apply_style_shortcut_callback),
                   style->name, _destroy_style_shortcut_callback);
       char tmp_accel[1024];
-      snprintf(tmp_accel,1024,"styles/Apply %s",style->name);
+      snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),style->name);
       dt_accel_connect_global(tmp_accel, closure);
 
       //g_free(style->name); freed at closure destruction
