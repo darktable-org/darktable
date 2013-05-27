@@ -128,24 +128,6 @@ basecurve_preset_t;
 #define m MONOTONE_HERMITE
 static const basecurve_preset_t basecurve_presets[] =
 {
-  // just remove noise in dark areas:
-  // pascals canon eos curve (well tested):
-  // pascals alternate canon eos curve for 5D Mark II and III and potentially a future IV
-  // pascals nikon curve (new curve, needs testing):
-  // pascals alternate nikon curve for (four digit) Nikon Dxxxx models
-  // pascals sony alpha curve (needs testing):
-  // pascals pentax curve (needs testing):
-  // (needs testing):
-  // pascals olympus curve (needs testing):
-  // pascals alternate olympus curve for E-M5
-  // pascals panasonic/leica curves (needs testing):
-  // (needs testing):
-  // pascals kodak curve
-  // pascals minolta curve
-  // pascals samsung curve (needs testing):
-  // pascals fujifilm curve
-  // Fotogenetic - Point and shoot v4.1
-  // Fotogenetic - EV3 v4.2
   {dark_contrast, "", "", 0, 51200,                        {{{{0.000000, 0.000000},{0.072581, 0.040000},{0.157258, 0.138710},{0.491935, 0.491935},{0.758065, 0.758065},{1.000000, 1.000000}}}, {6}, {m}}, 0},
   {canon_eos, "Canon", "", 0, 51200,                       {{{{0.000000, 0.000000},{0.028226, 0.029677},{0.120968, 0.232258},{0.459677, 0.747581},{0.858871, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
   {canon_eos_alt, "Canon", "EOS 5D Mark", 0, 51200,        {{{{0.000000, 0.000000},{0.026210, 0.029677},{0.108871, 0.232258},{0.350806, 0.747581},{0.669355, 0.967742},{1.000000, 1.000000}}}, {6}, {m}}, 1},
