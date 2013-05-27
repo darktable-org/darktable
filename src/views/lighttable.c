@@ -303,8 +303,8 @@ void init(dt_view_t *self)
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;
   lib->selection_origin_idx = -1;
-  lib->first_visible_zoomable = dt_conf_get_int("lighttable/ui/first_visible_zoomable");
-  lib->first_visible_filemanager = dt_conf_get_int("lighttable/ui/first_visible_filemanager");
+  lib->first_visible_zoomable = -1;
+  lib->first_visible_filemanager = -1;
   lib->button = 0;
   lib->modifiers = 0;
   lib->center = lib->pan = lib->track = 0;
@@ -337,8 +337,6 @@ void init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  dt_conf_set_int("lighttable/ui/first_visible_filemanager", lib->first_visible_filemanager);
-  dt_conf_set_int("lighttable/ui/first_visible_zoomable", lib->first_visible_zoomable);
   dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
   free(self->data);

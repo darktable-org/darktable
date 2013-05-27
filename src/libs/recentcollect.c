@@ -44,6 +44,7 @@ typedef struct dt_lib_recentcollect_t
 {
   // 1st is always most recently used entry (buttons stay fixed)
   dt_lib_recentcollect_item_t item[NUM_LINES];
+  int inited;
 }
 dt_lib_recentcollect_t;
 
@@ -175,8 +176,17 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   if(dt_collection_serialize(buf, bufsize)) return;
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
+  uint32_t curr_pos = 0;
+  if(d->inited)
+  {
+    curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
+  }
+  else
+  {
+    curr_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
+    d->inited = 1;
+  }
   uint32_t new_pos = 0;
 
   int n = -1;
@@ -290,6 +300,7 @@ gui_init (dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_recentcollect_t));
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 0);
+  d->inited = 0;
 
   // add buttons in the list, set them all to invisible
   for(int k=0; k<NUM_LINES; k++)
@@ -311,6 +322,8 @@ gui_init (dt_lib_module_t *self)
 void
 gui_cleanup (dt_lib_module_t *self)
 {
+  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
   free(self->data);
   self->data = NULL;
