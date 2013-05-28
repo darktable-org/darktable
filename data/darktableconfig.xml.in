@@ -1964,6 +1964,7 @@
       <enum>
         <option>linear</option>
         <option>logarithmic</option>
+        <option>waveform</option>
       </enum>
     </type>
     <default>logarithmic</default>
