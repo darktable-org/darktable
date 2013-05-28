@@ -44,6 +44,9 @@
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START     50
 #define DT_DEV_AVERAGE_DELAY_COUNT              5
 
+
+const gchar* dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
+
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 {
   memset(dev,0,sizeof(dt_develop_t));
@@ -71,13 +74,16 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->pipe = dev->preview_pipe = NULL;
   dt_pthread_mutex_init(&dev->pipe_mutex, NULL);
   dt_pthread_mutex_init(&dev->preview_pipe_mutex, NULL);
+//   dt_pthread_mutex_init(&dev->histogram_waveform_mutex, NULL);
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
   if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "linear") == 0)
-    dev->histogram_linear = TRUE;
-  else
-    dev->histogram_linear = FALSE;
+    dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
+  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "logarithmic") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
+  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "waveform") == 0)
+    dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
 
   if(dev->gui_attached)
   {
@@ -113,6 +119,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   // image_cache does not have to be unref'd, this is done outside develop module.
   dt_pthread_mutex_destroy(&dev->pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
+//   dt_pthread_mutex_destroy(&dev->histogram_waveform_mutex);
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);

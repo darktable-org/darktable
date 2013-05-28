@@ -1834,6 +1834,68 @@ post_process_collect_info:
       // don't count <= 0 pixels
       for(int k=19; k<4*64; k+=4) dev->histogram_max = dev->histogram_max > dev->histogram[k] ? dev->histogram_max : dev->histogram[k];
 
+      // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct size (thus the weird gui stuff :().
+      // this HAS to be done on the float input data, otherwise we get really ugly artefacts due to rounding issues when putting colors into the bins.
+//       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
+      if(dev->histogram_waveform_width != 0 && input)
+      {
+        uint32_t *buf = (uint32_t*)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3, sizeof(uint32_t));
+        memset(dev->histogram_waveform, 0, sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
+
+        const double bin_width = (double)(roi_in.width) / (double)dev->histogram_waveform_width, bin_height = 255.0 / (double)(dev->histogram_waveform_height - 1);
+        float *pixel = (float *)input;
+//         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
+
+        // count the colors into buf ...
+        for(int y = 0; y <= roi_in.height; y ++)
+        {
+          for(int x = 0; x <= roi_in.width; x ++)
+          {
+            float rgb[3];
+            for(int k=0; k<3; k++)
+              rgb[k] = pixel[4*y*roi_in.width+4*x+2-k];
+
+            const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
+            for(int k = 0; k < 3; k++)
+            {
+              const int out_y = 255 * (1.0 - CLAMP(rgb[k], 0.0, 1.0)) / bin_height;
+              uint32_t * const out = buf + (out_y * dev->histogram_waveform_width * 3 + out_x * 3 + k);
+              (*out)++;
+//               mincol[k] = MIN(mincol[k], *out);
+//               maxcol[k] = MAX(maxcol[k], *out);
+            }
+          }
+        }
+
+        // TODO: Find a nicer function to map buf -> image than just clipping
+//         float factor[3];
+//         for(int k = 0; k < 3; k++)
+//           factor[k] = 255.0 / (float)(maxcol[k] - mincol[k]); // leave some clipping
+
+        // ... and scale that into a nice image. putting the pixels into the image directly gets too saturated/clips.
+        for(int y = 0; y < dev->histogram_waveform_height; y++)
+        {
+          for(int x = 0; x < dev->histogram_waveform_width; x++)
+          {
+            uint32_t * const in = buf + (y * dev->histogram_waveform_width + x) * 3;
+            uint8_t * const out = (uint8_t*)(dev->histogram_waveform + (y * dev->histogram_waveform_width + x));
+            for(int k = 0; k < 3; k++)
+            {
+              if(in[k] == 0) continue;
+              out[k] = CLAMP(in[k] * 0.5, 5, 255);
+//               if(in[k] == 0)
+//                 out[k] = 0;
+//               else
+//                 out[k] = (float)(in[k] - mincol[k]) * factor[k];
+            }
+          }
+        }
+
+        free(buf);
+      }
+//       dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
+
+
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
       /* raise preview pipe finised signal */

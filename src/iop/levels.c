@@ -353,6 +353,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
+  dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   int width = widget->allocation.width, height = widget->allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
@@ -442,7 +443,10 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
+  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+    dt_draw_waveform_lines(cr, 0, 0, width, height);
+  else
+    dt_draw_vertical_lines(cr, 4, 0, 0, width, height);
 
   // Drawing the vertical line indicators
   cairo_set_line_width(cr, 2.);
@@ -496,16 +500,15 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   // only if the module is enabled
   if (self->enabled)
   {
-    dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
     hist = self->histogram;
-    hist_max = dev->histogram_linear?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
     if(hist && hist_max > 0)
     {
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 0);
+      dt_draw_histogram_8(cr, hist, 0, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
     }
   }

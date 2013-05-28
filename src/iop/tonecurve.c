@@ -609,6 +609,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_develop_t *dev = darktable.develop;
 
   const float color_labels_left[3][3] = { { 0.3f, 0.3f,  0.3f  },
     { 0.0f, 0.34f, 0.27f },
@@ -704,6 +705,9 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
+  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
+    dt_draw_waveform_lines(cr, 0, 0, width, height);
+  else
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // if autoscale_ab is on: do not display a and b curves
@@ -727,7 +731,6 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // only if module is enabled
   if (self->enabled)
   {
-    dt_develop_t *dev = darktable.develop;
     float *hist, hist_max;
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
@@ -740,13 +743,13 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     raw_mean_output = self->picked_output_color;
 
     hist = self->histogram;
-    hist_max = dev->histogram_linear?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
     if(hist && hist_max > 0)
     {
       cairo_save(cr);
       cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, ch);
+      dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
     }
 

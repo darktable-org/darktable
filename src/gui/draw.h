@@ -76,6 +76,31 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, cons
   }
 }
 
+static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int top, const int right, const int bottom)
+{
+//   float width = right - left;
+  float height = bottom - top;
+
+  int num = 8;
+
+  cairo_save(cr);
+
+  for(int k = 1; k < num; k++)
+  {
+    if(k == num/2) continue;
+    dt_draw_line(cr, left, top + k/(float)num*height, right, top + k/(float)num*height);
+    cairo_stroke(cr);
+  }
+
+  double dashes = 4.0;
+  cairo_set_dash(cr, &dashes, 1, 0);
+
+  dt_draw_line(cr, left, top + 0.5*height, right, top + 0.5*height);
+  cairo_stroke(cr);
+
+  cairo_restore(cr);
+}
+
 static inline void dt_draw_vertical_lines(cairo_t *cr, const int num,
     const int left, const int top,
     const int right, const int bottom)
@@ -198,12 +223,19 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t cha
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel)
+static inline void dt_draw_histogram_8(cairo_t *cr, float *hist, int32_t channel, dt_dev_histogram_type_t type)
 {
-  if(darktable.develop->histogram_linear == TRUE)
-    dt_draw_histogram_8_linear(cr, hist, channel);
-  else
-    dt_draw_histogram_8_log(cr, hist, channel);
+  switch(type)
+  {
+    case DT_DEV_HISTOGRAM_LOGARITHMIC:
+      dt_draw_histogram_8_log(cr, hist, channel);
+      break;
+    case DT_DEV_HISTOGRAM_LINEAR:
+      dt_draw_histogram_8_linear(cr, hist, channel);
+      break;
+    case DT_DEV_HISTOGRAM_WAVEFORM:
+    default: g_assert_not_reached();
+  }
 }
 
 /** transform a data blob from cairo's premultiplied rgba/bgra to GdkPixbuf's un-premultiplied bgra/rgba */

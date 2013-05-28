@@ -49,6 +49,16 @@ typedef enum dt_dev_overexposed_colorscheme_t
 }
 dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_histogram_type_t
+{
+  DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
+  DT_DEV_HISTOGRAM_LINEAR,
+  DT_DEV_HISTOGRAM_WAVEFORM,
+  DT_DEV_HISTOGRAM_N // needs to be the last one
+} dt_dev_histogram_type_t;
+
+extern const gchar* dt_dev_histogram_type_names[];
+
 struct dt_dev_pixelpipe_t;
 typedef struct dt_develop_t
 {
@@ -92,7 +102,10 @@ typedef struct dt_develop_t
   // histogram for display.
   float *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   float histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  gboolean histogram_linear;
+  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height, histogram_waveform_stride;
+  // we should process the waveform histogram in the correct size to make it not look like crap. since this requires gui knowledge we need this mutex
+//   dt_pthread_mutex_t histogram_waveform_mutex;
+  dt_dev_histogram_type_t histogram_type;
 
   // list of forms iop can use for masks or whatever
   GList *forms;
