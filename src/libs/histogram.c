@@ -339,8 +339,18 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
     cairo_save(cr);
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
-      // TODO: make the color channel selector work!
-      cairo_surface_t *source = cairo_image_surface_create_for_data((unsigned char *)dev->histogram_waveform,
+      // make the color channel selector work:
+      uint8_t *buf = (uint8_t*)malloc(sizeof(uint8_t) * height * stride);
+      uint8_t mask[3] = {d->blue, d->green, d->red};
+      memcpy(buf, dev->histogram_waveform, sizeof(uint8_t) * height * stride);
+      for(int y = 0; y < height; y++)
+        for(int x = 0; x < width; x++)
+          for(int k = 0; k < 3; k++)
+          {
+            buf[y * stride + x * 4 + k] *= mask[k];
+          }
+
+      cairo_surface_t *source = cairo_image_surface_create_for_data(buf,
                                                 CAIRO_FORMAT_ARGB32,
                                                 width, height, stride);
 
@@ -348,6 +358,7 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
+      free(buf);
     }
     else
     {
