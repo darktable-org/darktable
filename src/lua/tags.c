@@ -130,7 +130,7 @@ static int tag_lib_create(lua_State *L)
 {
   const char * name = luaL_checkstring(L,1);
   dt_lua_tag_t tagid;
-  if(!dt_tag_new(name,&tagid)) {
+  if(!dt_tag_new_from_gui(name,&tagid)) {
     return luaL_error(L,"error creating tag %s\n",name);
   }
   luaA_push(L,dt_lua_tag_t,&tagid);
