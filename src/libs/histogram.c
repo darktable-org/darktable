@@ -396,12 +396,15 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   char exifline[50];
   cairo_move_to (cr, .02*width, .98*height);
   dt_image_print_exif(&dev->image_storage, exifline, 50);
-  cairo_show_text(cr, exifline);
-  /*cairo_text_path(cr, exifline);
-  cairo_fill_preserve(cr);
-  cairo_set_line_width(cr, 1.0);
-  cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-  cairo_stroke(cr);*/
+  cairo_save(cr);
+  //   cairo_show_text(cr, exifline);
+  cairo_set_line_width(cr, 2.0);
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.3);
+  cairo_text_path(cr, exifline);
+  cairo_stroke_preserve(cr);
+  cairo_set_source_rgb(cr, .25, .25, .25);
+  cairo_fill(cr);
+  cairo_restore(cr);
 
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != 0)
