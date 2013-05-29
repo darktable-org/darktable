@@ -605,7 +605,10 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "Orientation"))
     {
       orientation = atoi((char *)value);
-      if ((dev!=NULL && dev->image_storage.orientation == 6 && orientation != 6) || orientation != 1) has_flip = TRUE;
+      if (dev!=NULL &&
+          ((dev->image_storage.orientation == 6 && orientation != 6)
+           || (dev->image_storage.orientation == 5 && orientation != 8)
+           || (dev->image_storage.orientation == 0 && orientation != 1))) has_flip = TRUE;
     }
     else if (!xmlStrcmp(attribute->name, (const xmlChar *) "HasCrop"))
     {
@@ -1142,7 +1145,39 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     pf.orientation = 0;
 
-    if (dev->image_storage.orientation == 6)
+    if (dev->image_storage.orientation == 5)
+      // portrait
+      switch (orientation)
+      {
+        case 8:
+          pf.orientation = 0;
+          break;
+        case 3:
+          pf.orientation = 5;
+          break;
+        case 6:
+          pf.orientation = 3;
+          break;
+        case 1:
+          pf.orientation = 6;
+          break;
+
+          // with horizontal flip
+        case 7:
+          pf.orientation = 1;
+          break;
+        case 2:
+          pf.orientation = 4;
+          break;
+        case 5:
+          pf.orientation = 2;
+          break;
+        case 4:
+          pf.orientation = 7;
+          break;
+      }
+
+    else if (dev->image_storage.orientation == 6)
       // portrait
       switch (orientation)
       {
