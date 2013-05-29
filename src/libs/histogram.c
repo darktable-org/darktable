@@ -461,14 +461,14 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
       d->highlight = 3;
       switch(darktable.develop->histogram_type)
       {
-        case DT_DEV_HISTOGRAM_LINEAR:
-          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to logarithmic"), (char *)NULL);
-          break;
         case DT_DEV_HISTOGRAM_LOGARITHMIC:
+          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to linear"), (char *)NULL);
+          break;
+        case DT_DEV_HISTOGRAM_LINEAR:
           g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to waveform"), (char *)NULL);
           break;
         case DT_DEV_HISTOGRAM_WAVEFORM:
-          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to linear"), (char *)NULL);
+          g_object_set(G_OBJECT(widget), "tooltip-text", _("set histogram mode to logarithmic"), (char *)NULL);
           break;
         case DT_DEV_HISTOGRAM_N:
           g_assert_not_reached();
