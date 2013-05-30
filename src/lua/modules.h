@@ -29,12 +29,12 @@ struct dt_imageio_module_storage_t;
 helper for formats to declare their lua interface
 */
 #define dt_lua_register_format(L,format,type_name) \
-  dt_lua_register_format_internal(L,format,#type_name)
-void dt_lua_register_format_internal(lua_State* L, struct dt_imageio_module_format_t* module,char*type_name);
+  dt_lua_register_format_typeid(L,format,#type_name)
+void dt_lua_register_format_typeid(lua_State* L, struct dt_imageio_module_format_t* module,char*type_name);
 
 #define dt_lua_register_storage(L,storage,type_name) \
-  dt_lua_register_storage_internal(L,storage,#type_name)
-void dt_lua_register_storage_internal(lua_State* L, struct dt_imageio_module_storage_t* module,char*type_name);
+  dt_lua_register_storage_typeid(L,storage,#type_name)
+void dt_lua_register_storage_typeid(lua_State* L, struct dt_imageio_module_storage_t* module,char*type_name);
 
 
 #define dt_lua_register_module_member(L,storage,struct_type,member,member_type) \

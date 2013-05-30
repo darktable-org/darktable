@@ -100,13 +100,13 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
   {
     char pseudo_type_name[1024];
     snprintf(pseudo_type_name,1024,"dt_imageio_module_format_data_%s",module->plugin_name);
-    module->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,pseudo_type_name,module->params_size(module));
+    module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state,pseudo_type_name,module->params_size(module));
     luaA_struct_typeid(darktable.lua_state,luaA_type_find(pseudo_type_name));
-    dt_lua_register_format_internal(darktable.lua_state,module,pseudo_type_name);
+    dt_lua_register_format_typeid(darktable.lua_state,module,pseudo_type_name);
 #endif
     module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_internal(darktable.lua_state,pseudo_type_name,NULL,NULL,pseudo_type_name);
+    dt_lua_register_type_callback_type_typeid(darktable.lua_state,pseudo_type_name,NULL,NULL,pseudo_type_name);
   }
 #endif
 
@@ -203,13 +203,13 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   {
     char pseudo_type_name[1024];
     snprintf(pseudo_type_name,1024,"dt_imageio_module_storage_data_%s",module->plugin_name);
-    module->parameter_lua_type = dt_lua_init_type_internal(darktable.lua_state,pseudo_type_name,module->params_size(module));
+    module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state,pseudo_type_name,module->params_size(module));
     luaA_struct_typeid(darktable.lua_state,luaA_type_find(pseudo_type_name));
-    dt_lua_register_storage_internal(darktable.lua_state,module,pseudo_type_name);
+    dt_lua_register_storage_typeid(darktable.lua_state,module,pseudo_type_name);
 #endif
   module->init(module);
 #ifdef USE_LUA
-    dt_lua_register_type_callback_type_internal(darktable.lua_state,pseudo_type_name,NULL,NULL,pseudo_type_name);
+    dt_lua_register_type_callback_type_typeid(darktable.lua_state,pseudo_type_name,NULL,NULL,pseudo_type_name);
   }
 #endif
 

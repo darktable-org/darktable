@@ -57,36 +57,36 @@ typedef const char * const_string; // string that has no push function
    */
 
 #define dt_lua_init_type(L,type_name) \
-  dt_lua_init_type_internal(L,#type_name,sizeof(type_name))
-luaA_Type dt_lua_init_type_internal(lua_State* L,const char*type_name,size_t size);
+  dt_lua_init_type_typeid(L,#type_name,sizeof(type_name))
+luaA_Type dt_lua_init_type_typeid(lua_State* L,const char*type_name,size_t size);
 
 /** helper functions to register index hanlers
    each one follow the same logic, you give an index, optionally a newindex and a list of entries it can handle
    */
 /// register for names (const char*) passed as varargs
 #define dt_lua_register_type_callback(L,type_name,index,newindex,...) \
-  dt_lua_register_type_callback_internal(L,#type_name,index,newindex,__VA_ARGS__)
-void dt_lua_register_type_callback_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,...);
+  dt_lua_register_type_callback_typeid(L,#type_name,index,newindex,__VA_ARGS__)
+void dt_lua_register_type_callback_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,...);
 /// register for an array of char* ended by a NULL entry
 #define dt_lua_register_type_callback_list(L,type_name,index,newindex,name_list) \
-  dt_lua_register_type_callback_list_internal(L,#type_name,index,newindex,name_list)
-void dt_lua_register_type_callback_list_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char**list);
+  dt_lua_register_type_callback_list_typeid(L,#type_name,index,newindex,name_list)
+void dt_lua_register_type_callback_list_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char**list);
 /// register using luaautoc callbacks from a type's members
 #define dt_lua_register_type_callback_type(L,type_name,index,newindex,struct_type_name) \
-  dt_lua_register_type_callback_type_internal(L,#type_name,index,newindex,#struct_type_name)
-void dt_lua_register_type_callback_type_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char* struct_type_name);
+  dt_lua_register_type_callback_type_typeid(L,#type_name,index,newindex,#struct_type_name)
+void dt_lua_register_type_callback_type_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char* struct_type_name);
 /// register a special handler for number indexes
 #define dt_lua_register_type_callback_number(L,type_name,index,newindex,length) \
-  dt_lua_register_type_callback_number_internal(L,#type_name,index,newindex,length)
-void dt_lua_register_type_callback_number_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction length);
+  dt_lua_register_type_callback_number_typeid(L,#type_name,index,newindex,length)
+void dt_lua_register_type_callback_number_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction length);
 /// register a special handler for unhandled entries
 #define dt_lua_register_type_callback_default(L,type_name,index,newindex,next) \
-  dt_lua_register_type_callback_default_internal(L,#type_name,index,newindex,next)
-void dt_lua_register_type_callback_default_internal(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next);
+  dt_lua_register_type_callback_default_typeid(L,#type_name,index,newindex,next)
+void dt_lua_register_type_callback_default_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next);
 /// pop the top of the stack, register it as a const returned for the entry
 #define dt_lua_register_type_callback_stack(L,type_name,name) \
-  dt_lua_register_type_callback_stack_internal(L,#type_name,name)
-void dt_lua_register_type_callback_stack_internal(lua_State* L,const char* type_name,const char* name);
+  dt_lua_register_type_callback_stack_typeid(L,#type_name,name)
+void dt_lua_register_type_callback_stack_typeid(lua_State* L,const char* type_name,const char* name);
 
 
 void dt_lua_initialize_types(lua_State *L);
