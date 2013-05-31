@@ -604,7 +604,7 @@ void dt_masks_reset_form_gui(void)
   darktable.develop->form_visible = NULL;
   dt_masks_init_formgui(darktable.develop);
   dt_iop_module_t *m = darktable.develop->gui_module;
-  if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
+  if (m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
     bd->masks_shown = 0;
