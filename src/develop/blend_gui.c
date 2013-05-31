@@ -610,9 +610,14 @@ _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
 static void
 _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
+  if(darktable.gui->reset) return;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   self->request_color_pick = 0;
+  bd->masks_shown = 1;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
   //we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
   dt_masks_change_form_gui(form);
@@ -624,9 +629,14 @@ _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *s
 static void
 _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
+  if(darktable.gui->reset) return;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
   //we want to be sure that the iop has focus
   dt_iop_request_focus(self);
   self->request_color_pick = 0;
+  bd->masks_shown = 1;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
   //we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
   dt_masks_change_form_gui(spot);
@@ -638,10 +648,24 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
 static void
 _blendop_masks_show_and_edit(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
-  //we want to be sure that the iop has focus
+  if(darktable.gui->reset) return;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  darktable.gui->reset = 1;
+
   dt_iop_request_focus(self);
   self->request_color_pick = 0;
-  dt_masks_iop_edit_toggle_callback(togglebutton, self);
+
+  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
+  if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
+    bd->masks_shown = !bd->masks_shown;
+  else
+    bd->masks_shown = 0;
+
+  gtk_toggle_button_set_active(togglebutton, bd->masks_shown);
+  dt_masks_set_edit_mode(self, bd->masks_shown);
+
+  darktable.gui->reset = 0;
 }
 
 
