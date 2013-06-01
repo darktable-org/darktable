@@ -643,11 +643,16 @@ dt_view_get_image_to_act_on()
      3) If there is not a selection, the image hovered is returned
   */
   int32_t mouse_over_id = -1;
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row 
+            (darktable.view_manager->proxy.lighttable.view);
+  
+  int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id
+            (darktable.view_manager->proxy.lighttable.view);
+
 
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
-  if(zoom == 1)
+  if(zoom == 1 || full_preview_id > 1)
   {
     return mouse_over_id;
   }
