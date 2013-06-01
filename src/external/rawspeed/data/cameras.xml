@@ -69,11 +69,12 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="72" y="52" width="0" height="0"/>
-		<Sensor black="0" white="16383"/>
+		<Crop x="76" y="56" width="0" height="0"/>
+		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+		<Sensor black="2026" white="15304"/>
 		<BlackAreas>
-			<Vertical x="0" width="72"/>
-			<Horizontal y="8" height="44"/>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="4" height="44"/>
 		</BlackAreas>
 		<Aliases>
 			<Alias>Canon EOS REBEL SL1</Alias>
