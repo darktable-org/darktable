@@ -68,6 +68,7 @@ __inline uint32 getBitsNoFill(uint32 nbits) {
 }
 __inline uint32 getBits(uint32 nbits) {
 	fill();
+  _ASSERTE(nbits <= MIN_GET_BITS);
 	return getBitsNoFill(nbits);
 }
 
