@@ -693,7 +693,7 @@ void gui_init (struct dt_iop_module_t *self)
 
   for(int k=0;k<3;k++) g->daylight_wb[k] = 1.0f;
   g->scale_tint  = dt_bauhaus_slider_new_with_range(self,0.1, 8.0, .01,1.0,3);
-  g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0);
+  g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE / DT_IOP_KLUDGE_FACTOR, 10.,5000.0,0);
   g->scale_r     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[0],3);
   g->scale_g     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[1],3);
   g->scale_b     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[2],3);
