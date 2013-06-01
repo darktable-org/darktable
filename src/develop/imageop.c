@@ -1088,11 +1088,12 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
           dt_masks_iop_use_same_as(module,base);
         }
       }
-      dt_dev_add_history_item(module->dev, module, TRUE);
     }
     else
       dt_iop_reload_defaults(module);
-
+    
+    //we save the new instance creation but keep it disabled
+    dt_dev_add_history_item(module->dev, module, FALSE);
 
     /* update ui to default params*/
     dt_iop_gui_update(module);
