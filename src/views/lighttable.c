@@ -290,6 +290,18 @@ static uint32_t _get_position(dt_view_t *self)
     return MAX(0, lib->first_visible_zoomable);
 }
 
+static int _get_images_in_row(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  return lib->images_in_row;
+}
+
+static int _get_full_preview_id(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  return lib->full_preview_id;
+}
+
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_library_t));
@@ -298,6 +310,8 @@ void init(dt_view_t *self)
 
   darktable.view_manager->proxy.lighttable.set_position = _set_position;
   darktable.view_manager->proxy.lighttable.get_position = _get_position;
+  darktable.view_manager->proxy.lighttable.get_images_in_row = _get_images_in_row;
+  darktable.view_manager->proxy.lighttable.get_full_preview_id = _get_full_preview_id;
   darktable.view_manager->proxy.lighttable.view = self;
 
   lib->select_offset_x = lib->select_offset_y = 0.5f;
