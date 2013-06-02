@@ -97,7 +97,6 @@ void SrwDecoder::decodeCompressed( TiffIFD* raw )
   mRaw->dim = iPoint2D(width, height);
   mRaw->createData();
   const uint32 offset = raw->getEntry(STRIPOFFSETS)->getInt();
-  const uint32 count = raw->getEntry(STRIPBYTECOUNTS)->getInt();
   uint32 compressed_offset = raw->getEntry((TiffTag)40976)->getInt();
   ByteStream *b;
   if (getHostEndianness() == little)
