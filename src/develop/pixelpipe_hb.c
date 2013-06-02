@@ -1790,32 +1790,32 @@ post_process_collect_info:
         if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)
         {
           for(int k=0; k<4; k+=2)
-            box[k] = MIN(roi_out->width,
+            box[k] = MIN(roi_out->width-1,
                          MAX(0, dev->gui_module->color_picker_box[k]
-                             * roi_out->width));
+                             * (roi_out->width-1)));
           for(int k=1; k<4; k+=2)
             box[k] = MIN(roi_out->height-1,
                          MAX(0, module->color_picker_box[k]
-                             * roi_out->height));
+                             * (roi_out->height-1)));
         }
         else
         {
           for(int k=0; k<4; k+=2)
-            box[k] = MIN(roi_out->width,
+            box[k] = MIN(roi_out->width-1,
                          MAX(0, dev->gui_module->color_picker_point[0]
-                             * roi_out->width));
+                             * (roi_out->width-1)));
           for(int k=1; k<4; k+=2)
             box[k] = MIN(roi_out->height-1,
                          MAX(0, module->color_picker_point[1]
-                             * roi_out->height));
+                             * (roi_out->height-1)));
         }
 
       }
       else
       {
         box[0] = box[1] = 0;
-        box[2] = roi_out->width;
-        box[3] = roi_out->height;
+        box[2] = roi_out->width-1;
+        box[3] = roi_out->height-1;
       }
       dev->histogram_max = 0;
       memset(dev->histogram, 0, sizeof(float)*4*64);
