@@ -227,25 +227,35 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
-      char zoomline[5];
-      snprintf(zoomline, 5, "%.0f%%", cur_scale*100);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size (cr, 11);
+
+      char zoomline[5];
+      snprintf(zoomline, 5, "%.0f%%", cur_scale*100);
+
       cairo_text_extents_t ext;
       cairo_text_extents(cr,zoomline,&ext);
       h = d->zoom_h = ext.height;
       w = d->zoom_w = ext.width;
 
       cairo_move_to(cr,width-w-h*1.1,0);
-      cairo_show_text(cr, zoomline);
-      cairo_stroke(cr);
+
+      cairo_save(cr);
+      cairo_set_line_width(cr, 2.0);
+      cairo_set_source_rgb(cr, style->bg[0].red/65535.0, style->bg[0].green/65535.0, style->bg[0].blue/65535.0);
+      cairo_text_path(cr, zoomline);
+      cairo_stroke_preserve(cr);
+      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
+      cairo_fill(cr);
+      cairo_restore(cr);
+
     }
     else
     {
       //draw the zoom-to-fit icon
       cairo_identity_matrix(cr);
       cairo_translate(cr, 0, height);
-      cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
+      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_text_extents_t ext;
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size (cr, 11);
@@ -257,10 +267,10 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
 
       cairo_move_to(cr,width-w-h-sp,-1.0*h);
       cairo_rectangle(cr,width-w-h-sp,-1.0*h,w,h);
-      cairo_set_source_rgba(cr, 1., 1., 1., 0.2);
+      cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
       cairo_fill(cr);
 
-      cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
+      cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_move_to(cr,width-w*0.8-h-sp,-1.0*h);
       cairo_line_to(cr,width-w-h-sp,-1.0*h);
       cairo_line_to(cr,width-w-h-sp,-0.7*h);
