@@ -410,7 +410,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     if(!dt_dev_pixelpipe_uses_downsampled_input(pipe)) // we're looking for the full buffer
     {
       if(roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
-         pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
+          pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height)
       {
         *output = pipe->input;
       }
@@ -448,8 +448,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
     // optimized branch (for mipf-preview):
     else if(dt_dev_pixelpipe_uses_downsampled_input(pipe) &&
-        roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
-        pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
+            roi_out->scale == 1.0 && roi_out->x == 0 && roi_out->y == 0 &&
+            pipe->iwidth == roi_out->width && pipe->iheight == roi_out->height) *output = pipe->input;
     else
     {
       // reserve new cache line: output
@@ -796,7 +796,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             {
               /* success: cache line is valid now, so we will not need to invalidate it later */
               valid_input_on_gpu_only = FALSE;
-          
+
               // TODO: check if we need to wait for finished opencl pipe before we release cl_mem_input
               // dt_dev_finish(pipe->devid);
             }
@@ -808,7 +808,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
- 
+
           /* we can now release cl_mem_input */
           if(cl_mem_input != NULL) dt_opencl_release_mem_object(cl_mem_input);
           cl_mem_input = NULL;
