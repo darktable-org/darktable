@@ -676,6 +676,12 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   for(int k=DT_MIPMAP_3; k>=0; k--)
   {
+    // clear stats:
+    cache->mip[k].stats_requests = 0;
+    cache->mip[k].stats_near_match = 0;
+    cache->mip[k].stats_misses = 0;
+    cache->mip[k].stats_fetches = 0;
+    cache->mip[k].stats_standin = 0;
     // buffer stores width and height + actual data
     const int width  = cache->mip[k].max_width;
     const int height = cache->mip[k].max_height;
@@ -684,6 +690,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     cache->mip[k].size = k;
     // level of parallelism also gives minimum size (which is twice that)
     // is rounded to a power of two by the cache anyways, we might as well.
+    // XXX this needs adjustment for video mode (more full-res thumbs for replay)
+    // TODO: collect hit/miss stats and auto-adjust to user browsing behaviour
+    // TODO: can #prefetches be collected this way, too?
     const uint32_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
     uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem2/cache->mip[k].buffer_size)));
     while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
@@ -764,7 +773,8 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 {
   for(int k=0; k<(int)DT_MIPMAP_F; k++)
   {
-    printf("[mipmap_cache] level %d fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost/(1024.0*1024.0),
+    printf("[mipmap_cache] level [i%d] (%4dx%4d) fill %.2f/%.2f MB (%.2f%% in %u/%u buffers)\n", k,
+        cache->mip[k].max_width, cache->mip[k].max_height, cache->mip[k].cache.cost/(1024.0*1024.0),
            cache->mip[k].cache.cost_quota/(1024.0*1024.0),
            100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
            dt_cache_size(&cache->mip[k].cache),
@@ -786,6 +796,23 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
            dt_cache_size(&cache->scratchmem.cache),
            dt_cache_capacity(&cache->scratchmem.cache));
   }
+  uint64_t sum = 0;
+  uint64_t sum_fetches = 0;
+  uint64_t sum_standins = 0;
+  for(int k=0; k<=(int)DT_MIPMAP_FULL; k++)
+  {
+    sum += cache->mip[k].stats_requests;
+    sum_fetches += cache->mip[k].stats_fetches;
+    sum_standins += cache->mip[k].stats_standin;
+  }
+  printf("[mipmap_cache] level | near match | miss | stand-in | fetches | total rq\n");
+  for(int k=0; k<=(int)DT_MIPMAP_FULL; k++)
+    printf("[mipmap_cache] %c%d    | %6.2f%% | %6.2f%% | %6.2f%%  | %6.2f%% | %6.2f%%\n", k > 3 ? 'f' : 'i', k,
+        100.0*cache->mip[k].stats_near_match/(float)cache->mip[k].stats_requests,
+        100.0*cache->mip[k].stats_misses/(float)cache->mip[k].stats_requests,
+        100.0*cache->mip[k].stats_standin/(float)sum_standins,
+        100.0*cache->mip[k].stats_fetches/(float)sum_fetches,
+        100.0*cache->mip[k].stats_requests/(float)sum);
   printf("\n\n");
   // very verbose stats about locks/users
   //dt_cache_print(&cache->mip[DT_MIPMAP_3].cache);
@@ -854,6 +881,7 @@ dt_mipmap_cache_read_get(
       //assert(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE || dsc->size == 0);
       if(dsc->flags & DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE)
       {
+        __sync_fetch_and_add (&(cache->mip[mip].stats_fetches), 1);
         // fprintf(stderr, "[mipmap cache get] now initializing buffer for img %u mip %d!\n", imgid, mip);
         // we're write locked here, as requested by the alloc callback.
         // now fill it with data:
@@ -952,6 +980,7 @@ dt_mipmap_cache_read_get(
   }
   else if(flags == DT_MIPMAP_BEST_EFFORT)
   {
+    __sync_fetch_and_add (&(cache->mip[mip].stats_requests), 1);
     // best-effort, might also return NULL.
     // never decrease mip level for float buffer or full image:
     dt_mipmap_size_t min_mip = (mip >= DT_MIPMAP_F) ? mip : DT_MIPMAP_0;
@@ -959,11 +988,19 @@ dt_mipmap_cache_read_get(
     {
       // already loaded?
       dt_mipmap_cache_read_get(cache, buf, imgid, k, DT_MIPMAP_TESTLOCK);
-      if(buf->buf && buf->width > 0 && buf->height > 0) return;
+      if(buf->buf && buf->width > 0 && buf->height > 0)
+      {
+        if(mip != k) __sync_fetch_and_add (&(cache->mip[k].stats_standin), 1);
+        return;
+      }
       // didn't succeed the first time? prefetch for later!
       if(mip == k)
+      {
+        __sync_fetch_and_add (&(cache->mip[mip].stats_near_match), 1);
         dt_mipmap_cache_read_get(cache, buf, imgid, mip, DT_MIPMAP_PREFETCH);
+      }
     }
+    __sync_fetch_and_add (&(cache->mip[mip].stats_misses), 1);
     // fprintf(stderr, "[mipmap cache get] image not found in cache: imgid %u mip %d!\n", imgid, mip);
     // nothing found :(
     buf->buf   = NULL;

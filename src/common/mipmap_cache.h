@@ -91,6 +91,13 @@ typedef struct dt_mipmap_cache_one_t
 
   // one cache per mipmap scale!
   dt_cache_t cache;
+
+  // a few stats on usage in this run:
+  uint64_t stats_requests;    // number of total requests
+  uint64_t stats_near_match;  // served with smaller mip res
+  uint64_t stats_misses;      // nothing returned at all.
+  uint64_t stats_fetches;     // texture was fetched (either as a stand-in or as per request)
+  uint64_t stats_standin;     // texture used as stand-in
 }
 dt_mipmap_cache_one_t;
 
