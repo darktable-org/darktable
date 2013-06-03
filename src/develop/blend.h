@@ -271,7 +271,7 @@ typedef struct dt_iop_gui_blend_data_t
   GList *masks_modes;
   GList *masks_combine;
   GList *masks_invert;
-  GList *blend_modes_deprecated;
+  GList *blend_modes_all;
   GtkWidget *iopw;
   GtkVBox *top_box;
   GtkVBox *bottom_box;
