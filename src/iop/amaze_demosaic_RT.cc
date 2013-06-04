@@ -46,8 +46,35 @@ float clampnan(const float x, const float m, const float M)
 }
 
 /*==================================================================================
- * begin raw therapee code, hg checkout of april 22, 2011 branch defloat.
+ * begin raw therapee code, hg checkout of june 04, 2013 branch master.
  *==================================================================================*/
+
+__inline float xmul2f(float d)
+{
+  if (*(int*)&d & 0x7FFFFFFF)   // if f==0 do nothing
+  {
+    *(int*)&d += 1 << 23; // add 1 to the exponent
+  }
+  return d;
+}
+
+__inline float xdiv2f(float d)
+{
+  if (*(int*)&d & 0x7FFFFFFF)   // if f==0 do nothing
+  {
+    *(int*)&d -= 1 << 23; // sub 1 from the exponent
+  }
+  return d;
+}
+
+__inline float xdivf( float d, int n)
+{
+  if (*(int*)&d & 0x7FFFFFFF)   // if f==0 do nothing
+  {
+    *(int*)&d -= n << 23; // add n to the exponent
+  }
+  return d;
+}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -101,8 +128,10 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   //const float clip_pt = 1/initialGain;
   const float clip_pt = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
 
-#define TS 512	 // Tile size; the image is processed in square tiles to lower memory requirements and facilitate multi-threading
 
+#define TS 512	 // Tile size; the image is processed in square tiles to lower memory requirements and facilitate multi-threading
+#define TSH	256
+#define TS6 500
   // local variables
 
 
@@ -112,9 +141,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   //shifts of pointer value to access pixels in vertical and diagonal directions
   static const int v1=TS, v2=2*TS, v3=3*TS, p1=-TS+1, p2=-2*TS+2, p3=-3*TS+3, m1=TS+1, m2=2*TS+2, m3=3*TS+3;
 
-  //neighborhood of a pixel
-  //static const int nbr[5] = {-v2,-2,2,v2,0};
-
   //tolerance to avoid dividing by zero
   static const float eps=1e-5, epssq=1e-10;			//tolerance to avoid dividing by zero
 
@@ -122,29 +148,42 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   static const float arthresh=0.75;
   //nyquist texture test threshold
   static const float nyqthresh=0.5;
-  //diagonal interpolation test threshold
-  //static const float pmthresh=0.25;
-  //factors for bounding interpolation in saturated regions
-  //static const float lbd=1.0, ubd=1.0; //lbd=0.66, ubd=1.5 alternative values;
 
   //gaussian on 5x5 quincunx, sigma=1.2
   static const float gaussodd[4] = {0.14659727707323927f, 0.103592713382435f, 0.0732036125103057f, 0.0365543548389495f};
   //gaussian on 5x5, sigma=1.2
-  static const float gaussgrad[6] = {0.07384411893421103f, 0.06207511968171489f, 0.0521818194747806f, \
+  static const float gaussgrad[6] = {0.07384411893421103f, 0.06207511968171489f, 0.0521818194747806f,
                                      0.03687419286733595f, 0.03099732204057846f, 0.018413194161458882f
                                     };
-  //gaussian on 3x3, sigma =0.7
-  //static const float gauss1[3] = {0.3376688223162362f, 0.12171198028231786f, 0.04387081413862306f};
   //gaussian on 5x5 alt quincunx, sigma=1.5
   static const float gausseven[2] = {0.13719494435797422f, 0.05640252782101291f};
   //guassian on quincunx grid
   static const float gquinc[4] = {0.169917f, 0.108947f, 0.069855f, 0.0287182f};
 
-  //volatile double progress = 0.0;
+  // volatile double progress = 0.0;
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#ifdef _OPENMP
+
+
+
+// Issue 1676
+
+// Moved from inside the parallel section
+
+  //if (plistener) {
+  //	plistener->setProgressStr (Glib::ustring::compose(M("TP_RAW_DMETHOD_PROGRESSBAR"), RAWParams::methodstring[RAWParams::amaze]));
+  //	plistener->setProgress (0.0);
+  //}
+  typedef struct s_mp
+  {
+    float m;
+    float p;
+  } s_mp;
+  typedef struct s_hv
+  {
+    float h;
+    float v;
+  } s_hv;
   #pragma omp parallel
-#endif
   {
     //position of top/left corner of the tile
     int top, left;
@@ -170,10 +209,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     float (*vcdalt);
     // alternative horizontal interpolation
     float (*hcdalt);
-    // square of vcd
-    float (*vcdsq);
-    // square of hcd
-    float (*hcdsq);
     // square of average color difference
     float (*cddiffsq);
     // weight to give horizontal vs vertical interpolation
@@ -186,103 +221,81 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     float (*delm);
     // diagonal interpolation of R+B
     float (*rbint);
+    s_hv  (*Dgrb2);
     // horizontal curvature of interpolated G (used to refine interpolation in Nyquist texture regions)
-    float (*Dgrbh2);
+//	float (*Dgrbh2);
     // vertical curvature of interpolated G
-    float (*Dgrbv2);
+//	float (*Dgrbv2);
     // difference between up/down interpolations of G
     float (*dgintv);
     // difference between left/right interpolations of G
     float (*dginth);
     // diagonal (plus) color difference R-B or G1-G2
-    //float (*Dgrbp1);
+//	float (*Dgrbp1);
     // diagonal (minus) color difference R-B or G1-G2
-    //float (*Dgrbm1);
+//	float (*Dgrbm1);
+    s_mp  (*Dgrbsq1);
     // square of diagonal color difference
-    float (*Dgrbpsq1);
+//	float (*Dgrbpsq1);
     // square of diagonal color difference
-    float (*Dgrbmsq1);
+//	float (*Dgrbmsq1);
     // tile raw data
     float (*cfa);
     // relative weight for combining plus and minus diagonal interpolations
     float (*pmwt);
+    // interpolated color difference R-B in minus and plus direction
+    s_mp  (*rb);
     // interpolated color difference R-B in plus direction
-    float (*rbp);
+//	float (*rbp);
     // interpolated color difference R-B in minus direction
-    float (*rbm);
+//	float (*rbm);
 
     // nyquist texture flag 1=nyquist, 0=not nyquist
-    int   (*nyquist);
+    char   (*nyquist);
 
-
+#define CLF 1
     // assign working space
-    buffer = (char *) malloc((32 * sizeof(float) + sizeof(int)) * TS * TS);
-    char *cur = buffer;
+    buffer = (char *) malloc(29*sizeof(float)*TS*TS - sizeof(float)*TS*TSH + sizeof(char)*TS*TSH+23*CLF*64);
+    char 	*data;
+    data = (char *)( ((uintptr_t)buffer + 63) / 64 * 64);
+
     //merror(buffer,"amaze_interpolate()");
     //memset(buffer,0,(34*sizeof(float)+sizeof(int))*TS*TS);
     // rgb array
-    rgb			= (float (*)[3])		cur;
-    cur += 3 * sizeof(float) * TS * TS; //pointers to array
-    delh		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    delv		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    delhsq		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    delvsq		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    dirwts		= (float (*)[2])		cur;
-    cur += 2 * sizeof(float) * TS * TS;
-    vcd			= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    hcd			= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    vcdalt		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    hcdalt		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    vcdsq		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    hcdsq		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    cddiffsq	= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    hvwt		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    Dgrb		= (float (*)[2])		cur;
-    cur += 2 * sizeof(float) * TS * TS;
-    delp		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    delm		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    rbint		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    Dgrbh2		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    Dgrbv2		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    dgintv		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    dginth		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    //Dgrbp1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
-    //Dgrbm1	= (float (*))			cur; cur += 1 * sizeof(float) * TS * TS;
-    Dgrbpsq1	= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    Dgrbmsq1	= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    cfa			= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    pmwt		= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    rbp			= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
-    rbm			= (float (*))			cur;
-    cur += 1 * sizeof(float) * TS * TS;
+    rgb			= (float (*)[3])		data; //pointers to array
+    delh		= (float (*))			(data +  3*sizeof(float)*TS*TS+1*CLF*64);
+    delv		= (float (*))			(data +  4*sizeof(float)*TS*TS+2*CLF*64);
+    delhsq		= (float (*))			(data +  5*sizeof(float)*TS*TS+3*CLF*64);
+    delvsq		= (float (*))			(data +  6*sizeof(float)*TS*TS+4*CLF*64);
+    dirwts		= (float (*)[2])		(data +  7*sizeof(float)*TS*TS+5*CLF*64);
+    vcd			= (float (*))			(data +  9*sizeof(float)*TS*TS+6*CLF*64);
+    hcd			= (float (*))			(data +  10*sizeof(float)*TS*TS+7*CLF*64);
+    vcdalt		= (float (*))			(data +  11*sizeof(float)*TS*TS+8*CLF*64);
+    hcdalt		= (float (*))			(data +  12*sizeof(float)*TS*TS+9*CLF*64);
+    cddiffsq	= (float (*))			(data +  13*sizeof(float)*TS*TS+10*CLF*64);
+    hvwt		= (float (*))			(data +  14*sizeof(float)*TS*TS+11*CLF*64);							//compressed			0.5 MB
+    Dgrb		= (float (*)[2])		(data +  15*sizeof(float)*TS*TS - sizeof(float)*TS*TSH+12*CLF*64);
+    delp		= (float (*))			(data +  17*sizeof(float)*TS*TS - sizeof(float)*TS*TSH+13*CLF*64);	// compressed			0.5 MB
+    delm		= (float (*))			(data +  17*sizeof(float)*TS*TS+14*CLF*64);							// compressed			0.5 MB
+    rbint		= (float (*))			(data +  18*sizeof(float)*TS*TS - sizeof(float)*TS*TSH+15*CLF*64);	// compressed			0.5 MB
+    Dgrb2		= (s_hv  (*))			(data +  18*sizeof(float)*TS*TS+16*CLF*64);							// compressed			1.0 MB
+//	Dgrbh2		= (float (*))			(data +  19*sizeof(float)*TS*TS);
+//	Dgrbv2		= (float (*))			(data +  20*sizeof(float)*TS*TS);
+    dgintv		= (float (*))			(data +  19*sizeof(float)*TS*TS+17*CLF*64);
+    dginth		= (float (*))			(data +  20*sizeof(float)*TS*TS+18*CLF*64);
+//	Dgrbp1		= (float (*))			(data +  23*sizeof(float)*TS*TS);													1.0 MB
+//	Dgrbm1		= (float (*))			(data +  23*sizeof(float)*TS*TS);													1.0 MB
+    Dgrbsq1		= (s_mp  (*))			(data +  21*sizeof(float)*TS*TS+19*CLF*64);							// compressed			1.0 MB
+//	Dgrbpsq1	= (float (*))			(data +  23*sizeof(float)*TS*TS);
+//	Dgrbmsq1	= (float (*))			(data +  24*sizeof(float)*TS*TS);
+    cfa			= (float (*))			(data +  22*sizeof(float)*TS*TS+20*CLF*64);
+    pmwt		= (float (*))			(data +  23*sizeof(float)*TS*TS+21*CLF*64);		// compressed								0.5 MB
+    rb			= (s_mp  (*))			(data +  24*sizeof(float)*TS*TS - sizeof(float)*TS*TSH+22*CLF*64);		// compressed		1.0 MB
+//	rbp			= (float (*))			(data +  30*sizeof(float)*TS*TS);
+//	rbm			= (float (*))			(data +  31*sizeof(float)*TS*TS);
 
-    nyquist		= (int (*))				cur;
-    cur += 1 * sizeof(int) * TS * TS;
-
+    nyquist		= (char (*))				(data +  25*sizeof(float)*TS*TS - sizeof(float)*TS*TSH+23*CLF*64);	//compressed		0.875 MB
+#undef CLF
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     /*double dt;
@@ -304,10 +317,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    //if (plistener) {
-    //	plistener->setProgressStr ("AMaZE Demosaicing...");
-    //	plistener->setProgress (0.0);
-    //}
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -343,16 +352,23 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // Main algorithm: Tile loop
     //#pragma omp parallel for shared(rawData,height,width,red,green,blue) private(top,left) schedule(dynamic)
     //code is openmp ready; just have to pull local tile variable declarations inside the tile loop
-#ifdef _OPENMP
-    #pragma omp for schedule(dynamic) nowait
-#endif
+
+
+
+// Issue 1676
+
+// use collapse(2) to collapse the 2 loops to one large loop, so there is better scaling
+
+    #pragma omp for schedule(dynamic) collapse(2) nowait
     for (top=winy-16; top < winy+height; top += TS-32)
       for (left=winx-16; left < winx+width; left += TS-32)
       {
+        memset(nyquist, 0, sizeof(char)*TS*TSH);
+        memset(rbint, 0, sizeof(float)*TS*TSH);
         //location of tile bottom edge
-        int bottom = MIN( top+TS,winy+height+16);
+        int bottom = MIN(top+TS,winy+height+16);
         //location of tile right edge
-        int right  = MIN(left+TS, winx+width+16);
+        int right  = MIN(left+TS,winx+width+16);
         //tile width  (=TS except for right edge of image)
         int rr1 = bottom - top;
         //tile height (=TS except for bottom edge of image)
@@ -369,12 +385,10 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         int c;
         //pointer counters within the tile
         int indx, indx1;
-        //direction counter for nbrs[]
-        /*int dir;*/
         //dummy indices
         int i, j;
         // +1 or -1
-        int sgn;
+//			int sgn;
 
         //color ratios in up/down/left/right directions
         float cru, crd, crl, crr;
@@ -390,25 +404,25 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         float Ginthar, Ginthha, Gintvar, Gintvha;
         //color difference (G-R or G-B) variance in up/down/left/right directions
         float Dgrbvvaru, Dgrbvvard, Dgrbhvarl, Dgrbhvarr;
-        //gradients in various directions
-        /*float gradp, gradm, gradv, gradh, gradpm, gradhv;*/
+        float uave, dave, lave, rave;
+
         //color difference variances in vertical and horizontal directions
         float vcdvar, hcdvar, vcdvar1, hcdvar1, hcdaltvar, vcdaltvar;
         //adaptive interpolation weight using variance of color differences
-        float varwt;
+        float varwt;																										// 639 - 644
         //adaptive interpolation weight using difference of left-right and up-down G interpolations
-        float diffwt;
+        float diffwt;																										// 640 - 644
         //alternative adaptive weight for combining horizontal/vertical interpolations
-        float hvwtalt;
+        float hvwtalt;																										// 745 - 748
         //temporary variables for combining interpolation weights at R and B sites
-        float vo, ve;
+//			float vo, ve;
         //interpolation of G in four directions
         float gu, gd, gl, gr;
         //variance of G in vertical/horizontal directions
         float gvarh, gvarv;
 
         //Nyquist texture test
-        float nyqtest;
+        float nyqtest;																										// 658 - 681
         //accumulators for Nyquist texture interpolation
         float sumh, sumv, sumsqh, sumsqv, areawt;
 
@@ -419,9 +433,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         //adaptive weights for combining diagonal interpolations
         float wtse, wtnw, wtsw, wtne;
         //alternate weight for combining diagonal interpolations
-        float pmwtalt;
+        float pmwtalt;																										// 885 - 888
         //variance of R-B in plus/minus directions
-        float rbvarp, rbvarm;
+        float rbvarm;																										// 843 - 848
 
 
 
@@ -473,8 +487,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             col = cc+left;
             c = FC(rr,cc,filters);
             indx1=rr*TS+cc;
-            //rgb[indx1][c] = (rawData[row][col])/65535.0f;
-            rgb[indx1][c] = in[row*width + col];
+            rgb[indx1][c] = (in[row*width + col]);
             //indx=row*width+col;
             //rgb[indx1][c] = image[indx][c]/65535.0f;//for dcraw implementation
 
@@ -498,7 +511,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=ccmin; cc<ccmax; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[(rrmax+rr)*TS+cc][c] = (rawData[(winy+height-rr-2)][left+cc])/65535.0f;
               rgb[(rrmax+rr)*TS+cc][c] = in[(winy+height-rr-2)*width+left+cc];
               //rgb[(rrmax+rr)*TS+cc][c] = (image[(height-rr-2)*width+left+cc][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+cc] = rgb[(rrmax+rr)*TS+cc][c];
@@ -520,7 +532,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[rr*TS+ccmax+cc][c] = (rawData[(top+rr)][(winx+width-cc-2)])/65535.0f;
               rgb[rr*TS+ccmax+cc][c] = in[(top+rr)*width + (winx+width-cc-2)];
               //rgb[rr*TS+ccmax+cc][c] = (image[(top+rr)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[rr*TS+ccmax+cc] = rgb[rr*TS+ccmax+cc][c];
@@ -534,7 +545,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[(rr)*TS+cc][c] = (rawData[winy+32-rr][winx+32-cc])/65535.0f;
               rgb[(rr)*TS+cc][c] = in[(winy+32-rr)*width + winx+32-cc];
               //rgb[(rr)*TS+cc][c] = (rgb[(32-rr)*TS+(32-cc)][c]);//for dcraw implementation
               cfa[(rr)*TS+cc] = rgb[(rr)*TS+cc][c];
@@ -546,7 +556,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[(rrmax+rr)*TS+ccmax+cc][c] = (rawData[(winy+height-rr-2)][(winx+width-cc-2)])/65535.0f;
               rgb[(rrmax+rr)*TS+ccmax+cc][c] = in[(winy+height-rr-2)*width + (winx+width-cc-2)];
               //rgb[(rrmax+rr)*TS+ccmax+cc][c] = (image[(height-rr-2)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+ccmax+cc] = rgb[(rrmax+rr)*TS+ccmax+cc][c];
@@ -558,7 +567,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[(rr)*TS+ccmax+cc][c] = (rawData[(winy+32-rr)][(winx+width-cc-2)])/65535.0f;
               rgb[(rr)*TS+ccmax+cc][c] = in[(winy+32-rr)*width + (winx+width-cc-2)];
               //rgb[(rr)*TS+ccmax+cc][c] = (image[(32-rr)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[(rr)*TS+ccmax+cc] = rgb[(rr)*TS+ccmax+cc][c];
@@ -570,7 +578,6 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              //rgb[(rrmax+rr)*TS+cc][c] = (rawData[(winy+height-rr-2)][(winx+32-cc)])/65535.0f;
               rgb[(rrmax+rr)*TS+cc][c] = in[(winy+height-rr-2)*width + (winx+32-cc)];
               //rgb[(rrmax+rr)*TS+cc][c] = (image[(height-rr-2)*width+(32-cc)][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+cc] = rgb[(rrmax+rr)*TS+cc][c];
@@ -584,33 +591,39 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           for (cc=1, indx=(rr)*TS+cc; cc < cc1-1; cc++, indx++)
           {
 
-            delh[indx] = fabs(cfa[indx+1]-cfa[indx-1]);
-            delv[indx] = fabs(cfa[indx+v1]-cfa[indx-v1]);
+            delh[indx] = fabsf(cfa[indx+1]-cfa[indx-1]);
+            delv[indx] = fabsf(cfa[indx+v1]-cfa[indx-v1]);
             delhsq[indx] = SQR(delh[indx]);
             delvsq[indx] = SQR(delv[indx]);
-            delp[indx] = fabs(cfa[indx+p1]-cfa[indx-p1]);
-            delm[indx] = fabs(cfa[indx+m1]-cfa[indx-m1]);
-
+//					delp[indx] = fabsf(cfa[indx+p1]-cfa[indx-p1]);
+//					delm[indx] = fabsf(cfa[indx+m1]-cfa[indx-m1]);
           }
 
         for (rr=2; rr < rr1-2; rr++)
           for (cc=2,indx=(rr)*TS+cc; cc < cc1-2; cc++, indx++)
           {
-
-            dirwts[indx][0] = eps+delv[indx+v1]+delv[indx-v1]+delv[indx];//+fabs(cfa[indx+v2]-cfa[indx-v2]);
+            dirwts[indx][0] = eps+delv[indx+v1]+delv[indx-v1]+delv[indx];//+fabsf(cfa[indx+v2]-cfa[indx-v2]);
             //vert directional averaging weights
-            dirwts[indx][1] = eps+delh[indx+1]+delh[indx-1]+delh[indx];//+fabs(cfa[indx+2]-cfa[indx-2]);
+            dirwts[indx][1] = eps+delh[indx+1]+delh[indx-1]+delh[indx];//+fabsf(cfa[indx+2]-cfa[indx-2]);
             //horizontal weights
 
-            if (FC(rr,cc,filters)&1)
-            {
-              //for later use in diagonal interpolation
-              //Dgrbp1[indx]=2*cfa[indx]-(cfa[indx-p1]+cfa[indx+p1]);
-              //Dgrbm1[indx]=2*cfa[indx]-(cfa[indx-m1]+cfa[indx+m1]);
-              Dgrbpsq1[indx]=(SQR(cfa[indx]-cfa[indx-p1])+SQR(cfa[indx]-cfa[indx+p1]));
-              Dgrbmsq1[indx]=(SQR(cfa[indx]-cfa[indx-m1])+SQR(cfa[indx]-cfa[indx+m1]));
-            }
           }
+
+        for (rr=6; rr < rr1-6; rr++)
+          for (cc=6+(FC(rr,2,filters)&1), indx=(rr)*TS+cc; cc < cc1-6; cc+=2, indx+=2)
+          {
+            delp[indx>>1] = fabsf(cfa[indx+p1]-cfa[indx-p1]);
+            delm[indx>>1] = fabsf(cfa[indx+m1]-cfa[indx-m1]);
+          }
+
+        for (rr=6; rr < rr1-6; rr++)
+          for (cc=6+(FC(rr,1,filters)&1),indx=(rr)*TS+cc; cc < cc1-6; cc+=2, indx+=2)
+          {
+            Dgrbsq1[indx>>1].p=(SQR(cfa[indx]-cfa[indx-p1])+SQR(cfa[indx]-cfa[indx+p1]));
+            Dgrbsq1[indx>>1].m=(SQR(cfa[indx]-cfa[indx-m1])+SQR(cfa[indx]-cfa[indx+m1]));
+          }
+
+
 
         //t2_init += clock()-t1_init;
         // end of tile initialization
@@ -620,23 +633,16 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         //t1_vcdhcd = clock();
 
         for (rr=4; rr<rr1-4; rr++)
-          //for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<cc1-4; cc+=2,indx+=2) {
+          //for (cc=4+(FC(rr,2,filters)&1),indx=rr*TS+cc,c=FC(rr,cc,filters); cc<cc1-4; cc+=2,indx+=2) {
           for (cc=4,indx=rr*TS+cc; cc<cc1-4; cc++,indx++)
           {
-            c=FC(rr,cc,filters);
-            if (c&1)
-            {
-              sgn=-1;
-            }
-            else
-            {
-              sgn=1;
-            }
+//					c=FC(rr,cc,filters);
+//					if (c&1) {sgn=-1;} else {sgn=1;}
 
             //initialization of nyquist test
-            nyquist[indx]=0;
+//					nyquist[indx]=0;
             //preparation for diag interp
-            rbint[indx]=0;
+//					rbint[indx]=0;
 
             //color ratios in each cardinal direction
             cru = cfa[indx-v1]*(dirwts[indx-v2][0]+dirwts[indx][0])/(dirwts[indx-v2][0]*(eps+cfa[indx])+dirwts[indx][0]*(eps+cfa[indx-v2]));
@@ -644,12 +650,17 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             crl = cfa[indx-1]*(dirwts[indx-2][1]+dirwts[indx][1])/(dirwts[indx-2][1]*(eps+cfa[indx])+dirwts[indx][1]*(eps+cfa[indx-2]));
             crr = cfa[indx+1]*(dirwts[indx+2][1]+dirwts[indx][1])/(dirwts[indx+2][1]*(eps+cfa[indx])+dirwts[indx][1]*(eps+cfa[indx+2]));
 
-            guha=HCLIP(cfa[indx-v1])+0.5*(cfa[indx]-cfa[indx-v2]);
-            gdha=HCLIP(cfa[indx+v1])+0.5*(cfa[indx]-cfa[indx+v2]);
-            glha=HCLIP(cfa[indx-1])+0.5*(cfa[indx]-cfa[indx-2]);
-            grha=HCLIP(cfa[indx+1])+0.5*(cfa[indx]-cfa[indx+2]);
-
-            if (fabs(1.0f-cru)<arthresh)
+            guha=HCLIP(cfa[indx-v1])+xdiv2f(cfa[indx]-cfa[indx-v2]);
+            gdha=HCLIP(cfa[indx+v1])+xdiv2f(cfa[indx]-cfa[indx+v2]);
+            glha=HCLIP(cfa[indx-1])+xdiv2f(cfa[indx]-cfa[indx-2]);
+            grha=HCLIP(cfa[indx+1])+xdiv2f(cfa[indx]-cfa[indx+2]);
+            /*
+            					guha=HCLIP(cfa[indx-v1])+0.5*(cfa[indx]-cfa[indx-v2]);
+            					gdha=HCLIP(cfa[indx+v1])+0.5*(cfa[indx]-cfa[indx+v2]);
+            					glha=HCLIP(cfa[indx-1])+0.5*(cfa[indx]-cfa[indx-2]);
+            					grha=HCLIP(cfa[indx+1])+0.5*(cfa[indx]-cfa[indx+2]);
+            */
+            if (fabsf(1.0f-cru)<arthresh)
             {
               guar=cfa[indx]*cru;
             }
@@ -657,7 +668,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             {
               guar=guha;
             }
-            if (fabs(1.0f-crd)<arthresh)
+            if (fabsf(1.0f-crd)<arthresh)
             {
               gdar=cfa[indx]*crd;
             }
@@ -665,7 +676,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             {
               gdar=gdha;
             }
-            if (fabs(1.0f-crl)<arthresh)
+            if (fabsf(1.0f-crl)<arthresh)
             {
               glar=cfa[indx]*crl;
             }
@@ -673,7 +684,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             {
               glar=glha;
             }
-            if (fabs(1.0f-crr)<arthresh)
+            if (fabsf(1.0f-crr)<arthresh)
             {
               grar=cfa[indx]*crr;
             }
@@ -691,11 +702,27 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             Gintvha = vwt*gdha+(1.0f-vwt)*guha;
             Ginthha = hwt*grha+(1.0f-hwt)*glha;
             //interpolated color differences
-            vcd[indx] = sgn*(Gintvar-cfa[indx]);
-            hcd[indx] = sgn*(Ginthar-cfa[indx]);
-            vcdalt[indx] = sgn*(Gintvha-cfa[indx]);
-            hcdalt[indx] = sgn*(Ginthha-cfa[indx]);
-
+            if (FC(rr,cc,filters)&1)
+            {
+              vcd[indx] = cfa[indx]-Gintvar;
+              hcd[indx] = cfa[indx]-Ginthar;
+              vcdalt[indx] = cfa[indx]-Gintvha;
+              hcdalt[indx] = cfa[indx]-Ginthha;
+            }
+            else
+            {
+              //interpolated color differences
+              vcd[indx] = Gintvar-cfa[indx];
+              hcd[indx] = Ginthar-cfa[indx];
+              vcdalt[indx] = Gintvha-cfa[indx];
+              hcdalt[indx] = Ginthha-cfa[indx];
+            }
+            /*
+            					vcd[indx] = sgn*(Gintvar-cfa[indx]);
+            					hcd[indx] = sgn*(Ginthar-cfa[indx]);
+            					vcdalt[indx] = sgn*(Gintvha-cfa[indx]);
+            					hcdalt[indx] = sgn*(Ginthha-cfa[indx]);
+            */
             if (cfa[indx] > 0.8*clip_pt || Gintvha > 0.8*clip_pt || Ginthha > 0.8*clip_pt)
             {
               //use HA if highlights are (nearly) clipped
@@ -711,18 +738,12 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             dgintv[indx]=MIN(SQR(guha-gdha),SQR(guar-gdar));
             dginth[indx]=MIN(SQR(glha-grha),SQR(glar-grar));
 
-            //dgintv[indx]=SQR(guar-gdar);
-            //dginth[indx]=SQR(glar-grar);
-
-            //vcdsq[indx] = SQR(vcd[indx]);
-            //hcdsq[indx] = SQR(hcd[indx]);
-            //cddiffsq[indx] = SQR(vcd[indx]-hcd[indx]);
           }
         //t2_vcdhcd += clock() - t1_vcdhcd;
 
         //t1_cdvar = clock();
         for (rr=4; rr<rr1-4; rr++)
-          //for (cc=4+(FC(rr,2)&1),indx=rr*TS+cc,c=FC(rr,cc); cc<cc1-4; cc+=2,indx+=2) {
+          //for (cc=4+(FC(rr,2,filters)&1),indx=rr*TS+cc,c=FC(rr,cc,filters); cc<cc1-4; cc+=2,indx+=2) {
           for (cc=4,indx=rr*TS+cc; cc<cc1-4; cc++,indx++)
           {
             c=FC(rr,cc,filters);
@@ -807,12 +828,10 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
               if (Gintv > clip_pt) vcd[indx]=ULIM(Gintv,cfa[indx-v1],cfa[indx+v1])-cfa[indx];
               //if (Ginth > pre_mul[c]) hcd[indx]=ULIM(Ginth,cfa[indx-1],cfa[indx+1])-cfa[indx];//for dcraw implementation
               //if (Gintv > pre_mul[c]) vcd[indx]=ULIM(Gintv,cfa[indx-v1],cfa[indx+v1])-cfa[indx];
+              cddiffsq[indx] = SQR(vcd[indx]-hcd[indx]);
             }
 
-
-            vcdsq[indx] = SQR(vcd[indx]);
-            hcdsq[indx] = SQR(hcd[indx]);
-            cddiffsq[indx] = SQR(vcd[indx]-hcd[indx]);
+//					cddiffsq[indx] = SQR(vcd[indx]-hcd[indx]);
           }
 
         for (rr=6; rr<rr1-6; rr++)
@@ -821,22 +840,21 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
             //compute color difference variances in cardinal directions
 
+            uave = vcd[indx]+vcd[indx-v1]+vcd[indx-v2]+vcd[indx-v3];
+            dave = vcd[indx]+vcd[indx+v1]+vcd[indx+v2]+vcd[indx+v3];
+            lave = (hcd[indx]+hcd[indx-1]+hcd[indx-2]+hcd[indx-3]);
+            rave = (hcd[indx]+hcd[indx+1]+hcd[indx+2]+hcd[indx+3]);
 
-            Dgrbvvaru = 4*(vcdsq[indx]+vcdsq[indx-v1]+vcdsq[indx-v2]+vcdsq[indx-v3])-SQR(vcd[indx]+vcd[indx-v1]+vcd[indx-v2]+vcd[indx-v3]);
-            Dgrbvvard = 4*(vcdsq[indx]+vcdsq[indx+v1]+vcdsq[indx+v2]+vcdsq[indx+v3])-SQR(vcd[indx]+vcd[indx+v1]+vcd[indx+v2]+vcd[indx+v3]);
-            Dgrbhvarl = 4*(hcdsq[indx]+hcdsq[indx-1]+hcdsq[indx-2]+hcdsq[indx-3])-SQR(hcd[indx]+hcd[indx-1]+hcd[indx-2]+hcd[indx-3]);
-            Dgrbhvarr = 4*(hcdsq[indx]+hcdsq[indx+1]+hcdsq[indx+2]+hcdsq[indx+3])-SQR(hcd[indx]+hcd[indx+1]+hcd[indx+2]+hcd[indx+3]);
-
+            Dgrbvvaru = SQR(vcd[indx]-uave)+SQR(vcd[indx-v1]-uave)+SQR(vcd[indx-v2]-uave)+SQR(vcd[indx-v3]-uave);
+            Dgrbvvard = SQR(vcd[indx]-dave)+SQR(vcd[indx+v1]-dave)+SQR(vcd[indx+v2]-dave)+SQR(vcd[indx+v3]-dave);
+            Dgrbhvarl = SQR(hcd[indx]-lave)+SQR(hcd[indx-1]-lave)+SQR(hcd[indx-2]-lave)+SQR(hcd[indx-3]-lave);
+            Dgrbhvarr = SQR(hcd[indx]-rave)+SQR(hcd[indx+1]-rave)+SQR(hcd[indx+2]-rave)+SQR(hcd[indx+3]-rave);
 
             hwt = dirwts[indx-1][1]/(dirwts[indx-1][1]+dirwts[indx+1][1]);
             vwt = dirwts[indx-v1][0]/(dirwts[indx+v1][0]+dirwts[indx-v1][0]);
 
             vcdvar = epssq+vwt*Dgrbvvard+(1.0f-vwt)*Dgrbvvaru;
             hcdvar = epssq+hwt*Dgrbhvarr+(1.0f-hwt)*Dgrbhvarl;
-
-            //vcdvar = 5*(vcdsq[indx]+vcdsq[indx-v1]+vcdsq[indx-v2]+vcdsq[indx+v1]+vcdsq[indx+v2])-SQR(vcd[indx]+vcd[indx-v1]+vcd[indx-v2]+vcd[indx+v1]+vcd[indx+v2]);
-            //hcdvar = 5*(hcdsq[indx]+hcdsq[indx-1]+hcdsq[indx-2]+hcdsq[indx+1]+hcdsq[indx+2])-SQR(hcd[indx]+hcd[indx-1]+hcd[indx-2]+hcd[indx+1]+hcd[indx+2]);
-
 
             //compute fluctuations in up/down and left/right interpolations of colors
             Dgrbvvaru = (dgintv[indx])+(dgintv[indx-v1])+(dgintv[indx-v2]);
@@ -853,13 +871,13 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
             //if both agree on interpolation direction, choose the one with strongest directional discrimination;
             //otherwise, choose the u/d and l/r difference fluctuation weights
-            if ((0.5-varwt)*(0.5-diffwt)>0 && fabs(0.5-diffwt)<fabs(0.5-varwt))
+            if ((0.5-varwt)*(0.5-diffwt)>0 && fabsf(0.5-diffwt)<fabsf(0.5-varwt))
             {
-              hvwt[indx]=varwt;
+              hvwt[indx>>1]=varwt;
             }
             else
             {
-              hvwt[indx]=diffwt;
+              hvwt[indx>>1]=diffwt;
             }
 
             //hvwt[indx]=varwt;
@@ -875,46 +893,46 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           {
 
             //nyquist texture test: ask if difference of vcd compared to hcd is larger or smaller than RGGB gradients
-            nyqtest = (gaussodd[0]*cddiffsq[indx]+ \
-                       gaussodd[1]*(cddiffsq[indx-m1]+cddiffsq[indx+p1]+ \
-                                    cddiffsq[indx-p1]+cddiffsq[indx+m1])+ \
-                       gaussodd[2]*(cddiffsq[indx-v2]+cddiffsq[indx-2]+ \
-                                    cddiffsq[indx+2]+cddiffsq[indx+v2])+ \
-                       gaussodd[3]*(cddiffsq[indx-m2]+cddiffsq[indx+p2]+ \
+            nyqtest = (gaussodd[0]*cddiffsq[indx]+
+                       gaussodd[1]*(cddiffsq[indx-m1]+cddiffsq[indx+p1]+
+                                    cddiffsq[indx-p1]+cddiffsq[indx+m1])+
+                       gaussodd[2]*(cddiffsq[indx-v2]+cddiffsq[indx-2]+
+                                    cddiffsq[indx+2]+cddiffsq[indx+v2])+
+                       gaussodd[3]*(cddiffsq[indx-m2]+cddiffsq[indx+p2]+
                                     cddiffsq[indx-p2]+cddiffsq[indx+m2]));
 
-            nyqtest -= nyqthresh*(gaussgrad[0]*(delhsq[indx]+delvsq[indx])+ \
-                                  gaussgrad[1]*(delhsq[indx-v1]+delvsq[indx-v1]+delhsq[indx+1]+delvsq[indx+1]+ \
-                                                delhsq[indx-1]+delvsq[indx-1]+delhsq[indx+v1]+delvsq[indx+v1])+ \
-                                  gaussgrad[2]*(delhsq[indx-m1]+delvsq[indx-m1]+delhsq[indx+p1]+delvsq[indx+p1]+ \
-                                                delhsq[indx-p1]+delvsq[indx-p1]+delhsq[indx+m1]+delvsq[indx+m1])+ \
-                                  gaussgrad[3]*(delhsq[indx-v2]+delvsq[indx-v2]+delhsq[indx-2]+delvsq[indx-2]+ \
-                                                delhsq[indx+2]+delvsq[indx+2]+delhsq[indx+v2]+delvsq[indx+v2])+ \
-                                  gaussgrad[4]*(delhsq[indx-2*TS-1]+delvsq[indx-2*TS-1]+delhsq[indx-2*TS+1]+delvsq[indx-2*TS+1]+ \
-                                                delhsq[indx-TS-2]+delvsq[indx-TS-2]+delhsq[indx-TS+2]+delvsq[indx-TS+2]+ \
-                                                delhsq[indx+TS-2]+delvsq[indx+TS-2]+delhsq[indx+TS+2]+delvsq[indx-TS+2]+ \
-                                                delhsq[indx+2*TS-1]+delvsq[indx+2*TS-1]+delhsq[indx+2*TS+1]+delvsq[indx+2*TS+1])+ \
-                                  gaussgrad[5]*(delhsq[indx-m2]+delvsq[indx-m2]+delhsq[indx+p2]+delvsq[indx+p2]+ \
+            nyqtest -= nyqthresh*(gaussgrad[0]*(delhsq[indx]+delvsq[indx])+
+                                  gaussgrad[1]*(delhsq[indx-v1]+delvsq[indx-v1]+delhsq[indx+1]+delvsq[indx+1]+
+                                                delhsq[indx-1]+delvsq[indx-1]+delhsq[indx+v1]+delvsq[indx+v1])+
+                                  gaussgrad[2]*(delhsq[indx-m1]+delvsq[indx-m1]+delhsq[indx+p1]+delvsq[indx+p1]+
+                                                delhsq[indx-p1]+delvsq[indx-p1]+delhsq[indx+m1]+delvsq[indx+m1])+
+                                  gaussgrad[3]*(delhsq[indx-v2]+delvsq[indx-v2]+delhsq[indx-2]+delvsq[indx-2]+
+                                                delhsq[indx+2]+delvsq[indx+2]+delhsq[indx+v2]+delvsq[indx+v2])+
+                                  gaussgrad[4]*(delhsq[indx-2*TS-1]+delvsq[indx-2*TS-1]+delhsq[indx-2*TS+1]+delvsq[indx-2*TS+1]+
+                                                delhsq[indx-TS-2]+delvsq[indx-TS-2]+delhsq[indx-TS+2]+delvsq[indx-TS+2]+
+                                                delhsq[indx+TS-2]+delvsq[indx+TS-2]+delhsq[indx+TS+2]+delvsq[indx-TS+2]+
+                                                delhsq[indx+2*TS-1]+delvsq[indx+2*TS-1]+delhsq[indx+2*TS+1]+delvsq[indx+2*TS+1])+
+                                  gaussgrad[5]*(delhsq[indx-m2]+delvsq[indx-m2]+delhsq[indx+p2]+delvsq[indx+p2]+
                                                 delhsq[indx-p2]+delvsq[indx-p2]+delhsq[indx+m2]+delvsq[indx+m2]));
 
 
             if (nyqtest>0)
             {
-              nyquist[indx]=1; //nyquist=1 for nyquist region
+              nyquist[indx>>1]=1; //nyquist=1 for nyquist region
             }
           }
-
+        unsigned int nyquisttemp;
         for (rr=8; rr<rr1-8; rr++)
           for (cc=8+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2)
           {
 
-            areawt=(nyquist[indx-v2]+nyquist[indx-m1]+nyquist[indx+p1]+ \
-                    nyquist[indx-2]+nyquist[indx]+nyquist[indx+2]+ \
-                    nyquist[indx-p1]+nyquist[indx+m1]+nyquist[indx+v2]);
+            nyquisttemp=(nyquist[(indx-v2)>>1]+nyquist[(indx-m1)>>1]+nyquist[(indx+p1)>>1]+
+                         nyquist[(indx-2)>>1]+nyquist[indx>>1]+nyquist[(indx+2)>>1]+
+                         nyquist[(indx-p1)>>1]+nyquist[(indx+m1)>>1]+nyquist[(indx+v2)>>1]);
             //if most of your neighbors are named Nyquist, it's likely that you're one too
-            if (areawt>4) nyquist[indx]=1;
+            if (nyquisttemp>4) nyquist[indx>>1]=1;
             //or not
-            if (areawt<4) nyquist[indx]=0;
+            if (nyquisttemp<4) nyquist[indx>>1]=0;
           }
 
         //t2_nyqtest += clock() - t1_nyqtest;
@@ -931,7 +949,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           for (cc=8+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2)
           {
 
-            if (nyquist[indx])
+            if (nyquist[indx>>1])
             {
               // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
               // area interpolation
@@ -941,20 +959,20 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                 for (j=-6; j<7; j+=2)
                 {
                   indx1=(rr+i)*TS+cc+j;
-                  if (nyquist[indx1])
+                  if (nyquist[indx1>>1])
                   {
-                    sumh += cfa[indx1]-0.5*(cfa[indx1-1]+cfa[indx1+1]);
-                    sumv += cfa[indx1]-0.5*(cfa[indx1-v1]+cfa[indx1+v1]);
-                    sumsqh += 0.5*(SQR(cfa[indx1]-cfa[indx1-1])+SQR(cfa[indx1]-cfa[indx1+1]));
-                    sumsqv += 0.5*(SQR(cfa[indx1]-cfa[indx1-v1])+SQR(cfa[indx1]-cfa[indx1+v1]));
+                    sumh += cfa[indx1]-xdiv2f(cfa[indx1-1]+cfa[indx1+1]);
+                    sumv += cfa[indx1]-xdiv2f(cfa[indx1-v1]+cfa[indx1+v1]);
+                    sumsqh += xdiv2f(SQR(cfa[indx1]-cfa[indx1-1])+SQR(cfa[indx1]-cfa[indx1+1]));
+                    sumsqv += xdiv2f(SQR(cfa[indx1]-cfa[indx1-v1])+SQR(cfa[indx1]-cfa[indx1+v1]));
                     areawt +=1;
                   }
                 }
 
               //horizontal and vertical color differences, and adaptive weight
-              hcdvar=epssq+MAX(0, areawt*sumsqh-sumh*sumh);
-              vcdvar=epssq+MAX(0, areawt*sumsqv-sumv*sumv);
-              hvwt[indx]=hcdvar/(vcdvar+hcdvar);
+              hcdvar=epssq+fabsf(areawt*sumsqh-sumh*sumh);
+              vcdvar=epssq+fabsf(areawt*sumsqv-sumv*sumv);
+              hvwt[indx>>1]=hcdvar/(vcdvar+hcdvar);
 
               // end of area interpolation
               // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -971,30 +989,32 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           {
 
             //first ask if one gets more directional discrimination from nearby B/R sites
-            hvwtalt = 0.25*(hvwt[indx-m1]+hvwt[indx+p1]+hvwt[indx-p1]+hvwt[indx+m1]);
-            vo=fabs(0.5-hvwt[indx]);
-            ve=fabs(0.5-hvwtalt);
-            if (vo<ve)
+            hvwtalt = xdivf(hvwt[(indx-m1)>>1]+hvwt[(indx+p1)>>1]+hvwt[(indx-p1)>>1]+hvwt[(indx+m1)>>1],2);
+//					hvwtalt = 0.25*(hvwt[(indx-m1)>>1]+hvwt[(indx+p1)>>1]+hvwt[(indx-p1)>>1]+hvwt[(indx+m1)>>1]);
+//					vo=fabsf(0.5-hvwt[indx>>1]);
+//					ve=fabsf(0.5-hvwtalt);
+            if (fabsf(0.5-hvwt[indx>>1])<fabsf(0.5-hvwtalt))
             {
-              hvwt[indx]=hvwtalt; //a better result was obtained from the neighbors
+              hvwt[indx>>1]=hvwtalt; //a better result was obtained from the neighbors
             }
+//					if (vo<ve) {hvwt[indx>>1]=hvwtalt;}//a better result was obtained from the neighbors
 
 
 
-            Dgrb[indx][0] = (hcd[indx]*(1.0f-hvwt[indx]) + vcd[indx]*hvwt[indx]);//evaluate color differences
+            Dgrb[indx][0] = (hcd[indx]*(1.0f-hvwt[indx>>1]) + vcd[indx]*hvwt[indx>>1]);//evaluate color differences
             //if (hvwt[indx]<0.5) Dgrb[indx][0]=hcd[indx];
             //if (hvwt[indx]>0.5) Dgrb[indx][0]=vcd[indx];
             rgb[indx][1] = cfa[indx] + Dgrb[indx][0];//evaluate G (finally!)
 
             //local curvature in G (preparation for nyquist refinement step)
-            if (nyquist[indx])
+            if (nyquist[indx>>1])
             {
-              Dgrbh2[indx] = SQR(rgb[indx][1] - 0.5*(rgb[indx-1][1]+rgb[indx+1][1]));
-              Dgrbv2[indx] = SQR(rgb[indx][1] - 0.5*(rgb[indx-v1][1]+rgb[indx+v1][1]));
+              Dgrb2[indx>>1].h = SQR(rgb[indx][1] - xdiv2f(rgb[indx-1][1]+rgb[indx+1][1]));
+              Dgrb2[indx>>1].v = SQR(rgb[indx][1] - xdiv2f(rgb[indx-v1][1]+rgb[indx+v1][1]));
             }
             else
             {
-              Dgrbh2[indx] = Dgrbv2[indx] = 0;
+              Dgrb2[indx>>1].h = Dgrb2[indx>>1].v = 0;
             }
           }
 
@@ -1010,17 +1030,17 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           for (cc=8+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2)
           {
 
-            if (nyquist[indx])
+            if (nyquist[indx>>1])
             {
               //local averages (over Nyquist pixels only) of G curvature squared
-              gvarh = epssq + (gquinc[0]*Dgrbh2[indx]+ \
-                               gquinc[1]*(Dgrbh2[indx-m1]+Dgrbh2[indx+p1]+Dgrbh2[indx-p1]+Dgrbh2[indx+m1])+ \
-                               gquinc[2]*(Dgrbh2[indx-v2]+Dgrbh2[indx-2]+Dgrbh2[indx+2]+Dgrbh2[indx+v2])+ \
-                               gquinc[3]*(Dgrbh2[indx-m2]+Dgrbh2[indx+p2]+Dgrbh2[indx-p2]+Dgrbh2[indx+m2]));
-              gvarv = epssq + (gquinc[0]*Dgrbv2[indx]+ \
-                               gquinc[1]*(Dgrbv2[indx-m1]+Dgrbv2[indx+p1]+Dgrbv2[indx-p1]+Dgrbv2[indx+m1])+ \
-                               gquinc[2]*(Dgrbv2[indx-v2]+Dgrbv2[indx-2]+Dgrbv2[indx+2]+Dgrbv2[indx+v2])+ \
-                               gquinc[3]*(Dgrbv2[indx-m2]+Dgrbv2[indx+p2]+Dgrbv2[indx-p2]+Dgrbv2[indx+m2]));
+              gvarh = epssq + (gquinc[0]*Dgrb2[indx>>1].h+
+                               gquinc[1]*(Dgrb2[(indx-m1)>>1].h+Dgrb2[(indx+p1)>>1].h+Dgrb2[(indx-p1)>>1].h+Dgrb2[(indx+m1)>>1].h)+
+                               gquinc[2]*(Dgrb2[(indx-v2)>>1].h+Dgrb2[(indx-2)>>1].h+Dgrb2[(indx+2)>>1].h+Dgrb2[(indx+v2)>>1].h)+
+                               gquinc[3]*(Dgrb2[(indx-m2)>>1].h+Dgrb2[(indx+p2)>>1].h+Dgrb2[(indx-p2)>>1].h+Dgrb2[(indx+m2)>>1].h));
+              gvarv = epssq + (gquinc[0]*Dgrb2[indx>>1].v+
+                               gquinc[1]*(Dgrb2[(indx-m1)>>1].v+Dgrb2[(indx+p1)>>1].v+Dgrb2[(indx-p1)>>1].v+Dgrb2[(indx+m1)>>1].v)+
+                               gquinc[2]*(Dgrb2[(indx-v2)>>1].v+Dgrb2[(indx-2)>>1].v+Dgrb2[(indx+2)>>1].v+Dgrb2[(indx+v2)>>1].v)+
+                               gquinc[3]*(Dgrb2[(indx-m2)>>1].v+Dgrb2[(indx+p2)>>1].v+Dgrb2[(indx-p2)>>1].v+Dgrb2[(indx+m2)>>1].v));
               //use the results as weights for refined G interpolation
               Dgrb[indx][0] = (hcd[indx]*gvarv + vcd[indx]*gvarh)/(gvarv+gvarh);
               rgb[indx][1] = cfa[indx] + Dgrb[indx][0];
@@ -1035,108 +1055,109 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // diagonal interpolation correction
 
         for (rr=8; rr<rr1-8; rr++)
-          for (cc=8+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-8; cc+=2,indx+=2)
+          for (cc=8+(FC(rr,2,filters)&1),indx=rr*TS+cc,indx1=indx>>1; cc<cc1-8; cc+=2,indx+=2,indx1++)
           {
 
-
-            rbvarp = epssq + (gausseven[0]*(Dgrbpsq1[indx-v1]+Dgrbpsq1[indx-1]+Dgrbpsq1[indx+1]+Dgrbpsq1[indx+v1]) + \
-                              gausseven[1]*(Dgrbpsq1[indx-v2-1]+Dgrbpsq1[indx-v2+1]+Dgrbpsq1[indx-2-v1]+Dgrbpsq1[indx+2-v1]+ \
-                                            Dgrbpsq1[indx-2+v1]+Dgrbpsq1[indx+2+v1]+Dgrbpsq1[indx+v2-1]+Dgrbpsq1[indx+v2+1]));
-            /*rbvarp -=  SQR( (gausseven[0]*(Dgrbp1[indx-v1]+Dgrbp1[indx-1]+Dgrbp1[indx+1]+Dgrbp1[indx+v1]) + \
-            gausseven[1]*(Dgrbp1[indx-v2-1]+Dgrbp1[indx-v2+1]+Dgrbp1[indx-2-v1]+Dgrbp1[indx+2-v1]+ \
-            Dgrbp1[indx-2+v1]+Dgrbp1[indx+2+v1]+Dgrbp1[indx+v2-1]+Dgrbp1[indx+v2+1])));*/
-            rbvarm = epssq + (gausseven[0]*(Dgrbmsq1[indx-v1]+Dgrbmsq1[indx-1]+Dgrbmsq1[indx+1]+Dgrbmsq1[indx+v1]) + \
-                              gausseven[1]*(Dgrbmsq1[indx-v2-1]+Dgrbmsq1[indx-v2+1]+Dgrbmsq1[indx-2-v1]+Dgrbmsq1[indx+2-v1]+ \
-                                            Dgrbmsq1[indx-2+v1]+Dgrbmsq1[indx+2+v1]+Dgrbmsq1[indx+v2-1]+Dgrbmsq1[indx+v2+1]));
-            /*rbvarm -=  SQR( (gausseven[0]*(Dgrbm1[indx-v1]+Dgrbm1[indx-1]+Dgrbm1[indx+1]+Dgrbm1[indx+v1]) + \
-            gausseven[1]*(Dgrbm1[indx-v2-1]+Dgrbm1[indx-v2+1]+Dgrbm1[indx-2-v1]+Dgrbm1[indx+2-v1]+ \
-            Dgrbm1[indx-2+v1]+Dgrbm1[indx+2+v1]+Dgrbm1[indx+v2-1]+Dgrbm1[indx+v2+1])));*/
-
-
-
+            /*
+            					rbvarp = epssq + (gausseven[0]*(Dgrbsq1[indx-v1].p+Dgrbsq1[indx-1].p+Dgrbsq1[indx+1].p+Dgrbsq1[indx+v1].p) +
+            									gausseven[1]*(Dgrbsq1[indx-v2-1].p+Dgrbsq1[indx-v2+1].p+Dgrbsq1[indx-2-v1].p+Dgrbsq1[indx+2-v1].p+
+            												  Dgrbsq1[indx-2+v1].p+Dgrbsq1[indx+2+v1].p+Dgrbsq1[indx+v2-1].p+Dgrbsq1[indx+v2+1].p));
+            					rbvarm = epssq + (gausseven[0]*(Dgrbsq1[indx-v1].m+Dgrbsq1[indx-1].m+Dgrbsq1[indx+1].m+Dgrbsq1[indx+v1].m) +
+            									gausseven[1]*(Dgrbsq1[indx-v2-1].m+Dgrbsq1[indx-v2+1].m+Dgrbsq1[indx-2-v1].m+Dgrbsq1[indx+2-v1].m+
+            												  Dgrbsq1[indx-2+v1].m+Dgrbsq1[indx+2+v1].m+Dgrbsq1[indx+v2-1].m+Dgrbsq1[indx+v2+1].m));
+            */
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             //diagonal color ratios
-            crse=2.0f*(cfa[indx+m1])/(eps+cfa[indx]+(cfa[indx+m2]));
-            crnw=2.0f*(cfa[indx-m1])/(eps+cfa[indx]+(cfa[indx-m2]));
-            crne=2.0f*(cfa[indx+p1])/(eps+cfa[indx]+(cfa[indx+p2]));
-            crsw=2.0f*(cfa[indx-p1])/(eps+cfa[indx]+(cfa[indx-p2]));
+            crse=xmul2f(cfa[indx+m1])/(eps+cfa[indx]+(cfa[indx+m2]));
+            crnw=xmul2f(cfa[indx-m1])/(eps+cfa[indx]+(cfa[indx-m2]));
+            crne=xmul2f(cfa[indx+p1])/(eps+cfa[indx]+(cfa[indx+p2]));
+            crsw=xmul2f(cfa[indx-p1])/(eps+cfa[indx]+(cfa[indx-p2]));
 
             //assign B/R at R/B sites
-            if (fabs(1.0f-crse)<arthresh)
+            if (fabsf(1.0f-crse)<arthresh)
             {
               rbse=cfa[indx]*crse; //use this if more precise diag interp is necessary
             }
             else
             {
-              rbse=(cfa[indx+m1])+0.5*(cfa[indx]-cfa[indx+m2]);
+              rbse=(cfa[indx+m1])+xdiv2f(cfa[indx]-cfa[indx+m2]);
             }
-            if (fabs(1.0f-crnw)<arthresh)
+            if (fabsf(1.0f-crnw)<arthresh)
             {
               rbnw=cfa[indx]*crnw;
             }
             else
             {
-              rbnw=(cfa[indx-m1])+0.5*(cfa[indx]-cfa[indx-m2]);
+              rbnw=(cfa[indx-m1])+xdiv2f(cfa[indx]-cfa[indx-m2]);
             }
-            if (fabs(1.0f-crne)<arthresh)
+            if (fabsf(1.0f-crne)<arthresh)
             {
               rbne=cfa[indx]*crne;
             }
             else
             {
-              rbne=(cfa[indx+p1])+0.5*(cfa[indx]-cfa[indx+p2]);
+              rbne=(cfa[indx+p1])+xdiv2f(cfa[indx]-cfa[indx+p2]);
             }
-            if (fabs(1.0f-crsw)<arthresh)
+            if (fabsf(1.0f-crsw)<arthresh)
             {
               rbsw=cfa[indx]*crsw;
             }
             else
             {
-              rbsw=(cfa[indx-p1])+0.5*(cfa[indx]-cfa[indx-p2]);
+              rbsw=(cfa[indx-p1])+xdiv2f(cfa[indx]-cfa[indx-p2]);
             }
 
-            wtse= eps+delm[indx]+delm[indx+m1]+delm[indx+m2];//same as for wtu,wtd,wtl,wtr
-            wtnw= eps+delm[indx]+delm[indx-m1]+delm[indx-m2];
-            wtne= eps+delp[indx]+delp[indx+p1]+delp[indx+p2];
-            wtsw= eps+delp[indx]+delp[indx-p1]+delp[indx-p2];
+            wtse= eps+delm[indx1]+delm[(indx+m1)>>1]+delm[(indx+m2)>>1];//same as for wtu,wtd,wtl,wtr
+            wtnw= eps+delm[indx1]+delm[(indx-m1)>>1]+delm[(indx-m2)>>1];
+            wtne= eps+delp[indx1]+delp[(indx+p1)>>1]+delp[(indx+p2)>>1];
+            wtsw= eps+delp[indx1]+delp[(indx-p1)>>1]+delp[(indx-p2)>>1];
 
 
-            rbm[indx] = (wtse*rbnw+wtnw*rbse)/(wtse+wtnw);
-            rbp[indx] = (wtne*rbsw+wtsw*rbne)/(wtne+wtsw);
-
-            pmwt[indx] = rbvarm/(rbvarp+rbvarm);
+            rb[indx1].m = (wtse*rbnw+wtnw*rbse)/(wtse+wtnw);
+            rb[indx1].p = (wtne*rbsw+wtsw*rbne)/(wtne+wtsw);
+            /*
+            					rbvarp = epssq + (gausseven[0]*(Dgrbsq1[indx-v1].p+Dgrbsq1[indx-1].p+Dgrbsq1[indx+1].p+Dgrbsq1[indx+v1].p) +
+            									gausseven[1]*(Dgrbsq1[indx-v2-1].p+Dgrbsq1[indx-v2+1].p+Dgrbsq1[indx-2-v1].p+Dgrbsq1[indx+2-v1].p+
+            												  Dgrbsq1[indx-2+v1].p+Dgrbsq1[indx+2+v1].p+Dgrbsq1[indx+v2-1].p+Dgrbsq1[indx+v2+1].p));
+            */
+            rbvarm = epssq + (gausseven[0]*(Dgrbsq1[(indx-v1)>>1].m+Dgrbsq1[(indx-1)>>1].m+Dgrbsq1[(indx+1)>>1].m+Dgrbsq1[(indx+v1)>>1].m) +
+                              gausseven[1]*(Dgrbsq1[(indx-v2-1)>>1].m+Dgrbsq1[(indx-v2+1)>>1].m+Dgrbsq1[(indx-2-v1)>>1].m+Dgrbsq1[(indx+2-v1)>>1].m+
+                                            Dgrbsq1[(indx-2+v1)>>1].m+Dgrbsq1[(indx+2+v1)>>1].m+Dgrbsq1[(indx+v2-1)>>1].m+Dgrbsq1[(indx+v2+1)>>1].m));
+            pmwt[indx1] = rbvarm/((epssq + (gausseven[0]*(Dgrbsq1[(indx-v1)>>1].p+Dgrbsq1[(indx-1)>>1].p+Dgrbsq1[(indx+1)>>1].p+Dgrbsq1[(indx+v1)>>1].p) +
+                                            gausseven[1]*(Dgrbsq1[(indx-v2-1)>>1].p+Dgrbsq1[(indx-v2+1)>>1].p+Dgrbsq1[(indx-2-v1)>>1].p+Dgrbsq1[(indx+2-v1)>>1].p+
+                                                Dgrbsq1[(indx-2+v1)>>1].p+Dgrbsq1[(indx+2+v1)>>1].p+Dgrbsq1[(indx+v2-1)>>1].p+Dgrbsq1[(indx+v2+1)>>1].p)))+rbvarm);
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //bound the interpolation in regions of high saturation
-            if (rbp[indx]<cfa[indx])
+            if (rb[indx1].p<cfa[indx])
             {
-              if (2.0*rbp[indx] < cfa[indx])
+              if (xmul2f(rb[indx1].p) < cfa[indx])
               {
-                rbp[indx] = ULIM(rbp[indx] ,cfa[indx-p1],cfa[indx+p1]);
+                rb[indx1].p = ULIM(rb[indx1].p ,cfa[indx-p1],cfa[indx+p1]);
               }
               else
               {
-                pwt = 2.0*(cfa[indx]-rbp[indx])/(eps+rbp[indx]+cfa[indx]);
-                rbp[indx]=pwt*rbp[indx] + (1.0f-pwt)*ULIM(rbp[indx],cfa[indx-p1],cfa[indx+p1]);
+                pwt = xmul2f(cfa[indx]-rb[indx1].p)/(eps+rb[indx1].p+cfa[indx]);
+                rb[indx1].p=pwt*rb[indx1].p + (1.0f-pwt)*ULIM(rb[indx1].p,cfa[indx-p1],cfa[indx+p1]);
               }
             }
-            if (rbm[indx]<cfa[indx])
+            if (rb[indx1].m<cfa[indx])
             {
-              if (2.0*rbm[indx] < cfa[indx])
+              if (xmul2f(rb[indx1].m) < cfa[indx])
               {
-                rbm[indx] = ULIM(rbm[indx] ,cfa[indx-m1],cfa[indx+m1]);
+                rb[indx1].m = ULIM(rb[indx1].m ,cfa[indx-m1],cfa[indx+m1]);
               }
               else
               {
-                mwt = 2.0*(cfa[indx]-rbm[indx])/(eps+rbm[indx]+cfa[indx]);
-                rbm[indx]=mwt*rbm[indx] + (1.0f-mwt)*ULIM(rbm[indx],cfa[indx-m1],cfa[indx+m1]);
+                mwt = xmul2f(cfa[indx]-rb[indx1].m)/(eps+rb[indx1].m+cfa[indx]);
+                rb[indx1].m=mwt*rb[indx1].m + (1.0f-mwt)*ULIM(rb[indx1].m,cfa[indx-m1],cfa[indx+m1]);
               }
             }
 
-            if (rbp[indx] > clip_pt) rbp[indx]=ULIM(rbp[indx],cfa[indx-p1],cfa[indx+p1]);//for RT implementation
-            if (rbm[indx] > clip_pt) rbm[indx]=ULIM(rbm[indx],cfa[indx-m1],cfa[indx+m1]);
-            //c=2-FC(rr,cc);//for dcraw implementation
+            if (rb[indx1].p > clip_pt) rb[indx1].p=ULIM(rb[indx1].p,cfa[indx-p1],cfa[indx+p1]);//for RT implementation
+            if (rb[indx1].m > clip_pt) rb[indx1].m=ULIM(rb[indx1].m,cfa[indx-m1],cfa[indx+m1]);
+            //c=2-FC(rr,cc,filters);//for dcraw implementation
             //if (rbp[indx] > pre_mul[c]) rbp[indx]=ULIM(rbp[indx],cfa[indx-p1],cfa[indx+p1]);
             //if (rbm[indx] > pre_mul[c]) rbm[indx]=ULIM(rbm[indx],cfa[indx-m1],cfa[indx+m1]);
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1147,67 +1168,69 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 
         for (rr=10; rr<rr1-10; rr++)
-          for (cc=10+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-10; cc+=2,indx+=2)
+          for (cc=10+(FC(rr,2,filters)&1),indx=rr*TS+cc,indx1=indx>>1; cc<cc1-10; cc+=2,indx+=2,indx1++)
           {
 
             //first ask if one gets more directional discrimination from nearby B/R sites
-            pmwtalt = 0.25*(pmwt[indx-m1]+pmwt[indx+p1]+pmwt[indx-p1]+pmwt[indx+m1]);
-            vo=fabs(0.5-pmwt[indx]);
-            ve=fabs(0.5-pmwtalt);
-            if (vo<ve)
+            pmwtalt = xdivf(pmwt[(indx-m1)>>1]+pmwt[(indx+p1)>>1]+pmwt[(indx-p1)>>1]+pmwt[(indx+m1)>>1],2);
+//					vo=fabsf(0.5-pmwt[indx1]);
+//					ve=fabsf(0.5-pmwtalt);
+            if (fabsf(0.5-pmwt[indx1])<fabsf(0.5-pmwtalt))
             {
-              pmwt[indx]=pmwtalt; //a better result was obtained from the neighbors
+              pmwt[indx1]=pmwtalt; //a better result was obtained from the neighbors
             }
-            rbint[indx] = 0.5*(cfa[indx] + rbm[indx]*(1.0f-pmwt[indx]) + rbp[indx]*pmwt[indx]);//this is R+B, interpolated
+
+//					if (vo<ve) {pmwt[indx1]=pmwtalt;}//a better result was obtained from the neighbors
+            rbint[indx1] = xdiv2f(cfa[indx] + rb[indx1].m*(1.0f-pmwt[indx1]) + rb[indx1].p*pmwt[indx1]);//this is R+B, interpolated
           }
 
         for (rr=12; rr<rr1-12; rr++)
-          for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc; cc<cc1-12; cc+=2,indx+=2)
+          for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc,indx1=indx>>1; cc<cc1-12; cc+=2,indx+=2,indx1++)
           {
 
-            if (fabs(0.5-pmwt[indx])<fabs(0.5-hvwt[indx]) ) continue;
+            if (fabsf(0.5-pmwt[indx>>1])<fabsf(0.5-hvwt[indx>>1]) ) continue;
 
             //now interpolate G vertically/horizontally using R+B values
             //unfortunately, since G interpolation cannot be done diagonally this may lead to color shifts
             //color ratios for G interpolation
 
-            cru = cfa[indx-v1]*2.0/(eps+rbint[indx]+rbint[indx-v2]);
-            crd = cfa[indx+v1]*2.0/(eps+rbint[indx]+rbint[indx+v2]);
-            crl = cfa[indx-1]*2.0/(eps+rbint[indx]+rbint[indx-2]);
-            crr = cfa[indx+1]*2.0/(eps+rbint[indx]+rbint[indx+2]);
+            cru = cfa[indx-v1]*2.0/(eps+rbint[indx1]+rbint[(indx1-v1)]);
+            crd = cfa[indx+v1]*2.0/(eps+rbint[indx1]+rbint[(indx1+v1)]);
+            crl = cfa[indx-1]*2.0/(eps+rbint[indx1]+rbint[(indx1-1)]);
+            crr = cfa[indx+1]*2.0/(eps+rbint[indx1]+rbint[(indx1+1)]);
 
             //interpolated G via adaptive ratios or Hamilton-Adams in each cardinal direction
-            if (fabs(1.0f-cru)<arthresh)
+            if (fabsf(1.0f-cru)<arthresh)
             {
-              gu=rbint[indx]*cru;
+              gu=rbint[indx1]*cru;
             }
             else
             {
-              gu=cfa[indx-v1]+0.5*(rbint[indx]-rbint[indx-v2]);
+              gu=cfa[indx-v1]+xdiv2f(rbint[indx1]-rbint[(indx1-v1)]);
             }
-            if (fabs(1.0f-crd)<arthresh)
+            if (fabsf(1.0f-crd)<arthresh)
             {
-              gd=rbint[indx]*crd;
-            }
-            else
-            {
-              gd=cfa[indx+v1]+0.5*(rbint[indx]-rbint[indx+v2]);
-            }
-            if (fabs(1.0f-crl)<arthresh)
-            {
-              gl=rbint[indx]*crl;
+              gd=rbint[indx1]*crd;
             }
             else
             {
-              gl=cfa[indx-1]+0.5*(rbint[indx]-rbint[indx-2]);
+              gd=cfa[indx+v1]+xdiv2f(rbint[indx1]-rbint[(indx1+v1)]);
             }
-            if (fabs(1.0f-crr)<arthresh)
+            if (fabsf(1.0f-crl)<arthresh)
             {
-              gr=rbint[indx]*crr;
+              gl=rbint[indx1]*crl;
             }
             else
             {
-              gr=cfa[indx+1]+0.5*(rbint[indx]-rbint[indx+2]);
+              gl=cfa[indx-1]+xdiv2f(rbint[indx1]-rbint[(indx1-1)]);
+            }
+            if (fabsf(1.0f-crr)<arthresh)
+            {
+              gr=rbint[indx1]*crr;
+            }
+            else
+            {
+              gr=cfa[indx+1]+xdiv2f(rbint[indx1]-rbint[(indx1+1)]);
             }
 
             //gu=rbint[indx]*cru;
@@ -1221,43 +1244,43 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             //bound the interpolation in regions of high saturation
-            if (Gintv<rbint[indx])
+            if (Gintv<rbint[indx1])
             {
-              if (2*Gintv < rbint[indx])
+              if (2*Gintv < rbint[indx1])
               {
                 Gintv = ULIM(Gintv ,cfa[indx-v1],cfa[indx+v1]);
               }
               else
               {
-                vwt = 2.0*(rbint[indx]-Gintv)/(eps+Gintv+rbint[indx]);
+                vwt = 2.0*(rbint[indx1]-Gintv)/(eps+Gintv+rbint[indx1]);
                 Gintv=vwt*Gintv + (1.0f-vwt)*ULIM(Gintv,cfa[indx-v1],cfa[indx+v1]);
               }
             }
-            if (Ginth<rbint[indx])
+            if (Ginth<rbint[indx1])
             {
-              if (2*Ginth < rbint[indx])
+              if (2*Ginth < rbint[indx1])
               {
                 Ginth = ULIM(Ginth ,cfa[indx-1],cfa[indx+1]);
               }
               else
               {
-                hwt = 2.0*(rbint[indx]-Ginth)/(eps+Ginth+rbint[indx]);
+                hwt = 2.0*(rbint[indx1]-Ginth)/(eps+Ginth+rbint[indx1]);
                 Ginth=hwt*Ginth + (1.0f-hwt)*ULIM(Ginth,cfa[indx-1],cfa[indx+1]);
               }
             }
 
             if (Ginth > clip_pt) Ginth=ULIM(Ginth,cfa[indx-1],cfa[indx+1]);//for RT implementation
             if (Gintv > clip_pt) Gintv=ULIM(Gintv,cfa[indx-v1],cfa[indx+v1]);
-            //c=FC(rr,cc);//for dcraw implementation
+            //c=FC(rr,cc,filters);//for dcraw implementation
             //if (Ginth > pre_mul[c]) Ginth=ULIM(Ginth,cfa[indx-1],cfa[indx+1]);
             //if (Gintv > pre_mul[c]) Gintv=ULIM(Gintv,cfa[indx-v1],cfa[indx+v1]);
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            rgb[indx][1] = Ginth*(1.0f-hvwt[indx]) + Gintv*hvwt[indx];
+            rgb[indx][1] = Ginth*(1.0f-hvwt[indx1]) + Gintv*hvwt[indx1];
             //rgb[indx][1] = 0.5*(rgb[indx][1]+0.25*(rgb[indx-v1][1]+rgb[indx+v1][1]+rgb[indx-1][1]+rgb[indx+1][1]));
             Dgrb[indx][0] = rgb[indx][1]-cfa[indx];
 
-            //rgb[indx][2-FC(rr,cc)]=2*rbint[indx]-cfa[indx];
+            //rgb[indx][2-FC(rr,cc,filters)]=2*rbint[indx]-cfa[indx];
           }
         //end of diagonal interpolation correction
         //t2_diag += clock() - t1_diag;
@@ -1276,25 +1299,27 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         for (rr=12; rr<rr1-12; rr++)
           for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc,c=1-FC(rr,cc,filters)/2; cc<cc1-12; cc+=2,indx+=2)
           {
-            wtnw=1.0/(eps+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
-            wtne=1.0/(eps+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
-            wtsw=1.0/(eps+fabs(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabs(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabs(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
-            wtse=1.0/(eps+fabs(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabs(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabs(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
+            wtnw=1.0/(eps+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
+            wtne=1.0/(eps+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
+            wtsw=1.0/(eps+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
+            wtse=1.0/(eps+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
 
             //Dgrb[indx][c]=(wtnw*Dgrb[indx-m1][c]+wtne*Dgrb[indx+p1][c]+wtsw*Dgrb[indx-p1][c]+wtse*Dgrb[indx+m1][c])/(wtnw+wtne+wtsw+wtse);
 
-            Dgrb[indx][c]=(wtnw*(1.325*Dgrb[indx-m1][c]-0.175*Dgrb[indx-m3][c]-0.075*Dgrb[indx-m1-2][c]-0.075*Dgrb[indx-m1-v2][c] )+ \
-                           wtne*(1.325*Dgrb[indx+p1][c]-0.175*Dgrb[indx+p3][c]-0.075*Dgrb[indx+p1+2][c]-0.075*Dgrb[indx+p1+v2][c] )+ \
-                           wtsw*(1.325*Dgrb[indx-p1][c]-0.175*Dgrb[indx-p3][c]-0.075*Dgrb[indx-p1-2][c]-0.075*Dgrb[indx-p1-v2][c] )+ \
+            Dgrb[indx][c]=(wtnw*(1.325*Dgrb[indx-m1][c]-0.175*Dgrb[indx-m3][c]-0.075*Dgrb[indx-m1-2][c]-0.075*Dgrb[indx-m1-v2][c] )+
+                           wtne*(1.325*Dgrb[indx+p1][c]-0.175*Dgrb[indx+p3][c]-0.075*Dgrb[indx+p1+2][c]-0.075*Dgrb[indx+p1+v2][c] )+
+                           wtsw*(1.325*Dgrb[indx-p1][c]-0.175*Dgrb[indx-p3][c]-0.075*Dgrb[indx-p1-2][c]-0.075*Dgrb[indx-p1-v2][c] )+
                            wtse*(1.325*Dgrb[indx+m1][c]-0.175*Dgrb[indx+m3][c]-0.075*Dgrb[indx+m1+2][c]-0.075*Dgrb[indx+m1+v2][c] ))/(wtnw+wtne+wtsw+wtse);
           }
         for (rr=12; rr<rr1-12; rr++)
           for (cc=12+(FC(rr,1,filters)&1),indx=rr*TS+cc,c=FC(rr,cc+1,filters)/2; cc<cc1-12; cc+=2,indx+=2)
             for(c=0; c<2; c++)
             {
+//						Dgrb[indx][c]=((hvwt[indx-v1])*Dgrb[indx-v1][c]+(1.0f-hvwt[indx+1])*Dgrb[indx+1][c]+(1.0f-hvwt[indx-1])*Dgrb[indx-1][c]+(hvwt[indx+v1])*Dgrb[indx+v1][c])/
+//						((hvwt[indx-v1])+(1.0f-hvwt[indx+1])+(1.0f-hvwt[indx-1])+(hvwt[indx+v1]));
 
-              Dgrb[indx][c]=((hvwt[indx-v1])*Dgrb[indx-v1][c]+(1.0f-hvwt[indx+1])*Dgrb[indx+1][c]+(1.0f-hvwt[indx-1])*Dgrb[indx-1][c]+(hvwt[indx+v1])*Dgrb[indx+v1][c])/ \
-                            ((hvwt[indx-v1])+(1.0f-hvwt[indx+1])+(1.0f-hvwt[indx-1])+(hvwt[indx+v1]));
+              Dgrb[indx][c]=((hvwt[(indx-v1)>>1])*Dgrb[indx-v1][c]+(1.0f-hvwt[(indx+1)>>1])*Dgrb[indx+1][c]+(1.0f-hvwt[(indx-1)>>1])*Dgrb[indx-1][c]+(hvwt[(indx+v1)>>1])*Dgrb[indx+v1][c])/
+                            ((hvwt[(indx-v1)>>1])+(1.0f-hvwt[(indx+1)>>1])+(1.0f-hvwt[(indx-1)>>1])+(hvwt[(indx+v1)>>1]));
 
             }
         for(rr=12; rr<rr1-12; rr++)
