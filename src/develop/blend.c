@@ -1724,7 +1724,7 @@ static void _blend_Lab_color(dt_iop_colorspace_type_t cst,const float *a, float 
       tb[1] =  (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
       tb[2] =  (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
 
-      if (flag == 0)
+      if (flag != 0)
       {
         tb[1] = ta[1];
         tb[2] = ta[2];
