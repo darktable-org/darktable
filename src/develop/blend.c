@@ -1668,6 +1668,81 @@ static void _blend_inverse(dt_iop_colorspace_type_t cst,const float *a, float *b
   }
 }
 
+
+/* blend only lightness in Lab color space without any clamping (a noop for other color spaces) */
+static void _blend_Lab_lightness(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+  float max[4]= {0},min[4]= {0};
+
+  _blend_colorspace_channel_range(cst,min,max);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_Lab)
+    {
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
+
+      tb[0] =  (ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity;
+      tb[1] = ta[1];
+      tb[2] = ta[2];
+
+      _blend_Lab_rescale(tb, &b[j]);
+    }
+    else
+      for(int k=0; k<channels; k++)
+        b[j+k] =  a[j+k];		// Noop for RGB and RAW without clamping
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+}
+
+
+/* blend only color in Lab color space without any clamping (a noop for other color spaces) */
+static void _blend_Lab_color(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+  float max[4]= {0},min[4]= {0};
+
+  _blend_colorspace_channel_range(cst,min,max);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_Lab)
+    {
+      _blend_Lab_scale(&a[j], ta);
+      _blend_Lab_scale(&b[j], tb);
+
+      tb[0] = ta[0];
+      tb[1] =  (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
+      tb[2] =  (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
+
+      if (flag == 0)
+      {
+        tb[1] = ta[1];
+        tb[2] = ta[2];
+      }
+
+      _blend_Lab_rescale(tb, &b[j]);
+    }
+    else
+      for(int k=0; k<channels; k++)
+        b[j+k] =  a[j+k];		// Noop for RGB and RAW without clamping
+
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+}
+
+
+
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
 {
   int ch = piece->colors;
@@ -1750,6 +1825,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_COLORADJUST:
       blend = _blend_coloradjust;
+      break;
+    case DEVELOP_BLEND_LAB_LIGHTNESS:
+      blend = _blend_Lab_lightness;
+      break;
+    case DEVELOP_BLEND_LAB_COLOR:
+      blend = _blend_Lab_color;
       break;
 
       /* fallback to normal blend */
