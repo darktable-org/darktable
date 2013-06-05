@@ -1249,7 +1249,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if ((scale-1.0)*(oldscale-1.0)<0) scale = 1.0f;
   if ((scale-fitscale)*(oldscale-fitscale)<0) scale = fitscale;
   scale = fmaxf(fminf(scale,2.0f),0.5*fitscale);
-  
+
   DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
