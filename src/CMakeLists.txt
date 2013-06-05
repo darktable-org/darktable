@@ -117,7 +117,7 @@ endif()
 #
 # Find all other required libraries for building
 #
-find_package(Glib 2.28 REQUIRED)
+find_package(Glib 2.30 REQUIRED)
 include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
