@@ -47,6 +47,9 @@
 #define DEVELOP_BLEND_DIFFERENCE2                       0x17
 #define DEVELOP_BLEND_NORMAL2                           0x18
 #define DEVELOP_BLEND_BOUNDED                           0x19
+#define DEVELOP_BLEND_LAB_LIGHTNESS                     0x1A
+#define DEVELOP_BLEND_LAB_COLOR                         0x1B
+
 
 #define DEVELOP_MASK_DISABLED       0x00
 #define DEVELOP_MASK_ENABLED        0x01
@@ -578,6 +581,18 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
       break;
 
+    case DEVELOP_BLEND_LAB_LIGHTNESS:
+      o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
+      o.y = a.y;
+      o.z = a.z;
+      break;
+
+    case DEVELOP_BLEND_LAB_COLOR:
+      o.x = a.x;
+      o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
+      o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
+      break;
+
     /* fallback to normal blend */
     case DEVELOP_BLEND_UNBOUNDED:
     case DEVELOP_BLEND_NORMAL2:
@@ -719,6 +734,11 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
     case DEVELOP_BLEND_BOUNDED:
     case DEVELOP_BLEND_NORMAL:
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      break;
+
+    case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_COLOR:
+      o = a;                            // Noop for Raw (without clamping)
       break;
 
     /* fallback to normal blend */
@@ -881,6 +901,11 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
     case DEVELOP_BLEND_BOUNDED:
     case DEVELOP_BLEND_NORMAL:
       o =  clamp((a * (1.0f - opacity)) + (b * opacity), min, max);
+      break;
+
+    case DEVELOP_BLEND_LAB_LIGHTNESS:
+    case DEVELOP_BLEND_LAB_COLOR:
+      o = a;                            // Noop for RGB (without clamping)
       break;
 
     /* fallback to normal blend */
