@@ -28,6 +28,7 @@
 #define DT_OPENCL_EVENTLISTSIZE 256
 #define DT_OPENCL_EVENTNAMELENGTH 64
 #define DT_OPENCL_MAX_EVENTS 256
+#define DT_OPENCL_MAX_ERRORS 5
 
 #ifdef HAVE_OPENCL
 
@@ -110,7 +111,9 @@ typedef struct dt_opencl_t
   int synch_cache;
   int micro_nap;
   int enabled;
+  int stopped;
   int num_devs;
+  int error_count;
   int *dev_priority_image;
   int *dev_priority_preview;
   int *dev_priority_export;
@@ -274,11 +277,15 @@ typedef struct dt_opencl_t
 {
   int inited;
   int enabled;
+  int stopped;
+  int error_count;
 } dt_opencl_t;
 static inline void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
   cl->inited = 0;
   cl->enabled = 0;
+  cl->stopped = 0;
+  cl->error_count = 0;
   dt_conf_set_bool("opencl", FALSE);
 }
 static inline void dt_opencl_cleanup(dt_opencl_t *cl) {}

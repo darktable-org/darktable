@@ -47,6 +47,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
+  cl->stopped = 0;
+  cl->error_count = 0;
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
   handles = (handles < 0 ? 0x7fffffff : handles);
@@ -1522,14 +1524,15 @@ int dt_opencl_update_enabled(void)
   if(!darktable.opencl->inited) return FALSE;
   const int prefs = dt_conf_get_bool("opencl");
 
-  //printf("[opencl_update_enabled] preferences is set to %d\n", prefs);
-
   if (darktable.opencl->enabled != prefs)
   {
     darktable.opencl->enabled = prefs;
+    darktable.opencl->stopped = 0;
+    darktable.opencl->error_count = 0;
     dt_print(DT_DEBUG_OPENCL, "[opencl_update_enabled] enabled flag set to %s\n", prefs ? "ON" : "OFF");
   }
-  return darktable.opencl->enabled;
+
+  return (darktable.opencl->enabled && !darktable.opencl->stopped);
 }
 
 /** get global memory of device */

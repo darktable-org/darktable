@@ -1996,19 +1996,18 @@ restart:
   void *buf = NULL;
   void *cl_mem_out = NULL;
   int out_bpp;
-  int oclerr = 0;
 
   // run pixelpipe recursively and get error status
   int err = dt_dev_pixelpipe_process_rec_and_backcopy(pipe, dev, &buf, &cl_mem_out, &out_bpp, &roi, modules, pieces, pos);
 
   // get status summary of opencl queue by checking the eventlist
-  if(pipe->devid >= 0) oclerr = (dt_opencl_events_flush(pipe->devid, 1) != 0);
+  int oclerr = (pipe->devid >= 0) ? (dt_opencl_events_flush(pipe->devid, 1) != 0) : 0;
 
   // Check if we had opencl errors ....
   // remark: opencl errors can come in two ways: pipe->opencl_error is TRUE (and err is TRUE) OR oclerr is TRUE
   if (oclerr || (err && pipe->opencl_error))
   {
-    // Well, there were error -> we might need to free an invalid opencl memory object
+    // Well, there were errors -> we might need to free an invalid opencl memory object
     if (cl_mem_out != NULL) dt_opencl_release_mem_object(cl_mem_out);
     dt_opencl_unlock_device(pipe->devid); // release opencl resource
     dt_pthread_mutex_lock(&pipe->busy_mutex);
@@ -2016,6 +2015,16 @@ restart:
     pipe->opencl_error = 0;               // reset error status
     pipe->devid = -1;
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+    darktable.opencl->error_count++;      // increase error count
+    if(darktable.opencl->error_count >= DT_OPENCL_MAX_ERRORS)
+    {
+      // too frequent opencl errors encountered: this is a clear sign of a broken setup. give up on opencl during this session.
+      darktable.opencl->stopped = 1;
+      dt_print(DT_DEBUG_OPENCL, "[opencl] frequent opencl errors encountered; disabling opencl for this session!\n");      
+      dt_control_log(_("darktable discovered problems with your OpenCL setup; disabling OpenCL for this session!"));
+    }
+
     dt_dev_pixelpipe_flush_caches(pipe);
     dt_dev_pixelpipe_change(pipe, dev);
     dt_print(DT_DEBUG_OPENCL, "[pixelpipe_process] [%s] falling back to cpu path\n", _pipe_type_to_str(pipe->type));
