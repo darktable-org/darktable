@@ -183,7 +183,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     float h;
     float v;
   } s_hv;
+#ifdef _OPENMP
   #pragma omp parallel
+#endif
   {
     //position of top/left corner of the tile
     int top, left;
@@ -350,7 +352,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
 
     // Main algorithm: Tile loop
+    //#ifdef _OPENMP
     //#pragma omp parallel for shared(rawData,height,width,red,green,blue) private(top,left) schedule(dynamic)
+    //#endif
     //code is openmp ready; just have to pull local tile variable declarations inside the tile loop
 
 
@@ -359,7 +363,9 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 // use collapse(2) to collapse the 2 loops to one large loop, so there is better scaling
 
+#ifdef _OPENMP
     #pragma omp for schedule(dynamic) collapse(2) nowait
+#endif
     for (top=winy-16; top < winy+height; top += TS-32)
       for (left=winx-16; left < winx+width; left += TS-32)
       {
