@@ -626,7 +626,7 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
   int devs = cl->num_devs;
   int count = 0;
   int full[devs+1];
-  char *saveptr;
+  char *saveptr = NULL;
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
@@ -670,7 +670,7 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
     }
     else if(*str != '\0')
     {
-      char *endptr;
+      char *endptr = NULL;
 
       // first check if str corresponds to an existing canonical device name
       long number = _device_by_cname(str);
