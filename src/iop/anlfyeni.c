@@ -32,11 +32,11 @@
 DT_MODULE(1)
 
 /* Description: This module implements a local contrast enhancement method
- * based on apaptive nonlinear filters. The algorithm is based on the article
+ * based on adaptive nonlinear filters. The algorithm is based on the article
  * "Image Local Contrast Enhancement using Adaptive Non-Linear Filters" by
  * T. Arici and Y. Altunbasak in  IEEE International Conference on Image
  * Processing, (2006). It is significantly faster than local contrast
- * enhancement by unsharp mask or apaptive histogram methods, and is not very
+ * enhancement by unsharp mask or adaptive histogram methods, and is not very
  * prone to produce halos. However the results look quite different as well.
  * This implementation uses three parameters: Alpha, similar to an inverse
  * radius leaving this above 5 is usually a good idea. Scaling instead of
@@ -138,8 +138,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
   //optional: parallelize it!
-  //TODO: IMPORTANT!! I am not 100% sure if this can actually be parallised. I
-  //should check that omp really only parallises the outer loop.
+  //TODO: IMPORTANT!! I am not 100% sure if this can actually be parallelized. I
+  //should check that omp really only parallelizes the outer loop.
   #pragma omp parallel for default(none) schedule(static) shared(ivoid,ovoid,roi_in,roi_out,d, piece) private(mu_f, mu_b, highpass)
 #endif
   for(int j=0; j<roi_out->height; j++)

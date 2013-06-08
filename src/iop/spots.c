@@ -120,7 +120,7 @@ static void _resynch_params(struct dt_iop_module_t *self)
   int nid[64] = {0};
   int nalgo[64] = {2};
 
-  //we go throught all forms in blend params
+  //we go through all forms in blend params
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
   if (grp && (grp->type & DT_MASKS_GROUP))
   {
@@ -212,7 +212,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   //dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
 
-  // We iterate throught all spots or polygons
+  // We iterate through all spots or polygons
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,bp->mask_id);
   if (grp && (grp->type & DT_MASKS_GROUP))
   {
@@ -248,7 +248,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         }
         fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
 
-        //we elarge the roi if needed
+        //we enlarge the roi if needed
         roiy = fminf(ft,roiy);
         roix = fminf(fl,roix);
         roir = fmaxf(fl+fw,roir);
@@ -285,7 +285,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memcpy(outb, inb, sizeof(float)*roi_out->width*ch);
   }
 
-  // iterate throught all forms
+  // iterate through all forms
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev,bp->mask_id);
   int pos=0;
   if (grp && (grp->type & DT_MASKS_GROUP))

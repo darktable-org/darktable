@@ -47,7 +47,7 @@ DT_MODULE(3)
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;      // search radius
-  float strength;    // noise level after equilization
+  float strength;    // noise level after equalization
   float a[3], b[3];  // fit for poissonian-gaussian noise per color channel.
   uint32_t mode;     // switch between nlmeans and wavelets
 }
@@ -404,7 +404,7 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
     }
 
     /* For pixels [2*mult, width-2*mult], we can safely use macro w/o tests
-     * to avoid uneeded branching in the inner loops */
+     * to avoid unneeded branching in the inner loops */
     for(int i=2*mult; i<width-2*mult; i++)
     {
       SUM_PIXEL_PROLOGUE

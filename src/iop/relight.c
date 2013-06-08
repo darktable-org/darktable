@@ -71,7 +71,7 @@ typedef struct dt_iop_relight_gui_data_t
   GtkLabel  *label1,*label2,*label3;            		       	// ev, center, width
   GtkWidget *scale1,*scale2;        			// ev,width
   GtkDarktableGradientSlider *gslider1;				// center
-  GtkDarktableToggleButton *tbutton1;                     // Pick median lightess
+  GtkDarktableToggleButton *tbutton1;                     // Pick median lightness
 }
 dt_iop_relight_gui_data_t;
 

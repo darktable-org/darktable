@@ -230,7 +230,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 }
 
 // 3rd (final) pass: you get this input region (may be different from what was requested above),
-// do your best to fill the ouput region!
+// do your best to fill the output region!
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
