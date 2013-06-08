@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-06-04 21:27+0200\n"
+"POT-Creation-Date: 2013-06-08 09:32+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -548,15 +548,15 @@ msgstr ""
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1511
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1515
 #: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "Abilitato"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1363
-#: ../src/develop/blend_gui.c:1508 ../src/develop/develop.c:1129
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1365
+#: ../src/develop/blend_gui.c:1512 ../src/develop/develop.c:1129
 #: ../src/imageio/format/j2k.c:631 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -1062,7 +1062,7 @@ msgstr[1] "%d forme in uso"
 msgid "no mask used"
 msgstr "Nessuna maschera in uso"
 
-#: ../src/develop/blend_gui.c:1092 ../src/develop/blend_gui.c:1371
+#: ../src/develop/blend_gui.c:1092 ../src/develop/blend_gui.c:1373
 msgid "drawn mask"
 msgstr "Maschera disegnata"
 
@@ -1173,40 +1173,48 @@ msgstr "Colore"
 msgid "coloradjustment"
 msgstr "Regolazione del colore"
 
+#: ../src/develop/blend_gui.c:1352
+msgid "Lab lightness"
+msgstr "Luminosità Lab"
+
+#: ../src/develop/blend_gui.c:1353
+msgid "Lab color"
+msgstr "Colore Lab"
+
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1354
+#: ../src/develop/blend_gui.c:1356
 msgid "difference (deprecated)"
 msgstr "Differenza (deprecato)"
 
-#: ../src/develop/blend_gui.c:1355
+#: ../src/develop/blend_gui.c:1357
 msgid "inverse (deprecated)"
 msgstr "Inverso (deprecato)"
 
-#: ../src/develop/blend_gui.c:1356
+#: ../src/develop/blend_gui.c:1358
 msgid "normal (deprecated)"
 msgstr "Normale (deprecato)"
 
-#: ../src/develop/blend_gui.c:1357
+#: ../src/develop/blend_gui.c:1359
 msgid "unbounded (deprecated)"
 msgstr "Illimitato (deprecato)"
 
-#: ../src/develop/blend_gui.c:1361
+#: ../src/develop/blend_gui.c:1363
 msgid "blend"
 msgstr "Fusione"
 
-#: ../src/develop/blend_gui.c:1366
+#: ../src/develop/blend_gui.c:1368
 msgid "uniformly"
 msgstr "Uniformità"
 
-#: ../src/develop/blend_gui.c:1377
+#: ../src/develop/blend_gui.c:1379
 msgid "parametric mask"
 msgstr "Maschera parametrica"
 
-#: ../src/develop/blend_gui.c:1383
+#: ../src/develop/blend_gui.c:1385
 msgid "drawn & parametric mask"
 msgstr "Maschera parametrica e disegnata"
 
-#: ../src/develop/blend_gui.c:1388
+#: ../src/develop/blend_gui.c:1390
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1214,43 +1222,43 @@ msgstr ""
 "Attiva la fusione: uniformemente, con maschera disegnata,\n"
 "con maschera parametrica, combinazione di entrambe"
 
-#: ../src/develop/blend_gui.c:1395
+#: ../src/develop/blend_gui.c:1397
 msgid "blend mode"
 msgstr "Modalità di fusione"
 
-#: ../src/develop/blend_gui.c:1396
+#: ../src/develop/blend_gui.c:1398
 msgid "choose blending mode"
 msgstr "Seleziona il metodo di fusione"
 
-#: ../src/develop/blend_gui.c:1476 ../src/iop/watermark.c:1047
+#: ../src/develop/blend_gui.c:1480 ../src/iop/watermark.c:1047
 msgid "opacity"
 msgstr "Opacità"
 
-#: ../src/develop/blend_gui.c:1479
+#: ../src/develop/blend_gui.c:1483
 msgid "set the opacity of the blending"
 msgstr "Imposta l'opacità della fusione"
 
-#: ../src/develop/blend_gui.c:1485
+#: ../src/develop/blend_gui.c:1489
 msgid "combine masks"
 msgstr "Combina le maschere"
 
-#: ../src/develop/blend_gui.c:1487
+#: ../src/develop/blend_gui.c:1491
 msgid "exclusive"
 msgstr "Esclusiva"
 
-#: ../src/develop/blend_gui.c:1490
+#: ../src/develop/blend_gui.c:1494
 msgid "inclusive"
 msgstr "Inclusiva"
 
-#: ../src/develop/blend_gui.c:1493
+#: ../src/develop/blend_gui.c:1497
 msgid "exclusive & inverted"
 msgstr "Esclusiva & invertita"
 
-#: ../src/develop/blend_gui.c:1496
+#: ../src/develop/blend_gui.c:1500
 msgid "inclusive & inverted"
 msgstr "Inclusiva & invertita"
 
-#: ../src/develop/blend_gui.c:1500
+#: ../src/develop/blend_gui.c:1504
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1258,27 +1266,27 @@ msgstr ""
 "Come combinare la maschera disegnata e i differenti canali della maschera "
 "parametrica"
 
-#: ../src/develop/blend_gui.c:1506
+#: ../src/develop/blend_gui.c:1510
 msgid "invert mask"
 msgstr "Inverti la maschera"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1519
 msgid "apply mask in normal or inverted mode"
 msgstr "Applica la maschera in modalità normale o invertita"
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1526
 msgid "mask blur"
 msgstr "Sfocatura maschera"
 
-#: ../src/develop/blend_gui.c:1524
+#: ../src/develop/blend_gui.c:1528
 msgid "radius for gaussian blur of blend mask"
 msgstr "Raggio della sfocatura gaussiana della maschera di fusione"
 
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1534
 msgid "display mask"
 msgstr "Visualizza maschera"
 
-#: ../src/develop/blend_gui.c:1537
+#: ../src/develop/blend_gui.c:1541
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "Disattiva temporaneamente la maschera di fusione. Per il solo modulo in uso"
@@ -1419,6 +1427,14 @@ msgstr[1] "%s sono stati importati con successo"
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiling fallito per il modulo '%s'. L'output potrebbe essere confuso."
+
+#: ../src/develop/pixelpipe_hb.c:2087
+msgid ""
+"darktable discovered problems with your OpenCL setup; disabling OpenCL for "
+"this session!"
+msgstr ""
+"Darktable ha riscontrato dei problemi con la configurazione OpenCL; "
+"disabilitazione OpenCL per questa sessione!"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -3101,15 +3117,15 @@ msgid "pick frame line color from image"
 msgstr "Scegli colore per la cornice dall'immagine"
 
 #. make sure you put all your translatable strings into _() !
-#: ../src/iop/cacorrect.c:59
+#: ../src/iop/cacorrect.c:57
 msgid "chromatic aberrations"
 msgstr "Aberrazioni cromatiche"
 
-#: ../src/iop/cacorrect.c:1211
+#: ../src/iop/cacorrect.c:1272
 msgid "automatic chromatic aberration correction"
 msgstr "Correzione automatica aberrazioni cromatiche"
 
-#: ../src/iop/cacorrect.c:1213
+#: ../src/iop/cacorrect.c:1274
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -6139,7 +6155,7 @@ msgstr "Esporta con le impostazioni correnti (Ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:872 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1674
+#: ../src/views/darkroom.c:1681
 msgctxt "accel"
 msgid "export"
 msgstr "Esporta "
@@ -7280,8 +7296,8 @@ msgstr "* Contributori *"
 #: ../src/libs/tools/darktable.c:236
 msgid "translator-credits"
 msgstr ""
-"Daniele Giorgis <daniele.giorgis@gmail.com> & Mauro Bartoccelli "
-"<bartokk@gmail.com>"
+"Daniele Giorgis <daniele.giorgis@gmail.com>\n"
+"& Mauro Bartoccelli <bartokk@gmail.com>"
 
 #: ../src/libs/tools/filmstrip.c:135
 msgid "filmstrip"
@@ -7533,7 +7549,7 @@ msgstr "Non è  disponibile nessuna fotocamera supportata per il tethering ..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1662
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1669
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Cambia rullino"
@@ -7608,34 +7624,34 @@ msgid "threshold of what shall be considered overexposed"
 msgstr "Soglia per la sovraesposizione"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1666
+#: ../src/views/darkroom.c:1673
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Primo piano"
 
-#: ../src/views/darkroom.c:1668
+#: ../src/views/darkroom.c:1675
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Riempi"
 
-#: ../src/views/darkroom.c:1670
+#: ../src/views/darkroom.c:1677
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Adatta"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1678
+#: ../src/views/darkroom.c:1685
 msgctxt "accel"
 msgid "image forward"
 msgstr "Immagine avanti"
 
-#: ../src/views/darkroom.c:1680
+#: ../src/views/darkroom.c:1687
 msgctxt "accel"
 msgid "image back"
 msgstr "Immagine indietro"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1684
+#: ../src/views/darkroom.c:1691
 msgctxt "accel"
 msgid "overexposed"
 msgstr "Sovraesposizione"
@@ -7732,7 +7748,7 @@ msgctxt "accel"
 msgid "redo"
 msgstr "Ripristina"
 
-#: ../src/develop/blend.c:1767 ../src/develop/blend.c:1967
+#: ../src/develop/blend.c:1848 ../src/develop/blend.c:2048
 msgid "could not allocate buffer for blending"
 msgstr "Impossibile allocare il buffer per la fusione"
 
