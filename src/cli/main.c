@@ -46,7 +46,7 @@ int usleep(useconds_t usec);
 static void
 usage(const char* progname)
 {
-  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>,--hq <0|1|true|false> --verbose]\n", progname);
+  fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max height>,--bpp <bpp>,--hq <0|1|true|false>,--verbose] [--core <darktable options>]\n", progname);
 }
 
 int main(int argc, char *arg[])
@@ -58,7 +58,6 @@ int main(int argc, char *arg[])
   gtk_init (&argc, &arg);
 
   // parse command line arguments
-
   char *image_filename = NULL;
   char *xmp_filename = NULL;
   char *output_filename = NULL;
@@ -66,7 +65,8 @@ int main(int argc, char *arg[])
   int width = 0, height = 0, bpp = 0;
   gboolean verbose = FALSE, high_quality = TRUE;
 
-  for(int k=1; k<argc; k++)
+  int k;
+  for(k=1; k<argc; k++)
   {
     if(arg[k][0] == '-')
     {
@@ -116,6 +116,12 @@ int main(int argc, char *arg[])
       {
         verbose = TRUE;
       }
+      else if(!strcmp(arg[k], "--core"))
+      {
+        // everything from here on should be passed to the core
+        k++;
+        break;
+      }
 
     }
     else
@@ -129,6 +135,14 @@ int main(int argc, char *arg[])
       file_counter++;
     }
   }
+
+  int m_argc = 0;
+  char *m_arg[4 + argc - k];
+  m_arg[m_argc++] = "darktable-cli";
+  m_arg[m_argc++] = "--library";
+  m_arg[m_argc++] = ":memory:";
+  for(; k < argc; k++) m_arg[m_argc++] = arg[k];
+  m_arg[m_argc] = NULL;
 
   if(file_counter < 2 || file_counter > 3)
   {
@@ -148,9 +162,8 @@ int main(int argc, char *arg[])
     fprintf(stderr, "%s\n", _("output file already exists, it will get renamed"));
   }
 
-  char *m_arg[] = {"darktable-cli", "--library", ":memory:", NULL};
   // init dt without gui:
-  if(dt_init(3, m_arg, 0)) exit(1);
+  if(dt_init(m_argc, m_arg, 0)) exit(1);
 
   dt_film_t film;
   int id = 0;
