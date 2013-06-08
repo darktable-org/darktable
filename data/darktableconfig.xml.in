@@ -106,6 +106,13 @@
     <shortdescription>priority of OpenCL devices for each pixelpipe type</shortdescription>
     <longdescription>defines priorities on how (multiple) OpenCL devices are allocated to the different types of pixelpipe (full, preview, export, thumbnail). for more details visit our usermanual (needs a restart).</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>opencl_use_pinned_memory</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to use pinned memory transfer during tiling</shortdescription>
+    <longdescription>during tiling huge amounts of memory need to be transfered between host and device. for some opencl implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, NVIDIA to the second.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>

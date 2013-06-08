@@ -95,6 +95,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %d\n", dt_conf_get_bool("opencl_synch_cache"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n", dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_pinned_memory: %d\n", dt_conf_get_bool("opencl_use_pinned_memory"));
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n", dt_conf_get_bool("opencl_avoid_atomics"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_omit_whitebalance: %d\n", dt_conf_get_bool("opencl_omit_whitebalance"));

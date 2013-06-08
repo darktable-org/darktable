@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011--2012 ulrich pegelow.
+    copyright (c) 2011--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1136,7 +1136,10 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   cl_int err = -999;
   cl_mem input = NULL;
   cl_mem output = NULL;
-
+  cl_mem pinned_input = NULL;
+  cl_mem pinned_output = NULL;
+  void *input_buffer = NULL;
+  void *output_buffer = NULL;
 
   const int devid = piece->pipe->devid;
   const int out_bpp = self->output_bpp(self, piece->pipe, piece);
@@ -1148,12 +1151,15 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
+  /* shall we use pinned memory transfers? */
+  int use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
+  const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers which seemingly get allocated not only on host but also on device (why???)
 
   /* calculate optimal size of tiles */
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor, 1.0f);
+  float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);                     
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
@@ -1231,13 +1237,55 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] use tiling on module '%s' for image with full size %d x %d\n", self->op, roi_in->width, roi_in->height);
   dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] (%d x %d) tiles with max dimensions %d x %d and overlap %d\n", tiles_x, tiles_y, width, height, overlap);
 
-
   /* store processed_maximum to be re-used and aggregated */
   float processed_maximum_saved[3];
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
     processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
 
+  /* reserve pinned input and output memory for host<->device data transfer */
+  if(use_pinned_memory)
+  {
+    pinned_input = dt_opencl_alloc_device_buffer_with_flags(devid, width*height*in_bpp, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR);
+    if(pinned_input == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] could not alloc pinned input buffer for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    input_buffer = dt_opencl_map_buffer(devid, pinned_input, CL_TRUE, CL_MAP_WRITE, 0, width*height*in_bpp);
+    if(input_buffer == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] could not map pinned input buffer to host memory for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    pinned_output = dt_opencl_alloc_device_buffer_with_flags(devid, width*height*out_bpp, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR);
+    if(pinned_output == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] could not alloc pinned output buffer for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    output_buffer = dt_opencl_map_buffer(devid, pinned_output, CL_TRUE, CL_MAP_READ, 0, width*height*out_bpp);
+    if(output_buffer == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] could not map pinned output buffer to host memory for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
 
   /* iterate over tiles */
   for(int tx=0; tx<tiles_x; tx++)
@@ -1273,9 +1321,25 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
       output = dt_opencl_alloc_device(devid, wd, ht, out_bpp);
       if(output == NULL) goto error;
 
-      /* non-blocking memory transfer: host input buffer -> opencl/device tile */
-      err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
-      if(err != CL_SUCCESS) goto error;
+      if(use_pinned_memory)
+      {
+        /* prepare pinned input tile buffer: copy part of input image */
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) shared(input_buffer,width,ivoid,ioffs,wd,ht) schedule(static)
+#endif
+        for(size_t j=0; j<ht; j++)
+          memcpy((char *)input_buffer+j*wd*in_bpp, (char *)ivoid+ioffs+j*ipitch, wd*in_bpp);
+
+        /* non-blocking memory transfer: pinned host input buffer -> opencl/device tile */
+        err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, origin, region, wd*in_bpp, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
+      else
+      {
+        /* non-blocking direct memory transfer: host input image -> opencl/device tile */
+        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, origin, region, ipitch, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
 
       /* take original processed_maximum as starting point */
       for(int k=0; k<3; k++)
@@ -1294,6 +1358,13 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
         processed_maximum_new[k] = piece->pipe->processed_maximum[k];
       }
 
+      if(use_pinned_memory)
+      {
+        /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
+        err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, origin, region, wd*out_bpp, CL_TRUE);
+        if(err != CL_SUCCESS) goto error;
+      }
+
       /* correct origin and region of tile for overlap.
          makes sure that we only copy back the "good" part. */
       if(tx > 0)
@@ -1309,10 +1380,21 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
         ooffs += overlap*opitch;
       }
 
-
-      /* non-blocking memory transfer: opencl/device tile -> host output buffer */
-      err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
-      if(err != CL_SUCCESS) goto error;
+      if(use_pinned_memory)
+      {
+        /* copy "good" part of tile from pinned output buffer to output image */
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) shared(ovoid,ooffs,output_buffer,width,origin,region,wd) schedule(static)
+#endif
+        for(size_t j=0; j<region[1]; j++)
+          memcpy((char *)ovoid+ooffs+j*opitch, (char *)output_buffer+((j+origin[1])*wd+origin[0])*out_bpp, region[0]*out_bpp);
+      }
+      else
+      {
+        /* non-blocking direct memory transfer: good part of opencl/device tile -> host output image */
+        err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, origin, region, opitch, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
 
       /* release input and output buffers */
       dt_opencl_release_mem_object(input);
@@ -1329,6 +1411,10 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
+  if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
+  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
+  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
@@ -1338,6 +1424,10 @@ error:
   /* copy back stored processed_maximum */
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+  if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
+  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
+  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
@@ -1354,6 +1444,11 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   cl_int err = -999;
   cl_mem input = NULL;
   cl_mem output = NULL;
+  cl_mem pinned_input = NULL;
+  cl_mem pinned_output = NULL;
+  void *input_buffer = NULL;
+  void *output_buffer = NULL;
+
 
   //_print_roi(roi_in, "module roi_in");
   //_print_roi(roi_out, "module roi_out");
@@ -1372,17 +1467,19 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   /* estimate for additional (space) requirement in buffer dimensions due to inaccuracies */
   const int inacc = RESERVE*delta;
 
-
   /* get tiling requirements of module */
   dt_develop_tiling_t tiling = { 0 };
   self->tiling_callback(self, piece, roi_in, roi_out, &tiling);
 
+  /* shall we use pinned memory transfers? */
+  int use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
+  const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers which seemingly get allocated not only on host but also on device (why???)
 
   /* calculate optimal size of tiles */
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor, 1.0f);
+  float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
 
@@ -1468,6 +1565,50 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   float processed_maximum_new[3] = { 1.0f };
   for(int k=0; k<3; k++)
     processed_maximum_saved[k] = piece->pipe->processed_maximum[k];
+
+  /* reserve pinned input and output memory for host<->device data transfer */
+  if(use_pinned_memory)
+  {
+    pinned_input = dt_opencl_alloc_device_buffer_with_flags(devid, width*height*in_bpp, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR);
+    if(pinned_input == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] could not alloc pinned input buffer for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    input_buffer = dt_opencl_map_buffer(devid, pinned_input, CL_TRUE, CL_MAP_WRITE, 0, width*height*in_bpp);
+    if(input_buffer == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] could not map pinned input buffer to host memory for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    pinned_output = dt_opencl_alloc_device_buffer_with_flags(devid, width*height*out_bpp, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR);
+    if(pinned_output == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] could not alloc pinned output buffer for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
+
+  if(use_pinned_memory)
+  {
+
+    output_buffer = dt_opencl_map_buffer(devid, pinned_output, CL_TRUE, CL_MAP_READ, 0, width*height*out_bpp);
+    if(output_buffer == NULL)
+    {
+      dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] could not map pinned output buffer to host memory for module '%s'\n", self->op);
+      use_pinned_memory = 0;
+    }
+  }
 
 
   /* iterate over tiles */
@@ -1559,6 +1700,10 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       size_t iorigin[] = { 0, 0, 0 };
       size_t iregion[] = { iroi_full.width, iroi_full.height, 1 };
 
+      /* origin and region of full output tile */
+      size_t oforigin[] = { 0, 0, 0 };
+      size_t ofregion[] = { oroi_full.width, oroi_full.height, 1 };
+
       /* origin and region of good part of output tile */
       size_t oorigin[] = { oroi_good.x - oroi_full.x, oroi_good.y - oroi_full.y, 0 };
       size_t oregion[] = { oroi_good.width, oroi_good.height, 1 };
@@ -1570,9 +1715,25 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
       output = dt_opencl_alloc_device(devid, oroi_full.width, oroi_full.height, out_bpp);
       if(output == NULL) goto error;
 
-      /* non-blocking memory transfer: host input buffer -> opencl/device tile */
-      err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion, ipitch, CL_FALSE);
-      if(err != CL_SUCCESS) goto error;
+      if(use_pinned_memory)
+      {
+        /* prepare pinned input tile buffer: copy part of input image */
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) shared(input_buffer,width,ivoid,ioffs,iroi_full) schedule(static)
+#endif
+        for(size_t j=0; j<iroi_full.height; j++)
+          memcpy((char *)input_buffer+j*iroi_full.width*in_bpp, (char *)ivoid+ioffs+j*ipitch, iroi_full.width*in_bpp);
+
+        /* non-blocking memory transfer: pinned host input buffer -> opencl/device tile */
+        err = dt_opencl_write_host_to_device_raw(devid, (char *)input_buffer, input, iorigin, iregion, iroi_full.width*in_bpp, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
+      else
+      {
+        /* non-blocking direct memory transfer: host input image -> opencl/device tile */
+        err = dt_opencl_write_host_to_device_raw(devid, (char *)ivoid + ioffs, input, iorigin, iregion, ipitch, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
 
       /* take original processed_maximum as starting point */
       for(int k=0; k<3; k++)
@@ -1591,9 +1752,25 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
         processed_maximum_new[k] = piece->pipe->processed_maximum[k];
       }
 
-      /* non-blocking memory transfer: opencl/device tile -> host output buffer */
-      err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
-      if(err != CL_SUCCESS) goto error;
+      if(use_pinned_memory)
+      {
+        /* blocking memory transfer: complete opencl/device tile -> pinned host output buffer */
+        err = dt_opencl_read_host_from_device_raw(devid, (char *)output_buffer, output, oforigin, ofregion, oroi_full.width*out_bpp, CL_TRUE);
+        if(err != CL_SUCCESS) goto error;
+
+        /* copy "good" part of tile from pinned output buffer to output image */
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) shared(ovoid,ooffs,output_buffer,oroi_full,oorigin,oregion) schedule(static)
+#endif
+        for(size_t j=0; j<oregion[1]; j++)
+          memcpy((char *)ovoid+ooffs+j*opitch, (char *)output_buffer+((j+oorigin[1])*oroi_full.width+oorigin[0])*out_bpp, oregion[0]*out_bpp);
+      }
+      else
+      {
+        /* non-blocking direct memory transfer: good part of opencl/device tile -> host output image */
+        err = dt_opencl_read_host_from_device_raw(devid, (char *)ovoid + ooffs, output, oorigin, oregion, opitch, CL_FALSE);
+        if(err != CL_SUCCESS) goto error;
+      }
 
       /* release input and output buffers */
       dt_opencl_release_mem_object(input);
@@ -1609,7 +1786,10 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   /* copy back final processed_maximum */
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_new[k];
-
+  if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
+  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
+  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
@@ -1619,6 +1799,10 @@ error:
   /* copy back stored processed_maximum */
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_saved[k];
+  if(input_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_input, input_buffer);
+  if(pinned_input != NULL) dt_opencl_release_mem_object(pinned_input);
+  if(output_buffer != NULL) dt_opencl_unmap_mem_object(devid, pinned_output, output_buffer);
+  if(pinned_output != NULL) dt_opencl_release_mem_object(pinned_output);
   if(input != NULL) dt_opencl_release_mem_object(input);
   if(output != NULL) dt_opencl_release_mem_object(output);
   piece->pipe->tiling = 0;
