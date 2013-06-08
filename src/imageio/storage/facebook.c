@@ -215,7 +215,7 @@ typedef struct dt_storage_facebook_param_t
 //////////////////////////// curl requests related functions
 
 /**
- * extract the user token from the calback @a url
+ * extract the user token from the callback @a url
  */
 static gchar *fb_extract_token_from_url(const gchar *url)
 {
@@ -239,7 +239,7 @@ static gchar *fb_extract_token_from_url(const gchar *url)
     }
     if (urlchunks[i + 1] == NULL) //this shouldn't happens but we never know...
     {
-      g_printerr(_("[facebook] unexpeted url format\n"));
+      g_printerr(_("[facebook] unexpected url format\n"));
       break;
     }
   }
@@ -297,7 +297,7 @@ static void fb_query_get_add_url_arguments(GString *key, GString *value, GString
  *
  * @param ctx facebook context (token field must be set)
  * @param method the method to call on the facebook graph API, the methods should not start with '/' example: "me/albums"
- * @param args hashtable of the aguments to be added to the requests, must be in the form key (string) = value (string)
+ * @param args hashtable of the arguments to be added to the requests, must be in the form key (string) = value (string)
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
 static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable *args)
@@ -371,7 +371,7 @@ static void fb_query_post_add_file_arguments(const gchar *key, const gchar *valu
  *
  * @param ctx facebook context (token field must be set)
  * @param method the method to call on the facebook graph API, the methods should not start with '/' example: "me/albums"
- * @param args hashtable of the aguments to be added to the requests, might be null if none
+ * @param args hashtable of the arguments to be added to the requests, might be null if none
  * @param files hashtable of the files to be send with the requests, might be null if none
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
@@ -623,7 +623,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
 
   gtk_widget_show_all(GTK_WIDGET(fb_auth_dialog));
 
-  ////////////// wait for the user to entrer the validation URL
+  ////////////// wait for the user to enter the validation URL
   gint result;
   gchar *token = NULL;
   const char *replyurl;
@@ -792,7 +792,7 @@ static void ui_refresh_albums(dt_storage_facebook_gui_data_t *ui)
   GList *albumList = fb_get_album_list(ui->facebook_api, &getlistok);
   if (! getlistok)
   {
-    dt_control_log(_("unable to retreive the album list"));
+    dt_control_log(_("unable to retrieve the album list"));
     goto cleanup;
   }
 
@@ -845,7 +845,7 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
   {
     ctx->token = g_strdup(uiselectedaccounttoken);
   }
-  //check selected token if we akready have one
+  //check selected token if we already have one
   if (ctx->token != NULL && !fb_test_auth_token(ctx))
   {
     g_free(ctx->token);
@@ -903,7 +903,7 @@ static gboolean ui_authenticate(dt_storage_facebook_gui_data_t *ui)
       }
       gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
       //we have to re-set the current token here since ui_combo_username_changed is called
-      //on gtk_combo_box_set_active_iter (and thus is reseting the active token)
+      //on gtk_combo_box_set_active_iter (and thus is resetting the active token)
       ctx->token = g_strdup(accountinfo->token);
       fb_account_info_destroy(accountinfo);
     }
@@ -1039,7 +1039,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
 
-  //retreive saved accounts
+  //retrieve saved accounts
   ui_refresh_users(ui);
 
   //////// album list /////////

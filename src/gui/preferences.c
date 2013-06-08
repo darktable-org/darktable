@@ -404,7 +404,7 @@ static void init_tab_presets(GtkWidget *book)
 
   tree_insert_presets(model);
 
-  // Seting a custom sort functions so expandable groups rise to the top
+  // Setting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
     GTK_TREE_SORTABLE(model), P_MODULE_COLUMN, GTK_SORT_ASCENDING);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), P_MODULE_COLUMN,
@@ -539,7 +539,7 @@ static void init_tab_accels(GtkWidget *book)
   g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel,
                   (gpointer)model);
 
-  // Seting a custom sort functions so expandable groups rise to the top
+  // Setting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(
     GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(model), A_TRANS_COLUMN,
@@ -685,17 +685,17 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
                                     strlen(translated_path), "/");
     gchar *trans_node = g_strndup(translated_path, trans_end-translated_path);
 
-    /* search the tree if we alread have an sibiling with node name */
-    int sibilings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),
+    /* search the tree if we alread have an sibling with node name */
+    int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model),
                     parent);
-    for (i = 0; i < sibilings; i++)
+    for (i = 0; i < siblings; i++)
     {
       gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(model), &iter, parent, i);
       gtk_tree_model_get(GTK_TREE_MODEL(model), &iter,
                          A_ACCEL_COLUMN, &val_str,
                          -1);
 
-      /* do we match current sibiling */
+      /* do we match current sibling */
       if (!strcmp(val_str, node)) found = TRUE;
 
       g_free(val_str);

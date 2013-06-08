@@ -30,7 +30,7 @@ typedef enum _darktable_slider_type
 {
   /** Default type , a standard slider, this is default */
   DARKTABLE_SLIDER_BAR=0,
-  /** Value slider, doesnt show a bar, just a value */
+  /** Value slider, doesn't show a bar, just a value */
   DARKTABLE_SLIDER_VALUE
 } darktable_slider_type_t;
 
@@ -92,7 +92,7 @@ void dtgtk_slider_set_label(GtkDarktableSlider *slider,gchar *label);
 void dtgtk_slider_set_unit(GtkDarktableSlider *slider,gchar *unit);
 /** Set the default value of slider */
 void dtgtk_slider_set_default_value(GtkDarktableSlider *slider,gdouble val);
-/** Set force of sign of positice in displayed value */
+/** Set force of sign of positive in displayed value */
 void dtgtk_slider_set_force_sign(GtkDarktableSlider *slider,gboolean force);
 /** Set the value of the slider */
 void dtgtk_slider_set_value(GtkDarktableSlider *slider,gdouble value);

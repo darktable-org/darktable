@@ -97,7 +97,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container);
 /* initialize the top container of panel */
 static void _ui_init_panel_top(dt_ui_t *ui, GtkWidget *container);
-/* intialize the center top panel */
+/* initialize the center top panel */
 static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container);
 /* initialize the center bottom panel */
 static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container);
@@ -317,7 +317,7 @@ dt_gui_key_accel_block_on_focus_connect(GtkWidget *w)
   /* first off add focus change event mask */
   gtk_widget_add_events(w, GDK_FOCUS_CHANGE_MASK);
 
-  /* conenct the signals */
+  /* connect the signals */
   g_signal_connect (G_OBJECT (w), "focus-in-event", G_CALLBACK(_widget_focus_in_block_key_accelerators), (gpointer)w);
   g_signal_connect (G_OBJECT (w), "focus-out-event", G_CALLBACK(_widget_focus_out_unblock_key_accelerators), (gpointer)w);
 }
@@ -1145,7 +1145,7 @@ void init_main_table(GtkWidget *container)
   gtk_table_attach(GTK_TABLE(container), widget, 2, 3, 1, 2,
                    GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
 
-  /* intiialize the center top panel */
+  /* initiialize the center top panel */
   _ui_init_panel_center_top(darktable.gui->ui, widget);
 
   /* setup center drawing area */
@@ -1298,7 +1298,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   }
   else
   {
-    /* restore the visibile state of panels */
+    /* restore the visible state of panels */
     for (int k=0; k<DT_UI_PANEL_SIZE; k++)
     {
       g_snprintf(key, 512, "%s/ui/%s_visible",cv->module_name, _ui_panel_config_names[k]);
@@ -1406,7 +1406,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   /* set panel width */
   gtk_widget_set_size_request(widget,dt_conf_get_int("panel_width"), -1);
 
-  // Adding the vbox which will containt TOP,CENTER,BOTTOM
+  // Adding the vbox which will contain TOP,CENTER,BOTTOM
   container = widget;
   widget = gtk_vbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(container), widget);

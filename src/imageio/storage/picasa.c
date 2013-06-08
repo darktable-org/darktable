@@ -303,7 +303,7 @@ static void picasa_query_get_add_url_arguments(GString *key, GString *value, GSt
  *
  * @param ctx picasa context (token field must be set)
  * @param method the method to call on the google API, the methods should not start with '/' example: "me/albums"
- * @param args hashtable of the aguments to be added to the requests, must be in the form key (string) = value (string)
+ * @param args hashtable of the arguments to be added to the requests, must be in the form key (string) = value (string)
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
 static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHashTable *args, gboolean picasa)
@@ -366,7 +366,7 @@ typedef struct
  *
  * @param ctx picasa context (token field must be set)
  * @param method the method to call on the google API, the methods should not start with '/' example: "me/albums"
- * @param args hashtable of the aguments to be added to the requests, might be null if none
+ * @param args hashtable of the arguments to be added to the requests, might be null if none
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
 
@@ -854,7 +854,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   gtk_widget_show_all(GTK_WIDGET(picasa_auth_dialog));
 
-  ////////////// wait for the user to entrer the validation URL
+  ////////////// wait for the user to enter the validation URL
   gint result;
   gchar *token = NULL;
   const char *replyurl;
@@ -916,7 +916,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   JsonNode *root = json_parser_get_root(parser);
   JsonObject *obj;
 
-  // defensive check, root can be null while parsing the acount info
+  // defensive check, root can be null while parsing the account info
   if (root)
   {
     obj = json_node_get_object(root);
@@ -1048,7 +1048,7 @@ static void ui_refresh_albums(dt_storage_picasa_gui_data_t *ui)
   GList *albumList = picasa_get_album_list(ui->picasa_api, &getlistok);
   if (! getlistok)
   {
-    dt_control_log(_("unable to retreive the album list"));
+    dt_control_log(_("unable to retrieve the album list"));
     goto cleanup;
   }
 
@@ -1333,7 +1333,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_summary));
 
-  //retreive saved accounts
+  //retrieve saved accounts
   ui_refresh_users(ui);
 
   //////// album list /////////
@@ -1466,7 +1466,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
     (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
   }
 
-  /* Google is showing the desciption field as the caption field */
+  /* Google is showing the description field as the caption field */
   /*
   desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
   if (desc != NULL)

@@ -12,12 +12,12 @@ add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
 if(OPENEXR_FOUND)
-	list(APPEND MODULES ${MODUELS} "exr")
+	list(APPEND MODULES ${MODULES} "exr")
 	add_library(exr MODULE "exr.cc")
 endif(OPENEXR_FOUND)
 
 if(OPENJPEG_FOUND)
-	list(APPEND MODULES ${MODUELS} "j2k")
+	list(APPEND MODULES ${MODULES} "j2k")
 	add_library(j2k MODULE "j2k.c")
 endif(OPENJPEG_FOUND)
 
