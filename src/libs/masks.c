@@ -239,7 +239,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
@@ -291,7 +291,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
@@ -348,7 +348,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
@@ -405,7 +405,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
@@ -462,7 +462,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
@@ -523,7 +523,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   dt_masks_init_formgui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   lm->gui_reset = 1;
@@ -558,7 +558,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   dt_masks_init_formgui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   lm->gui_reset = 1;
@@ -592,7 +592,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   dt_masks_init_formgui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
-  //now we go throught all selected nodes
+  //now we go through all selected nodes
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   dt_iop_module_t *module = NULL;
@@ -730,7 +730,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
   if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint) event->x, (gint) event->y, &mouse_path, NULL, NULL, NULL))
   {
     on_row = 1;
-    //we retrive the iter and module from path
+    //we retrieve the iter and module from path
     if (gtk_tree_model_get_iter (model,&iter,mouse_path))
     {
       GValue gv = {0,};
@@ -1262,7 +1262,7 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
   gtk_tree_selection_unselect_all(selection);
   lm->gui_reset = 0;
 
-  //we go throught all nodes
+  //we go through all nodes
   lm->gui_reset = 1-throw_event;
   GtkTreeIter  iter;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));

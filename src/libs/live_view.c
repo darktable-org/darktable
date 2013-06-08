@@ -208,7 +208,7 @@ static void _toggle_live_view_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-// TODO: using a toggle button would be better, but this setting can also be chhanged by right clicking on the canvas (src/views/capture.c).
+// TODO: using a toggle button would be better, but this setting can also be changed by right clicking on the canvas (src/views/capture.c).
 //       maybe using a signal would work? i have no idea.
 static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
 {

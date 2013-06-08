@@ -141,7 +141,7 @@ static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,c
   /* create in hash out of j pointer*/
   g_hash_table_insert(d->jobs, key, j);
 
-  /* intialize the ui elements for job */
+  /* initialize the ui elements for job */
   gtk_widget_set_name (GTK_WIDGET (j->widget), "background_job_eventbox");
   GtkBox *vbox = GTK_BOX (gtk_vbox_new (FALSE,0));
   GtkBox *hbox = GTK_BOX (gtk_hbox_new (FALSE,0));
@@ -262,7 +262,7 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
 #endif
 #endif
 
-      /* hide jobbox if theres no jobs left */
+      /* hide jobbox if there are no jobs left */
       if (g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox))) == 0 )
         gtk_widget_hide(d->jobbox);
     }

@@ -103,7 +103,7 @@ _lib_tag_gui_update (gpointer instance,gpointer self)
 
   GtkTreeStore *store = gtk_tree_store_new(1, G_TYPE_STRING);
 
-  /* intialize the tree store with known tags */
+  /* initialize the tree store with known tags */
   sqlite3_stmt *stmt;
 
   GtkTreeIter uncategorized, temp;
@@ -207,7 +207,7 @@ void gui_init(dt_lib_module_t *self)
                                   GTK_POLICY_AUTOMATIC);
 
 
-  /* add the treeview to show hirarchy tags*/
+  /* add the treeview to show hierarchy tags*/
   GtkCellRenderer *renderer;
 
   d->view = GTK_TREE_VIEW (gtk_tree_view_new());
@@ -279,7 +279,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _gtk_tree_move_iter(GtkTreeStore *store, GtkTreeIter *source, GtkTreeIter *dest)
 {
-  /* create copy of iter and insert into destinatation */
+  /* create copy of iter and insert into destination */
   GtkTreeIter ni;
   GValue value;
   memset(&value,0,sizeof(GValue));
