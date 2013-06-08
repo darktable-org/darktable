@@ -136,6 +136,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     success = success && dt_gmodule_symbol(module, "clGetProgramInfo", (void (**)(void))&d->symbols->dt_clGetProgramInfo);
     success = success && dt_gmodule_symbol(module, "clCreateProgramWithBinary", (void (**)(void))&d->symbols->dt_clCreateProgramWithBinary);
     success = success && dt_gmodule_symbol(module, "clEnqueueCopyBuffer", (void (**)(void))&d->symbols->dt_clEnqueueCopyBuffer);
+    success = success && dt_gmodule_symbol(module, "clEnqueueMapBuffer", (void (**)(void))&d->symbols->dt_clEnqueueMapBuffer);
+    success = success && dt_gmodule_symbol(module, "clEnqueueUnmapMemObject", (void (**)(void))&d->symbols->dt_clEnqueueUnmapMemObject);
 
     if (!success) dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not load all required symbols from library\n");
     d->have_opencl = success;
