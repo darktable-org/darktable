@@ -163,7 +163,7 @@ dt_imageio_open_rawspeed(
   {
     printf("[rawspeed] %s\n", exc.what());
 
-    /* if an exception is rasied lets not retry or handle the
+    /* if an exception is raised lets not retry or handle the
      specific ones, consider the file as corrupted */
     return DT_IMAGEIO_FILE_CORRUPTED;
   }

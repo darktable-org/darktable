@@ -62,7 +62,7 @@ const dt_selection_t * dt_selection_new()
   _selection_update_collection(NULL, (gpointer)s);
 
 
-  /* setup singal handler for darktable collection update
+  /* setup signal handler for darktable collection update
    to update the internal collection of the selection */
   dt_control_signal_connect(darktable.signals,
                             DT_SIGNAL_COLLECTION_CHANGED,
@@ -221,7 +221,7 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
 
   sqlite3_finalize(stmt);
 
-  /* selece the images in range from start to end */
+  /* select the images in range from start to end */
   uint32_t old_flags = dt_collection_get_query_flags(selection->collection);
 
   /* use the limit to select range of images */

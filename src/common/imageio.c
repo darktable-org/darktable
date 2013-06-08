@@ -380,7 +380,7 @@ static const uint8_t _imageio_ldr_magic[] =
   0x00, 0x01, 0x03, 0x50, 0x4E, 0x47,                   // ASCII 'PNG'
 
   /* canon CR2 */
-  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,  // Canon CR2 is like TIFF with aditional magic number. must come before tiff as an exclusion
+  0x01, 0x00, 0x0a, 0x49, 0x49, 0x2a, 0x00, 0x10, 0x00, 0x00, 0x00, 0x43, 0x52,  // Canon CR2 is like TIFF with additional magic number. must come before tiff as an exclusion
 
   /* tiff image, intel */
   0x00, 0x00, 0x04, 0x4d, 0x4d, 0x00, 0x2a,
@@ -801,7 +801,7 @@ dt_imageio_open(
   const char  *filename,          // full path
   dt_mipmap_cache_allocator_t a)  // allocate via dt_mipmap_cache_alloc
 {
-  /* first of all, check if file exists, dont bother to test loading if not exists */
+  /* first of all, check if file exists, don't bother to test loading if not exists */
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
     return !DT_IMAGEIO_OK;
 

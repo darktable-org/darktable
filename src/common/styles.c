@@ -92,7 +92,7 @@ _dt_style_cleanup_multi_instance(int id)
 
   /* let's clean-up the style multi-instance. What we want to do is have a unique multi_priority value for each iop.
      Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
-     SQLite there is no notion of ROW_NUMBER, so we use rather ressource consuming SQL statement, but as a style has
+     SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a style has
      never a huge number of items that's not a real issue. */
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update style_items set multi_priority=(select COUNT(0)-1 from style_items sty2 where sty2.num<=style_items.num and sty2.operation=style_items.operation and sty2.styleid=?1), multi_name=multi_priority where styleid=?1", -1, &stmt, NULL);
@@ -219,14 +219,14 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   dt_styles_save_to_file(newname,stylesdir,TRUE);
 
   /* delete old accelerator and create a new one */
-  //TODO: sould better use dt_accel_rename_global() to keep the old accel_key untouched, but it seems to be buggy
+  //TODO: should better use dt_accel_rename_global() to keep the old accel_key untouched, but it seems to be buggy
   if (g_strcmp0(name, newname))
   {
     char tmp_accel[1024];
     snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
 
-    gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
+    gchar* tmp_name = g_strdup(newname); // freed by _destroy_style_shortcut_callback
     snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
@@ -296,7 +296,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
     dt_styles_save_to_file(newname,stylesdir,FALSE);
 
     char tmp_accel[1024];
-    gchar* tmp_name = g_strdup(newname); // freed by _destro_style_shortcut_callback
+    gchar* tmp_name = g_strdup(newname); // freed by _destroy_style_shortcut_callback
     snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
@@ -357,7 +357,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
     dt_styles_save_to_file(name,stylesdir,FALSE);
 
     char tmp_accel[1024];
-    gchar* tmp_name = g_strdup(name); // freed by _destro_style_shortcut_callback
+    gchar* tmp_name = g_strdup(name); // freed by _destroy_style_shortcut_callback
     snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),name);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;

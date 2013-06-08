@@ -25,9 +25,9 @@
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str,const gchar *format, ... );
 
-/** replace all occurences of pattern by substitute. the returned value has to be freed after use. */
+/** replace all occurrences of pattern by substitute. the returned value has to be freed after use. */
 gchar* dt_util_str_replace(const gchar* string, const gchar* pattern, const gchar* substitute);
-/** count the number of occurences of needle in haystack */
+/** count the number of occurrences of needle in haystack */
 guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
 /** generate a string from the elements of the list, separated by separator. the list is freed, the result has to be freed. */
 gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count);

@@ -50,7 +50,7 @@ _dt_history_cleanup_multi_instance(int imgid, int minnum)
 
   /* let's clean-up the history multi-instance. What we want to do is have a unique multi_priority value for each iop.
      Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
-     SQLite there is no notion of ROW_NUMBER, so we use rather ressource consuming SQL statement, but as an history has
+     SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as an history has
      never a huge number of items that's not a real issue.
 
      We only do this for the given imgid and only for num>minnum, that is we only handle new history items just copied.

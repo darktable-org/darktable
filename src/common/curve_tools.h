@@ -27,7 +27,7 @@
 #define CATMULL_ROM     1
 #define MONOTONE_HERMITE       2
 
-//Maximum resoltuion allowed due to space considerations.
+//Maximum resolution allowed due to space considerations.
 #define MAX_RESOLUTION    65536
 #define MAX_ANCHORS 20
 
