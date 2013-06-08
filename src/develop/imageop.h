@@ -176,7 +176,7 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
   int32_t request_histogram;
-  /** set to 1 if you want the mask to be transfered into alpha channel during next eval. gui mode only. */
+  /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
@@ -232,7 +232,7 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
-  /** the correspoinding SO object */
+  /** the corresponding SO object */
   dt_iop_module_so_t *so;
 
   /** multi-instances things */
@@ -258,7 +258,7 @@ typedef struct dt_iop_module_t
   int (*operation_tags_filter)  ();
   /** how many bytes per pixel in the output. */
   int (*output_bpp)       (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
-  /** report back info for tiling: memory usage and overlap. Memory usage: factor * intput_size + overhead */
+  /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
   void (*tiling_callback) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling);
 
   /** callback methods for gui. */
@@ -314,7 +314,7 @@ typedef struct dt_iop_module_t
   /** a tiling variant of process_cl(). */
   int (*process_tiling_cl)  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 
-  /** this functions are used for distrot iop
+  /** this functions are used for distort iop
    * points is an array of float {x1,y1,x2,y2,...}
    * size is 2*points_count */
   /** points before the iop is applied => point after processed */

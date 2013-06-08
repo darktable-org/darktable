@@ -1196,7 +1196,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   /* for simplicity reasons we use only one alignment that fits to x and y requirements at the same time */
   const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
 
-  /* determing alignment requirement for tile width/height.
+  /* determining alignment requirement for tile width/height.
      in case of tile width also align according to definition of CL_ALIGNMENT */
   const unsigned int walign = _lcm(xyalign, CL_ALIGNMENT);
   const unsigned int halign = xyalign;

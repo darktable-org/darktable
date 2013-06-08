@@ -80,7 +80,7 @@ void dt_control_queue_redraw();
 
 /** \brief request redraw of center window.
     This redraws the center view within a gdk critical section
-    to prevent several thrads to carry out the redraw.
+    to prevent several threads to carry out the redraw.
 */
 void dt_control_queue_redraw_center();
 
@@ -92,12 +92,12 @@ void dt_control_queue_redraw_widget(GtkWidget *widget);
 
 /** \brief smart wrapper for entering gdk critical section.
     This wrapper check is current thread context already have
-    entered a gdk criical section to prevent entering the critical
+    entered a gdk critical section to prevent entering the critical
     section that will reduce a application lock.
 
     \return true if current call have the lock, see usage in note.
 
-    \note It's very importent that dt_control_gdk_unlock()
+    \note It's very important that dt_control_gdk_unlock()
     not is called if its locked on current thread in another place
     so its very important to use the following code semantics:
     \code
@@ -173,7 +173,7 @@ typedef struct dt_job_t
 }
 dt_job_t;
 
-/** intializes a job */
+/** initializes a job */
 void dt_control_job_init(dt_job_t *j, const char *msg, ...);
 /** setup a state callback for job. */
 void dt_control_job_set_state_callback(dt_job_t *j,dt_job_state_change_callback cb,void *user_data);

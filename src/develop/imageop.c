@@ -805,7 +805,7 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = malloc(sizeof(dt_develop_blend_params_t));
   memset(piece->blendop_data, 0, sizeof(dt_develop_blend_params_t));
-  /// FIXME: Commmit params is already done in module
+  /// FIXME: Commit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
 
@@ -834,7 +834,7 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
     }
     modules = g_list_next(modules);
   }
-  if (!next) return; //what happend ???
+  if (!next) return; //what happened ???
 
   //we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);
@@ -2029,7 +2029,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
 
-  /* add multi instaces menu button */
+  /* add multi instances menu button */
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
   {
     hw[idx] = gtk_fixed_new();

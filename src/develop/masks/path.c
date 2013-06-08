@@ -265,7 +265,7 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
     a1 += 2*M_PI;
   }
 
-  //we dertermine start and end radius too
+  //we determine start and end radius too
   float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
   float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
 
@@ -299,7 +299,7 @@ static void _path_points_recurs(float *p1, float *p2,
                                  double tmin, double tmax, float *path_min, float *path_max, float *border_min, float *border_max,
                                  float *rpath, float *rborder, float *path, float *border, int *pos_path, int *pos_border, int withborder)
 {
-  //we calcul points if needed
+  //we calculate points if needed
   if (path_min[0] == -99999)
   {
     _path_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
@@ -344,7 +344,7 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
 {
   int inter_count = 0;
 
-  //we search extrem points in x and y
+  //we search extreme points in x and y
   int xmin, xmax, ymin, ymax;
   xmin = ymin = INT_MAX;
   xmax = ymax = INT_MIN;
@@ -580,7 +580,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
     }
 
-    //we first want to be sure that theres's no gaps in broder
+    //we first want to be sure that there are no gaps in border
     if (border && nb>=3)
     {
       //we get the next point (start of the next segment)
@@ -1644,7 +1644,7 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
     for (int i=nb*3; i<gpt->points_count; i++)
     {
       cairo_line_to(cr,gpt->points[i*2]+dx,gpt->points[i*2+1]+dy);
-      //we decide to hightlight the form segment by segment
+      //we decide to highlight the form segment by segment
       if (gpt->points[i*2+1] == gpt->points[seg*6+3] && gpt->points[i*2] == gpt->points[seg*6+2])
       {
         //this is the end of the last segment, so we have to draw it
@@ -2005,7 +2005,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     int just_change_dir = 0;
     for (int ii=nb_corner*3; ii < 2*nbp; ii++)
     {
-      //we are writting more than 1 loop in the case the dir in y change
+      //we are writing more than 1 loop in the case the dir in y change
       //exactly at start/end point
       int i = ii;
       if (ii >= nbp) i = ii - nbp + nb_corner*3;
@@ -2048,7 +2048,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
       //we add the point
       if (just_change_dir && ii==i)
       {
-        //if we have changed the direction, we have to be carrefull that point can be at the same place
+        //if we have changed the direction, we have to be carefull that point can be at the same place
         //as the previous one , especially on sharp edges
         float v = (*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
         if (v>0.0)

@@ -162,7 +162,7 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *width, int *height, int *posx, int *posy);
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, float **buffer, int *roi, float scale);
 
-/** we create a completly new form. */
+/** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
 /** retrieve a form with is id */
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);

@@ -49,7 +49,7 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
-  /** \bief This signal is rasied when a thumb is doubleclicked in
+  /** \bief This signal is raised when a thumb is doubleclicked in
     no param, no returned value
       filmstrip module.
    */
@@ -76,7 +76,7 @@ typedef enum dt_signal_t
   DT_SIGNAL_FILMROLLS_REMOVED,
 
   /** \brief This signal is raised when darktable.develop is initialized.
-      \note any modules that wants to acces darktable->develop should connect
+      \note any modules that wants to access darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.
   no param, no returned value
    */
@@ -115,14 +115,14 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGE_IMPORT,
 
-  /** \brief This signal is raised when multiple images are exporte
+  /** \brief This signal is raised when multiple images are exported
     1 dt_image_export_t *: structure describing the export. the content can be edited
     no return
     */
   DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,
 
   /** \brief This signal is raised after an image has been exported
-    to a file, but before it is sent to facebook/picassa etc...
+    to a file, but before it is sent to facebook/picasa etc...
     export won't happen until this function returns
     1 int : the imgid exported
     2 char* : the filename we exported to
@@ -140,7 +140,7 @@ typedef enum dt_signal_t
 }
 dt_signal_t;
 
-/* intitialize the signal framework */
+/* inititialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
 /* raises a signal */
 void dt_control_signal_raise(const struct dt_control_signal_t *ctlsig, const dt_signal_t signal,...);
