@@ -222,7 +222,7 @@ def add_edges(gr):
   gr.add_edge(('borders', 'soften'))
   gr.add_edge(('borders', 'clahe'))
   gr.add_edge(('borders', 'channelmixer'))
-  # don't indicate boders as over/under exposed
+  # don't indicate borders as over/under exposed
   gr.add_edge(('borders', 'overexposed'))
 
   # but watermark can be drawn on top of borders
