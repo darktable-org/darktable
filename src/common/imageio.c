@@ -310,6 +310,7 @@ dt_imageio_open_raw(
   img->bpp = img->filters ? sizeof(uint16_t) : 4*sizeof(float);
   img->width  = (img->orientation & 4) ? raw->sizes.height : raw->sizes.width;
   img->height = (img->orientation & 4) ? raw->sizes.width  : raw->sizes.height;
+#if 0 // disabled libraw exif data. it's inconsistent with exiv2, we don't want that.
   img->exif_iso = raw->other.iso_speed;
   img->exif_exposure = raw->other.shutter;
   img->exif_aperture = raw->other.aperture;
@@ -319,6 +320,7 @@ dt_imageio_open_raw(
   g_strlcpy(img->exif_model, raw->idata.model, sizeof(img->exif_model));
   img->exif_model[sizeof(img->exif_model) - 1] = 0x0;
   dt_gettime_t(img->exif_datetime_taken, raw->other.timestamp);
+#endif
 
   void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
