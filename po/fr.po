@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-06-09 19:01+0200\n"
-"PO-Revision-Date: 2013-06-09 19:05+0100\n"
+"PO-Revision-Date: 2013-06-09 19:08+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5105,13 +5105,12 @@ msgstr ""
 "entre ombres et hautes lumières"
 
 #: ../src/iop/splittoning.c:603
-#, fuzzy
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve midtones"
 msgstr ""
-"pourcentage de luminance (tons moyens)\n"
-"non affecté par le virage"
+"compression de l'effet sur les hautes lumières/ombres et\n"
+"préserve les tons moyens"
 
 #: ../src/iop/spots.c:54
 msgid "spot removal"
