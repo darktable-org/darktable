@@ -103,37 +103,24 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
 
   // just carry over other 3 channels:
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float lum[3] = {0.299f, 0.587f, 0.144f};
-  float accum[3] = {0.0f, 0.0f, 0.0f};
-  int cnt[3] = {0, 0, 0};
-
+  const float near_clip = 0.9f*clip;
+  float maxp = 0.f;
+  float blend = 0.f;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
-      if(pixel.x > clip)
+      // go through all 9 neighbours
+      for(int jj=-1;jj<=1;jj++)
       {
-        // go through all 9 neighbours
-        for(int jj=-1;jj<=1;jj++)
+        for(int ii=-1;ii<=1;ii++)
         {
-          for(int ii=-1;ii<=1;ii++)
-          {
-            float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
-            if(px > clip)
-            {
-              int c = FC(ry+y+jj, rx+x+ii, filters);
-              accum[c] += lum[c]*px;
-              cnt[c] ++;
-            }
-          }
+          float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
+          blend = fmax(blend, (fmin(clip, px) - near_clip)/(clip-near_clip));
+          maxp = fmax(maxp, px);
         }
-        if(cnt[0] && cnt[1] && cnt[2])
-        {
-          pixel.x = 0.0f;
-          for(int c=0;c<3;c++)
-            pixel.x += accum[c]/cnt[c];
-        }
-        else pixel.x = clip;
       }
+      if(blend > 0.0f)
+        pixel.x = blend*maxp + (1.f-blend)*pixel.x;
       break;
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
       pixel.x = fmin(clip, pixel.x);
