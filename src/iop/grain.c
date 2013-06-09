@@ -335,9 +335,21 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #endif
 
+// see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
+// this is the modified bernstein
+static unsigned int _hash_string(char *s)
+{
+  unsigned int h = 0;
+  while(*s) h = 33 * h ^ *s++;
+  return h;
+}
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
+
+  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)(roi_out->width * 0.3);
+
   const int ch = piece->colors;
   // Apply grain to image
   const double strength=(data->strength/100.0);
@@ -349,7 +361,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
   const double filtermul = piece->iscale/(roi_out->scale*wd);
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data)
+  #pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data, hash)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
@@ -376,12 +388,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           float px = l/fib2, py = l*(fib1/fib2);
           py -= (int)py;
           float dx = px*filtermul, dy = py*filtermul;
-          noise += (1.0/fib2) * _simplex_2d_noise(x+dx, y+dy, octaves, 1.0, zoom);
+          noise += (1.0/fib2) * _simplex_2d_noise(x+dx+hash, y+dy, octaves, 1.0, zoom);
         }
       }
       else
       {
-        noise = _simplex_2d_noise(x, y, octaves, 1.0, zoom);
+        noise = _simplex_2d_noise(x+hash, y, octaves, 1.0, zoom);
       }
 
       out[0] = in[0]+((100.0*(noise*(strength)))*GRAIN_LIGHTNESS_STRENGTH_SCALE);
