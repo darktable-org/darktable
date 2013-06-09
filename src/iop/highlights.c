@@ -153,13 +153,13 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 }
 
 
-static int
-FC(const int row, const int col, const unsigned int filters)
-{
-  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
-}
-
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void process(
+    struct dt_iop_module_t *self,
+    dt_dev_pixelpipe_iop_t *piece,
+    void *ivoid,
+    void *ovoid,
+    const dt_iop_roi_t *roi_in,
+    const dt_iop_roi_t *roi_out)
 {
   const int filters = dt_image_flipped_filter(&piece->pipe->image);
   dt_iop_highlights_data_t *data = (dt_iop_highlights_data_t *)piece->data;
@@ -199,35 +199,33 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         float *in  = (float *)ivoid + roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
-          if(in[0] < clip-0.001f || i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
+          if(i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
           {
-            // fast path for well-exposed pixels.
+            // fast path for border
             out[0] = in[0];
           }
           else
           {
-            // r and b are same, so we only need two masks
-            const float lum[3] = { 0.299, 0.587, 0.144 };
             // go for all 9 neighbours
-            float accum[3] = {0.0f, 0.0f, 0.0f};
-            int cnt[3] = {0, 0, 0};
+            const float near_clip = 0.9f*clip;
+            float blend = 0.0f;
+            float max = 0.0f;
             for(int jj=-1; jj<=1; jj++)
             {
               for(int ii=-1; ii<=1; ii++)
               {
                 const float val = in[jj*roi_out->width + ii];
-                const int c = FC(j+jj+roi_out->y, i+ii+roi_out->x, filters);
-                accum[c] += val;
-                cnt[c] ++;
+                blend = fmaxf(blend, (fminf(clip, val) - near_clip)/(clip-near_clip));
+                max = fmaxf(max, val);
               }
             }
-            if(cnt[0] && cnt[1] && cnt[2])
+            if(blend > 0)
             {
-              out[0] = 0.0f;
-              for(int c=0; c<3; c++)
-                out[0] += lum[c]*accum[c]/cnt[c];
+              // the computed blend weight will be 1 as soon as one pixel is overexposed.
+              // it'll be 0 below near_clip and grow gradually in between.
+              out[0] = blend*max + (1.f-blend)*in[0];
             }
-            else out[0] = clip;
+            else out[0] = in[0];
           }
           out ++;
           in ++;
