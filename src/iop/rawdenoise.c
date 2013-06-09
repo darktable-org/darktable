@@ -165,7 +165,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       int col = (c&2)>>1;
       const float *inp = in + row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, inp+=2)
-        *fimgp = sqrt(*inp);
+        *fimgp = sqrt(MAX(0, *inp));
     }
 
     int lastpass;
