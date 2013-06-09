@@ -1154,13 +1154,14 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   /* shall we use pinned memory transfers? */
   int use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers which seemingly get allocated not only on host but also on device (why???)
+  const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
   /* calculate optimal size of tiles */
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024.0f*1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);                     
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), pinned_buffer_slack*darktable.opencl->dev[devid].max_mem_alloc);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
@@ -1474,13 +1475,14 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
   /* shall we use pinned memory transfers? */
   int use_pinned_memory = dt_conf_get_bool("opencl_use_pinned_memory");
   const int pinned_buffer_overhead = use_pinned_memory ? 2 : 0; // add two additional pinned memory buffers which seemingly get allocated not only on host but also on device (why???)
+  const float pinned_buffer_slack = use_pinned_memory ? 0.85f : 1.0f; // avoid problems when pinned buffer size gets too close to max_mem_alloc size
 
   /* calculate optimal size of tiles */
   float headroom = (float)dt_conf_get_int("opencl_memory_headroom")*1024*1024;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
   float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);
-  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), darktable.opencl->dev[devid].max_mem_alloc);
+  const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f), pinned_buffer_slack*darktable.opencl->dev[devid].max_mem_alloc);
   float maxbuf = fmax(tiling.maxbuf, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
