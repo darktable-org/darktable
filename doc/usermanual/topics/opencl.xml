@@ -202,6 +202,14 @@ darktable -d opencl -d perf
                       opencl_micro_nap controls the duration of these naps in microseconds. You need to experiment in order to find an optimum value for your system. Values of 
                       0, 100, 500 and 1000 are good starting points to try. Defaults to 1000.</para>
                 </sect4>
+
+                <sect4><title>opencl_use_pinned_memory</title>
+                      <para>During tiling huge amounts of memory need to be transfered between host and device. On some devices (namely AMD) direct memory transfers to and from an
+                      arbitrary host memory region may give a huge performance penalty. This is especially noticable when exporting large images. Setting this configuration parameter 
+                      to TRUE tells darktable to use a special kind of intermediate buffer for host-device data transfers. On some devices this can speed up exporting of large files 
+                      by a factor of 2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer technique even for arbitrary memory regions. They may deliver better 
+                      performance if opencl_use_pinned_memory is left at its default FALSE.</para>
+                </sect4>
         </sect2>
 
         <sect2 status="final"><title>Multiple OpenCL devices</title>

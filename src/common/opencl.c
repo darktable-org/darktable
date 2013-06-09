@@ -95,6 +95,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_synch_cache: %d\n", dt_conf_get_bool("opencl_synch_cache"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_number_event_handles: %d\n", dt_conf_get_int("opencl_number_event_handles"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_micro_nap: %d\n", dt_conf_get_int("opencl_micro_nap"));
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_use_pinned_memory: %d\n", dt_conf_get_bool("opencl_use_pinned_memory"));
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_avoid_atomics: %d\n", dt_conf_get_bool("opencl_avoid_atomics"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_omit_whitebalance: %d\n", dt_conf_get_bool("opencl_omit_whitebalance"));
@@ -1361,6 +1362,26 @@ void dt_opencl_release_mem_object(void *mem)
   (darktable.opencl->dlocl->symbols->dt_clReleaseMemObject)(mem);
 }
 
+void* dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, const int flags, size_t offset, size_t size)
+{
+  if (!darktable.opencl->inited) return NULL;
+  cl_int err;
+  void *ptr;
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Map Buffer]");
+  ptr = (darktable.opencl->dlocl->symbols->dt_clEnqueueMapBuffer)(darktable.opencl->dev[devid].cmd_queue, buffer, blocking, flags, offset, size, 0, NULL, eventp, &err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl map buffer] could not map buffer: %d\n", err);
+  return ptr;
+}
+
+int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr)
+{
+  if (!darktable.opencl->inited) return -1;
+  cl_int err;
+  cl_event *eventp = dt_opencl_events_get_slot(devid, "[Unmap Mem Object]");
+  err = (darktable.opencl->dlocl->symbols->dt_clEnqueueUnmapMemObject)(darktable.opencl->dev[devid].cmd_queue, mem_object, mapped_ptr, 0, NULL, eventp);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl unmap mem object] could not unmap mem object: %d\n", err);
+  return err;
+}
 
 void* dt_opencl_alloc_device(const int devid, const int width, const int height, const int bpp)
 {
@@ -1435,6 +1456,19 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
 
   cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
                CL_MEM_READ_WRITE,
+               size,
+               NULL, &err);
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid, err);
+  return buf;
+}
+
+void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const int size, const int flags)
+{
+  if(!darktable.opencl->inited) return NULL;
+  cl_int err;
+
+  cl_mem buf = (darktable.opencl->dlocl->symbols->dt_clCreateBuffer) (darktable.opencl->dev[devid].context,
+               flags,
                size,
                NULL, &err);
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl alloc_device_buffer] could not alloc buffer on device %d: %d\n", devid, err);
