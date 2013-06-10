@@ -130,6 +130,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
   gr.add_edge(('colorout', 'colisa'))
+  gr.add_edge(('colorout', 'defringe'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -152,6 +153,7 @@ def add_edges(gr):
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
   gr.add_edge(('colisa', 'colorin'))
+  gr.add_edge(('defringe', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -284,6 +286,10 @@ def add_edges(gr):
   # colorize first in Lab pipe
   gr.add_edge(('colortransfer', 'colorize'))
   gr.add_edge(('colormapping', 'colortransfer'))
+  
+  # defringe before color manipulations (colorbalance is sufficient) and before equalizer
+  gr.add_edge(('colorbalance', 'defringe'))
+  gr.add_edge(('equalizer', 'defringe'))
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
@@ -352,6 +358,7 @@ gr.add_nodes([
 'colormapping',
 'colorzones',
 'colorcontrast',
+'defringe',
 'demosaic',
 'denoiseprofile',
 'dither',
