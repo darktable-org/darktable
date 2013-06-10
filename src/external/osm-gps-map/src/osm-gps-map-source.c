@@ -65,9 +65,12 @@ osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
                http://openaerialmap.org/pipermail/talk_openaerialmap.org/2008-December/000055.html */
             return NULL;
         case OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER:
-            return "http://tah.openstreetmap.org/Tiles/tile/#Z/#X/#Y.png";
+            /* The Tile@Home serverhas been shut down. */
+            // return "http://tah.openstreetmap.org/Tiles/tile/#Z/#X/#Y.png";
+            return NULL;
         case OSM_GPS_MAP_SOURCE_OPENCYCLEMAP:
-            return "http://c.andy.sandbox.cloudmade.com/tiles/cycle/#Z/#X/#Y.png";
+            // return "http://c.andy.sandbox.cloudmade.com/tiles/cycle/#Z/#X/#Y.png";
+            return "http://b.tile.opencyclemap.org/cycle/#Z/#X/#Y.png";
         case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
             return "http://tile.xn--pnvkarte-m4a.de/tilegen/#Z/#X/#Y.png";
         case OSM_GPS_MAP_SOURCE_OSMC_TRAILS:
@@ -75,11 +78,11 @@ osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
         case OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE:
             return "http://maps-for-free.com/layer/relief/z#Z/row#Y/#Z_#X-#Y.jpg";
         case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
-            return "http://mt#R.google.com/vt/lyrs=m@146&hl=en&x=#X&s=&y=#Y&z=#Z";
+            return "http://mt#R.google.com/vt/lyrs=m&hl=en&x=#X&s=&y=#Y&z=#Z";
         case OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID:
-            return "http://mt#R.google.com/vt/lyrs=h@146&hl=en&x=#X&s=&y=#Y&z=#Z";
+            return "http://mt#R.google.com/vt/lyrs=y&hl=en&x=#X&s=&y=#Y&z=#Z";
         case OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE:
-            return "http://khm#R.google.com/kh/v=89&x=#X&y=#Y&z=#Z";
+            return "http://mt#R.google.com/vt/lyrs=s&hl=en&x=#X&s=&y=#Y&z=#Z";
         case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET:
             return "http://a#R.ortho.tiles.virtualearth.net/tiles/r#W.jpeg?g=50";
         case OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE:
