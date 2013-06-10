@@ -522,12 +522,15 @@ if(USE_COLORD)
   endif(COLORD_FOUND)
 endif(USE_COLORD)
 
+if(USE_SQUISH)
 # libsquish for compressed thumbnails:
 add_dependencies(lib_darktable squish)
 add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
 target_link_libraries(lib_darktable ${LIBS} squish_static)
 add_subdirectory(external/squish)
+add_definitions("-DHAVE_SQUISH")
+endif(USE_SQUISH)
 
 if(LUA52_FOUND)
 	# liblautoc for lua automated interface generation

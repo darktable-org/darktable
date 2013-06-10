@@ -26,7 +26,9 @@
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "libraw/libraw.h"
+#ifdef HAVE_SQUISH
 #include "squish/csquish.h"
+#endif
 
 #include <assert.h>
 #include <string.h>
@@ -1377,12 +1379,14 @@ dt_mipmap_cache_decompress(
   const dt_mipmap_buffer_t *buf,
   uint8_t *scratchmem)
 {
+#ifdef HAVE_SQUISH
   if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
   {
     squish_decompress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
     return scratchmem;
   }
   else
+#endif
   {
     return buf->buf;
   }
@@ -1396,6 +1400,7 @@ dt_mipmap_cache_compress(
   dt_mipmap_buffer_t *buf,
   uint8_t *const scratchmem)
 {
+#ifdef HAVE_SQUISH
   // only do something if compression is on, don't compress skulls:
   if(darktable.mipmap_cache->compression_type && buf->width > 8 && buf->height > 8)
   {
@@ -1404,6 +1409,7 @@ dt_mipmap_cache_compress(
     if(darktable.mipmap_cache->compression_type == 1) flags |= squish_colour_range_fit;
     squish_compress_image(scratchmem, buf->width, buf->height, buf->buf, squish_dxt1);
   }
+#endif
 }
 
 
