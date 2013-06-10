@@ -1179,7 +1179,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           indx = row*width + col;
           c = FC(row,col,filters);
 
-          out[indx] = rgb[(rr)*TS+cc][c];
+          out[indx] = MAX(0, rgb[(rr)*TS+cc][c]);
           //image[indx][c] = CLIP((int)(65535.0*rgb[(rr)*TS+cc][c] + 0.5));//for dcraw implementation
         }
     }
