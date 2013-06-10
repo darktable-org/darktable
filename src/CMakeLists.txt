@@ -520,8 +520,10 @@ add_subdirectory(iop)
 # Compile export modules
 add_subdirectory(imageio)
 
+if(HAVE_OPENCL)
 # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
 add_subdirectory(cltest)
+endif(HAVE_OPENCL)
 
 # have a command line interface
 add_subdirectory(cli)
