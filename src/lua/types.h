@@ -71,7 +71,7 @@ void dt_lua_register_type_callback_typeid(lua_State* L,const char* type_name,lua
 #define dt_lua_register_type_callback_list(L,type_name,index,newindex,name_list) \
   dt_lua_register_type_callback_list_typeid(L,#type_name,index,newindex,name_list)
 void dt_lua_register_type_callback_list_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char**list);
-/// register using luaautoc callbacks from a type's members
+/// register using luaautoc callbacks from a type's members. If both index and newindex are null, provide a default one
 #define dt_lua_register_type_callback_type(L,type_name,index,newindex,struct_type_name) \
   dt_lua_register_type_callback_type_typeid(L,#type_name,index,newindex,#struct_type_name)
 void dt_lua_register_type_callback_type_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char* struct_type_name);

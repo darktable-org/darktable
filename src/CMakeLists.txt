@@ -178,6 +178,7 @@ if(USE_LUA)
 			"lua/preferences.c"
 			"lua/print.c"
 			"lua/storage.c"
+			"lua/styles.c"
 			"lua/tags.c"
 			"lua/types.c"
 			)

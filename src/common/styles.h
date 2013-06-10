@@ -67,6 +67,9 @@ void dt_styles_apply_to_image (const char *name,gboolean dulpicate,int32_t imgid
 /** delete a style by name */
 void dt_styles_delete_by_name (const char *name);
 
+/** get a style object by name, the object needs to be freed by the caller */
+dt_style_t *dt_styles_get_by_name (const char *name);
+
 /** check if style exists by name*/
 gboolean dt_styles_exists (const char *name);
 

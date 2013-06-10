@@ -1031,6 +1031,26 @@ void connect_styles_key_accels()
     while ((result=g_list_next(result))!=NULL);
   }
 }
+dt_style_t *dt_styles_get_by_name (const char *name)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description from styles where name = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_STATIC);
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *name = (const char *)sqlite3_column_text (stmt, 0);
+    const char *description = (const char *)sqlite3_column_text (stmt, 1);
+    dt_style_t *s=g_malloc (sizeof (dt_style_t));
+    s->name = g_strdup (name);
+    s->description= g_strdup (description);
+    sqlite3_finalize (stmt);
+    return s;
+  } else  {
+
+    sqlite3_finalize (stmt);
+    return NULL;
+  }
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -30,6 +30,7 @@
 #include "lua/modules.h"
 #include "lua/storage.h"
 #include "lua/events.h"
+#include "lua/styles.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -52,6 +53,7 @@ static lua_CFunction init_funcs[] =
 {
   dt_lua_init_glist,
   dt_lua_init_image,
+  dt_lua_init_styles,
   dt_lua_init_print,
   dt_lua_init_configuration,
   dt_lua_init_preferences,

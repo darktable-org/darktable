@@ -21,6 +21,7 @@
 #include "lua/glist.h"
 #include "lua/tags.h"
 #include "lua/database.h"
+#include "lua/styles.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/image.h"
@@ -88,6 +89,8 @@ typedef enum
   DESCRIPTION,
   RIGHTS,
   GROUP_LEADER,
+  APPLY_STYLE,
+  CREATE_STYLE,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -105,9 +108,10 @@ const char *image_fields_name[] =
   "description",
   "rights",
   "group_leader",
+  "apply_style",
+  "create_style",
   NULL
 };
-
 static int image_index(lua_State *L)
 {
   const char* membername = lua_tostring(L, -1);
@@ -273,13 +277,23 @@ static int image_index(lua_State *L)
         luaA_push(L,dt_lua_image_t,&(my_image->group_id));
         break;
       }
+    case APPLY_STYLE:
+      {
+        lua_pushcfunction(L,dt_lua_style_apply);
+        break;
+      }
+    case CREATE_STYLE:
+      {
+        lua_pushcfunction(L,dt_lua_style_create_from_image);
+        break;
+      }
     default:
       releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
 
   }
-  releasereadimage(L,my_image);
-  return 1;
+releasereadimage(L,my_image);
+return 1;
 }
 
 static int image_newindex(lua_State *L)
@@ -470,7 +484,7 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader",NULL) ; // make these fields read-only
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader","apply_style","create_style",NULL) ; // make these fields read-only
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);

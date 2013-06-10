@@ -104,11 +104,12 @@ static int database_index(lua_State*L)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L,dt_lua_image_t,&imgid);
+    sqlite3_finalize(stmt);
   }
   else
   {
     sqlite3_finalize(stmt);
-    luaL_error(L,"incorrect index in database");
+    return luaL_error(L,"incorrect index in database");
   }
   return 1;
 }
