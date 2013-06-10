@@ -5448,6 +5448,17 @@ const wb_data wb_preset[] = {
   { "SONY", "NEX-C3", "5500K", 0,		{ 2.753906, 1, 1.492188, 0 } },
   { "SONY", "NEX-C3", "6500K", 0,		{ 2.996094, 1, 1.351563, 0 } },
 
+  { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
+  { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
+  { "SONY", "SLT-A37", Cloudy, 0,		{ 2.8828, 1, 1.3906, 0 } },
+  { "SONY", "SLT-A37", Incandescent, 0,		{ 1.6367, 1, 2.7070, 0 } },
+  { "SONY", "SLT-A37", WarmWhiteFluorescent, 0,	{ 1.9180, 1, 2.6914, 0 } },
+  { "SONY", "SLT-A37", CoolWhiteFluorescent, 0,	{ 2.4219, 1, 2.1523, 0 } },
+  { "SONY", "SLT-A37", DayWhiteFluorescent, 0,	{ 2.6172, 1, 1.5977, 0 } },
+  { "SONY", "SLT-A37", DaylightFluorescent, 0,	{ 2.9883, 1, 1.3984, 0 } },
+  { "SONY", "SLT-A37", Flash, 0,		{ 3.0859, 1, 1.3008, 0 } },
+  { "SONY", "SLT-A37", "5500K", 0,		{ 2.7227, 1, 1.4805, 0 } },
+
   { "SONY", "SLT-A55V", Daylight, -3,		{ 2.3320, 1, 1.6758, 0 } },
   { "SONY", "SLT-A55V", Daylight, -2,		{ 2.3984, 1, 1.6172, 0 } },
   { "SONY", "SLT-A55V", Daylight, -1,		{ 2.4727, 1, 1.5625, 0 } },
