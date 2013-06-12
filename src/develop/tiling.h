@@ -19,8 +19,6 @@
 #ifndef DT_DEVELOP_TILING_H
 #define DT_DEVELOP_TILING_H
 
-#define DT_TILING_MAXTILES 500
-
 #include "develop/imageop.h"
 #include "develop/develop.h"
 #include "develop/pixelpipe.h"
