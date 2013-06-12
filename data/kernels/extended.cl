@@ -403,7 +403,7 @@ vignette (read_only image2d_t in, write_only image2d_t out, const int width, con
 
   if(weight > 0.0f)
   {
-    float falloff = brightness < 0.0f ? 1.0 + (weight * brightness) : weight * brightness;
+    float falloff = brightness < 0.0f ? 1.0f + (weight * brightness) : weight * brightness;
 
     pixel.x =clamp(brightness < 0.0f ? pixel.x * falloff + dith : pixel.x + falloff + dith, 0.0f, 1.0f);
     pixel.y =clamp(brightness < 0.0f ? pixel.y * falloff + dith : pixel.y + falloff + dith, 0.0f, 1.0f);
