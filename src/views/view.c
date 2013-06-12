@@ -725,30 +725,7 @@ dt_view_image_expose(
     selected = 1;
 #endif
 
-#if DRAW_HISTORY == 1
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
-
-  /* lets check if imgid has history */
-  if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW)
-    altered = 1;
-#endif
-
   const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
-
-#if DRAW_GROUPING == 1
-  DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
-  DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
-
-  /* lets check if imgid is in a group */
-  if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
-    is_grouped = 1;
-  else if(img && darktable.gui->expanded_group_id == img->group_id)
-    darktable.gui->expanded_group_id = -1;
-#endif
 
   if(selected == 1)
   {
@@ -911,124 +888,151 @@ dt_view_image_expose(
   const float fscale = fminf(width, height);
   if(imgsel == imgid || full_preview)
   {
-    // draw mouseover hover effects, set event hook for mouse button down!
-    *image_over = DT_VIEW_DESERT;
-    cairo_set_line_width(cr, 1.5);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-    float r1, r2;
-    if(zoom != 1)
+    if (zoom < 15)
     {
-      r1 = 0.05*width;
-      r2 = 0.022*width;
-    }
-    else
-    {
-      r1 = 0.015*fscale;
-      r2 = 0.007*fscale;
-    }
+      const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
 
-    float x, y;
-    if(zoom != 1) y = 0.90*height;
-    else y = .12*fscale;
-    gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
-
-    if(img) for(int k=0; k<5; k++)
-      {
-        if(zoom != 1) x = (0.41+k*0.12)*width;
-        else x = (.08+k*0.04)*fscale;
-
-        if(!image_is_rejected) //if rejected: draw no stars
-        {
-          dt_view_star(cr, x, y, r1, r2);
-          if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-          {
-            *image_over = DT_VIEW_STAR_1 + k;
-            cairo_fill(cr);
-          }
-          else if((img->flags & 0x7) > k)
-          {
-            cairo_fill_preserve(cr);
-            cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
-            cairo_stroke(cr);
-            cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-          }
-          else cairo_stroke(cr);
-        }
-      }
-
-    //Image rejected?
-    if(zoom !=1) x = 0.11*width;
-    else x = .04*fscale;
-
-    if (image_is_rejected)
-      cairo_set_source_rgb(cr, 1., 0., 0.);
-
-    if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
-    {
-      *image_over = DT_VIEW_REJECT; //mouse sensitive
-      cairo_new_sub_path(cr);
-      cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
-      cairo_stroke(cr);
-    }
-
-    if (image_is_rejected)
-      cairo_set_line_width(cr, 2.5);
-
-    //reject cross:
-    cairo_move_to(cr, x-r2, y-r2);
-    cairo_line_to(cr, x+r2, y+r2);
-    cairo_move_to(cr, x+r2, y-r2);
-    cairo_line_to(cr, x-r2, y+r2);
-    cairo_close_path(cr);
-    cairo_stroke(cr);
-    cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
-    cairo_set_line_width(cr, 1.5);
-
-
-    // image part of a group?
-    if(is_grouped && darktable.gui && darktable.gui->grouping)
-    {
-      // draw grouping icon and border if the current group is expanded
-      // align to the right, left of altered
-      float s = (r1+r2)*.75;
-      float _x, _y;
+      // draw mouseover hover effects, set event hook for mouse button down!
+      *image_over = DT_VIEW_DESERT;
+      cairo_set_line_width(cr, 1.5);
+      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+      float r1, r2;
       if(zoom != 1)
       {
-        _x = width*0.9 - s*2.5;
-        _y = height*0.1 - s*.4;
+        r1 = 0.05*width;
+        r2 = 0.022*width;
       }
       else
       {
-        _x = (.04+7*0.04-1.1*.04)*fscale;
-        _y = y - (.17*.04)*fscale;
+        r1 = 0.015*fscale;
+        r2 = 0.007*fscale;
       }
-      cairo_save(cr);
-      if(img && (imgid != img->group_id))
-        cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
-      dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
-      cairo_restore(cr);
-      // mouse is over the grouping icon
-      if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
-        *image_over = DT_VIEW_GROUP;
-    }
+
+      float x, y;
+      if(zoom != 1) y = 0.90*height;
+      else y = .12*fscale;
+      gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
+
+      if(img) for(int k=0; k<5; k++)
+        {
+          if(zoom != 1) x = (0.41+k*0.12)*width;
+          else x = (.08+k*0.04)*fscale;
+
+          if(!image_is_rejected) //if rejected: draw no stars
+          {
+            dt_view_star(cr, x, y, r1, r2);
+            if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+            {
+              *image_over = DT_VIEW_STAR_1 + k;
+              cairo_fill(cr);
+            }
+            else if((img->flags & 0x7) > k)
+            {
+              cairo_fill_preserve(cr);
+              cairo_set_source_rgb(cr, 1.0-bordercol, 1.0-bordercol, 1.0-bordercol);
+              cairo_stroke(cr);
+              cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+            }
+            else cairo_stroke(cr);
+          }
+        }
+
+      //Image rejected?
+      if(zoom !=1) x = 0.11*width;
+      else x = .04*fscale;
+
+      if (image_is_rejected)
+        cairo_set_source_rgb(cr, 1., 0., 0.);
+
+      if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+      {
+        *image_over = DT_VIEW_REJECT; //mouse sensitive
+        cairo_new_sub_path(cr);
+        cairo_arc(cr, x, y, (r1+r2)*.5, 0, 2.0f*M_PI);
+        cairo_stroke(cr);
+      }
+
+      if (image_is_rejected)
+        cairo_set_line_width(cr, 2.5);
+
+      //reject cross:
+      cairo_move_to(cr, x-r2, y-r2);
+      cairo_line_to(cr, x+r2, y+r2);
+      cairo_move_to(cr, x+r2, y-r2);
+      cairo_line_to(cr, x-r2, y+r2);
+      cairo_close_path(cr);
+      cairo_stroke(cr);
+      cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
+      cairo_set_line_width(cr, 1.5);
+
+#if DRAW_GROUPING == 1
+      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
+      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 1, imgid);
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.get_grouped, 2, imgid);
+
+      /* lets check if imgid is in a group */
+      if(sqlite3_step(darktable.view_manager->statements.get_grouped) == SQLITE_ROW)
+        is_grouped = 1;
+      else if(img && darktable.gui->expanded_group_id == img->group_id)
+        darktable.gui->expanded_group_id = -1;
+#endif
+
+      // image part of a group?
+      if(is_grouped && darktable.gui && darktable.gui->grouping)
+      {
+        // draw grouping icon and border if the current group is expanded
+        // align to the right, left of altered
+        float s = (r1+r2)*.75;
+        float _x, _y;
+        if(zoom != 1)
+        {
+          _x = width*0.9 - s*2.5;
+          _y = height*0.1 - s*.4;
+        }
+        else
+        {
+          _x = (.04+7*0.04-1.1*.04)*fscale;
+          _y = y - (.17*.04)*fscale;
+        }
+        cairo_save(cr);
+        if(img && (imgid != img->group_id))
+          cairo_set_source_rgb(cr, fontcol, fontcol, fontcol);
+        dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
+        cairo_restore(cr);
+        // mouse is over the grouping icon
+        if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
+          *image_over = DT_VIEW_GROUP;
+      }
+
+#if DRAW_HISTORY == 1
+      DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.have_history);
+      DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.have_history);
+      DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.have_history, 1, imgid);
+
+      /* lets check if imgid has history */
+      if(sqlite3_step(darktable.view_manager->statements.have_history) == SQLITE_ROW)
+        altered = 1;
+#endif
 
     // image altered?
-    if(altered)
-    {
-      // align to right
-      float s = (r1+r2)*.5;
-      if(zoom != 1)
+      if(altered && zoom < 15)
       {
-        x = width*0.9;
-        y = height*0.1;
-      }
-      else x = (.04+7*0.04)*fscale;
-      dt_view_draw_altered(cr, x, y, s);
-      //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-      if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
-      {
-        darktable.gui->center_tooltip = 1;
+        // align to right
+        float s = (r1+r2)*.5;
+        if(zoom != 1)
+        {
+          x = width*0.9;
+          y = height*0.1;
+        }
+        else x = (.04+7*0.04)*fscale;
+        dt_view_draw_altered(cr, x, y, s);
+        //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
+        if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+        {
+          darktable.gui->center_tooltip = 1;
+        }
       }
     }
   }
@@ -1039,6 +1043,10 @@ dt_view_image_expose(
 #if DRAW_COLORLABELS == 1
   // TODO: make mouse sensitive, just as stars!
   // TODO: cache in image struct!
+
+  // TODO: there is a branch that sets the bg == colorlabel
+  //       this might help if zoom > 15
+  if (zoom < 15)
   {
     // color labels:
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
