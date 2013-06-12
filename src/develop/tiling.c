@@ -687,7 +687,7 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int tiles_y = height < roi_in->height ? ceilf(roi_in->height/(float)tile_ht) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] gave up tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
     goto error;
@@ -927,7 +927,7 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     tiles_y = height < roi_out->height ? ceilf((float)roi_out->height / (float)_max(height - 2*overlap_out, 1)) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] gave up tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
     goto error;
@@ -1228,7 +1228,7 @@ _default_process_tiling_cl_ptp (struct dt_iop_module_t *self, struct dt_dev_pixe
   const int tiles_y = height < roi_in->height ? ceilf(roi_in->height/(float)tile_ht) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
   {
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_ptp] aborted tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
     return FALSE;
@@ -1546,7 +1546,7 @@ _default_process_tiling_cl_roi (struct dt_iop_module_t *self, struct dt_dev_pixe
     tiles_y = height < roi_out->height ? ceilf((float)roi_out->height / (float)_max(height - 2*overlap_out, 1)) : 1;
 
   /* sanity check: don't run wild on too many tiles */
-  if(tiles_x * tiles_y > DT_TILING_MAXTILES)
+  if(tiles_x * tiles_y > dt_conf_get_int("maximum_number_tiles"))
   {
     dt_print(DT_DEBUG_OPENCL, "[default_process_tiling_cl_roi] aborted tiling for module '%s'. too many tiles: %d x %d\n", self->op, tiles_x, tiles_y);
     return FALSE;

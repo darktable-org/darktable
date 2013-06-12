@@ -155,6 +155,13 @@
     <shortdescription>round opencl work group sizes to a multiple of</shortdescription>
     <longdescription>in opencl processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on opencl performance.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>maximum_number_tiles</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription>assumed maximum sane number of tiles</shortdescription>
+    <longdescription>if during tiling this number of tiles is exceeded darktable assumes something went wrong. in case you want to process huge images (like gigapixel panoramas) you may try to increase that limit. as this has never been tested by the developers you are on your own. please report back your successes or failures.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>ask_before_remove</name>
     <type>bool</type>
