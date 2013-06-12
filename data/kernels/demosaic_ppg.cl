@@ -455,7 +455,7 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
     const float4 pxM3 = read_imagef(in, sampleri, (int2)(col+3, row));  // g
 
     const float pc_c = FCV(pc,c);
-    float4 px_c  = (float4)0.0;
+    float4 px_c  = (float4)0.0f;
     if (c == 0)
       px_c = (float4)(pxm2.z,pxM2.z,pym2.z,pyM2.z);
     else if (c & 1) 
