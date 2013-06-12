@@ -39,6 +39,8 @@
 #include <strings.h>
 #include <math.h>
 
+#define DECORATION_SIZE_LIMIT 40
+
 void dt_view_manager_init(dt_view_manager_t *vm)
 {
   /* prepare statements */
@@ -872,7 +874,7 @@ dt_view_image_expose(
   const float fscale = fminf(width, height);
   if(imgsel == imgid || full_preview)
   {
-    if (zoom < 15)
+    if (width > DECORATION_SIZE_LIMIT)
     {
       const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
 
@@ -1001,7 +1003,7 @@ dt_view_image_expose(
 #endif
 
     // image altered?
-      if(altered && zoom < 15)
+      if(altered && width > DECORATION_SIZE_LIMIT)
       {
         // align to right
         float s = (r1+r2)*.5;
@@ -1030,7 +1032,7 @@ dt_view_image_expose(
 
   // TODO: there is a branch that sets the bg == colorlabel
   //       this might help if zoom > 15
-  if (zoom < 15)
+  if (width > DECORATION_SIZE_LIMIT)
   {
     // color labels:
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
