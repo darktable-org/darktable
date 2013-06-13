@@ -2205,6 +2205,15 @@ const wb_data wb_preset[] = {
   { "NIKON", "1 V1", Cloudy, 0,			{ 1.960938, 1, 1.406250, 0 } },
   { "NIKON", "1 V1", Shade, 0,			{ 2.257813, 1, 1.277344, 0 } },
 
+  // Nikon CoolPix P330 firmware 1.0
+  { "NIKON", "COOLPIX P330", DirectSunlight, 0,	{ 1.792969, 1, 1.65625, 0 }},
+  { "NIKON", "COOLPIX P330", Incandescent, 0,	{ 1.171875, 1, 2.730469, 0 }},
+  { "NIKON", "COOLPIX P330", WhiteFluorescent, 0, { 1.867188, 1, 2.421875, 0 }},
+  { "NIKON", "COOLPIX P330", DayWhiteFluorescent, 0, { 1.8125, 1, 1.742188, 0 }},
+  { "NIKON", "COOLPIX P330", DaylightFluorescent, 0, { 2.046875, 1, 1.390625, 0}},
+  { "NIKON", "COOLPIX P330", Cloudy, 0,		{ 1.929688, 1, 1.480469, 0 }},
+  { "NIKON", "COOLPIX P330", Flash, 0,		{ 2.039063, 1, 1.578125, 0 }},
+
   // Fine tuning is from A6 to B6 on amber-blue.
   { "NIKON", "COOLPIX P7100", DirectSunlight, -6, { 1.7908, 1, 1.9042, 0 } },
   { "NIKON", "COOLPIX P7100", DirectSunlight, 0, { 1.6500, 1, 2.1349, 0 } },
