@@ -19,7 +19,7 @@ lua nls opencl openmp pax_kernel +rawspeed +slideshow web-services"
 
 CDEPEND="
 	dev-db/sqlite:3
-	>=dev-libs/glib-2.28:2
+	>=dev-libs/glib-2.30:2
 	dev-libs/libxml2:2
 	colord? ( x11-misc/colord )
 	flickr? ( media-libs/flickcurl )
@@ -28,7 +28,7 @@ CDEPEND="
 	gnome-base/librsvg:2
 	gphoto2? ( media-libs/libgphoto2 )
 	graphicsmagick? ( media-gfx/graphicsmagick )
-	jpeg2k? ( media-libs/openjpeg )
+	jpeg2k? ( media-libs/openjpeg:0 )
 	lua? ( >=dev-lang/lua-5.2 )
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
