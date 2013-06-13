@@ -347,7 +347,9 @@ static int dt_lua_trigger_event_internal(const char*event,int nargs,int nresults
 }
 static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
   int res;
+#ifdef _OPENMP
 #pragma omp critical(running_lua)
+#endif
   {
     res = dt_lua_trigger_event_internal(event,nargs,nresults);
   }
