@@ -790,16 +790,10 @@ dt_view_image_expose(
   }
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip =
-    dt_mipmap_cache_get_matching_size(
-      darktable.mipmap_cache,
-      imgwd*width, imgwd*height);
-  dt_mipmap_cache_read_get(
-    darktable.mipmap_cache,
-    &buf,
-    imgid,
-    mip,
-    0);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
+                                                           imgwd*width, imgwd*height);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, 0);
+
 #if DRAW_THUMB == 1
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
@@ -892,7 +886,6 @@ dt_view_image_expose(
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
-      const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
 
       // draw mouseover hover effects, set event hook for mouse button down!
       *image_over = DT_VIEW_DESERT;
@@ -1019,7 +1012,7 @@ dt_view_image_expose(
 #endif
 
     // image altered?
-      if(altered && width > DECORATION_SIZE_LIMIT)
+      if(altered)
       {
         // align to right
         float s = (r1+r2)*.5;
