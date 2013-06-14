@@ -1842,7 +1842,9 @@ post_process_collect_info:
         uint32_t *buf = (uint32_t*)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3, sizeof(uint32_t));
         memset(dev->histogram_waveform, 0, sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
 
-        const double bin_width = (double)(roi_in.width) / (double)dev->histogram_waveform_width, bin_height = 255.0 / (double)(dev->histogram_waveform_height - 1);
+        // 1.0 is at 8/9 of the height!
+        const double bin_width = (double)(roi_in.width) / (double)dev->histogram_waveform_width,
+                     _height = (double)(dev->histogram_waveform_height - 1);
         float *pixel = (float *)input;
 //         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
 
@@ -1858,7 +1860,7 @@ post_process_collect_info:
             const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
             for(int k = 0; k < 3; k++)
             {
-              const int out_y = 255 * (1.0 - CLAMP(rgb[k], 0.0, 1.0)) / bin_height;
+              const int out_y = CLAMP(1.0 - (8.0/9.0) * rgb[k], 0.0, 1.0) * _height;
               uint32_t * const out = buf + (out_y * dev->histogram_waveform_width * 3 + out_x * 3 + k);
               (*out)++;
 //               mincol[k] = MIN(mincol[k], *out);
