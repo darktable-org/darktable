@@ -81,13 +81,13 @@ static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int
 //   float width = right - left;
   float height = bottom - top;
 
-  int num = 8;
+  int num = 9, middle = 5;
 
   cairo_save(cr);
 
   for(int k = 1; k < num; k++)
   {
-    if(k == num/2) continue;
+    if(k == middle) continue;
     dt_draw_line(cr, left, top + k/(float)num*height, right, top + k/(float)num*height);
     cairo_stroke(cr);
   }
@@ -95,7 +95,7 @@ static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int
   double dashes = 4.0;
   cairo_set_dash(cr, &dashes, 1, 0);
 
-  dt_draw_line(cr, left, top + 0.5*height, right, top + 0.5*height);
+  dt_draw_line(cr, left, top + middle/(float)num*height, right, top + middle/(float)num*height);
   cairo_stroke(cr);
 
   cairo_restore(cr);
