@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <locale.h>
 
 #include <sys/stat.h>
 #include <errno.h>
@@ -49,6 +50,11 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   cl->enabled = 0;
   cl->stopped = 0;
   cl->error_count = 0;
+
+  // work-around to fix a bug in some AMD OpenCL compilers, which would fail parsing certain numerical constants if locale is different from "C".
+  // we save the current locale, set locale to "C", and restore the previous setting after OpenCL is initialized
+  char *locale = setlocale(LC_ALL, NULL);
+  setlocale(LC_ALL, "C");
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
   handles = (handles < 0 ? 0x7fffffff : handles);
@@ -425,6 +431,7 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
   }
+  if(locale) setlocale(LC_ALL, locale);
   return;
 }
 
