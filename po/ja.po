@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-16 10:38+0900\n"
-"PO-Revision-Date: 2013-05-16 10:40+0900\n"
+"POT-Creation-Date: 2013-06-09 11:47+0900\n"
+"PO-Revision-Date: 2013-06-14 12:21+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: Japanese\n"
@@ -423,7 +423,7 @@ msgstr ""
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:964
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:733
+#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:735
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "レッド"
@@ -435,14 +435,14 @@ msgstr "イエロー"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:968
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:734
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:736
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "グリーン"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:970
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:735
+#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:737
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
 msgid "blue"
 msgstr "ブルー"
@@ -485,7 +485,7 @@ msgstr "ファイル`%s'は不明な形式です！"
 msgid "error loading file `%s'"
 msgstr "`%s' ファイル読み込み中にエラーが発生しました"
 
-#: ../src/common/darktable.c:478
+#: ../src/common/darktable.c:479
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "エラー：無効な一時ディレクトリ : %s\n"
@@ -507,20 +507,20 @@ msgstr "他に貼り付ける前に、画像からの履歴をコピーする必
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/develop.c:1109 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1112 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "ON"
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1109
+#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1112
 #: ../src/imageio/format/j2k.c:601 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "OFF"
 
-#: ../src/common/image.c:109
+#: ../src/common/image.c:125
 msgid "orphaned image"
 msgstr "関連付けられていない画像"
 
@@ -532,7 +532,7 @@ msgstr ""
 "エクスポートのメモリ割り当てに失敗しました。エクスポートに使用されるスレッド"
 "を少なくするか、もっとメモリを搭載してください"
 
-#: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1103
+#: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1140
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "画像 `%s' は使用不可能です"
@@ -560,21 +560,21 @@ msgstr "エクスポート時に適用するスタイル '%s' を見つけるこ
 msgid "generic poissonian"
 msgstr "汎用ポアソン"
 
-#: ../src/common/ratings.c:45
+#: ../src/common/ratings.c:47
 #, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
 msgstr[0] "%d 個の画像を除外しています"
 msgstr[1] "%d 個の画像を除外しています"
 
-#: ../src/common/ratings.c:47
+#: ../src/common/ratings.c:49
 #, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
 msgstr[0] "評価 %d を %d 個の画像に適用しています"
 msgstr[1] "評価 %d を %d 個の画像に適用しています"
 
-#: ../src/common/ratings.c:71
+#: ../src/common/ratings.c:73
 msgid "no images selected to apply rating"
 msgstr "評価を適用する選択画像がありません"
 
@@ -582,6 +582,16 @@ msgstr "評価を適用する選択画像がありません"
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "`%s' という名前のスタイルは既にあります"
+
+#. freed by _destro_style_shortcut_callback
+#: ../src/common/styles.c:226 ../src/common/styles.c:230
+#: ../src/common/styles.c:300 ../src/common/styles.c:361
+#: ../src/common/styles.c:488 ../src/common/styles.c:985
+#: ../src/common/styles.c:1009
+#, c-format
+msgctxt "accel"
+msgid "styles/apply %s"
+msgstr "スタイル/ %s を適用"
 
 #: ../src/common/styles.c:307 ../src/common/styles.c:368
 #, c-format
@@ -971,7 +981,7 @@ msgstr "ブレンド"
 
 #: ../src/develop/blend_gui.c:822
 msgid "uniformly"
-msgstr "均等"
+msgstr "均一"
 
 #: ../src/develop/blend_gui.c:823
 msgid "only, if.."
@@ -1134,7 +1144,7 @@ msgstr "ブレンドの不透明度を設定"
 msgid "choose blending mode"
 msgstr "ブレンドモード選択"
 
-#: ../src/develop/develop.c:932
+#: ../src/develop/develop.c:935
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: モデュール `%s'バージョンの不一致: %d != %d"
@@ -1148,78 +1158,78 @@ msgstr "GUI作成中エラー、標準エラー出力を参照してください
 msgid "error creating gui, DT_SIMPLE_GUI_NONE could not be found"
 msgstr "GUI作成中エラー、DT_SIMPLE_GUI_NONE は見つかりませんでした"
 
-#: ../src/develop/imageop.c:1134
+#: ../src/develop/imageop.c:1133
 msgid "new instance"
 msgstr "新しいインスタンス"
 
-#: ../src/develop/imageop.c:1139
+#: ../src/develop/imageop.c:1138
 msgid "move up"
 msgstr "上へ移動 "
 
-#: ../src/develop/imageop.c:1145
+#: ../src/develop/imageop.c:1144
 msgid "move down"
 msgstr "下へ移動 "
 
 #. delete
-#: ../src/develop/imageop.c:1151 ../src/libs/image.c:143
-#: ../src/libs/styles.c:395 ../src/libs/tagging.c:487
+#: ../src/develop/imageop.c:1150 ../src/libs/image.c:143
+#: ../src/libs/styles.c:395 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "削除"
 
-#: ../src/develop/imageop.c:1173 ../src/develop/imageop.c:2010
+#: ../src/develop/imageop.c:1172 ../src/develop/imageop.c:2009
 #, c-format
 msgid "%s is switched on"
 msgstr "%s は スイッチオン"
 
-#: ../src/develop/imageop.c:1173 ../src/develop/imageop.c:2010
+#: ../src/develop/imageop.c:1172 ../src/develop/imageop.c:2009
 #, c-format
 msgid "%s is switched off"
 msgstr "%s は スイッチオフ"
 
-#: ../src/develop/imageop.c:1403 ../src/gui/accelerators.c:637
+#: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:637
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:747 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "プリセット"
 
-#: ../src/develop/imageop.c:1444
+#: ../src/develop/imageop.c:1443
 msgctxt "accel"
 msgid "fusion"
 msgstr "フュージョン"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1449
+#: ../src/develop/imageop.c:1448
 msgctxt "accel"
 msgid "show module"
 msgstr "モジュールを表示"
 
-#: ../src/develop/imageop.c:1450
+#: ../src/develop/imageop.c:1449
 msgctxt "accel"
 msgid "enable module"
 msgstr "モジュールを有効"
 
-#: ../src/develop/imageop.c:1453 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1452 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "モジュールのパラメータをリセット"
 
-#: ../src/develop/imageop.c:1455 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1454 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "プリセット・メニューを表示"
 
-#: ../src/develop/imageop.c:1980
+#: ../src/develop/imageop.c:1979
 msgid "multiple instances actions"
 msgstr "マルチ・インスタンスの操作"
 
-#: ../src/develop/imageop.c:1989 ../src/libs/lib.c:830
+#: ../src/develop/imageop.c:1988 ../src/libs/lib.c:830
 msgid "reset parameters"
 msgstr "パラメータをリセット"
 
-#: ../src/develop/imageop.c:1998 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:1997 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:843
 msgid "presets"
 msgstr "プリセット"
@@ -1265,6 +1275,14 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
 "タイリングはモジュール '%s' に失敗しました。出力が文字化けしている可能性があ"
 "ります"
+
+#: ../src/develop/pixelpipe_hb.c:2025
+msgid ""
+"darktable discovered problems with your OpenCL setup; disabling OpenCL for "
+"this session!"
+msgstr ""
+"darktableは OpenCLの設定に問題を発見しました;このセッションの OpenCLを無効に"
+"します！"
 
 #: ../src/dtgtk/resetlabel.c:61
 msgid "double-click to reset"
@@ -1732,46 +1750,46 @@ msgstr "名前"
 
 #. exif
 #: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1348
-#: ../src/gui/presets.c:419 ../src/libs/metadata_view.c:82
+#: ../src/gui/presets.c:419 ../src/libs/metadata_view.c:85
 msgid "model"
 msgstr "機種"
 
 #: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1356
-#: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:83
+#: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:86
 msgid "maker"
 msgstr "メーカー"
 
 #: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1364
 #: ../src/gui/presets.c:433 ../src/libs/collect.h:43
-#: ../src/libs/metadata_view.c:84
+#: ../src/libs/metadata_view.c:87
 msgid "lens"
 msgstr "レンズ"
 
 #. iso
 #: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1371
 #: ../src/gui/presets.c:440 ../src/libs/camera.c:597 ../src/libs/collect.h:44
-#: ../src/libs/metadata_view.c:89
+#: ../src/libs/metadata_view.c:92
 msgid "iso"
 msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1384
 #: ../src/gui/presets.c:453 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
-#: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:86
+#: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:89
 msgid "exposure"
 msgstr "露光"
 
 #. aperture
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1399
 #: ../src/gui/presets.c:468 ../src/libs/camera.c:549 ../src/libs/camera.c:558
-#: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:85
+#: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:88
 msgid "aperture"
 msgstr "絞り"
 
 #. focal length
 #: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1414
 #: ../src/gui/presets.c:483 ../src/libs/camera.c:568
-#: ../src/libs/metadata_view.c:87
+#: ../src/libs/metadata_view.c:90
 msgid "focal length"
 msgstr "焦点距離"
 
@@ -2225,7 +2243,7 @@ msgstr "facebook ウェブアルバム"
 #: ../src/imageio/storage/facebook.c:1018 ../src/imageio/storage/flickr.c:479
 #: ../src/imageio/storage/gallery.c:167 ../src/imageio/storage/latex.c:167
 #: ../src/imageio/storage/picasa.c:1311 ../src/libs/collect.h:38
-#: ../src/libs/metadata.c:303 ../src/libs/metadata_view.c:95
+#: ../src/libs/metadata.c:303 ../src/libs/metadata_view.c:98
 msgid "title"
 msgstr "タイトル"
 
@@ -2434,7 +2452,7 @@ msgstr "イコライザ"
 #: ../src/iop/atrous.c:131 ../src/iop/soften.c:105
 msgctxt "accel"
 msgid "mix"
-msgstr "ミックス"
+msgstr "合成"
 
 #: ../src/iop/atrous.c:773
 msgid "enhance coarse"
@@ -2537,7 +2555,7 @@ msgstr "各サイズのシャープネスを調整します"
 
 #: ../src/iop/atrous.c:1457 ../src/iop/soften.c:601
 msgid "mix"
-msgstr "ミックス"
+msgstr "合成"
 
 #: ../src/iop/atrous.c:1458
 msgid "make effect stronger or weaker"
@@ -2615,13 +2633,13 @@ msgstr "fotogenetic (コンパクトカメラ)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:205
+#: ../src/iop/basecurve.c:187
 msgid "base curve"
 msgstr "ベースカーブ"
 
-#: ../src/iop/basecurve.c:727
+#: ../src/iop/basecurve.c:709
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "横軸：入力、縦軸：出力　RGBチャネル上で動作"
+msgstr "横軸：入力、縦軸：出力　RGBチャンネル上で動作"
 
 #: ../src/iop/bilat.c:69 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -2650,19 +2668,19 @@ msgid "radius"
 msgstr "半径"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:100
 msgctxt "accel"
 msgid "red"
 msgstr "レッド"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:101
 msgctxt "accel"
 msgid "green"
 msgstr "グリーン"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:102
 msgctxt "accel"
 msgid "blue"
 msgstr "ブルー"
@@ -2963,15 +2981,15 @@ msgstr "グレイ"
 
 #: ../src/iop/channelmixer.c:451
 msgid "amount of red channel in the output channel"
-msgstr "出力チャネル内のレッドチャンネルの適用量"
+msgstr "出力チャンネル内のレッドチャンネルの適用量"
 
 #: ../src/iop/channelmixer.c:458
 msgid "amount of green channel in the output channel"
-msgstr "出力チャネル内のグリーンチャンネルの適用量"
+msgstr "出力チャンネル内のグリーンチャンネルの適用量"
 
 #: ../src/iop/channelmixer.c:465
 msgid "amount of blue channel in the output channel"
-msgstr "出力チャネル内のブルーチャンネルの適用量"
+msgstr "出力チャンネル内のブルーチャンネルの適用量"
 
 #: ../src/iop/channelmixer.c:483
 msgid "swap R and B"
@@ -3347,7 +3365,7 @@ msgstr "明度"
 #: ../src/iop/colorize.c:90
 msgctxt "accel"
 msgid "source mix"
-msgstr "元画像とミックス"
+msgstr "元画像と合成"
 
 #: ../src/iop/colorize.c:279 ../src/iop/splittoning.c:402
 msgid "select tone color"
@@ -3363,7 +3381,7 @@ msgstr "彩度トーンを選択します"
 
 #: ../src/iop/colorize.c:446
 msgid "source mix"
-msgstr "元画像とのミックス"
+msgstr "元画像との合成"
 
 #: ../src/iop/colorize.c:450
 msgid "lightness of color"
@@ -3371,7 +3389,7 @@ msgstr "適用色の明度"
 
 #: ../src/iop/colorize.c:451
 msgid "mix value of source lightness"
-msgstr "元画像の明度と適用色とのミックス値"
+msgstr "元画像の明度と適用色との混合値"
 
 #: ../src/iop/colorout.c:48
 msgid "output color profile"
@@ -3495,7 +3513,7 @@ msgstr ""
 
 #: ../src/iop/colortransfer.c:673
 msgid "number of clusters to find in image"
-msgstr "画像で検索するクラスタ数"
+msgstr "画像内で拾得するクラスタ数"
 
 #: ../src/iop/colortransfer.c:677
 msgid "acquire"
@@ -4079,19 +4097,19 @@ msgstr "反転"
 #: ../src/iop/invert.c:71
 msgctxt "accel"
 msgid "pick color of film material from image"
-msgstr "画像からフィルム素材のカラーを選択"
+msgstr "画像からフィルムベースのカラーを選択"
 
 #: ../src/iop/invert.c:154
 msgid "select color of film material"
-msgstr "フィルム素材のカラーを選択"
+msgstr "フィルムベースのカラーを選択"
 
 #: ../src/iop/invert.c:309
 msgid "color of film material"
-msgstr "フィルム素材のカラー"
+msgstr "フィルムベースのカラー"
 
 #: ../src/iop/invert.c:340
 msgid "pick color of film material from image"
-msgstr "画像からフィルム素材のカラーを選択"
+msgstr "画像からフィルムベースのカラーを選択"
 
 #: ../src/iop/lens.c:48
 msgid "lens correction"
@@ -4339,8 +4357,8 @@ msgstr "レベル"
 msgid ""
 "drag handles to set black, grey, and white points.  operates on L channel."
 msgstr ""
-"ドラッグで、黒、グレイ、およびホワイトポイントを設定します。 Lチャネルで動作"
-"します"
+"ドラッグで、黒、グレイ、およびホワイトポイントを設定します。 Lチャンネルで動"
+"作します"
 
 #: ../src/iop/levels.c:287
 msgid "apply auto levels"
@@ -4544,19 +4562,19 @@ msgstr "露光オーバー"
 msgid "unbreak input profile"
 msgstr "入力プロファイルの修復"
 
-#: ../src/iop/profile_gamma.c:122 ../src/iop/tonecurve.c:242
+#: ../src/iop/profile_gamma.c:125 ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "リニア"
 
-#: ../src/iop/profile_gamma.c:123
+#: ../src/iop/profile_gamma.c:126
 msgid "linear part"
 msgstr "リニア部分"
 
-#: ../src/iop/profile_gamma.c:136
+#: ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr "ガンマ"
 
-#: ../src/iop/profile_gamma.c:137
+#: ../src/iop/profile_gamma.c:140
 msgid "gamma exponential factor"
 msgstr "ガンマの指数係数"
 
@@ -4594,7 +4612,7 @@ msgstr "幅"
 msgid "the fill-light in EV"
 msgstr "補助光 .EV"
 
-#: ../src/iop/relight.c:391 ../src/libs/metadata_view.c:91
+#: ../src/iop/relight.c:391 ../src/libs/metadata_view.c:94
 msgid "width"
 msgstr "幅"
 
@@ -4745,7 +4763,7 @@ msgstr "ぼかしの明るさ"
 
 #: ../src/iop/soften.c:602
 msgid "the mix of effect"
-msgstr "効果をミックスします"
+msgstr "効果を合成します"
 
 #: ../src/iop/splittoning.c:85
 msgid "split toning"
@@ -4840,55 +4858,55 @@ msgstr "ストロークの数:"
 msgid "spot removal only supports up to 32 spots"
 msgstr "スポット除去は、32スポットまでサポートします"
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:80
 msgctxt "modulename"
 msgid "white balance"
 msgstr "ホワイトバランス"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "tint"
 msgstr "色かぶり補正"
 
-#: ../src/iop/temperature.c:97
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "temperature"
 msgstr "色温度"
 
-#: ../src/iop/temperature.c:385
+#: ../src/iop/temperature.c:387
 msgid "camera white balance"
 msgstr "カメラのホワイトバランス"
 
-#: ../src/iop/temperature.c:386
+#: ../src/iop/temperature.c:388
 msgid "spot white balance"
 msgstr "スポット・ホワイトバランス"
 
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:389
 msgid "passthrough"
 msgstr "パススルー"
 
-#: ../src/iop/temperature.c:731
+#: ../src/iop/temperature.c:733
 msgid "tint"
 msgstr "色かぶり補正"
 
-#: ../src/iop/temperature.c:732
+#: ../src/iop/temperature.c:734
 msgid "temperature"
 msgstr "色温度"
 
-#: ../src/iop/temperature.c:747
+#: ../src/iop/temperature.c:749
 msgid "choose white balance preset from camera"
 msgstr "カメラのホワイトバランスのプリセットを選択"
 
-#: ../src/iop/temperature.c:750
+#: ../src/iop/temperature.c:752
 msgid "finetune"
 msgstr "微調整"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:753
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f ミレッド"
 
-#: ../src/iop/temperature.c:755
+#: ../src/iop/temperature.c:757
 msgid "fine tune white balance preset"
 msgstr "プリセット ホワイトバランスの微調整"
 
@@ -5453,7 +5471,7 @@ msgid "session"
 msgstr "セッション"
 
 #: ../src/libs/capture.c:138 ../src/libs/collect.h:46
-#: ../src/libs/metadata_view.c:78 ../src/libs/tools/filter.c:126
+#: ../src/libs/metadata_view.c:81 ../src/libs/tools/filter.c:126
 msgid "filename"
 msgstr "ファイル名"
 
@@ -5575,7 +5593,7 @@ msgid "description"
 msgstr "説明"
 
 #: ../src/libs/collect.h:40 ../src/libs/import.c:497
-#: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:96
+#: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:99
 msgid "creator"
 msgstr "作成者"
 
@@ -5864,7 +5882,7 @@ msgstr "現在の設定でエクスポート (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:827 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1617
+#: ../src/views/darkroom.c:1624
 msgctxt "accel"
 msgid "export"
 msgstr "エクスポート"
@@ -5956,7 +5974,7 @@ msgstr "GPXファイルを解析し、選択された画像の位置を更新し
 msgid "histogram"
 msgstr "ヒストグラム"
 
-#: ../src/libs/histogram.c:109 ../src/libs/histogram.c:376
+#: ../src/libs/histogram.c:109 ../src/libs/histogram.c:379
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -5964,39 +5982,39 @@ msgstr ""
 "ドラッグで露光量変更,\n"
 "ダブルクリックでリセット"
 
-#: ../src/libs/histogram.c:351
+#: ../src/libs/histogram.c:354
 msgid "set histogram mode to logarithmic"
 msgstr "ヒストグラム·モードを対数に設定"
 
-#: ../src/libs/histogram.c:351
+#: ../src/libs/histogram.c:354
 msgid "set histogram mode to linear"
 msgstr "ヒストグラムモードをリニアに設定"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:359
 msgid "click to hide red channel"
 msgstr "クリックでレッド・チャンネル非表示"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:359
 msgid "click to show red channel"
 msgstr "クリックでレッド・チャンネル表示"
 
-#: ../src/libs/histogram.c:361
+#: ../src/libs/histogram.c:364
 msgid "click to hide green channel"
 msgstr "クリックでグリーン・チャンネル非表示"
 
-#: ../src/libs/histogram.c:361
+#: ../src/libs/histogram.c:364
 msgid "click to show green channel"
 msgstr "クリックでグリーン・チャンネル表示"
 
-#: ../src/libs/histogram.c:366
+#: ../src/libs/histogram.c:369
 msgid "click to hide blue channel"
 msgstr "クリックでブルー・チャンネル非表示"
 
-#: ../src/libs/histogram.c:366
+#: ../src/libs/histogram.c:369
 msgid "click to show blue channel"
 msgstr "クリックでブルー・チャンネル表示"
 
-#: ../src/libs/histogram.c:371
+#: ../src/libs/histogram.c:374
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -6354,7 +6372,7 @@ msgstr "ID"
 msgid "overlay another image over the live view"
 msgstr "ライブビューで別の画像をオーバーレイする"
 
-#: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:77
+#: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:80
 msgid "image id"
 msgstr "画像 ID"
 
@@ -6533,42 +6551,56 @@ msgid "All rights reserved."
 msgstr "All rights reserved."
 
 #. internal
-#: ../src/libs/metadata_view.c:76
+#: ../src/libs/metadata_view.c:79
 msgid "filmroll"
 msgstr "フィルムロール"
 
-#: ../src/libs/metadata_view.c:79
+#: ../src/libs/metadata_view.c:82
 msgid "full path"
 msgstr "フルパス"
 
-#: ../src/libs/metadata_view.c:88
+#: ../src/libs/metadata_view.c:91
 msgid "focus distance"
 msgstr "被写体までの距離"
 
-#: ../src/libs/metadata_view.c:90
+#: ../src/libs/metadata_view.c:93
 msgid "datetime"
 msgstr "日時"
 
-#: ../src/libs/metadata_view.c:92
+#: ../src/libs/metadata_view.c:95
 msgid "height"
 msgstr "高さ"
 
-#: ../src/libs/metadata_view.c:97
+#: ../src/libs/metadata_view.c:100
 msgid "copyright"
 msgstr "著作権"
 
 #. geotagging
-#: ../src/libs/metadata_view.c:100
+#: ../src/libs/metadata_view.c:103
 msgid "latitude"
 msgstr "緯度"
 
-#: ../src/libs/metadata_view.c:101
+#: ../src/libs/metadata_view.c:104
 msgid "longitude"
 msgstr "経度"
 
-#: ../src/libs/metadata_view.c:113
+#: ../src/libs/metadata_view.c:116
 msgid "image information"
 msgstr "画像情報"
+
+#: ../src/libs/metadata_view.c:209
+#, c-format
+msgid ""
+"double click to jump to film roll\n"
+"%s"
+msgstr ""
+"ダブルクリックでフィルムロールへ移動\n"
+"%s"
+
+#: ../src/libs/metadata_view.c:403
+msgctxt "accel"
+msgid "jump to film roll"
+msgstr "フィルムロールへ移動"
 
 #: ../src/libs/modulegroups.c:69
 msgid "modulegroups"
@@ -6610,22 +6642,27 @@ msgstr "他のモジュール"
 msgid "navigation"
 msgstr "ナビゲーション"
 
-#: ../src/libs/recentcollect.c:50
+#: ../src/libs/recentcollect.c:54
 msgid "recently used collections"
 msgstr "最近開いたコレクション"
 
-#: ../src/libs/recentcollect.c:88
+#: ../src/libs/recentcollect.c:90
+msgctxt "accel"
+msgid "jump back to previous collection"
+msgstr "前のコレクションに戻る"
+
+#: ../src/libs/recentcollect.c:119
 #, c-format
 msgid " and "
 msgstr " and "
 
-#: ../src/libs/recentcollect.c:91
+#: ../src/libs/recentcollect.c:122
 #, c-format
 msgid " or "
 msgstr " or "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:94
+#: ../src/libs/recentcollect.c:125
 #, c-format
 msgid " but not "
 msgstr " but not "
@@ -6827,7 +6864,7 @@ msgstr[1] ""
 msgid "delete tag?"
 msgstr "タグを削除しますか？"
 
-#: ../src/libs/tagging.c:416
+#: ../src/libs/tagging.c:417
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -6835,27 +6872,27 @@ msgstr ""
 "添付されたタグ、\n"
 "ダブルクリックで取り除きます"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:424
 msgid "attach"
 msgstr "添付"
 
-#: ../src/libs/tagging.c:425
+#: ../src/libs/tagging.c:426
 msgid "attach tag to all selected images"
 msgstr "選択したすべての画像にタグを添付します"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:431
 msgid "detach"
 msgstr "除外"
 
-#: ../src/libs/tagging.c:432
+#: ../src/libs/tagging.c:433
 msgid "detach tag from all selected images"
 msgstr "選択された全ての画像からタグを取り除きます"
 
-#: ../src/libs/tagging.c:445
+#: ../src/libs/tagging.c:446
 msgid "enter tag name"
 msgstr "タグ名を入力"
 
-#: ../src/libs/tagging.c:473
+#: ../src/libs/tagging.c:474
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -6863,11 +6900,11 @@ msgstr ""
 "関連付けられたタグ、 \n"
 "ダブルクリックで添付"
 
-#: ../src/libs/tagging.c:480
+#: ../src/libs/tagging.c:481
 msgid "new"
 msgstr "新規"
 
-#: ../src/libs/tagging.c:482
+#: ../src/libs/tagging.c:483
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -6875,7 +6912,7 @@ msgstr ""
 "入力した名前で\n"
 "新しいタグを作成します"
 
-#: ../src/libs/tagging.c:489
+#: ../src/libs/tagging.c:490
 msgid "delete selected tag"
 msgstr "選択されたタグを削除します"
 
@@ -6967,37 +7004,37 @@ msgstr "フィルムストリップ"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1591
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1598
 msgctxt "accel"
-msgid "rate desert"
+msgid "rate 0"
 msgstr "星なし"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1592
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1599
 msgctxt "accel"
 msgid "rate 1"
 msgstr "星一つ"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1593
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1600
 msgctxt "accel"
 msgid "rate 2"
 msgstr "星二つ"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1594
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1601
 msgctxt "accel"
 msgid "rate 3"
 msgstr "星三つ"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1595
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1602
 msgctxt "accel"
 msgid "rate 4"
 msgstr "星四つ"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1596
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1603
 msgctxt "accel"
 msgid "rate 5"
 msgstr "星五つ"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1597
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1604
 msgctxt "accel"
 msgid "rate reject"
 msgstr "評価除外"
@@ -7035,27 +7072,27 @@ msgstr "画像を複製"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1617
 msgctxt "accel"
 msgid "color red"
 msgstr "カラー レッド"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1618
 msgctxt "accel"
 msgid "color yellow"
 msgstr "カラー イエロー"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1612
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1619
 msgctxt "accel"
 msgid "color green"
 msgstr "カラー グリーン"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1613
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1620
 msgctxt "accel"
 msgid "color blue"
 msgstr "カラー ブルー"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1614
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1621
 msgctxt "accel"
 msgid "color purple"
 msgstr "カラー パープル"
@@ -7210,7 +7247,7 @@ msgstr "テザリングをサポートするカメラがありません..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1605
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1612
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "フィルムストリップ切り換え"
@@ -7285,112 +7322,112 @@ msgid "threshold of what shall be considered overexposed"
 msgstr "露光オーバーと見なされる、しきい値"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1609
+#: ../src/views/darkroom.c:1616
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "ズームアップ"
 
-#: ../src/views/darkroom.c:1611
+#: ../src/views/darkroom.c:1618
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "ズーム フィル"
 
-#: ../src/views/darkroom.c:1613
+#: ../src/views/darkroom.c:1620
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "ズーム フィット"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1621
+#: ../src/views/darkroom.c:1628
 msgctxt "accel"
 msgid "image forward"
 msgstr "次の画像"
 
-#: ../src/views/darkroom.c:1623
+#: ../src/views/darkroom.c:1630
 msgctxt "accel"
 msgid "image back"
 msgstr "前の画像"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1627
+#: ../src/views/darkroom.c:1634
 msgctxt "accel"
 msgid "overexposed"
 msgstr "露光オーバー"
 
-#: ../src/views/lighttable.c:407
+#: ../src/views/lighttable.c:433
 msgid "there are no images in this collection"
 msgstr "このコレクションには画像がありません"
 
-#: ../src/views/lighttable.c:409
+#: ../src/views/lighttable.c:435
 msgid "if you have not imported any images yet"
 msgstr "画像をまだ何もインポートしていない場合"
 
-#: ../src/views/lighttable.c:411
+#: ../src/views/lighttable.c:437
 msgid "you can do so in the import module"
 msgstr "インポート·モジュールで行うことができます"
 
-#: ../src/views/lighttable.c:418
+#: ../src/views/lighttable.c:444
 msgid "try to relax the filter settings in the top panel"
 msgstr "上部パネルの絞り込みの設定を緩和してみてください"
 
-#: ../src/views/lighttable.c:425
+#: ../src/views/lighttable.c:451
 msgid "or add images in the collection module in the left panel"
 msgstr "または左側パネルのコレクション・モジュールに画像を追加"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1600
+#: ../src/views/lighttable.c:1607
 msgctxt "accel"
 msgid "navigate up"
 msgstr "ナビゲート 上"
 
-#: ../src/views/lighttable.c:1602
+#: ../src/views/lighttable.c:1609
 msgctxt "accel"
 msgid "navigate down"
 msgstr "ナビゲート 下"
 
-#: ../src/views/lighttable.c:1604
+#: ../src/views/lighttable.c:1611
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "ナビゲート ページ・アップ"
 
-#: ../src/views/lighttable.c:1606
+#: ../src/views/lighttable.c:1613
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "ナビゲート ページ・ダウン"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1617
+#: ../src/views/lighttable.c:1624
 msgctxt "accel"
 msgid "scroll up"
 msgstr "スクロール アップ"
 
-#: ../src/views/lighttable.c:1619
+#: ../src/views/lighttable.c:1626
 msgctxt "accel"
 msgid "scroll down"
 msgstr "スクロール ダウン"
 
-#: ../src/views/lighttable.c:1621
+#: ../src/views/lighttable.c:1628
 msgctxt "accel"
 msgid "scroll left"
 msgstr "スクロール 左"
 
-#: ../src/views/lighttable.c:1623
+#: ../src/views/lighttable.c:1630
 msgctxt "accel"
 msgid "scroll right"
 msgstr "スクロール 右"
 
-#: ../src/views/lighttable.c:1625
+#: ../src/views/lighttable.c:1632
 msgctxt "accel"
 msgid "scroll center"
 msgstr "スクロール 中央"
 
-#: ../src/views/lighttable.c:1627
+#: ../src/views/lighttable.c:1634
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "グリッドに画像を再配置"
 
 #. Preview key
-#: ../src/views/lighttable.c:1631
+#: ../src/views/lighttable.c:1638
 msgctxt "accel"
 msgid "preview"
 msgstr "プレビュー"
@@ -7408,6 +7445,10 @@ msgstr "元に戻す"
 msgctxt "accel"
 msgid "redo"
 msgstr "やり直す"
+
+#~ msgctxt "accel"
+#~ msgid "rate desert"
+#~ msgstr "星なし"
 
 #~ msgid " (needs a restart) "
 #~ msgstr "(要再起動)"
