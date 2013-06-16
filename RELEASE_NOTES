@@ -10,3 +10,4 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+- preview pipe now uses the output profile instead of the display profile.
