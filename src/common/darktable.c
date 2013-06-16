@@ -101,6 +101,7 @@ static int usage(const char *argv0)
   printf(" [--configdir <user config directory>]");
   printf(" [--cachedir <user cache directory>]");
   printf(" [--localedir <locale directory>]");
+  printf(" [--conf <key>=<value>]");
   printf("\n");
   return 1;
 }
@@ -385,7 +386,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   darktable.num_openmp_threads = omp_get_num_procs();
 #endif
   darktable.unmuted = 0;
-  GSList *images_to_load = NULL;
+  GSList *images_to_load = NULL, *config_override = NULL;
   for(int k=1; k<argc; k++)
   {
     if(argv[k][0] == '-')
@@ -457,6 +458,20 @@ int dt_init(int argc, char *argv[], const int init_gui)
         printf("[dt_init] using %d threads for openmp parallel sections\n", darktable.num_openmp_threads);
         k ++;
       }
+      else if(!strcmp(argv[k], "--conf"))
+      {
+        gchar *keyval = g_strdup(argv[++k]), *c = keyval;
+        while(*c != '=' && c < keyval + strlen(keyval)) c++;
+        if(*c == '=' && *(c+1) != '\0')
+        {
+          *c++ = '\0';
+          dt_conf_string_entry_t *entry = (dt_conf_string_entry_t*)g_malloc(sizeof(dt_conf_string_entry_t));
+          entry->key = g_strdup(keyval);
+          entry->value = g_strdup(c);
+          config_override = g_slist_append(config_override, entry);
+        }
+        g_free(keyval);
+      }
     }
 #ifndef MAC_INTEGRATION
     else
@@ -517,7 +532,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
   memset(darktable.conf, 0, sizeof(dt_conf_t));
-  dt_conf_init(darktable.conf, filename);
+  dt_conf_init(darktable.conf, filename, config_override);
+  g_slist_free_full(config_override, g_free);
 
   // set the interface language
   const gchar* lang = dt_conf_get_string("ui_last/gui_language");
