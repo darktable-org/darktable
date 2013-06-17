@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(VERSION 2.6)
 
 option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
+option(USE_CAMERA_IMPORT "Use gphoto2 to import images from camera directly. Unmaintained and known to occasionally delete your images." OFF)
 option(USE_NLS "Build Native Language Support (using gettext)" ON)
 option(USE_COLORD "Enable colord support" ON)
 option(USE_GEO "Build geotagging parts" ON)
@@ -220,6 +221,10 @@ endif(GTK3_MIGRATION_CHECKS)
 # setup some theme specific variables
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
+
+if(USE_CAMERA_IMPORT)
+  add_definitions("-DUSE_CAMERA_IMPORT=1")
+endif(USE_CAMERA_IMPORT)
 
 # we need some specific functions:
 IF(CMAKE_SYSTEM MATCHES "SunOS.*")

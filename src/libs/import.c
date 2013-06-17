@@ -34,7 +34,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gdk/gdkkeysyms.h>
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
 #include "gui/camera_import_dialog.h"
 #endif
 #include "libs/lib.h"
@@ -42,7 +42,7 @@
 DT_MODULE(1)
 
 
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
 /** helper function to update ui with available cameras and ther actionbuttons */
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 #endif
@@ -50,7 +50,7 @@ static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 
 typedef struct dt_lib_import_t
 {
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
   dt_camctl_listener_t camctl_listener;
 #endif
   GtkButton *import_file;
@@ -128,7 +128,7 @@ void connect_key_accels(dt_lib_module_t *self)
                                 GTK_WIDGET(d->import_camera));
 }
 
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
 
 /* scan for new devices button callback */
 static void _lib_import_scan_devices_callback(GtkButton *button,gpointer data)
@@ -318,7 +318,7 @@ static void _camctl_camera_control_status_callback(dt_camctl_status_t status,voi
   if(i_have_lock) dt_control_gdk_unlock();
 }
 
-#endif // HAVE_GPHOTO2
+#endif // USE_CAMERA_IMPORT
 
 static void _lib_import_metadata_changed(GtkWidget *widget, GtkComboBox *box)
 {
@@ -839,7 +839,7 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_import_folder_callback),
                     self);
 
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_vbox_new(FALSE,5));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
@@ -857,7 +857,7 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-#ifdef HAVE_GPHOTO2
+#ifdef USE_CAMERA_IMPORT
   dt_lib_import_t *d = (dt_lib_import_t*)self->data;
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener );
