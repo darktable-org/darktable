@@ -224,10 +224,6 @@ endif(GTK3_MIGRATION_CHECKS)
 set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
 
-if(USE_CAMERA_IMPORT)
-  add_definitions("-DUSE_CAMERA_IMPORT=1")
-endif(USE_CAMERA_IMPORT)
-
 # we need some specific functions:
 IF(CMAKE_SYSTEM MATCHES "SunOS.*")
 add_definitions("-D_XOPEN_SOURCE=600")
