@@ -131,6 +131,9 @@ if(USE_CAMERA_SUPPORT)
   include_directories(${Gphoto2_INCLUDE_DIRS})
   list(APPEND LIBS ${Gphoto2_LIBRARIES})
   add_definitions(${Gphoto2_DEFINITIONS})
+  if(USE_CAMERA_IMPORT)
+    add_definitions("-DUSE_CAMERA_IMPORT=1")
+  endif(USE_CAMERA_IMPORT)
 endif(USE_CAMERA_SUPPORT)
 
 # INotify isn't used anymore as it seems
