@@ -527,6 +527,7 @@ guess_font_size()
       while(*c == ' ' || *c == '\t') c++;
       if(!strncmp(c, "font_name", 9))
       {
+        fclose(f);
         // skip all to = then second " (end)
         while(*c != '=' && *c != 0) c++;
         while(*c != '"' && *c != 0) c++;
@@ -538,10 +539,8 @@ guess_font_size()
         {
           int fontsize = (int)atol(c);
           // fprintf(stderr, "[bauhaus] guessing gtk font size of %d pt\n", fontsize);
-          fclose(f);
           if(fontsize > 0) return fontsize;
         }
-        fclose(f);
         return def;
       }
     }

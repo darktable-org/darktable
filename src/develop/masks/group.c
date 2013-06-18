@@ -354,7 +354,11 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   int fww = fw*scale;
   int fyy = fy*scale;
   int fhh = fh*scale;
-  if (fxx>roi[0]+roi[2]) return 1;
+  if (fxx>roi[0]+roi[2])
+  {
+    free(fm);
+    return 1;
+  }
 
   if (fxx<roi[0]) fww += fxx-roi[0], fxx=roi[0];
   if (fww+fxx>=roi[0]+roi[2]) fww = roi[0]+roi[2]-fxx-1;

@@ -425,6 +425,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
   if(parameters.cp_cinema)
   {
     cinema_setup_encoder(&parameters,image,rates);
+    free(rates);
   }
 
   /* encode the destination image */

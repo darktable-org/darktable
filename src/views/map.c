@@ -336,6 +336,7 @@ map_changed_failure:
         g_object_unref(source);
       if(thumb)
         g_object_unref(thumb);
+      free(scratchmem);
       free(rgbbuf);
     }
     else
@@ -439,6 +440,7 @@ map_motion_failure:
         g_object_unref(source);
       if(thumb)
         g_object_unref(thumb);
+      free(scratchmem);
       free(rgbbuf);
     }
 
