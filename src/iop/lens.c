@@ -105,10 +105,14 @@ static char*
 _lens_sanitize(const char *orig_lens)
 {
   char *found_or = strstr(orig_lens, " or ");
+  char *found_parenthesis = strstr(orig_lens, " (");
 
-  if (found_or)
+  if (found_or || found_parenthesis)
   {
-    size_t pos = (size_t)(found_or - orig_lens);
+    size_t pos_or = (size_t)(found_or - orig_lens);
+    size_t pos_parenthesis = (size_t)(found_parenthesis - orig_lens);
+
+    size_t pos = pos_or < pos_parenthesis ? pos_or : pos_parenthesis;
 
     char *new_lens = (char*) malloc(pos+1);
 
