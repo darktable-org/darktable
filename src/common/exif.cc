@@ -768,6 +768,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
     Exiv2::XmpData &xmpData = image->xmpData();
     res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
 
+    // Initialize size - don't wait for full raw to be loaded to get this
+    // information. If use_embedded_thumbnail is set, it will take a 
+    // change in development history to have this information
+    img->height = image->pixelHeight();
+    img->width = image->pixelWidth();
+
     return res?0:1;
   }
   catch (Exiv2::AnyError& e)
