@@ -2250,11 +2250,11 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
 
     *n = *d;  // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
-    n->mask_mode |= ((o->blendif & DEVELOP_BLENDIF_active) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
+    n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->blendif = o->blendif & 0xff;  // only just in case: knock out all bits which were undefined in version 2; also switch off active bit
+    n->blendif = o->blendif & 0xff;  // only just in case: knock out all bits which were undefined in version 2; also switch off old "active" bit
     for(int i=0; i<(4*8); i++)
       n->blendif_parameters[i] = o->blendif_parameters[i];
 
@@ -2271,11 +2271,11 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
 
     *n = *d;  // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
-    n->mask_mode |= ((o->blendif & DEVELOP_BLENDIF_active) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
+    n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
-    n->blendif = o->blendif & ~DEVELOP_BLENDIF_active;
+    n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);  // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, 4*DEVELOP_BLENDIF_SIZE*sizeof(float));
 
     return 0;
@@ -2291,12 +2291,12 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
 
     *n = *d;  // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
-    n->mask_mode |= ((o->blendif & DEVELOP_BLENDIF_active) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
+    n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED)) ? DEVELOP_MASK_CONDITIONAL : 0;
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->radius = o->radius;
-    n->blendif = o->blendif & ~DEVELOP_BLENDIF_active;
+    n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);  // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, 4*DEVELOP_BLENDIF_SIZE*sizeof(float));
 
     return 0;
