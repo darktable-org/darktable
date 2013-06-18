@@ -104,7 +104,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ONE_INSTANCE;
+  return 0;
 }
 
 
