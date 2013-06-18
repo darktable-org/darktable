@@ -111,15 +111,22 @@ _lens_sanitize(const char *orig_lens)
   {
     size_t pos_or = (size_t)(found_or - orig_lens);
     size_t pos_parenthesis = (size_t)(found_parenthesis - orig_lens);
-
     size_t pos = pos_or < pos_parenthesis ? pos_or : pos_parenthesis;
 
-    char *new_lens = (char*) malloc(pos+1);
+    if (pos > 0)
+    {
+      char *new_lens = (char*) malloc(pos+1);
 
-    strncpy(new_lens, orig_lens, pos);
-    new_lens[pos] = '\0';
+      strncpy(new_lens, orig_lens, pos);
+      new_lens[pos] = '\0';
 
-    return new_lens;
+      return new_lens;
+    }
+    else
+    {
+      char *new_lens = strdup(orig_lens);
+      return new_lens;
+    }
   }
   else
   {
