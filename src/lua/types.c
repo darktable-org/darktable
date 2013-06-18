@@ -271,9 +271,9 @@ void dt_lua_autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int inde
   memcpy(cout,udata,luaA_type_size(type_id));
 }
 
-void dt_lua_register_type_callback_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,...)
+void dt_lua_register_type_callback_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,...)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getsubtable(L,-1,"__get");
   luaL_getsubtable(L,-2,"__set");
   va_list key_list;
@@ -298,9 +298,9 @@ void dt_lua_register_type_callback_typeid(lua_State* L,const char* type_name,lua
   va_end(key_list);
   lua_pop(L,3);
 }
-void dt_lua_register_type_callback_list_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char**list)
+void dt_lua_register_type_callback_list_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,const char**list)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getsubtable(L,-1,"__get");
   luaL_getsubtable(L,-2,"__set");
   const char** key = list;
@@ -323,9 +323,9 @@ void dt_lua_register_type_callback_list_typeid(lua_State* L,const char* type_nam
   lua_pop(L,3);
 }
 
-void dt_lua_register_type_callback_number_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction length)
+void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction length)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   lua_pushcfunction(L,index);
   lua_setfield(L,-2,"__number_index");
   lua_pushcfunction(L,newindex);
@@ -344,9 +344,9 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,const char* type_n
 
 }
 
-void dt_lua_register_type_callback_default_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
+void dt_lua_register_type_callback_default_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   lua_pushcfunction(L,index);
   lua_setfield(L,-2,"__default_index");
   lua_pushcfunction(L,newindex);
@@ -368,9 +368,9 @@ static int lautoc_struct_newindex(lua_State *L)
   return 0;
 }
 
-void dt_lua_register_type_callback_type_typeid(lua_State* L,const char* type_name,lua_CFunction index, lua_CFunction newindex,const char* struct_type_name)
+void dt_lua_register_type_callback_type_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,luaA_Type struct_type_id)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getsubtable(L,-1,"__get");
   luaL_getsubtable(L,-2,"__set");
   if(!index && !newindex)
@@ -378,20 +378,20 @@ void dt_lua_register_type_callback_type_typeid(lua_State* L,const char* type_nam
     index = lautoc_struct_index;
     newindex = lautoc_struct_newindex;
   }
-  const char* member = luaA_struct_next_member_name_typeid(L,luaA_type_find(struct_type_name),LUAA_INVALID_MEMBER_NAME);
+  const char* member = luaA_struct_next_member_name_typeid(L,struct_type_id,LUAA_INVALID_MEMBER_NAME);
   while(member != LUAA_INVALID_MEMBER_NAME)
   {
-    lua_pushnumber(L,luaA_type_find(struct_type_name));
+    lua_pushnumber(L,struct_type_id);
     lua_pushcclosure(L,index,1);
     lua_setfield(L,-3,member);
 
     if(newindex)
     {
-      lua_pushnumber(L,luaA_type_find(struct_type_name));
+      lua_pushnumber(L,struct_type_id);
       lua_pushcclosure(L,newindex,1);
       lua_setfield(L,-2,member);
     }
-    member = luaA_struct_next_member_name_typeid(L,luaA_type_find(struct_type_name),member);
+    member = luaA_struct_next_member_name_typeid(L,struct_type_id,member);
   }
   lua_pop(L,3);
 }
@@ -402,9 +402,9 @@ static int type_const_index(lua_State* L)
   lua_pushvalue(L,lua_upvalueindex(1));
   return 1;
 }
-void dt_lua_register_type_callback_stack_typeid(lua_State* L,const char* type_name,const char* name)
+void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,const char* name)
 {
-  luaL_getmetatable(L,type_name); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getsubtable(L,-1,"__get");
   luaL_getsubtable(L,-2,"__set");
   lua_pushvalue(L,-4);
@@ -413,19 +413,18 @@ void dt_lua_register_type_callback_stack_typeid(lua_State* L,const char* type_na
   lua_pop(L,4);
 }
 
-luaA_Type dt_lua_init_type_typeid(lua_State* L, const char*type_name,size_t size)
+luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
 {
-  luaA_Type my_type = luaA_type_add(type_name,size);
-  luaL_newmetatable(L,type_name);
+  luaL_newmetatable(L,luaA_type_name(type_id));
 
-  lua_pushstring(L,type_name);
+  lua_pushstring(L,luaA_type_name(type_id));
   lua_setfield(L,-2,"__luaA_TypeName");
 
-  lua_pushnumber(L,my_type);
+  lua_pushnumber(L,type_id);
   lua_setfield(L,-2,"__luaA_Type");
 
 
-  luaA_conversion_typeid(my_type,dt_lua_autotype_full_pushfunc,dt_lua_autotype_tofunc);
+  luaA_conversion_typeid(type_id,dt_lua_autotype_full_pushfunc,dt_lua_autotype_tofunc);
 
   lua_pushcfunction(L,dt_lua_autotype_next);
   lua_setfield(L,-2,"__next");
@@ -446,7 +445,7 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, const char*type_name,size_t size
   lua_setfield(L,-2,"__set");
   // remove the metatable
   lua_pop(L,1);
-  return my_type;
+  return type_id;
 }
 
 

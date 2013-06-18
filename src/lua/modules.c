@@ -122,12 +122,12 @@ static int write_image(lua_State *L)
   return 1;
 }
 
-void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* module, char*type_name)
+void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* module, luaA_Type type_id)
 {
-  dt_lua_register_type_callback_list_typeid(L,type_name,format_index,NULL,format_fields_name);
+  dt_lua_register_type_callback_list_typeid(L,type_id,format_index,NULL,format_fields_name);
   lua_pushcfunction(L,write_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_name,"write_image");
-  luaL_getmetatable(L,type_name);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"write_image");
+  luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
   lua_pushstring(L,"format");
@@ -244,10 +244,10 @@ static int get_storage_params(lua_State *L)
   return 1;
 }
 
-void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* module, char*type_name)
+void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
 {
-  dt_lua_register_type_callback_list_typeid(L,type_name,storage_index,NULL,storage_fields_name);
-  luaL_getmetatable(L,type_name);
+  dt_lua_register_type_callback_list_typeid(L,type_id,storage_index,NULL,storage_fields_name);
+  luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
   lua_pushstring(L,"storage");

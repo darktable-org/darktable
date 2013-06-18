@@ -298,11 +298,12 @@ static int register_storage(lua_State *L)
 
   char tmp[1024];
   snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
-  storage->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state,tmp,storage->params_size(storage));
-  luaA_struct_typeid(darktable.lua_state,luaA_type_find(tmp));
+  luaA_Type type_id = luaA_type_add(tmp,storage->params_size(storage));
+  storage->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state,type_id);
+  luaA_struct_typeid(darktable.lua_state,type_id);
   //dt_lua_register_type_callback_default_typeid(L,tmp,extra_data_index,extra_data_newindex,extra_data_next);
   //dt_lua_register_type_callback_number_typeid(L,tmp,extra_data_index,extra_data_newindex,extra_data_length);
-  dt_lua_register_storage_typeid(darktable.lua_state,storage,tmp);
+  dt_lua_register_storage_typeid(darktable.lua_state,storage,type_id);
 
   dt_imageio_insert_storage(storage);
 
