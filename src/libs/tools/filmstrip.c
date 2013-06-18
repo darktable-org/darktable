@@ -1014,6 +1014,7 @@ _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext *context, gp
         g_object_unref(source);
       if(scaled)
         g_object_unref(scaled);
+      free(scratchmem);
       g_free(rgbbuf);
     }
 
