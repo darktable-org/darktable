@@ -304,17 +304,23 @@ void dt_masks_read_forms(dt_develop_t *dev)
     }
     else if(form->type & DT_MASKS_PATH)
     {
-      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb_points*sizeof(dt_masks_point_path_t));
-      memcpy(ptbuf, sqlite3_column_blob(stmt, 5), nb_points*sizeof(dt_masks_point_path_t));
+      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)sqlite3_column_blob(stmt, 5);
       for (int i=0; i<nb_points; i++)
-        form->points = g_list_append(form->points,ptbuf+i);
+      {
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)malloc(sizeof(dt_masks_point_path_t));
+        memcpy(point, ptbuf+i, sizeof(dt_masks_point_path_t));
+        form->points = g_list_append(form->points,point);
+      }
     }
     else if(form->type & DT_MASKS_GROUP)
     {
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)malloc(nb_points*sizeof(dt_masks_point_group_t));
-      memcpy(ptbuf, sqlite3_column_blob(stmt, 5), nb_points*sizeof(dt_masks_point_group_t));
+      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)sqlite3_column_blob(stmt, 5);
       for (int i=0; i<nb_points; i++)
-        form->points = g_list_append(form->points,ptbuf+i);
+      {
+        dt_masks_point_group_t *point = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        memcpy(point, ptbuf+i, sizeof(dt_masks_point_group_t));
+        form->points = g_list_append(form->points,point);
+      }
     }
 
     //and we can add the form to the list
@@ -462,7 +468,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
 void dt_masks_free_form(dt_masks_form_t *form)
 {
   if (!form) return;
-  g_list_free(form->points);
+  g_list_free_full(form->points, free);
   free(form);
   form = NULL;
 }
@@ -1321,6 +1327,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   
   //and we save all that
   dt_masks_write_forms(dev);
+  free(used);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
