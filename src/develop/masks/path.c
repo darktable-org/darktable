@@ -869,7 +869,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
         bx /= 3.0*surf;
         by /= 3.0*surf;
 
-        if (amount < 1.0 && surf < 0.00001) return 1;
+        if (amount < 1.0 && surf < 0.00001 && surf > -0.00001) return 1;
         
         //now we move each point
         for(int k = 0; k < nb; k++)
