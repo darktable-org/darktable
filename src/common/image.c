@@ -402,6 +402,7 @@ int dt_image_altered(const uint32_t imgid)
     // FIXME: this is clearly a terrible way to determine which modules
     // are okay to still load the thumbnail and which aren't.
     // (that's currently the only use of this function)
+    if(!op) continue; // can happen while importing or something like that
     if(!strcmp(op, "basecurve")) continue;
     if(!strcmp(op, "sharpen")) continue;
     if(!strcmp(op, "dither")) continue;
