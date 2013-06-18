@@ -382,6 +382,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
     if(!image)
     {
       fprintf(stderr, "Error: opj_image_create() failed\n");
+      free(rates);
       return 1;
     }
 
@@ -413,6 +414,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
         break;
       default:
         fprintf(stderr, "Error: this shouldn't happen, there is no bit depth of %d for jpeg 2000 images.\n", prec);
+        free(rates);
         return 1;
     }
   }
