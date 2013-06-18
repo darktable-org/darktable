@@ -801,16 +801,10 @@ dt_view_image_expose(
   }
 
   dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip =
-    dt_mipmap_cache_get_matching_size(
-      darktable.mipmap_cache,
-      imgwd*width, imgwd*height);
-  dt_mipmap_cache_read_get(
-    darktable.mipmap_cache,
-    &buf,
-    imgid,
-    mip,
-    0);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
+                                                           imgwd*width, imgwd*height);
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
+
 #if DRAW_THUMB == 1
   float scale = 1.0;
   // decompress image, if necessary. if compression is off, scratchmem will be == NULL,
