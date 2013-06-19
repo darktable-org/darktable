@@ -114,8 +114,8 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
   // just carry over other 3 channels:
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float near_clip = 0.9f*clip;
-  float maxp = 0.f;
-  float blend = 0.f;
+  float maxp = 0.0f;
+  float blend = 0.0f;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
@@ -130,7 +130,7 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
         }
       }
       if(blend > 0.0f)
-        pixel.x = blend*maxp + (1.f-blend)*pixel.x;
+        pixel.x = blend*maxp + (1.0f-blend)*pixel.x;
       break;
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
       pixel.x = fmin(clip, pixel.x);

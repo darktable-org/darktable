@@ -41,7 +41,8 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   if(x >= width || y >= height) return;
 
   const int mult = 1<<scale;
-  float filter[5] = {1.0f/16.0f, 4.0f/16.0f, 6.0f/16.0f, 4.0f/16.0f, 1.0f/16.0f};
+  float filter[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };  // 1/16, 4/16, 6/16, 4/16, 1/16
+
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 sum = (float4)(0.0f);
