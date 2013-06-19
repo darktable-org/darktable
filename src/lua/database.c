@@ -118,19 +118,17 @@ int dt_lua_init_database(lua_State * L)
 {
 
   /* database type */
-  dt_lua_init_type(L,dt_lua_database_t);
-  dt_lua_register_type_callback_number(L,dt_lua_database_t,database_index,NULL,database_len);
-  lua_pushcfunction(L,dt_lua_duplicate_image);
-  dt_lua_register_type_callback_stack(L,dt_lua_database_t,"duplicate");
-  lua_pushcfunction(L,import_images);
-  dt_lua_register_type_callback_stack(L,dt_lua_database_t,"import");
-
-  /* darktable.images() */
   dt_lua_push_darktable_lib(L);
-  void * tmp= NULL;
-  luaA_push(L,dt_lua_database_t,&tmp);
+  luaA_Type type_id = dt_lua_init_singleton(L,"image_database");
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
+
+  dt_lua_register_type_callback_number_typeid(L,type_id,database_index,NULL,database_len);
+  lua_pushcfunction(L,dt_lua_duplicate_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcfunction(L,import_images);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+
   return 0;
 }
 

@@ -449,6 +449,23 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
 }
 
 
+luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
+{
+  char tmp_name[1024];
+  snprintf(tmp_name,1024,"dt_lua_singleton_%s",unique_name);
+
+  luaA_Type type_id = dt_lua_init_type_typeid(L,luaA_type_add(tmp_name,sizeof(void*)));
+  void *tmp=NULL;
+  luaA_push_typeid(L,type_id,&tmp);
+  lua_getmetatable(L,-1);
+  lua_pushboolean(L,true);
+  lua_setfield(L,-2,"__is_singleton");
+  lua_pop(L,1);
+
+  return type_id;
+}
+
+
 void dt_lua_initialize_types(lua_State *L)
 {
   luaA_conversion(char_20,push_char_array,to_char20);

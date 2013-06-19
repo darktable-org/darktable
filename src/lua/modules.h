@@ -40,8 +40,6 @@ void dt_lua_register_storage_typeid(lua_State* L, struct dt_imageio_module_stora
 #define dt_lua_register_module_member(L,storage,struct_type,member,member_type) \
   luaA_struct_member_typeid(L,storage->parameter_lua_type,#member,luaA_type_id(member_type),offsetof(struct_type,member))
 
-typedef void* dt_lua_module_format_table_t;
-typedef void* dt_lua_module_storage_table_t;
 int dt_lua_init_modules(lua_State *L);
 
 #endif

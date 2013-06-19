@@ -94,18 +94,16 @@ static int act_on_cb(lua_State *L)
 int dt_lua_init_gui(lua_State * L)
 {
 
-  dt_lua_push_darktable_lib(L);
   /* images */
-  typedef void* dt_lua_gui_lib;
-  void* tmp = NULL;
-  dt_lua_init_type(L,dt_lua_gui_lib);
-  lua_pushcfunction(L,selection_cb);
-  dt_lua_register_type_callback_stack(L,dt_lua_gui_lib,"selection");
-  dt_lua_register_type_callback(L,dt_lua_gui_lib,hovered_cb,NULL,"hovered",NULL);
-  dt_lua_register_type_callback(L,dt_lua_gui_lib,act_on_cb,NULL,"action_images",NULL);
-  luaA_push(L,dt_lua_gui_lib,&tmp);
+  dt_lua_push_darktable_lib(L);
+  luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib");
   lua_setfield(L,-2,"gui");
   lua_pop(L,1);
+
+  lua_pushcfunction(L,selection_cb);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
+  dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);
+  dt_lua_register_type_callback_typeid(L,type_id,act_on_cb,NULL,"action_images",NULL);
   return 0;
 }
 

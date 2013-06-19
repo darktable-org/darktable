@@ -134,7 +134,14 @@ void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* mod
   lua_setfield(L,-2,"__module_type");
   lua_pop(L,1); // pop the metatable
   // add to the table
-  dt_lua_register_type_callback(L,dt_lua_module_format_table_t,get_format_params,NULL,module->plugin_name,NULL);
+  dt_lua_push_darktable_lib(L);
+  dt_lua_goto_subtable(L,"modules");
+  dt_lua_goto_subtable(L,"format");
+  lua_getmetatable(L,-1);
+  lua_getfield(L,-1,"__luaA_Type");
+  luaA_Type format_table_type = luaL_checkint(L,-1);
+  dt_lua_register_type_callback_typeid(L,format_table_type,get_format_params,NULL,module->plugin_name,NULL);
+  lua_pop(L,3);
 };
 
 
@@ -254,23 +261,27 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
   lua_setfield(L,-2,"__module_type");
   lua_pop(L,1); // pop the metatable
   // add to the table
-  dt_lua_register_type_callback(L,dt_lua_module_storage_table_t,get_storage_params,NULL,module->plugin_name,NULL);
+  dt_lua_push_darktable_lib(L);
+  dt_lua_goto_subtable(L,"modules");
+  dt_lua_goto_subtable(L,"storage");
+  lua_getmetatable(L,-1);
+  lua_getfield(L,-1,"__luaA_Type");
+  luaA_Type storage_table_type = luaL_checkint(L,-1);
+  dt_lua_register_type_callback_typeid(L,storage_table_type,get_storage_params,NULL,module->plugin_name,NULL);
+  lua_pop(L,3);
 
 };
 
 int dt_lua_init_modules(lua_State *L)
 {
 
-  void*tmp=NULL;
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");
 
-  dt_lua_init_type(L,dt_lua_module_format_table_t);
-  luaA_push(L,dt_lua_module_format_table_t,&tmp);
+  dt_lua_init_singleton(L,"format_table");
   lua_setfield(L,-2,"format");
 
-  dt_lua_init_type(L,dt_lua_module_storage_table_t);
-  luaA_push(L,dt_lua_module_storage_table_t,&tmp);
+  dt_lua_init_singleton(L,"module_table");
   lua_setfield(L,-2,"storage");
 
   lua_pop(L,1);

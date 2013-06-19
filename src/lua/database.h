@@ -19,7 +19,6 @@
 #define DT_LUA_DATABASE_H
 #include "lua/lua.h"
 
-typedef void* dt_lua_database_t; // magic type used for the database singleton
 
 int dt_lua_duplicate_image(lua_State *L);
 int dt_lua_init_database(lua_State * L);

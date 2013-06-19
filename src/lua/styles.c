@@ -298,24 +298,21 @@ int dt_lua_init_styles(lua_State * L)
 
 
   /* style table type */
-  typedef void * dt_lua_style_table_t;
-  dt_lua_init_type(L,dt_lua_style_table_t);
-  dt_lua_register_type_callback_number(L,dt_lua_style_table_t,style_table_index,NULL,style_table_len);
-  lua_pushcfunction(L,style_duplicate);
-  dt_lua_register_type_callback_stack(L,dt_lua_style_table_t,"duplicate");
-  lua_pushcfunction(L,style_delete);
-  dt_lua_register_type_callback_stack(L,dt_lua_style_table_t,"delete");
-  lua_pushcfunction(L,dt_lua_style_create_from_image);
-  dt_lua_register_type_callback_stack(L,dt_lua_style_table_t,"create");
-  lua_pushcfunction(L,dt_lua_style_apply);
-  dt_lua_register_type_callback_stack(L,dt_lua_style_table_t,"apply");
-
-  /* darktable.images() */
   dt_lua_push_darktable_lib(L);
-  void * tmp= NULL;
-  luaA_push(L,dt_lua_style_table_t,&tmp);
+  luaA_Type type_id =  dt_lua_init_singleton(L,"style_table");
   lua_setfield(L,-2,"styles");
   lua_pop(L,1);
+
+  dt_lua_register_type_callback_number_typeid(L,type_id,style_table_index,NULL,style_table_len);
+  lua_pushcfunction(L,style_duplicate);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcfunction(L,style_delete);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcfunction(L,dt_lua_style_create_from_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"create");
+  lua_pushcfunction(L,dt_lua_style_apply);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"apply");
+
   return 0;
 }
 

@@ -228,28 +228,26 @@ int dt_lua_init_tags(lua_State*L)
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
 
-  dt_lua_push_darktable_lib(L);
   /* tags */
-  typedef void* dt_lua_tags_lib;
-  void* tmp = NULL;
-  dt_lua_init_type(L,dt_lua_tags_lib);
-  dt_lua_register_type_callback_number(L,dt_lua_tags_lib,tag_lib_index,NULL,tag_lib_length);
-  lua_pushcfunction(L,tag_lib_create);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"create");
-  lua_pushcfunction(L,tag_lib_find);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"find");
-  lua_pushcfunction(L,tag_delete);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"delete");
-  lua_pushcfunction(L,dt_lua_tag_attach);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"attach");
-  lua_pushcfunction(L,dt_lua_tag_detach);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"detach");
-  lua_pushcfunction(L,dt_lua_tag_get_attached);
-  dt_lua_register_type_callback_stack(L,dt_lua_tags_lib,"get_tags");
-  luaA_push(L,dt_lua_tags_lib,&tmp);
+  dt_lua_push_darktable_lib(L);
+  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table");
   lua_setfield(L,-2,"tags");
-
   lua_pop(L,1);
+
+  dt_lua_register_type_callback_number_typeid(L,type_id,tag_lib_index,NULL,tag_lib_length);
+  lua_pushcfunction(L,tag_lib_create);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"create");
+  lua_pushcfunction(L,tag_lib_find);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"find");
+  lua_pushcfunction(L,tag_delete);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
+  lua_pushcfunction(L,dt_lua_tag_attach);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"attach");
+  lua_pushcfunction(L,dt_lua_tag_detach);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"detach");
+  lua_pushcfunction(L,dt_lua_tag_get_attached);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"get_tags");
+
 
   return 0;
 }
