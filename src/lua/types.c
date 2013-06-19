@@ -331,14 +331,15 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,
   lua_pushcfunction(L,newindex);
   lua_setfield(L,-2,"__number_newindex");
   if(length) {
-    lua_pushcfunction(L,length);
-    lua_setfield(L,-2,"__len");
-  }
-  lua_pushcfunction(L,dt_lua_autotype_ipairs);
-  lua_setfield(L,-2,"__ipairs");
+	  lua_pushcfunction(L,length);
+	  lua_setfield(L,-2,"__len");
 
-  lua_pushcfunction(L,dt_lua_autotype_inext);
-  lua_setfield(L,-2,"__inext");
+	  lua_pushcfunction(L,dt_lua_autotype_ipairs);
+	  lua_setfield(L,-2,"__ipairs");
+
+	  lua_pushcfunction(L,dt_lua_autotype_inext);
+	  lua_setfield(L,-2,"__inext");
+  }
 
   lua_pop(L,1);
 
