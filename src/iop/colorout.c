@@ -553,7 +553,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   piece->process_cl_ready = 1;
 
   /* if we are exporting then check and set usage of override profile */
-  if (pipe->type == DT_DEV_PIXELPIPE_EXPORT || pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if (pipe->type == DT_DEV_PIXELPIPE_EXPORT)
   {
     if (overprofile && strcmp(overprofile, "image"))
       snprintf(p->iccprofile, DT_IOP_COLOR_ICC_LEN, "%s", overprofile);
