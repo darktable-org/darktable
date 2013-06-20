@@ -43,7 +43,7 @@ local function introspect_metatable(object,indent,name,known,ancestors)
 	if not M.debug then return "" end
 	if name == nil then name = "(unknown)" end
 	local metatable = getmetatable(object);
-	if metatable ==  nil then return "" end
+	if metatable ==  nil then return indent.."(no metatable)\n" end
 	local result = indent..name..".metatable"
 	table.insert(ancestors,name)
 	result = result..introspect_body(metatable,indent..indent_string,"metatable",known,ancestors)
