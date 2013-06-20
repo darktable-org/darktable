@@ -390,6 +390,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   /* get grid stride */
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  lib->images_in_row = iir;
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
@@ -792,6 +793,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   center = lib->center;
   track  = lib->track;
 
+  lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
   cairo_set_source_rgb (cr, .2, .2, .2);
