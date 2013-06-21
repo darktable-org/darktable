@@ -127,7 +127,7 @@ dt_imageio_open_rawspeed(
     m.reset();
 
     img->filters = 0;
-    if( r->subsampling.x > 1 || r->subsampling.y > 1 )
+    if( !r->isCFA )
     {
       img->flags &= ~DT_IMAGE_LDR;
       img->flags |= DT_IMAGE_RAW;
