@@ -1139,6 +1139,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   cl_mem dev_buf2 = NULL;
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
+  cl_mem dev_filter = NULL;
   cl_mem dev_detail[max_max_scale];
   for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
 
@@ -1187,6 +1188,13 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if(dev_tmp == NULL) goto error;
+
+  float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };  // 1/16, 4/16, 6/16, 4/16, 1/16
+  float mm[5][5];
+  for(int j=0; j<5; j++) for(int i=0; i<5; i++) mm[j][i] = m[i] * m[j];
+
+  dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*25, mm);
+  if(dev_filter == NULL) goto error;
 
   for(int k=0; k<max_scale; k++)
   {
@@ -1253,6 +1261,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int), (void *)&scale);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float), (void *)&inv_sigma2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 7, sizeof(cl_mem), (void *)&dev_filter);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -1388,6 +1397,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   if(dev_m != NULL)  dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   return TRUE;
@@ -1396,6 +1406,7 @@ error:
   if(dev_r != NULL) dt_opencl_release_mem_object(dev_r);
   if(dev_m != NULL)  dt_opencl_release_mem_object(dev_m);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
+  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
