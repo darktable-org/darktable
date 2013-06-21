@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-07 18:50+0200\n"
-"PO-Revision-Date: 2013-04-08 20:03+0300\n"
+"POT-Creation-Date: 2013-06-16 06:58+0400\n"
+"PO-Revision-Date: 2013-06-21 08:39+0300\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
@@ -15,10 +15,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2); 10<=4 && (n%100<10 || n"
-"%100>=20) ? 1 : 2);\n"
-"X-Poedit-Language: Russian\n"
-"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: ../build/src/preferences_gen.h:877
 msgid "gui options"
@@ -407,7 +405,7 @@ msgstr "Не удалось получить параметры от модул�
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:964
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:733
+#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:735
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "Красный"
@@ -419,14 +417,14 @@ msgstr "Жёлтая"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:968
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:734
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:736
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "Зелёный"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:970
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:735
+#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:737
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
 msgid "blue"
 msgstr "Синий"
@@ -465,12 +463,12 @@ msgstr "Ошибка при загрузке каталога «%s»"
 msgid "file `%s' has unknown format!"
 msgstr "У файла \"%s\" неизвестный формат!"
 
-#: ../src/common/darktable.c:338 ../src/libs/import.c:711
+#: ../src/common/darktable.c:338 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Ошибка при загрузке файла «%s»"
 
-#: ../src/common/darktable.c:478
+#: ../src/common/darktable.c:479
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr ""
@@ -494,49 +492,49 @@ msgstr ""
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/develop.c:1109 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1112 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "Вкл."
 
 #: ../src/common/history.c:238 ../src/common/history.c:239
 #: ../src/common/history.c:255 ../src/common/styles.c:546
-#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1109
+#: ../src/develop/blend_gui.c:1028 ../src/develop/develop.c:1112
 #: ../src/imageio/format/j2k.c:601 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "Выкл."
 
-#: ../src/common/image.c:109
+#: ../src/common/image.c:125
 #, fuzzy
 msgid "orphaned image"
 msgstr "Одиночная фотография"
 
-#: ../src/common/imageio.c:548
+#: ../src/common/imageio.c:550
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
 msgstr ""
 
-#: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1103
+#: ../src/common/imageio.c:558 ../src/common/mipmap_cache.c:1142
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "Фотография \"%s\" недоступна!"
 
 #. If a style is to be applied during export, add the iop params into the history
 #. set export style to "none" by default
-#: ../src/common/imageio.c:563 ../src/common/variables.c:220
+#: ../src/common/imageio.c:565 ../src/common/variables.c:220
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1462
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1780
-#: ../src/iop/lens.c:1707 ../src/libs/export.c:159 ../src/libs/export.c:162
+#: ../src/iop/lens.c:1732 ../src/libs/export.c:159 ../src/libs/export.c:162
 #: ../src/libs/export.c:595 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
 msgstr "Нет"
 
-#: ../src/common/imageio.c:572
+#: ../src/common/imageio.c:574
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
@@ -546,7 +544,7 @@ msgstr ""
 msgid "generic poissonian"
 msgstr ""
 
-#: ../src/common/ratings.c:45
+#: ../src/common/ratings.c:47
 #, fuzzy, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
@@ -554,7 +552,7 @@ msgstr[0] "Удаляется %d фотография"
 msgstr[1] "Удаляются %d фотографии"
 msgstr[2] "Удаляются %d фотографий"
 
-#: ../src/common/ratings.c:47
+#: ../src/common/ratings.c:49
 #, fuzzy, c-format
 msgid "applying rating %d to %d image"
 msgid_plural "applying rating %d to %d images"
@@ -562,7 +560,7 @@ msgstr[0] "Дублируется %d фотография"
 msgstr[1] "Дублируются %d фотографии"
 msgstr[2] "Дублируются %d фотографий"
 
-#: ../src/common/ratings.c:71
+#: ../src/common/ratings.c:73
 #, fuzzy
 msgid "no images selected to apply rating"
 msgstr "Не выбранных фотографий!"
@@ -571,6 +569,16 @@ msgstr "Не выбранных фотографий!"
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "Стиль с названием «%s» уже существует"
+
+#. freed by _destro_style_shortcut_callback
+#: ../src/common/styles.c:226 ../src/common/styles.c:230
+#: ../src/common/styles.c:300 ../src/common/styles.c:361
+#: ../src/common/styles.c:488 ../src/common/styles.c:985
+#: ../src/common/styles.c:1009
+#, c-format
+msgctxt "accel"
+msgid "styles/apply %s"
+msgstr ""
 
 #: ../src/common/styles.c:307 ../src/common/styles.c:368
 #, c-format
@@ -1133,9 +1141,9 @@ msgstr "Изменить непрозрачность при смешивани�
 
 #: ../src/develop/blend_gui.c:1097
 msgid "choose blending mode"
-msgstr "Выберите режим смешивания"
+msgstr "Выбор режима смешивания"
 
-#: ../src/develop/develop.c:932
+#: ../src/develop/develop.c:935
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: несоответствие версии модуля `%s': %d != %d"
@@ -1149,78 +1157,78 @@ msgstr ""
 msgid "error creating gui, DT_SIMPLE_GUI_NONE could not be found"
 msgstr ""
 
-#: ../src/develop/imageop.c:1134
+#: ../src/develop/imageop.c:1133
 msgid "new instance"
 msgstr "Создать копию"
 
-#: ../src/develop/imageop.c:1139
+#: ../src/develop/imageop.c:1138
 msgid "move up"
 msgstr "Поднять"
 
-#: ../src/develop/imageop.c:1145
+#: ../src/develop/imageop.c:1144
 msgid "move down"
 msgstr "Опустить"
 
 #. delete
-#: ../src/develop/imageop.c:1151 ../src/libs/image.c:143
-#: ../src/libs/styles.c:395 ../src/libs/tagging.c:487
+#: ../src/develop/imageop.c:1150 ../src/libs/image.c:143
+#: ../src/libs/styles.c:395 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "Удалить"
 
-#: ../src/develop/imageop.c:1173 ../src/develop/imageop.c:2010
+#: ../src/develop/imageop.c:1172 ../src/develop/imageop.c:2009
 #, c-format
 msgid "%s is switched on"
 msgstr "%s включен"
 
-#: ../src/develop/imageop.c:1173 ../src/develop/imageop.c:2010
+#: ../src/develop/imageop.c:1172 ../src/develop/imageop.c:2009
 #, c-format
 msgid "%s is switched off"
 msgstr "%s выключен"
 
-#: ../src/develop/imageop.c:1403 ../src/gui/accelerators.c:637
+#: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:637
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:196
 #: ../src/gui/presets.c:298 ../src/gui/presets.c:603
-#: ../src/iop/temperature.c:745 ../src/libs/import.c:487 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:747 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:971
 msgid "preset"
 msgstr "Профиль"
 
-#: ../src/develop/imageop.c:1444
+#: ../src/develop/imageop.c:1443
 msgctxt "accel"
 msgid "fusion"
 msgstr "Совмещение"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1449
+#: ../src/develop/imageop.c:1448
 msgctxt "accel"
 msgid "show module"
 msgstr "Показать модуль"
 
-#: ../src/develop/imageop.c:1450
+#: ../src/develop/imageop.c:1449
 msgctxt "accel"
 msgid "enable module"
 msgstr "Включить модуль"
 
-#: ../src/develop/imageop.c:1453 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1452 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Сбросить параметры модуля"
 
-#: ../src/develop/imageop.c:1455 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1454 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Показать меню профилей"
 
-#: ../src/develop/imageop.c:1980
+#: ../src/develop/imageop.c:1979
 msgid "multiple instances actions"
 msgstr "Действия с несколькими копиями"
 
-#: ../src/develop/imageop.c:1989 ../src/libs/lib.c:830
+#: ../src/develop/imageop.c:1988 ../src/libs/lib.c:830
 msgid "reset parameters"
 msgstr "Сбросить параметры"
 
-#: ../src/develop/imageop.c:1998 ../src/gui/preferences.c:398
+#: ../src/develop/imageop.c:1997 ../src/gui/preferences.c:398
 #: ../src/libs/lib.c:843
 msgid "presets"
 msgstr "Профили"
@@ -1236,7 +1244,7 @@ msgstr ""
 msgid "`%s' not a lightroom xmp!"
 msgstr ""
 
-#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:511
+#: ../src/develop/lightroom.c:1324 ../src/libs/import.c:515
 msgid "tags"
 msgstr "Метки"
 
@@ -1264,6 +1272,12 @@ msgstr[2] ""
 #: ../src/develop/tiling.c:805 ../src/develop/tiling.c:1101
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
+msgstr ""
+
+#: ../src/develop/pixelpipe_hb.c:2025
+msgid ""
+"darktable discovered problems with your OpenCL setup; disabling OpenCL for "
+"this session!"
 msgstr ""
 
 #: ../src/dtgtk/resetlabel.c:61
@@ -1370,11 +1384,11 @@ msgid "general"
 msgstr "Общие"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:398
+#: ../src/gui/camera_import_dialog.c:327 ../src/libs/import.c:402
 msgid "ignore jpeg files"
 msgstr "Игнорировать файлы JPEG"
 
-#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:399
+#: ../src/gui/camera_import_dialog.c:328 ../src/libs/import.c:403
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+jpeg in a directory."
@@ -1732,46 +1746,46 @@ msgstr "Название"
 
 #. exif
 #: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1348
-#: ../src/gui/presets.c:419 ../src/libs/metadata_view.c:82
+#: ../src/gui/presets.c:419 ../src/libs/metadata_view.c:85
 msgid "model"
 msgstr "Модель"
 
 #: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1356
-#: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:83
+#: ../src/gui/presets.c:426 ../src/libs/metadata_view.c:86
 msgid "maker"
 msgstr "Производитель"
 
 #: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1364
 #: ../src/gui/presets.c:433 ../src/libs/collect.h:43
-#: ../src/libs/metadata_view.c:84
+#: ../src/libs/metadata_view.c:87
 msgid "lens"
 msgstr "Объектив"
 
 #. iso
 #: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1371
 #: ../src/gui/presets.c:440 ../src/libs/camera.c:597 ../src/libs/collect.h:44
-#: ../src/libs/metadata_view.c:89
+#: ../src/libs/metadata_view.c:92
 msgid "iso"
 msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1384
 #: ../src/gui/presets.c:453 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
-#: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:86
+#: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:89
 msgid "exposure"
 msgstr "Экспозиция"
 
 #. aperture
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1399
 #: ../src/gui/presets.c:468 ../src/libs/camera.c:549 ../src/libs/camera.c:558
-#: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:85
+#: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:88
 msgid "aperture"
 msgstr "Диафрагма"
 
 #. focal length
 #: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1414
 #: ../src/gui/presets.c:483 ../src/libs/camera.c:568
-#: ../src/libs/metadata_view.c:87
+#: ../src/libs/metadata_view.c:90
 msgid "focal length"
 msgstr "Фокусное расстояние"
 
@@ -2044,15 +2058,15 @@ msgstr "OpenEXR"
 
 #: ../src/imageio/format/j2k.c:540
 msgid "jpeg 2000"
-msgstr ""
+msgstr "jpeg 2000"
 
 #: ../src/imageio/format/j2k.c:575
 msgid "jp2"
-msgstr ""
+msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:580
 msgid "j2k"
-msgstr ""
+msgstr "j2k"
 
 #: ../src/imageio/format/j2k.c:587 ../src/imageio/format/jpeg.c:669
 #: ../src/libs/camera.c:617
@@ -2065,15 +2079,15 @@ msgstr "Режим DCP"
 
 #: ../src/imageio/format/j2k.c:602
 msgid "cinema2k, 24fps"
-msgstr ""
+msgstr "cinema2k, 24 к/с"
 
 #: ../src/imageio/format/j2k.c:603
 msgid "cinema2k, 48fps"
-msgstr ""
+msgstr "cinema2k, 48 к/с"
 
 #: ../src/imageio/format/j2k.c:604
 msgid "cinema4k, 24fps"
-msgstr ""
+msgstr "cinema4k, 24 к/с"
 
 #: ../src/imageio/format/jpeg.c:649
 msgid "8-bit jpg"
@@ -2226,7 +2240,7 @@ msgstr "Альбом Facebook"
 #: ../src/imageio/storage/facebook.c:1018 ../src/imageio/storage/flickr.c:479
 #: ../src/imageio/storage/gallery.c:167 ../src/imageio/storage/latex.c:167
 #: ../src/imageio/storage/picasa.c:1311 ../src/libs/collect.h:38
-#: ../src/libs/metadata.c:303 ../src/libs/metadata_view.c:95
+#: ../src/libs/metadata.c:303 ../src/libs/metadata_view.c:98
 msgid "title"
 msgstr "Название"
 
@@ -2620,11 +2634,11 @@ msgstr "fotogenetic (цифрокомпакт)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:205
+#: ../src/iop/basecurve.c:187
 msgid "base curve"
 msgstr "Базовая кривая"
 
-#: ../src/iop/basecurve.c:727
+#: ../src/iop/basecurve.c:709
 #, fuzzy
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr ""
@@ -2659,22 +2673,22 @@ msgid "radius"
 msgstr "Радиус"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:98
-msgctxt "accel"
-msgid "red"
-msgstr "Красная"
-
-#: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:99
-msgctxt "accel"
-msgid "green"
-msgstr "Зелёная"
-
-#: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
 #: ../src/iop/temperature.c:100
 msgctxt "accel"
+msgid "red"
+msgstr "Красная метка"
+
+#: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
+#: ../src/iop/temperature.c:101
+msgctxt "accel"
+msgid "green"
+msgstr "Зелёная метка"
+
+#: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
+#: ../src/iop/temperature.c:102
+msgctxt "accel"
 msgid "blue"
-msgstr "Синяя"
+msgstr "Синяя метка"
 
 #: ../src/iop/bilateral.cc:343
 msgid "spatial extent of the gaussian"
@@ -2780,7 +2794,7 @@ msgstr "Выберите цвет линии рамки"
 
 #. add import singel image buttons
 #: ../src/iop/borders.c:983 ../src/iop/clipping.c:1740
-#: ../src/libs/import.c:814
+#: ../src/libs/import.c:818
 msgid "image"
 msgstr "Фотография"
 
@@ -2959,7 +2973,7 @@ msgid "destination"
 msgstr "Канал вывода"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:282
+#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:974
 #: ../src/iop/colorzones.c:1003 ../src/iop/graduatednd.c:1064
 #: ../src/iop/lowpass.c:523 ../src/iop/soften.c:584
@@ -3193,7 +3207,7 @@ msgstr "Деления спирали"
 msgid "golden spiral"
 msgstr "Золотая спираль"
 
-#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1713
+#: ../src/iop/clipping.c:1793 ../src/iop/lens.c:1738
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "Все"
@@ -3248,26 +3262,31 @@ msgid "color correction"
 msgstr "Цветокоррекция"
 
 #: ../src/iop/colorcorrection.c:95
-msgid "warming filter"
+#, fuzzy
+msgid "warm tone"
 msgstr "Утепляющий фильтр"
 
 #: ../src/iop/colorcorrection.c:102
+msgid "warming filter"
+msgstr "Утепляющий фильтр"
+
+#: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "Охлаждающий фильтр"
 
-#: ../src/iop/colorcorrection.c:107 ../src/iop/lowpass.c:104
+#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
 #: ../src/iop/soften.c:103 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "Насыщенность"
 
-#: ../src/iop/colorcorrection.c:263
+#: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
 
-#: ../src/iop/colorcorrection.c:281
+#: ../src/iop/colorcorrection.c:288
 msgid "set the global saturation"
 msgstr "Общая насыщенность"
 
@@ -3310,7 +3329,7 @@ msgstr "sRGB (например, JPEG)"
 #: ../src/iop/colorin.c:754 ../src/iop/colorin.c:786 ../src/iop/colorout.c:921
 #: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
 msgid "Adobe RGB (compatible)"
-msgstr ""
+msgstr "Adobe RGB (совместимый)"
 
 #: ../src/iop/colorin.c:756 ../src/iop/colorin.c:788 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
@@ -3571,7 +3590,7 @@ msgid "amaze (slow)"
 msgstr "amaze (медленная)"
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:376
 msgid "method"
 msgstr "Способ"
 
@@ -3659,7 +3678,7 @@ msgstr "Найден вариант для ISO%d"
 msgid "interpolated from iso %d and %d"
 msgstr "Интерполировано между ISO%d и %d"
 
-#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1868
+#: ../src/iop/denoiseprofile.c:1713 ../src/iop/lens.c:1893
 msgid "mode"
 msgstr "Режим"
 
@@ -3687,7 +3706,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:1721
 msgid "radius of the patches to match. increase for more sharpness"
-msgstr ""
+msgstr "Радиус сравниваемых участков. Чем больше значение, тем выше резкость."
 
 #: ../src/iop/denoiseprofile.c:1722
 msgid "finetune denoising strength"
@@ -3861,7 +3880,7 @@ msgstr "Оператор глобальной проекции тонов"
 
 #: ../src/iop/globaltonemap.c:633
 msgid "bias"
-msgstr ""
+msgstr "Смещение"
 
 #: ../src/iop/globaltonemap.c:634
 msgid ""
@@ -4001,25 +4020,25 @@ msgstr "Сила применяемой зернистости"
 msgid "highlight reconstruction"
 msgstr "Восстановление пересветов"
 
-#: ../src/iop/highlights.c:382
+#: ../src/iop/highlights.c:377
 msgid "clip highlights"
 msgstr "Обрезать пересветы"
 
-#: ../src/iop/highlights.c:383
+#: ../src/iop/highlights.c:378
 msgid "reconstruct in LCh"
 msgstr "Восстановить в LCh"
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:379
 msgid "highlight reconstruction method"
 msgstr "Способ восстановления пересвеченных участков"
 
-#: ../src/iop/highlights.c:387
+#: ../src/iop/highlights.c:382
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
 msgstr ""
 
-#: ../src/iop/highlights.c:389
+#: ../src/iop/highlights.c:384
 msgid "clipping threshold"
 msgstr "Порог обрезки"
 
@@ -4145,7 +4164,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "Выберите коррективы"
 
-#: ../src/iop/lens.c:1052
+#: ../src/iop/lens.c:1077
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4158,15 +4177,15 @@ msgstr ""
 "Байонет:\t\t%s\n"
 "Кроп-фактор:\t%.1f"
 
-#: ../src/iop/lens.c:1283
+#: ../src/iop/lens.c:1308
 msgid "camera/lens not found - please select manually"
-msgstr ""
+msgstr "Камера/объектив не найдены. Выберите вручную."
 
-#: ../src/iop/lens.c:1285
+#: ../src/iop/lens.c:1310
 msgid "try to locate your camera/lens in the above two menus"
 msgstr ""
 
-#: ../src/iop/lens.c:1330
+#: ../src/iop/lens.c:1355
 #, fuzzy, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4185,157 +4204,152 @@ msgstr ""
 "Тип:\t\t\t\t%s\n"
 "Байонеты:\t\t\t%s"
 
-#: ../src/iop/lens.c:1376
+#: ../src/iop/lens.c:1401
 msgid "mm"
 msgstr "мм"
 
-#: ../src/iop/lens.c:1377
+#: ../src/iop/lens.c:1402
 msgid "focal length (mm)"
 msgstr "Фокусное расстояние (мм)"
 
-#: ../src/iop/lens.c:1404
+#: ../src/iop/lens.c:1429
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1405
+#: ../src/iop/lens.c:1430
 msgid "f-number (aperture)"
 msgstr "Число F (диафрагма)"
 
-#: ../src/iop/lens.c:1420
+#: ../src/iop/lens.c:1445
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1421
+#: ../src/iop/lens.c:1446
 msgid "distance to subject"
 msgstr "Расстояние до объекта"
 
-#: ../src/iop/lens.c:1719
+#: ../src/iop/lens.c:1744
 msgid "distortion & TCA"
 msgstr "Искажения оптики и ХА"
 
-#: ../src/iop/lens.c:1725
+#: ../src/iop/lens.c:1750
 msgid "distortion & vignetting"
 msgstr "Искажения оптики и виньетирование"
 
-#: ../src/iop/lens.c:1731
+#: ../src/iop/lens.c:1756
 msgid "TCA & vignetting"
 msgstr "ХА и виньетирование"
 
-#: ../src/iop/lens.c:1737
+#: ../src/iop/lens.c:1762
 msgid "only distortion"
 msgstr "Только искажения оптики"
 
-#: ../src/iop/lens.c:1743
+#: ../src/iop/lens.c:1768
 msgid "only TCA"
 msgstr "Только ХА"
 
-#: ../src/iop/lens.c:1749
+#: ../src/iop/lens.c:1774
 msgid "only vignetting"
 msgstr "Только виньетирование"
 
-#: ../src/iop/lens.c:1772
+#: ../src/iop/lens.c:1797
 msgid "find camera"
 msgstr "Найти камеру"
 
-#: ../src/iop/lens.c:1789
+#: ../src/iop/lens.c:1814
 msgid "find lens"
 msgstr "Найти объектив"
 
-#: ../src/iop/lens.c:1822
+#: ../src/iop/lens.c:1847
 msgid "corrections"
 msgstr "Коррективы"
 
-#: ../src/iop/lens.c:1824
+#: ../src/iop/lens.c:1849
 msgid "which corrections to apply"
 msgstr "Какие коррективы применить"
 
-#: ../src/iop/lens.c:1839
+#: ../src/iop/lens.c:1864
 msgid "geometry"
 msgstr "Геометрия"
 
-#: ../src/iop/lens.c:1841
+#: ../src/iop/lens.c:1866
 msgid "target geometry"
 msgstr "Целевая геометрия объектива"
 
-#: ../src/iop/lens.c:1842
+#: ../src/iop/lens.c:1867
 msgid "rectilinear"
 msgstr "Прямолинейная"
 
-#: ../src/iop/lens.c:1843
+#: ../src/iop/lens.c:1868
 msgid "fish-eye"
 msgstr "Рыбий глаз"
 
-#: ../src/iop/lens.c:1844
+#: ../src/iop/lens.c:1869
 msgid "panoramic"
 msgstr "Панорамная"
 
-#: ../src/iop/lens.c:1845
+#: ../src/iop/lens.c:1870
 msgid "equirectangular"
 msgstr "Эквидистантная"
 
-#: ../src/iop/lens.c:1847
+#: ../src/iop/lens.c:1872
 msgid "orthographic"
-msgstr ""
+msgstr "Ортографическая"
 
-#: ../src/iop/lens.c:1848
+#: ../src/iop/lens.c:1873
 msgid "stereographic"
-msgstr ""
+msgstr "Стереографическая"
 
-#: ../src/iop/lens.c:1849
+#: ../src/iop/lens.c:1874
 msgid "equisolid angle"
-msgstr ""
+msgstr "Равноцельная"
 
-#: ../src/iop/lens.c:1850
-#, fuzzy
+#: ../src/iop/lens.c:1875
 msgid "thoby fish-eye"
-msgstr "Рыбий глаз"
+msgstr "Рыбий глаз Тоби"
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1883
 msgid "auto scale"
 msgstr "Автомасштабирование"
 
-#: ../src/iop/lens.c:1859 ../src/iop/vignette.c:1126
+#: ../src/iop/lens.c:1884 ../src/iop/vignette.c:1126
 #: ../src/iop/watermark.c:1018
 msgid "scale"
 msgstr "Масштаб"
 
-#: ../src/iop/lens.c:1870
+#: ../src/iop/lens.c:1895
 msgid "correct distortions or apply them"
 msgstr "Скорректировать или применить искажения"
 
-#: ../src/iop/lens.c:1871
+#: ../src/iop/lens.c:1896
 msgid "correct"
 msgstr "Коррекция"
 
-#: ../src/iop/lens.c:1872
+#: ../src/iop/lens.c:1897
 msgid "distort"
 msgstr "Искажение"
 
-#: ../src/iop/lens.c:1879
-#, fuzzy
+#: ../src/iop/lens.c:1904
 msgid "transversal chromatic aberration red"
-msgstr "Хроматические аберрации"
+msgstr "Поперечные хроматические аберрации, красный канал"
 
-#: ../src/iop/lens.c:1880
-#, fuzzy
+#: ../src/iop/lens.c:1905
 msgid "tca red"
-msgstr "TCA R"
+msgstr "TCA, красный"
 
-#: ../src/iop/lens.c:1885
-#, fuzzy
+#: ../src/iop/lens.c:1910
 msgid "transversal chromatic aberration blue"
-msgstr "Хроматические аберрации"
+msgstr "Поперечные хроматические аберрации, синий канал"
 
-#: ../src/iop/lens.c:1886
-#, fuzzy
+#: ../src/iop/lens.c:1911
 msgid "tca blue"
-msgstr "TCA B"
+msgstr "TCA, синий"
 
-#: ../src/iop/lens.c:1893
+#: ../src/iop/lens.c:1918
 msgid "corrections done: "
 msgstr "Применённые коррективы:"
 
-#: ../src/iop/lens.c:1894
+#: ../src/iop/lens.c:1919
 msgid "which corrections have actually been done"
 msgstr "Какие коррективы применены на самом деле"
 
@@ -4353,19 +4367,16 @@ msgid "apply auto levels"
 msgstr "Автоматически рассчитать уровни"
 
 #: ../src/iop/levels.c:291
-#, fuzzy
 msgid "pick blackpoint from image"
-msgstr "Взять цвет с фотографии"
+msgstr "Снять чёрную точку"
 
 #: ../src/iop/levels.c:295
-#, fuzzy
 msgid "pick medium greypoint from image"
-msgstr "Взять цвет с фотографии"
+msgstr "Снять серую точку"
 
 #: ../src/iop/levels.c:299
-#, fuzzy
 msgid "pick whitepoint from image"
-msgstr "Взять цвет с фотографии"
+msgstr "Снять белую точку"
 
 #: ../src/iop/lowlight.c:87
 msgid "lowlight vision"
@@ -4482,17 +4493,14 @@ msgid "bilateral filter"
 msgstr "Билатеральный фильтр"
 
 #: ../src/iop/lowpass.c:534
-#, fuzzy
 msgid "radius of gaussian/bilateral blur"
 msgstr "Радиус гауссова размывания"
 
 #: ../src/iop/lowpass.c:535
-#, fuzzy
 msgid "contrast of lowpass filter"
 msgstr "Контраст низкочастотного фильтра"
 
 #: ../src/iop/lowpass.c:536
-#, fuzzy
 msgid "color saturation of lowpass filter"
 msgstr "Насыщенность низкочастотного фильтра"
 
@@ -4559,19 +4567,19 @@ msgstr "Индикатор ошибок экспозиции"
 msgid "unbreak input profile"
 msgstr "Починка профиля ввода"
 
-#: ../src/iop/profile_gamma.c:122 ../src/iop/tonecurve.c:242
+#: ../src/iop/profile_gamma.c:125 ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "Линейная кривая"
 
-#: ../src/iop/profile_gamma.c:123
+#: ../src/iop/profile_gamma.c:126
 msgid "linear part"
 msgstr "Линейная часть"
 
-#: ../src/iop/profile_gamma.c:136
+#: ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr "Гамма"
 
-#: ../src/iop/profile_gamma.c:137
+#: ../src/iop/profile_gamma.c:140
 msgid "gamma exponential factor"
 msgstr "Экспоненциальный фактор гаммы"
 
@@ -4609,7 +4617,7 @@ msgstr "Ширина"
 msgid "the fill-light in EV"
 msgstr "Заполнение светом в шагах экспозиции"
 
-#: ../src/iop/relight.c:391 ../src/libs/metadata_view.c:91
+#: ../src/iop/relight.c:391 ../src/libs/metadata_view.c:94
 msgid "width"
 msgstr "Ширина"
 
@@ -4646,16 +4654,14 @@ msgid "compress"
 msgstr "Сжатие"
 
 #: ../src/iop/shadhi.c:150
-#, fuzzy
 msgctxt "accel"
 msgid "shadows color correction"
-msgstr "Цветокоррекция"
+msgstr "Цветокоррекция теней"
 
 #: ../src/iop/shadhi.c:151
-#, fuzzy
 msgctxt "accel"
 msgid "highlights color correction"
-msgstr "Восстановление пересветов"
+msgstr "Цветокоррекция светов"
 
 #. Shadows
 #: ../src/iop/shadhi.c:650 ../src/iop/splittoning.c:580
@@ -4815,9 +4821,8 @@ msgid "chocolate brown"
 msgstr "Шоколадный коричневый"
 
 #: ../src/iop/splittoning.c:557
-#, fuzzy
 msgid "select the saturation tone"
-msgstr "Выбрать насыщенность тона теней"
+msgstr "Выбрать насыщенности тона"
 
 #: ../src/iop/splittoning.c:593
 msgid "balance"
@@ -4855,57 +4860,55 @@ msgstr "Количество замен:"
 msgid "spot removal only supports up to 32 spots"
 msgstr "Можно удалять не более 32 пятен"
 
-#: ../src/iop/temperature.c:78
+#: ../src/iop/temperature.c:80
 msgctxt "modulename"
 msgid "white balance"
 msgstr "Баланс белого"
 
-#: ../src/iop/temperature.c:96
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "tint"
 msgstr "Оттенок"
 
-#: ../src/iop/temperature.c:97
-#, fuzzy
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "temperature"
-msgstr "Исходная температура"
+msgstr "Температура"
 
-#: ../src/iop/temperature.c:385
+#: ../src/iop/temperature.c:387
 msgid "camera white balance"
 msgstr "ББ камеры"
 
-#: ../src/iop/temperature.c:386
+#: ../src/iop/temperature.c:388
 msgid "spot white balance"
 msgstr "Пипетка"
 
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:389
 msgid "passthrough"
 msgstr "Пропустить"
 
-#: ../src/iop/temperature.c:731
+#: ../src/iop/temperature.c:733
 msgid "tint"
 msgstr "Оттенок"
 
-#: ../src/iop/temperature.c:732
-#, fuzzy
+#: ../src/iop/temperature.c:734
 msgid "temperature"
-msgstr "Исходная температура"
+msgstr "Температура"
 
-#: ../src/iop/temperature.c:747
+#: ../src/iop/temperature.c:749
 msgid "choose white balance preset from camera"
 msgstr "Выбрать предустановку баланса белого для камеры"
 
-#: ../src/iop/temperature.c:750
+#: ../src/iop/temperature.c:752
 msgid "finetune"
 msgstr "Уточнение"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:753
 #, c-format
 msgid "%.0f mired"
 msgstr ""
 
-#: ../src/iop/temperature.c:755
+#: ../src/iop/temperature.c:757
 msgid "fine tune white balance preset"
 msgstr "Скорректировать профиль баланса белого"
 
@@ -5437,7 +5440,6 @@ msgid "shutterspeed2"
 msgstr "Длительность экспозиции"
 
 #: ../src/libs/camera.c:587
-#, fuzzy
 msgid "shutterspeed"
 msgstr "Длительность экспозиции"
 
@@ -5467,7 +5469,7 @@ msgid "session"
 msgstr "Сеанс"
 
 #: ../src/libs/capture.c:138 ../src/libs/collect.h:46
-#: ../src/libs/metadata_view.c:78 ../src/libs/tools/filter.c:126
+#: ../src/libs/metadata_view.c:81 ../src/libs/tools/filter.c:126
 msgid "filename"
 msgstr "Имя файла"
 
@@ -5586,17 +5588,17 @@ msgstr "История изменений"
 msgid "description"
 msgstr "Описание"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:493
-#: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:96
+#: ../src/libs/collect.h:40 ../src/libs/import.c:497
+#: ../src/libs/metadata.c:329 ../src/libs/metadata_view.c:99
 msgid "creator"
 msgstr "Создатель"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/collect.h:41 ../src/libs/import.c:503
 #: ../src/libs/metadata.c:342
 msgid "publisher"
 msgstr "Издатель"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/collect.h:42 ../src/libs/import.c:509
 #: ../src/libs/metadata.c:355
 msgid "rights"
 msgstr "Права"
@@ -5663,7 +5665,7 @@ msgid "xmp sidecar files"
 msgstr "Файлы XMP"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
-#: ../src/libs/import.c:680 ../src/libs/styles.c:280
+#: ../src/libs/import.c:684 ../src/libs/styles.c:280
 msgid "all files"
 msgstr "Все файлы"
 
@@ -5878,7 +5880,7 @@ msgstr "Экспортировать с текущими параметрами 
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:827 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1617
+#: ../src/views/darkroom.c:1624
 msgctxt "accel"
 msgid "export"
 msgstr "Экспортировать"
@@ -5963,7 +5965,7 @@ msgstr ""
 msgid "histogram"
 msgstr "Гистограмма"
 
-#: ../src/libs/histogram.c:109 ../src/libs/histogram.c:376
+#: ../src/libs/histogram.c:109 ../src/libs/histogram.c:379
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets"
@@ -5971,39 +5973,39 @@ msgstr ""
 "Перетаскивание меняет экспозицию,\n"
 "двойной щелчок обнуляет изменения"
 
-#: ../src/libs/histogram.c:351
+#: ../src/libs/histogram.c:354
 msgid "set histogram mode to logarithmic"
 msgstr "Переключить режим гистограммы в логарифмический"
 
-#: ../src/libs/histogram.c:351
+#: ../src/libs/histogram.c:354
 msgid "set histogram mode to linear"
 msgstr "Переключить режим гистограммы в линейный"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:359
 msgid "click to hide red channel"
 msgstr "Щёлкните, чтобы скрыть красный канал"
 
-#: ../src/libs/histogram.c:356
+#: ../src/libs/histogram.c:359
 msgid "click to show red channel"
 msgstr "Щёлкните, чтобы показать красный канал"
 
-#: ../src/libs/histogram.c:361
+#: ../src/libs/histogram.c:364
 msgid "click to hide green channel"
 msgstr "Щёлкните, чтобы скрыть зелёный канал"
 
-#: ../src/libs/histogram.c:361
+#: ../src/libs/histogram.c:364
 msgid "click to show green channel"
 msgstr "Щёлкните, чтобы показать зелёный канал"
 
-#: ../src/libs/histogram.c:366
+#: ../src/libs/histogram.c:369
 msgid "click to hide blue channel"
 msgstr "Щёлкните, чтобы скрыть синий канал"
 
-#: ../src/libs/histogram.c:366
+#: ../src/libs/histogram.c:369
 msgid "click to show blue channel"
 msgstr "Щёлкните, чтобы показать синий канал"
 
-#: ../src/libs/histogram.c:371
+#: ../src/libs/histogram.c:374
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets"
@@ -6166,115 +6168,120 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "Разгруппировать"
 
-#: ../src/libs/import.c:84
+#: ../src/libs/import.c:85
 msgid "import"
 msgstr "Импорт"
 
-#: ../src/libs/import.c:105
+#: ../src/libs/import.c:106
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "Поискать устройства"
 
-#: ../src/libs/import.c:106
+#: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "import from camera"
 msgstr "Импортировать с камеры"
 
-#: ../src/libs/import.c:107
-#, fuzzy
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "Дистанционная съёмка"
 
-#: ../src/libs/import.c:108
+#: ../src/libs/import.c:109
 #, fuzzy
 msgctxt "accel"
 msgid "import image"
 msgstr "Импортировать фотографию"
 
+#: ../src/libs/import.c:110
+#, fuzzy
+msgctxt "accel"
+msgid "import folder"
+msgstr "Импортировать съёмку"
+
 #. add the rescan button
-#: ../src/libs/import.c:187
+#: ../src/libs/import.c:191
 msgid "scan for devices"
 msgstr "Найти устройства"
 
-#: ../src/libs/import.c:190
+#: ../src/libs/import.c:194
 msgid "scan for newly attached devices"
 msgstr "Найти новые подключенные устройства"
 
-#: ../src/libs/import.c:217
+#: ../src/libs/import.c:221
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "Устройство \"%s\" подсоединено к порту \"%s\"."
 
-#: ../src/libs/import.c:226
+#: ../src/libs/import.c:230
 msgid "import from camera"
 msgstr "Импортировать с камеры"
 
-#: ../src/libs/import.c:231
+#: ../src/libs/import.c:235
 msgid "tethered shoot"
 msgstr "Дистанционная съёмка"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:253
+#: ../src/libs/import.c:257
 msgid "no supported devices found"
 msgstr "Поддерживаемых устройств не обнаружено"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:372
+#: ../src/libs/import.c:376
 msgid "import options"
 msgstr "Параметры импорта"
 
 #. recursive opening.
-#: ../src/libs/import.c:392
+#: ../src/libs/import.c:396
 msgid "import directories recursively"
 msgstr "Импортировать вложенные папки"
 
-#: ../src/libs/import.c:393
+#: ../src/libs/import.c:397
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr ""
 "Рекурсивно импортировать подкаталоги, для каждого подкаталога будет создана "
 "своя съёмка"
 
-#: ../src/libs/import.c:407
+#: ../src/libs/import.c:411
 msgid "apply metadata on import"
 msgstr "Применить метаданные при импорте"
 
-#: ../src/libs/import.c:408
+#: ../src/libs/import.c:412
 msgid "apply some metadata to all newly imported images."
 msgstr "Применить некоторые метаданные ко всем импортированным фотографиям"
 
-#: ../src/libs/import.c:435
+#: ../src/libs/import.c:439
 msgid "comma separated list of tags"
 msgstr "Разделённый запятыми список меток"
 
-#: ../src/libs/import.c:650
+#: ../src/libs/import.c:654
 msgid "import image"
 msgstr "Импортировать фотографию"
 
-#: ../src/libs/import.c:675
+#: ../src/libs/import.c:679
 msgid "supported images"
 msgstr "Поддерживаемые форматы"
 
-#: ../src/libs/import.c:725
+#: ../src/libs/import.c:729
 #, fuzzy
 msgid "file has unknown format!"
 msgstr "У файла \"%s\" неизвестный формат!"
 
-#: ../src/libs/import.c:743
+#: ../src/libs/import.c:747
 msgid "import film"
 msgstr "Импортировать съёмку"
 
-#: ../src/libs/import.c:817
+#: ../src/libs/import.c:821
 msgid "select one or more images to import"
 msgstr "Выберите отдельные фотографии для импорта"
 
 #. adding the import folder button
-#: ../src/libs/import.c:826
+#: ../src/libs/import.c:830
 msgid "folder"
 msgstr "Из папки"
 
-#: ../src/libs/import.c:830
+#: ../src/libs/import.c:834
 msgid "select a folder to import as film roll"
 msgstr "Выберите папку для импорта как съёмки"
 
@@ -6356,9 +6363,8 @@ msgid "move focus point out (big steps)"
 msgstr ""
 
 #: ../src/libs/live_view.c:355
-#, fuzzy
 msgid "selected image"
-msgstr "Выбранные фотографии"
+msgstr "Выбранная фотография"
 
 #: ../src/libs/live_view.c:356 ../src/libs/tools/filter.c:129
 msgid "id"
@@ -6368,7 +6374,7 @@ msgstr "Идентификатор"
 msgid "overlay another image over the live view"
 msgstr ""
 
-#: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:77
+#: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:80
 msgid "image id"
 msgstr "ID снимка"
 
@@ -6377,9 +6383,8 @@ msgid "enter image id of the overlay manually"
 msgstr ""
 
 #: ../src/libs/live_view.c:376
-#, fuzzy
 msgid "overlay mode"
-msgstr "Перекрытие"
+msgstr "Режим смешивания"
 
 #: ../src/libs/live_view.c:378
 #, fuzzy
@@ -6391,48 +6396,40 @@ msgid "add"
 msgstr "Добавить"
 
 #: ../src/libs/live_view.c:380
-#, fuzzy
 msgid "saturate"
-msgstr "Насыщенность"
+msgstr ""
 
 #: ../src/libs/live_view.c:387
-#, fuzzy
 msgid "color dodge"
-msgstr "Цветовые зоны"
+msgstr ""
 
 #: ../src/libs/live_view.c:388
-#, fuzzy
 msgid "color burn"
-msgstr "Синяя"
+msgstr ""
 
 #: ../src/libs/live_view.c:389
-#, fuzzy
 msgid "hard light"
-msgstr "Направленный свет"
+msgstr "Жёсткий свет"
 
 #: ../src/libs/live_view.c:390
-#, fuzzy
 msgid "soft light"
 msgstr "Рассеянный свет"
 
 #: ../src/libs/live_view.c:392
-#, fuzzy
 msgid "exclusion"
-msgstr "Совмещение"
+msgstr "Вычитание"
 
 #: ../src/libs/live_view.c:393
 msgid "hsl hue"
 msgstr "Тон HSL"
 
 #: ../src/libs/live_view.c:394
-#, fuzzy
 msgid "hsl saturation"
-msgstr "Насыщенность"
+msgstr "Насыщенность HSL"
 
 #: ../src/libs/live_view.c:395
-#, fuzzy
 msgid "hsl color"
-msgstr "Цвет"
+msgstr "Тон HSL"
 
 #: ../src/libs/live_view.c:396
 msgid "hsl luminosity"
@@ -6440,16 +6437,15 @@ msgstr "Светимость HSL"
 
 #: ../src/libs/live_view.c:398
 msgid "mode of the overlay"
-msgstr ""
+msgstr "Режим перекрытия"
 
 #: ../src/libs/live_view.c:404
-#, fuzzy
 msgid "split line"
-msgstr "Раздельное тонирование"
+msgstr "Линия разделения"
 
 #: ../src/libs/live_view.c:407
 msgid "only draw part of the overlay"
-msgstr ""
+msgstr "Рисовать только часть перекрытия"
 
 #: ../src/libs/location.c:81
 msgid "find location"
@@ -6558,42 +6554,55 @@ msgid "All rights reserved."
 msgstr "Все права защищены"
 
 #. internal
-#: ../src/libs/metadata_view.c:76
+#: ../src/libs/metadata_view.c:79
 msgid "filmroll"
 msgstr "Съёмка"
 
-#: ../src/libs/metadata_view.c:79
+#: ../src/libs/metadata_view.c:82
 msgid "full path"
 msgstr "Расположение"
 
-#: ../src/libs/metadata_view.c:88
+#: ../src/libs/metadata_view.c:91
 msgid "focus distance"
 msgstr "Фокусное расстояние"
 
-#: ../src/libs/metadata_view.c:90
+#: ../src/libs/metadata_view.c:93
 msgid "datetime"
 msgstr "Дата и время"
 
-#: ../src/libs/metadata_view.c:92
+#: ../src/libs/metadata_view.c:95
 msgid "height"
 msgstr "Высота"
 
-#: ../src/libs/metadata_view.c:97
+#: ../src/libs/metadata_view.c:100
 msgid "copyright"
 msgstr "Авторские права"
 
 #. geotagging
-#: ../src/libs/metadata_view.c:100
+#: ../src/libs/metadata_view.c:103
 msgid "latitude"
 msgstr "Широта"
 
-#: ../src/libs/metadata_view.c:101
+#: ../src/libs/metadata_view.c:104
 msgid "longitude"
 msgstr "Долгота"
 
-#: ../src/libs/metadata_view.c:113
+#: ../src/libs/metadata_view.c:116
 msgid "image information"
 msgstr "Метаданные"
+
+#: ../src/libs/metadata_view.c:209
+#, fuzzy, c-format
+msgid ""
+"double click to jump to film roll\n"
+"%s"
+msgstr "Двойной щелчок сбрасывает изменения до «%s»"
+
+#: ../src/libs/metadata_view.c:403
+#, fuzzy
+msgctxt "accel"
+msgid "jump to film roll"
+msgstr "Импортировать съёмку"
 
 #: ../src/libs/modulegroups.c:69
 #, fuzzy
@@ -6610,24 +6619,23 @@ msgstr "Только модули, использованные в обрабо�
 
 #: ../src/libs/modulegroups.c:118
 msgid "basic group"
-msgstr "Группа основных модулей обработки"
+msgstr "Основные модули обработки"
 
 #: ../src/libs/modulegroups.c:123
 msgid "correction group"
-msgstr "Группа исправляющих модулей обработки"
+msgstr "Корректирующие модули"
 
 #: ../src/libs/modulegroups.c:128
 msgid "color group"
-msgstr "Группа модулей цветокоррекции"
+msgstr "Модули цветокоррекции"
 
 #: ../src/libs/modulegroups.c:133
-#, fuzzy
 msgid "tone group"
-msgstr "Группа исправляющих модулей обработки"
+msgstr "Модули обработки тоновоспроизведения"
 
 #: ../src/libs/modulegroups.c:138
 msgid "effect group"
-msgstr "Группа модулей художественной обработки"
+msgstr "Модули художественной обработки"
 
 #: ../src/libs/modulelist.c:57
 msgid "more modules"
@@ -6637,22 +6645,27 @@ msgstr "Список модулей"
 msgid "navigation"
 msgstr "Навигация"
 
-#: ../src/libs/recentcollect.c:50
+#: ../src/libs/recentcollect.c:54
 msgid "recently used collections"
 msgstr "Недавние коллекции"
 
-#: ../src/libs/recentcollect.c:88
+#: ../src/libs/recentcollect.c:90
+msgctxt "accel"
+msgid "jump back to previous collection"
+msgstr "Перейти к предыдущей подборке фотографий"
+
+#: ../src/libs/recentcollect.c:119
 #, c-format
 msgid " and "
 msgstr " и "
 
-#: ../src/libs/recentcollect.c:91
+#: ../src/libs/recentcollect.c:122
 #, c-format
 msgid " or "
 msgstr " или "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:94
+#: ../src/libs/recentcollect.c:125
 #, c-format
 msgid " but not "
 msgstr " но не "
@@ -6718,7 +6731,6 @@ msgid "snapshots"
 msgstr "Мгновенные снимки"
 
 #: ../src/libs/snapshots.c:101
-#, fuzzy
 msgctxt "accel"
 msgid "take snapshot"
 msgstr "Сделать снимок"
@@ -6832,13 +6844,11 @@ msgid "detach"
 msgstr "Снять"
 
 #: ../src/libs/tagging.c:81
-#, fuzzy
 msgctxt "accel"
 msgid "new"
 msgstr "Создать"
 
 #: ../src/libs/tagging.c:83
-#, fuzzy
 msgctxt "accel"
 msgid "tag"
 msgstr "Метка"
@@ -6865,7 +6875,7 @@ msgstr[2] ""
 msgid "delete tag?"
 msgstr "Удалить метку?"
 
-#: ../src/libs/tagging.c:416
+#: ../src/libs/tagging.c:417
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -6873,27 +6883,27 @@ msgstr ""
 "Назначенные метки,\n"
 "щёлкните дважды для снятия"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:424
 msgid "attach"
 msgstr "Назначить"
 
-#: ../src/libs/tagging.c:425
+#: ../src/libs/tagging.c:426
 msgid "attach tag to all selected images"
 msgstr "Назначить метку всем выбранным фотографиям"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:431
 msgid "detach"
 msgstr "Снять"
 
-#: ../src/libs/tagging.c:432
+#: ../src/libs/tagging.c:433
 msgid "detach tag from all selected images"
 msgstr "Снять метку со всех выбранных фотографий"
 
-#: ../src/libs/tagging.c:445
+#: ../src/libs/tagging.c:446
 msgid "enter tag name"
 msgstr "Введите название метки"
 
-#: ../src/libs/tagging.c:473
+#: ../src/libs/tagging.c:474
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -6901,24 +6911,23 @@ msgstr ""
 "Связанные метки;\n"
 "двойной щелчок снимает их"
 
-#: ../src/libs/tagging.c:480
+#: ../src/libs/tagging.c:481
 msgid "new"
 msgstr "Создать"
 
-#: ../src/libs/tagging.c:482
+#: ../src/libs/tagging.c:483
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "Создать новую метку с введённым названием"
 
-#: ../src/libs/tagging.c:489
+#: ../src/libs/tagging.c:490
 msgid "delete selected tag"
 msgstr "Удалить выбранную метку"
 
 #: ../src/libs/tools/colorlabels.c:38
-#, fuzzy
 msgid "colorlabels"
-msgstr "Цветовая метка"
+msgstr "Цветовые метки"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:69
@@ -7004,38 +7013,37 @@ msgstr "Лента фотографий"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1591
-#, fuzzy
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1598
 msgctxt "accel"
-msgid "rate desert"
-msgstr "Без оценки"
+msgid "rate 0"
+msgstr "Оценка 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1592
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1599
 msgctxt "accel"
 msgid "rate 1"
 msgstr "Оценка 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1593
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1600
 msgctxt "accel"
 msgid "rate 2"
 msgstr "Оценка 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1594
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1601
 msgctxt "accel"
 msgid "rate 3"
 msgstr "Оценка 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1595
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1602
 msgctxt "accel"
 msgid "rate 4"
 msgstr "Оценка 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1596
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1603
 msgctxt "accel"
 msgid "rate 5"
 msgstr "Оценка 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1597
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1604
 msgctxt "accel"
 msgid "rate reject"
 msgstr "Отклонить"
@@ -7076,30 +7084,30 @@ msgstr "Дублируется %d фотография"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1617
 msgctxt "accel"
 msgid "color red"
-msgstr "Красная"
+msgstr "Красная метка"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1618
 msgctxt "accel"
 msgid "color yellow"
-msgstr "Жёлтая"
+msgstr "Жёлтая метка"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1612
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1619
 msgctxt "accel"
 msgid "color green"
-msgstr "Зелёная"
+msgstr "Зелёная метка"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1613
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1620
 msgctxt "accel"
 msgid "color blue"
-msgstr "Синяя"
+msgstr "Синяя метка"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1614
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1621
 msgctxt "accel"
 msgid "color purple"
-msgstr "Пурпурная"
+msgstr "Пурпурная метка"
 
 #. setup selection accelerators
 #. selection accels
@@ -7155,7 +7163,6 @@ msgid "sort by"
 msgstr "Сортировка"
 
 #: ../src/libs/tools/global_toolbox.c:43
-#, fuzzy
 msgid "preferences"
 msgstr "Параметры darktable"
 
@@ -7176,13 +7183,11 @@ msgid "show global preferences"
 msgstr "Открыть диалог настройки программы"
 
 #: ../src/libs/tools/global_toolbox.c:123
-#, fuzzy
 msgctxt "accel"
 msgid "grouping"
-msgstr "Группа исправляющих модулей обработки"
+msgstr "Группирование"
 
 #: ../src/libs/tools/global_toolbox.c:124
-#, fuzzy
 msgctxt "accel"
 msgid "preferences"
 msgstr "Параметры darktable"
@@ -7230,9 +7235,8 @@ msgid "module toolbox"
 msgstr "значение перед модулем"
 
 #: ../src/libs/tools/ratings.c:50
-#, fuzzy
 msgid "ratings"
-msgstr "Оценка"
+msgstr "Оценки"
 
 #: ../src/libs/tools/viewswitcher.c:46
 #, fuzzy
@@ -7263,7 +7267,7 @@ msgstr "Нет подключенных камер с поддержкой уд�
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1605
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1612
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "Переключить ленту фотографий"
@@ -7287,40 +7291,39 @@ msgstr "Пока что не создано ни одного стиля"
 
 #: ../src/views/darkroom.c:1042
 msgid "quick access to presets of your favorites"
-msgstr ""
+msgstr "Быстрый доступ к предустановкам избранных модулей"
 
 #: ../src/views/darkroom.c:1054
 msgid "quick access for applying any of your styles"
-msgstr ""
+msgstr "Быстрый доступ к применению сохранённых стилей обработки"
 
 #: ../src/views/darkroom.c:1062
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
 msgstr ""
+"Переключение просмотра недо- и переэкспонированных участков.\n"
+"Параметры открываются по щелчку правой клавишей мыши."
 
 #: ../src/views/darkroom.c:1107
 msgid "color scheme"
 msgstr "Цветовая схема"
 
 #: ../src/views/darkroom.c:1108
-#, fuzzy
 msgid "black & white"
-msgstr "Чёрно-белый"
+msgstr "Чёрный и белый"
 
 #: ../src/views/darkroom.c:1109
-#, fuzzy
 msgid "red & blue"
-msgstr "Красный / синий"
+msgstr "Красный и синий"
 
 #: ../src/views/darkroom.c:1110
-#, fuzzy
 msgid "purple & green"
-msgstr "Пурпурная"
+msgstr "Фиолетовый и зелёный"
 
 #: ../src/views/darkroom.c:1112
 msgid "select colors to indicate over/under exposure"
-msgstr ""
+msgstr "Выберите цвета для индикации недо- и переэкспонированных участков"
 
 #: ../src/views/darkroom.c:1122
 msgid "lower threshold"
@@ -7339,126 +7342,120 @@ msgid "threshold of what shall be considered overexposed"
 msgstr "Порог того, что будет считаться избыточно экспонированным"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1609
-#, fuzzy
+#: ../src/views/darkroom.c:1616
 msgctxt "accel"
 msgid "zoom close-up"
-msgstr "1:1"
+msgstr "Масштаб 1:1"
 
-#: ../src/views/darkroom.c:1611
-#, fuzzy
+#: ../src/views/darkroom.c:1618
 msgctxt "accel"
 msgid "zoom fill"
-msgstr "Заполнить по ширине"
+msgstr "Заполнение по ширине"
 
-#: ../src/views/darkroom.c:1613
+#: ../src/views/darkroom.c:1620
 #, fuzzy
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Масштаб"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1621
+#: ../src/views/darkroom.c:1628
 msgctxt "accel"
 msgid "image forward"
 msgstr "Следующая фотография"
 
-#: ../src/views/darkroom.c:1623
+#: ../src/views/darkroom.c:1630
 msgctxt "accel"
 msgid "image back"
 msgstr "Предыдущая фотография"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1627
+#: ../src/views/darkroom.c:1634
 #, fuzzy
 msgctxt "accel"
 msgid "overexposed"
 msgstr "Индикатор ошибок экспозиции"
 
-#: ../src/views/lighttable.c:407
-#, fuzzy
+#: ../src/views/lighttable.c:433
 msgid "there are no images in this collection"
-msgstr ""
-"Выделить необработанные фотографии\n"
-"в текущей коллекции"
+msgstr "В этой подборке нет фотографий"
 
-#: ../src/views/lighttable.c:409
+#: ../src/views/lighttable.c:435
 #, fuzzy
 msgid "if you have not imported any images yet"
 msgstr "Вы ещё не импортировали изображения."
 
-#: ../src/views/lighttable.c:411
+#: ../src/views/lighttable.c:437
 msgid "you can do so in the import module"
 msgstr ""
 
-#: ../src/views/lighttable.c:418
+#: ../src/views/lighttable.c:444
 msgid "try to relax the filter settings in the top panel"
 msgstr "Попробуйте изменить фильтр перечисляемых снимков вверху"
 
-#: ../src/views/lighttable.c:425
+#: ../src/views/lighttable.c:451
 #, fuzzy
 msgid "or add images in the collection module in the left panel"
 msgstr "или в модуле подборки фотографий в панели слева."
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1600
+#: ../src/views/lighttable.c:1607
 #, fuzzy
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Навигация"
 
-#: ../src/views/lighttable.c:1602
+#: ../src/views/lighttable.c:1609
 #, fuzzy
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Навигация"
 
-#: ../src/views/lighttable.c:1604
+#: ../src/views/lighttable.c:1611
 #, fuzzy
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Навигация"
 
-#: ../src/views/lighttable.c:1606
+#: ../src/views/lighttable.c:1613
 #, fuzzy
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "На страницу вниз"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1617
+#: ../src/views/lighttable.c:1624
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Прокрутить вверх"
 
-#: ../src/views/lighttable.c:1619
+#: ../src/views/lighttable.c:1626
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Прокрутить вниз"
 
-#: ../src/views/lighttable.c:1621
+#: ../src/views/lighttable.c:1628
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Прокрутить влево"
 
-#: ../src/views/lighttable.c:1623
+#: ../src/views/lighttable.c:1630
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Прокрутить вправо"
 
-#: ../src/views/lighttable.c:1625
-#, fuzzy
+#: ../src/views/lighttable.c:1632
 msgctxt "accel"
 msgid "scroll center"
-msgstr "Горизонтальный центр"
+msgstr ""
 
-#: ../src/views/lighttable.c:1627
+#: ../src/views/lighttable.c:1634
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr ""
 
 #. Preview key
-#: ../src/views/lighttable.c:1631
+#: ../src/views/lighttable.c:1638
 msgctxt "accel"
 msgid "preview"
 msgstr "Предпросмотр"
@@ -7476,6 +7473,11 @@ msgstr "Отменить"
 msgctxt "accel"
 msgid "redo"
 msgstr ""
+
+#, fuzzy
+#~ msgctxt "accel"
+#~ msgid "rate desert"
+#~ msgstr "Без оценки"
 
 #~ msgid " (needs a restart)"
 #~ msgstr " (требует перезапуска)"
@@ -8462,9 +8464,6 @@ msgstr ""
 
 #~ msgid "devices"
 #~ msgstr "Устройства"
-
-#~ msgid "import film roll"
-#~ msgstr "Импортировать съёмку"
 
 #~ msgid "library"
 #~ msgstr "Библиотека"
