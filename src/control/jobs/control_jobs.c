@@ -587,8 +587,18 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
 /* enumerator of selected images */
 void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  /* get sorted list of selected images */
-  t->index = dt_collection_get_selected(darktable.collection);
+  GList *list = NULL;
+  long int imgid = dt_view_get_image_to_act_on();
+
+  if(imgid < 0) {
+    /* get sorted list of selected images */
+    t->index = dt_collection_get_selected(darktable.collection);
+  }
+  else {
+    /* Create a list with only one image */
+    list = g_list_append (list, (gpointer)imgid);
+    t->index = list;
+  }
 }
 
 void dt_control_merge_hdr_job_init(dt_job_t *job)
