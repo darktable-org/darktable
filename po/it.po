@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-06-08 09:32+0200\n"
+"POT-Creation-Date: 2013-06-20 19:49+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -422,20 +422,20 @@ msgstr ""
 msgid "Unknown option for --hq"
 msgstr "Opzione sconosciuta per --hq "
 
-#: ../src/cli/main.c:148
+#: ../src/cli/main.c:162
 msgid "output file already exists, it will get renamed"
 msgstr "File di output già esistente, dovrà essere rinominato"
 
-#: ../src/cli/main.c:164
+#: ../src/cli/main.c:177
 #, c-format
 msgid "error: can't open file %s"
 msgstr "Errore: impossibile aprire il file %s"
 
-#: ../src/cli/main.c:188
+#: ../src/cli/main.c:201
 msgid "empty history stack"
 msgstr "Coda di sviluppo vuota"
 
-#: ../src/cli/main.c:208
+#: ../src/cli/main.c:221
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -443,18 +443,18 @@ msgstr ""
 "Non trovo il modulo di gestione della memorizzazione su disco. Verifica la "
 "tua installazione, potrebbe essere difettosa."
 
-#: ../src/cli/main.c:215
+#: ../src/cli/main.c:228
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "Impossibile ottenere i parametri dal modulo di salvataggio, annullamento "
 "esportazione..."
 
-#: ../src/cli/main.c:226
+#: ../src/cli/main.c:239
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "Estensione '.%s' sconosciuta"
 
-#: ../src/cli/main.c:234
+#: ../src/cli/main.c:247
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "Impossibile ottenere i parametri dal modulo di formato, annullamento "
@@ -504,27 +504,27 @@ msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "%d immagine di %d è stata selezionate nella raccolta"
 msgstr[1] "%d immagini di %d sono state selezionate nella raccolta"
 
-#: ../src/common/darktable.c:287
+#: ../src/common/darktable.c:288
 #, c-format
 msgid "found strange path `%s'"
 msgstr "Trovato percorso anomalo `%s'"
 
-#: ../src/common/darktable.c:305
+#: ../src/common/darktable.c:306
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "Errore nel caricamento della cartella `%s'"
 
-#: ../src/common/darktable.c:325
+#: ../src/common/darktable.c:326
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "Il file `%s' ha un formato sconosciuto!"
 
-#: ../src/common/darktable.c:339 ../src/libs/import.c:715
+#: ../src/common/darktable.c:340 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr "Errore nel caricamento del file `%s'"
 
-#: ../src/common/darktable.c:482
+#: ../src/common/darktable.c:497
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRORE: cartella temporanea errata: %s\n"
@@ -557,7 +557,7 @@ msgstr "Abilitato"
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1365
 #: ../src/develop/blend_gui.c:1512 ../src/develop/develop.c:1129
-#: ../src/imageio/format/j2k.c:631 ../src/iop/demosaic.c:1329
+#: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
@@ -567,7 +567,7 @@ msgstr "Disabilitato"
 msgid "orphaned image"
 msgstr "Immagine orfana"
 
-#: ../src/common/imageio.c:548
+#: ../src/common/imageio.c:550
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
@@ -575,14 +575,14 @@ msgstr ""
 "Fallita l'allocazione della memoria per l'esportazione, abbassare il numero "
 "di thread usati per l'esportazione o aggiungere memoria."
 
-#: ../src/common/imageio.c:556 ../src/common/mipmap_cache.c:1140
+#: ../src/common/imageio.c:558 ../src/common/mipmap_cache.c:1142
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "L'immagine `%s' non è disponibile!"
 
 #. If a style is to be applied during export, add the iop params into the history
 #. set export style to "none" by default
-#: ../src/common/imageio.c:563 ../src/common/variables.c:220
+#: ../src/common/imageio.c:565 ../src/common/variables.c:220
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1459
 #: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:1717
 #: ../src/iop/clipping.c:1760 ../src/iop/clipping.c:1777
@@ -593,7 +593,7 @@ msgstr "L'immagine `%s' non è disponibile!"
 msgid "none"
 msgstr "Nessuno"
 
-#: ../src/common/imageio.c:572
+#: ../src/common/imageio.c:574
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Impossibile trovare lo stile '%s' da applicare per l'esportazione."
@@ -626,7 +626,7 @@ msgstr "Nessuna immagine selezionata per applicare la valutazione"
 msgid "style with name '%s' already exists"
 msgstr "Stile con nome '%s' già esistente"
 
-#. freed by _destro_style_shortcut_callback
+#. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:226 ../src/common/styles.c:230
 #: ../src/common/styles.c:300 ../src/common/styles.c:361
 #: ../src/common/styles.c:489 ../src/common/styles.c:1000
@@ -1050,7 +1050,7 @@ msgstr "Input"
 msgid "double click to reset"
 msgstr "Doppio click per ripristinare"
 
-#: ../src/develop/blend_gui.c:1050 ../src/develop/masks/masks.c:953
+#: ../src/develop/blend_gui.c:1050 ../src/develop/masks/masks.c:959
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1058,7 +1058,7 @@ msgstr[0] "%d forma in uso"
 msgstr[1] "%d forme in uso"
 
 #: ../src/develop/blend_gui.c:1055 ../src/develop/blend_gui.c:1093
-#: ../src/develop/masks/masks.c:956
+#: ../src/develop/masks/masks.c:962
 msgid "no mask used"
 msgstr "Nessuna maschera in uso"
 
@@ -1428,7 +1428,7 @@ msgstr[1] "%s sono stati importati con successo"
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiling fallito per il modulo '%s'. L'output potrebbe essere confuso."
 
-#: ../src/develop/pixelpipe_hb.c:2087
+#: ../src/develop/pixelpipe_hb.c:2089
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2227,36 +2227,36 @@ msgstr ""
 msgid "openexr"
 msgstr "Openexr"
 
-#: ../src/imageio/format/j2k.c:570
+#: ../src/imageio/format/j2k.c:573
 msgid "jpeg 2000"
 msgstr "jpeg 2000"
 
-#: ../src/imageio/format/j2k.c:605
+#: ../src/imageio/format/j2k.c:608
 msgid "jp2"
 msgstr "jp2"
 
-#: ../src/imageio/format/j2k.c:610
+#: ../src/imageio/format/j2k.c:613
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/imageio/format/j2k.c:617 ../src/imageio/format/jpeg.c:547
+#: ../src/imageio/format/j2k.c:620 ../src/imageio/format/jpeg.c:547
 #: ../src/libs/camera.c:617
 msgid "quality"
 msgstr "Qualità"
 
-#: ../src/imageio/format/j2k.c:626
+#: ../src/imageio/format/j2k.c:629
 msgid "dcp mode"
 msgstr "Modalità dcp"
 
-#: ../src/imageio/format/j2k.c:632
+#: ../src/imageio/format/j2k.c:635
 msgid "cinema2k, 24fps"
 msgstr "cinema2k, 24fps"
 
-#: ../src/imageio/format/j2k.c:633
+#: ../src/imageio/format/j2k.c:636
 msgid "cinema2k, 48fps"
 msgstr "cinema2k, 48fps"
 
-#: ../src/imageio/format/j2k.c:634
+#: ../src/imageio/format/j2k.c:637
 msgid "cinema4k, 24fps"
 msgstr "cinema4k, 24fps"
 
@@ -2336,7 +2336,7 @@ msgstr "Immagini esportate da Darktable"
 
 #: ../src/imageio/storage/facebook.c:242
 #, c-format
-msgid "[facebook] unexpeted url format\n"
+msgid "[facebook] unexpected url format\n"
 msgstr "[facebook] formato url inaspettato\n"
 
 #. //////////// build & show the validation dialog
@@ -2381,7 +2381,7 @@ msgid "other account"
 msgstr "Altro account"
 
 #: ../src/imageio/storage/facebook.c:795 ../src/imageio/storage/picasa.c:1051
-msgid "unable to retreive the album list"
+msgid "unable to retrieve the album list"
 msgstr "Impossibile trovare la lista degli album"
 
 #: ../src/imageio/storage/facebook.c:803 ../src/imageio/storage/flickr.c:388
@@ -2813,7 +2813,7 @@ msgstr "Ascissa: input, Ordinata: output. Lavorano sui canali RGB"
 msgid "local contrast"
 msgstr "Contrasto locale"
 
-#: ../src/iop/bilat.c:267 ../src/iop/grain.c:501
+#: ../src/iop/bilat.c:267 ../src/iop/grain.c:513
 msgid "coarseness"
 msgstr "Ruvidezza"
 
@@ -2906,7 +2906,7 @@ msgid "the threshold of light"
 msgstr "Soglia della luce"
 
 #: ../src/iop/bloom.c:348 ../src/iop/denoiseprofile.c:1716
-#: ../src/iop/grain.c:510 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
+#: ../src/iop/grain.c:522 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "Intensità"
@@ -2955,7 +2955,7 @@ msgstr "Scegli colore per il bordo"
 msgid "select frame line color"
 msgstr "Scegli colore per la cornice"
 
-#. add import singel image buttons
+#. add import single image buttons
 #: ../src/iop/borders.c:981 ../src/iop/clipping.c:1737
 #: ../src/libs/import.c:818
 msgid "image"
@@ -3121,11 +3121,11 @@ msgstr "Scegli colore per la cornice dall'immagine"
 msgid "chromatic aberrations"
 msgstr "Aberrazioni cromatiche"
 
-#: ../src/iop/cacorrect.c:1272
+#: ../src/iop/cacorrect.c:1278
 msgid "automatic chromatic aberration correction"
 msgstr "Correzione automatica aberrazioni cromatiche"
 
-#: ../src/iop/cacorrect.c:1274
+#: ../src/iop/cacorrect.c:1280
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -3688,16 +3688,16 @@ msgstr "Profilo di uscita"
 
 #: ../src/iop/colorout.c:893
 msgid "softproof profile"
-msgstr "Profilo prova colore a monitor"
+msgstr "Profilo prova a monitor"
 
 #: ../src/iop/colorout.c:894
 msgid "display profile"
-msgstr "Profilo video"
+msgstr "Profilo monitor"
 
 #. the system display profile is only suitable for display purposes
 #: ../src/iop/colorout.c:905 ../src/libs/export.c:618
 msgid "system display profile"
-msgstr "Profilo video di sistema"
+msgstr "Profilo monitor di sistema"
 
 #: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
 #: ../src/iop/colorout.c:917 ../src/libs/export.c:546
@@ -3827,7 +3827,7 @@ msgid "amaze (slow)"
 msgstr "amaze (lenta)"
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
-#: ../src/iop/highlights.c:378
+#: ../src/iop/highlights.c:376
 msgid "method"
 msgstr "Metodo"
 
@@ -4253,11 +4253,11 @@ msgctxt "accel"
 msgid "coarseness"
 msgstr "Ruvidezza "
 
-#: ../src/iop/grain.c:504
+#: ../src/iop/grain.c:516
 msgid "the grain size (~iso of the film)"
 msgstr "Dimensione grana (~iso della pellicola)"
 
-#: ../src/iop/grain.c:513
+#: ../src/iop/grain.c:525
 msgid "the strength of applied grain"
 msgstr "Intensità della grana applicata"
 
@@ -4265,19 +4265,19 @@ msgstr "Intensità della grana applicata"
 msgid "highlight reconstruction"
 msgstr "Recupero alteluci"
 
-#: ../src/iop/highlights.c:379
+#: ../src/iop/highlights.c:377
 msgid "clip highlights"
 msgstr "Taglio alteluci"
 
-#: ../src/iop/highlights.c:380
+#: ../src/iop/highlights.c:378
 msgid "reconstruct in LCh"
 msgstr "Ricostruisci in LCh"
 
-#: ../src/iop/highlights.c:381
+#: ../src/iop/highlights.c:379
 msgid "highlight reconstruction method"
 msgstr "Metodo ricostruzione alteluci"
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:382
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -4285,7 +4285,7 @@ msgstr ""
 "Regola manualmente la soglia di tosaggio contro le alteluci magenta (non "
 "dovrebbe mai essere necessario modificarlo)"
 
-#: ../src/iop/highlights.c:386
+#: ../src/iop/highlights.c:384
 msgid "clipping threshold"
 msgstr "Soglia di tosaggio"
 
@@ -5083,11 +5083,11 @@ msgstr "Bilanciamento della divisione dei toni"
 
 #: ../src/iop/splittoning.c:603
 msgid ""
-"compress the effect on highlighs/shadows and\n"
+"compress the effect on highlights/shadows and\n"
 "preserve midtones"
 msgstr ""
 "Comprimi l'effetto sulle alteluci/ombre e\n"
-"mantieni toni medi"
+"preserva i toni medi"
 
 #: ../src/iop/spots.c:54
 msgid "spot removal"
@@ -5370,7 +5370,7 @@ msgstr "Spostamento verticale del centro dell'effetto"
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
-"1 produces a circle or elipse\n"
+"1 produces a circle or ellipse\n"
 "2 produces a diamond"
 msgstr ""
 "Forma\n"
@@ -6021,7 +6021,7 @@ msgstr "Come gestire la coda di sviluppo esistente"
 
 #: ../src/libs/copy_history.c:295
 msgid "load sidecar file"
-msgstr "Carica file di elaborazione"
+msgstr "Carica file XMP"
 
 #: ../src/libs/copy_history.c:297
 msgid ""
@@ -6033,7 +6033,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:300
 msgid "write sidecar files"
-msgstr "Scrivi file di elaborazione"
+msgstr "Scrivi file XMP"
 
 #: ../src/libs/copy_history.c:302
 msgid "write history stack and tags to xmp sidecar files"
@@ -6067,12 +6067,12 @@ msgstr "Incolla "
 #: ../src/libs/copy_history.c:345
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "Carica file di elaborazione"
+msgstr "Carica file XMP"
 
 #: ../src/libs/copy_history.c:346
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "Scrivi file di elaborazione"
+msgstr "Scrivi file XMP"
 
 #: ../src/libs/export.c:72
 msgid "export selected"
@@ -7012,7 +7012,7 @@ msgstr ""
 
 #: ../src/libs/select.c:126
 msgid "select untouched"
-msgstr "Seleziona le immagini non modificate"
+msgstr "Selez. non modificate"
 
 #: ../src/libs/select.c:128
 msgid ""
@@ -7424,7 +7424,7 @@ msgstr "Seleziona rullino"
 #: ../src/libs/tools/filmstrip.c:198 ../src/libs/tools/lighttable.c:154
 msgctxt "accel"
 msgid "select untouched"
-msgstr "Seleziona non modificate"
+msgstr "Selez. non modificate"
 
 #: ../src/libs/tools/filter.c:53
 msgid "filter"
@@ -7738,12 +7738,12 @@ msgstr "Anteprima"
 msgid "map"
 msgstr "Mappa"
 
-#: ../src/views/map.c:553
+#: ../src/views/map.c:555
 msgctxt "accel"
 msgid "undo"
 msgstr "Annulla"
 
-#: ../src/views/map.c:554
+#: ../src/views/map.c:556
 msgctxt "accel"
 msgid "redo"
 msgstr "Ripristina"
@@ -7782,11 +7782,11 @@ msgstr "Cerchio #%d"
 msgid "path #%d"
 msgstr "Tracciato #%d"
 
-#: ../src/develop/masks/masks.c:841 ../src/libs/masks.c:810
+#: ../src/develop/masks/masks.c:847 ../src/libs/masks.c:810
 msgid "add existing shape"
 msgstr "Aggiungi forma esistente"
 
-#: ../src/develop/masks/masks.c:868
+#: ../src/develop/masks/masks.c:874
 msgid "use same shapes as"
 msgstr "Usa la stessa forma di"
 
