@@ -33,7 +33,7 @@ weight(const float4 c1, const float4 c2, const float sharpen)
 
 __kernel void
 eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_only image2d_t detail,
-     const int width, const int height, const int scale, const float sharpen)
+     const int width, const int height, const int scale, const float sharpen, global const float *filter)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -41,8 +41,6 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   if(x >= width || y >= height) return;
 
   const int mult = 1<<scale;
-  float filter[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };  // 1/16, 4/16, 6/16, 4/16, 1/16
-
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 sum = (float4)(0.0f);
@@ -51,9 +49,10 @@ eaw_decompose (__read_only image2d_t in, __write_only image2d_t coarse, __write_
   {
     int xx = mad24(mult, i - 2, x);
     int yy = mad24(mult, j - 2, y);
+    int k  = mad24(j, 5, i);
 
     float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
-    float4 w = filter[i]*filter[j]*weight(pixel, px, sharpen);
+    float4 w = filter[k]*weight(pixel, px, sharpen);
 
     sum += w*px;
     wgt += w;

@@ -537,9 +537,17 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
+  cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem dev_detail[max_scale];
   for(int k=0; k<max_scale; k++) dev_detail[k] = NULL;
+
+  float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };  // 1/16, 4/16, 6/16, 4/16, 1/16
+  float mm[5][5];
+  for(int j=0; j<5; j++) for(int i=0; i<5; i++) mm[j][i] = m[i] * m[j];
+
+  dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*25, mm);
+  if (dev_filter == NULL) goto error;
 
   /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
      need to keep it for blendops */
@@ -583,6 +591,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 4, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 5, sizeof(unsigned int), (void *)&scale);
     dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 6, sizeof(float), (void *)&sharp[s]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_decompose, 7, sizeof(cl_mem), (void *)&dev_filter);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_decompose, sizes);
     if(err != CL_SUCCESS) goto error;
@@ -626,12 +635,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   dt_opencl_finish(devid);
 
+  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
   return TRUE;
 
 error:
+  if(dev_filter != NULL) dt_opencl_release_mem_object(dev_filter);
   if(dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   for(int k=0; k<max_scale; k++)
     if (dev_detail[k] != NULL) dt_opencl_release_mem_object(dev_detail[k]);
