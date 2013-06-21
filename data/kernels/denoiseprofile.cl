@@ -291,7 +291,7 @@ weight(const float4 c1, const float4 c2, const float inv_sigma2)
 
 kernel void
 denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, write_only image2d_t detail,
-     const int width, const int height, const unsigned int scale, const float inv_sigma2)
+     const int width, const int height, const unsigned int scale, const float inv_sigma2, global const float *filter)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -299,18 +299,19 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
   if(x >= width || y >= height) return;
 
   const int mult = 1<<scale;
-  float filter[5] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f };  // 1/16, 4/16, 6/16, 4/16, 1/16
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 sum = (float4)(0.0f);
   float4 wgt = (float4)(0.0f);
+
   for(int j=0;j<5;j++) for(int i=0;i<5;i++)
   {
     int xx = mad24(mult, i - 2, x);
     int yy = mad24(mult, j - 2, y);
+    int k  = mad24(j, 5, i);
 
     float4 px = read_imagef(in, sampleri, (int2)(xx, yy));
-    float4 w = filter[i]*filter[j]*weight(pixel, px, inv_sigma2);
+    float4 w = filter[k]*weight(pixel, px, inv_sigma2);
 
     sum += w*px;
     wgt += w;
