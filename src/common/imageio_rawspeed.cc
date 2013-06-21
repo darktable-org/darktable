@@ -129,9 +129,6 @@ dt_imageio_open_rawspeed(
     img->filters = 0;
     if( !r->isCFA )
     {
-      img->flags &= ~DT_IMAGE_LDR;
-      img->flags |= DT_IMAGE_RAW;
-
       dt_imageio_retval_t ret = dt_imageio_open_rawspeed_sraw(img, r, a);
       return ret;
     }
