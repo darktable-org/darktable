@@ -209,8 +209,8 @@ blur_line_z(
   const int j = get_global_id(1);
   if(k >= size1 || j >= size2) return;
 
-  const float w1 = 4.f/16.f;
-  const float w2 = 2.f/16.f;
+  const float w1 = 4.0f/16.0f;
+  const float w2 = 2.0f/16.0f;
 
   int index = k*offset1 + j*offset2;
 
@@ -251,9 +251,9 @@ blur_line(
   const int j = get_global_id(1);
   if(k >= size1 || j >= size2) return;
 
-  const float w0 = 6.f/16.f;
-  const float w1 = 4.f/16.f;
-  const float w2 = 1.f/16.f;
+  const float w0 = 6.0f/16.0f;
+  const float w1 = 4.0f/16.0f;
+  const float w2 = 1.0f/16.0f;
   int index = k*offset1 + j*offset2;
 
   float tmp1 = ibuf[index];

@@ -1136,7 +1136,7 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   const float Lm = (blend * 0.5f + (1.0f-blend)*lookup(table_L, select)) - 0.5f;
   const float hm = (blend * 0.5f + (1.0f-blend)*lookup(table_b, select)) - 0.5f;
   blend *= blend; // saturation isn't as prone to artifacts:
-  // const float Cm = 2.0f* (blend*.5f + (1.0f-blend)*lookup(d->lut[1], select));
+  // const float Cm = 2.0f* (blend*0.5f + (1.0f-blend)*lookup(d->lut[1], select));
   const float Cm = 2.0f * lookup(table_a, select);
   const float L = pixel.x * pow(2.0f, 4.0f*Lm);
 
