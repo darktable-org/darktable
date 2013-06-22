@@ -279,9 +279,9 @@ clip_and_zoom(__read_only image2d_t in, __write_only image2d_t out, const int wi
 
   float4 color = (float4)(0.0f, 0.0f, 0.0f, 0.0f);
 
-  const float px_footprint = .5f/r_scale;
+  const float px_footprint = 0.5f/r_scale;
   const int samples = ((int)px_footprint);
-  float2 p = backtransformf((float2)(x+.5f, y+.5f), r_x, r_y, r_wd, r_ht, r_scale);
+  float2 p = backtransformf((float2)(x+0.5f, y+0.5f), r_x, r_y, r_wd, r_ht, r_scale);
   for(int j=-samples;j<=samples;j++) for(int i=-samples;i<=samples;i++)
   {
     float4 px = read_imagef(in, samplerf, (float2)(p.x+i, p.y+j));
@@ -417,13 +417,13 @@ ppg_demosaic_green (__read_only image2d_t in, __write_only image2d_t out, const 
       // use guessy
       const float m = fmin(pym.x, pyM.x);
       const float M = fmax(pym.x, pyM.x);
-      color.y = fmax(fmin(guessy*.25f, M), m);
+      color.y = fmax(fmin(guessy*0.25f, M), m);
     }
     else
     {
       const float m = fmin(pxm.x, pxM.x);
       const float M = fmax(pxm.x, pxM.x);
-      color.y = fmax(fmin(guessx*.25f, M), m);
+      color.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
   write_imagef (out, (int2)(x, y), color);
@@ -492,13 +492,13 @@ ppg_demosaic_green_median (__read_only image2d_t in, __write_only image2d_t out,
       // use guessy
       const float m = fmin(pym.y, pyM.y);
       const float M = fmax(pym.y, pyM.y);
-      pc.y = fmax(fmin(guessy*.25f, M), m);
+      pc.y = fmax(fmin(guessy*0.25f, M), m);
     }
     else
     {
       const float m = fmin(pxm.y, pxM.y);
       const float M = fmax(pxm.y, pxM.y);
-      pc.y = fmax(fmin(guessx*.25f, M), m);
+      pc.y = fmax(fmin(guessx*0.25f, M), m);
     }
   }
   write_imagef (out, (int2)(x, y), pc);
@@ -532,13 +532,13 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
     float4 nr = read_imagef(in, sampleri, (int2)(col+1, row));
     if(FC(row, col+1, filters) == 0) // red nb in same row
     {
-      color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*.5f;
-      color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*.5f;
+      color.z = (nt.z + nb.z + 2.0f*color.y - nt.y - nb.y)*0.5f;
+      color.x = (nl.x + nr.x + 2.0f*color.y - nl.y - nr.y)*0.5f;
     }
     else
     { // blue nb
-      color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*.5f;
-      color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*.5f;
+      color.x = (nt.x + nb.x + 2.0f*color.y - nt.y - nb.y)*0.5f;
+      color.z = (nl.z + nr.z + 2.0f*color.y - nl.y - nr.y)*0.5f;
     }
   }
   else
@@ -555,9 +555,9 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
       const float guess1 = ntl.z + nbr.z + 2.0f*color.y - ntl.y - nbr.y;
       const float diff2  = fabs(ntr.z - nbl.z) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
       const float guess2 = ntr.z + nbl.z + 2.0f*color.y - ntr.y - nbl.y;
-      if     (diff1 > diff2) color.z = guess2 * .5f;
-      else if(diff1 < diff2) color.z = guess1 * .5f;
-      else color.z = (guess1 + guess2)*.25f;
+      if     (diff1 > diff2) color.z = guess2 * 0.5f;
+      else if(diff1 < diff2) color.z = guess1 * 0.5f;
+      else color.z = (guess1 + guess2)*0.25f;
     }
     else // c == 2, blue pixel, fill red:
     {
@@ -565,9 +565,9 @@ ppg_demosaic_redblue (__read_only image2d_t in, __write_only image2d_t out, cons
       const float guess1 = ntl.x + nbr.x + 2.0f*color.y - ntl.y - nbr.y;
       const float diff2  = fabs(ntr.x - nbl.x) + fabs(ntr.y - color.y) + fabs(nbl.y - color.y);
       const float guess2 = ntr.x + nbl.x + 2.0f*color.y - ntr.y - nbl.y;
-      if     (diff1 > diff2) color.x = guess2 * .5f;
-      else if(diff1 < diff2) color.x = guess1 * .5f;
-      else color.x = (guess1 + guess2)*.25f;
+      if     (diff1 > diff2) color.x = guess2 * 0.5f;
+      else if(diff1 < diff2) color.x = guess1 * 0.5f;
+      else color.x = (guess1 + guess2)*0.25f;
     }
   }
   write_imagef (out, (int2)(x, y), color);

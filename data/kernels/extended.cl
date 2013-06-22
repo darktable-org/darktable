@@ -589,7 +589,7 @@ global_tonemap_filmic (read_only image2d_t in, write_only image2d_t out, const i
   float l = pixel.x * 0.01f;
   float m = fmax(0.0f, l - 0.004f);
 
-  pixel.x = 100.0f * ((m*(6.2f*m+.5f))/(m*(6.2f*m+1.7f)+0.06f));
+  pixel.x = 100.0f * ((m*(6.2f*m+0.5f))/(m*(6.2f*m+1.7f)+0.06f));
 
   write_imagef (out, (int2)(x, y), pixel);
 }
