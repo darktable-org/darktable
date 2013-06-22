@@ -450,7 +450,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t)
   {
-    0, 25, 1, 1
+    0, 10, 1, 1
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_lowpass_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lowpass_params_t));
