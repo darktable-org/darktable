@@ -525,7 +525,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   /* courseness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 100.0, 3200.0, 20.0, p->scale*53.3, 0);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 3200.0, 20.0, p->scale*53.3, 0);
   dt_bauhaus_widget_set_label(g->scale1, _("coarseness"));
   dt_bauhaus_slider_set_format(g->scale1,"%.0fISO");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
