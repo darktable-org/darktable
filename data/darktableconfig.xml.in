@@ -214,7 +214,7 @@
   <dtconfig>
     <name>plugins/capture/storage/namepattern</name>
     <type>string</type>
-    <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
+    <default>IMG_$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
     <shortdescription>rename pattern for captured images</shortdescription>
     <longdescription/>
   </dtconfig>
