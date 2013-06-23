@@ -1740,49 +1740,49 @@ void gui_init(struct dt_iop_module_t *self)
   int pos = -1;
   dt_iop_lensfun_modifier_t *modifier;
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("none"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("none"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_NONE;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("all"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("all"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_ALL;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("distortion & TCA"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("distortion & TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST_TCA;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("distortion & vignetting"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("distortion & vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST_VIGN;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("TCA & vignetting"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("TCA & vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_TCA_VIGN;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("only distortion"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("only distortion"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_DIST;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("only TCA"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("only TCA"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_TCA;
   modifier->pos = ++pos;
 
   modifier = (dt_iop_lensfun_modifier_t *)g_malloc0(sizeof(dt_iop_lensfun_modifier_t));
-  g_strlcpy(modifier->name, _("only vignetting"), sizeof(modifier->name));
+  dt_utf8_strlcpy(modifier->name, _("only vignetting"), sizeof(modifier->name));
   g->modifiers = g_list_append(g->modifiers, modifier);
   modifier->modflag = LENSFUN_MODFLAG_VIGN;
   modifier->pos = ++pos;

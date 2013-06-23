@@ -33,6 +33,7 @@ guint dt_util_str_occurence(const gchar *haystack,const gchar *needle);
 gchar* dt_util_glist_to_str(const gchar* separator, GList * items, const unsigned int count);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
 gchar* dt_util_fix_path(const gchar* path);
+size_t dt_utf8_strlcpy(char *dest, const char *src, size_t n);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
