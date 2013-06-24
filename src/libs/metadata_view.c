@@ -214,7 +214,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
-    dt_image_full_path(img->id, value, MAXPATHLEN);
+    gboolean from_cache = FALSE;
+    dt_image_full_path(img->id, value, MAXPATHLEN, &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], value);
 
     /* EXIF */

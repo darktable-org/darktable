@@ -55,10 +55,11 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
 {
   /* construct a temporary file name */
   char tmpdir[DT_MAX_PATH_LEN]= {0};
+  gboolean from_cache = FALSE;
   dt_loc_get_tmp_dir (tmpdir,DT_MAX_PATH_LEN);
 
   char dirname[DT_MAX_PATH_LEN];
-  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN);
+  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));

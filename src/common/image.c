@@ -39,6 +39,8 @@
 #include <glob.h>
 #include <glib/gstdio.h>
 
+static void _image_local_copy_full_path(const int imgid, char *pathname, int len);
+
 int dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
@@ -128,7 +130,7 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
   pathname[len-1] = '\0';
 }
 
-void dt_image_full_path(const int imgid, char *pathname, int len)
+void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -138,6 +140,42 @@ void dt_image_full_path(const int imgid, char *pathname, int len)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), len);
+  }
+  sqlite3_finalize(stmt);
+
+  if (*from_cache && !g_file_test(pathname, G_FILE_TEST_EXISTS))
+  {
+    _image_local_copy_full_path(imgid, pathname, len);
+    *from_cache = TRUE;
+  }
+  else
+    *from_cache = FALSE;
+}
+
+static void _image_local_copy_full_path(const int imgid, char *pathname, int len)
+{
+  sqlite3_stmt *stmt;
+  *pathname='\0';
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT folder || '/' || filename FROM images, film_rolls "
+                              "WHERE images.film_id = film_rolls.id AND images.id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char filename[DT_MAX_PATH_LEN];
+    char cachedir[DT_MAX_PATH_LEN];
+    g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), len);
+    char *md5_filename = g_compute_checksum_for_string (G_CHECKSUM_MD5, filename, strlen (filename));
+    dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+
+    // and finally, add extension, needed as some part of the code is looking for the extension
+    char *c = filename + strlen(filename);
+    while(*c != '.' && c > filename) c--;
+
+    // cache filename format: <cachedir>/imf-<id>-<MD5>.<ext>
+    snprintf(pathname, len, "%s/img-%d-%s%s", cachedir, imgid, md5_filename, c);
+
+    g_free(md5_filename);
   }
   sqlite3_finalize(stmt);
 }
@@ -696,7 +734,8 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   int32_t result = -1;
   gchar oldimg[DT_MAX_PATH_LEN] = {0};
   gchar newimg[DT_MAX_PATH_LEN] = {0};
-  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN);
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN, &from_cache);
   gchar *newdir = NULL;
 
   sqlite3_stmt *film_stmt;
@@ -791,6 +830,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   sqlite3_stmt *stmt;
   gchar srcpath[DT_MAX_PATH_LEN] = {0};
   gchar *newdir = NULL;
+  gboolean from_cache = FALSE;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
@@ -801,7 +841,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
-    dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN);
+    dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
     gchar *imgbname = g_path_get_basename(srcpath);
     gchar *destpath = g_build_filename(newdir, imgbname, NULL);
     GFile *src = g_file_new_for_path(srcpath);
@@ -905,16 +945,23 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
 void dt_image_write_sidecar_file(int imgid)
 {
+  gboolean from_cache;
+
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     char filename[DT_MAX_PATH_LEN+8];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, filename);
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+
+    // only write xmp at the original location
+    if (!from_cache)
+    {
+      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
+      char *c = filename + strlen(filename);
+      sprintf(c, ".xmp");
+      dt_exif_xmp_write(imgid, filename);
+    }
   }
 }
 

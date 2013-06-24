@@ -74,10 +74,11 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   GList *t = t1->index;
   while(t)
   {
+    gboolean from_cache = FALSE;
     imgid = (long int)t->data;
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
     char dtfilename[DT_MAX_PATH_LEN+4];
-    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN);
+    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
@@ -230,7 +231,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
   char pathname[DT_MAX_PATH_LEN];
-  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
+  gboolean from_cache = TRUE;
+  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
   // last param is dng mode
   const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
@@ -393,7 +395,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -991,7 +994,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
-        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
+        gboolean from_cache = TRUE;
+        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);

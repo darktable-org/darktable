@@ -123,8 +123,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
-/** returns the full path name where the image was imported from. */
-void dt_image_full_path(const int imgid, char *pathname, int len);
+/** returns the full path name where the image was imported from. from_cache=TRUE check and return local cached filename if any. */
+void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache);
 /** returns the full directory of the associated film roll. */
 void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
