@@ -310,6 +310,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_edit;
   int *masks_combo_ids;
   int masks_shown;
+  int control_button_pressed;
 }
 dt_iop_gui_blend_data_t;
 

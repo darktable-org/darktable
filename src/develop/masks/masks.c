@@ -597,6 +597,7 @@ void dt_masks_init_formgui(dt_develop_t *dev)
 
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
+  dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
@@ -613,7 +614,7 @@ void dt_masks_reset_form_gui(void)
   if (m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-    bd->masks_shown = 0;
+    bd->masks_shown = DT_MASKS_EDIT_OFF;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), 0);
   }
 }
@@ -627,7 +628,7 @@ void dt_masks_reset_show_masks_icons(void)
     if ((m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
     {
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)m->blend_data;
-      bd->masks_shown = 0;
+      bd->masks_shown = DT_MASKS_EDIT_OFF;
       GTK_TOGGLE_BUTTON(bd->masks_edit)->active = 0;
       gtk_widget_queue_draw(bd->masks_edit);
     }
@@ -636,7 +637,7 @@ void dt_masks_reset_show_masks_icons(void)
 }
 
 
-void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
+void dt_masks_set_edit_mode(struct dt_iop_module_t *module, int value)
 {
   if (!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
@@ -654,8 +655,10 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value)
     bd->masks_shown = value;
   }
   dt_masks_change_form_gui(grp);
+  darktable.develop->form_gui->edit_mode = value;
   if (value && form) dt_dev_masks_selection_change(darktable.develop,form->formid,FALSE);
   else dt_dev_masks_selection_change(darktable.develop,0,FALSE);
+
   dt_control_queue_redraw_center();
 }
 
@@ -665,12 +668,12 @@ void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, dt_iop_mod
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
   if (module->blend_params->mask_id==0)
   {
-    bd->masks_shown = 0;
+    bd->masks_shown = DT_MASKS_EDIT_OFF;
     return;
   }
 
   //reset the gui
-  dt_masks_set_edit_mode(module,!bd->masks_shown);
+  dt_masks_set_edit_mode(module, (bd->masks_shown == DT_MASKS_EDIT_OFF ? DT_MASKS_EDIT_FULL : DT_MASKS_EDIT_OFF));
 }
 
 static void _menu_no_masks(struct dt_iop_module_t *module)
@@ -962,7 +965,7 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
   else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
 
   dt_bauhaus_combobox_set(bd->masks_combo,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
 }
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)
