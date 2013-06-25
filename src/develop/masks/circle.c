@@ -122,7 +122,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/border", circle->border);
       }
-      else
+      else if (gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
         if(up && circle->radius > 0.002f) circle->radius *= 0.97f;
         else  if(circle->radius < 1.0f  ) circle->radius *= 1.0f/0.97f;
@@ -133,6 +133,10 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
           dt_conf_set_float("plugins/darkroom/spots/circle_size", circle->radius);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/size", circle->radius);
+      }
+      else
+      {
+        return 0;
       }
       dt_masks_update_image(darktable.develop);
     }
@@ -146,7 +150,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
 {
   if (which != 1) return 0;
   if (!gui) return 0;
-  if (gui->source_selected && !gui->creation)
+  if (gui->source_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
     if (!gpt) return 0;
@@ -158,7 +162,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
     gui->dy = gpt->source[1] - gui->posy;
     return 1;
   }
-  else if (gui->form_selected && !gui->creation)
+  else if (gui->form_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
     if (!gpt) return 0;
@@ -258,7 +262,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
 static int dt_circle_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
-  if (which == 3 && parentid > 0)
+  if (which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_init_formgui(darktable.develop);
     //we hide the form
@@ -391,6 +395,7 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module,float pzx
     }
     dt_control_queue_redraw_center();
     if (!gui->form_selected && !gui->border_selected) return 0;
+    if (gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
     return 1;
   }
 

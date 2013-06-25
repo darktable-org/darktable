@@ -55,6 +55,14 @@ typedef enum dt_masks_points_states_t
 }
 dt_masks_points_states_t;
 
+typedef enum dt_masks_edit_mode_t
+{
+  DT_MASKS_EDIT_OFF = 0,
+  DT_MASKS_EDIT_FULL = 1,
+  DT_MASKS_EDIT_RESTRICTED = 2
+}
+dt_masks_edit_mode_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -125,6 +133,7 @@ typedef struct dt_masks_form_gui_t
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
+  int edit_mode;
   int point_selected;
   int point_edited;
   int feather_selected;
@@ -197,7 +206,7 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 
 void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_iop_module_t *module);
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
-void dt_masks_set_edit_mode(struct dt_iop_module_t *module,gboolean value);
+void dt_masks_set_edit_mode(struct dt_iop_module_t *module, int value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
 void dt_masks_iop_combo_populate(struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module, struct dt_iop_module_t *src);
