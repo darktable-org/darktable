@@ -2224,7 +2224,7 @@ int
 dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
 
 {  
-  if(old_version == 1 && new_version == 5)
+  if(old_version == 1 && new_version == 6)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
@@ -2240,7 +2240,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 6)
   {
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
@@ -2261,7 +2261,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && new_version == 6)
   {
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
@@ -2281,7 +2281,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
@@ -2299,6 +2299,20 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active);  // knock out old unused "active" flag
     memcpy(n->blendif_parameters, o->blendif_parameters, 4*DEVELOP_BLENDIF_SIZE*sizeof(float));
 
+    return 0;
+  }
+
+  if(old_version == 5 && new_version == 6)
+  {
+    if(length != sizeof(dt_develop_blend_params5_t)) return 1;
+
+    dt_develop_blend_params5_t *o = (dt_develop_blend_params5_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    // this is needed as version 5 contained a bug which screwed up history stacks of even older
+    // versions. potentially bad history stacks can be identified by an active bit no. 32 in blendif.
+    memcpy(n, o, sizeof(dt_develop_blend_params_t));  // start with a copy of version 5 parameters
+    n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif) & ~(1u << DEVELOP_BLENDIF_active);
     return 0;
   }
 
