@@ -381,6 +381,9 @@ void dt_image_remove(const int32_t imgid)
   // make sure we remove from the cache first, or else the cache will look for imgid in sql
   dt_image_cache_remove(darktable.image_cache, imgid);
 
+  // if a local copy exists, remove it
+  dt_image_local_copy_reset(imgid);
+
   int new_group_id = dt_grouping_remove_from_group(imgid);
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
@@ -748,10 +751,15 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
+    gchar copysrcpath[DT_MAX_PATH_LEN];
+    gchar copydestpath[DT_MAX_PATH_LEN];
     gchar *imgbname = g_path_get_basename(oldimg);
     g_snprintf(newimg, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
     g_free(imgbname);
     g_free(newdir);
+
+    // get current local copy if any
+    _image_local_copy_full_path(imgid, copysrcpath, DT_MAX_PATH_LEN);
 
     // statement for getting ids of the image to be moved and it's duplicates
     sqlite3_stmt *duplicates_stmt;
@@ -809,6 +817,23 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         dup_list = g_list_delete_link(dup_list, dup_list);
       }
       g_list_free(dup_list);
+
+      // finaly, rename local copy if any
+      if (g_file_test(copysrcpath, G_FILE_TEST_EXISTS))
+      {
+        // get new name
+        _image_local_copy_full_path(imgid, copydestpath, DT_MAX_PATH_LEN);
+
+        GFile *cold = g_file_new_for_path(copysrcpath);
+        GFile *cnew = g_file_new_for_path(copydestpath);
+
+        if (g_file_move(cold, cnew, 0, NULL, NULL, NULL, NULL) != TRUE)
+          fprintf(stderr, "[dt_image_move] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+
+        g_object_unref(cold);
+        g_object_unref(cnew);
+      }
+
       result = 0;
     }
     else
@@ -937,6 +962,51 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   }
 
   return newid;
+}
+
+void dt_image_local_copy_set(const int32_t imgid)
+{
+  gchar srcpath[DT_MAX_PATH_LEN] = {0};
+  gchar destpath[DT_MAX_PATH_LEN] = {0};
+
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
+
+  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+
+  if (!g_file_test(destpath, G_FILE_TEST_EXISTS))
+  {
+    GFile *src = g_file_new_for_path(srcpath);
+    GFile *dest = g_file_new_for_path(destpath);
+
+    // copy image to cache directory
+    GError *gerror = NULL;
+    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+
+    g_object_unref(dest);
+    g_object_unref(src);
+  }
+}
+
+void dt_image_local_copy_reset(const int32_t imgid)
+{
+  gchar destpath[DT_MAX_PATH_LEN] = {0};
+  gchar cachedir[DT_MAX_PATH_LEN] = {0};
+  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+
+  //  remove cached file, but double check that this is really into the cache. We really want to avoid deleting
+  //  a user's original file.
+
+  dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+
+  if (g_file_test(destpath, G_FILE_TEST_EXISTS) && strstr(destpath, cachedir))
+  {
+    GFile *dest = g_file_new_for_path(destpath);
+
+    // delete image from cache directory
+    g_file_delete(dest, NULL, NULL);
+    g_object_unref(dest);
+  }
 }
 
 // *******************************************************

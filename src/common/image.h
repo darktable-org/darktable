@@ -318,6 +318,8 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
 /** physically cope image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+void dt_image_local_copy_set(const int32_t imgid);
+void dt_image_local_copy_reset(const int32_t imgid);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);

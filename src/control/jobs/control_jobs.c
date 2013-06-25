@@ -872,6 +872,24 @@ abort:
   return;
 }
 
+void dt_control_set_local_copy_images()
+{
+  dt_job_t j;
+  dt_control_local_copy_images_job_init(&j);
+  j.user_data=(void *)1;
+  dt_control_add_job(darktable.control, &j);
+  return;
+}
+
+void dt_control_reset_local_copy_images()
+{
+  dt_job_t j;
+  dt_control_local_copy_images_job_init(&j);
+  j.user_data=(void *)0;
+  dt_control_add_job(darktable.control, &j);
+  return;
+}
+
 void dt_control_move_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "move images");
@@ -888,6 +906,14 @@ void dt_control_copy_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
+void dt_control_local_copy_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "local copy images");
+  job->execute = &dt_control_local_copy_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_selected_init(t);
+}
+
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
@@ -898,6 +924,23 @@ int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
          _("copying %d image"), _("copying %d images"));
+}
+
+int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    if ((long int)job->user_data == 1)
+      dt_image_local_copy_set(imgid);
+    else
+      dt_image_local_copy_reset(imgid);
+    t = g_list_delete_link(t, t);
+  }
+  return 0;
 }
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
