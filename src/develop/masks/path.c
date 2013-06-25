@@ -849,7 +849,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border*amount);
         }
       }
-      else
+      else if (gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
         //get the center of gravity of the form (like if it was a simple polygon)
         float bx = 0.0f;
@@ -895,6 +895,10 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
 
         //now the redraw/save stuff
         _path_init_ctrl_points(form);
+      }
+      else
+      {
+        return 0;
       }
 
       dt_masks_write_form(form,darktable.develop);
@@ -1019,7 +1023,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
       dt_control_queue_redraw_center();
       return 1;
     }
-    else if (gui->source_selected)
+    else if (gui->source_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
       dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
       if (!gpt) return 0;
@@ -1031,7 +1035,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
       gui->dy = gpt->source[3] - gui->posy;
       return 1;
     }
-    else if (gui->form_selected)
+    else if (gui->form_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
       gui->form_dragging = TRUE;
       gui->point_edited = -1;
@@ -1131,7 +1135,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
     }
     gui->point_edited = -1;
   }
-  else if (which==3 && parentid>0)
+  else if (which==3 && parentid>0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_init_formgui(darktable.develop);
     //we hide the form
@@ -1610,6 +1614,7 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module,float pzx, 
   }
   dt_control_queue_redraw_center();
   if (!gui->form_selected && !gui->border_selected && gui->seg_selected<0) return 0;
+  if (gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
   return 1;
 }
 
