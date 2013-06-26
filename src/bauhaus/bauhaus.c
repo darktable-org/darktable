@@ -1821,13 +1821,13 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 &&
-              (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
+              (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
       {
         darktable.bauhaus->keys[--darktable.bauhaus->keys_cnt] = 0;
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
-              (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
+              (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
       {
         // accept input
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
@@ -1837,7 +1837,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
-      else if(event->keyval == GDK_Escape)
+      else if(event->keyval == GDK_KEY_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
@@ -1862,7 +1862,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 &&
-              (event->keyval == GDK_BackSpace || event->keyval == GDK_Delete))
+              (event->keyval == GDK_KEY_BackSpace || event->keyval == GDK_KEY_Delete))
       {
         darktable.bauhaus->keys_cnt -= (darktable.bauhaus->keys+darktable.bauhaus->keys_cnt) -
                                        g_utf8_prev_char(darktable.bauhaus->keys+darktable.bauhaus->keys_cnt);
@@ -1870,7 +1870,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         gtk_widget_queue_draw(darktable.bauhaus->popup_area);
       }
       else if(darktable.bauhaus->keys_cnt > 0 && darktable.bauhaus->keys_cnt + 1 < 64 &&
-              (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter))
+              (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter))
       {
         // accept unique matches only for editable:
         if(darktable.bauhaus->current->data.combobox.editable)
@@ -1883,22 +1883,22 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
-      else if(event->keyval == GDK_Escape)
+      else if(event->keyval == GDK_KEY_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
       }
-      else if(event->keyval == GDK_Up)
+      else if(event->keyval == GDK_KEY_Up)
       {
         combobox_popup_scroll(1);
       }
-      else if(event->keyval == GDK_Down)
+      else if(event->keyval == GDK_KEY_Down)
       {
         combobox_popup_scroll(0);
       }
-      else if(event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
+      else if(event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
       {
         // return pressed, but didn't type anything
         darktable.bauhaus->end_mouse_y = -1; // negative will use currently highlighted instead.

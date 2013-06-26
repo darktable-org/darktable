@@ -258,16 +258,16 @@ static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user
 
   switch(event->keyval)
   {
-    case GDK_Return:
-    case GDK_KP_Enter:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
       write_metadata(user_data);
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       break;
-    case GDK_Escape:
+    case GDK_KEY_Escape:
       update(user_data, FALSE);
       gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
       break;
-    case GDK_Tab:
+    case GDK_KEY_Tab:
       write_metadata(user_data);
       break;
     default:

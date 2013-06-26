@@ -88,7 +88,7 @@ _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratable,
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "jump back to previous collection"),
-                        GDK_k, GDK_CONTROL_MASK);
+                        GDK_KEY_k, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

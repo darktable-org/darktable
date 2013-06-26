@@ -552,15 +552,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
 void init_key_accels(dt_view_t *self)
 {
-  dt_accel_register_view(self, NC_("accel", "undo"), GDK_z, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "redo"), GDK_r, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_r, GDK_CONTROL_MASK);
 }
 
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
                                         GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
-  if (keyval == GDK_z)
+  if (keyval == GDK_KEY_z)
     dt_undo_do_undo(darktable.undo, DT_UNDO_GEOTAG);
   else
     dt_undo_do_redo(darktable.undo, DT_UNDO_GEOTAG);

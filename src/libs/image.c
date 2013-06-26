@@ -246,7 +246,7 @@ gui_cleanup (dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "remove from collection"),
-                        GDK_Delete, 0);
+                        GDK_KEY_Delete, 0);
   dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
   dt_accel_register_lib(self,
                         NC_("accel", "rotate selected images 90 degrees CW"),
@@ -255,11 +255,11 @@ void init_key_accels(dt_lib_module_t *self)
                         NC_("accel", "rotate selected images 90 degrees CCW"),
                         0, 0);
   dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_d, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_KEY_d, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
   // Grouping keys
-  dt_accel_register_lib(self, NC_("accel", "group"), GDK_g, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

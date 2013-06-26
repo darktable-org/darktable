@@ -2812,7 +2812,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "commit"),
-                        GDK_Return, 0);
+                        GDK_KEY_Return, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
 }
 

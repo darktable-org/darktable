@@ -1669,29 +1669,29 @@ void init_key_accels(dt_view_t *self)
 {
   // Film strip shortcuts
   dt_accel_register_view(self, NC_("accel", "toggle film strip"),
-                         GDK_f, GDK_CONTROL_MASK);
+                         GDK_KEY_f, GDK_CONTROL_MASK);
 
   // Zoom shortcuts
   dt_accel_register_view(self, NC_("accel", "zoom close-up"),
-                         GDK_1, GDK_MOD1_MASK);
+                         GDK_KEY_1, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fill"),
-                         GDK_2, GDK_MOD1_MASK);
+                         GDK_KEY_2, GDK_MOD1_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom fit"),
-                         GDK_3, GDK_MOD1_MASK);
+                         GDK_KEY_3, GDK_MOD1_MASK);
 
   // enable shortcut to export with current export settings:
   dt_accel_register_view(self, NC_("accel", "export"),
-                         GDK_e, GDK_CONTROL_MASK);
+                         GDK_KEY_e, GDK_CONTROL_MASK);
 
   // Shortcut to skip images
   dt_accel_register_view(self, NC_("accel", "image forward"),
-                         GDK_space, 0);
+                         GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "image back"),
-                         GDK_BackSpace, 0);
+                         GDK_KEY_BackSpace, 0);
 
   // toggle overexposure indication
   dt_accel_register_view(self, NC_("accel", "overexposed"),
-                         GDK_o, 0);
+                         GDK_KEY_o, 0);
 }
 
 void connect_key_accels(dt_view_t *self)

@@ -1004,7 +1004,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
 
     return TRUE;
   }
-  else if(event->keyval == GDK_BackSpace)
+  else if(event->keyval == GDK_KEY_BackSpace)
   {
     // If a leaf node is selected, clear that accelerator
 
@@ -1046,7 +1046,7 @@ static gboolean tree_key_press_presets(GtkWidget *widget, GdkEventKey *event,
   if(event->is_modifier)
     return FALSE;
 
-  if(event->keyval == GDK_Delete || event->keyval == GDK_BackSpace)
+  if(event->keyval == GDK_KEY_Delete || event->keyval == GDK_KEY_BackSpace)
   {
     // If a leaf node is selected, delete that preset
 

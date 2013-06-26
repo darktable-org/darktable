@@ -80,7 +80,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "tag"), GDK_t, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "tag"), GDK_KEY_t, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -524,13 +524,13 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
   dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
   switch(event->keyval)
   {
-    case GDK_Escape:
+    case GDK_KEY_Escape:
       gtk_widget_destroy(d->floating_tag_window);
       return TRUE;
-    case GDK_Tab:
+    case GDK_KEY_Tab:
       return TRUE;
-    case GDK_Return:
-    case GDK_KP_Enter:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
     {
       const gchar *tag = gtk_entry_get_text(GTK_ENTRY(entry));
       /* attach tag to images  */

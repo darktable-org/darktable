@@ -882,10 +882,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   g_signal_connect (G_OBJECT (widget), "configure-event", G_CALLBACK (window_configure), NULL);
 
   // register keys for view switching
-  dt_accel_register_global(NC_("accel", "capture view"), GDK_t, 0);
-  dt_accel_register_global(NC_("accel", "lighttable view"), GDK_l, 0);
-  dt_accel_register_global(NC_("accel", "darkroom view"), GDK_d, 0);
-  dt_accel_register_global(NC_("accel", "map view"), GDK_m, 0);
+  dt_accel_register_global(NC_("accel", "capture view"), GDK_KEY_t, 0);
+  dt_accel_register_global(NC_("accel", "lighttable view"), GDK_KEY_l, 0);
+  dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
+  dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
 
   dt_accel_connect_global(
     "capture view",
@@ -908,7 +908,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   init_styles_key_accels();
   connect_styles_key_accels();
   // register ctrl-q to quit:
-  dt_accel_register_global(NC_("accel", "quit"), GDK_q, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "quit"), GDK_KEY_q, GDK_CONTROL_MASK);
 
   dt_accel_connect_global(
     "quit",
@@ -916,13 +916,13 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   // Contrast and brightness accelerators
   dt_accel_register_global(NC_("accel", "increase brightness"),
-                           GDK_F10, 0);
+                           GDK_KEY_F10, 0);
   dt_accel_register_global(NC_("accel", "decrease brightness"),
-                           GDK_F9, 0);
+                           GDK_KEY_F9, 0);
   dt_accel_register_global(NC_("accel", "increase contrast"),
-                           GDK_F8, 0);
+                           GDK_KEY_F8, 0);
   dt_accel_register_global(NC_("accel", "decrease contrast"),
-                           GDK_F7, 0);
+                           GDK_KEY_F7, 0);
 
   dt_accel_connect_global(
     "increase brightness",
@@ -942,8 +942,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                    (gpointer)0, NULL));
 
   // Full-screen accelerators
-  dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_F11, 0);
-  dt_accel_register_global(NC_("accel", "leave fullscreen"), GDK_Escape, 0);
+  dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_KEY_F11, 0);
+  dt_accel_register_global(NC_("accel", "leave fullscreen"), GDK_KEY_Escape, 0);
 
   dt_accel_connect_global(
     "toggle fullscreen",
@@ -955,14 +955,14 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
                    (gpointer)0, NULL));
 
   // Side-border hide/show
-  dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_Tab, 0);
+  dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
 
   // toggle view of header
   dt_accel_register_global(NC_("accel", "toggle header"),
-                           GDK_h, GDK_CONTROL_MASK);
+                           GDK_KEY_h, GDK_CONTROL_MASK);
 
   // View-switch
-  dt_accel_register_global(NC_("accel", "switch view"), GDK_period, 0);
+  dt_accel_register_global(NC_("accel", "switch view"), GDK_KEY_period, 0);
 
   dt_accel_connect_global(
     "switch view",
