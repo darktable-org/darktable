@@ -229,7 +229,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     else                          snprintf(value, vl, "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
 
-    snprintf(value, vl, "%.0f", img->exif_focal_length);
+    snprintf(value, vl, "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
 
     snprintf(value, vl, "%.2f m", img->exif_focus_distance);
