@@ -870,7 +870,7 @@ set_params (dt_lib_module_t *self, const void *params, int size)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "export"),
-                        GDK_e, GDK_CONTROL_MASK);
+                        GDK_KEY_e, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

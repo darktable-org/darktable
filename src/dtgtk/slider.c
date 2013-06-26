@@ -285,28 +285,28 @@ static void _slider_entry_abort(GtkDarktableSlider *slider)
 
 static gboolean _slider_entry_key_event(GtkWidget* widget, GdkEventKey* event, gpointer data)
 {
-  if (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
+  if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
     _slider_entry_commit(DTGTK_SLIDER(data));
-  if (event->keyval==GDK_Escape || event->keyval==GDK_Tab)
+  if (event->keyval==GDK_KEY_Escape || event->keyval==GDK_KEY_Tab)
     _slider_entry_abort(DTGTK_SLIDER(data));
   else if( // Masking allowed keys...
-    event->keyval == GDK_minus || event->keyval == GDK_KP_Subtract ||
-    event->keyval == GDK_plus || event->keyval == GDK_KP_Add ||
-    event->keyval == GDK_period || event->keyval == GDK_KP_Decimal ||
-    event->keyval == GDK_Left  ||
-    event->keyval == GDK_Right  ||
-    event->keyval == GDK_Delete  ||
-    event->keyval == GDK_BackSpace  ||
-    event->keyval == GDK_0  || event->keyval == GDK_KP_0  ||
-    event->keyval == GDK_1  || event->keyval == GDK_KP_1  ||
-    event->keyval == GDK_2  || event->keyval == GDK_KP_2  ||
-    event->keyval == GDK_3  || event->keyval == GDK_KP_3  ||
-    event->keyval == GDK_4  || event->keyval == GDK_KP_4  ||
-    event->keyval == GDK_5  || event->keyval == GDK_KP_5  ||
-    event->keyval == GDK_6  || event->keyval == GDK_KP_6  ||
-    event->keyval == GDK_7  || event->keyval == GDK_KP_7  ||
-    event->keyval == GDK_8  || event->keyval == GDK_KP_8  ||
-    event->keyval == GDK_9  || event->keyval == GDK_KP_9
+    event->keyval == GDK_KEY_minus || event->keyval == GDK_KEY_KP_Subtract ||
+    event->keyval == GDK_KEY_plus || event->keyval == GDK_KEY_KP_Add ||
+    event->keyval == GDK_KEY_period || event->keyval == GDK_KEY_KP_Decimal ||
+    event->keyval == GDK_KEY_Left  ||
+    event->keyval == GDK_KEY_Right  ||
+    event->keyval == GDK_KEY_Delete  ||
+    event->keyval == GDK_KEY_BackSpace  ||
+    event->keyval == GDK_KEY_0  || event->keyval == GDK_KEY_KP_0  ||
+    event->keyval == GDK_KEY_1  || event->keyval == GDK_KEY_KP_1  ||
+    event->keyval == GDK_KEY_2  || event->keyval == GDK_KEY_KP_2  ||
+    event->keyval == GDK_KEY_3  || event->keyval == GDK_KEY_KP_3  ||
+    event->keyval == GDK_KEY_4  || event->keyval == GDK_KEY_KP_4  ||
+    event->keyval == GDK_KEY_5  || event->keyval == GDK_KEY_KP_5  ||
+    event->keyval == GDK_KEY_6  || event->keyval == GDK_KEY_KP_6  ||
+    event->keyval == GDK_KEY_7  || event->keyval == GDK_KEY_KP_7  ||
+    event->keyval == GDK_KEY_8  || event->keyval == GDK_KEY_KP_8  ||
+    event->keyval == GDK_KEY_9  || event->keyval == GDK_KEY_KP_9
   )
   {
     return FALSE;

@@ -401,7 +401,7 @@ static void _mouse_over_image_callback(gpointer instance,gpointer user_data)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "jump to film roll"),
-                        GDK_j, GDK_CONTROL_MASK);
+                        GDK_KEY_j, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

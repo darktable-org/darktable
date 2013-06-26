@@ -107,7 +107,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import image"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "import folder"), GDK_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "import folder"), GDK_KEY_i, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)

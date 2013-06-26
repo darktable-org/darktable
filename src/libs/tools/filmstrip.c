@@ -158,42 +158,42 @@ int position()
 void init_key_accels(dt_lib_module_t *self)
 {
   /* setup rating key accelerators */
-  dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_0, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_1, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 2"), GDK_2, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 3"), GDK_3, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 4"), GDK_4, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate 5"), GDK_5, 0);
-  dt_accel_register_lib(self, NC_("accel", "rate reject"), GDK_r, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 2"), GDK_KEY_2, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
+  dt_accel_register_lib(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
 
   /* setup history key accelerators */
   dt_accel_register_lib(self, NC_("accel", "copy history"),
-                        GDK_c, GDK_CONTROL_MASK);
+                        GDK_KEY_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "copy history parts"),
-                        GDK_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+                        GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste history"),
-                        GDK_v, GDK_CONTROL_MASK);
+                        GDK_KEY_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste history parts"),
-                        GDK_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+                        GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "discard history"),
                         0, 0);
 
   dt_accel_register_lib(self, NC_("accel", "duplicate image"),
-                        GDK_d, GDK_CONTROL_MASK);
+                        GDK_KEY_d, GDK_CONTROL_MASK);
 
 
   /* setup color label accelerators */
-  dt_accel_register_lib(self, NC_("accel", "color red"), GDK_F1, 0);
-  dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_F2, 0);
-  dt_accel_register_lib(self, NC_("accel", "color green"), GDK_F3, 0);
-  dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_F4, 0);
-  dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_F5, 0);
+  dt_accel_register_lib(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  dt_accel_register_lib(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
+  dt_accel_register_lib(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
+  dt_accel_register_lib(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
+  dt_accel_register_lib(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
 
   /* setup selection accelerators */
-  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_a, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_i, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select all"), GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "select none"), GDK_KEY_a, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
 

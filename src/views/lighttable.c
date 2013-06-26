@@ -1595,47 +1595,47 @@ void init_key_accels(dt_view_t *self)
   // Initializing accelerators
 
   // Rating keys
-  dt_accel_register_view(self, NC_("accel", "rate 0"), GDK_0, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_1, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 2"), GDK_2, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_3, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 4"), GDK_4, 0);
-  dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_5, 0);
-  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_r, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 2"), GDK_KEY_2, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 3"), GDK_KEY_3, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 4"), GDK_KEY_4, 0);
+  dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
+  dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"),
-                         GDK_g, 0);
+                         GDK_KEY_g, 0);
   dt_accel_register_view(self, NC_("accel", "navigate down"),
-                         GDK_g, GDK_SHIFT_MASK);
+                         GDK_KEY_g, GDK_SHIFT_MASK);
   dt_accel_register_view(self, NC_("accel", "navigate page up"),
-                         GDK_Page_Up, 0);
+                         GDK_KEY_Page_Up, 0);
   dt_accel_register_view(self, NC_("accel", "navigate page down"),
-                         GDK_Page_Down, 0);
+                         GDK_KEY_Page_Down, 0);
 
   // Color keys
-  dt_accel_register_view(self, NC_("accel", "color red"), GDK_F1, 0);
-  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_F2, 0);
-  dt_accel_register_view(self, NC_("accel", "color green"), GDK_F3, 0);
-  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_F4, 0);
-  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_F5, 0);
+  dt_accel_register_view(self, NC_("accel", "color red"), GDK_KEY_F1, 0);
+  dt_accel_register_view(self, NC_("accel", "color yellow"), GDK_KEY_F2, 0);
+  dt_accel_register_view(self, NC_("accel", "color green"), GDK_KEY_F3, 0);
+  dt_accel_register_view(self, NC_("accel", "color blue"), GDK_KEY_F4, 0);
+  dt_accel_register_view(self, NC_("accel", "color purple"), GDK_KEY_F5, 0);
 
   // Scroll keys
   dt_accel_register_view(self, NC_("accel", "scroll up"),
-                         GDK_Up, 0);
+                         GDK_KEY_Up, 0);
   dt_accel_register_view(self, NC_("accel", "scroll down"),
-                         GDK_Down, 0);
+                         GDK_KEY_Down, 0);
   dt_accel_register_view(self, NC_("accel", "scroll left"),
-                         GDK_Left, 0);
+                         GDK_KEY_Left, 0);
   dt_accel_register_view(self, NC_("accel", "scroll right"),
-                         GDK_Right, 0);
+                         GDK_KEY_Right, 0);
   dt_accel_register_view(self, NC_("accel", "scroll center"),
-                         GDK_apostrophe, 0);
+                         GDK_KEY_apostrophe, 0);
   dt_accel_register_view(self, NC_("accel", "realign images to grid"),
-                         GDK_l, 0);
+                         GDK_KEY_l, 0);
 
   // Preview key
-  dt_accel_register_view(self, NC_("accel", "preview"), GDK_z, 0);
+  dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_z, 0);
 }
 
 void connect_key_accels(dt_view_t *self)

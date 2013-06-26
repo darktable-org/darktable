@@ -169,8 +169,8 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
   switch(event->keyval)
   {
-    case GDK_Escape:
-    case GDK_Tab:
+    case GDK_KEY_Escape:
+    case GDK_KEY_Tab:
     {
       // reset
       gchar *str = dt_conf_get_string("plugins/lighttable/geotagging/offset");
@@ -188,8 +188,8 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
       return FALSE;
     }
 
-    case GDK_Return:
-    case GDK_KP_Enter:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
     {
       const gchar* value = gtk_entry_get_text(GTK_ENTRY(d->offset_entry));
       if(_lib_geotagging_parse_offset(value, NULL))
@@ -206,38 +206,38 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
     }
 
     // allow +, -, :, 0 .. 9, left/right/home/end movement using arrow keys and del/backspace
-    case GDK_plus:
-    case GDK_minus:
-    case GDK_colon:
-    case GDK_0:
-    case GDK_KP_0:
-    case GDK_1:
-    case GDK_KP_1:
-    case GDK_2:
-    case GDK_KP_2:
-    case GDK_3:
-    case GDK_KP_3:
-    case GDK_4:
-    case GDK_KP_4:
-    case GDK_5:
-    case GDK_KP_5:
-    case GDK_6:
-    case GDK_KP_6:
-    case GDK_7:
-    case GDK_KP_7:
-    case GDK_8:
-    case GDK_KP_8:
-    case GDK_9:
-    case GDK_KP_9:
+    case GDK_KEY_plus:
+    case GDK_KEY_minus:
+    case GDK_KEY_colon:
+    case GDK_KEY_0:
+    case GDK_KEY_KP_0:
+    case GDK_KEY_1:
+    case GDK_KEY_KP_1:
+    case GDK_KEY_2:
+    case GDK_KEY_KP_2:
+    case GDK_KEY_3:
+    case GDK_KEY_KP_3:
+    case GDK_KEY_4:
+    case GDK_KEY_KP_4:
+    case GDK_KEY_5:
+    case GDK_KEY_KP_5:
+    case GDK_KEY_6:
+    case GDK_KEY_KP_6:
+    case GDK_KEY_7:
+    case GDK_KEY_KP_7:
+    case GDK_KEY_8:
+    case GDK_KEY_KP_8:
+    case GDK_KEY_9:
+    case GDK_KEY_KP_9:
 
-    case GDK_Left:
-    case GDK_Right:
-    case GDK_Home:
-    case GDK_KP_Home:
-    case GDK_End:
-    case GDK_KP_End:
-    case GDK_Delete:
-    case GDK_BackSpace:
+    case GDK_KEY_Left:
+    case GDK_KEY_Right:
+    case GDK_KEY_Home:
+    case GDK_KEY_KP_Home:
+    case GDK_KEY_End:
+    case GDK_KEY_KP_End:
+    case GDK_KEY_Delete:
+    case GDK_KEY_BackSpace:
       return FALSE;
 
     default: // block everything else
@@ -336,12 +336,12 @@ _lib_geotagging_floating_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
   switch(event->keyval)
   {
-    case GDK_Escape:
+    case GDK_KEY_Escape:
       gtk_widget_destroy(d->floating_window);
       return TRUE;
 
-    case GDK_Return:
-    case GDK_KP_Enter:
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
       _lib_geotagging_calculate_offset_callback(NULL, self);
       return TRUE;
 

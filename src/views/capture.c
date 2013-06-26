@@ -562,7 +562,7 @@ void init_key_accels(dt_view_t *self)
 {
   // Setup key accelerators in capture view...
   dt_accel_register_view(self, NC_("accel", "toggle film strip"),
-                         GDK_f, GDK_CONTROL_MASK);
+                         GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_view_t *self)

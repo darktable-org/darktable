@@ -546,6 +546,20 @@ if(LUA52_FOUND)
 	add_subdirectory(external/LuaAutoC)
 endif(LUA52_FOUND)
 
+###### GTK+3 port ######
+
+#
+#  Do not include individual headers
+#
+add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
+
+#
+# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
+#
+add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
+
+###### GTK+3 port ######
+
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first
