@@ -848,6 +848,7 @@ void init_global(dt_iop_module_so_t *module)
   }
 }
 
+static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera);
 
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -885,6 +886,7 @@ void reload_defaults(dt_iop_module_t *module)
     if(cam)
     {
       tmp.crop = cam[0]->CropFactor;
+      tmp.scale = get_autoscale(module, &tmp, cam[0]);
       lf_free(cam);
     }
   }
@@ -1647,20 +1649,15 @@ static void scale_changed(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static float get_autoscale(dt_iop_module_t *self)
+static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera)
 {
-  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
-  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   float scale = 1.0;
   if(p->lens[0] != '\0')
   {
-    char make [200], model [200];
-    const gchar *txt = gtk_button_get_label(GTK_BUTTON(g->lens_model));
-    parse_maker_model (txt, make, sizeof (make), model, sizeof (model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera, NULL, p->lens, 0);
+    const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, camera, NULL, p->lens, 0);
     if(lenslist && !lenslist[1])
     {
       // create dummy modifier
@@ -1682,8 +1679,9 @@ static float get_autoscale(dt_iop_module_t *self)
 static void autoscale_pressed(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  const float scale = get_autoscale(self);
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
+  dt_iop_lensfun_params_t   *p = (dt_iop_lensfun_params_t   *)self->params;
+  const float scale = get_autoscale(self, p, g->camera);
   dt_bauhaus_slider_set(g->scale, scale);
 }
 
