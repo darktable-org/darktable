@@ -34,7 +34,17 @@
 #include <assert.h>
 #include <string.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
+
+// legacy parameters of version 1 of module
+typedef struct dt_iop_colorize_params1_t
+{
+  float hue;
+  float saturation;
+  float source_lightness_mix;
+  float lightness;
+}
+dt_iop_colorize_params1_t;
 
 typedef struct dt_iop_colorize_params_t
 {
@@ -42,8 +52,11 @@ typedef struct dt_iop_colorize_params_t
   float saturation;
   float source_lightness_mix;
   float lightness;
+  int version;
 }
 dt_iop_colorize_params_t;
+
+
 
 typedef struct dt_iop_colorize_gui_data_t
 {
@@ -54,10 +67,10 @@ dt_iop_colorize_gui_data_t;
 
 typedef struct dt_iop_colorize_data_t
 {
-  float hue;
-  float saturation;
-  float source_lightness_mix;
-  float lightness;
+  float L;
+  float a;
+  float b;
+  float mix;
 }
 dt_iop_colorize_data_t;
 
@@ -84,6 +97,25 @@ groups ()
   return IOP_GROUP_EFFECT;
 }
 
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    const dt_iop_colorize_params1_t *old = old_params;
+    dt_iop_colorize_params_t *new = new_params;
+
+    new->hue = old->hue;
+    new->saturation = old->saturation;
+    new->source_lightness_mix = old->source_lightness_mix;
+    new->lightness = old->lightness;
+    new->version = 1;
+    return 0;
+  }
+  return 1;
+}
+
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
@@ -104,30 +136,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
   const int ch = piece->colors;
 
-  /* create Lab */
-  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
-  hsl2rgb(rgb,d->hue, d->saturation, d->lightness/100.0);
-
-  XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
-  XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
-  XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
-
-  dt_XYZ_to_Lab(XYZ,Lab);
-
-
-  /* a/b components */
-  const float L = Lab[0];
-  const float a = Lab[1];
-  const float b = Lab[2];
-
-  const float mix = d->source_lightness_mix/100.0;
+  const float L = d->L;
+  const float a = d->a;
+  const float b = d->b;
+  const float mix = d->mix;
+  const float Lmlmix = L - (mix*100.0f)/2.0f;
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out) private(in,out) schedule(static)
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    float lmix=(mix*100.0)/2.0;
+
     int stride = ch*roi_out->width;
 
     in = (float *)ivoid+(k*stride);
@@ -135,7 +155,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     for(int l=0; l < stride; l+=ch)
     {
-      out[l+0] = L-lmix + in[l+0]*mix;
+      out[l+0] = Lmlmix + in[l+0]*mix;
       out[l+1] = a;
       out[l+2] = b;
       out[l+3] = in[l+3];
@@ -155,22 +175,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  /* create Lab */
-  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
-  hsl2rgb(rgb,data->hue, data->saturation, data->lightness/100.0);
-
-  XYZ[0] = (rgb[0] * 0.5767309) + (rgb[1] * 0.1855540) + (rgb[2] * 0.1881852);
-  XYZ[1] = (rgb[0] * 0.2973769) + (rgb[1] * 0.6273491) + (rgb[2] * 0.0752741);
-  XYZ[2] = (rgb[0] * 0.0270343) + (rgb[1] * 0.0706872) + (rgb[2] * 0.9911085);
-
-  dt_XYZ_to_Lab(XYZ,Lab);
-
-
-  /* a/b components */
-  const float L = Lab[0];
-  const float a = Lab[1];
-  const float b = Lab[2];
-  const float mix = data->source_lightness_mix/100.0f;
+  const float L = data->L;
+  const float a = data->a;
+  const float b = data->b;
+  const float mix = data->mix;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
@@ -324,10 +332,33 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #else
   dt_iop_colorize_data_t *d = (dt_iop_colorize_data_t *)piece->data;
-  d->hue = p->hue;
-  d->saturation = p->saturation;
-  d->lightness = p->lightness;
-  d->source_lightness_mix = p->source_lightness_mix;
+
+  /* create Lab */
+  float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
+  hsl2rgb(rgb,p->hue, p->saturation, p->lightness/100.0);
+
+  if(p->version == 1)
+  {
+    // the old matrix is a bit off. in fact it's the conversion matrix from AdobeRGB to XYZ@D65
+    XYZ[0] = (rgb[0] * 0.5767309f) + (rgb[1] * 0.1855540f) + (rgb[2] * 0.1881852f);
+    XYZ[1] = (rgb[0] * 0.2973769f) + (rgb[1] * 0.6273491f) + (rgb[2] * 0.0752741f);
+    XYZ[2] = (rgb[0] * 0.0270343f) + (rgb[1] * 0.0706872f) + (rgb[2] * 0.9911085f);
+  }
+  else
+  {
+    // this fits better. conversion matrix from sRGB to XYZ@D50 - which is what dt_XYZ_to_Lab() expects as input
+    XYZ[0] = (rgb[0] * 0.4360747f) + (rgb[1] * 0.3850649f) + (rgb[2] * 0.1430804f);
+    XYZ[1] = (rgb[0] * 0.2225045f) + (rgb[1] * 0.7168786f) + (rgb[2] * 0.0606169f);
+    XYZ[2] = (rgb[0] * 0.0139322f) + (rgb[1] * 0.0971045f) + (rgb[2] * 0.7141733f);
+  }
+
+  dt_XYZ_to_Lab(XYZ,Lab);
+
+  /* a/b components */
+  d->L = Lab[0];
+  d->a = Lab[1];
+  d->b = Lab[2];
+  d->mix = p->source_lightness_mix/100.0f;
 #endif
 }
 
@@ -388,7 +419,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_colorize_params_t tmp = (dt_iop_colorize_params_t)
   {
-    0, 0.5, 50, 50
+    0, 0.5, 50, 50, module->version()
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorize_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorize_params_t));
