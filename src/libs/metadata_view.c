@@ -232,8 +232,15 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value, vl, "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
 
-    snprintf(value, vl, "%.2f m", img->exif_focus_distance);
-    _metadata_update_value(d->metadata[md_exif_focus_distance], value);
+    if (isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
+    {
+      _metadata_update_value(d->metadata[md_exif_focus_distance], NODATA_STRING);
+    }
+    else
+    {
+      snprintf(value, vl, "%.2f m", img->exif_focus_distance);
+      _metadata_update_value(d->metadata[md_exif_focus_distance], value);
+    }
 
     snprintf(value, vl, "%.0f", img->exif_iso);
     _metadata_update_value(d->metadata[md_exif_iso], value);
