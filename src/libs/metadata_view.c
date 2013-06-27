@@ -43,6 +43,7 @@ enum
   md_internal_imgid,
   md_internal_filename,
   md_internal_fullpath,
+  md_internal_local_copy,
 
   /* exif */
   md_exif_model,
@@ -80,6 +81,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
   _md_labels[md_internal_fullpath] = _("full path");
+  _md_labels[md_internal_local_copy] = _("local copy");
 
   /* exif */
   _md_labels[md_exif_model] = _("model");
@@ -192,6 +194,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   {
     const int vl = 512;
     char value[vl];
+    char pathname[DT_MAX_PATH_LEN];
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
@@ -215,8 +218,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
     gboolean from_cache = FALSE;
-    dt_image_full_path(img->id, value, MAXPATHLEN, &from_cache);
-    _metadata_update_value(d->metadata[md_internal_fullpath], value);
+    dt_image_full_path(img->id, pathname, DT_MAX_PATH_LEN, &from_cache);
+    _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
+
+    snprintf(value, vl, "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));
+    _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     /* EXIF */
     _metadata_update_value_end(d->metadata[md_exif_model], img->exif_model);
