@@ -456,10 +456,13 @@ static void
 pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *roi,
                  float *picked_color, float *picked_color_min, float *picked_color_max)
 {
-  int box[4];
-  int point[2];
+  const float wd = darktable.develop->preview_pipe->backbuf_width;
+  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  const int width = roi->width;
+  const int height = roi->height;
   float Lab[3];
 
+  // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity of data
   for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
   for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
   for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
@@ -467,22 +470,37 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
-  // Initializing bounds of colorpicker box
-  for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
-  for(int k=1; k<4; k+=2) box[k] = MIN(roi->height-1, MAX(0, module->color_picker_box[k]*roi->height));
-
-  // Initializing bounds of colorpicker point
-  point[0] = MIN(roi->width - 1, MAX(0, module->color_picker_point[0] * roi->width));
-  point[1] = MIN(roi->height - 1, MAX(0, module->color_picker_point[1] * roi->height));
-
   if(darktable.lib->proxy.colorpicker.size)
   {
+    int box[4];
+    float fbox[4];
+
+    // get absolute pixel coordinates in final preview image
+    for(int k=0; k<4; k+=2) fbox[k] = module->color_picker_box[k]*wd;
+    for(int k=1; k<4; k+=2) fbox[k] = module->color_picker_box[k]*ht;
+
+    // transform back to current module coordinates
+    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fbox, 2);
+
+    // re-order edges of bounding box
+    box[0] = fminf(fbox[0], fbox[2]);
+    box[1] = fminf(fbox[1], fbox[3]);
+    box[2] = fmaxf(fbox[0], fbox[2]);
+    box[3] = fmaxf(fbox[1], fbox[3]);
+
+    // do not continue if box is completely outside of roi
+    if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
+
+    // clamp bounding box to roi
+    for(int k=0; k<4; k+=2) box[k] = MIN(width-1, MAX(0, box[k]));
+    for(int k=1; k<4; k+=2) box[k] = MIN(height-1, MAX(0, box[k]));
+
     const float w = 1.0/((box[3]-box[1]+1)*(box[2]-box[0]+1));
     for(int j=box[1]; j<=box[3]; j++) for(int i=box[0]; i<=box[2]; i++)
       {
-        const float L = img[4*(roi->width*j + i) + 0];
-        const float a = img[4*(roi->width*j + i) + 1];
-        const float b = img[4*(roi->width*j + i) + 2];
+        const float L = img[4*(width*j + i) + 0];
+        const float a = img[4*(width*j + i) + 1];
+        const float b = img[4*(width*j + i) + 2];
         Lab[0] += w*L;
         Lab[1] += w*a;
         Lab[2] += w*b;
@@ -497,11 +515,27 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
   }
   else
   {
+    int point[2];
+    float fpoint[2];
+
+    // get absolute pixel coordinates in final preview image
+    fpoint[0] = module->color_picker_point[0]*wd;
+    fpoint[1] = module->color_picker_point[1]*ht;
+
+    // transform back to current module coordinates
+    dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fpoint, 1);
+    
+    point[0] = fpoint[0];
+    point[1] = fpoint[1];
+
+    // do not continue if point is outside of roi
+    if(point[0] >= width || point[1] >= height || point[0] < 0 || point[1] < 0) return;
+
     for(int i = 0; i < 3; i++)
       picked_color[i]
       = picked_color_min[i]
         = picked_color_max[i]
-          = img[4*(roi->width*point[1] + point[0]) + i];
+          = img[4*(width*point[1] + point[0]) + i];
   }
 }
 
@@ -515,11 +549,18 @@ static void
 pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
                     float *picked_color, float *picked_color_min, float *picked_color_max)
 {
+  const float wd = darktable.develop->preview_pipe->backbuf_width;
+  const float ht = darktable.develop->preview_pipe->backbuf_height;
+  const int width = roi->width;
+  const int height = roi->height;
   int box[4];
+  float fbox[4];
+
   size_t origin[3];
   size_t region[3];
   float Lab[3];
 
+  // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity of data
   for(int k=0; k<3; k++) picked_color_min[k] =  666.0f;
   for(int k=0; k<3; k++) picked_color_max[k] = -666.0f;
   for(int k=0; k<3; k++) Lab[k] = picked_color[k] = 0.0f;
@@ -527,16 +568,33 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return;
 
+  // get absolute pixel coordinates in final preview image
   if(darktable.lib->proxy.colorpicker.size)
   {
-    for(int k=0; k<4; k+=2) box[k] = MIN(roi->width -1, MAX(0, module->color_picker_box[k]*roi->width));
-    for(int k=1; k<4; k+=2) box[k] = MIN(roi->height-1, MAX(0, module->color_picker_box[k]*roi->height));
+    for(int k=0; k<4; k+=2) fbox[k] = module->color_picker_box[k]*wd;
+    for(int k=1; k<4; k+=2) fbox[k] = module->color_picker_box[k]*ht;
   }
   else
   {
-    box[0] = box[2] = MIN(roi->width - 1, MAX(0, module->color_picker_point[0] * roi->width));
-    box[1] = box[3] = MIN(roi->height - 1, MAX(0, module->color_picker_point[1] * roi->height));
+    fbox[0] = fbox[2] = module->color_picker_point[0]*wd;
+    fbox[1] = fbox[3] = module->color_picker_point[1]*ht;
   }
+
+  // transform back to current module coordinates
+  dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fbox, 2);
+
+  // re-order edges of bounding box
+  box[0] = fminf(fbox[0], fbox[2]);
+  box[1] = fminf(fbox[1], fbox[3]);
+  box[2] = fmaxf(fbox[0], fbox[2]);
+  box[3] = fmaxf(fbox[1], fbox[3]);
+
+  // do not continue if box is completely outside of roi
+  if(box[0] >= width || box[1] >= height || box[2] < 0 || box[3] < 0) return;
+
+  // clamp bounding box to roi
+  for(int k=0; k<4; k+=2) box[k] = MIN(width-1, MAX(0, box[k]));
+  for(int k=1; k<4; k+=2) box[k] = MIN(height-1, MAX(0, box[k]));
 
   // Initializing bounds of colorpicker box
   origin[0] = box[0];
@@ -551,6 +609,7 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   float *buffer = dt_alloc_align(64, bufsize*4*sizeof(float));
   if(buffer == NULL) return;
 
+  // get the required part of the image from opencl device
   cl_int err = dt_opencl_read_host_from_device_raw(devid, buffer, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
 
   if(err == CL_SUCCESS)
