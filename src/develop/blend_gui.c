@@ -318,7 +318,7 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   {
     if(data->blendif_inited && (mask_mode & DEVELOP_MASK_CONDITIONAL))
     {
-      dt_bauhaus_combobox_set(data->masks_combine_combo, g_list_index(data->masks_combine, GUINT_TO_POINTER(data->module->blend_params->mask_combine)));
+      dt_bauhaus_combobox_set(data->masks_combine_combo, g_list_index(data->masks_combine, GUINT_TO_POINTER(data->module->blend_params->mask_combine & (DEVELOP_COMBINE_INV|DEVELOP_COMBINE_INCL))));
       gtk_widget_hide(GTK_WIDGET(data->masks_invert_combo));
       gtk_widget_show(GTK_WIDGET(data->masks_combine_combo));
     }
@@ -390,7 +390,9 @@ _blendop_blend_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 static void
 _blendop_masks_combine_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
-  data->module->blend_params->mask_combine = GPOINTER_TO_UINT(g_list_nth_data(data->masks_combine, dt_bauhaus_combobox_get(data->masks_combine_combo)));
+  const unsigned combine = GPOINTER_TO_UINT(g_list_nth_data(data->masks_combine, dt_bauhaus_combobox_get(data->masks_combine_combo)));
+  data->module->blend_params->mask_combine &= ~(DEVELOP_COMBINE_INV|DEVELOP_COMBINE_INCL);
+  data->module->blend_params->mask_combine |= combine;
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
@@ -602,6 +604,7 @@ _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
   }
 
   module->blend_params->blendif ^= toggle_mask;
+  module->blend_params->mask_combine ^= DEVELOP_COMBINE_MASKS_POS;
   module->blend_params->mask_combine ^= DEVELOP_COMBINE_INCL;
   dt_iop_gui_update_blending(module);
   dt_dev_add_history_item(darktable.develop, module, TRUE);
@@ -704,6 +707,21 @@ _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event, dt_iop_mo
   return FALSE;
 }
 
+static void
+_blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+  dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
+
+  if(active)
+    bp->mask_combine |= DEVELOP_COMBINE_MASKS_POS;
+  else
+    bp->mask_combine &= ~DEVELOP_COMBINE_MASKS_POS;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 static gboolean
 _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *module)
@@ -1073,6 +1091,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 void dt_iop_gui_update_masks(dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+  dt_develop_blend_params_t *bp = module->blend_params;
 
   if (!bd || !bd->masks_support || !bd->masks_inited) return;
 
@@ -1096,6 +1115,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   dt_bauhaus_combobox_set(bd->masks_combo, 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity), bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
 
   //update buttons status
   int b1=0,b2=0;
@@ -1131,6 +1151,13 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
     dt_bauhaus_combobox_add_populate_fct(bd->masks_combo, dt_masks_iop_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_combo, TRUE, TRUE, 0);
+
+    bd->masks_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_object_set(G_OBJECT(bd->masks_polarity), "tooltip-text", _("toggle polarity of drawn mask"), (char *)NULL);
+    g_signal_connect (G_OBJECT(bd->masks_polarity), "toggled", G_CALLBACK (_blendop_masks_polarity_callback), module);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_polarity), bs, bs);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_polarity, FALSE, FALSE, 0);
 
     bd->masks_edit = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_signal_connect(G_OBJECT(bd->masks_edit), "button-press-event", G_CALLBACK(_blendop_masks_show_and_edit), module);
@@ -1224,7 +1251,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   dt_bauhaus_combobox_set(bd->blend_modes_combo, blend_mode_number);
 
-  dt_bauhaus_combobox_set(bd->masks_combine_combo, g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine)));
+  dt_bauhaus_combobox_set(bd->masks_combine_combo, g_list_index(bd->masks_combine, GUINT_TO_POINTER(module->blend_params->mask_combine & (DEVELOP_COMBINE_INV|DEVELOP_COMBINE_INCL))));
   dt_bauhaus_combobox_set(bd->masks_invert_combo, g_list_index(bd->masks_invert, GUINT_TO_POINTER(module->blend_params->mask_combine & DEVELOP_COMBINE_INV)));
   dt_bauhaus_slider_set(bd->opacity_slider, module->blend_params->opacity);
   dt_bauhaus_slider_set(bd->radius_slider, module->blend_params->radius);
