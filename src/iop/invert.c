@@ -104,7 +104,7 @@ static gboolean
 expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0) return FALSE;
+  if(self->picked_color_max[0] < 0.0f) return FALSE;
   if(!self->request_color_pick) return FALSE;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
