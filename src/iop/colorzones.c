@@ -597,7 +597,7 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, DT_IOP_COLORZONES_RES, c->draw_max_xs, c->draw_max_ys);
   }
 
-  if(self->picked_color[0] == 0.0)
+  if(self->picked_color_max[0] < 0.0f || self->picked_color[0] == 0.0f)
   {
     self->picked_color[0] = 50.0f;
     self->picked_color[1] =  0.0f;
@@ -664,29 +664,32 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       cairo_fill(cr);
     }
 
-  // draw marker for currently selected color:
-  float picked_i = -1.0;
-  switch(p.channel)
+  if(self->picked_color_max[0] >= 0.0f)
   {
-      // select by channel, abscissa:
-    case DT_IOP_COLORZONES_L:
-      picked_i = self->picked_color[0]/100.0;
-      break;
-    case DT_IOP_COLORZONES_C:
-      picked_i = pickC / 128.0;
-      break;
-    default: // case DT_IOP_COLORZONES_h:
-      picked_i = fmodf(atan2f(self->picked_color[2], self->picked_color[1]) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
-      break;
+    // draw marker for currently selected color:
+    float picked_i = -1.0;
+    switch(p.channel)
+    {
+        // select by channel, abscissa:
+      case DT_IOP_COLORZONES_L:
+        picked_i = self->picked_color[0]/100.0;
+        break;
+      case DT_IOP_COLORZONES_C:
+        picked_i = pickC / 128.0;
+        break;
+      default: // case DT_IOP_COLORZONES_h:
+        picked_i = fmodf(atan2f(self->picked_color[2], self->picked_color[1]) + 2.0*M_PI, 2.0*M_PI)/(2.0*M_PI);
+        break;
+    }
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+    cairo_set_line_width(cr, 2.);
+    cairo_move_to(cr, width*picked_i, 0.0);
+    cairo_line_to(cr, width*picked_i, height);
+    cairo_stroke(cr);
+    cairo_restore(cr);
   }
-  cairo_save(cr);
-  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-  cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-  cairo_set_line_width(cr, 2.);
-  cairo_move_to(cr, width*picked_i, 0.0);
-  cairo_line_to(cr, width*picked_i, height);
-  cairo_stroke(cr);
-  cairo_restore(cr);
 
   // draw x positions
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);

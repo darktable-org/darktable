@@ -572,7 +572,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
   darktable.gui->reset = 1;
-  if(module->request_color_pick)
+  if(module->request_color_pick && raw_max[0] > 0.0f)
   {
     _blendif_scale(data->csp, raw_mean, picker_mean);
     _blendif_scale(data->csp, raw_min, picker_min);
