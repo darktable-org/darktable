@@ -349,7 +349,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   float mean, min, max;
 
-  if(self->request_color_pick)
+  if(self->request_color_pick && self->picked_color_max[0] >= 0.0f)
   {
     mean = fmin(fmax(self->picked_color[0] / 100.0f, 0.0f), 1.0f);
     min = fmin(fmax(self->picked_color_min[0] / 100.0f, 0.0f), 1.0f);
