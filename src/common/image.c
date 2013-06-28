@@ -985,6 +985,15 @@ void dt_image_local_copy_set(const int32_t imgid)
 
     g_object_unref(dest);
     g_object_unref(src);
+
+    // update cache
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags |= DT_IMAGE_LOCAL_COPY;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -1006,6 +1015,15 @@ void dt_image_local_copy_reset(const int32_t imgid)
     // delete image from cache directory
     g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
+
+    // update cache
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags &= ~DT_IMAGE_LOCAL_COPY;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    dt_control_queue_redraw_center();
   }
 }
 

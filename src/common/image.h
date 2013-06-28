@@ -56,7 +56,9 @@ typedef enum
   // set when auto-applying presets have been applied to this image.
   DT_IMAGE_AUTO_PRESETS_APPLIED = 512,
   // legacy flag. is set for all new images. i hate to waste a bit on this :(
-  DT_IMAGE_NO_LEGACY_PRESETS = 1024
+  DT_IMAGE_NO_LEGACY_PRESETS = 1024,
+  // local copy status
+  DT_IMAGE_LOCAL_COPY = 2048
 }
 dt_image_flags_t;
 
