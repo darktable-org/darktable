@@ -216,6 +216,13 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
   const int border=8;
   const int border2=16;
+
+  if(height < border2 || width < border2)
+  {
+    // already copied buffer over above. these small sizes aren't safe to run through the code below.
+    return;
+  }
+
   //order of 2d polynomial fit (polyord), and numpar=polyord^2
   int polyord=4, numpar=16;
   //number of blocks used in the fit

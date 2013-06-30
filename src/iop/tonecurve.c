@@ -778,26 +778,29 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
       }
 
       // ... and the local sample
-      picker_scale(raw_mean, picker_mean);
-      picker_scale(raw_min, picker_min);
-      picker_scale(raw_max, picker_max);
+      if(raw_max[0] >= 0.0f)
+      {
+        picker_scale(raw_mean, picker_mean);
+        picker_scale(raw_min, picker_min);
+        picker_scale(raw_max, picker_max);
 
-      cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
-      cairo_rectangle(cr, width*picker_min[ch], 0, width*fmax(picker_max[ch]-picker_min[ch], 0.0f), -height);
-      cairo_fill(cr);
-      cairo_set_source_rgba(cr, 0.9, 0.7, 0.7, 0.5);
-      cairo_move_to(cr, width*picker_mean[ch], 0);
-      cairo_line_to(cr, width*picker_mean[ch], -height);
-      cairo_stroke(cr);
+        cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
+        cairo_rectangle(cr, width*picker_min[ch], 0, width*fmax(picker_max[ch]-picker_min[ch], 0.0f), -height);
+        cairo_fill(cr);
+        cairo_set_source_rgba(cr, 0.9, 0.7, 0.7, 0.5);
+        cairo_move_to(cr, width*picker_mean[ch], 0);
+        cairo_line_to(cr, width*picker_mean[ch], -height);
+        cairo_stroke(cr);
 
-      snprintf(text, 256, "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        snprintf(text, 256, "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
-      cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-      cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 0.06*height);
-      cairo_move_to (cr, 0.02f*width, -0.94*height);
-      cairo_show_text(cr, text);
-      cairo_stroke(cr);
+        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_set_font_size (cr, 0.06*height);
+        cairo_move_to (cr, 0.02f*width, -0.94*height);
+        cairo_show_text(cr, text);
+        cairo_stroke(cr);
+      }
     }
   }
 

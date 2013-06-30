@@ -47,7 +47,7 @@ DT_MODULE(5)
 
 
 // number of gui guides in combo box
-#define NUM_GUIDES 6
+#define NUM_GUIDES 8
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -1625,9 +1625,11 @@ aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 #define GUIDE_NONE 0
 #define GUIDE_GRID 1
 #define GUIDE_THIRD 2
-#define GUIDE_DIAGONAL 3
-#define GUIDE_TRIANGL 4
-#define GUIDE_GOLDEN 5
+#define GUIDE_METERING 3
+#define GUIDE_PERSPECTIVE 4
+#define GUIDE_DIAGONAL 5
+#define GUIDE_TRIANGL 6
+#define GUIDE_GOLDEN 7
 
 static void
 guides_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
@@ -1758,8 +1760,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->guide_lines = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->guide_lines, _("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
-  dt_bauhaus_combobox_add(g->guide_lines, _("grid"));
+  dt_bauhaus_combobox_add(g->guide_lines, _("grid")); // TODO: make the number of lines configurable with a slider?
   dt_bauhaus_combobox_add(g->guide_lines, _("rules of thirds"));
+  dt_bauhaus_combobox_add(g->guide_lines, _("metering"));
+  dt_bauhaus_combobox_add(g->guide_lines, _("perspective")); // TODO: make the number of lines configurable with a slider?
   dt_bauhaus_combobox_add(g->guide_lines, _("diagonal method"));
   dt_bauhaus_combobox_add(g->guide_lines, _("harmonious triangles"));
   dt_bauhaus_combobox_add(g->guide_lines, _("golden mean"));
@@ -1958,6 +1962,24 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_set_dash (cr, &dashes, 0, 0);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     dt_guides_draw_rules_of_thirds(cr, left, top,  right, bottom, xThird, yThird);
+    cairo_stroke (cr);
+  }
+  else if (which == GUIDE_PERSPECTIVE)
+  {
+    dt_guides_draw_perspective(cr, left, top, cwidth, cheight);
+    cairo_stroke (cr);
+    cairo_set_dash (cr, &dashes, 0, 0);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_guides_draw_perspective(cr, left, top, cwidth, cheight);
+    cairo_stroke (cr);
+  }
+  else if (which == GUIDE_METERING)
+  {
+    dt_guides_draw_metering(cr, left, top, cwidth, cheight);
+    cairo_stroke (cr);
+    cairo_set_dash (cr, &dashes, 0, 0);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_guides_draw_metering(cr, left, top, cwidth, cheight);
     cairo_stroke (cr);
   }
   else if (which == GUIDE_TRIANGL)

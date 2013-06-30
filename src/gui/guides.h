@@ -34,6 +34,10 @@ void dt_guides_draw_diagonal_method(cairo_t *cr, const float x, const float y, c
 
 void dt_guides_draw_rules_of_thirds(cairo_t *cr, const float left, const float top,  const float right, const float bottom, const float xThird, const float yThird);
 
+void dt_guides_draw_perspective(cairo_t *cr, const float x, const float y,  const float w, const float h);
+
+void dt_guides_draw_metering(cairo_t *cr, const float x, const float y,  const float w, const float h);
+
 void dt_guides_draw_harmonious_triangles(cairo_t *cr, const float left, const float top,  const float right, const float bottom, const float dst);
 
 void dt_guides_draw_golden_mean(cairo_t *cr, dt_QRect_t* R1, dt_QRect_t* R2, dt_QRect_t* R3, dt_QRect_t* R4, dt_QRect_t* R5, dt_QRect_t* R6, dt_QRect_t* R7, gboolean goldenSection, gboolean goldenTriangle, gboolean goldenSpiralSection, gboolean goldenSpiral);

@@ -73,6 +73,7 @@
 #define DEVELOP_COMBINE_INV         0x01
 #define DEVELOP_COMBINE_EXCL        0x00
 #define DEVELOP_COMBINE_INCL        0x02
+#define DEVELOP_COMBINE_MASKS_POS   0x04
 #define DEVELOP_COMBINE_NORM_EXCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_EXCL)
 #define DEVELOP_COMBINE_NORM_INCL   (DEVELOP_COMBINE_NORM | DEVELOP_COMBINE_INCL)
 #define DEVELOP_COMBINE_INV_EXCL    (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_EXCL)
@@ -332,6 +333,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_path;
   GtkWidget *masks_circle;
   GtkWidget *masks_edit;
+  GtkWidget *masks_polarity;
   int *masks_combo_ids;
   int masks_shown;
   int control_button_pressed;

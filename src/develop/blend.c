@@ -1856,12 +1856,32 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   {
     int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
     dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+    if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+    {
+      // if we have a mask and this flag is set -> invert the mask
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
+    }
   }
   else
   {
     //we fill the buffer with 1.0f or 0.0f depending on mask_combine
     const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+    #pragma omp parallel for default(none) shared(mask)
+#else
+    #pragma omp parallel for shared(mask)
+#endif
+#endif
     for (int i=0; i<buffsize; i++) mask[i] = fill;
   }
 
@@ -1895,7 +1915,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #else
     #pragma omp parallel for shared(i,roi_out,o,mask,blend,d,ch)
 #endif
-
 #endif
     for (int y=0; y<roi_out->height; y++)
     {
@@ -1939,7 +1958,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #else
       #pragma omp parallel for shared(roi_out,mask)
 #endif
-
 #endif
       for (int k=0; k<roi_out->height*roi_out->width; k++)
       {
@@ -1954,7 +1972,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #else
     #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
 #endif
-
 #endif
     for (int y=0; y<roi_out->height; y++)
     {
@@ -2055,12 +2072,32 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   {
     int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
     dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+    if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+    {
+      // if we have a mask and this flag is set -> invert the mask
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
+    }
   }
   else
   {
     //we fill the buffer with 1.0f or 0.0f depending on mask_combine
     const float fill = (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
     const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+    #pragma omp parallel for default(none) shared(mask)
+#else
+    #pragma omp parallel for shared(mask)
+#endif
+#endif
     for (int i=0; i<buffsize; i++) mask[i] = fill;
   }
 

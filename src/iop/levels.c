@@ -366,6 +366,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
    * update as rapidly */
   if(self->request_color_pick &&
       self->color_picker_point[0] >= 0.0f && self->color_picker_point[1] >= 0.0f &&
+      self->picked_color_max[0] >= 0.0f &&
       mean_picked_color != c->last_picked_color)
   {
     float previous_color[3];
