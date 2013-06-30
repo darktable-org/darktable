@@ -563,6 +563,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
+  cairo_save(cr);
   cairo_set_source_rgb(cr, .3, .3, .3);
 
   cairo_translate(cr, width/2.0, height/2.0f);
@@ -578,6 +579,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   if (form->type & DT_MASKS_CIRCLE) dt_circle_events_post_expose(cr,zoom_scale,gui,0);
   else if (form->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,0,g_list_length(form->points));
   else if (form->type & DT_MASKS_GROUP) dt_group_events_post_expose(cr,zoom_scale,form,gui);
+  cairo_restore(cr);
 }
 
 void dt_masks_init_formgui(dt_develop_t *dev)

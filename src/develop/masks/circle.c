@@ -552,7 +552,11 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   }
 
   //and we transform them with all distorted modules
-  if (dt_dev_distort_transform(dev,*points,l+1)) return 1;
+  if (dt_dev_distort_transform(dev,*points,l+1))
+  {
+    free(*points);
+    return 1;
+  }
 
   //if we failed, then free all and return
   free(*points);
@@ -685,7 +689,11 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   start2 = dt_get_wtime();
 
   //we back transform all this points
-  if (!dt_dev_distort_backtransform_plus(module->dev,piece->pipe,0,module->priority,points,w*h)) return 0;
+  if (!dt_dev_distort_backtransform_plus(module->dev,piece->pipe,0,module->priority,points,w*h))
+  {
+    free(points);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] circle transform took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
