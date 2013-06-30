@@ -349,8 +349,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
       {
-        length += length_inc;
-
 #if 1
         // !!! approximation is ok only when highest density is 8
         // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
@@ -372,6 +370,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
         /* max(0,in / (c + (1-c)*density)) */
         _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_div_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+
+        length += length_inc;
       }
     }
   }
@@ -394,8 +394,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for(int x=0; x<roi_out->width; x++, in+=ch, out+=ch)
       {
-        length += length_inc;
-
 #if 1
         // !!! approximation is ok only when lowest density is -8
         // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
@@ -416,6 +414,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
         /* max(0,in * (c + (1-c)*density)) */
         _mm_stream_ps(out,_mm_max_ps(_mm_set1_ps(0.0f),_mm_mul_ps(_mm_load_ps(in),_mm_add_ps(c,_mm_mul_ps(c1,density)))));
+
+        length += length_inc;
       }
     }
   }
