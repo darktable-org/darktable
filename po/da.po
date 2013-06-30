@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-06-28 13:39+0200\n"
-"PO-Revision-Date: 2013-06-28 13:43+0200\n"
+"POT-Creation-Date: 2013-06-30 21:23+0200\n"
+"PO-Revision-Date: 2013-06-30 21:26+0200\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <da@li.org>\n"
 "Language: da_DK\n"
@@ -577,8 +577,8 @@ msgstr "billede `%s' er ikke tilgængeligt!"
 #. set export style to "none" by default
 #: ../src/common/imageio.c:565 ../src/common/variables.c:220
 #: ../src/control/control.c:120 ../src/iop/clipping.c:1459
-#: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:1717
-#: ../src/iop/clipping.c:1760 ../src/iop/clipping.c:1777
+#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1719
+#: ../src/iop/clipping.c:1762 ../src/iop/clipping.c:1781
 #: ../src/iop/lens.c:1741 ../src/libs/export.c:176 ../src/libs/export.c:179
 #: ../src/libs/export.c:639 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
@@ -1034,7 +1034,7 @@ msgstr "input"
 msgid "double click to reset"
 msgstr "dobbeltklik for at nulstille"
 
-#: ../src/develop/blend_gui.c:1105 ../src/develop/masks/masks.c:962
+#: ../src/develop/blend_gui.c:1105 ../src/develop/masks/masks.c:964
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1042,7 +1042,7 @@ msgstr[0] "%d form brugt"
 msgstr[1] "%d forme brugt"
 
 #: ../src/develop/blend_gui.c:1110 ../src/develop/blend_gui.c:1149
-#: ../src/develop/masks/masks.c:965
+#: ../src/develop/masks/masks.c:967
 msgid "no mask used"
 msgstr "ingen maske bruges"
 
@@ -2938,7 +2938,7 @@ msgid "select frame line color"
 msgstr "vælg rammelinjens farve"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:981 ../src/iop/clipping.c:1737
+#: ../src/iop/borders.c:981 ../src/iop/clipping.c:1739
 #: ../src/libs/import.c:818
 msgid "image"
 msgstr "billede"
@@ -2955,15 +2955,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1746
+#: ../src/iop/borders.c:985 ../src/iop/clipping.c:1748
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:986 ../src/iop/clipping.c:1738
+#: ../src/iop/borders.c:986 ../src/iop/clipping.c:1740
 msgid "golden cut"
 msgstr "gylden beskæring"
 
-#: ../src/iop/borders.c:987 ../src/iop/clipping.c:1740
+#: ../src/iop/borders.c:987 ../src/iop/clipping.c:1742
 msgid "3:2"
 msgstr "3:2"
 
@@ -2971,15 +2971,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:989 ../src/iop/clipping.c:1745
+#: ../src/iop/borders.c:989 ../src/iop/clipping.c:1747
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:990 ../src/iop/clipping.c:1742
+#: ../src/iop/borders.c:990 ../src/iop/clipping.c:1744
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:991 ../src/iop/clipping.c:1744
+#: ../src/iop/borders.c:991 ../src/iop/clipping.c:1746
 msgid "square"
 msgstr "kvadratisk"
 
@@ -3016,7 +3016,7 @@ msgstr "kantstørrelse"
 msgid "size of the border in percent of the full image"
 msgstr "kantens størrelse i procent af hele billedet"
 
-#: ../src/iop/borders.c:1056 ../src/iop/clipping.c:1735
+#: ../src/iop/borders.c:1056 ../src/iop/clipping.c:1737
 msgid "aspect"
 msgstr "forhold"
 
@@ -3202,17 +3202,17 @@ msgstr "beskær og rotér"
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "ugyldig format for forhold. det skal være \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1460 ../src/iop/clipping.c:1701
-#: ../src/iop/clipping.c:1718
+#: ../src/iop/clipping.c:1460 ../src/iop/clipping.c:1703
+#: ../src/iop/clipping.c:1720
 msgid "vertical"
 msgstr "lodret"
 
-#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1700
-#: ../src/iop/clipping.c:1719
+#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1702
+#: ../src/iop/clipping.c:1721
 msgid "horizontal"
 msgstr "vandret"
 
-#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1720
+#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1722
 msgid "full"
 msgstr "fuld"
 
@@ -3224,152 +3224,162 @@ msgstr "gammelt system"
 msgid "correction applied"
 msgstr "korrektion udført"
 
-#: ../src/iop/clipping.c:1698 ../src/iop/clipping.c:1776
+#: ../src/iop/clipping.c:1700 ../src/iop/clipping.c:1780
 #: ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "spejlvend"
 
-#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1780
+#: ../src/iop/clipping.c:1704 ../src/iop/clipping.c:1784
 #: ../src/libs/live_view.c:339
 msgid "both"
 msgstr "begge"
 
-#: ../src/iop/clipping.c:1704
+#: ../src/iop/clipping.c:1706
 msgid "mirror image horizontally and/or vertically"
 msgstr "spejlvend billede vandret og/eller lodret"
 
-#: ../src/iop/clipping.c:1709
+#: ../src/iop/clipping.c:1711
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1712
+#: ../src/iop/clipping.c:1714
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "højreklik og træk en lige linie på billedet for at trække en lige linie"
 
-#: ../src/iop/clipping.c:1716
+#: ../src/iop/clipping.c:1718
 msgid "keystone"
 msgstr "trapezkorregering"
 
-#: ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1723
 msgid "set perspective correction for your image"
 msgstr "sæt perspektivkorregering for dit billede"
 
-#: ../src/iop/clipping.c:1726
+#: ../src/iop/clipping.c:1728
 msgid "automatic cropping"
 msgstr "automatisk beskæring"
 
-#: ../src/iop/clipping.c:1727
+#: ../src/iop/clipping.c:1729
 msgid "no"
 msgstr "nej"
 
-#: ../src/iop/clipping.c:1728
+#: ../src/iop/clipping.c:1730
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1729
+#: ../src/iop/clipping.c:1731
 msgid "automatically crop to avoid black edges"
 msgstr "beskær automatisk for at undgå sorte kanter"
 
-#: ../src/iop/clipping.c:1736
+#: ../src/iop/clipping.c:1738
 msgid "free"
 msgstr "fri"
 
-#: ../src/iop/clipping.c:1739
+#: ../src/iop/clipping.c:1741
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1741
+#: ../src/iop/clipping.c:1743
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1743
+#: ../src/iop/clipping.c:1745
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1747
+#: ../src/iop/clipping.c:1749
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1748
+#: ../src/iop/clipping.c:1750
 msgid "10:8 in print"
 msgstr "10:8 ved tryk"
 
-#: ../src/iop/clipping.c:1753
+#: ../src/iop/clipping.c:1755
 msgid "set the aspect ratio (w:h)"
 msgstr "sæt størrelsesforhold (b:h)"
 
-#: ../src/iop/clipping.c:1759 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1761 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:1761 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "gitter"
 
-#: ../src/iop/clipping.c:1762 ../src/libs/live_view.c:326
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "tredjedelsreglen"
 
-#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1765
+msgid "metering"
+msgstr "måling"
+
+#: ../src/iop/clipping.c:1766
+msgid "perspective"
+msgstr "perspektiv"
+
+#. TODO: make the number of lines configurable with a slider?
+#: ../src/iop/clipping.c:1767 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonalmetoden"
 
-#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1768 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "harmoniske trekanter"
 
-#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "det gyldne snit"
 
-#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:1775 ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "vis guidelinier for at hjælpe med at komponere dit fotografi"
 
-#: ../src/iop/clipping.c:1778 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1782 ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "vandret"
 
-#: ../src/iop/clipping.c:1779 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1783 ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "lodret"
 
-#: ../src/iop/clipping.c:1781 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "spejlvend guider"
 
-#: ../src/iop/clipping.c:1786 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1790 ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "ekstra"
 
-#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "gyldne sektioner"
 
-#: ../src/iop/clipping.c:1788 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "gyldne spiralsektioner"
 
-#: ../src/iop/clipping.c:1789 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "gylden spiral"
 
-#: ../src/iop/clipping.c:1790 ../src/iop/lens.c:1747
+#: ../src/iop/clipping.c:1794 ../src/iop/lens.c:1747
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "alle"
 
-#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "vis ekstra guider"
 
-#: ../src/iop/clipping.c:2792
+#: ../src/iop/clipping.c:2814
 msgctxt "accel"
 msgid "commit"
 msgstr "udfør"
 
-#: ../src/iop/clipping.c:2794
+#: ../src/iop/clipping.c:2816
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -7740,11 +7750,11 @@ msgstr "cirkel nr. %d"
 msgid "path #%d"
 msgstr "sti nr. %d"
 
-#: ../src/develop/masks/masks.c:850 ../src/libs/masks.c:810
+#: ../src/develop/masks/masks.c:852 ../src/libs/masks.c:810
 msgid "add existing shape"
 msgstr "tilføj eksisterende form"
 
-#: ../src/develop/masks/masks.c:877
+#: ../src/develop/masks/masks.c:879
 msgid "use same shapes as"
 msgstr "brug samme former som"
 
