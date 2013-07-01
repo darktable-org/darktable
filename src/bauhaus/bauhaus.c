@@ -32,8 +32,6 @@
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
 
 // fwd declare
-static void dt_bauhaus_hide_popup();
-static void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
 static gboolean
 dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean
@@ -813,6 +811,7 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   d->min = min;
   d->max = max;
+  d->step = step;
   // normalize default:
   d->defpos = (defval-min)/(max-min);
   d->pos = d->defpos;
@@ -1546,7 +1545,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   return TRUE;
 }
 
-static void
+void
 dt_bauhaus_hide_popup()
 {
   if(darktable.bauhaus->current)
@@ -1558,7 +1557,7 @@ dt_bauhaus_hide_popup()
   }
 }
 
-static void
+void
 dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
 {
   if(darktable.bauhaus->current)
@@ -1729,6 +1728,31 @@ dt_bauhaus_slider_set(GtkWidget *widget, float pos)
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   dt_bauhaus_slider_set_normalized(w, (pos-d->min)/(d->max-d->min));
+}
+
+float
+dt_bauhaus_slider_get_step(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return 0;
+
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  return d->step;
+}
+
+void
+dt_bauhaus_slider_reset(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+
+  dt_bauhaus_slider_set_normalized(w, d->defpos);
+
+  return;
 }
 
 void
