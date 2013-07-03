@@ -89,7 +89,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
     return 1;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,&self_data);
+  luaA_push_typeid(L,self->parameter_lua_type,self_data);
   luaA_push(L,dt_lua_image_t,&imgid);
   luaA_push_typeid(L,format->parameter_lua_type,fdata);
   lua_pushstring(L,complete_name);
@@ -117,7 +117,7 @@ extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
     return;
   }
 
-  luaA_push_typeid(L,self->parameter_lua_type,&data);
+  luaA_push_typeid(L,self->parameter_lua_type,data);
 
   lua_storage_t *d = (lua_storage_t*) data;
   GList* imgids =d->imgids;
