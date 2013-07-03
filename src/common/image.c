@@ -1016,6 +1016,14 @@ void dt_image_local_copy_reset(const int32_t imgid)
     g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
 
+    // delete xmp if any
+    g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+    dest = g_file_new_for_path(destpath);
+
+    if (g_file_test(destpath, G_FILE_TEST_EXISTS))
+      g_file_delete(dest, NULL, NULL);
+    g_object_unref(dest);
+
     // update cache
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
     dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
@@ -1033,23 +1041,17 @@ void dt_image_local_copy_reset(const int32_t imgid)
 
 void dt_image_write_sidecar_file(int imgid)
 {
-  gboolean from_cache;
-
   // TODO: compute hash and don't write if not needed!
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
+    gboolean from_cache = TRUE;
     char filename[DT_MAX_PATH_LEN+8];
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
-
-    // only write xmp at the original location
-    if (!from_cache)
-    {
-      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-      char *c = filename + strlen(filename);
-      sprintf(c, ".xmp");
-      dt_exif_xmp_write(imgid, filename);
-    }
+    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
+    char *c = filename + strlen(filename);
+    sprintf(c, ".xmp");
+    dt_exif_xmp_write(imgid, filename);
   }
 }
 

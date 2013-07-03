@@ -1851,7 +1851,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
 {
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
-  gboolean from_cache = FALSE;
+  gboolean from_cache = TRUE;
 
   dt_image_full_path(imgid, imgfname, 1024, &from_cache);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
