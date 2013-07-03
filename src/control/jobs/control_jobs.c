@@ -319,8 +319,33 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  sqlite3_stmt *stmt = NULL;
 
+  // check that we can safely remove the image
   char query[1024];
+  gboolean remove_ok = TRUE;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM images WHERE id IN (SELECT imgid FROM selected_images) AND flags&?1=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    if (!dt_image_safe_remove(imgid))
+    {
+      remove_ok = FALSE;
+      break;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  if (!remove_ok)
+  {
+    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+    return 0;
+  }
+
+  // update remove status
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
@@ -328,7 +353,6 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
-  sqlite3_stmt *stmt = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)

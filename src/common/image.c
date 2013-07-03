@@ -395,6 +395,11 @@ int32_t dt_image_duplicate(const int32_t imgid)
 
 void dt_image_remove(const int32_t imgid)
 {
+  // if a local copy exists, remove it
+
+  if (dt_image_local_copy_reset(imgid))
+    return;
+
   sqlite3_stmt *stmt;
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   int old_group_id = img->group_id;
@@ -402,9 +407,6 @@ void dt_image_remove(const int32_t imgid)
 
   // make sure we remove from the cache first, or else the cache will look for imgid in sql
   dt_image_cache_remove(darktable.image_cache, imgid);
-
-  // if a local copy exists, remove it
-  dt_image_local_copy_reset(imgid);
 
   int new_group_id = dt_grouping_remove_from_group(imgid);
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
@@ -1019,20 +1021,39 @@ void dt_image_local_copy_set(const int32_t imgid)
   }
 }
 
-void dt_image_local_copy_reset(const int32_t imgid)
+int dt_image_local_copy_reset(const int32_t imgid)
 {
   gchar destpath[DT_MAX_PATH_LEN] = {0};
   gchar cachedir[DT_MAX_PATH_LEN] = {0};
+
+  // check that the original file is accessible
+
+  gboolean from_cache = TRUE;
+  dt_image_full_path(imgid, destpath, DT_MAX_PATH_LEN, &from_cache);
+  g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+
+  if (from_cache && g_file_test(destpath, G_FILE_TEST_EXISTS))
+  {
+    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    return 1;
+  }
+
+  // get name of local copy
+
   _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
 
-  //  remove cached file, but double check that this is really into the cache. We really want to avoid deleting
-  //  a user's original file.
+  // remove cached file, but double check that this is really into the cache. We really want to avoid deleting
+  // a user's original file.
 
   dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
 
   if (g_file_test(destpath, G_FILE_TEST_EXISTS) && strstr(destpath, cachedir))
   {
     GFile *dest = g_file_new_for_path(destpath);
+
+    // first sync the xmp with the original picture
+
+    dt_image_write_sidecar_file(imgid);
 
     // delete image from cache directory
     g_file_delete(dest, NULL, NULL);
@@ -1055,6 +1076,8 @@ void dt_image_local_copy_reset(const int32_t imgid)
 
     dt_control_queue_redraw_center();
   }
+
+  return 0;
 }
 
 // *******************************************************
