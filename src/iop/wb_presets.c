@@ -5436,6 +5436,16 @@ const wb_data wb_preset[] = {
   { "SONY", "NEX-5N", Flash, 6,			{ 3.367188, 1, 1.113281, 0 } },
   { "SONY", "NEX-5N", Flash, 7,			{ 3.476563, 1, 1.074219, 0 } },
 
+  { "SONY", "NEX-5R", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
+  { "SONY", "NEX-5R", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
+  { "SONY", "NEX-5R", Cloudy, 0,		{ 2.7188, 1, 1.3828, 0 } },
+  { "SONY", "NEX-5R", Tungsten, 0,		{ 1.5039, 1, 2.7695, 0 } },
+  { "SONY", "NEX-5R", WarmWhiteFluorescent, 0,	{ 1.8164, 1, 2.7305, 0 } },
+  { "SONY", "NEX-5R", CoolWhiteFluorescent, 0,	{ 2.3086, 1, 2.1758, 0 } },
+  { "SONY", "NEX-5R", DayWhiteFluorescent, 0,	{ 2.4844, 1, 1.5703, 0 } },
+  { "SONY", "NEX-5R", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
+  { "SONY", "NEX-5R", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
+
   { "SONY", "NEX-7", Daylight, 0,		{ 2.5820, 1, 1.5273, 0 } },
   { "SONY", "NEX-7", Shade, 0,			{ 3.0781, 1, 1.2734, 0 } },
   { "SONY", "NEX-7", Cloudy, 0,			{ 2.7930, 1, 1.4102, 0 } },
