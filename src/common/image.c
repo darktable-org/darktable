@@ -130,6 +130,28 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
   pathname[len-1] = '\0';
 }
 
+gboolean dt_image_safe_remove(const int32_t imgid)
+{
+  // always safe to remove if we do not have .xmp
+  if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
+
+  // check whether the original file is accessible
+  char pathname[DT_MAX_PATH_LEN];
+  gboolean from_cache = TRUE;
+
+  dt_image_full_path(imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
+
+  if (!from_cache)
+    return TRUE;
+
+  else
+  {
+    // finaly check if we have a .xmp for the local copy. If no modification done on the local copy it is safe to remove.
+    g_strlcat(pathname, ".xmp", DT_MAX_PATH_LEN);
+    return !g_file_test(pathname, G_FILE_TEST_EXISTS);
+  }
+}
+
 void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
