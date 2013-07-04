@@ -1169,6 +1169,30 @@ void dt_image_synch_all_xmp(const gchar *pathname)
   }
 }
 
+void dt_image_local_copy_synch(void)
+{
+  // nothing to do if not creating .xmp
+  if(!dt_conf_get_bool("write_sidecar_files")) return;
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db), "SELECT id FROM images WHERE flags&?1=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid = sqlite3_column_int(stmt, 0);
+    gboolean from_cache = TRUE;
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+
+    if (!from_cache)
+      dt_image_write_sidecar_file(imgid);
+  }
+  sqlite3_finalize(stmt);
+}
+
 #if GLIB_CHECK_VERSION (2, 26, 0)
 void dt_image_add_time_offset(const int imgid, const long int offset)
 {
