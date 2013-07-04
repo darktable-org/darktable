@@ -761,6 +761,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_print_mem_usage();
   }
 
+  dt_image_local_copy_synch();
+
   /* init lua last, since it's user made stuff it must be in the real environment */
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state,init_gui);
