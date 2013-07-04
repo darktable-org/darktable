@@ -322,8 +322,10 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
 void dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
-/* check whether an original file is accessible */
+/* check whether it is safe to remove a file */
 gboolean dt_image_safe_remove(const int32_t imgid);
+/* try to sync .xmp for all local copies */
+void dt_image_local_copy_synch(void);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
