@@ -552,11 +552,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   }
 
   //and we transform them with all distorted modules
-  if (dt_dev_distort_transform(dev,*points,l+1))
-  {
-    free(*points);
-    return 1;
-  }
+  if (dt_dev_distort_transform(dev,*points,l+1)) return 1;
 
   //if we failed, then free all and return
   free(*points);
