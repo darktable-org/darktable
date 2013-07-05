@@ -40,8 +40,6 @@ DT_MODULE(2)
 #define DT_IOP_LOWEST_TEMPERATURE     2000
 #define DT_IOP_HIGHEST_TEMPERATURE   23000
 
-#define DT_IOP_KLUDGE_FACTOR 1.6
-
 typedef struct dt_iop_temperature_params_t
 {
   float temp_out;
@@ -380,7 +378,7 @@ void gui_update (struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
   dt_bauhaus_slider_set(g->scale_b, p->coeffs[2]);
-  dt_bauhaus_slider_set(g->scale_k, temp / DT_IOP_KLUDGE_FACTOR);
+  dt_bauhaus_slider_set(g->scale_k, temp);
   dt_bauhaus_slider_set(g->scale_tint, tint);
 
   dt_bauhaus_combobox_clear(g->presets);
@@ -490,7 +488,7 @@ void reload_defaults(dt_iop_module_t *module)
         float temp, tint, mul[3];
         for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
         convert_rgb_to_k(mul, &temp, &tint);
-        dt_bauhaus_slider_set_default(g->scale_k,    temp / DT_IOP_KLUDGE_FACTOR);
+        dt_bauhaus_slider_set_default(g->scale_k,    temp);
         dt_bauhaus_slider_set_default(g->scale_tint, tint);
       }
 
@@ -551,7 +549,7 @@ gui_update_from_coeffs (dt_iop_module_t *self)
   convert_rgb_to_k(mul, &temp, &tint);
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->scale_k,    temp / DT_IOP_KLUDGE_FACTOR);
+  dt_bauhaus_slider_set(g->scale_k,    temp);
   dt_bauhaus_slider_set(g->scale_tint, tint);
   dt_bauhaus_slider_set(g->scale_r, p->coeffs[0]);
   dt_bauhaus_slider_set(g->scale_g, p->coeffs[1]);
@@ -589,7 +587,7 @@ temp_changed(dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
 
-  const float temp = dt_bauhaus_slider_get(g->scale_k) * DT_IOP_KLUDGE_FACTOR;
+  const float temp = dt_bauhaus_slider_get(g->scale_k);
   const float tint = dt_bauhaus_slider_get(g->scale_tint);
 
   convert_k_to_rgb(temp, p->coeffs);
@@ -725,7 +723,7 @@ void gui_init (struct dt_iop_module_t *self)
 
   for(int k=0; k<3; k++) g->daylight_wb[k] = 1.0f;
   g->scale_tint  = dt_bauhaus_slider_new_with_range(self,0.1, 8.0, .01,1.0,3);
-  g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE / DT_IOP_KLUDGE_FACTOR, 10.,5000.0,0);
+  g->scale_k     = dt_bauhaus_slider_new_with_range(self,DT_IOP_LOWEST_TEMPERATURE, DT_IOP_HIGHEST_TEMPERATURE, 10.,5000.0,0);
   g->scale_r     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[0],3);
   g->scale_g     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[1],3);
   g->scale_b     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[2],3);
