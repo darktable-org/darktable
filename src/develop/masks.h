@@ -35,7 +35,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_CIRCLE = 1,
   DT_MASKS_PATH = 2,
   DT_MASKS_GROUP = 4,
-  DT_MASKS_CLONE = 8
+  DT_MASKS_CLONE = 8,
+  DT_MASKS_GRADIENT = 16
 }
 dt_masks_type_t;
 
@@ -82,6 +83,16 @@ typedef struct dt_masks_point_path_t
   dt_masks_points_states_t state;
 }
 dt_masks_point_path_t;
+
+/** structure used to store anchor for a gradient */
+typedef struct dt_masks_point_gradient_t
+{
+  float anchor[2];
+  float rotation;
+  float compression;
+  float steepness;
+}
+dt_masks_point_gradient_t;
 
 /** structure used to store all forms's id for a group */
 typedef struct dt_masks_point_group_t
@@ -133,6 +144,7 @@ typedef struct dt_masks_form_gui_t
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
+  gboolean pivot_selected;
   int edit_mode;
   int point_selected;
   int point_edited;
@@ -142,6 +154,7 @@ typedef struct dt_masks_form_gui_t
 
   gboolean form_dragging;
   gboolean source_dragging;
+  gboolean form_rotating;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;

@@ -33,6 +33,7 @@ static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     if (!sel) return 0;
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -46,7 +47,8 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module,float p
     gui->group_edited = gui->group_selected;
     //we initialise some variable
     gui->posx = gui->posy = gui->dx = gui->dy = 0.0f;
-    gui->form_selected = gui->border_selected = gui->form_dragging = FALSE;
+    gui->form_selected = gui->border_selected = gui->form_dragging = gui->form_rotating = FALSE;
+    gui->pivot_selected = FALSE;
     gui->point_border_selected = gui->seg_selected = gui->point_selected = gui->feather_selected = -1;
     gui->point_border_dragging = gui->seg_dragging = gui->feather_dragging = gui->point_dragging = -1;
 
@@ -61,6 +63,7 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module,float p
     if (!sel) return 0;
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -76,6 +79,7 @@ static int dt_group_events_button_released(struct dt_iop_module_t *module,float 
     if (!sel) return 0;
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -108,6 +112,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     int rep = 0;
     if (sel->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
     if (rep) return 1;
     //if a point is in state editing, then we don't want that another form can be selected
     if (gui->point_edited >= 0) return 0;
@@ -118,6 +123,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
   int pos = 0;
   gui->form_selected = gui->border_selected = FALSE;
   gui->source_selected = gui->source_dragging = FALSE;
+  gui->pivot_selected = FALSE;
   gui->feather_selected  = -1;
   gui->point_edited = gui->point_selected = -1;
   gui->seg_selected = -1;
@@ -133,11 +139,13 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     float xx = pzx*darktable.develop->preview_pipe->backbuf_width, yy = pzy*darktable.develop->preview_pipe->backbuf_height;
     if (sel->type & DT_MASKS_CIRCLE) dt_circle_get_distance(xx,yy,as,gui,pos,&inside, &inside_border, &near, &inside_source);
     else if (sel->type & DT_MASKS_PATH) dt_path_get_distance(xx,yy,as,gui,pos,g_list_length(sel->points),&inside, &inside_border, &near, &inside_source);
+    else if (sel->type & DT_MASKS_GRADIENT) dt_gradient_get_distance(xx,yy,as,gui,pos,&inside, &inside_border, &near, &inside_source);
     if (inside || inside_border || near>=0 || inside_source)
     {
       gui->group_edited = gui->group_selected = pos;
       if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
       else if (sel->type & DT_MASKS_PATH) return dt_path_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
+      else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
     }
     fpts = g_list_next(fpts);
     pos++;
@@ -156,6 +164,7 @@ static void dt_group_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_fo
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop,fpt->formid);
     if (sel->type & DT_MASKS_CIRCLE) dt_circle_events_post_expose(cr,zoom_scale,gui,pos);
     else if (sel->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,pos,g_list_length(sel->points));
+    else if (sel->type & DT_MASKS_GRADIENT) dt_gradient_events_post_expose(cr,zoom_scale,gui,pos);
     fpts = g_list_next(fpts);
     pos++;
   }
@@ -343,7 +352,7 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
 
   //we get the mask
   float *fm = NULL;
-  int fx,fy,fw,fh;
+  int fx = roi[0], fy = roi[1], fw = roi[2] , fh = roi[3];
   if (!dt_masks_get_mask(module,piece,form,&fm,&fw,&fh,&fx,&fy)) return 0;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks] get all masks took %0.04f sec\n", dt_get_wtime()-start2);
