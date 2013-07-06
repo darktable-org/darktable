@@ -39,7 +39,7 @@ typedef struct dt_lib_masks_t
 {
   /* vbox with managed history items */
   GtkWidget *hbox;
-  GtkWidget *bt_circle, *bt_path;
+  GtkWidget *bt_circle, *bt_path, *bt_gradient;
   GtkWidget *treeview;
   GtkWidget *scroll_window;
 
@@ -133,6 +133,31 @@ static void _bt_add_path (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
   }
   else _tree_add_path(NULL,NULL);
 }
+static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
+{
+  //we create the new form
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
+  dt_masks_change_form_gui(spot);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = module;
+  darktable.develop->form_gui->group_selected = 0;
+  dt_control_queue_redraw_center();
+}
+static void _bt_add_gradient (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *module)
+{
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    //we unset the creation mode
+    dt_masks_form_t *form = darktable.develop->form_visible;
+    if (form) dt_masks_free_form(form);
+    dt_masks_change_form_gui(NULL);
+    dt_masks_init_formgui(darktable.develop);
+    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+  }
+  else _tree_add_gradient(NULL,NULL);
+}
+
+
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
   if (!grp || !(grp->type & DT_MASKS_GROUP)) return;
@@ -783,6 +808,11 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       item = gtk_menu_item_new_with_label(_("add path"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
       gtk_menu_append(menu, item);
+
+      item = gtk_menu_item_new_with_label(_("add gradient"));
+      g_signal_connect(item, "activate",(GCallback) _tree_add_gradient, module);
+      gtk_menu_append(menu, item);
+
       gtk_menu_append(menu, gtk_separator_menu_item_new());
     }
 
@@ -805,6 +835,10 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
 
         item = gtk_menu_item_new_with_label(_("add path"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
+        gtk_menu_append(menu, item);
+
+        item = gtk_menu_item_new_with_label(_("add gradient"));
+        g_signal_connect(item, "activate",(GCallback) _tree_add_gradient, module);
         gtk_menu_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add existing shape"));
@@ -1119,6 +1153,8 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
   //we set the add shape icons inactive
   GTK_TOGGLE_BUTTON(lm->bt_circle)->active = FALSE;
   GTK_TOGGLE_BUTTON(lm->bt_path)->active = FALSE;
+  GTK_TOGGLE_BUTTON(lm->bt_gradient)->active = FALSE;
+
 
   GtkTreeStore *treestore;
   //we store : text ; *module ; groupid ; formid
@@ -1350,6 +1386,13 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *label = gtk_label_new(_("created shapes"));
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
+
+  d->bt_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_gradient), NULL);
+  g_object_set(G_OBJECT(d->bt_gradient), "tooltip-text", _("add gradient"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(d->bt_gradient),bs,bs);
+  gtk_box_pack_end (GTK_BOX (hbox),d->bt_gradient,FALSE,FALSE,0);
 
   d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), NULL);

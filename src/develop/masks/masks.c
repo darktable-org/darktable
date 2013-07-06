@@ -26,7 +26,9 @@
 
 #include "develop/masks/circle.c"
 #include "develop/masks/path.c"
+#include "develop/masks/gradient.c"
 #include "develop/masks/group.c"
+
 
 static void _set_hinter_message(dt_masks_form_gui_t *gui)
 {
@@ -36,6 +38,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui)
   else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
   else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
   else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+  else if (gui->pivot_selected) strcat(msg,_("move to rotate shape"));
 
   dt_control_hinter_message(darktable.control,msg);
 }
@@ -132,6 +135,7 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
 
   if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,128,_("circle #%d"),nb);
   else if (form->type & DT_MASKS_PATH) snprintf(form->name,128,_("path #%d"),nb);
+  else if (form->type & DT_MASKS_GRADIENT) snprintf(form->name,128,_("gradient #%d"),nb);
 
   dt_masks_write_form(form,darktable.develop);
 
@@ -186,6 +190,15 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
   {
     return dt_path_get_points_border(dev,form, points, points_count, border, border_count,source);
   }
+  else if (form->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *) (g_list_first(form->points)->data);
+    if (dt_gradient_get_points(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, points, points_count))
+    {
+      if (border) return dt_gradient_get_points_border(dev, gradient->anchor[0], gradient->anchor[1], gradient->rotation, gradient->compression, border, border_count);
+      else return 1;
+    }
+  }
   return 0;
 }
 
@@ -198,6 +211,10 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   else if (form->type & DT_MASKS_PATH)
   {
     return dt_path_get_area(module,piece,form,width,height,posx,posy);
+  }
+  else if (form->type & DT_MASKS_GRADIENT)
+  {
+    return dt_gradient_get_area(module,piece,form,width,height,posx,posy);
   }
   return 0;
 }
@@ -228,6 +245,10 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   else if (form->type & DT_MASKS_GROUP)
   {
     return dt_group_get_mask(module,piece,form,buffer,width,height,posx,posy);
+  }
+  else if (form->type & DT_MASKS_GRADIENT)
+  {
+    return dt_gradient_get_mask(module,piece,form,buffer,width,height,posx,posy);
   }
   return 0;
 }
@@ -322,6 +343,13 @@ void dt_masks_read_forms(dt_develop_t *dev)
         form->points = g_list_append(form->points,point);
       }
     }
+    else if (form->type & DT_MASKS_GRADIENT)
+    {
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)malloc(sizeof(dt_masks_point_gradient_t));
+      memcpy(gradient, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_gradient_t));
+      form->points = g_list_append(form->points,gradient);
+    }
+
 
     //and we can add the form to the list
     dev->forms = g_list_append(dev->forms,form);
@@ -393,6 +421,15 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
     sqlite3_finalize (stmt);
     free(ptbuf);
   }
+  if (form->type & DT_MASKS_GRADIENT)
+  {
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *) (g_list_first(form->points)->data);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+  }
+
 }
 
 void dt_masks_write_forms(dt_develop_t *dev)
@@ -461,6 +498,15 @@ void dt_masks_write_forms(dt_develop_t *dev)
       sqlite3_finalize (stmt);
       free(ptbuf);
     }
+    if (form->type & DT_MASKS_GRADIENT)
+    {
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *) (g_list_first(form->points)->data);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+      sqlite3_step (stmt);
+      sqlite3_finalize (stmt);
+    }
+
     forms = g_list_next(forms);
   }
 }
@@ -487,6 +533,7 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   if (form->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
   else if (form->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
 
   if (gui) _set_hinter_message(gui);
 
@@ -504,6 +551,7 @@ int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, d
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
   else if (form->type & DT_MASKS_PATH) return dt_path_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_released(module,pzx,pzy,which,state,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
 
   return 0;
 }
@@ -520,6 +568,7 @@ int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, do
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
   else if (form->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_pressed(module,pzx,pzy,which,type,state,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
 
   return 0;
 }
@@ -536,6 +585,7 @@ int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, do
   if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_PATH) return dt_path_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,pzx,pzy,up,state,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
 
   return 0;
 }
@@ -547,7 +597,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   if (!gui) return;
   if (!form) return;
   //if it's a spot in creation, nothing to draw
-  if ((form->type & DT_MASKS_CIRCLE) && gui->creation) return;
+  if(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_GRADIENT)) && gui->creation) return;
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   if (wd < 1.0 || ht < 1.0) return;
@@ -579,6 +629,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   if (form->type & DT_MASKS_CIRCLE) dt_circle_events_post_expose(cr,zoom_scale,gui,0);
   else if (form->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,0,g_list_length(form->points));
   else if (form->type & DT_MASKS_GROUP) dt_group_events_post_expose(cr,zoom_scale,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) dt_gradient_events_post_expose(cr,zoom_scale,gui,0);
   cairo_restore(cr);
 }
 
@@ -589,8 +640,9 @@ void dt_masks_init_formgui(dt_develop_t *dev)
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
   dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
-  dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging = FALSE;
+  dev->form_gui->form_selected = dev->form_gui->border_selected = dev->form_gui->form_dragging = dev->form_gui->form_rotating = FALSE;
   dev->form_gui->source_selected = dev->form_gui->source_dragging = FALSE;
+  dev->form_gui->pivot_selected = FALSE;
   dev->form_gui->point_border_selected = dev->form_gui->seg_selected = dev->form_gui->point_selected = dev->form_gui->feather_selected = -1;
   dev->form_gui->point_border_dragging = dev->form_gui->seg_dragging = dev->form_gui->feather_dragging = dev->form_gui->point_dragging = -1;
   dev->form_gui->creation_closing_form = dev->form_gui->creation = FALSE;
@@ -711,6 +763,18 @@ static void _menu_add_path(struct dt_iop_module_t *module)
   //we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
   dt_masks_change_form_gui(form);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = module;
+  dt_control_queue_redraw_center();
+}
+static void _menu_add_gradient(struct dt_iop_module_t *module)
+{
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(module);
+  //we create the new form
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
+  dt_masks_change_form_gui(spot);
+
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
@@ -919,6 +983,11 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
     {
       //add a path shape
       _menu_add_path(module);
+    }
+    else if (val == -2000016)
+    {
+      //add a gradient shape
+      _menu_add_gradient(module);
     }
     else if (val < 0)
     {
@@ -1194,6 +1263,10 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
     {
       pos += sizeof(dt_masks_point_path_t);
     }
+    else if (form->type & DT_MASKS_GRADIENT)
+    {
+      pos += sizeof(dt_masks_point_gradient_t);
+    }
     forms = g_list_next(forms);
   }
   return pos;
@@ -1240,6 +1313,11 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
     {
       memcpy(str+pos, forms->data, sizeof(dt_masks_point_path_t));
       pos += sizeof(dt_masks_point_path_t);
+    }
+    else if (form->type & DT_MASKS_GRADIENT)
+    {
+      memcpy(str+pos, forms->data, sizeof(dt_masks_point_gradient_t));
+      pos += sizeof(dt_masks_point_gradient_t);
     }
     forms = g_list_next(forms);
   }
