@@ -783,7 +783,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
 
     // Initialize size - don't wait for full raw to be loaded to get this
-    // information. If use_embedded_thumbnail is set, it will take a 
+    // information. If use_embedded_thumbnail is set, it will take a
     // change in development history to have this information
     img->height = image->pixelHeight();
     img->width = image->pixelWidth();
@@ -1818,7 +1818,8 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
   try
   {
     char input_filename[1024];
-    dt_image_full_path(imgid, input_filename, 1024);
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, input_filename, 1024, &from_cache);
 
     Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(filename);
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
@@ -1850,8 +1851,9 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
 {
   // refuse to write sidecar for non-existent image:
   char imgfname[1024];
+  gboolean from_cache = TRUE;
 
-  dt_image_full_path(imgid, imgfname, 1024);
+  dt_image_full_path(imgid, imgfname, 1024, &from_cache);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
 
   try

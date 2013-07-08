@@ -504,7 +504,32 @@ int dt_film_is_empty(const int id)
 // It just does the iteration over all images in the SQL statement
 void dt_film_remove(const int id)
 {
+  // only allowed if local copies have there original accessible
+
   sqlite3_stmt *stmt;
+
+  gboolean remove_ok = TRUE;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT id FROM images WHERE film_id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    if (!dt_image_safe_remove(imgid))
+    {
+      remove_ok = FALSE;
+      break;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  if (!remove_ok)
+  {
+    dt_control_log(_("cannot remove film roll with non accessible local copies\n"));
+    return;
+  }
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "update tagxtag set count = count - 1 where "
                               "(id2 in (select tagid from tagged_images where imgid in "
@@ -551,6 +576,7 @@ void dt_film_remove(const int id)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const uint32_t imgid = sqlite3_column_int(stmt, 0);
+    dt_image_local_copy_reset(imgid);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_cache_remove (darktable.image_cache, imgid);
   }
