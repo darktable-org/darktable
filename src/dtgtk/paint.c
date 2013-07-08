@@ -819,6 +819,28 @@ void dtgtk_cairo_paint_label (cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 
 }
 
+void dtgtk_cairo_paint_local_copy(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  if (!flags) return;
+
+  gint s = (w<h?w:h);
+  double r = 0.4;
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+
+  /* fill base color */
+  cairo_arc (cr, 0.5, 0.5, r, 0.0, 2.0*M_PI);
+
+  cairo_set_source_rgba (cr,1,1,1,1);
+  cairo_fill (cr);
+
+  /* draw outline */
+  cairo_set_source_rgba (cr,0.5,0.5,0.5,0.5);
+  cairo_set_line_width(cr, 0.1);
+  cairo_arc (cr, 0.5, 0.5, r, 0.0, 2.0*M_PI);
+  cairo_stroke (cr);
+}
+
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {
   gint s = (w<h?w:h);
