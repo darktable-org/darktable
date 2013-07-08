@@ -526,7 +526,7 @@ void dt_film_remove(const int id)
 
   if (!remove_ok)
   {
-    dt_control_log(_("cannot remove film roll with non accessible local copies\n"));
+    dt_control_log(_("cannot remove film roll having local copies with non accessible originals"));
     return;
   }
 
