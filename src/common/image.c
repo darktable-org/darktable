@@ -1180,6 +1180,8 @@ void dt_image_local_copy_synch(void)
     (dt_database_get(darktable.db), "SELECT id FROM images WHERE flags&?1=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
 
+  int count = 0;
+
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
@@ -1188,9 +1190,21 @@ void dt_image_local_copy_synch(void)
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
 
     if (!from_cache)
+    {
       dt_image_write_sidecar_file(imgid);
+      count++;
+    }
   }
   sqlite3_finalize(stmt);
+
+  if (count>0)
+  {
+    char message[128];
+    g_snprintf
+      (message, 128,
+       ngettext("%d local copy has been synchronized", "%d local copies have been synchronized", count), count);
+    dt_control_log(message);
+  }
 }
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
