@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-08 21:18+0200\n"
-"PO-Revision-Date: 2013-07-08 21:21+0100\n"
+"POT-Creation-Date: 2013-07-09 14:02+0200\n"
+"PO-Revision-Date: 2013-07-09 14:05+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6485,7 +6485,7 @@ msgstr ""
 
 #: ../src/libs/image.c:208
 msgid "cache locally"
-msgstr "copie localement"
+msgstr "copier localement"
 
 #: ../src/libs/image.c:210
 msgid "copy the image locally"
@@ -6493,7 +6493,7 @@ msgstr "copie l'image localement"
 
 #: ../src/libs/image.c:214
 msgid "reset cache"
-msgstr "supprime copie locale"
+msgstr "suppr. copie locale"
 
 #: ../src/libs/image.c:216
 msgid "remove the local copy of the image"
