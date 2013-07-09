@@ -1191,7 +1191,7 @@ void dt_view_toggle_selection(int imgid)
 }
 
 /**
- * \brief Reset filter back to "all images"
+ * \brief Reset filter
  */
 void dt_view_filter_reset_for_import(const dt_view_manager_t *vm)
 {

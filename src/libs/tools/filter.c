@@ -35,7 +35,7 @@ typedef struct dt_lib_tool_filter_t
 }
 dt_lib_tool_filter_t;
 
-/* proxy function to reset filter back to 'all' */
+/* proxy function to intelligently reset filter */
 static void _lib_filter_reset_for_import(dt_lib_module_t *self);
 
 /* callback for filter combobox change */
@@ -253,7 +253,7 @@ _lib_filter_reset_for_import(dt_lib_module_t *self)
   /* convert new filter rating to filter dropdown selector */
   int new_filter = (new_filter_rating >= 1 && new_filter_rating <= 5) ? new_filter_rating + 1 : new_filter_rating;
 
-  /* Reset to topmost item, 'all' */
+  /* Reset to new filter dropdown item */
   gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
