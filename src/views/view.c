@@ -1193,7 +1193,7 @@ void dt_view_toggle_selection(int imgid)
 /**
  * \brief Reset filter back to "all images"
  */
-void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm)
+void dt_view_filter_reset_for_import(const dt_view_manager_t *vm)
 {
   if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
     vm->proxy.filter.reset_filter(vm->proxy.filter.module);

@@ -704,7 +704,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
     int filmid = 0;
 
     /* reset filter to display all images, otherwise view may remain empty */
-    dt_view_filter_reset_to_show_all(darktable.view_manager);
+    dt_view_filter_reset_for_import(darktable.view_manager);
 
     while(it)
     {
@@ -771,7 +771,7 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
     GSList *it = list;
 
     /* reset filter to display all images, otherwise view may remain empty */
-    dt_view_filter_reset_to_show_all(darktable.view_manager);
+    dt_view_filter_reset_for_import(darktable.view_manager);
 
     /* for each selected folder add import job */
     while(it)

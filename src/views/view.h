@@ -315,7 +315,7 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
 /*
  * Filter dropdown proxy
  */
-void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
+void dt_view_filter_reset_for_import(const dt_view_manager_t *vm);
 
 /*
  * NEW filmstrip api
