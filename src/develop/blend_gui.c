@@ -661,6 +661,32 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *event, dt_iop_modul
 }
 
 static int
+_blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  if (event->button == 1)
+  {
+    //we want to be sure that the iop has focus
+    dt_iop_request_focus(self);
+    self->request_color_pick = 0;
+    bd->masks_shown = DT_MASKS_EDIT_FULL;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    //we create the new form
+    dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
+    dt_masks_change_form_gui(spot);
+    darktable.develop->form_gui->creation = TRUE;
+    darktable.develop->form_gui->creation_module = self;
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+
+static int
 _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -1179,6 +1205,13 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_path), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_path), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_path, FALSE, FALSE, 0);
+
+    bd->masks_gradient = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect(G_OBJECT(bd->masks_gradient), "button-press-event", G_CALLBACK(_blendop_masks_add_gradient), module);
+    g_object_set(G_OBJECT(bd->masks_gradient), "tooltip-text", _("add gradient"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_gradient), bs, bs);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_gradient), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), bd->masks_gradient, FALSE, FALSE, 0);
 
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE,0);
 

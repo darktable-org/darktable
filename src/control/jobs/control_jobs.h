@@ -58,6 +58,9 @@ void dt_control_move_images_job_init(dt_job_t *job);
 int32_t dt_control_copy_images_job_run(dt_job_t *job);
 void dt_control_copy_images_job_init(dt_job_t *job);
 
+int32_t dt_control_local_copy_images_job_run(dt_job_t *job);
+void dt_control_local_copy_images_job_init(dt_job_t *job);
+
 void dt_control_delete_images_job_init(dt_job_t *job);
 int32_t dt_control_delete_images_job_run(dt_job_t *job);
 
@@ -79,6 +82,8 @@ void dt_control_flip_images(const int32_t cw);
 void dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();
+void dt_control_set_local_copy_images();
+void dt_control_reset_local_copy_images();
 void dt_control_export(GList *imgid_list,int max_width, int max_height, int format_index, int storage_index, gboolean high_quality,char *style);
 void dt_control_merge_hdr();
 

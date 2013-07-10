@@ -56,7 +56,9 @@ typedef enum
   // set when auto-applying presets have been applied to this image.
   DT_IMAGE_AUTO_PRESETS_APPLIED = 512,
   // legacy flag. is set for all new images. i hate to waste a bit on this :(
-  DT_IMAGE_NO_LEGACY_PRESETS = 1024
+  DT_IMAGE_NO_LEGACY_PRESETS = 1024,
+  // local copy status
+  DT_IMAGE_LOCAL_COPY = 2048
 }
 dt_image_flags_t;
 
@@ -123,8 +125,8 @@ int dt_image_is_ldr(const dt_image_t *img);
 int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
-/** returns the full path name where the image was imported from. */
-void dt_image_full_path(const int imgid, char *pathname, int len);
+/** returns the full path name where the image was imported from. from_cache=TRUE check and return local cached filename if any. */
+void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache);
 /** returns the full directory of the associated film roll. */
 void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len);
 /** returns the portion of the path used for the film roll name. */
@@ -318,6 +320,12 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
 /** physically cope image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+void dt_image_local_copy_set(const int32_t imgid);
+int dt_image_local_copy_reset(const int32_t imgid);
+/* check whether it is safe to remove a file */
+gboolean dt_image_safe_remove(const int32_t imgid);
+/* try to sync .xmp for all local copies */
+void dt_image_local_copy_synch(void);
 // xmp functions:
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);

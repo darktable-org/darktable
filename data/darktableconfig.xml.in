@@ -2027,4 +2027,25 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/gradient/rotation</name>
+    <type>float</type>
+    <default>0.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/gradient/compression</name>
+    <type>float</type>
+    <default>0.5</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/gradient/steepness</name>
+    <type>float</type>
+    <default>0.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
 </dtconfiglist>

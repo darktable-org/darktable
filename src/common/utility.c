@@ -193,6 +193,51 @@ gchar* dt_util_fix_path(const gchar* path)
 
   return rpath;
 }
+
+/**
+ * dt_utf8_strlcpy:
+ * @dest: buffer to fill with characters from @src
+ * @src: UTF-8 encoded string
+ * @n: size of @dest
+ *
+ * Like the BSD-standard strlcpy() function, but
+ * is careful not to truncate in the middle of a character.
+ * The @src string must be valid UTF-8 encoded text.
+ * (Use g_utf8_validate() on all text before trying to use UTF-8
+ * utility functions with it.)
+ *
+ * Return value: strlen(src)
+ * Implementation by Philip Page, see https://bugzilla.gnome.org/show_bug.cgi?id=520116
+ **/
+size_t dt_utf8_strlcpy(char *dest, const char *src,size_t n)
+{
+  register const gchar *s = src;
+  while (s - src < n  &&  *s)
+  {
+    s = g_utf8_next_char(s);
+  }
+
+  if (s - src >= n)
+  {
+    /* We need to truncate; back up one. */
+    s = g_utf8_prev_char(s);
+    strncpy(dest, src, s - src);
+    dest[s - src] = '\0';
+    /* Find the full length for return value. */
+    while (*s)
+    {
+      s = g_utf8_next_char(s);
+    }
+  }
+  else
+  {
+      /* Plenty of room, just copy */
+    strncpy(dest, src, s - src);
+    dest[s - src] = '\0';
+  }
+  return s - src;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

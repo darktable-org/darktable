@@ -87,6 +87,8 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_aspectflip(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a color label icon */
 void dtgtk_cairo_paint_label(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint the local copy symbol */
+void dtgtk_cairo_paint_local_copy(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint a color picker icon - a pipette for bigger buttons */
 void dtgtk_cairo_paint_colorpicker(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a display mask icon */
@@ -146,6 +148,8 @@ void dtgtk_cairo_paint_map_pin(cairo_t *cr, gint x, gint y, gint w, gint h, gint
 void dtgtk_cairo_paint_masks_eye(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a circle icon for masks*/
 void dtgtk_cairo_paint_masks_circle(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a gradient icon for masks*/
+void dtgtk_cairo_paint_masks_gradient(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a path icon for masks*/
 void dtgtk_cairo_paint_masks_path(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a multi-path icon for masks*/

@@ -571,7 +571,8 @@ void reload_defaults(dt_iop_module_t *module)
   if(!cimg->profile)
   {
     char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN);
+    gboolean from_cache = TRUE;
+    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN, &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc!='.'&&cc>filename; cc--);
     gchar *ext = g_ascii_strdown(cc+1, -1);
