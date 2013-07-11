@@ -39,6 +39,8 @@
 #include <glob.h>
 #include <glib/gstdio.h>
 
+static void _image_local_copy_full_path(const int imgid, char *pathname, int len);
+
 int dt_image_is_ldr(const dt_image_t *img)
 {
   const char *c = img->filename + strlen(img->filename);
@@ -128,7 +130,29 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
   pathname[len-1] = '\0';
 }
 
-void dt_image_full_path(const int imgid, char *pathname, int len)
+gboolean dt_image_safe_remove(const int32_t imgid)
+{
+  // always safe to remove if we do not have .xmp
+  if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
+
+  // check whether the original file is accessible
+  char pathname[DT_MAX_PATH_LEN];
+  gboolean from_cache = TRUE;
+
+  dt_image_full_path(imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
+
+  if (!from_cache)
+    return TRUE;
+
+  else
+  {
+    // finaly check if we have a .xmp for the local copy. If no modification done on the local copy it is safe to remove.
+    g_strlcat(pathname, ".xmp", DT_MAX_PATH_LEN);
+    return !g_file_test(pathname, G_FILE_TEST_EXISTS);
+  }
+}
+
+void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -138,6 +162,42 @@ void dt_image_full_path(const int imgid, char *pathname, int len)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), len);
+  }
+  sqlite3_finalize(stmt);
+
+  if (*from_cache && !g_file_test(pathname, G_FILE_TEST_EXISTS))
+  {
+    _image_local_copy_full_path(imgid, pathname, len);
+    *from_cache = TRUE;
+  }
+  else
+    *from_cache = FALSE;
+}
+
+static void _image_local_copy_full_path(const int imgid, char *pathname, int len)
+{
+  sqlite3_stmt *stmt;
+  *pathname='\0';
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT folder || '/' || filename FROM images, film_rolls "
+                              "WHERE images.film_id = film_rolls.id AND images.id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char filename[DT_MAX_PATH_LEN];
+    char cachedir[DT_MAX_PATH_LEN];
+    g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), len);
+    char *md5_filename = g_compute_checksum_for_string (G_CHECKSUM_MD5, filename, strlen (filename));
+    dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+
+    // and finally, add extension, needed as some part of the code is looking for the extension
+    char *c = filename + strlen(filename);
+    while(*c != '.' && c > filename) c--;
+
+    // cache filename format: <cachedir>/imf-<id>-<MD5>.<ext>
+    snprintf(pathname, len, "%s/img-%d-%s%s", cachedir, imgid, md5_filename, c);
+
+    g_free(md5_filename);
   }
   sqlite3_finalize(stmt);
 }
@@ -335,6 +395,11 @@ int32_t dt_image_duplicate(const int32_t imgid)
 
 void dt_image_remove(const int32_t imgid)
 {
+  // if a local copy exists, remove it
+
+  if (dt_image_local_copy_reset(imgid))
+    return;
+
   sqlite3_stmt *stmt;
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   int old_group_id = img->group_id;
@@ -696,7 +761,8 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   int32_t result = -1;
   gchar oldimg[DT_MAX_PATH_LEN] = {0};
   gchar newimg[DT_MAX_PATH_LEN] = {0};
-  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN);
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN, &from_cache);
   gchar *newdir = NULL;
 
   sqlite3_stmt *film_stmt;
@@ -709,10 +775,15 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
+    gchar copysrcpath[DT_MAX_PATH_LEN];
+    gchar copydestpath[DT_MAX_PATH_LEN];
     gchar *imgbname = g_path_get_basename(oldimg);
     g_snprintf(newimg, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
     g_free(imgbname);
     g_free(newdir);
+
+    // get current local copy if any
+    _image_local_copy_full_path(imgid, copysrcpath, DT_MAX_PATH_LEN);
 
     // statement for getting ids of the image to be moved and it's duplicates
     sqlite3_stmt *duplicates_stmt;
@@ -770,6 +841,23 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         dup_list = g_list_delete_link(dup_list, dup_list);
       }
       g_list_free(dup_list);
+
+      // finaly, rename local copy if any
+      if (g_file_test(copysrcpath, G_FILE_TEST_EXISTS))
+      {
+        // get new name
+        _image_local_copy_full_path(imgid, copydestpath, DT_MAX_PATH_LEN);
+
+        GFile *cold = g_file_new_for_path(copysrcpath);
+        GFile *cnew = g_file_new_for_path(copydestpath);
+
+        if (g_file_move(cold, cnew, 0, NULL, NULL, NULL, NULL) != TRUE)
+          fprintf(stderr, "[dt_image_move] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+
+        g_object_unref(cold);
+        g_object_unref(cnew);
+      }
+
       result = 0;
     }
     else
@@ -791,6 +879,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   sqlite3_stmt *stmt;
   gchar srcpath[DT_MAX_PATH_LEN] = {0};
   gchar *newdir = NULL;
+  gboolean from_cache = FALSE;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select folder from film_rolls where id = ?1", -1, &stmt, NULL);
@@ -801,7 +890,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
-    dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN);
+    dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
     gchar *imgbname = g_path_get_basename(srcpath);
     gchar *destpath = g_build_filename(newdir, imgbname, NULL);
     GFile *src = g_file_new_for_path(srcpath);
@@ -899,6 +988,98 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   return newid;
 }
 
+void dt_image_local_copy_set(const int32_t imgid)
+{
+  gchar srcpath[DT_MAX_PATH_LEN] = {0};
+  gchar destpath[DT_MAX_PATH_LEN] = {0};
+
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
+
+  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+
+  if (!g_file_test(destpath, G_FILE_TEST_EXISTS))
+  {
+    GFile *src = g_file_new_for_path(srcpath);
+    GFile *dest = g_file_new_for_path(destpath);
+
+    // copy image to cache directory
+    GError *gerror = NULL;
+    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+
+    g_object_unref(dest);
+    g_object_unref(src);
+
+    // update cache
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags |= DT_IMAGE_LOCAL_COPY;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    dt_control_queue_redraw_center();
+  }
+}
+
+int dt_image_local_copy_reset(const int32_t imgid)
+{
+  gchar destpath[DT_MAX_PATH_LEN] = {0};
+  gchar cachedir[DT_MAX_PATH_LEN] = {0};
+
+  // check that the original file is accessible
+
+  gboolean from_cache = TRUE;
+  dt_image_full_path(imgid, destpath, DT_MAX_PATH_LEN, &from_cache);
+  g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+
+  if (from_cache && g_file_test(destpath, G_FILE_TEST_EXISTS))
+  {
+    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    return 1;
+  }
+
+  // get name of local copy
+
+  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+
+  // remove cached file, but double check that this is really into the cache. We really want to avoid deleting
+  // a user's original file.
+
+  dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+
+  if (g_file_test(destpath, G_FILE_TEST_EXISTS) && strstr(destpath, cachedir))
+  {
+    GFile *dest = g_file_new_for_path(destpath);
+
+    // first sync the xmp with the original picture
+
+    dt_image_write_sidecar_file(imgid);
+
+    // delete image from cache directory
+    g_file_delete(dest, NULL, NULL);
+    g_object_unref(dest);
+
+    // delete xmp if any
+    g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+    dest = g_file_new_for_path(destpath);
+
+    if (g_file_test(destpath, G_FILE_TEST_EXISTS))
+      g_file_delete(dest, NULL, NULL);
+    g_object_unref(dest);
+
+    // update cache
+    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+    img->flags &= ~DT_IMAGE_LOCAL_COPY;
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+    dt_image_cache_read_release(darktable.image_cache, img);
+
+    dt_control_queue_redraw_center();
+  }
+
+  return 0;
+}
+
 // *******************************************************
 // xmp stuff
 // *******************************************************
@@ -909,8 +1090,9 @@ void dt_image_write_sidecar_file(int imgid)
   // write .xmp file
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
+    gboolean from_cache = TRUE;
     char filename[DT_MAX_PATH_LEN+8];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
@@ -984,6 +1166,44 @@ void dt_image_synch_all_xmp(const gchar *pathname)
     g_free(imgfname);
     g_free(imgpath);
     g_free(globbuf);
+  }
+}
+
+void dt_image_local_copy_synch(void)
+{
+  // nothing to do if not creating .xmp
+  if(!dt_conf_get_bool("write_sidecar_files")) return;
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db), "SELECT id FROM images WHERE flags&?1=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
+
+  int count = 0;
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid = sqlite3_column_int(stmt, 0);
+    gboolean from_cache = TRUE;
+    char filename[DT_MAX_PATH_LEN];
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+
+    if (!from_cache)
+    {
+      dt_image_write_sidecar_file(imgid);
+      count++;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  if (count>0)
+  {
+    char message[128];
+    g_snprintf
+      (message, 128,
+       ngettext("%d local copy has been synchronized", "%d local copies have been synchronized", count), count);
+    dt_control_log(message);
   }
 }
 

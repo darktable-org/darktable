@@ -74,10 +74,11 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   GList *t = t1->index;
   while(t)
   {
+    gboolean from_cache = FALSE;
     imgid = (long int)t->data;
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
     char dtfilename[DT_MAX_PATH_LEN+4];
-    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN);
+    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
@@ -230,7 +231,8 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
   char pathname[DT_MAX_PATH_LEN];
-  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN);
+  gboolean from_cache = TRUE;
+  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
   // last param is dng mode
   const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
@@ -317,8 +319,33 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   double fraction=0;
   snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  sqlite3_stmt *stmt = NULL;
 
+  // check that we can safely remove the image
   char query[1024];
+  gboolean remove_ok = TRUE;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM images WHERE id IN (SELECT imgid FROM selected_images) AND flags&?1=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int imgid = sqlite3_column_int(stmt, 0);
+    if (!dt_image_safe_remove(imgid))
+    {
+      remove_ok = FALSE;
+      break;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  if (!remove_ok)
+  {
+    dt_control_log(_("cannot remove local copy when the original file is not accessible."));
+    dt_control_backgroundjobs_destroy(darktable.control, jid);
+    return 0;
+  }
+
+  // update remove status
   sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
 
@@ -326,7 +353,6 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = NULL;
-  sqlite3_stmt *stmt = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -393,7 +419,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    gboolean from_cache = FALSE;
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -869,6 +896,24 @@ abort:
   return;
 }
 
+void dt_control_set_local_copy_images()
+{
+  dt_job_t j;
+  dt_control_local_copy_images_job_init(&j);
+  j.user_data=(void *)1;
+  dt_control_add_job(darktable.control, &j);
+  return;
+}
+
+void dt_control_reset_local_copy_images()
+{
+  dt_job_t j;
+  dt_control_local_copy_images_job_init(&j);
+  j.user_data=(void *)0;
+  dt_control_add_job(darktable.control, &j);
+  return;
+}
+
 void dt_control_move_images_job_init(dt_job_t *job)
 {
   dt_control_job_init(job, "move images");
@@ -885,6 +930,14 @@ void dt_control_copy_images_job_init(dt_job_t *job)
   dt_control_image_enumerator_job_selected_init(t);
 }
 
+void dt_control_local_copy_images_job_init(dt_job_t *job)
+{
+  dt_control_job_init(job, "local copy images");
+  job->execute = &dt_control_local_copy_images_job_run;
+  dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
+  dt_control_image_enumerator_job_selected_init(t);
+}
+
 int32_t dt_control_move_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_move,
@@ -895,6 +948,23 @@ int32_t dt_control_copy_images_job_run(dt_job_t *job)
 {
   return _generic_dt_control_fileop_images_job_run(job, &dt_image_copy,
          _("copying %d image"), _("copying %d images"));
+}
+
+int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
+{
+  long int imgid = -1;
+  dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
+  GList *t = t1->index;
+  while(t)
+  {
+    imgid = (long int)t->data;
+    if ((long int)job->user_data == 1)
+      dt_image_local_copy_set(imgid);
+    else
+      dt_image_local_copy_reset(imgid);
+    t = g_list_delete_link(t, t);
+  }
+  return 0;
 }
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
@@ -991,7 +1061,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
-        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
+        gboolean from_cache = TRUE;
+        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);

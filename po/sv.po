@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-02 16:20+0200\n"
-"PO-Revision-Date: 2013-07-02 16:37+0200\n"
+"POT-Creation-Date: 2013-07-08 09:33+0200\n"
+"PO-Revision-Date: 2013-07-08 09:34+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -458,7 +458,7 @@ msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:973
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:735
+#: ../src/iop/channelmixer.c:452 ../src/iop/temperature.c:733
 #: ../src/libs/collect.c:1139 ../src/libs/collect.c:1141
 msgid "red"
 msgstr "röd"
@@ -470,14 +470,14 @@ msgstr "gul"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:977
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:736
+#: ../src/iop/channelmixer.c:459 ../src/iop/temperature.c:734
 #: ../src/libs/collect.c:1151 ../src/libs/collect.c:1153
 msgid "green"
 msgstr "grön"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:979
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:737
+#: ../src/iop/channelmixer.c:466 ../src/iop/temperature.c:735
 #: ../src/libs/collect.c:1157 ../src/libs/collect.c:1159
 msgid "blue"
 msgstr "blå"
@@ -543,15 +543,15 @@ msgstr ""
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1578
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1611
 #: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1428
-#: ../src/develop/blend_gui.c:1575 ../src/develop/develop.c:1129
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1461
+#: ../src/develop/blend_gui.c:1608 ../src/develop/develop.c:1129
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -910,83 +910,83 @@ msgstr[1] "lägger till tidsförskjutning på %d bilder"
 msgid "added time offset to %d image(s)"
 msgstr "la till tidsförskjutning på %d bild(er)"
 
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:892
 msgid "sliders for L channel"
 msgstr "reglage för L-kanal"
 
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:892
 msgid "sliders for a channel"
 msgstr "reglage för a-kanal"
 
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:892
 msgid "sliders for b channel"
 msgstr "reglage för b-kanal"
 
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:892
 msgid "sliders for chroma channel (of LCh)"
 msgstr "reglage för färgkanal (i LCh)"
 
-#: ../src/develop/blend_gui.c:866
+#: ../src/develop/blend_gui.c:892
 msgid "sliders for hue channel (of LCh)"
 msgstr "reglage för nyanskanal (i LCh)"
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:867
+#: ../src/develop/blend_gui.c:893
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:868
+#: ../src/develop/blend_gui.c:894
 msgid "sliders for gray value"
 msgstr "reglage för gråvärden"
 
-#: ../src/develop/blend_gui.c:868
+#: ../src/develop/blend_gui.c:894
 msgid "sliders for red channel"
 msgstr "reglage för röd kanal"
 
-#: ../src/develop/blend_gui.c:868
+#: ../src/develop/blend_gui.c:894
 msgid "sliders for green channel"
 msgstr "reglage för grön kanal kanal"
 
-#: ../src/develop/blend_gui.c:868
+#: ../src/develop/blend_gui.c:894
 msgid "sliders for blue channel"
 msgstr "reglage för blå kanal"
 
-#: ../src/develop/blend_gui.c:869
+#: ../src/develop/blend_gui.c:895
 msgid "sliders for hue channel (of HSL)"
 msgstr "reglage för nyanskanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:869
+#: ../src/develop/blend_gui.c:895
 msgid "sliders for chroma channel (of HSL)"
 msgstr "reglage för färgkanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:869
+#: ../src/develop/blend_gui.c:895
 msgid "sliders for value channel (of HSL)"
 msgstr "reglage för värdekanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:872
+#: ../src/develop/blend_gui.c:898
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -998,7 +998,7 @@ msgstr ""
 "* område givet av de nedre markörerna: blanda inte alls\n"
 "* område mellan intilliggande övre/undre markörer: blanda gradvis"
 
-#: ../src/develop/blend_gui.c:874
+#: ../src/develop/blend_gui.c:900
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1010,204 +1010,209 @@ msgstr ""
 "* område givet av de nedre markörerna: blanda inte alls\n"
 "* område mellan intilliggande övre/undre markörer: blanda gradvis"
 
-#: ../src/develop/blend_gui.c:993 ../src/iop/colorzones.c:1032
+#: ../src/develop/blend_gui.c:1019 ../src/iop/colorzones.c:1032
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
 msgstr "välj gränsnittsfärg från bild"
 
-#: ../src/develop/blend_gui.c:996
+#: ../src/develop/blend_gui.c:1022
 msgid "reset blend mask settings"
 msgstr "återställ blandningsmaskens inställningar"
 
-#: ../src/develop/blend_gui.c:999
+#: ../src/develop/blend_gui.c:1025
 msgid "invert all channel's polarities"
 msgstr "invertera alla kanalers polariteter"
 
-#: ../src/develop/blend_gui.c:1010 ../src/develop/blend_gui.c:1013
+#: ../src/develop/blend_gui.c:1036 ../src/develop/blend_gui.c:1039
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "växla polaritet. syns bäst genom att slå på 'visningsmask'"
 
-#: ../src/develop/blend_gui.c:1022
+#: ../src/develop/blend_gui.c:1048
 msgid "output"
 msgstr "utgående"
 
-#: ../src/develop/blend_gui.c:1033
+#: ../src/develop/blend_gui.c:1059
 msgid "input"
 msgstr "inkommande"
 
-#: ../src/develop/blend_gui.c:1044 ../src/develop/blend_gui.c:1045
+#: ../src/develop/blend_gui.c:1070 ../src/develop/blend_gui.c:1071
 msgid "double click to reset"
 msgstr "dubbelklicka för återställning"
 
-#: ../src/develop/blend_gui.c:1105 ../src/develop/masks/masks.c:964
+#: ../src/develop/blend_gui.c:1131 ../src/develop/masks/masks.c:1033
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d form används"
 msgstr[1] "%d former används"
 
-#: ../src/develop/blend_gui.c:1110 ../src/develop/blend_gui.c:1149
-#: ../src/develop/masks/masks.c:967
+#: ../src/develop/blend_gui.c:1136 ../src/develop/blend_gui.c:1175
+#: ../src/develop/masks/masks.c:1036
 msgid "no mask used"
 msgstr "ingen markering används"
 
-#: ../src/develop/blend_gui.c:1148 ../src/develop/blend_gui.c:1436
+#: ../src/develop/blend_gui.c:1174 ../src/develop/blend_gui.c:1469
 msgid "drawn mask"
 msgstr "ritad markering"
 
-#: ../src/develop/blend_gui.c:1156
+#: ../src/develop/blend_gui.c:1182
 msgid "toggle polarity of drawn mask"
 msgstr "växla den ritade markeringens polaritet"
 
-#: ../src/develop/blend_gui.c:1164
+#: ../src/develop/blend_gui.c:1190
 msgid "show and edit mask elements"
 msgstr "visa och redigera markeringens element"
 
-#: ../src/develop/blend_gui.c:1171 ../src/iop/spots.c:539
-#: ../src/libs/masks.c:779 ../src/libs/masks.c:802 ../src/libs/masks.c:1363
+#: ../src/develop/blend_gui.c:1197 ../src/iop/spots.c:539
+#: ../src/libs/masks.c:804 ../src/libs/masks.c:832 ../src/libs/masks.c:1406
 msgid "add circle"
 msgstr "lägg till cirkel"
 
-#: ../src/develop/blend_gui.c:1178 ../src/iop/spots.c:532
-#: ../src/libs/masks.c:783 ../src/libs/masks.c:806 ../src/libs/masks.c:1356
+#: ../src/develop/blend_gui.c:1204 ../src/iop/spots.c:532
+#: ../src/libs/masks.c:808 ../src/libs/masks.c:836 ../src/libs/masks.c:1399
 msgid "add path"
 msgstr "lägg till slinga"
 
+#: ../src/develop/blend_gui.c:1211 ../src/libs/masks.c:812
+#: ../src/libs/masks.c:840 ../src/libs/masks.c:1392
+msgid "add gradient"
+msgstr "lägg till gradient"
+
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1394 ../src/libs/live_view.c:377
+#: ../src/develop/blend_gui.c:1427 ../src/libs/live_view.c:377
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/blend_gui.c:1395
+#: ../src/develop/blend_gui.c:1428
 msgid "normal bounded"
 msgstr "begränsad normal"
 
-#: ../src/develop/blend_gui.c:1396 ../src/libs/live_view.c:386
+#: ../src/develop/blend_gui.c:1429 ../src/libs/live_view.c:386
 msgid "lighten"
 msgstr "gör endast ljusare"
 
-#: ../src/develop/blend_gui.c:1397 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1430 ../src/libs/live_view.c:385
 msgid "darken"
 msgstr "gör endast mörkare"
 
-#: ../src/develop/blend_gui.c:1398 ../src/libs/live_view.c:382
+#: ../src/develop/blend_gui.c:1431 ../src/libs/live_view.c:382
 msgid "multiply"
 msgstr "multiplicera"
 
-#: ../src/develop/blend_gui.c:1399
+#: ../src/develop/blend_gui.c:1432
 msgid "average"
 msgstr "medel"
 
-#: ../src/develop/blend_gui.c:1400
+#: ../src/develop/blend_gui.c:1433
 msgid "addition"
 msgstr "addition"
 
-#: ../src/develop/blend_gui.c:1401
+#: ../src/develop/blend_gui.c:1434
 msgid "subtract"
 msgstr "substrahera"
 
-#: ../src/develop/blend_gui.c:1402 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1435 ../src/libs/live_view.c:391
 msgid "difference"
 msgstr "differens"
 
-#: ../src/develop/blend_gui.c:1403 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1436 ../src/libs/live_view.c:383
 msgid "screen"
 msgstr "skärma för"
 
-#: ../src/develop/blend_gui.c:1404 ../src/libs/live_view.c:353
+#: ../src/develop/blend_gui.c:1437 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
 msgstr "överlagring"
 
-#: ../src/develop/blend_gui.c:1405
+#: ../src/develop/blend_gui.c:1438
 msgid "softlight"
 msgstr "mjukt ljus"
 
-#: ../src/develop/blend_gui.c:1406
+#: ../src/develop/blend_gui.c:1439
 msgid "hardlight"
 msgstr "hårt ljus"
 
-#: ../src/develop/blend_gui.c:1407
+#: ../src/develop/blend_gui.c:1440
 msgid "vividlight"
 msgstr "intensivt ljus"
 
-#: ../src/develop/blend_gui.c:1408
+#: ../src/develop/blend_gui.c:1441
 msgid "linearlight"
 msgstr "linjärt ljus"
 
-#: ../src/develop/blend_gui.c:1409
+#: ../src/develop/blend_gui.c:1442
 msgid "pinlight"
 msgstr "snävt ljus"
 
-#: ../src/develop/blend_gui.c:1410 ../src/iop/channelmixer.c:439
+#: ../src/develop/blend_gui.c:1443 ../src/iop/channelmixer.c:439
 #: ../src/iop/colorize.c:472 ../src/iop/colorzones.c:1021
 #: ../src/iop/colorzones.c:1059
 msgid "lightness"
 msgstr "ljushet"
 
-#: ../src/develop/blend_gui.c:1411 ../src/iop/atrous.c:1430
+#: ../src/develop/blend_gui.c:1444 ../src/iop/atrous.c:1430
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
 msgstr "chroma"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:1412 ../src/iop/channelmixer.c:437
+#: ../src/develop/blend_gui.c:1445 ../src/iop/channelmixer.c:437
 #: ../src/iop/colorize.c:448 ../src/iop/colorzones.c:1023
 #: ../src/iop/colorzones.c:1057 ../src/iop/graduatednd.c:1049
 #: ../src/iop/splittoning.c:542
 msgid "hue"
 msgstr "nyans"
 
-#: ../src/develop/blend_gui.c:1413
+#: ../src/develop/blend_gui.c:1446
 msgid "color"
 msgstr "färg"
 
-#: ../src/develop/blend_gui.c:1414
+#: ../src/develop/blend_gui.c:1447
 msgid "coloradjustment"
 msgstr "färgjustering"
 
-#: ../src/develop/blend_gui.c:1415
+#: ../src/develop/blend_gui.c:1448
 msgid "Lab lightness"
 msgstr "ljushet i Lab"
 
-#: ../src/develop/blend_gui.c:1416
+#: ../src/develop/blend_gui.c:1449
 msgid "Lab color"
 msgstr "färg i Lab"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1419
+#: ../src/develop/blend_gui.c:1452
 msgid "difference (deprecated)"
 msgstr "skillnad (utgående)"
 
-#: ../src/develop/blend_gui.c:1420
+#: ../src/develop/blend_gui.c:1453
 msgid "inverse (deprecated)"
 msgstr "inverterad (utgående)"
 
-#: ../src/develop/blend_gui.c:1421
+#: ../src/develop/blend_gui.c:1454
 msgid "normal (deprecated)"
 msgstr "normal (utgående)"
 
-#: ../src/develop/blend_gui.c:1422
+#: ../src/develop/blend_gui.c:1455
 msgid "unbounded (deprecated)"
 msgstr "obunden (utgående)"
 
-#: ../src/develop/blend_gui.c:1426
+#: ../src/develop/blend_gui.c:1459
 msgid "blend"
 msgstr "blanda"
 
-#: ../src/develop/blend_gui.c:1431
+#: ../src/develop/blend_gui.c:1464
 msgid "uniformly"
 msgstr "jämnt"
 
-#: ../src/develop/blend_gui.c:1442
+#: ../src/develop/blend_gui.c:1475
 msgid "parametric mask"
 msgstr "parametermarkering"
 
-#: ../src/develop/blend_gui.c:1448
+#: ../src/develop/blend_gui.c:1481
 msgid "drawn & parametric mask"
 msgstr "ridad och parametermarkering"
 
-#: ../src/develop/blend_gui.c:1453
+#: ../src/develop/blend_gui.c:1486
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1215,43 +1220,43 @@ msgstr ""
 "slå på blandningsläge: över hela bilden, med ritad markering, med "
 "parametermarkering, eller en kombination av båda"
 
-#: ../src/develop/blend_gui.c:1460
+#: ../src/develop/blend_gui.c:1493
 msgid "blend mode"
 msgstr "blandningsläge"
 
-#: ../src/develop/blend_gui.c:1461
+#: ../src/develop/blend_gui.c:1494
 msgid "choose blending mode"
 msgstr "välj blandningstyp"
 
-#: ../src/develop/blend_gui.c:1543 ../src/iop/watermark.c:1047
+#: ../src/develop/blend_gui.c:1576 ../src/iop/watermark.c:1047
 msgid "opacity"
 msgstr "ogenomskinlighet"
 
-#: ../src/develop/blend_gui.c:1546
+#: ../src/develop/blend_gui.c:1579
 msgid "set the opacity of the blending"
 msgstr "justera blandningens ogenomskinlighet"
 
-#: ../src/develop/blend_gui.c:1552
+#: ../src/develop/blend_gui.c:1585
 msgid "combine masks"
 msgstr "kombinera markeringar"
 
-#: ../src/develop/blend_gui.c:1554
+#: ../src/develop/blend_gui.c:1587
 msgid "exclusive"
 msgstr "uteslutnande"
 
-#: ../src/develop/blend_gui.c:1557
+#: ../src/develop/blend_gui.c:1590
 msgid "inclusive"
 msgstr "inneslutande"
 
-#: ../src/develop/blend_gui.c:1560
+#: ../src/develop/blend_gui.c:1593
 msgid "exclusive & inverted"
 msgstr "uteslutande & inverterad"
 
-#: ../src/develop/blend_gui.c:1563
+#: ../src/develop/blend_gui.c:1596
 msgid "inclusive & inverted"
 msgstr "inneslutande & inverterad"
 
-#: ../src/develop/blend_gui.c:1567
+#: ../src/develop/blend_gui.c:1600
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1259,27 +1264,27 @@ msgstr ""
 "hur individuella ritad markering samt olika kanaler i parametermarkering ska "
 "kombineras"
 
-#: ../src/develop/blend_gui.c:1573
+#: ../src/develop/blend_gui.c:1606
 msgid "invert mask"
 msgstr "invertera markering"
 
-#: ../src/develop/blend_gui.c:1582
+#: ../src/develop/blend_gui.c:1615
 msgid "apply mask in normal or inverted mode"
 msgstr "använd markeringen i normal eller inverterat läge"
 
-#: ../src/develop/blend_gui.c:1589
+#: ../src/develop/blend_gui.c:1622
 msgid "mask blur"
 msgstr "maskens fjädring"
 
-#: ../src/develop/blend_gui.c:1591
+#: ../src/develop/blend_gui.c:1624
 msgid "radius for gaussian blur of blend mask"
 msgstr "radie för blandningsmaskens gaussiska oskärpa"
 
-#: ../src/develop/blend_gui.c:1597
+#: ../src/develop/blend_gui.c:1630
 msgid "display mask"
 msgstr "visningsmask"
 
-#: ../src/develop/blend_gui.c:1604
+#: ../src/develop/blend_gui.c:1637
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
@@ -1308,11 +1313,11 @@ msgstr "ny instans"
 msgid "duplicate instance"
 msgstr "duplicera instans"
 
-#: ../src/develop/imageop.c:1180 ../src/libs/masks.c:919
+#: ../src/develop/imageop.c:1180 ../src/libs/masks.c:953
 msgid "move up"
 msgstr "flytta upp"
 
-#: ../src/develop/imageop.c:1186 ../src/libs/masks.c:922
+#: ../src/develop/imageop.c:1186 ../src/libs/masks.c:956
 msgid "move down"
 msgstr "flytta ner"
 
@@ -1336,7 +1341,7 @@ msgstr "%s är avslagen"
 #: ../src/gui/accelerators.c:717 ../src/gui/accelerators.c:861
 #: ../src/gui/accelerators.c:886 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
-#: ../src/iop/temperature.c:747 ../src/libs/import.c:491 ../src/libs/lib.c:291
+#: ../src/iop/temperature.c:745 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:976
 msgid "preset"
 msgstr "förinställning"
@@ -2821,19 +2826,19 @@ msgid "radius"
 msgstr "radie"
 
 #: ../src/iop/bilateral.cc:89 ../src/iop/channelmixer.c:134
-#: ../src/iop/temperature.c:100
+#: ../src/iop/temperature.c:98
 msgctxt "accel"
 msgid "red"
 msgstr "röd"
 
 #: ../src/iop/bilateral.cc:90 ../src/iop/channelmixer.c:135
-#: ../src/iop/temperature.c:101
+#: ../src/iop/temperature.c:99
 msgctxt "accel"
 msgid "green"
 msgstr "grön"
 
 #: ../src/iop/bilateral.cc:91 ../src/iop/channelmixer.c:136
-#: ../src/iop/temperature.c:102
+#: ../src/iop/temperature.c:100
 msgctxt "accel"
 msgid "blue"
 msgstr "blå"
@@ -5096,55 +5101,55 @@ msgstr ""
 "använd skrollhjulet på musen för att justera storleken.\n"
 "högerklick för att ta bort en form."
 
-#: ../src/iop/temperature.c:80
+#: ../src/iop/temperature.c:78
 msgctxt "modulename"
 msgid "white balance"
 msgstr "vitbalans"
 
-#: ../src/iop/temperature.c:98
+#: ../src/iop/temperature.c:96
 msgctxt "accel"
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:99
+#: ../src/iop/temperature.c:97
 msgctxt "accel"
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:387
+#: ../src/iop/temperature.c:385
 msgid "camera white balance"
 msgstr "vitbalans från kamera"
 
-#: ../src/iop/temperature.c:388
+#: ../src/iop/temperature.c:386
 msgid "spot white balance"
 msgstr "vitbalans i mätningsområde"
 
-#: ../src/iop/temperature.c:389
+#: ../src/iop/temperature.c:387
 msgid "passthrough"
 msgstr "passa vidare"
 
-#: ../src/iop/temperature.c:733
+#: ../src/iop/temperature.c:731
 msgid "tint"
 msgstr "nyans"
 
-#: ../src/iop/temperature.c:734
+#: ../src/iop/temperature.c:732
 msgid "temperature"
 msgstr "temperatur"
 
-#: ../src/iop/temperature.c:749
+#: ../src/iop/temperature.c:747
 msgid "choose white balance preset from camera"
 msgstr "välj förinställd vitbalans från kamera"
 
-#: ../src/iop/temperature.c:752
+#: ../src/iop/temperature.c:750
 msgid "finetune"
 msgstr "finjustering"
 
-#: ../src/iop/temperature.c:753
+#: ../src/iop/temperature.c:751
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f justerad"
 
-#: ../src/iop/temperature.c:757
+#: ../src/iop/temperature.c:755
 msgid "fine tune white balance preset"
 msgstr "finjustera förinställd vitbalans"
 
@@ -7288,37 +7293,37 @@ msgstr "filmrulle"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1598
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1608
 msgctxt "accel"
 msgid "rate 0"
 msgstr "rang 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1599
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1609
 msgctxt "accel"
 msgid "rate 1"
 msgstr "rang 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1600
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1610
 msgctxt "accel"
 msgid "rate 2"
 msgstr "rang 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1601
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1611
 msgctxt "accel"
 msgid "rate 3"
 msgstr "rang 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1602
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1612
 msgctxt "accel"
 msgid "rate 4"
 msgstr "rang 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1603
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1613
 msgctxt "accel"
 msgid "rate 5"
 msgstr "rang 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1604
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1614
 msgctxt "accel"
 msgid "rate reject"
 msgstr "avvisad"
@@ -7356,27 +7361,27 @@ msgstr "duplicerar bild"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1617
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1627
 msgctxt "accel"
 msgid "color red"
 msgstr "röd färg"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1618
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1628
 msgctxt "accel"
 msgid "color yellow"
 msgstr "gul färg"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1619
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1629
 msgctxt "accel"
 msgid "color green"
 msgstr "grön färg"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1620
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1630
 msgctxt "accel"
 msgid "color blue"
 msgstr "blå färg"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1621
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1631
 msgctxt "accel"
 msgid "color purple"
 msgstr "lila färg"
@@ -7659,60 +7664,60 @@ msgid "or add images in the collection module in the left panel"
 msgstr "eller lägg till bilder i samlingsmodulen i den vänstra panelen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1607
+#: ../src/views/lighttable.c:1617
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigera upp"
 
-#: ../src/views/lighttable.c:1609
+#: ../src/views/lighttable.c:1619
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigera ner"
 
-#: ../src/views/lighttable.c:1611
+#: ../src/views/lighttable.c:1621
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigera sida upp"
 
-#: ../src/views/lighttable.c:1613
+#: ../src/views/lighttable.c:1623
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigera sida ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1624
+#: ../src/views/lighttable.c:1634
 msgctxt "accel"
 msgid "scroll up"
 msgstr "skrolla upp"
 
-#: ../src/views/lighttable.c:1626
+#: ../src/views/lighttable.c:1636
 msgctxt "accel"
 msgid "scroll down"
 msgstr "skrolla ner"
 
-#: ../src/views/lighttable.c:1628
+#: ../src/views/lighttable.c:1638
 msgctxt "accel"
 msgid "scroll left"
 msgstr "skrolla vänster"
 
-#: ../src/views/lighttable.c:1630
+#: ../src/views/lighttable.c:1640
 msgctxt "accel"
 msgid "scroll right"
 msgstr "skrolla höger"
 
-#: ../src/views/lighttable.c:1632
+#: ../src/views/lighttable.c:1642
 msgctxt "accel"
 msgid "scroll center"
 msgstr "centrera"
 
 # TODO: could use better translation
-#: ../src/views/lighttable.c:1634
+#: ../src/views/lighttable.c:1644
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "räta upp bilder efter rutnätet"
 
 #. Preview key
-#: ../src/views/lighttable.c:1638
+#: ../src/views/lighttable.c:1648
 msgctxt "accel"
 msgid "preview"
 msgstr "förhandsvisning"
@@ -7735,41 +7740,50 @@ msgstr "återställ"
 msgid "could not allocate buffer for blending"
 msgstr "kunde inte tilldela buffert för blandning"
 
-#: ../src/develop/masks/masks.c:34
+#: ../src/develop/masks/masks.c:36
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl+klick för att lägga till en skarp nod"
 
-#: ../src/develop/masks/masks.c:35
+#: ../src/develop/masks/masks.c:37
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+klick för att växla mellan kurv/skarp nod"
 
-#: ../src/develop/masks/masks.c:36
+#: ../src/develop/masks/masks.c:38
 msgid "right-click to reset feather value"
 msgstr "höger-klicka för att återställa fjädringsvärdet"
 
-#: ../src/develop/masks/masks.c:37
+#: ../src/develop/masks/masks.c:39
 msgid "ctrl+click to add a node"
 msgstr "ctrl+klick för att lägga till en nod"
 
-#: ../src/develop/masks/masks.c:38
+#: ../src/develop/masks/masks.c:40
 msgid "ctrl+scroll to set shape opacity"
 msgstr "ctrl+scroll för att ställa in formens genomskinlighet"
 
-#: ../src/develop/masks/masks.c:133
+#: ../src/develop/masks/masks.c:41
+msgid "move to rotate shape"
+msgstr "flytta för att rotera formen"
+
+#: ../src/develop/masks/masks.c:136
 #, c-format
 msgid "circle #%d"
 msgstr "cirkelform #%d"
 
-#: ../src/develop/masks/masks.c:134
+#: ../src/develop/masks/masks.c:137
 #, c-format
 msgid "path #%d"
 msgstr "slinga #%d"
 
-#: ../src/develop/masks/masks.c:852 ../src/libs/masks.c:810
+#: ../src/develop/masks/masks.c:138
+#, c-format
+msgid "gradient #%d"
+msgstr "gradient #%d"
+
+#: ../src/develop/masks/masks.c:916 ../src/libs/masks.c:844
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
-#: ../src/develop/masks/masks.c:879
+#: ../src/develop/masks/masks.c:943
 msgid "use same shapes as"
 msgstr "använd samma form som"
 
@@ -7777,48 +7791,48 @@ msgstr "använd samma form som"
 msgid "mask manager"
 msgstr "markeringshanterare"
 
-#: ../src/libs/masks.c:164
+#: ../src/libs/masks.c:189
 #, c-format
 msgid "group #%d"
 msgstr "grupp #%d"
 
-#: ../src/libs/masks.c:876
+#: ../src/libs/masks.c:910
 msgid "delete this shape"
 msgstr "ta bort denna form"
 
-#: ../src/libs/masks.c:882
+#: ../src/libs/masks.c:916
 msgid "remove from group"
 msgstr "ta bort från grupp"
 
-#: ../src/libs/masks.c:890
+#: ../src/libs/masks.c:924
 msgid "group the forms"
 msgstr "gruppera formerna"
 
-#: ../src/libs/masks.c:899
+#: ../src/libs/masks.c:933
 msgid "use inversed shape"
 msgstr "använd omvänd form"
 
-#: ../src/libs/masks.c:905
+#: ../src/libs/masks.c:939
 msgid "mode : union"
 msgstr "läge : hopslagning"
 
-#: ../src/libs/masks.c:908
+#: ../src/libs/masks.c:942
 msgid "mode : intersection"
 msgstr "läge : skärning"
 
-#: ../src/libs/masks.c:911
+#: ../src/libs/masks.c:945
 msgid "mode : difference"
 msgstr "läge : skillnad"
 
-#: ../src/libs/masks.c:914
+#: ../src/libs/masks.c:948
 msgid "mode : exclusion"
 msgstr "läge : uteslutning"
 
-#: ../src/libs/masks.c:928
+#: ../src/libs/masks.c:962
 msgid "cleanup unused shapes"
 msgstr "städa bort oanvända former"
 
-#: ../src/libs/masks.c:1351
+#: ../src/libs/masks.c:1387
 msgid "created shapes"
 msgstr "skapa former"
 

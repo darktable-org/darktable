@@ -899,8 +899,11 @@ dt_mipmap_cache_read_get(
           // dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
           // dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
           dt_image_cache_read_release(darktable.image_cache, cimg);
+
           char filename[DT_MAX_PATH_LEN];
-          dt_image_full_path(buffered_image.id, filename, DT_MAX_PATH_LEN);
+          gboolean from_cache = TRUE;
+          dt_image_full_path(buffered_image.id, filename, DT_MAX_PATH_LEN, &from_cache);
+
           dt_mipmap_cache_allocator_t a = (dt_mipmap_cache_allocator_t)&dsc;
           struct dt_mipmap_buffer_dsc* prvdsc = dsc;
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, a);
@@ -1112,7 +1115,8 @@ _init_f(
 
   /* do not even try to process file if it isn't available */
   char filename[2048] = {0};
-  dt_image_full_path(imgid, filename, 2048);
+  gboolean from_cache = TRUE;
+  dt_image_full_path(imgid, filename, 2048, &from_cache);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
@@ -1219,9 +1223,10 @@ _init_8(
 {
   const uint32_t wd = *width, ht = *height;
   char filename[DT_MAX_PATH_LEN] = {0};
+  gboolean from_cache = TRUE;
 
   /* do not even try to process file if it isnt available */
-  dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+  dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
@@ -1249,8 +1254,9 @@ _init_8(
   {
     // try to load the embedded thumbnail in raw
     int ret;
+    gboolean from_cache = TRUE;
     memset(filename, 0, DT_MAX_PATH_LEN);
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN);
+    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
 
     const char *c = filename + strlen(filename);
     while(*c != '.' && c > filename) c--;

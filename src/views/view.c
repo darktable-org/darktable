@@ -693,6 +693,7 @@ dt_view_image_expose(
   // impact from around 400ms -> 55ms per redraw.
 #define DRAW_THUMB 1
 #define DRAW_COLORLABELS 1
+#define DRAW_LOCAL_COPY 1
 #define DRAW_GROUPING 1
 #define DRAW_SELECTED 1
 #define DRAW_HISTORY 1
@@ -1062,6 +1063,21 @@ dt_view_image_expose(
       dtgtk_cairo_paint_label(cr, x+(3*r*col)-5*r, y-r, r*2, r*2, col);
       cairo_restore(cr);
     }
+  }
+#endif
+
+#if DRAW_LOCAL_COPY == 1
+  if (img && width > DECORATION_SIZE_LIMIT)
+  {
+    // copy status:
+    const float x = zoom == 1 ? (0.07)*fscale : .21*width;
+    const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
+    const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
+    const int xoffset = 7;
+    gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
+    cairo_save(cr);
+    dtgtk_cairo_paint_local_copy(cr, x+(3*r*xoffset)-5*r, y-r, r*2, r*2, has_local_copy);
+    cairo_restore(cr);
   }
 #endif
 

@@ -39,7 +39,8 @@ typedef struct dt_lib_image_t
   GtkWidget
   *rotate_cw_button, *rotate_ccw_button, *remove_button,
   *delete_button, *create_hdr_button, *duplicate_button, *reset_button,
-  *move_button, *copy_button, *group_button, *ungroup_button;
+  *move_button, *copy_button, *group_button, *ungroup_button, *cache_button,
+  *uncache_button;
 }
 dt_lib_image_t;
 
@@ -116,6 +117,8 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 9) dt_control_copy_images();
   else if(i == 10) _group_helper_function();
   else if(i == 11) _ungroup_helper_function();
+  else if(i == 12) dt_control_set_local_copy_images();
+  else if(i == 13) dt_control_reset_local_copy_images();
 }
 
 int
@@ -199,6 +202,21 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+  hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
+
+  button = gtk_button_new_with_label(_("cache locally"));
+  d->cache_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("copy the image locally"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)12);
+
+  button = gtk_button_new_with_label(_("reset cache"));
+  d->uncache_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("remove the local copy of the image"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)13);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));

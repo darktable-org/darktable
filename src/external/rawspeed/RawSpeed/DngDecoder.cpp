@@ -207,6 +207,8 @@ RawImage DngDecoder::decodeRawInternal() {
 
         for (uint32 i = 0; i < slices.size(); i++) {
           DngStrip slice = slices[i];
+          if (hints.find("ignore_bytecount") != hints.end())
+            slice.count = mFile->getSize() - slice.offset;
           ByteStream in(mFile->getData(slice.offset), slice.count);
           iPoint2D size(width, slice.h);
           iPoint2D pos(0, slice.offsetY);

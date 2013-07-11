@@ -94,7 +94,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   dt_loc_get_tmp_dir (tmpdir,4096);
 
   char dirname[4096];
-  dt_image_full_path(imgid, dirname, 1024);
+  gboolean from_cache = FALSE;
+  dt_image_full_path(imgid, dirname, 1024, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
