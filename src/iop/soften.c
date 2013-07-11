@@ -144,10 +144,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   int rad = mrad*(fmin(100.0,data->size+1)/100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* horizontal blur out into out */
-  const int range = 2*radius+1;
-  const int hr = range/2;
-
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
   float *scanline[3]= {0};
   scanline[0]  = malloc((size*sizeof(float))*ch);
@@ -156,6 +152,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
+    /* horizontal blur out into out */
     int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
@@ -163,10 +160,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         float L=0;
         int hits = 0;
-        for(int x=-hr; x<roi_out->width; x++)
+        for(int x=-radius; x<roi_out->width; x++)
         {
-          int op = x - hr-1;
-          int np = x+hr;
+          int op = x - radius-1;
+          int np = x+radius;
           if(op>=0)
           {
             L-=out[(index+op)*ch+k];
@@ -190,19 +187,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     /* vertical pass on blurlightness */
-    const int opoffs = -(hr+1)*roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
+    const int opoffs = -(radius+1)*roi_out->width;
+    const int npoffs = (radius)*roi_out->width;
     for(int x=0; x < roi_out->width; x++)
     {
       for(int k=0; k<3; k++)
       {
         float L=0;
         int hits=0;
-        int index = -hr*roi_out->width+x;
-        for(int y=-hr; y<roi_out->height; y++)
+        int index = -radius*roi_out->width+x;
+        for(int y=-radius; y<roi_out->height; y++)
         {
-          int op=y-hr-1;
-          int np= y + hr;
+          int op=y-radius-1;
+          int np= y + radius;
 
           if(op>=0)
           {
