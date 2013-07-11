@@ -818,7 +818,6 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
         gp_file_new_from_fd( &destination , handle );
         if( gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
         {
-          close( handle );
           _dispatch_camera_image_downloaded(c,cam,output);
           if( delete_orginals )
             gp_camera_file_delete(cam->gpcam, folder, filename, c->gpcontext);
@@ -826,7 +825,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
         else
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
 
-
+        close( handle );
       }
     }
     while( (ifile=g_list_next(ifile)) );
