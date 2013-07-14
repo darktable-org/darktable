@@ -524,7 +524,7 @@ gui_init (dt_imageio_module_storage_t *self)
   g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
 
   ui->button = GTK_BUTTON(gtk_button_new_with_label(_("login")));
-  g_object_set(G_OBJECT(ui->button), "tooltip-text", _("Flickr login"), (char *)NULL);
+  g_object_set(G_OBJECT(ui->button), "tooltip-text", _("flickr login"), (char *)NULL);
 
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
   gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);

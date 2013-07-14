@@ -611,7 +611,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
                                          GTK_DIALOG_DESTROY_WITH_PARENT,
                                          GTK_MESSAGE_QUESTION,
                                          GTK_BUTTONS_OK_CANCEL,
-                                         _("Facebook authentication")));
+                                         _("facebook authentication")));
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (fb_auth_dialog),
       "%s\n\n%s", text1, text2);
 
@@ -1058,13 +1058,13 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *list_store = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_INT);
   GtkTreeIter iter;
   gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("Only Me"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_SELF, -1);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("only me"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_SELF, -1);
   gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("Friends"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_ALL_FRIENDS, -1);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("friends"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_ALL_FRIENDS, -1);
   gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("Public"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_EVERYONE, -1);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("public"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_EVERYONE, -1);
   gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("Friends of Friends"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_FRIENDS_OF_FRIENDS, -1);
+  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("friends of friends"), COMBO_PRIVACY_MODEL_VAL_COL, FBALBUM_PRIVACY_FRIENDS_OF_FRIENDS, -1);
 
   gtk_combo_box_set_model(ui->comboBox_privacy, GTK_TREE_MODEL(list_store));
 
