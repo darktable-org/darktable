@@ -725,6 +725,126 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   return 1;
 }
 
+
+static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+{
+  double start2 = dt_get_wtime();
+
+  //we get the circle values
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *) (g_list_first(form->points)->data);
+
+  //we create a buffer of mesh points for later interpolation. mainly in order to reduce memory footprint
+  const int w = roi->width;
+  const int h = roi->height;
+  const int px = roi->x;
+  const int py = roi->y;
+  const float iscale = 1.0f/roi->scale;
+  const int mesh = 4;
+  const int mw = (w + mesh - 1) / mesh + 1;
+  const int mh = (h + mesh - 1) / mesh + 1;
+
+  float *points = malloc(mw*mh*2*sizeof(float));
+  if(points == NULL) return 0;
+
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(points)
+#else
+      #pragma omp parallel for shared(points)
+#endif
+#endif
+  for (int j=0; j<mh; j++)
+    for (int i=0; i<mw; i++)
+    {
+      points[(j*mw+i)*2] = (mesh*i+px)*iscale;
+      points[(j*mw+i)*2+1] = (mesh*j+py)*iscale;
+    }
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] circle draw took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  start2 = dt_get_wtime();
+
+  //we back transform all these points
+  if (!dt_dev_distort_backtransform_plus(module->dev,piece->pipe,0,module->priority,points,mw*mh))
+  {
+    free(points);
+    return 0;
+  }
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] circle transform took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  start2 = dt_get_wtime();
+
+  //we populate the buffer
+  const int wi = piece->pipe->iwidth, hi=piece->pipe->iheight;
+  const float center[2] = {circle->center[0]*wi, circle->center[1]*hi};
+  const float radius2 = circle->radius*MIN(wi,hi)*circle->radius*MIN(wi,hi);
+  const float total2 = (circle->radius+circle->border)*MIN(wi,hi)*(circle->radius+circle->border)*MIN(wi,hi);
+
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(points)
+#else
+      #pragma omp parallel for shared(points)
+#endif
+#endif
+  for (int i=0; i<mh; i++)
+    for (int j=0; j<mw; j++)
+    {
+      float x = points[(i*mw+j)*2];
+      float y = points[(i*mw+j)*2+1];
+      float l2 = (x-center[0])*(x-center[0]) + (y-center[1])*(y-center[1]);
+      if (l2<radius2) points[(i*mw+j)*2] = 1.0f;
+      else if (l2 < total2)
+      {
+        float f = (total2-l2)/(total2-radius2);
+        points[(i*mw+j)*2] = f*f;
+      }
+      else points[(i*mw+j)*2] = 0.0f;
+    }
+
+
+  //we allocate the buffer
+  *buffer = malloc(w*h*sizeof(float));
+  if(*buffer == NULL)
+  {
+    free(points);
+    return 0;
+  }
+  memset(*buffer,0,w*h*sizeof(float));
+
+  //we fill the mask buffer by interpolation
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(points,buffer)
+#else
+      #pragma omp parallel for shared(points,buffer)
+#endif
+#endif
+  for (int j=0; j<h; j++)
+  {
+    int jj = j % mesh;
+    int mj = j / mesh;
+    for (int i=0; i<w; i++)
+    {
+      int ii = i % mesh;
+      int mi = i / mesh;
+      (*buffer)[j*w+i] = (  points[(mj*mw+mi)*2]       * (mesh-ii)*(mesh-jj) +
+                            points[(mj*mw+mi+1)*2]     * ii*(mesh-jj)        +
+                            points[((mj+1)*mw+mi)*2]   * (mesh-ii)*jj        +
+                            points[((mj+1)*mw+mi+1)*2] * ii*jj                 ) / (mesh*mesh);
+    }
+  }
+
+  free(points);
+
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  start2 = dt_get_wtime();
+
+  return 1;
+}
+
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
