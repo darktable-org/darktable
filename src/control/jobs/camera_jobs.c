@@ -354,7 +354,7 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
         g_free(fullfile);
         g_free(storage);
 
-        dt_control_log(_("Couldn't expand to a uniq filename for import, please check your import settings."));
+        dt_control_log(_("couldn't expand to a unique filename for import, please check your import settings."));
 
         return NULL;
       }

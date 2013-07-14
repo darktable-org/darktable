@@ -502,7 +502,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 error:
   /* Something wrong happened */
   gtk_widget_destroy (filechooser);
-  dt_control_log(_("Problem selecting new path for the filmroll in %s"), tree_path);
+  dt_control_log(_("problem selecting new path for the filmroll in %s"), tree_path);
 
   g_free(tree_path);
   g_free(new_path);

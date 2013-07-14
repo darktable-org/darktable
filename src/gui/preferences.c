@@ -1186,7 +1186,7 @@ static void restore_defaults(GtkButton *button, gpointer data)
                          NULL, GTK_DIALOG_MODAL,
                          GTK_MESSAGE_WARNING,
                          GTK_BUTTONS_OK_CANCEL,
-                         _("Are you sure you want to restore the default keybindings?  This will "
+                         _("are you sure you want to restore the default keybindings?  this will "
                            "erase any modifications you have made."));
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
