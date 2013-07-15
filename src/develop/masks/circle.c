@@ -467,7 +467,8 @@ static void dt_circle_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_f
   //draw the source if any
   if (gpt->source_count>6)
   {
-    float radius = fabs(gpt->points[2] - gpt->points[0]);
+    const float radius = fabs(gpt->points[3] - gpt->points[1]);
+
 
     
     // compute the dest inner circle intersection with the line from source center to dest center.
