@@ -2275,21 +2275,23 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
 {
   //segment length
-  int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
+  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
 
-  float lx = p1[0]-p0[0];
-  float ly = p1[1]-p0[1];
+  const float lx = p1[0]-p0[0];
+  const float ly = p1[1]-p0[1];
+
+  const int dx = lx < 0 ? -1 : 1;
+  const int dy = ly < 0 ? -1 : 1;
 
   for (int i=0 ; i<l; i++)
   {
     //position
-    int x = (int)((float)i*lx/(float)l) + p0[0];
-    int y = (int)((float)i*ly/(float)l) + p0[1];
-    if(x < 0 || x > bw || y < 0 || y > bh) continue;  //keep running for x==bw, y==bh for gap filling (see below)
-    float op = 1.0-(float)i/(float)l;
-    if (x < bw && y < bh) (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x > 0  && y < bh) (*buffer)[y*bw+x-1] = fmaxf((*buffer)[y*bw+x-1],op); //this one is to avoid gap due to int rounding
-    if (x < bw && y >  0) (*buffer)[(y-1)*bw+x] = fmaxf((*buffer)[(y-1)*bw+x],op); //this one is to avoid gap due to int rounding
+    const int x = (int)((float)i*lx/(float)l) + p0[0];
+    const int y = (int)((float)i*ly/(float)l) + p0[1];
+    const float op = 1.0-(float)i/(float)l;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
   }
 }
 
@@ -2477,8 +2479,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int next = 0;
   for (int i=nb_corner*3; i<border_count; i++)
   {
-    p0[0] = points[i*2];
-    p0[1] = points[i*2+1];
+    p0[0] = floorf(points[i*2] + 0.5f);
+    p0[1] = ceilf(points[i*2+1]);
     if (next > 0)
     {
       p1[0] = border[next*2];
