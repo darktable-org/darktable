@@ -253,6 +253,27 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   return 0;
 }
 
+int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+{
+  if (form->type & DT_MASKS_CIRCLE)
+  {
+    return dt_circle_get_mask_roi(module,piece,form,roi,buffer);
+  }
+  else if (form->type & DT_MASKS_PATH)
+  {
+    return dt_path_get_mask_roi(module,piece,form,roi,buffer);
+  }
+  else if (form->type & DT_MASKS_GROUP)
+  {
+    return dt_group_get_mask_roi(module,piece,form,roi,buffer);
+  }
+  else if (form->type & DT_MASKS_GRADIENT)
+  {
+    return dt_gradient_get_mask_roi(module,piece,form,roi,buffer);
+  }
+  return 0;
+}
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)malloc(sizeof(dt_masks_form_t));
