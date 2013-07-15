@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-07-15 18:11+0200\n"
-"PO-Revision-Date: 2013-07-15 18:23+0200\n"
+"PO-Revision-Date: 2013-07-15 18:32+0200\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <da@li.org>\n"
 "Language: da_DK\n"
@@ -428,7 +428,7 @@ msgstr "fejl: kan ikke åbne fil %s"
 
 #: ../src/cli/main.c:201
 msgid "empty history stack"
-msgstr "tom historiestak"
+msgstr "tom historikstak"
 
 #: ../src/cli/main.c:221
 msgid ""
@@ -543,7 +543,7 @@ msgstr ""
 #: ../src/common/history.c:145
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
-"du er nødt til at kopiere historie fra ét billede, før du kan indsætte det "
+"du er nødt til at kopiere historik fra ét billede, før du kan indsætte det "
 "på et andet"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
@@ -2214,7 +2214,7 @@ msgstr "vælg dele"
 
 #: ../src/gui/hist_dialog.c:228
 msgid "can't copy history out of unaltered image"
-msgstr "kan ikke kopiere historie ud fra uændret billede"
+msgstr "kan ikke kopiere historik ud fra uændret billede"
 
 #: ../src/imageio/format/copy.c:150 ../src/libs/copy_history.c:256
 #: ../src/libs/image.c:161
@@ -5851,7 +5851,7 @@ msgstr "tid"
 
 #: ../src/libs/collect.h:36 ../src/libs/history.c:55
 msgid "history"
-msgstr "historie"
+msgstr "historik"
 
 #: ../src/libs/collect.h:39 ../src/libs/metadata.c:316
 msgid "description"
@@ -5924,7 +5924,7 @@ msgstr "vis prøveområder på billede"
 
 #: ../src/libs/copy_history.c:50
 msgid "history stack"
-msgstr "historiestak"
+msgstr "historikstak"
 
 #: ../src/libs/copy_history.c:73
 msgid "open sidecar file"
@@ -5949,7 +5949,7 @@ msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
 msgstr ""
-"kopiér delvis historiestak fra\n"
+"kopiér delvis historikstak fra\n"
 "første valgte billede (ctrl-shift-c)"
 
 #: ../src/libs/copy_history.c:261
@@ -5961,7 +5961,7 @@ msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
 msgstr ""
-"kopiér historiestak fra\n"
+"kopiér historikstak fra\n"
 "første valgte billede (ctrl-c)"
 
 #: ../src/libs/copy_history.c:266
@@ -5973,7 +5973,7 @@ msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"kassér historiestak fra\n"
+"kassér historikstak fra\n"
 "alle valgte billeder"
 
 #: ../src/libs/copy_history.c:274
@@ -5985,7 +5985,7 @@ msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
 msgstr ""
-"indsæt delvis historiestak til\n"
+"indsæt delvis historikstak til\n"
 "alle valgte billeder (ctrl-shift-v)"
 
 #: ../src/libs/copy_history.c:280
@@ -5997,7 +5997,7 @@ msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
 msgstr ""
-"indsæt historiestak til\n"
+"indsæt historikstak til\n"
 "alle valgte billeder (ctrl-v)"
 
 #: ../src/libs/copy_history.c:286
@@ -6010,7 +6010,7 @@ msgstr "overskriv"
 
 #: ../src/libs/copy_history.c:288
 msgid "how to handle existing history"
-msgstr "hvordan eksisterende historie skal håndteres"
+msgstr "hvordan eksisterende historik skal håndteres"
 
 #: ../src/libs/copy_history.c:295
 msgid "load sidecar file"
@@ -6030,7 +6030,7 @@ msgstr "skriv metadatafiler"
 
 #: ../src/libs/copy_history.c:302
 msgid "write history stack and tags to xmp sidecar files"
-msgstr "skriv historiestak og tags til xmp-metadatafil"
+msgstr "skriv historikstak og tags til xmp-metadatafil"
 
 #: ../src/libs/copy_history.c:340
 msgctxt "accel"
@@ -6295,7 +6295,7 @@ msgstr ""
 #: ../src/libs/history.c:75
 msgctxt "accel"
 msgid "create style from history"
-msgstr "opret stil ud fra historie"
+msgstr "opret stil ud fra historik"
 
 #: ../src/libs/history.c:77
 msgctxt "accel"
@@ -6305,19 +6305,19 @@ msgstr "anvend stil fra popup-menu"
 #: ../src/libs/history.c:79
 msgctxt "accel"
 msgid "compress history stack"
-msgstr "komprimér historiestak"
+msgstr "komprimér historikstak"
 
 #: ../src/libs/history.c:106
 msgid "compress history stack"
-msgstr "komprimér historiestak"
+msgstr "komprimér historikstak"
 
 #: ../src/libs/history.c:108
 msgid "create a minimal history stack which produces the same image"
-msgstr "opret en minimal historiestak, som producerer det samme billede"
+msgstr "opret en minimal historikstak, som producerer det samme billede"
 
 #: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
-msgstr "opret en stil fra den aktuelle historiestak"
+msgstr "opret en stil fra den aktuelle historikstak"
 
 #: ../src/libs/history.c:184 ../src/libs/snapshots.c:382
 msgid "original"
@@ -6365,7 +6365,7 @@ msgstr "duplikér"
 
 #: ../src/libs/image.c:179
 msgid "add a duplicate to the collection, including its history stack"
-msgstr "føj et duplikat til samlingen, inklusive dets historiestak"
+msgstr "føj et duplikat til samlingen, inklusive dets historikstak"
 
 #: ../src/libs/image.c:189
 msgid "rotate selected images 90 degrees ccw"
@@ -7097,7 +7097,7 @@ msgstr "opretter et dublikat af billedet før anvendelse af stil"
 
 #: ../src/libs/styles.c:385
 msgid "create styles from history stack of selected images"
-msgstr "opret stile fra historiestak for valgte billeder"
+msgstr "opret stile fra historikstak for valgte billeder"
 
 #. edit
 #: ../src/libs/styles.c:389
@@ -7348,27 +7348,27 @@ msgstr "vurdér afvis"
 #: ../src/libs/tools/filmstrip.c:171
 msgctxt "accel"
 msgid "copy history"
-msgstr "kopiér historie"
+msgstr "kopiér historik"
 
 #: ../src/libs/tools/filmstrip.c:173
 msgctxt "accel"
 msgid "copy history parts"
-msgstr "kopiér delvis historie"
+msgstr "kopiér delvis historik"
 
 #: ../src/libs/tools/filmstrip.c:175
 msgctxt "accel"
 msgid "paste history"
-msgstr "indsæt historie"
+msgstr "indsæt historik"
 
 #: ../src/libs/tools/filmstrip.c:177
 msgctxt "accel"
 msgid "paste history parts"
-msgstr "indsæt delvis historie"
+msgstr "indsæt delvis historik"
 
 #: ../src/libs/tools/filmstrip.c:179
 msgctxt "accel"
 msgid "discard history"
-msgstr "kassér historie"
+msgstr "kassér historik"
 
 #: ../src/libs/tools/filmstrip.c:182
 msgctxt "accel"
