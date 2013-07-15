@@ -306,7 +306,7 @@ static event_handler event_list[] = {
   //{"pre-export",register_chained_event,trigger_chained_event},
   {"shortcut",register_shortcut_event,trigger_keyed_event}, 
   {"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
-  //{"tmp-export-image",register_multiinstance_event,trigger_multiinstance_event},
+  {"intermediate-export-image",register_multiinstance_event,trigger_multiinstance_event},
   //{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
   {NULL,NULL,NULL}
 };
@@ -420,16 +420,16 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
   lua_pop(L,1);
 }
 #endif
-#if 0
+
 static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
      gpointer user_data){
   luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state,filename);
-  dt_lua_trigger_event("tmp-export-image",2,0);
+  dt_lua_trigger_event("intermediate-export-image",2,0);
 }
-#endif
+
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
   luaA_push(darktable.lua_state,dt_lua_image_t,&id);
   dt_lua_trigger_event("post-import-image",1,0);
@@ -453,7 +453,7 @@ int dt_lua_init_events(lua_State *L) {
   lua_pop(L,1);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
   //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
-  //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
