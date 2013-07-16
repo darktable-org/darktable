@@ -145,10 +145,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanline[3]= {0};
-  scanline[0]  = malloc((size*sizeof(float))*ch);
-  scanline[1]  = malloc((size*sizeof(float))*ch);
-  scanline[2]  = malloc((size*sizeof(float))*ch);
+  __m128 scanline[size];
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
@@ -156,33 +153,28 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
-      for(int k=0; k<3; k++)
+      __m128 L = _mm_setzero_ps();
+      int hits = 0;
+      for(int x=-radius; x<roi_out->width; x++)
       {
-        float L=0;
-        int hits = 0;
-        for(int x=-radius; x<roi_out->width; x++)
+        int op = x - radius-1;
+        int np = x+radius;
+        if(op>=0)
         {
-          int op = x - radius-1;
-          int np = x+radius;
-          if(op>=0)
-          {
-            L-=out[(index+op)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->width)
-          {
-            L+=out[(index+np)*ch+k];
-            hits++;
-          }
-          if(x>=0)
-            scanline[k][x] = L/hits;
+          L -= _mm_load_ps(&out[(index+op)*ch]);
+          hits--;
         }
+        if(np < roi_out->width)
+        {
+          L +=  _mm_load_ps(&out[(index+np)*ch]);
+          hits++;
+        }
+        if(x>=0)
+          scanline[x] = L / _mm_set_ps1(hits);
       }
 
-      for (int k=0; k<3; k++)
-        for (int x=0; x<roi_out->width; x++)
-          out[(index+x)*ch+k] = scanline[k][x];
-
+      for (int x=0; x<roi_out->width; x++)
+        _mm_store_ps(&out[(index+x)*ch], scanline[x]);
       index+=roi_out->width;
     }
 
@@ -191,36 +183,31 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int npoffs = (radius)*roi_out->width;
     for(int x=0; x < roi_out->width; x++)
     {
-      for(int k=0; k<3; k++)
+      __m128 L = _mm_setzero_ps();
+      int hits=0;
+      int index = -radius*roi_out->width+x;
+      for(int y=-radius; y<roi_out->height; y++)
       {
-        float L=0;
-        int hits=0;
-        int index = -radius*roi_out->width+x;
-        for(int y=-radius; y<roi_out->height; y++)
-        {
-          int op=y-radius-1;
-          int np= y + radius;
+        int op=y-radius-1;
+        int np= y + radius;
 
-          if(op>=0)
-          {
-            L-=out[(index+opoffs)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->height)
-          {
-            L+=out[(index+npoffs)*ch+k];
-            hits++;
-          }
-          if(y>=0)
-            scanline[k][y] = L/hits;
-          index += roi_out->width;
+        if(op>=0)
+        {
+          L -= _mm_load_ps(&out[(index+opoffs)*ch]);
+          hits--;
         }
+        if(np < roi_out->height)
+        {
+          L += _mm_load_ps(&out[(index+npoffs)*ch]);
+          hits++;
+        }
+        if(y>=0)
+          scanline[y] = L / _mm_set_ps1(hits);
+        index += roi_out->width;
       }
 
-      for(int k=0; k<3; k++)
-        for (int y=0; y<roi_out->height; y++)
-          out[(y*roi_out->width+x)*ch+k] = scanline[k][y];
-
+      for (int y=0; y<roi_out->height; y++)
+        _mm_store_ps(&out[(y*roi_out->width+x)*ch], scanline[y]);
     }
   }
 
@@ -237,10 +224,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
     out[index+3] = in[index+3];
   }
-
-  for(int i=0; i<3; ++i)
-    if(scanline[i])
-      free(scanline[i]);
 }
 
 #ifdef HAVE_OPENCL
