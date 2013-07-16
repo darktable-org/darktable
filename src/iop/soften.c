@@ -43,7 +43,8 @@
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
+#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_soften_params_t
@@ -218,17 +219,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
 
-  const float amount = data->amount/100.0;
+  const __m128 amount = _mm_set1_ps(data->amount/100.0);
+  const __m128 amount_1 = _mm_set1_ps(1-(data->amount)/100.0);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     int index = ch*k;
-    out[index+0] = in[index+0]*(1-amount) + CLIP(out[index+0])*amount;
-    out[index+1] = in[index+1]*(1-amount) + CLIP(out[index+1])*amount;
-    out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
-    out[index+3] = in[index+3];
+    _mm_store_ps(&out[index],
+                 _mm_load_ps(&in[index]) * amount_1 + MM_CLIP_PS(_mm_load_ps(&out[index])) * amount);
   }
 }
 
