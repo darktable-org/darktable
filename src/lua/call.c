@@ -45,8 +45,9 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
         lua_pushnil(L);
       }
     }
+  } else {
+	  lua_remove(L,result); // remove the error handler
   }
-  lua_remove(L,result); // remove the error handler
   result= lua_gettop(L) -result;
 
   lua_gc(L,LUA_GCCOLLECT,0);

@@ -397,6 +397,160 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
 
   return 1;
 }
+
+static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+{
+  double start2 = dt_get_wtime();
+  //we allocate buffers and values
+  const int nb = g_list_length(form->points);
+  if (nb == 0) return 0;
+  float* bufs;
+  int nb_ok = 0;
+
+  const int width = roi->width;
+  const int height = roi->height;
+
+  //we allocate the buffer
+  *buffer = malloc(sizeof(float)*width*height);
+  if(*buffer == NULL) return 0;
+  memset(*buffer, 0, width*height*sizeof(float));
+
+  //and we get all masks
+  GList *fpts = g_list_first(form->points);
+
+  while(fpts)
+  {
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *) fpts->data;
+    dt_masks_form_t *sel = dt_masks_get_from_id(module->dev,fpt->formid);
+
+    if (sel)
+    {
+      const int ok = dt_masks_get_mask_roi(module,piece,sel,roi,&bufs);
+      const float op = fpt->opacity;
+      const int state = fpt->state;
+
+      if (ok) 
+      {
+        if (state & DT_MASKS_STATE_INVERSE)
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs)
+#else
+          #pragma omp parallel for shared(bufs)
+#endif
+#endif
+          for(int j=0; j<height; j++)
+            for(int i=0; i<width; i++)
+              bufs[j*width+i] = 1.0f - bufs[j*width+i];
+        }
+
+        if (state & DT_MASKS_STATE_UNION)
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs,buffer)
+#else
+          #pragma omp parallel for shared(bufs,buffer)
+#endif
+#endif
+          for (int y=0; y<height; y++)
+            for (int x=0; x<width; x++)
+              (*buffer)[y*width+x] = fmaxf((*buffer)[y*width+x], bufs[y*width+x]*op);
+        }
+        else if (state & DT_MASKS_STATE_INTERSECTION)
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs,buffer)
+#else
+          #pragma omp parallel for shared(bufs,buffer)
+#endif
+#endif
+          for (int y=0; y<height; y++)
+            for (int x=0; x<width; x++)
+            {
+              float b1 = (*buffer)[y*width+x];
+              float b2 = b2 = bufs[y*width+x];
+              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = fminf(b1,b2*op);
+              else (*buffer)[y*width+x] = 0.0f;
+            }
+        }
+        else if (state & DT_MASKS_STATE_DIFFERENCE)
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs,buffer)
+#else
+          #pragma omp parallel for shared(bufs,buffer)
+#endif
+#endif
+          for (int y=0; y<height; y++)
+            for (int x=0; x<width; x++)
+            {
+              float b1 = (*buffer)[y*width+x];
+              float b2 = bufs[y*width+x]*op;
+              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = b1*(1.0f-b2);
+            }
+        }
+        else if (state & DT_MASKS_STATE_EXCLUSION)
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs,buffer)
+#else
+          #pragma omp parallel for shared(bufs,buffer)
+#endif
+#endif
+          for (int y=0; y<height; y++)
+            for (int x=0; x<width; x++)
+            {
+              float b1 = (*buffer)[y*width+x];
+              float b2 = bufs[y*width+x]*op;
+              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = fmaxf((1.0f-b1)*b2,b1*(1.0f-b2));
+              else (*buffer)[y*width+x] = fmaxf(b1, b2);
+            }
+        }
+        else //if we are here, this mean that we just have to copy the shape and null other parts
+        {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+          #pragma omp parallel for default(none) shared(bufs,buffer)
+#else
+          #pragma omp parallel for shared(bufs,buffer)
+#endif
+#endif
+          for (int y=0; y<height; y++)
+            for (int x=0; x<width; x++)
+              (*buffer)[y*width+x] = bufs[y*width+x]*op;
+        }
+
+        //and we free the buffer
+        free(bufs);
+
+        if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime()-start2);
+        start2 = dt_get_wtime();
+
+        nb_ok++;
+      }
+    }
+    fpts = g_list_next(fpts);
+  }
+
+  return (nb_ok != 0);
+}
+
+int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+{
+  double start2 = dt_get_wtime();
+  if (!form) return 0;
+
+  int ok = dt_masks_get_mask_roi(module,piece,form,roi,buffer);
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime()-start2);
+  return ok;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

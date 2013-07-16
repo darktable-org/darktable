@@ -918,9 +918,9 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "adobergb"))
     {
-      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-      dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB (compatible)"));
-      dt_bauhaus_combobox_add(g->cbox5, _("Adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->cbox3, _("adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->cbox5, _("adobe RGB (compatible)"));
     }
     else
     {

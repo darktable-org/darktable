@@ -2130,6 +2130,400 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   return 1;
 }
+
+
+/** crop path to roi given by xmin, xmax, ymin, ymax. path segments outside of roi are replaced by
+    nodes lying on roi borders. */
+static int _path_crop_to_roi(float *path, const int point_count, float xmin, float xmax, float ymin, float ymax)
+{
+  int point_start = -1;
+  int l = -1, r = -1;
+
+
+  // first try to find a node clearly inside roi
+  for(int k=0; k<point_count; k++)
+  {
+    float x = path[2*k];
+    float y = path[2*k+1];
+   
+    if(x >= xmin+1 && y >= ymin+1 && x <= xmax-1 && y <= ymax-1)
+    {
+      point_start = k;
+      break;
+    }
+  }  
+
+  //printf("crop to xmin %f, xmax %f, ymin %f, ymax %f - start %d (%f, %f)\n", xmin, xmax, ymin, ymax, point_start, path[2*point_start], path[2*point_start+1]);
+
+  if(point_start < 0) return 0;   // no point within roi found. should normally not happen but we can't continue from here
+
+  // find the crossing points with xmin and replace segment by nodes on border
+  for(int k=0; k<point_count; k++)
+  {
+    int kk = (k + point_start) % point_count;
+
+    if(l <  0 && path[2*kk] <  xmin) l = k;      // where we leave roi
+    if(l >= 0 && path[2*kk] >= xmin) r = k - 1;  // where we re-enter roi
+
+    // replace that segment
+    if(l >= 0 && r >= 0)
+    {
+      int count = r - l + 1;
+      int ll = (l - 1 + point_start) % point_count;
+      int rr = (r + 1 + point_start) % point_count;
+      float delta_y = (count == 1) ? 0 : (path[2*rr+1] - path[2*ll+1])/(count - 1);
+      float start_y = path[2*ll+1];
+
+      for(int n = 0; n < count; n++)
+      {
+        int nn = (n + l + point_start) % point_count;
+        path[2*nn] = xmin;
+        path[2*nn+1] = start_y + n * delta_y;
+      }
+
+      l = r = -1;
+    }
+  }
+
+  // find the crossing points with xmax and replace segment by nodes on border
+  for(int k=0; k<point_count; k++)
+  {
+    int kk = (k + point_start) % point_count;
+
+    if(l <  0 && path[2*kk] >  xmax) l = k;      // where we leave roi
+    if(l >= 0 && path[2*kk] <= xmax) r = k - 1;  // where we re-enter roi
+
+    // replace that segment
+    if(l >= 0 && r >= 0)
+    {
+      int count = r - l + 1;
+      int ll = (l - 1 + point_start) % point_count;
+      int rr = (r + 1 + point_start) % point_count;
+      float delta_y = (count == 1) ? 0 : (path[2*rr+1] - path[2*ll+1])/(count - 1);
+      float start_y = path[2*ll+1];
+      
+      for(int n = 0; n < count; n++)
+      {
+        int nn = (n + l + point_start) % point_count;
+        path[2*nn] = xmax;
+        path[2*nn+1] = start_y + n * delta_y;
+      }
+
+      l = r = -1;
+    }
+  }
+
+  // find the crossing points with ymin and replace segment by nodes on border
+  for(int k=0; k<point_count; k++)
+  {
+    int kk = (k + point_start) % point_count;
+
+    if(l <  0 && path[2*kk+1] <  ymin) l = k;      // where we leave roi
+    if(l >= 0 && path[2*kk+1] >= ymin) r = k - 1;  // where we re-enter roi
+
+    // replace that segment
+    if(l >= 0 && r >= 0)
+    {
+      int count = r - l + 1;
+      int ll = (l - 1 + point_start) % point_count;
+      int rr = (r + 1 + point_start) % point_count;
+      float delta_x = (count == 1) ? 0 : (path[2*rr] - path[2*ll])/(count - 1);
+      float start_x = path[2*ll];
+      
+      for(int n = 0; n < count; n++)
+      {
+        int nn = (n + l + point_start) % point_count;
+        path[2*nn] = start_x + n * delta_x;
+        path[2*nn+1] = ymin;
+      }
+
+      l = r = -1;
+    }
+  }
+
+  // find the crossing points with ymax and replace segment by nodes on border
+  for(int k=0; k<point_count; k++)
+  {
+    int kk = (k + point_start) % point_count;
+
+    if(l <  0 && path[2*kk+1] >  ymax) l = k;      // where we leave roi
+    if(l >= 0 && path[2*kk+1] <= ymax) r = k - 1;  // where we re-enter roi
+
+    // replace that segment
+    if(l >= 0 && r >= 0)
+    {
+      int count = r - l + 1;
+      int ll = (l - 1 + point_start) % point_count;
+      int rr = (r + 1 + point_start) % point_count;
+      float delta_x = (count == 1) ? 0 : (path[2*rr] - path[2*ll])/(count - 1);
+      float start_x = path[2*ll];
+      
+      for(int n = 0; n < count; n++)
+      {
+        int nn = (n + l + point_start) % point_count;
+        path[2*nn] = start_x + n * delta_x;
+        path[2*nn+1] = ymax;
+      }
+
+      l = r = -1;
+    }
+  }
+  return 1;
+}
+
+/** we write a falloff segment respecting limits of buffer */
+static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
+{
+  //segment length
+  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
+
+  const float lx = p1[0]-p0[0];
+  const float ly = p1[1]-p0[1];
+
+  const int dx = lx < 0 ? -1 : 1;
+  const int dy = ly < 0 ? -1 : 1;
+
+  for (int i=0 ; i<l; i++)
+  {
+    //position
+    const int x = (int)((float)i*lx/(float)l) + p0[0];
+    const int y = (int)((float)i*ly/(float)l) + p0[1];
+    const float op = 1.0-(float)i/(float)l;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+  }
+}
+
+static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+{
+  if (!module) return 0;
+  double start = dt_get_wtime();
+  double start2;
+
+  const int px = roi->x;
+  const int py = roi->y;
+  const int width = roi->width;
+  const int height = roi->height;
+  const float scale = roi->scale;
+
+  //we get buffers for all points
+  float *points, *border, *cpoints = NULL;
+  int points_count,border_count;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
+  start = start2 = dt_get_wtime();
+
+  //we allocate the output buffer
+  *buffer = malloc(width*height*sizeof(float));
+  if (*buffer == NULL)
+  {
+    free(points);
+    free(border);
+    return 0;
+  }
+  memset(*buffer,0,width*height*sizeof(float));
+
+  int nb_corner = g_list_length(form->points);
+
+  //we shift and scale down path and border
+  for (int i=nb_corner*3; i < border_count; i++)
+  {
+    float xx = border[2*i];
+    float yy = border[2*i+1];
+    if (xx == -999999)
+    {
+      if (yy == -999999) break; //that means we have to skip the end of the border path
+      i = yy-1;
+      continue;
+    }
+    border[2*i] = xx * scale - px;
+    border[2*i+1] = yy * scale - py;
+  }
+
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    float xx = points[2*i];
+    float yy = points[2*i+1];
+    points[2*i] = xx * scale - px;
+    points[2*i+1] = yy * scale - py;
+  }
+
+  //now we want to find the area, so we search min/max points
+  float xmin, xmax, ymin, ymax;
+  xmin = ymin = FLT_MAX;
+  xmax = ymax = FLT_MIN;
+
+  for (int i=nb_corner*3; i < border_count; i++)
+  {
+    //we look at the borders
+    float xx = border[i*2];
+    float yy = border[i*2+1];
+    if (xx == -999999)
+    {
+      if (yy == -999999) break; //that means we have to skip the end of the border path
+      i = yy-1;
+      continue;
+    }
+    xmin = fminf(xx,xmin);
+    xmax = fmaxf(xx,xmax);
+    ymin = fminf(yy,ymin);
+    ymax = fmaxf(yy,ymax);
+  }
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    //we look at the path too
+    float xx = points[i*2];
+    float yy = points[i*2+1];
+    xmin = fminf(xx,xmin);
+    xmax = fmaxf(xx,xmax);
+    ymin = fminf(yy,ymin);
+    ymax = fmaxf(yy,ymax);
+  }
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  start2 = dt_get_wtime();
+
+  //check if the path completely lies outside of roi -> we're done/mask remains empty
+  if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
+  {
+    free(points);
+    free(border);
+    return 1;
+  }
+
+  //second copy of path which can be altered when cropping to roi
+  cpoints = malloc(2*points_count*sizeof(float));
+  if (cpoints == NULL)
+  {
+    free(points);
+    free(border);
+    return 0;
+  }
+  memcpy(cpoints, points, 2*points_count*sizeof(float));
+
+  //now we clip cpoints to roi
+  const int no_points = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
+
+
+  //only if non-feathered part of shape lies within roi
+  if(!no_points && points_count > 2)
+  {
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+    start2 = dt_get_wtime();
+
+    //edge-flag polygon fill: we write all the point around the path into the buffer
+    float xlast = cpoints[(points_count-1)*2];
+    float ylast = cpoints[(points_count-1)*2+1];
+
+    for (int i=nb_corner*3; i<points_count; i++)
+    {
+      float xstart = xlast;
+      float ystart = ylast;
+
+      float xend = xlast = cpoints[i*2];
+      float yend = ylast = cpoints[i*2+1];
+
+      if(ystart > yend)
+      {
+        float tmp;
+        tmp = ystart, ystart = yend, yend = tmp;
+        tmp = xstart, xstart = xend, xend = tmp;
+      }
+
+      const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
+
+      for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
+      {
+        const float xcross = xstart + m * (yy - ystart);
+          
+        int xx = floorf(xcross);
+        if ((float)xx + 0.5f <= xcross) xx++;
+
+        if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
+
+        (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+      }
+    }
+
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+    start2 = dt_get_wtime();
+
+    //we fill the inside plain
+    //we don't need to deal with parts of shape outside of roi
+    xmin = fmaxf(xmin, 0);
+    xmax = fminf(xmax, width-1);
+    ymin = fmaxf(ymin, 0);
+    ymax = fminf(ymax, height-1);
+
+    for (int yy=ymin; yy<=ymax; yy++)
+    {
+      int state = 0;
+      for (int xx=xmin ; xx<=xmax; xx++)
+      {
+        float v = (*buffer)[yy*width+xx];
+        if (v > 0.5f) state = !state;
+        if (state) (*buffer)[yy*width+xx] = 1.0f;
+      }
+    }
+
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+    start2 = dt_get_wtime();
+  }
+
+  //now we fill the falloff
+  int p0[2], p1[2];
+  int last0[2] = {-100,-100};
+  int last1[2] = {-100,-100};
+  int next = 0;
+  for (int i=nb_corner*3; i<border_count; i++)
+  {
+    p0[0] = floorf(points[i*2] + 0.5f);
+    p0[1] = ceilf(points[i*2+1]);
+    if (next > 0)
+    {
+      p1[0] = border[next*2];
+      p1[1] = border[next*2+1];
+    }
+    else
+    {
+      p1[0] = border[i*2];
+      p1[1] = border[i*2+1];
+    }
+
+    //now we check p1 value to know if we have to skip a part
+    if (next == i) next = 0;
+    while (p1[0] == -999999)
+    {
+      if (p1[1] == -999999) next = i-1;
+      else next = p1[1];
+      p1[0] = border[next*2];
+      p1[1] = border[next*2+1];
+    }
+
+    //and we draw the falloff
+    if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
+    {
+      _path_falloff_roi(buffer, p0, p1, width, height);
+      last0[0] = p0[0];
+      last0[1] = p0[1];
+      last1[0] = p1[0];
+      last1[1] = p1[1];
+    }
+  }
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+
+  free(points);
+  free(border);
+  free(cpoints);
+
+  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name, dt_get_wtime()-start);
+
+  return 1;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

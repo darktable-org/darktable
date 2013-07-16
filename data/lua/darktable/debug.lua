@@ -123,5 +123,12 @@ function M.dump(object,name)
 	return introspect_internal(object,"",name,{},{})
 end
 
+function M.type(object)
+	if type(object) ~= "userdata" then return type(object) end
+	local metatable = getmetatable(object);
+	if not metatable or not metatable.__luaA_TypeName then return "userdata" end
+	return metatable.__luaA_TypeName
+end
+
 dt.debug = M
 return M
