@@ -145,14 +145,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  __m128 scanline[size];
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#endif
     /* horizontal blur out into out */
-    int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
+      __m128 scanline[size];
+      int index = y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
       for(int x=-radius; x<roi_out->width; x++)
@@ -175,14 +178,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for (int x=0; x<roi_out->width; x++)
         _mm_store_ps(&out[(index+x)*ch], scanline[x]);
-      index+=roi_out->width;
     }
 
     /* vertical pass on blurlightness */
     const int opoffs = -(radius+1)*roi_out->width;
     const int npoffs = (radius)*roi_out->width;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#endif
     for(int x=0; x < roi_out->width; x++)
     {
+      __m128 scanline[size];
       __m128 L = _mm_setzero_ps();
       int hits=0;
       int index = -radius*roi_out->width+x;
