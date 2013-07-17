@@ -165,16 +165,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
         int np = x+radius;
         if(op>=0)
         {
-          L -= _mm_load_ps(&out[(index+op)*ch]);
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+op)*ch]));
           hits--;
         }
         if(np < roi_out->width)
         {
-          L +=  _mm_load_ps(&out[(index+np)*ch]);
+          L =  _mm_add_ps(L, _mm_load_ps(&out[(index+np)*ch]));
           hits++;
         }
         if(x>=0)
-          scanline[x] = L / _mm_set_ps1(hits);
+          scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
       }
 
       for (int x=0; x<roi_out->width; x++)
@@ -200,16 +200,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
         if(op>=0)
         {
-          L -= _mm_load_ps(&out[(index+opoffs)*ch]);
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+opoffs)*ch]));
           hits--;
         }
         if(np < roi_out->height)
         {
-          L += _mm_load_ps(&out[(index+npoffs)*ch]);
+          L = _mm_add_ps(L, _mm_load_ps(&out[(index+npoffs)*ch]));
           hits++;
         }
         if(y>=0)
-          scanline[y] = L / _mm_set_ps1(hits);
+          scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
         index += roi_out->width;
       }
 
@@ -228,7 +228,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     int index = ch*k;
     _mm_store_ps(&out[index],
-                 _mm_load_ps(&in[index]) * amount_1 + MM_CLIP_PS(_mm_load_ps(&out[index])) * amount);
+                 _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
+                            _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
   }
 }
 
