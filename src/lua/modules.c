@@ -83,8 +83,7 @@ static int format_index(lua_State*L)
 
 static int get_format_params(lua_State *L)
 {
-  const char * format_name = luaL_checkstring(L,-1);
-  dt_imageio_module_format_t *format_module = dt_imageio_get_format_by_name(format_name);
+  dt_imageio_module_format_t *format_module = lua_touserdata(L,lua_upvalueindex(1));
   dt_imageio_module_data_t *fdata = format_module->get_params(format_module);
   luaA_push_typeid(L,format_module->parameter_lua_type,fdata);
   format_module->free_params(format_module,fdata);
@@ -140,7 +139,9 @@ void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* mod
   lua_getmetatable(L,-1);
   lua_getfield(L,-1,"__luaA_Type");
   luaA_Type format_table_type = luaL_checkint(L,-1);
-  dt_lua_register_type_callback_typeid(L,format_table_type,get_format_params,NULL,module->plugin_name,NULL);
+  lua_pushlightuserdata(L,module);
+  lua_pushcclosure(L,get_format_params,1);
+  dt_lua_register_type_callback_stack_typeid(L,format_table_type,module->plugin_name);
   lua_pop(L,3);
 };
 
@@ -237,8 +238,7 @@ static int storage_index(lua_State*L)
 
 static int get_storage_params(lua_State *L)
 {
-  const char * storage_name = luaL_checkstring(L,-1);
-  dt_imageio_module_storage_t *storage_module = dt_imageio_get_storage_by_name(storage_name);
+  dt_imageio_module_storage_t *storage_module = lua_touserdata(L,lua_upvalueindex(1));
   dt_imageio_module_data_t *fdata = storage_module->get_params(storage_module);
   if(!fdata)
   {
@@ -267,7 +267,9 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
   lua_getmetatable(L,-1);
   lua_getfield(L,-1,"__luaA_Type");
   luaA_Type storage_table_type = luaL_checkint(L,-1);
-  dt_lua_register_type_callback_typeid(L,storage_table_type,get_storage_params,NULL,module->plugin_name,NULL);
+  lua_pushlightuserdata(L,module);
+  lua_pushcclosure(L,get_storage_params,1);
+  dt_lua_register_type_callback_stack_typeid(L,storage_table_type,module->plugin_name);
   lua_pop(L,3);
 
 };

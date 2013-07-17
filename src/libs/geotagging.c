@@ -438,7 +438,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.gpx");
-  gtk_file_filter_set_name(filter, _("GPS Data Exchange Format"));
+  gtk_file_filter_set_name(filter, _("gps data exchange format"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
