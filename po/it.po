@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-10 19:22+0200\n"
+"POT-Creation-Date: 2013-07-18 19:31+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -714,7 +714,7 @@ msgstr "%d/%d importati in %s"
 
 #: ../src/control/jobs/camera_jobs.c:357
 msgid ""
-"Couldn't expand to a uniq filename for import, please check your import "
+"couldn't expand to a unique filename for import, please check your import "
 "settings."
 msgstr ""
 "Per l'importazione impossibile espandere ad un nome di file univoco,verifica "
@@ -1070,7 +1070,7 @@ msgstr "Input"
 msgid "double click to reset"
 msgstr "Doppio click per ripristinare"
 
-#: ../src/develop/blend_gui.c:1131 ../src/develop/masks/masks.c:1033
+#: ../src/develop/blend_gui.c:1131 ../src/develop/masks/masks.c:1054
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1078,7 +1078,7 @@ msgstr[0] "%d forma in uso"
 msgstr[1] "%d forme in uso"
 
 #: ../src/develop/blend_gui.c:1136 ../src/develop/blend_gui.c:1175
-#: ../src/develop/masks/masks.c:1036
+#: ../src/develop/masks/masks.c:1057
 msgid "no mask used"
 msgstr "Nessuna maschera in uso"
 
@@ -1354,7 +1354,7 @@ msgid "move down"
 msgstr "Sposta giù"
 
 #. delete
-#: ../src/develop/imageop.c:1192 ../src/libs/image.c:145
+#: ../src/develop/imageop.c:1192 ../src/libs/image.c:146
 #: ../src/libs/styles.c:396 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "Elimina"
@@ -2041,7 +2041,7 @@ msgstr "Seleziona file da importare"
 
 #: ../src/gui/preferences.c:1194
 msgid ""
-"Are you sure you want to restore the default keybindings?  This will erase "
+"are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
 msgstr ""
 "Sei sicuro di voler ripristinare i tasti predefiniti? Questo cancellerà le "
@@ -2240,7 +2240,7 @@ msgid "can't copy history out of unaltered image"
 msgstr "Impossibile copiare la coda di sviluppo da un'immagine non modificata"
 
 #: ../src/imageio/format/copy.c:150 ../src/libs/copy_history.c:256
-#: ../src/libs/image.c:160
+#: ../src/libs/image.c:161
 msgid "copy"
 msgstr "Copia"
 
@@ -2386,7 +2386,7 @@ msgstr ""
 "Passo 2: incolla l'url del browser e premi il bottone ok una volta fatto."
 
 #: ../src/imageio/storage/facebook.c:614
-msgid "Facebook authentication"
+msgid "facebook authentication"
 msgstr "Autenticazione Facebook"
 
 #: ../src/imageio/storage/facebook.c:620 ../src/imageio/storage/picasa.c:851
@@ -2455,19 +2455,19 @@ msgid "privacy"
 msgstr "Privacy"
 
 #: ../src/imageio/storage/facebook.c:1061
-msgid "Only Me"
+msgid "only me"
 msgstr "Solo io"
 
-#: ../src/imageio/storage/facebook.c:1063
-msgid "Friends"
+#: ../src/imageio/storage/facebook.c:1063 ../src/imageio/storage/flickr.c:539
+msgid "friends"
 msgstr "Amici"
 
-#: ../src/imageio/storage/facebook.c:1065
-msgid "Public"
+#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/picasa.c:1358
+msgid "public"
 msgstr "Pubblico"
 
 #: ../src/imageio/storage/facebook.c:1067
-msgid "Friends of Friends"
+msgid "friends of friends"
 msgstr "Amici degli Amici"
 
 #: ../src/imageio/storage/facebook.c:1200 ../src/imageio/storage/picasa.c:1493
@@ -2558,7 +2558,7 @@ msgid "refresh album list"
 msgstr "Aggiorna lista album"
 
 #: ../src/imageio/storage/flickr.c:527
-msgid "Flickr login"
+msgid "flickr login"
 msgstr "Login Flickr"
 
 #: ../src/imageio/storage/flickr.c:534
@@ -2568,10 +2568,6 @@ msgstr "Esporta tags"
 #: ../src/imageio/storage/flickr.c:538
 msgid "you"
 msgstr "Tu"
-
-#: ../src/imageio/storage/flickr.c:539
-msgid "friends"
-msgstr "Amici"
 
 #: ../src/imageio/storage/flickr.c:540
 msgid "family"
@@ -2630,10 +2626,6 @@ msgstr "Album Picasa"
 #: ../src/imageio/storage/picasa.c:1356
 msgid "private"
 msgstr "Privato"
-
-#: ../src/imageio/storage/picasa.c:1358
-msgid "public"
-msgstr "Pubblico"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/picasa.c:1527
@@ -3536,9 +3528,9 @@ msgstr "Matrice colore alternativa"
 msgid "sRGB (e.g. jpg)"
 msgstr "sRGB (es. jpg)"
 
-#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:921
+#: ../src/iop/colorin.c:755 ../src/iop/colorout.c:921
 #: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
-msgid "Adobe RGB (compatible)"
+msgid "adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibile)"
 
 #: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:909
@@ -3559,6 +3551,10 @@ msgstr "XYZ lineare "
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:592
 msgid "Lab"
 msgstr "Lab"
+
+#: ../src/iop/colorin.c:787
+msgid "Adobe RGB (compatible)"
+msgstr "Adobe RGB (compatibile)"
 
 #: ../src/iop/colorin.c:897 ../src/iop/denoiseprofile.c:1723
 #: ../src/libs/export.c:606
@@ -4676,7 +4672,19 @@ msgctxt "accel"
 msgid "blue shift"
 msgstr "Spostamento del blu"
 
-#: ../src/iop/lowlight.c:331
+#. Column 1 - "make" of the camera.
+#. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
+#. * Column 3 - WB name.
+#. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
+#. *	      It is enough to give only the extreme values, the other values
+#. *	      will be interpolated.
+#. * Column 5 - Channel multipliers.
+#. *
+#. * Minolta's ALPHA and MAXXUM models are treated as the DYNAX model.
+#. *
+#. * WB name is standardized to one of the following:
+#. "Sunlight" and other variation should be switched to this:
+#: ../src/iop/lowlight.c:331 ../src/iop/wb_presets.c:45
 msgid "daylight"
 msgstr "Luce diurna "
 
@@ -5499,123 +5507,107 @@ msgstr "Opacità della filigrana"
 msgid "the scale of the watermark"
 msgstr "Proporzioni della filigrana"
 
-#. Column 1 - "make" of the camera.
-#. * Column 2 - "model" (use the "make" and "model" as provided by DCRaw).
-#. * Column 3 - WB name.
-#. * Column 4 - Fine tuning. MUST be in increasing order. 0 for no fine tuning.
-#. *	      It is enough to give only the extreme values, the other values
-#. *	      will be interpolated.
-#. * Column 5 - Channel multipliers.
-#. *
-#. * Minolta's ALPHA and MAXXUM models are treated as the DYNAX model.
-#. *
-#. * WB name is standardized to one of the following:
-#. "Sunlight" and other variation should be switched to this:
-#: ../src/iop/wb_presets.c:45
-msgid "Daylight"
-msgstr "Luce diurna"
-
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
-msgid "Direct sunlight"
-msgstr "Luce diretta"
+msgid "direct sunlight"
+msgstr "Luce solare diretta"
 
 #: ../src/iop/wb_presets.c:48
-msgid "Cloudy"
+msgid "cloudy"
 msgstr "Nuvoloso"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
-msgid "Shade"
+msgid "shade"
 msgstr "Ombra"
 
 #: ../src/iop/wb_presets.c:51
-msgid "Incandescent"
+msgid "incandescent"
 msgstr "Incandescente"
 
 #: ../src/iop/wb_presets.c:52
-msgid "Incandescent warm"
+msgid "incandescent warm"
 msgstr "Incandescente calda"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
-msgid "Tungsten"
+msgid "tungsten"
 msgstr "Tungsteno"
 
 #: ../src/iop/wb_presets.c:55
-msgid "Fluorescent"
+msgid "fluorescent"
 msgstr "Fluorescente"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
-msgid "Fluorescent high"
+msgid "fluorescent high"
 msgstr "Fluorescente alta"
 
 #: ../src/iop/wb_presets.c:58
-msgid "Cool white fluorescent"
+msgid "cool white fluorescent"
 msgstr "Fluorescente bianca fredda"
 
 #: ../src/iop/wb_presets.c:59
-msgid "Warm white fluorescent"
+msgid "warm white fluorescent"
 msgstr "Fluorescente bianca calda"
 
 #: ../src/iop/wb_presets.c:60
-msgid "Daylight fluorescent"
+msgid "daylight fluorescent"
 msgstr "Luce diurna fluorescente"
 
 #: ../src/iop/wb_presets.c:61
-msgid "Neutral fluorescent"
+msgid "neutral fluorescent"
 msgstr "Fluorescente neutrale"
 
 #: ../src/iop/wb_presets.c:62
-msgid "White fluorescent"
+msgid "white fluorescent"
 msgstr "Fluorescente bianca"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
-msgid "Sodium-vapor fluorescent"
+msgid "sodium-vapor fluorescent"
 msgstr "Fluorescente ai vapori di sodio"
 
 #: ../src/iop/wb_presets.c:65
-msgid "Day white fluorescent"
+msgid "day white fluorescent"
 msgstr "Fluorescente bianca diurna"
 
 #: ../src/iop/wb_presets.c:66
-msgid "High temp. mercury-vapor fluorescent"
+msgid "high temp. mercury-vapor fluorescent"
 msgstr "Fluorescente ai vapori di mercurio alta temperatura"
 
 #: ../src/iop/wb_presets.c:68
-msgid "Flash"
+msgid "flash"
 msgstr "Flash"
 
 #. For Olympus with no real "Flash" preset:
 #: ../src/iop/wb_presets.c:70
-msgid "Flash (auto mode)"
+msgid "flash (auto mode)"
 msgstr "Flash (Automatico)"
 
 #: ../src/iop/wb_presets.c:71
-msgid "Evening sun"
+msgid "evening sun"
 msgstr "Tramonto"
 
 #: ../src/iop/wb_presets.c:72
-msgid "Underwater"
+msgid "underwater"
 msgstr "Sott'acqua"
 
-#: ../src/iop/wb_presets.c:73
-msgid "Black & white"
-msgstr "Bianco & nero"
+#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1150
+msgid "black & white"
+msgstr "bianco & nero"
 
 #: ../src/iop/wb_presets.c:76
-msgid "Manual WB"
+msgid "manual wb"
 msgstr "Manuale"
 
 #: ../src/iop/wb_presets.c:77
-msgid "Camera WB"
+msgid "camera wb"
 msgstr "Fotocamera"
 
 #: ../src/iop/wb_presets.c:78
-msgid "Auto WB"
-msgstr "Automatico"
+msgid "auto wb"
+msgstr "Auto"
 
 #: ../src/iop/zonesystem.c:94
 msgid "zone system"
@@ -5811,7 +5803,7 @@ msgstr "Cerca rullino"
 
 #: ../src/libs/collect.c:505
 #, c-format
-msgid "Problem selecting new path for the filmroll in %s"
+msgid "problem selecting new path for the filmroll in %s"
 msgstr "Problema selezionando il nuovo percorso per il rullino in %s"
 
 #: ../src/libs/collect.c:544
@@ -6238,7 +6230,7 @@ msgid "open gpx file"
 msgstr "Apri file gpx"
 
 #: ../src/libs/geotagging.c:441
-msgid "GPS Data Exchange Format"
+msgid "gps data exchange format"
 msgstr "Formato di scambio dati GPS"
 
 #: ../src/libs/geotagging.c:451
@@ -6370,141 +6362,141 @@ msgstr "Crea uno stile dall'attuale coda di sviluppo"
 msgid "original"
 msgstr "Originale"
 
-#: ../src/libs/image.c:49
+#: ../src/libs/image.c:50
 msgid "selected image[s]"
 msgstr "Immagini selezionate"
 
-#: ../src/libs/image.c:139
+#: ../src/libs/image.c:140
 msgid "remove"
 msgstr "Rimuovi"
 
-#: ../src/libs/image.c:141
+#: ../src/libs/image.c:142
 msgid "remove from the collection"
 msgstr "Rimuovi dalla raccolta"
 
-#: ../src/libs/image.c:147
+#: ../src/libs/image.c:148
 msgid "physically delete from disk"
 msgstr "Elimina fisicamente dal disco"
 
-#: ../src/libs/image.c:154
+#: ../src/libs/image.c:155
 msgid "move"
 msgstr "Sposta"
 
-#: ../src/libs/image.c:156
+#: ../src/libs/image.c:157
 msgid "move to other folder"
 msgstr "Sposta in un'altra cartella"
 
-#: ../src/libs/image.c:162
+#: ../src/libs/image.c:163
 msgid "copy to other folder"
 msgstr "Copia in un'altra cartella"
 
-#: ../src/libs/image.c:170
+#: ../src/libs/image.c:171
 msgid "create hdr"
 msgstr "Crea HDR"
 
-#: ../src/libs/image.c:174
+#: ../src/libs/image.c:175
 msgid "create a high dynamic range image from selected shots"
 msgstr "Crea HDR dagli scatti selezionati"
 
-#: ../src/libs/image.c:176
+#: ../src/libs/image.c:177
 msgid "duplicate"
 msgstr "Duplica"
 
-#: ../src/libs/image.c:178
+#: ../src/libs/image.c:179
 msgid "add a duplicate to the collection, including its history stack"
 msgstr "Aggiungi un duplicato alla raccolta, includendo la coda di sviluppo"
 
-#: ../src/libs/image.c:188
+#: ../src/libs/image.c:189
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Ruota le immagini selezionate di 90° antiorari"
 
-#: ../src/libs/image.c:194
+#: ../src/libs/image.c:195
 msgid "rotate selected images 90 degrees cw"
 msgstr "Ruota le immagini selezionate di 90° orari"
 
-#: ../src/libs/image.c:199
+#: ../src/libs/image.c:200
 msgid "reset rotation"
 msgstr "Ripristina rotazione"
 
-#: ../src/libs/image.c:201
+#: ../src/libs/image.c:202
 msgid "reset rotation to exif data"
 msgstr "Ripristina rotazione ai dati EXIF"
 
-#: ../src/libs/image.c:208
+#: ../src/libs/image.c:209
 msgid "cache locally"
 msgstr "Archivia localmente"
 
-#: ../src/libs/image.c:210
+#: ../src/libs/image.c:211
 msgid "copy the image locally"
 msgstr "Copia l'immagine localmente"
 
-#: ../src/libs/image.c:214
+#: ../src/libs/image.c:215
 msgid "reset cache"
 msgstr "Rimuovi copia locale"
 
-#: ../src/libs/image.c:216
+#: ../src/libs/image.c:217
 msgid "remove the local copy of the image"
 msgstr "Rimuovi la copia locale dell'immagine"
 
-#: ../src/libs/image.c:223
+#: ../src/libs/image.c:224
 msgid "group"
 msgstr "Raggruppa"
 
-#: ../src/libs/image.c:225
+#: ../src/libs/image.c:226
 msgid "add selected images to expanded group or create a new one"
 msgstr ""
 "Aggiungi le immagini selezionate ad un gruppo esteso oppure creane uno nuovo"
 
-#: ../src/libs/image.c:229
+#: ../src/libs/image.c:230
 msgid "ungroup"
 msgstr "Separa"
 
-#: ../src/libs/image.c:231
+#: ../src/libs/image.c:232
 msgid "remove selected images from the group"
 msgstr "Elimina le immagini selezionate dal gruppo"
 
-#: ../src/libs/image.c:247
+#: ../src/libs/image.c:248
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "Rimuovi dalla raccolta"
 
-#: ../src/libs/image.c:249
+#: ../src/libs/image.c:250
 msgctxt "accel"
 msgid "delete from disk"
 msgstr "Elimina dal disco"
 
-#: ../src/libs/image.c:251
+#: ../src/libs/image.c:252
 msgctxt "accel"
 msgid "rotate selected images 90 degrees cw"
 msgstr "Ruota le immagini selezionate di 90° orari "
 
-#: ../src/libs/image.c:254
+#: ../src/libs/image.c:255
 msgctxt "accel"
 msgid "rotate selected images 90 degrees ccw"
 msgstr "Ruota le immagini selezionate di 90° antiorari "
 
-#: ../src/libs/image.c:256
+#: ../src/libs/image.c:257
 msgctxt "accel"
 msgid "create hdr"
 msgstr "Crea HDR"
 
-#: ../src/libs/image.c:257
+#: ../src/libs/image.c:258
 msgctxt "accel"
 msgid "duplicate"
 msgstr "Duplica "
 
-#: ../src/libs/image.c:258
+#: ../src/libs/image.c:259
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "Ripristina rotazione "
 
 #. Grouping keys
-#: ../src/libs/image.c:260
+#: ../src/libs/image.c:261
 msgctxt "accel"
 msgid "group"
 msgstr "Raggruppa"
 
-#: ../src/libs/image.c:261
+#: ../src/libs/image.c:262
 msgctxt "accel"
 msgid "ungroup"
 msgstr "Separa"
@@ -6829,55 +6821,55 @@ msgstr "Scrivi metadata nelle immagini selezionate"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:423
-msgid "CC-by"
-msgstr "CC-BY"
+msgid "cc-by"
+msgstr "cc-by"
 
 #: ../src/libs/metadata.c:423
-msgid "Creative Commons Attribution (CC-BY)"
-msgstr "Creative Commons Attribuzione (CC-BY)"
+msgid "creative commons attribution (cc-by)"
+msgstr "Attribuzione Creative Commons (CC-BY)"
 
 #: ../src/libs/metadata.c:424
-msgid "CC-by-sa"
+msgid "cc-by-sa"
 msgstr "CC-BY-SA"
 
 #: ../src/libs/metadata.c:424
-msgid "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
-msgstr "Creative Commons Attribuzione - Condividi allo stesso modo (CC-BY-SA)"
+msgid "creative commons attribution-sharealike (cc-by-sa)"
+msgstr "Attribuzione Creative Commons - Condividi allo stesso modo (CC-BY-SA)"
 
 #: ../src/libs/metadata.c:425
-msgid "CC-by-nd"
+msgid "cc-by-nd"
 msgstr "CC-BY-ND"
 
 #: ../src/libs/metadata.c:425
-msgid "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
-msgstr "Creative Commons Attribuzione - Non opere derivate (CC-BY-ND)"
+msgid "creative commons attribution-noderivs (cc-by-nd)"
+msgstr "Attribuzione Creative Commons - No opere derivate (CC-BY-ND)"
 
 #: ../src/libs/metadata.c:426
-msgid "CC-by-nc"
+msgid "cc-by-nc"
 msgstr "CC-BY-NC"
 
 #: ../src/libs/metadata.c:426
-msgid "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
-msgstr "Creative Commons Attribuzione - Non commerciale (CC-BY-NC)"
+msgid "creative commons attribution-noncommercial (cc-by-nc)"
+msgstr "Attribuzione Creative Commons - Non commerciale (CC-BY-NC)"
 
 #: ../src/libs/metadata.c:427
-msgid "CC-by-nc-sa"
+msgid "cc-by-nc-sa"
 msgstr "CC-BY-NC-SA"
 
 #: ../src/libs/metadata.c:427
-msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
+msgid "creative commons attribution-noncommercial-sharealike (cc-by-nc-sa)"
 msgstr ""
-"Creative Commons Attribuzione - Non commerciale - Condividi allo stesso modo "
+"Attribuzione Creative Commons - Non commerciale - Condividi allo stesso modo "
 "(CC-BY-NC-SA)"
 
 #: ../src/libs/metadata.c:428
-msgid "CC-by-nc-nd"
+msgid "cc-by-nc-nd"
 msgstr "CC-BY-NC-ND"
 
 #: ../src/libs/metadata.c:428
-msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
+msgid "creative commons attribution-noncommercial-noderivs (cc-by-nc-nd)"
 msgstr ""
-"Creative Commons Attribuzione - Non commerciale - Non opere derivate (CC-BY-"
+"Attribuzione Creative Commons - Non commerciale - No opere derivate (CC-BY-"
 "NC-ND)"
 
 #: ../src/libs/metadata.c:429
@@ -6885,8 +6877,8 @@ msgid "all rights reserved"
 msgstr "Tutti i diritti riservati"
 
 #: ../src/libs/metadata.c:429
-msgid "All rights reserved."
-msgstr "Tutti i diritti riservati."
+msgid "all rights reserved."
+msgstr "Tutti i diritti riservati"
 
 #. internal
 #: ../src/libs/metadata_view.c:80
@@ -7650,10 +7642,6 @@ msgstr ""
 msgid "color scheme"
 msgstr "Combinazione colori"
 
-#: ../src/views/darkroom.c:1150
-msgid "black & white"
-msgstr "bianco & nero"
-
 #: ../src/views/darkroom.c:1151
 msgid "red & blue"
 msgstr "rosso & blu"
@@ -7807,7 +7795,7 @@ msgctxt "accel"
 msgid "redo"
 msgstr "Ripristina"
 
-#: ../src/develop/blend.c:1848 ../src/develop/blend.c:2065
+#: ../src/develop/blend.c:1848 ../src/develop/blend.c:2069
 msgid "could not allocate buffer for blending"
 msgstr "Impossibile allocare il buffer per la fusione"
 
@@ -7850,11 +7838,11 @@ msgstr "Tracciato #%d"
 msgid "gradient #%d"
 msgstr "Gradiente #%d"
 
-#: ../src/develop/masks/masks.c:916 ../src/libs/masks.c:844
+#: ../src/develop/masks/masks.c:937 ../src/libs/masks.c:844
 msgid "add existing shape"
 msgstr "Aggiungi forma esistente"
 
-#: ../src/develop/masks/masks.c:943
+#: ../src/develop/masks/masks.c:964
 msgid "use same shapes as"
 msgstr "Usa la stessa forma di"
 
@@ -7910,6 +7898,33 @@ msgstr "Forme create"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "Opzioni lua"
+
+#~ msgid "Friends"
+#~ msgstr "Amici"
+
+#~ msgid "Public"
+#~ msgstr "Pubblico"
+
+#~ msgid "Daylight"
+#~ msgstr "Luce diurna"
+
+#~ msgid "Black & white"
+#~ msgstr "Bianco & nero"
+
+#~ msgid "Manual WB"
+#~ msgstr "Manuale"
+
+#~ msgid "Camera WB"
+#~ msgstr "Fotocamera"
+
+#~ msgid "Auto WB"
+#~ msgstr "Automatico"
+
+#~ msgid "CC-by"
+#~ msgstr "CC-BY"
+
+#~ msgid "All rights reserved."
+#~ msgstr "Tutti i diritti riservati."
 
 #~ msgid "masks"
 #~ msgstr "maschere"
