@@ -128,7 +128,6 @@ typedef struct dt_ctl_settings_t
   char dbname[512];
 
   int32_t lib_image_mouse_over_id;
-  int32_t lib_only_one_image_seen_id;
 
   // synchronized navigation
   float dev_zoom_x, dev_zoom_y, dev_zoom_scale;

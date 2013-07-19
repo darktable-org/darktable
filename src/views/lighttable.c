@@ -380,7 +380,6 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
   dt_library_t *lib = (dt_library_t *)self->data;
 
   gboolean offset_changed = FALSE;
-  DT_CTL_SET_GLOBAL(lib_only_one_image_seen_id, -1);
 
   /* query new collection count */
   lib->collection_count = dt_collection_get_count (darktable.collection);
@@ -553,7 +552,6 @@ end_query_cache:
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery, FALSE);
-        if(iir == 1) DT_CTL_SET_GLOBAL(lib_only_one_image_seen_id, id);
 
         cairo_restore(cr);
       }
@@ -785,7 +783,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   lib->collection_count = dt_collection_get_count (darktable.collection);
 
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  DT_CTL_SET_GLOBAL(lib_only_one_image_seen_id, -1);
   zoom   = dt_conf_get_int("plugins/lighttable/images_in_row");
   zoom_x = lib->zoom_x;
   zoom_y = lib->zoom_y;
@@ -976,8 +973,6 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         cairo_save(cr);
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery, FALSE);
-        if(zoom == 1) DT_CTL_SET_GLOBAL(lib_only_one_image_seen_id, id);
-
         cairo_restore(cr);
       }
       else goto failure;
@@ -1095,7 +1090,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   if( lib->full_preview_id!=-1 )
   {
     expose_full_preview(self, cr, width, height, pointerx, pointery);
-    DT_CTL_SET_GLOBAL(lib_only_one_image_seen_id, lib->full_preview_id);
   }
   else // we do pass on expose to manager or zoomable
   {
