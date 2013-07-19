@@ -1112,7 +1112,7 @@ static gboolean
 expose_status_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                          guint keyval, GdkModifierType modifier, gpointer data)
 {
-  const bool status = dt_conf_get_bool("lighttable/ui/expose_statuses");
+  const gboolean status = dt_conf_get_bool("lighttable/ui/expose_statuses");
   dt_conf_set_bool("lighttable/ui/expose_statuses", status==TRUE?FALSE:TRUE);
   dt_control_queue_redraw_center();
   return TRUE;
