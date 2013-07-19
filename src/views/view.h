@@ -61,7 +61,7 @@ typedef struct dt_view_t
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
   const char *(*name)     (struct dt_view_t *self); // get translatable name
-  uint32_t (*view)        (struct dt_view_t *self); // get the view type
+  uint32_t (*view)        (const struct dt_view_t *self); // get the view type
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
   void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)
