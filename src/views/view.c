@@ -645,8 +645,7 @@ dt_view_get_image_to_act_on()
   //   in which case it affects the whole selection.
   // - if the mouse is outside the center view (or no image hovered over otherwise)
   //   it only affects the selection.
-  // - if zoom == 1 or full preview key pressed (z), current displayed image is the one.
-  int32_t mouse_over_id = -1, only_one_image_seen_id = -1;
+  int32_t mouse_over_id = -1;
   int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row 
             (darktable.view_manager->proxy.lighttable.view);
   
@@ -655,11 +654,10 @@ dt_view_get_image_to_act_on()
 
 
   DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  DT_CTL_GET_GLOBAL(only_one_image_seen_id, lib_only_one_image_seen_id);
 
-  if(zoom == 1 || full_preview_id > -1)
+  if(zoom == 1 || full_preview_id > 1)
   {
-    return only_one_image_seen_id;
+    return mouse_over_id;
   }
   else
   {
@@ -884,8 +882,16 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  int show_status;
+
+  if (v->view(v) == DT_VIEW_LIGHTTABLE)
+    show_status = dt_conf_get_bool("lighttable/ui/expose_statuses");
+  else
+    show_status = 0;
+
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview)
+  if(imgsel == imgid || full_preview || show_status)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {

@@ -133,7 +133,6 @@ void dt_ctl_settings_init(dt_control_t *s)
   // TODO: move the mouse_over_id of lighttable to something general in
   // control: gui-thread selected img or so?
   s->global_settings.lib_image_mouse_over_id = -1;
-  s->global_settings.lib_only_one_image_seen_id = -1;
 
   // TODO: move these to darkroom settings blob:
   s->global_settings.dev_closeup = 0;
