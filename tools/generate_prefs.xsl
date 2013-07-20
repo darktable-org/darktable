@@ -66,7 +66,7 @@
 	<!-- preferences tabs -->
 	<!-- gui -->
 
-	<xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("gui options")));&#xA;</xsl:text>
+	<xsl:text>&#xA;static void&#xA;init_tab_gui</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("GUI options")));&#xA;</xsl:text>
 
 	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='gui']">
 		<xsl:apply-templates select="." mode="tab_block"/>

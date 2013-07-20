@@ -69,8 +69,8 @@ int flags()
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tca R"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "tca B"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA R"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA B"));
 
   dt_accel_register_iop(self, FALSE, NC_("accel", "find camera"), 0, 0);
   dt_accel_register_iop(self, FALSE, NC_("accel", "find lens"), 0, 0);
@@ -1910,14 +1910,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   // override linear tca (if not 1.0):
   g->tca_r = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_r, 5);
-  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("transversal chromatic aberration red"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_r, _("tca red"));
+  g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("Transversal Chromatic Aberration red"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_r, _("TCA red"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
 
   g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
-  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("transversal chromatic aberration blue"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_b, _("tca blue"));
+  g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("Transversal Chromatic Aberration blue"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->tca_b, _("TCA blue"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
 

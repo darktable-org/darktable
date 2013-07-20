@@ -159,8 +159,8 @@ position ()
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "toggle live view"), GDK_v, 0);
-  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees ccw"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees cw"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CCW"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "rotate 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "flip horizontally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (big steps)"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "move focus point in (small steps)"), 0, 0);
@@ -173,8 +173,8 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_lib_live_view_t *lib = (dt_lib_live_view_t*)self->data;
 
   dt_accel_connect_button_lib(self, "toggle live view", GTK_WIDGET(lib->live_view));
-  dt_accel_connect_button_lib(self, "rotate 90 degrees ccw", GTK_WIDGET(lib->rotate_ccw));
-  dt_accel_connect_button_lib(self, "rotate 90 degrees cw", GTK_WIDGET(lib->rotate_cw));
+  dt_accel_connect_button_lib(self, "rotate 90 degrees CCW", GTK_WIDGET(lib->rotate_ccw));
+  dt_accel_connect_button_lib(self, "rotate 90 degrees CW", GTK_WIDGET(lib->rotate_cw));
   dt_accel_connect_button_lib(self, "flip horizontally", GTK_WIDGET(lib->flip));
   dt_accel_connect_button_lib(self, "move focus point in (big steps)", GTK_WIDGET(lib->focus_in_big));
   dt_accel_connect_button_lib(self, "move focus point in (small steps)", GTK_WIDGET(lib->focus_in_small));
@@ -390,10 +390,10 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, _("soft light"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("difference"));
   dt_bauhaus_combobox_add(lib->overlay_mode, _("exclusion"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl hue"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl saturation"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl color"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("hsl luminosity"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL hue"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL saturation"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL color"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL luminosity"));
 #endif
   g_object_set(G_OBJECT(lib->overlay_mode), "tooltip-text", _("mode of the overlay"), (char *)NULL);
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
