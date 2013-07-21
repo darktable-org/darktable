@@ -1833,6 +1833,34 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_radius_a</name>
+    <type>float</type>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_radius_b</name>
+    <type>float</type>
+    <default>0.01414</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_border</name>
+    <type>float</type>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_rotation</name>
+    <type>float</type>
+    <default>90.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/spots/path_border</name>
     <type>float</type>
     <default>0.05</default>
@@ -2017,6 +2045,34 @@
     <name>plugins/darkroom/masks/circle/border</name>
     <type>float</type>
     <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/radius_a</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/radius_b</name>
+    <type>float</type>
+    <default>0.03535</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/rotation</name>
+    <type>float</type>
+    <default>90.0</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

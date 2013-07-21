@@ -42,7 +42,7 @@ dt_iop_spots_params_t;
 typedef struct dt_iop_spots_gui_data_t
 {
   GtkLabel *label;
-  GtkWidget *bt_path, *bt_circle;
+  GtkWidget *bt_path, *bt_circle, *bt_ellipse;
 }
 dt_iop_spots_gui_data_t;
 
@@ -188,6 +188,27 @@ static void _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *s
   dt_iop_request_focus(self);
   //we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE|DT_MASKS_CLONE);
+  dt_masks_change_form_gui(spot);
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = self;
+  dt_control_queue_redraw_center();
+}
+static void _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
+{
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+  {
+    //we unset the creation mode
+    dt_masks_form_t *form = darktable.develop->form_visible;
+    if (form) dt_masks_free_form(form);
+    dt_masks_change_form_gui(NULL);
+    dt_masks_init_formgui(darktable.develop);
+    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    return;
+  }
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(self);
+  //we create the new form
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE|DT_MASKS_CLONE);
   dt_masks_change_form_gui(spot);
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = self;
@@ -390,6 +411,12 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           dx = pt->center[0]*roi_in->scale*piece->buf_in.width - form->source[0]*roi_in->scale*piece->buf_in.width;
           dy = pt->center[1]*roi_in->scale*piece->buf_in.height - form->source[1]*roi_in->scale*piece->buf_in.height;
         }
+        else if (form->type & DT_MASKS_ELLIPSE)
+        {
+          dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)g_list_nth_data(form->points,0);
+          dx = pt->center[0]*roi_in->scale*piece->buf_in.width - form->source[0]*roi_in->scale*piece->buf_in.width;
+          dy = pt->center[1]*roi_in->scale*piece->buf_in.height - form->source[1]*roi_in->scale*piece->buf_in.height;
+        }
         if (dx!=0 || dy!=0)
         {
           //now we do the pixel clone
@@ -504,14 +531,16 @@ void gui_update (dt_iop_module_t *self)
   snprintf(str,3,"%d",nb);
   gtk_label_set_text(g->label, str);
   //update buttons status
-  int b1=0,b2=0;
+  int b1=0,b2=0,b3=0;
   if (self->dev->form_gui && self->dev->form_visible && self->dev->form_gui->creation && self->dev->form_gui->creation_module == self)
   {
     if (self->dev->form_visible->type & DT_MASKS_CIRCLE) b1=1;
     else if (self->dev->form_visible->type & DT_MASKS_PATH) b2=1;
+    else if (self->dev->form_visible->type & DT_MASKS_ELLIPSE) b3=1;
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), b1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), b2);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), b3);
 }
 
 void gui_init (dt_iop_module_t *self)
@@ -533,6 +562,13 @@ void gui_init (dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_path),bs,bs);
   gtk_box_pack_end (GTK_BOX (hbox),g->bt_path,FALSE,FALSE,0);
+
+  g->bt_ellipse = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+  g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(_add_ellipse), self);
+  g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
+  gtk_widget_set_size_request(GTK_WIDGET(g->bt_ellipse),bs,bs);
+  gtk_box_pack_end (GTK_BOX (hbox),g->bt_ellipse,FALSE,FALSE,0);
 
   g->bt_circle = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(_add_circle), self);

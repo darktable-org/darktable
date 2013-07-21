@@ -27,6 +27,7 @@
 #include "develop/masks/circle.c"
 #include "develop/masks/path.c"
 #include "develop/masks/gradient.c"
+#include "develop/masks/ellipse.c"
 #include "develop/masks/group.c"
 
 
@@ -136,6 +137,7 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
   if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,128,_("circle #%d"),nb);
   else if (form->type & DT_MASKS_PATH) snprintf(form->name,128,_("path #%d"),nb);
   else if (form->type & DT_MASKS_GRADIENT) snprintf(form->name,128,_("gradient #%d"),nb);
+  else if (form->type & DT_MASKS_ELLIPSE) snprintf(form->name,128,_("ellipse #%d"),nb);
 
   dt_masks_write_form(form,darktable.develop);
 
@@ -199,6 +201,20 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
       else return 1;
     }
   }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *) (g_list_first(form->points)->data);
+    float x,y,a,b;
+    if (source) x=form->source[0], y=form->source[1];
+    else x=ellipse->center[0], y=ellipse->center[1];
+    a = ellipse->radius[0], b = ellipse->radius[1];
+    if (dt_ellipse_get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
+    {
+      if (border) return dt_ellipse_get_points(dev, x, y, a + ellipse->border, b + ellipse->border, ellipse->rotation, border, border_count);
+      else return 1;
+    }
+  }
+
   return 0;
 }
 
@@ -216,6 +232,11 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   {
     return dt_gradient_get_area(module,piece,form,width,height,posx,posy);
   }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    return dt_ellipse_get_area(module,piece,form,width,height,posx,posy);
+  }
+
   return 0;
 }
 
@@ -228,6 +249,10 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   else if (form->type & DT_MASKS_PATH)
   {
     return dt_path_get_source_area(module,piece,form,width,height,posx,posy);
+  }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    return dt_ellipse_get_source_area(module,piece,form,width,height,posx,posy);
   }
   return 0;
 }
@@ -250,6 +275,10 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   {
     return dt_gradient_get_mask(module,piece,form,buffer,width,height,posx,posy);
   }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    return dt_ellipse_get_mask(module,piece,form,buffer,width,height,posx,posy);
+  }
   return 0;
 }
 
@@ -270,6 +299,10 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   else if (form->type & DT_MASKS_GRADIENT)
   {
     return dt_gradient_get_mask_roi(module,piece,form,roi,buffer);
+  }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    return dt_ellipse_get_mask_roi(module,piece,form,roi,buffer);
   }
   return 0;
 }
@@ -370,7 +403,12 @@ void dt_masks_read_forms(dt_develop_t *dev)
       memcpy(gradient, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_gradient_t));
       form->points = g_list_append(form->points,gradient);
     }
-
+    else if (form->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));
+      memcpy(ellipse, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_ellipse_t));
+      form->points = g_list_append(form->points,ellipse);
+    }
 
     //and we can add the form to the list
     dev->forms = g_list_append(dev->forms,form);
@@ -442,10 +480,18 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
     sqlite3_finalize (stmt);
     free(ptbuf);
   }
-  if (form->type & DT_MASKS_GRADIENT)
+  else if (form->type & DT_MASKS_GRADIENT)
   {
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *) (g_list_first(form->points)->data);
     DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+  }
+  else if (form->type & DT_MASKS_ELLIPSE)
+  {
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *) (g_list_first(form->points)->data);
+    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ellipse, sizeof(dt_masks_point_ellipse_t), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
@@ -519,10 +565,18 @@ void dt_masks_write_forms(dt_develop_t *dev)
       sqlite3_finalize (stmt);
       free(ptbuf);
     }
-    if (form->type & DT_MASKS_GRADIENT)
+    else if (form->type & DT_MASKS_GRADIENT)
     {
       dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *) (g_list_first(form->points)->data);
       DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, gradient, sizeof(dt_masks_point_gradient_t), SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
+      sqlite3_step (stmt);
+      sqlite3_finalize (stmt);
+    }
+    else if (form->type & DT_MASKS_ELLIPSE)
+    {
+      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *) (g_list_first(form->points)->data);
+      DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ellipse, sizeof(dt_masks_point_ellipse_t), SQLITE_TRANSIENT);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, 1);
       sqlite3_step (stmt);
       sqlite3_finalize (stmt);
@@ -555,6 +609,7 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   else if (form->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
   else if (form->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
 
   if (gui) _set_hinter_message(gui);
 
@@ -573,6 +628,7 @@ int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, d
   else if (form->type & DT_MASKS_PATH) return dt_path_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_released(module,pzx,pzy,which,state,form,gui);
   else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_released(module,pzx,pzy,which,state,form,0,gui,0);
 
   return 0;
 }
@@ -590,6 +646,7 @@ int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, do
   else if (form->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_pressed(module,pzx,pzy,which,type,state,form,gui);
   else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
 
   return 0;
 }
@@ -607,6 +664,7 @@ int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, do
   else if (form->type & DT_MASKS_PATH) return dt_path_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
   else if (form->type & DT_MASKS_GROUP) return dt_group_events_mouse_scrolled(module,pzx,pzy,up,state,form,gui);
   else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_mouse_scrolled(module,pzx,pzy,up,state,form,0,gui,0);
 
   return 0;
 }
@@ -618,7 +676,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   if (!gui) return;
   if (!form) return;
   //if it's a spot in creation, nothing to draw
-  if(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_GRADIENT)) && gui->creation) return;
+  if(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE) || (form->type & DT_MASKS_GRADIENT)) && gui->creation) return;
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
   if (wd < 1.0 || ht < 1.0) return;
@@ -651,6 +709,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   else if (form->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,0,g_list_length(form->points));
   else if (form->type & DT_MASKS_GROUP) dt_group_events_post_expose(cr,zoom_scale,form,gui);
   else if (form->type & DT_MASKS_GRADIENT) dt_gradient_events_post_expose(cr,zoom_scale,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) dt_ellipse_events_post_expose(cr,zoom_scale,gui,0);
   cairo_restore(cr);
 }
 
@@ -794,6 +853,18 @@ static void _menu_add_gradient(struct dt_iop_module_t *module)
   dt_iop_request_focus(module);
   //we create the new form
   dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
+  dt_masks_change_form_gui(spot);
+
+  darktable.develop->form_gui->creation = TRUE;
+  darktable.develop->form_gui->creation_module = module;
+  dt_control_queue_redraw_center();
+}
+static void _menu_add_ellipse(struct dt_iop_module_t *module)
+{
+  //we want to be sure that the iop has focus
+  dt_iop_request_focus(module);
+  //we create the new form
+  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE);
   dt_masks_change_form_gui(spot);
 
   darktable.develop->form_gui->creation = TRUE;
@@ -1009,6 +1080,11 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
     {
       //add a gradient shape
       _menu_add_gradient(module);
+    }
+    else if (val == -2000032)
+    {
+      //add a gradient shape
+      _menu_add_ellipse(module);
     }
     else if (val < 0)
     {
@@ -1288,6 +1364,11 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
     {
       pos += sizeof(dt_masks_point_gradient_t);
     }
+    else if (form->type & DT_MASKS_ELLIPSE)
+    {
+      pos += sizeof(dt_masks_point_ellipse_t);
+    }
+
     forms = g_list_next(forms);
   }
   return pos;
@@ -1339,6 +1420,11 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
     {
       memcpy(str+pos, forms->data, sizeof(dt_masks_point_gradient_t));
       pos += sizeof(dt_masks_point_gradient_t);
+    }
+    else if (form->type & DT_MASKS_ELLIPSE)
+    {
+      memcpy(str+pos, forms->data, sizeof(dt_masks_point_ellipse_t));
+      pos += sizeof(dt_masks_point_ellipse_t);
     }
     forms = g_list_next(forms);
   }
