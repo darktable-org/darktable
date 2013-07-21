@@ -34,6 +34,7 @@ static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_mouse_scrolled(module,pzx,pzy,up,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -64,6 +65,7 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module,float p
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_pressed(module,pzx,pzy,which,type,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -80,6 +82,7 @@ static int dt_group_events_button_released(struct dt_iop_module_t *module,float 
     if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) return dt_path_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_released(module,pzx,pzy,which,state,sel,fpt->parentid,gui,gui->group_edited);
   }
   return 0;
 }
@@ -113,6 +116,7 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     if (sel->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
     else if (sel->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
+    else if (sel->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,gui->group_edited);
     if (rep) return 1;
     //if a point is in state editing, then we don't want that another form can be selected
     if (gui->point_edited >= 0) return 0;
@@ -140,12 +144,14 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
     if (sel->type & DT_MASKS_CIRCLE) dt_circle_get_distance(xx,yy,as,gui,pos,&inside, &inside_border, &near, &inside_source);
     else if (sel->type & DT_MASKS_PATH) dt_path_get_distance(xx,yy,as,gui,pos,g_list_length(sel->points),&inside, &inside_border, &near, &inside_source);
     else if (sel->type & DT_MASKS_GRADIENT) dt_gradient_get_distance(xx,yy,as,gui,pos,&inside, &inside_border, &near, &inside_source);
+    else if (sel->type & DT_MASKS_ELLIPSE) dt_ellipse_get_distance(xx,yy,as,gui,pos,&inside, &inside_border, &near, &inside_source);
     if (inside || inside_border || near>=0 || inside_source)
     {
       gui->group_edited = gui->group_selected = pos;
       if (sel->type & DT_MASKS_CIRCLE) return dt_circle_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
       else if (sel->type & DT_MASKS_PATH) return dt_path_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
       else if (sel->type & DT_MASKS_GRADIENT) return dt_gradient_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
+      else if (sel->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_mouse_moved(module,pzx,pzy,which,sel,fpt->parentid,gui,pos);
     }
     fpts = g_list_next(fpts);
     pos++;
@@ -165,6 +171,7 @@ static void dt_group_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_fo
     if (sel->type & DT_MASKS_CIRCLE) dt_circle_events_post_expose(cr,zoom_scale,gui,pos);
     else if (sel->type & DT_MASKS_PATH) dt_path_events_post_expose(cr,zoom_scale,gui,pos,g_list_length(sel->points));
     else if (sel->type & DT_MASKS_GRADIENT) dt_gradient_events_post_expose(cr,zoom_scale,gui,pos);
+    else if (sel->type & DT_MASKS_ELLIPSE) dt_ellipse_events_post_expose(cr,zoom_scale,gui,pos);
     fpts = g_list_next(fpts);
     pos++;
   }

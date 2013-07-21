@@ -10,7 +10,7 @@ set(MODULES tonecurve gamma temperature colorcorrection exposure
   colortransfer colormapping colorize invert shadhi
   cacorrect overexposed bloom soften clahe equalizer highpass
   hotpixels lowlight spots rawdenoise borders nlmeans levels
-  flip globaltonemap bilat denoiseprofile dither)
+  flip globaltonemap bilat denoiseprofile dither colorbalance)
 
 add_library(soften MODULE "soften.c")
 add_library(bloom MODULE "bloom.c")
@@ -25,6 +25,7 @@ add_library(colorcorrection MODULE "colorcorrection.c")
 # add_library(shrecovery MODULE "shrecovery.c")
 add_library(exposure MODULE "exposure.c")
 add_library(equalizer MODULE "equalizer.c")
+add_library(colorbalance MODULE "colorbalance.c")
 add_library(colorin MODULE "colorin.c")
 add_library(colorout MODULE "colorout.c")
 add_library(clipping MODULE "clipping.c")

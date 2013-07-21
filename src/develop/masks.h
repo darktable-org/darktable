@@ -36,7 +36,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_PATH = 2,
   DT_MASKS_GROUP = 4,
   DT_MASKS_CLONE = 8,
-  DT_MASKS_GRADIENT = 16
+  DT_MASKS_GRADIENT = 16,
+  DT_MASKS_ELLIPSE = 32
 }
 dt_masks_type_t;
 
@@ -72,6 +73,16 @@ typedef struct dt_masks_point_circle_t
   float border;
 }
 dt_masks_point_circle_t;
+
+/** structure used to store 1 point for an ellipse */
+typedef struct dt_masks_point_ellipse_t
+{
+  float center[2];
+  float radius[2];
+  float rotation;
+  float border;
+}
+dt_masks_point_ellipse_t;
 
 /** structure used to store 1 point for a path form */
 typedef struct dt_masks_point_path_t
