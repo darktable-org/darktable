@@ -40,7 +40,9 @@
 #define DT_BAUHAUS_WIDGET_CLASS(obj)       (G_TYPE_CHECK_CLASS_CAST ((obj), DT_BAUHAUS_WIDGET, DtBauhausWidgetClass))
 #define DT_IS_BAUHAUS_WIDGET(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DT_BAUHAUS_WIDGET_TYPE))
 #define DT_IS_BAUHAUS_WIDGET_CLASS(obj)    (G_TYPE_CHECK_CLASS_TYPE ((obj), DT_BAUHAUS_WIDGET_TYPE))
-#define DT_BAUHAUS_WIDGET_GET_CLASS        (G_TYPE_INSTANCE_GET_CLASS ((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauausWidgetClass))
+#define DT_BAUHAUS_WIDGET_GET_CLASS        (G_TYPE_INSTANCE_GET_CLASS ((obj), DT_BAUHAUS_WIDGET_TYPE, DtBauhausWidgetClass))
+
+extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX     500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN     25
@@ -58,6 +60,7 @@ typedef struct dt_bauhaus_slider_data_t
 {
   float pos;      // normalized slider value
   float oldpos;   // slider value before entering finetune mode (normalized)
+  float step;     // step width (not normalized)
   float defpos;   // default value (normalized)
   float min, max; // min and max range
   float scale;    // step width for loupe mode
@@ -212,6 +215,9 @@ void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, i
 // make this quad a toggle button:
 void dt_bauhaus_widget_set_quad_toggle(GtkWidget *w, int toggle);
 
+void dt_bauhaus_hide_popup();
+void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
+
 // slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
 GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits);
@@ -219,6 +225,8 @@ GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, fl
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
+float dt_bauhaus_slider_get_step(GtkWidget *widget);
+void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);

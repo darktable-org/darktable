@@ -23,9 +23,10 @@
 #include "common/debug.h"
 #include "develop/blend.h"
 
+#include "bauhaus/bauhaus.h"
+
 #include <gtk/gtk.h>
 #include <assert.h>
-
 
 void dt_accel_path_global(char *s, size_t n, const char* path)
 {
@@ -363,7 +364,6 @@ void dt_accel_connect_button_lib(dt_lib_module_t *module, const gchar *path,
   dt_accel_connect_lib(module, path, closure);
 }
 
-
 static gboolean slider_edit_callback(GtkAccelGroup *accel_group,
                                      GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
@@ -379,9 +379,10 @@ static gboolean slider_edit_callback(GtkAccelGroup *accel_group,
   gtk_widget_queue_draw (GTK_WIDGET(slider));
   return TRUE;
 }
+
 static gboolean slider_increase_callback(GtkAccelGroup *accel_group,
-    GObject *acceleratable, guint keyval,
-    GdkModifierType modifier, gpointer data)
+                                         GObject *acceleratable, guint keyval,
+                                         GdkModifierType modifier, gpointer data)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(data);
   float value = gtk_adjustment_get_value(slider->adjustment);
@@ -393,9 +394,10 @@ static gboolean slider_increase_callback(GtkAccelGroup *accel_group,
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
 }
+
 static gboolean slider_decrease_callback(GtkAccelGroup *accel_group,
-    GObject *acceleratable, guint keyval,
-    GdkModifierType modifier, gpointer data)
+                                         GObject *acceleratable, guint keyval,
+                                         GdkModifierType modifier, gpointer data)
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(data);
   float value = gtk_adjustment_get_value(slider->adjustment);
@@ -418,13 +420,63 @@ static gboolean slider_reset_callback(GtkAccelGroup *accel_group,
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
 }
+
+static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group,
+                                             GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  GtkWidget *slider = GTK_WIDGET(data);
+
+  dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(slider));
+
+  return TRUE;
+}
+
+static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group,
+                                                 GObject *acceleratable, guint keyval,
+                                                 GdkModifierType modifier, gpointer data)
+{
+  GtkWidget *slider = GTK_WIDGET(data);
+
+  float value = dt_bauhaus_slider_get(slider);
+  float step  = dt_bauhaus_slider_get_step(slider);
+
+  dt_bauhaus_slider_set(slider, value + step);
+
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
+}
+
+static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group,
+                                                 GObject *acceleratable, guint keyval,
+                                                 GdkModifierType modifier, gpointer data)
+{
+  GtkWidget *slider = GTK_WIDGET(data);
+
+  float value = dt_bauhaus_slider_get(slider);
+  float step  = dt_bauhaus_slider_get_step(slider);
+
+  dt_bauhaus_slider_set(slider, value - step);
+
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
+}
+
+static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group,
+                                              GObject *acceleratable, guint keyval,
+                                              GdkModifierType modifier, gpointer data)
+{
+  GtkWidget *slider = GTK_WIDGET(data);
+
+  dt_bauhaus_slider_reset(slider);
+
+  g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
+  return TRUE;
+}
+
 void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
                                  GtkWidget *slider)
 {
-  // just make this callback safe for bauhaus sliders for now:
-  // TODO: implement it for these widgets, too!
-  // (we check for their inheritance from gtk drawing area, that's simpler)
-  if(GTK_IS_DRAWING_AREA(slider)) return;
   gchar increase_path[256];
   gchar decrease_path[256];
   gchar reset_path[256];
@@ -434,8 +486,15 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
   char *paths[] = {increase_path, decrease_path, reset_path, edit_path};
   dt_accel_paths_slider_iop(paths, 256, module->op, path);
 
-  closure =  g_cclosure_new(G_CALLBACK(slider_increase_callback),
-                            (gpointer)slider, NULL);
+  if (DT_IS_BAUHAUS_WIDGET(slider)) {
+    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_increase_callback),
+                             (gpointer)slider, NULL);
+
+  } else {
+    closure = g_cclosure_new(G_CALLBACK(slider_increase_callback),
+                             (gpointer)slider, NULL);
+  }
+
   accel = _lookup_accel(increase_path);
 
   if (accel)
@@ -452,8 +511,14 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
-  closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
-                           (gpointer)slider, NULL);
+  if (DT_IS_BAUHAUS_WIDGET(slider)) {
+    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_decrease_callback),
+                             (gpointer)slider, NULL);
+  } else {
+    closure = g_cclosure_new(G_CALLBACK(slider_decrease_callback),
+                             (gpointer)slider, NULL);
+  }
+
   accel = _lookup_accel(decrease_path);
 
   if (accel)
@@ -470,8 +535,14 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
-  closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
-                           (gpointer)slider, NULL);
+  if (DT_IS_BAUHAUS_WIDGET(slider)) {
+    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_reset_callback),
+                             (gpointer)slider, NULL);
+  } else {
+    closure = g_cclosure_new(G_CALLBACK(slider_reset_callback),
+                             (gpointer)slider, NULL);
+  }
+
   accel = _lookup_accel(reset_path);
 
   if (accel)
@@ -488,8 +559,14 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path,
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
 
-  closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
+  if (DT_IS_BAUHAUS_WIDGET(slider)) {
+    closure = g_cclosure_new(G_CALLBACK(bauhaus_slider_edit_callback),
                            (gpointer)slider, NULL);
+  } else {
+    closure = g_cclosure_new(G_CALLBACK(slider_edit_callback),
+                             (gpointer)slider, NULL);
+  }
+
   accel = _lookup_accel(edit_path);
 
   if (accel)
