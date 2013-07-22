@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-18 19:31+0200\n"
+"POT-Creation-Date: 2013-07-20 12:04+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -805,7 +805,7 @@ msgstr "Fallita l'analisi del file gpx"
 msgid "applied matched gpx location onto %d image(s)"
 msgstr "Applicazione della corrispondente posizione gpx su %d immagine/i"
 
-#: ../src/control/jobs/control_jobs.c:699
+#: ../src/control/jobs/control_jobs.c:709
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -814,11 +814,11 @@ msgstr[0] "Sicuro di voler eliminare %d immagine selezionata dalla raccolta?"
 msgstr[1] ""
 "Sicuro di voler eliminare le %d immagini selezionate dalla raccolta?"
 
-#: ../src/control/jobs/control_jobs.c:702
+#: ../src/control/jobs/control_jobs.c:712
 msgid "remove images?"
 msgstr "Rimuovere le immagini?"
 
-#: ../src/control/jobs/control_jobs.c:728
+#: ../src/control/jobs/control_jobs.c:738
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -829,25 +829,25 @@ msgstr[1] ""
 "Sei sicuro di voler eliminare FISICAMENTE le %d immagini selezionate dal "
 "disco?"
 
-#: ../src/control/jobs/control_jobs.c:731
+#: ../src/control/jobs/control_jobs.c:741
 msgid "delete images?"
 msgstr "Cancellare le immagini?"
 
-#: ../src/control/jobs/control_jobs.c:764
+#: ../src/control/jobs/control_jobs.c:774
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "Impossibile creare il rullino nella cartella di destinazione, spostamento "
 "annullato..."
 
-#: ../src/control/jobs/control_jobs.c:796
-#: ../src/control/jobs/control_jobs.c:853 ../src/imageio/storage/disk.c:68
+#: ../src/control/jobs/control_jobs.c:806
+#: ../src/control/jobs/control_jobs.c:863 ../src/imageio/storage/disk.c:68
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/gallery.c:79
 #: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
 #: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "Seleziona cartella"
 
-#: ../src/control/jobs/control_jobs.c:819
+#: ../src/control/jobs/control_jobs.c:829
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -862,80 +862,80 @@ msgstr[1] ""
 "Sicuro di voler spostare fisicamente %d immagini selezionate in %s\n"
 "(tutti i duplicati non selezionati saranno spostati insieme)"
 
-#: ../src/control/jobs/control_jobs.c:823
+#: ../src/control/jobs/control_jobs.c:833
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "Spostare l'immagine?"
 msgstr[1] "Spostare le immagini?"
 
-#: ../src/control/jobs/control_jobs.c:876
+#: ../src/control/jobs/control_jobs.c:886
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "Sicuro di voler copiare %d immagine selezionata in %s?"
 msgstr[1] "Sicuro di voler copiare  %d immagini selezionate in %s?"
 
-#: ../src/control/jobs/control_jobs.c:879
+#: ../src/control/jobs/control_jobs.c:889
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "Copio immagine?"
 msgstr[1] "Copio immagini?"
 
-#: ../src/control/jobs/control_jobs.c:944
+#: ../src/control/jobs/control_jobs.c:954
 #, c-format
 msgid "moving %d image"
 msgstr "Spostamento %d immagine"
 
-#: ../src/control/jobs/control_jobs.c:944
+#: ../src/control/jobs/control_jobs.c:954
 #, c-format
 msgid "moving %d images"
 msgstr "Spostamento %d immagini"
 
-#: ../src/control/jobs/control_jobs.c:950
+#: ../src/control/jobs/control_jobs.c:960
 #, c-format
 msgid "copying %d image"
 msgstr "Copia in corso %d immagine"
 
-#: ../src/control/jobs/control_jobs.c:950
+#: ../src/control/jobs/control_jobs.c:960
 #, c-format
 msgid "copying %d images"
 msgstr "Copia in corso %d immagini"
 
-#: ../src/control/jobs/control_jobs.c:998
+#: ../src/control/jobs/control_jobs.c:1008
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Impossibile ottenere i parametri dal modulo di salvataggio `%s', "
 "annullamento esportazione.."
 
-#: ../src/control/jobs/control_jobs.c:1002
+#: ../src/control/jobs/control_jobs.c:1012
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Esporto %d immagine.."
 msgstr[1] "Esporto %d immagini.."
 
-#: ../src/control/jobs/control_jobs.c:1004
+#: ../src/control/jobs/control_jobs.c:1014
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "Esporto %d immagine in %s"
 msgstr[1] "Esporto %d immagini in %s"
 
-#: ../src/control/jobs/control_jobs.c:1068
-#: ../src/control/jobs/control_jobs.c:1069 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1078
+#: ../src/control/jobs/control_jobs.c:1079 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "Immagine `%s' al momento non disponibile"
 
-#: ../src/control/jobs/control_jobs.c:1147
+#: ../src/control/jobs/control_jobs.c:1157
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "Aggiungo compensazione oraria ad %d immagine"
 msgstr[1] "Aggiungo compensazione oraria alle %d immagini"
 
-#: ../src/control/jobs/control_jobs.c:1167
+#: ../src/control/jobs/control_jobs.c:1177
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "Aggiunta compensazione oraria a %d immagine/i"
@@ -4158,14 +4158,14 @@ msgstr "Operatore della mappatura tonale globale"
 
 #: ../src/iop/globaltonemap.c:633
 msgid "bias"
-msgstr "Diagonale"
+msgstr "Imprecisione"
 
 #: ../src/iop/globaltonemap.c:634
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"La diagonale per la mappatura tonale controlla la linearità, più è elevata "
+"L'imprecisione per la mappatura tonale controlla la linearità, più è elevata "
 "più dettagli ci sono nei neri"
 
 #: ../src/iop/globaltonemap.c:642
@@ -5297,7 +5297,7 @@ msgstr "Vibranza"
 #: ../src/iop/velvia.c:102
 msgctxt "accel"
 msgid "mid-tones bias"
-msgstr "Diagonale toni medi "
+msgstr "Imprecisione toni medi "
 
 #: ../src/iop/velvia.c:347
 msgid "the strength of saturation boost"
@@ -5305,7 +5305,7 @@ msgstr "Intensità dell'incremento della saturazione"
 
 #: ../src/iop/velvia.c:353
 msgid "mid-tones bias"
-msgstr "Diagonale toni medi "
+msgstr "Imprecisione toni medi "
 
 #: ../src/iop/velvia.c:357
 msgid "how much to spare highlights and shadows"
@@ -7357,37 +7357,37 @@ msgstr "provino"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1608
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1620
 msgctxt "accel"
 msgid "rate 0"
 msgstr "valuta 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1609
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1621
 msgctxt "accel"
 msgid "rate 1"
 msgstr "Valuta 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1610
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1622
 msgctxt "accel"
 msgid "rate 2"
 msgstr "Valuta 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1611
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1623
 msgctxt "accel"
 msgid "rate 3"
 msgstr "Valuta 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1612
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1624
 msgctxt "accel"
 msgid "rate 4"
 msgstr "Valuta 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1613
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1625
 msgctxt "accel"
 msgid "rate 5"
 msgstr "Valuta 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1614
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1626
 msgctxt "accel"
 msgid "rate reject"
 msgstr "Valuta rifiutato"
@@ -7425,27 +7425,27 @@ msgstr "Duplica immagine"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1627
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1641
 msgctxt "accel"
 msgid "color red"
 msgstr "Rosso"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1628
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1642
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Giallo"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1629
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1643
 msgctxt "accel"
 msgid "color green"
 msgstr "Verde"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1630
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1644
 msgctxt "accel"
 msgid "color blue"
 msgstr "Blu"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1631
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1645
 msgctxt "accel"
 msgid "color purple"
 msgstr "Viola"
@@ -7703,80 +7703,85 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "Sovraesposizione"
 
-#: ../src/views/lighttable.c:433
+#: ../src/views/lighttable.c:434
 msgid "there are no images in this collection"
 msgstr "Non ci sono immagini in questa raccolta"
 
-#: ../src/views/lighttable.c:435
+#: ../src/views/lighttable.c:436
 msgid "if you have not imported any images yet"
 msgstr "Se non hai ancora importato nessuna immagine"
 
-#: ../src/views/lighttable.c:437
+#: ../src/views/lighttable.c:438
 msgid "you can do so in the import module"
 msgstr "puoi farlo nel modulo di importazione"
 
-#: ../src/views/lighttable.c:444
+#: ../src/views/lighttable.c:445
 msgid "try to relax the filter settings in the top panel"
 msgstr "Prova a disattivare  le impostazioni del filtro dal pannello di sopra"
 
-#: ../src/views/lighttable.c:451
+#: ../src/views/lighttable.c:452
 msgid "or add images in the collection module in the left panel"
 msgstr "o aggiungi immagini alla raccolta nel pannello di sinistra"
 
+#: ../src/views/lighttable.c:1628
+msgctxt "accel"
+msgid "expose statuses"
+msgstr "Mostra stato"
+
 #. Navigation keys
-#: ../src/views/lighttable.c:1617
+#: ../src/views/lighttable.c:1631
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Navigazione sù"
 
-#: ../src/views/lighttable.c:1619
+#: ../src/views/lighttable.c:1633
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Navigazione giù"
 
-#: ../src/views/lighttable.c:1621
+#: ../src/views/lighttable.c:1635
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Pagina su"
 
-#: ../src/views/lighttable.c:1623
+#: ../src/views/lighttable.c:1637
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "Pagina giù"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1634
+#: ../src/views/lighttable.c:1648
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Scorri in su"
 
-#: ../src/views/lighttable.c:1636
+#: ../src/views/lighttable.c:1650
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Scorri in giù"
 
-#: ../src/views/lighttable.c:1638
+#: ../src/views/lighttable.c:1652
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Scorri verso sinitra"
 
-#: ../src/views/lighttable.c:1640
+#: ../src/views/lighttable.c:1654
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Scorri verso destra"
 
-#: ../src/views/lighttable.c:1642
+#: ../src/views/lighttable.c:1656
 msgctxt "accel"
 msgid "scroll center"
 msgstr "Scorri verso il centro"
 
-#: ../src/views/lighttable.c:1644
+#: ../src/views/lighttable.c:1658
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Riallinea le immagini alla griglia"
 
 #. Preview key
-#: ../src/views/lighttable.c:1648
+#: ../src/views/lighttable.c:1662
 msgctxt "accel"
 msgid "preview"
 msgstr "Anteprima"
