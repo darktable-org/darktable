@@ -220,6 +220,8 @@ int main(int argc, char *arg[])
         input[3*k+c] = (1.0f-f)*inv_hist[3*bin+c] + f*inv_hist[3*(bin+1)+c];
       }
     }
+
+    free(inv_hist);
   }
 
   float std[N][3] = {{0.0f}};
