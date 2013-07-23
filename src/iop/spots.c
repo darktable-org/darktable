@@ -491,12 +491,12 @@ void gui_focus (struct dt_iop_module_t *self, gboolean in)
     if(in)
     {
       // got focus, show all shapes
-      dt_masks_set_edit_mode(self,TRUE);
+      dt_masks_set_edit_mode(self,DT_MASKS_EDIT_FULL);
     }
     else
     {
       // lost focus, hide all shapes
-      dt_masks_set_edit_mode(self,FALSE);
+      dt_masks_set_edit_mode(self,DT_MASKS_EDIT_OFF);
     }
   }
 }
