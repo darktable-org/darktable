@@ -347,7 +347,7 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   }
   else if(data->masks_inited)
   {
-    dt_masks_set_edit_mode(data->module, 0);
+    dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
   else
@@ -1161,7 +1161,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
     dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
     bd->masks_shown = DT_MASKS_EDIT_OFF;
     //reset the gui
-    dt_masks_set_edit_mode(module, FALSE);
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
   }
   dt_bauhaus_combobox_set(bd->masks_combo, 0);
 
@@ -1375,7 +1375,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
   else if(bd->masks_inited)
   {
-    dt_masks_set_edit_mode(module, 0);
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
 
     gtk_widget_hide(GTK_WIDGET(bd->masks_box));
   }

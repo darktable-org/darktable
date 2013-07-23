@@ -771,7 +771,7 @@ void dt_masks_reset_show_masks_icons(void)
 }
 
 
-void dt_masks_set_edit_mode(struct dt_iop_module_t *module, int value)
+void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value)
 {
   if (!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
@@ -818,7 +818,7 @@ static void _menu_no_masks(struct dt_iop_module_t *module)
   module->blend_params->mask_id = 0;
 
   //and we update the iop
-  dt_masks_set_edit_mode(module,FALSE);
+  dt_masks_set_edit_mode(module,DT_MASKS_EDIT_OFF);
   dt_masks_iop_update(module);
 
   dt_dev_add_history_item(darktable.develop, module, TRUE);
@@ -902,7 +902,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
   dt_masks_iop_update(module);
   dt_dev_masks_list_change(darktable.develop);
-  dt_masks_set_edit_mode(module,TRUE);
+  dt_masks_set_edit_mode(module,DT_MASKS_EDIT_FULL);
 }
 void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
 {
@@ -1098,7 +1098,7 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
         dt_dev_add_history_item(darktable.develop, module, TRUE);
         dt_masks_iop_update(module);
         dt_dev_masks_list_change(darktable.develop);
-        dt_masks_set_edit_mode(module,TRUE);
+        dt_masks_set_edit_mode(module,DT_MASKS_EDIT_FULL);
       }
     }
     else if (val > 0)
