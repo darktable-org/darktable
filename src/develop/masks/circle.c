@@ -467,7 +467,7 @@ static void dt_circle_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_f
   //draw the source if any
   if (gpt->source_count>6)
   {
-    const float radius = fabs(gpt->points[3] - gpt->points[1]);
+    const float radius = fabs(gpt->points[2] - gpt->points[0]);
 
 
     
