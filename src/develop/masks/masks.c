@@ -731,7 +731,15 @@ void dt_masks_init_formgui(dt_develop_t *dev)
 
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
-  dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
+
+  dt_iop_module_t *module = dev->gui_module;
+  if (module && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(module->flags() & IOP_FLAGS_NO_MASKS) && module->blend_data)
+  {
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+    dev->form_gui->edit_mode = bd->masks_shown;
+  }
+  else
+    dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
