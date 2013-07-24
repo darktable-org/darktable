@@ -219,13 +219,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/camera/import/delete_originals</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if originals on camera should be deleted</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/capture/camera/import/jobcode</name>
     <type>string</type>
     <default>noname</default>

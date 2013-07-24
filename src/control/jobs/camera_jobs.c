@@ -427,7 +427,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
 
     //  start download of images
     dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_import(darktable.camctl,t->camera,t->images,dt_conf_get_bool("plugins/capture/camera/import/delete_originals"));
+    dt_camctl_import(darktable.camctl,t->camera,t->images);
     dt_camctl_unregister_listener(darktable.camctl,&listener);
     dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
     dt_variables_params_destroy(t->vp);

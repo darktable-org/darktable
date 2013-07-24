@@ -729,7 +729,7 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
 
 
-void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,gboolean delete_orginals)
+void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 {
   //dt_camctl_t *camctl=(dt_camctl_t *)c;
   _camctl_lock(c,cam);
@@ -767,8 +767,6 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,
         if( gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
         {
           _dispatch_camera_image_downloaded(c,cam,output);
-          if( delete_orginals )
-            gp_camera_file_delete(cam->gpcam, folder, filename, c->gpcontext);
         }
         else
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);

@@ -219,7 +219,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c,const dt_camera_t *cam,gboolean 
 /** travers filesystem on camera an retreives previews of images */
 void dt_camctl_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_t flags,const dt_camera_t *cam);
 /** Imports the images in list from specified camera */
-void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images,gboolean delete_orginals);
+void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images);
 
 /** Execute remote capture of camera.*/
 void dt_camctl_camera_capture(const dt_camctl_t *c,const dt_camera_t *cam);
