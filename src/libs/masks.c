@@ -105,7 +105,6 @@ static void _bt_add_circle (GtkWidget *widget, GdkEventButton *e, dt_iop_module_
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
   }
   else _tree_add_circle(NULL,NULL);
@@ -128,7 +127,6 @@ static void _bt_add_ellipse (GtkWidget *widget, GdkEventButton *e, dt_iop_module
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
   }
   else _tree_add_ellipse(NULL,NULL);
@@ -152,7 +150,6 @@ static void _bt_add_path (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
   }
   else _tree_add_path(NULL,NULL);
@@ -175,7 +172,6 @@ static void _bt_add_gradient (GtkWidget *widget, GdkEventButton *e, dt_iop_modul
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
   }
   else _tree_add_gradient(NULL,NULL);
@@ -569,7 +565,7 @@ static void _tree_moveup(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   //we first discard all visible shapes
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
   //now we go through all selected nodes
@@ -604,7 +600,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   //we first discard all visible shapes
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
   //now we go through all selected nodes
@@ -638,7 +634,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
   //we first discard all visible shapes
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = NULL;
 
   //now we go through all selected nodes
@@ -708,7 +704,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
   int nb = gtk_tree_selection_count_selected_rows(selection);
   if (nb == 0)
   {
-    dt_masks_init_formgui(darktable.develop);
+    dt_masks_clear_form_gui(darktable.develop);
     darktable.develop->form_visible = NULL;
     dt_control_queue_redraw_center();
     return;
@@ -760,7 +756,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
   dt_masks_form_t *grp2 = dt_masks_create(DT_MASKS_GROUP);
   dt_masks_group_ungroup(grp2,grp);
   free(grp);
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = grp2;
   dt_control_queue_redraw_center();
 }

@@ -713,7 +713,7 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   cairo_restore(cr);
 }
 
-void dt_masks_init_formgui(dt_develop_t *dev)
+void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
   if (dev->form_gui->points) g_list_free(dev->form_gui->points);
   dev->form_gui->points = NULL;
@@ -731,19 +731,24 @@ void dt_masks_init_formgui(dt_develop_t *dev)
 
   dev->form_gui->group_edited = -1;
   dev->form_gui->group_selected = -1;
+}
+
+void dt_masks_init_form_gui(dt_develop_t *dev)
+{
+  dt_masks_clear_form_gui(dev);
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = newform;
 }
 
 void dt_masks_reset_form_gui(void)
 {
   darktable.develop->form_visible = NULL;
-  dt_masks_init_formgui(darktable.develop);
+  dt_masks_clear_form_gui(darktable.develop);
   dt_iop_module_t *m = darktable.develop->gui_module;
   if (m && (m->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && !(m->flags() & IOP_FLAGS_NO_MASKS))
   {

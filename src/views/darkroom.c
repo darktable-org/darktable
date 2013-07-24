@@ -554,7 +554,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_formgui(dev);
+  dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
@@ -1057,7 +1057,7 @@ void enter(dt_view_t *self)
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_formgui(dev);
+  dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
