@@ -935,7 +935,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
       //we remove the form
       dt_masks_free_form(form);
       darktable.develop->form_visible = NULL;
-      dt_masks_init_formgui(darktable.develop);
+      dt_masks_clear_form_gui(darktable.develop);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1137,7 +1137,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pz
   }
   else if (which==3 && parentid>0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_init_formgui(darktable.develop);
+    dt_masks_clear_form_gui(darktable.develop);
     //we hide the form
     if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
     else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
@@ -1326,7 +1326,7 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module,float p
     //we remove the point (and the entire form if there is too few points)
     if (g_list_length(form->points) < 4)
     {
-      dt_masks_init_formgui(darktable.develop);
+      dt_masks_clear_form_gui(darktable.develop);
       //we hide the form
       if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
       else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;

@@ -159,7 +159,6 @@ static void _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *sel
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
     return;
   }
@@ -180,7 +179,6 @@ static void _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *s
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
     return;
   }
@@ -201,7 +199,6 @@ static void _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    dt_masks_init_formgui(darktable.develop);
     GTK_TOGGLE_BUTTON(widget)->active = FALSE;
     return;
   }

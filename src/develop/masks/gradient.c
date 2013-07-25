@@ -180,7 +180,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module,flo
 {
   if (which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_init_formgui(darktable.develop);
+    dt_masks_clear_form_gui(darktable.develop);
     //we hide the form
     if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
     else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
