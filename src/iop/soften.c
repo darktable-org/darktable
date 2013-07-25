@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <xmmintrin.h>
 
 #define MAX_RADIUS  32
 #define BOX_ITERATIONS 8
