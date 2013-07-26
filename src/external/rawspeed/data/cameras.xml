@@ -3121,6 +3121,16 @@
 			<Hint name="msb_override" value="false"/>
 		</Hints>    
 	</Camera>  
+	<Camera make="SAMSUNG" model="NX2000" decoder_version="3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-10" height="-18"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="SAMSUNG" model="NX300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
