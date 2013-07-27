@@ -64,6 +64,7 @@ src/iop/cacorrect.c
 src/iop/channelmixer.c
 src/iop/clahe.c
 src/iop/clipping.c
+src/iop/colorbalance.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
 src/iop/colorin.c
