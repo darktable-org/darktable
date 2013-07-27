@@ -686,6 +686,31 @@ _blendop_masks_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_iop_modu
 }
 
 static int
+_blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return FALSE;
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
+
+  if (event->button == 1)
+  {
+    //we want to be sure that the iop has focus
+    dt_iop_request_focus(self);
+    self->request_color_pick = 0;
+    bd->masks_shown = DT_MASKS_EDIT_FULL;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    //we create the new form
+    dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
+    dt_masks_change_form_gui(form);
+    darktable.develop->form_gui->creation = TRUE;
+    darktable.develop->form_gui->creation_module = self;
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static int
 _blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
@@ -1169,18 +1194,20 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity), bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
 
   //update buttons status
-  int b1=0,b2=0,b3=0,b4=0;
+  int b1=0,b2=0,b3=0,b4=0,b5=0;
   if (module->dev->form_gui && module->dev->form_visible && module->dev->form_gui->creation && module->dev->form_gui->creation_module == module)
   {
     if (module->dev->form_visible->type & DT_MASKS_CIRCLE) b1=1;
     else if (module->dev->form_visible->type & DT_MASKS_PATH) b2=1;
     else if (module->dev->form_visible->type & DT_MASKS_GRADIENT) b3=1;
     else if (module->dev->form_visible->type & DT_MASKS_ELLIPSE) b4=1;
+    else if (module->dev->form_visible->type & DT_MASKS_BRUSH) b5=1;
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), b1);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_path), b2);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_gradient), b3);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_ellipse), b4);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_brush), b5);
 }
 
 void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
@@ -1249,6 +1276,14 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_size_request(GTK_WIDGET(bd->masks_circle), bs, bs);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_circle), FALSE);
     gtk_box_pack_end(GTK_BOX(abox), bd->masks_circle, FALSE, FALSE, bs);
+
+    bd->masks_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
+    g_signal_connect(G_OBJECT(bd->masks_brush), "button-press-event", G_CALLBACK(_blendop_masks_add_brush), module);
+    g_object_set(G_OBJECT(bd->masks_brush), "tooltip-text", _("add brush"), (char *)NULL);
+    gtk_widget_set_size_request(GTK_WIDGET(bd->masks_brush), bs, bs);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_brush), FALSE);
+    gtk_box_pack_end(GTK_BOX(abox), bd->masks_brush, FALSE, FALSE, 0);
+
 
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE,0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(abox), TRUE, TRUE,0);

@@ -37,7 +37,8 @@ typedef enum dt_masks_type_t
   DT_MASKS_GROUP = 4,
   DT_MASKS_CLONE = 8,
   DT_MASKS_GRADIENT = 16,
-  DT_MASKS_ELLIPSE = 32
+  DT_MASKS_ELLIPSE = 32,
+  DT_MASKS_BRUSH = 64
 }
 dt_masks_type_t;
 
@@ -95,6 +96,19 @@ typedef struct dt_masks_point_path_t
 }
 dt_masks_point_path_t;
 
+/** structure used to store 1 point for a brush form */
+typedef struct dt_masks_point_brush_t
+{
+  float corner[2];
+  float ctrl1[2];
+  float ctrl2[2];
+  float border[2];
+  float density;
+  float hardness;
+  dt_masks_points_states_t state;
+}
+dt_masks_point_brush_t;
+
 /** structure used to store anchor for a gradient */
 typedef struct dt_masks_point_gradient_t
 {
@@ -149,6 +163,10 @@ typedef struct dt_masks_form_gui_t
 {
   //points used to draw the form
   GList *points;  //list of dt_masks_form_gui_points_t
+
+  //points used to sample mouse moves
+  float *guipoints;
+  int guipoints_count;
 
   //values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx,scrolly;

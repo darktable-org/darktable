@@ -154,6 +154,8 @@ void dtgtk_cairo_paint_masks_ellipse(cairo_t *cr,gint x,gint y,gint w,gint h,gin
 void dtgtk_cairo_paint_masks_gradient(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a path icon for masks*/
 void dtgtk_cairo_paint_masks_path(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** Paint a brush icon for masks*/
+void dtgtk_cairo_paint_masks_brush(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a multi-path icon for masks*/
 void dtgtk_cairo_paint_masks_multi(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** Paint a inverse icon for masks*/

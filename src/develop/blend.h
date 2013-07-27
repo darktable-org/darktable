@@ -334,6 +334,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_circle;
   GtkWidget *masks_ellipse;
   GtkWidget *masks_gradient;
+  GtkWidget *masks_brush;
   GtkWidget *masks_edit;
   GtkWidget *masks_polarity;
   int *masks_combo_ids;

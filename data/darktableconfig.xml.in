@@ -1861,6 +1861,27 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spots/brush_border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/brush_density</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/brush_hardness</name>
+    <type>float</type>
+    <default>0.66</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/temperature/visible</name>
     <type>bool</type>
     <default>TRUE</default>
@@ -2094,6 +2115,27 @@
     <name>plugins/darkroom/masks/gradient/steepness</name>
     <type>float</type>
     <default>0.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/density</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/hardness</name>
+    <type>float</type>
+    <default>0.66</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
