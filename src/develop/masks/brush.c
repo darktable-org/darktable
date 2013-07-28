@@ -843,11 +843,11 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      float amount = 1.03;
-      if (up) amount = 0.97;
       int nb = g_list_length(form->points);
       if (gui->border_selected)
       {
+        float amount = 1.03f;
+        if (up) amount = 0.97f;
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k);
@@ -867,6 +867,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       }
       else
       {
+        float amount = 1.25f;
+        if (up) amount = 0.8f;
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k);
@@ -1638,7 +1640,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   double dashed[] = {4.0, 4.0};
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len  = sizeof(dashed) / sizeof(dashed[0]);
+
   if (!gui) return;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return;
@@ -1777,6 +1779,9 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   //draw border and corners
   if ((gui->group_selected == index) && gpt->border_count > nb*3+2)
   {
+
+    int len  = sizeof(dashed) / sizeof(dashed[0]);
+
     cairo_move_to(cr,gpt->border[nb*6]+dx,gpt->border[nb*6+1]+dy);
 
     for (int i=nb*3+1; i<gpt->border_count; i++)
@@ -1795,6 +1800,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
 
+#if 0
     //we draw the brush segment by segment
     for (int k=0; k<nb; k++)
     {
@@ -1820,6 +1826,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_dash(cr, dashed, 0, 0);
       cairo_stroke(cr);
     }
+#endif
   }
 
   //draw the source if needed
