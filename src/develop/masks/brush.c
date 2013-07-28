@@ -24,6 +24,41 @@
 #include "develop/masks.h"
 #include "common/debug.h"
 
+/** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
+static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
+{
+  const int stepsize = 200000;
+  const int highlevel = 20000;
+
+  //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
+
+  if(*buffer == NULL)
+  {
+    *buffer = malloc(stepsize*sizeof(float));
+    *buffer_count = 0;
+    *buffer_max = stepsize;
+    return TRUE;
+  }
+
+  if(*buffer_count > *buffer_max)
+  {
+    fprintf(stderr, "_brush_buffer_grow: memory size exceeded and detected too late :(\n");
+  }
+
+  if(*buffer_count + highlevel > *buffer_max)
+  {
+    float *oldbuffer = *buffer;
+    *buffer_max += stepsize;
+    *buffer = malloc(*buffer_max*sizeof(float));
+    if(*buffer == NULL) return FALSE;
+    memset(*buffer, 0, *buffer_max*sizeof(float));
+    memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
+    free(oldbuffer);
+  }
+
+  return TRUE;
+}
+
 
 /** get squared distance of point to line segment */
 static float _brush_point_line_distance2(const float x, const float y, const float *line_start, const float *line_end)
@@ -414,13 +449,30 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
   float wd = pipe->iwidth, ht = pipe->iheight;
 
-  //TODO: we really need flexible memory allocation
-  *points = malloc(600000*sizeof(float));
-  memset(*points,0,600000*sizeof(float));
-  if (border) *border = malloc(600000*sizeof(float));
-  if (border) memset(*border,0,600000*sizeof(float));
-  if (payload) *payload = malloc(600000*sizeof(float));
-  if (payload) memset(*payload,0,600000*sizeof(float));
+  int points_max, pos;
+  int border_max, posb;
+  int payload_max, posp;
+
+  *points = NULL;
+  points_max = 0;
+  pos = 0;
+  if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+
+  if (border)
+  {
+    *border = NULL;
+    border_max = 0;
+    posb = 0;
+    if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+  }
+
+  if (payload)
+  {
+    *payload = NULL;
+    payload_max = 0;
+    posp = 0;
+    if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+  }
 
   //we store all points
   float dx,dy;
@@ -469,10 +521,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     }
   }
 
+  pos = 6*nb;
+  posb = 6*nb;
+  posp = 6*nb;
 
-  int pos = 6*nb;
-  int posb = 6*nb;
-  int posp = 6*nb;
   int cw = 1;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name, dt_get_wtime()-start2);
@@ -521,6 +573,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
         float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
         _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, cw);
+
+        if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+        if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
       }
 
       if (payload)
@@ -530,6 +585,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
           (*payload)[posp] = p1[5];
           (*payload)[posp+1] = p1[6];
           posp += 2;
+
+          if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
         }
       }
       continue;
@@ -547,6 +604,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     else if (payload) _brush_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,rp,*points,NULL,*payload,&pos,&posb,&posp,FALSE,TRUE);
     else _brush_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,rp,*points,NULL,NULL,&pos,&posb,&posp,FALSE,FALSE);
 
+    if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+
     //we check gaps in the border (sharp edges)
     if (border && (fabsf((*border)[posb-2]-rb[0] > 1) || fabsf((*border)[posb-1]-rb[1]) > 1))
     {
@@ -561,6 +620,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     {
       (*payload)[posp++] = rp[0];
       (*payload)[posp++] = rp[1];
+      if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
     }
 
     if (border)
@@ -578,6 +638,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       }
       (*border)[posb++] = rb[0];
       (*border)[posb++] = rb[1];
+
+      if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
     }
 
     //we first want to be sure that there are no gaps in border
@@ -594,6 +656,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         //float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
         _brush_points_recurs_border_gaps(rc, rb, NULL, bmax, *points, &pos, *border, &posb, cw);
       }
+
+      if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
     }
 
     if (payload)
@@ -604,11 +668,14 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         (*payload)[posp+1] = rp[1];
         posp += 2;
       }
+      if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
     }
   }
   *points_count = pos/2;
   if (border) *border_count = posb/2;
   if (payload) *payload_count = posp/2;
+
+  //printf("points %d, border %d, playload %d\n", *points_count, border ? *border_count : -1, payload ? *payload_count : -1);
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points point recurs %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
