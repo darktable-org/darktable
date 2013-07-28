@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-28 11:43+0200\n"
-"PO-Revision-Date: 2013-07-28 12:22+0100\n"
+"POT-Creation-Date: 2013-07-28 18:29+0200\n"
+"PO-Revision-Date: 2013-07-28 18:30+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3443,11 +3443,11 @@ msgstr "couleur bleue"
 #. lift
 #: ../src/iop/colorbalance.c:553
 msgid "lift"
-msgstr "force"
+msgstr "lift"
 
 #: ../src/iop/colorbalance.c:558
 msgid "factor of lift"
-msgstr "facteur de force"
+msgstr "facteur de lift"
 
 #: ../src/iop/colorbalance.c:559 ../src/iop/colorbalance.c:597
 #: ../src/iop/colorbalance.c:635
@@ -3456,15 +3456,15 @@ msgstr "facteur"
 
 #: ../src/iop/colorbalance.c:567
 msgid "factor of red for lift"
-msgstr "facteur rouge de la force"
+msgstr "facteur rouge du lift"
 
 #: ../src/iop/colorbalance.c:576
 msgid "factor of green for lift"
-msgstr "facteur vert de la force"
+msgstr "facteur vert du lift"
 
 #: ../src/iop/colorbalance.c:585
 msgid "factor of blue for lift"
-msgstr "facteur bleu de la force"
+msgstr "facteur bleu du lift"
 
 #. gamma
 #: ../src/iop/colorbalance.c:591 ../src/iop/profile_gamma.c:139
