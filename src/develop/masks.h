@@ -165,7 +165,7 @@ typedef struct dt_masks_form_gui_t
   GList *points;  //list of dt_masks_form_gui_points_t
 
   //points used to sample mouse moves
-  float *guipoints;
+  float *guipoints, *guipoints_pressure;
   int guipoints_count;
 
   //values for mouse positions, etc...
@@ -236,9 +236,9 @@ void dt_masks_clear_form_gui(dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
-int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, int which);
+int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, double pressure, int which);
 int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, double y, int which, uint32_t state);
-int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, int which, int type, uint32_t state);
+int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, double pressure, int which, int type, uint32_t state);
 int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, double y, int up, uint32_t state);
 void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 

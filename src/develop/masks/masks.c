@@ -663,7 +663,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
   form = NULL;
 }
 
-int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, int which)
+int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, double pressure, int which)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -674,12 +674,12 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   pzy += 0.5f;
 
   int rep = 0;
-  if (form->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,which,form,gui);
-  else if (form->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
-  else if (form->type & DT_MASKS_BRUSH) rep = dt_brush_events_mouse_moved(module,pzx,pzy,which,form,0,gui,0);
+  if (form->type & DT_MASKS_CIRCLE) rep = dt_circle_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) rep = dt_path_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_GROUP) rep = dt_group_events_mouse_moved(module,pzx,pzy,pressure,which,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) rep = dt_gradient_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
+  else if (form->type & DT_MASKS_BRUSH) rep = dt_brush_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
 
   if (gui) _set_hinter_message(gui);
 
@@ -704,7 +704,7 @@ int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, d
   return 0;
 }
 
-int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, int which, int type, uint32_t state)
+int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_masks_form_t *form = darktable.develop->form_visible;
   dt_masks_form_gui_t *gui = darktable.develop->form_gui;
@@ -713,12 +713,12 @@ int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, do
   pzx += 0.5f;
   pzy += 0.5f;
 
-  if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_pressed(module,pzx,pzy,which,type,state,form,gui);
-  else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
-  else if (form->type & DT_MASKS_BRUSH) return dt_brush_events_button_pressed(module,pzx,pzy,which,type,state,form,0,gui,0);
+  if (form->type & DT_MASKS_CIRCLE) return dt_circle_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_PATH) return dt_path_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_GROUP) return dt_group_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,gui);
+  else if (form->type & DT_MASKS_GRADIENT) return dt_gradient_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_ELLIPSE) return dt_ellipse_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,0,gui,0);
+  else if (form->type & DT_MASKS_BRUSH) return dt_brush_events_button_pressed(module,pzx,pzy,pressure,which,type,state,form,0,gui,0);
 
   return 0;
 }
@@ -959,6 +959,7 @@ static void _menu_add_brush(struct dt_iop_module_t *module)
 {
   //we want to be sure that the iop has focus
   dt_iop_request_focus(module);
+  dt_gui_enable_extended_input_devices();
   //we create the new form
   dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
   dt_masks_change_form_gui(form);

@@ -151,6 +151,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_NAN = 2048,
   DT_DEBUG_MASKS = 4096,
   DT_DEBUG_LUA = 8192,
+  DT_DEBUG_INPUT = 16384
 }
 dt_debug_thread_t;
 

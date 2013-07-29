@@ -544,7 +544,7 @@ void leave(dt_view_t *self)
 
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   // redraw center on mousemove
   dt_control_queue_redraw_center();

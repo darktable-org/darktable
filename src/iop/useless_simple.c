@@ -221,8 +221,8 @@ dt_gui_simple_t* gui_init_simple(dt_iop_module_so_t *self) // sorry, only dt_iop
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
+// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 

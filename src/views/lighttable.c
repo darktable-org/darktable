@@ -1364,7 +1364,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_control_queue_redraw_center();
 }
@@ -1379,7 +1379,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;

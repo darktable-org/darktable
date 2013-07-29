@@ -133,9 +133,9 @@ typedef struct dt_iop_module_so_t
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
-  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, double pressure, int which);
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);
 
@@ -279,9 +279,9 @@ typedef struct dt_iop_module_t
 
   /** optional event callbacks */
   int  (*mouse_leave)     (struct dt_iop_module_t *self);
-  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, int which);
+  int  (*mouse_moved)     (struct dt_iop_module_t *self, double x, double y, double pressure, int which);
   int  (*button_released) (struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*button_pressed)  (struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
   int  (*key_pressed)     (struct dt_iop_module_t *self, uint16_t which);
   int  (*scrolled)        (struct dt_iop_module_t *self, double x, double y, int up, uint32_t state);
   void (*configure)       (struct dt_iop_module_t *self, int width, int height);

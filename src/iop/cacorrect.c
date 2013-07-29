@@ -1301,8 +1301,8 @@ void gui_cleanup   (dt_iop_module_t *self)
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
+// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

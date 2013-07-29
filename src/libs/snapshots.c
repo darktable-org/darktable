@@ -186,7 +186,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
 
 static int _lib_snapshot_rotation_cnt = 0;
 
-int button_pressed (struct dt_lib_module_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   // convert to image coordinates:
@@ -239,7 +239,7 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
   return 0;
 }
 
-int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
+int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_snapshots_t *d=(dt_lib_snapshots_t *)self->data;
   // convert to image coordinates:

@@ -677,7 +677,14 @@ key_released (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
-  dt_control_button_pressed(event->x, event->y, event->button, event->type, event->state & 0xf);
+  double pressure = 1.0;
+  if(event->device->source == GDK_SOURCE_PEN)
+  {
+    gdouble axes[event->device->num_axes];
+    gdk_device_get_state(event->device, w->window, axes, NULL);
+    gdk_device_get_axis(event->device, axes, GDK_AXIS_PRESSURE, &pressure);
+  }
+  dt_control_button_pressed(event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
   gtk_widget_grab_focus(w);
   gtk_widget_queue_draw(w);
   return TRUE;
@@ -694,7 +701,14 @@ button_released (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 static gboolean
 mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
 {
-  dt_control_mouse_moved(event->x, event->y, event->state & 0xf);
+  double pressure = 1.0;
+  if(event->device->source == GDK_SOURCE_PEN)
+  {
+    gdouble axes[event->device->num_axes];
+    gdk_device_get_state(event->device, w->window, axes, NULL);
+    gdk_device_get_axis(event->device, axes, GDK_AXIS_PRESSURE, &pressure);
+  }
+  dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
   gint x, y;
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return FALSE;
@@ -959,6 +973,28 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   /* apply contrast to theme */
   dt_gui_contrast_init ();
+
+  // let's try to support pressure sensitive input devices like tablets for mask drawing
+  static const gchar *SOURCE_NAMES[] = {"GDK_SOURCE_MOUSE", "GDK_SOURCE_PEN", "GDK_SOURCE_ERASER", "GDK_SOURCE_CURSOR"};
+  static const gchar *MODE_NAMES[] = {"GDK_MODE_DISABLED", "GDK_MODE_SCREEN", "GDK_MODE_WINDOW"};
+  static const gchar *AXIS_NAMES[] = {"GDK_AXIS_IGNORE", "GDK_AXIS_X", "GDK_AXIS_Y", "GDK_AXIS_PRESSURE", "GDK_AXIS_XTILT", "GDK_AXIS_YTILT", "GDK_AXIS_WHEEL", "GDK_AXIS_LAST"};
+  dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
+  GList *input_devices = gdk_devices_list();
+  while(input_devices)
+  {
+    GdkDevice *device = (GdkDevice*)input_devices->data;
+    dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", device->name, device->has_cursor?"with cursor":"no cursor", SOURCE_NAMES[device->source], MODE_NAMES[device->mode], device->num_axes, device->num_keys);
+    for(int i = 0; i < device->num_axes; i++)
+    {
+      GdkDeviceAxis* axis = &device->axes[i];
+      dt_print(DT_DEBUG_INPUT, "  %s [%f .. %f]\n", AXIS_NAMES[axis->use], axis->min, axis->max);
+    }
+    dt_print(DT_DEBUG_INPUT, "\n");
+    input_devices = g_list_next(input_devices);
+  }
+
+  widget = dt_ui_center(darktable.gui->ui);
+  gtk_widget_set_extension_events(widget, GDK_EXTENSION_EVENTS_CURSOR);
 
   return 0;
 }
@@ -1550,6 +1586,53 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
     it = g_list_next(it);
   }
   g_list_free(renderers);
+}
+
+// we only try to enable/disable those devices that are pens and that have a pressure axis
+void dt_gui_enable_extended_input_devices()
+{
+  GdkDevice *core_pointer = gdk_device_get_core_pointer();
+  GList *input_devices = gdk_devices_list();
+  while(input_devices)
+  {
+    GdkDevice *device = (GdkDevice*)input_devices->data;
+    if(device != core_pointer && device->source == GDK_SOURCE_PEN)
+    {
+      for(int i = 0; i < device->num_axes; i++)
+      {
+        GdkDeviceAxis* axis = &device->axes[i];
+        if(axis->use == GDK_AXIS_PRESSURE)
+        {
+          gdk_device_set_mode(device, GDK_MODE_SCREEN);
+          break;
+        }
+      }
+    }
+    input_devices = g_list_next(input_devices);
+  }
+}
+
+void dt_gui_disable_extended_input_devices()
+{
+  GdkDevice *core_pointer = gdk_device_get_core_pointer();
+  GList *input_devices = gdk_devices_list();
+  while(input_devices)
+  {
+    GdkDevice *device = (GdkDevice*)input_devices->data;
+    if(device != core_pointer && device->source == GDK_SOURCE_PEN)
+    {
+      for(int i = 0; i < device->num_axes; i++)
+      {
+        GdkDeviceAxis* axis = &device->axes[i];
+        if(axis->use == GDK_AXIS_PRESSURE)
+        {
+          gdk_device_set_mode(device, GDK_MODE_DISABLED);
+          break;
+        }
+      }
+    }
+    input_devices = g_list_next(input_devices);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -455,7 +455,7 @@ void dt_view_manager_mouse_enter (dt_view_manager_t *vm)
   if(v->mouse_enter) v->mouse_enter(v);
 }
 
-void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
+void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, double pressure, int which)
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
@@ -469,7 +469,7 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
 
     /* does this module belong to current view ?*/
     if (plugin->mouse_moved && plugin->views() & v->view(v) )
-      if(plugin->mouse_moved(plugin, x, y, which))
+      if(plugin->mouse_moved(plugin, x, y, pressure, which))
         handled = TRUE;
 
     /* get next plugin */
@@ -478,7 +478,7 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->mouse_moved)
-    v->mouse_moved(v, x, y, which);
+    v->mouse_moved(v, x, y, pressure, which);
 
 }
 
@@ -510,7 +510,7 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   return 0;
 }
 
-int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state)
+int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
@@ -524,7 +524,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
     /* does this module belong to current view ?*/
     if (plugin->button_pressed && plugin->views() & v->view(v) )
-      if(plugin->button_pressed(plugin, x, y, which,type,state))
+      if(plugin->button_pressed(plugin, x, y, pressure, which,type,state))
         handled = TRUE;
 
     /* get next plugin */
@@ -533,7 +533,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->button_pressed)
-    return v->button_pressed(v, x, y, which,type,state);
+    return v->button_pressed(v, x, y, pressure, which,type,state);
 
   return 0;
 }

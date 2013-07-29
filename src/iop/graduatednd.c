@@ -484,7 +484,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 }
 
 int
-mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   int32_t zoom, closeup;
@@ -543,7 +543,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 }
 
 int
-button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   float pzx, pzy;

@@ -1418,14 +1418,14 @@ void dt_control_mouse_enter()
   dt_view_manager_mouse_enter(darktable.view_manager);
 }
 
-void dt_control_mouse_moved(double x, double y, int which)
+void dt_control_mouse_moved(double x, double y, double pressure, int which)
 {
   float tb = darktable.control->tabborder;
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-    dt_view_manager_mouse_moved(darktable.view_manager, x-tb, y-tb, which);
+    dt_view_manager_mouse_moved(darktable.view_manager, x-tb, y-tb, pressure, which);
 }
 
 void dt_control_button_released(double x, double y, int which, uint32_t state)
@@ -1487,7 +1487,7 @@ static gboolean _dt_ctl_log_message_timeout_callback (gpointer data)
 }
 
 
-void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state)
+void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
 {
   float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
@@ -1495,6 +1495,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
   darktable.control->button_type = type;
   darktable.control->button_x = x - tb;
   darktable.control->button_y = y - tb;
+  // adding pressure to this data structure is not needed right now. should the need ever arise: here is the place to do it :)
   float wd = darktable.control->width;
   float ht = darktable.control->height;
 
@@ -1514,7 +1515,7 @@ void dt_control_button_pressed(double x, double y, int which, int type, uint32_t
 
   if(x > tb && x < wd-tb && y > tb && y < ht-tb)
   {
-    if(!dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, which, type, state))
+    if(!dt_view_manager_button_pressed(darktable.view_manager, x-tb, y-tb, pressure, which, type, state))
       if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
   }
 }
