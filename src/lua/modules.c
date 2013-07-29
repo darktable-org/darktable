@@ -161,8 +161,8 @@ static const char *storage_fields_name[] =
   "name",
   "width",
   "height",
-  "recommended_width",
-  "recommended_height",
+  "recommanded_width",
+  "recommanded_height",
   "supports_format",
   NULL
 };
