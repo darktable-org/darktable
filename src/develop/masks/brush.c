@@ -1129,7 +1129,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       template.hardness = MAX(MIN(masks_hardness, 1.0f), 0.0f);
       template.state = DT_MASKS_POINT_STATE_NORMAL;
 
-      const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness*0.25f;
+      const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness;
 
       //we simplify the path and generate the nodes
       form->points = _brush_ramer_douglas_peucker(gui->guipoints+2, gui->guipoints_count-1, epsilon2, &template);
