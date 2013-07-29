@@ -97,7 +97,7 @@ static float _brush_point_line_distance2(const float x, const float y, const flo
 }
 
 /** remove unneaded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
-static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, float epsilon2, const dt_masks_point_brush_t *template)
+static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *pressure, float epsilon2, const dt_masks_point_brush_t *template)
 {
   GList *ResultList = NULL;
 
@@ -116,8 +116,8 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
   if (dmax2 >= epsilon2)
   {
-    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, epsilon2, template);
-    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, epsilon2, template);
+    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, pressure, epsilon2, template);
+    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, pressure+index, epsilon2, template);
 
     // remove last element from ResultList1
     GList *end1 = g_list_last(ResultList1);
@@ -132,12 +132,14 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     memcpy(point1, template, sizeof(dt_masks_point_brush_t)); 
     point1->corner[0] = points[0];
     point1->corner[1] = points[1];
+    point1->hardness *= pressure[0];
     ResultList = g_list_append(ResultList, (gpointer)point1);
 
     dt_masks_point_brush_t *pointn = malloc(sizeof(dt_masks_point_brush_t));
     memcpy(pointn, template, sizeof(dt_masks_point_brush_t)); 
     pointn->corner[0] = points[(points_count-1)*2];
     pointn->corner[1] = points[(points_count-1)*2+1];
+    pointn->hardness *= pressure[points_count-1];
     ResultList = g_list_append(ResultList, (gpointer)pointn);
   }
 
@@ -904,7 +906,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
   return 0;
 }
 
-static int dt_brush_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
+static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (type==GDK_2BUTTON_PRESS || type==GDK_3BUTTON_PRESS) return 1;
@@ -933,10 +935,13 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module,float p
 
       if(!gui->guipoints) gui->guipoints = malloc(600000*sizeof(float));
       if(!gui->guipoints) return 1;
+      if(!gui->guipoints_pressure) gui->guipoints_pressure = malloc(300000*sizeof(float));
+      if(!gui->guipoints_pressure) return 1;
       gui->guipoints[0] = MAX(0.005f, masks_border)*MIN(wd, ht)*masks_hardness;
       gui->guipoints[1] = masks_density;
       gui->guipoints[2] = pzx*wd;
       gui->guipoints[3] = pzy*ht;
+      gui->guipoints_pressure[0] = pressure;
 
       gui->guipoints_count = 2;
 
@@ -1090,6 +1095,10 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (!gui) return 0;
+
+  // disable pressure readings
+  dt_gui_disable_extended_input_devices();
+
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return 0;
 
@@ -1132,7 +1141,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness;
 
       //we simplify the path and generate the nodes
-      form->points = _brush_ramer_douglas_peucker(gui->guipoints+2, gui->guipoints_count-1, epsilon2, &template);
+      form->points = _brush_ramer_douglas_peucker(gui->guipoints+2, gui->guipoints_count-1, gui->guipoints_pressure, epsilon2, &template);
 
       //if the path consists only of two endpoints we add a third point in the middle so we don't need to deal with this special case later
       if(g_list_length(form->points) == 2)
@@ -1154,7 +1163,9 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       _brush_init_ctrl_points(form);
 
       free(gui->guipoints);
+      free(gui->guipoints_pressure);
       gui->guipoints = NULL;
+      gui->guipoints_pressure = NULL;
       gui->guipoints_count = 0;
 
       //we save the form and quit creation mode
@@ -1175,7 +1186,9 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     else
     {
       free(gui->guipoints);
+      free(gui->guipoints_pressure);
       gui->guipoints = NULL;
+      gui->guipoints_pressure = NULL;
       gui->guipoints_count = 0;
 
       //we remove the form
@@ -1404,7 +1417,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   return 0;
 }
 
-static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
+static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
   int32_t zoom, closeup;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -1426,6 +1439,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module,float pzx,
 
       gui->guipoints[2*gui->guipoints_count] = px;
       gui->guipoints[2*gui->guipoints_count+1] = py;
+      gui->guipoints_pressure[gui->guipoints_count-1] = pressure;
       gui->guipoints_count++;
     }
     dt_control_queue_redraw_center();

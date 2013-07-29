@@ -242,7 +242,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
   return 0;
 }
 
-static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
+static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (which != 1) return 0;
@@ -560,7 +560,7 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module,floa
   return 0;
 }
 
-static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
+static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (gui->form_dragging || gui->form_rotating || gui->source_dragging || gui->point_dragging >= 1)
   {

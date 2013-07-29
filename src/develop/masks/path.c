@@ -915,7 +915,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
   return 0;
 }
 
-static int dt_path_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
+static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (type==GDK_2BUTTON_PRESS || type==GDK_3BUTTON_PRESS) return 1;
@@ -1389,7 +1389,7 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module,float p
   return 0;
 }
 
-static int dt_path_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
+static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
   int32_t zoom, closeup;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);

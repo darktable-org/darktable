@@ -775,7 +775,7 @@ int button_released(struct dt_lib_module_t *self, double x, double y, int which,
   return 0;
 }
 
-int button_pressed (struct dt_lib_module_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;
@@ -822,7 +822,7 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, int which,
   return result;
 }
 
-int mouse_moved(dt_lib_module_t *self, double x, double y, int which)
+int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_live_view_t *lib = (dt_lib_live_view_t *)self->data;
   int result = 0;

@@ -673,8 +673,8 @@ void gui_cleanup(dt_iop_module_t *self)
 }
 
 /** additional, optional callbacks to capture darkroom center events. */
-// int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
+// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
