@@ -533,10 +533,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   //we render all segments first upwards, then downwards
   for(int n = 0; n < 2*nb; n++)
   {
-    float *p1, *p2, *p3, *p4;
+    float p1[7], p2[7], p3[7], p4[7];
     int k = _brush_cyclic_cursor(n, nb);
     int k1 = _brush_cyclic_cursor(n+1, nb);
     int k2 = _brush_cyclic_cursor(n+2, nb);
+
     if(k == k1) cw *= -1;
     dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k1);
@@ -547,10 +548,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       float pb[7] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl1[0]*wd-dx, point2->ctrl1[1]*ht-dy, point2->border[0]*MIN(wd,ht), point2->hardness, point2->density};
       float pc[7] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl2[0]*wd-dx, point2->ctrl2[1]*ht-dy, point2->border[1]*MIN(wd,ht), point2->hardness, point2->density};
       float pd[7] = {point3->corner[0]*wd-dx, point3->corner[1]*ht-dy, point3->ctrl1[0]*wd-dx, point3->ctrl1[1]*ht-dy, point3->border[0]*MIN(wd,ht), point3->hardness, point3->density};
-      p1 = pa;
-      p2 = pb;
-      p3 = pc;
-      p4 = pd;
+      memcpy(p1, pa, 7*sizeof(float));
+      memcpy(p2, pb, 7*sizeof(float));
+      memcpy(p3, pc, 7*sizeof(float));
+      memcpy(p4, pd, 7*sizeof(float));
     }
     else
     {
@@ -558,10 +559,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       float pb[7] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl2[0]*wd-dx, point2->ctrl2[1]*ht-dy, point2->border[0]*MIN(wd,ht), point2->hardness, point2->density};
       float pc[7] = {point2->corner[0]*wd-dx, point2->corner[1]*ht-dy, point2->ctrl1[0]*wd-dx, point2->ctrl1[1]*ht-dy, point2->border[1]*MIN(wd,ht), point2->hardness, point2->density};
       float pd[7] = {point3->corner[0]*wd-dx, point3->corner[1]*ht-dy, point3->ctrl2[0]*wd-dx, point3->ctrl2[1]*ht-dy, point3->border[0]*MIN(wd,ht), point3->hardness, point3->density};
-      p1 = pa;
-      p2 = pb;
-      p3 = pc;
-      p4 = pd;
+      memcpy(p1, pa, 7*sizeof(float));
+      memcpy(p2, pb, 7*sizeof(float));
+      memcpy(p3, pc, 7*sizeof(float));
+      memcpy(p4, pd, 7*sizeof(float));
     }
 
     //render endpoints
