@@ -28,7 +28,6 @@ typedef enum
   GET_MIME,
   GET_MAX_WIDTH,
   GET_MAX_HEIGHT,
-  EXPORT,
   LAST_FORMAT_FIELD
 } format_fields;
 static const char *format_fields_name[] =
@@ -39,7 +38,6 @@ static const char *format_fields_name[] =
   "mime",
   "max_width",
   "max_height",
-  "write_image",
   NULL
 };
 
