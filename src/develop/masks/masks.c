@@ -791,6 +791,9 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 {
   if (dev->form_gui->points) g_list_free(dev->form_gui->points);
   dev->form_gui->points = NULL;
+  if (dev->form_gui->guipoints) free(dev->form_gui->guipoints);
+  dev->form_gui->guipoints = NULL;
+  dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
   dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
   dev->form_gui->scrollx = dev->form_gui->scrolly = 0.0f;
@@ -811,6 +814,8 @@ void dt_masks_init_form_gui(dt_develop_t *dev)
 {
   dt_masks_clear_form_gui(dev);
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
+  dev->form_gui->guipoints = NULL;
+  dev->form_gui->guipoints_count = 0;
 }
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
