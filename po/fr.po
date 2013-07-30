@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-28 18:29+0200\n"
-"PO-Revision-Date: 2013-07-28 18:30+0100\n"
+"POT-Creation-Date: 2013-07-30 14:02+0200\n"
+"PO-Revision-Date: 2013-07-30 14:35+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -524,7 +524,7 @@ msgstr "le fichier '%s' possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier '%s'"
 
-#: ../src/common/darktable.c:497
+#: ../src/common/darktable.c:498
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -555,15 +555,15 @@ msgstr ""
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1684
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1686
 #: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "activé(e)"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1534
-#: ../src/develop/blend_gui.c:1681 ../src/develop/develop.c:1129
+#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1536
+#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1129
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -944,83 +944,83 @@ msgstr[1] "ajout du décalage horaire à %d images"
 msgid "added time offset to %d image(s)"
 msgstr "décalage horaire ajouté à %d image(s)"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:944
 msgid "sliders for L channel"
 msgstr "conditions de fusion sur le canal L"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:944
 msgid "sliders for a channel"
 msgstr "conditions de fusion sur le canal a"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:944
 msgid "sliders for b channel"
 msgstr "conditions de fusion sur le canal b"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:944
 msgid "sliders for chroma channel (of LCh)"
 msgstr "conditions de fusion sur le canal de chromaticité C (de LCh)"
 
-#: ../src/develop/blend_gui.c:942
+#: ../src/develop/blend_gui.c:944
 msgid "sliders for hue channel (of LCh)"
 msgstr "conditions de fusion sur le canal de teinte h (de LCh)"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " g "
 msgstr " g"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " R "
 msgstr " R"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " G "
 msgstr " V"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " B "
 msgstr " B"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " H "
 msgstr " H"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " S "
 msgstr " S"
 
-#: ../src/develop/blend_gui.c:943
+#: ../src/develop/blend_gui.c:945
 msgid " L "
 msgstr " L"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:946
 msgid "sliders for gray value"
 msgstr "conditions de fusion sur le canal gris"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:946
 msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:946
 msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:946
 msgid "sliders for blue channel"
 msgstr "conditions de fusion sur le canal bleu"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for hue channel (of HSL)"
 msgstr "conditions de fusion sur le canal de teinte h (de HSL)"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for chroma channel (of HSL)"
 msgstr "conditions de fusion sur le canal de saturation (de HSL)"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for value channel (of HSL)"
 msgstr "conditions de fusion sur le canal de valeur L (de HSL)"
 
-#: ../src/develop/blend_gui.c:948
+#: ../src/develop/blend_gui.c:950
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1034,7 +1034,7 @@ msgstr ""
 "pas de fusion\n"
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:952
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1048,219 +1048,219 @@ msgstr ""
 "pas de fusion\n"
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
-#: ../src/develop/blend_gui.c:1069 ../src/iop/colorzones.c:1032
+#: ../src/develop/blend_gui.c:1071 ../src/iop/colorzones.c:1032
 #: ../src/iop/tonecurve.c:513
 msgid "pick gui color from image"
 msgstr "choisit une couleur dans l'image"
 
-#: ../src/develop/blend_gui.c:1072
+#: ../src/develop/blend_gui.c:1074
 msgid "reset blend mask settings"
 msgstr "réinitialise les paramètres de fusion conditionnelle"
 
-#: ../src/develop/blend_gui.c:1075
+#: ../src/develop/blend_gui.c:1077
 msgid "invert all channel's polarities"
 msgstr "inverser les canaux"
 
-#: ../src/develop/blend_gui.c:1086 ../src/develop/blend_gui.c:1089
+#: ../src/develop/blend_gui.c:1088 ../src/develop/blend_gui.c:1091
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "inverse le masque"
 
-#: ../src/develop/blend_gui.c:1098
+#: ../src/develop/blend_gui.c:1100
 msgid "output"
 msgstr "sortie"
 
-#: ../src/develop/blend_gui.c:1109
+#: ../src/develop/blend_gui.c:1111
 msgid "input"
 msgstr "entrée"
 
-#: ../src/develop/blend_gui.c:1120 ../src/develop/blend_gui.c:1121
+#: ../src/develop/blend_gui.c:1122 ../src/develop/blend_gui.c:1123
 msgid "double click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/develop/blend_gui.c:1181 ../src/develop/masks/masks.c:1225
+#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1231
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d forme utilisée"
 msgstr[1] "%d formes utilisées"
 
-#: ../src/develop/blend_gui.c:1186 ../src/develop/blend_gui.c:1232
-#: ../src/develop/masks/masks.c:1228
+#: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
+#: ../src/develop/masks/masks.c:1234
 msgid "no mask used"
 msgstr "aucun masque utilisé"
 
-#: ../src/develop/blend_gui.c:1231 ../src/develop/blend_gui.c:1542
+#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1544
 msgid "drawn mask"
 msgstr "masque dessiné"
 
-#: ../src/develop/blend_gui.c:1240
+#: ../src/develop/blend_gui.c:1242
 msgid "show and edit mask elements"
 msgstr "montre et édite les masques"
 
-#: ../src/develop/blend_gui.c:1246
+#: ../src/develop/blend_gui.c:1248
 msgid "toggle polarity of drawn mask"
 msgstr "inverse le masque dessiné"
 
-#: ../src/develop/blend_gui.c:1254 ../src/libs/masks.c:858
-#: ../src/libs/masks.c:894 ../src/libs/masks.c:1447
+#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:860
+#: ../src/libs/masks.c:896 ../src/libs/masks.c:1449
 msgid "add gradient"
 msgstr "ajoute un dégradé"
 
-#: ../src/develop/blend_gui.c:1261 ../src/iop/spots.c:558
-#: ../src/libs/masks.c:854 ../src/libs/masks.c:890 ../src/libs/masks.c:1454
+#: ../src/develop/blend_gui.c:1263 ../src/iop/spots.c:558
+#: ../src/libs/masks.c:856 ../src/libs/masks.c:892 ../src/libs/masks.c:1456
 msgid "add path"
 msgstr "ajouter chemin"
 
-#: ../src/develop/blend_gui.c:1268 ../src/iop/spots.c:565
-#: ../src/libs/masks.c:850 ../src/libs/masks.c:886 ../src/libs/masks.c:1461
+#: ../src/develop/blend_gui.c:1270 ../src/iop/spots.c:565
+#: ../src/libs/masks.c:852 ../src/libs/masks.c:888 ../src/libs/masks.c:1463
 msgid "add ellipse"
 msgstr "ajouter un masque elliptique"
 
-#: ../src/develop/blend_gui.c:1275 ../src/iop/spots.c:572
-#: ../src/libs/masks.c:846 ../src/libs/masks.c:882 ../src/libs/masks.c:1468
+#: ../src/develop/blend_gui.c:1277 ../src/iop/spots.c:572
+#: ../src/libs/masks.c:848 ../src/libs/masks.c:884 ../src/libs/masks.c:1470
 msgid "add circle"
 msgstr "ajouter un masque circulaire"
 
-#: ../src/develop/blend_gui.c:1282 ../src/libs/masks.c:878
-#: ../src/libs/masks.c:1475
+#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:880
+#: ../src/libs/masks.c:1477
 msgid "add brush"
 msgstr "ajouter un masque au pinceau"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1500 ../src/libs/live_view.c:377
+#: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:377
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/blend_gui.c:1501
+#: ../src/develop/blend_gui.c:1503
 msgid "normal bounded"
 msgstr "normal écrêté"
 
-#: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:386
+#: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:386
 msgid "lighten"
 msgstr "éclaircir"
 
-#: ../src/develop/blend_gui.c:1503 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:385
 msgid "darken"
 msgstr "assombrir"
 
-#: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:382
+#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:382
 msgid "multiply"
 msgstr "multiplier"
 
-#: ../src/develop/blend_gui.c:1505
+#: ../src/develop/blend_gui.c:1507
 msgid "average"
 msgstr "moyenne"
 
-#: ../src/develop/blend_gui.c:1506
+#: ../src/develop/blend_gui.c:1508
 msgid "addition"
 msgstr "addition"
 
-#: ../src/develop/blend_gui.c:1507
+#: ../src/develop/blend_gui.c:1509
 msgid "subtract"
 msgstr "soustraire"
 
-#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:391
 msgid "difference"
 msgstr "différence"
 
-#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:383
 msgid "screen"
 msgstr "écran"
 
-#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:353
+#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:353
 #: ../src/libs/live_view.c:384
 msgid "overlay"
 msgstr "superposer"
 
-#: ../src/develop/blend_gui.c:1511
+#: ../src/develop/blend_gui.c:1513
 msgid "softlight"
 msgstr "lumière douce"
 
-#: ../src/develop/blend_gui.c:1512
+#: ../src/develop/blend_gui.c:1514
 msgid "hardlight"
 msgstr "lumière dure"
 
-#: ../src/develop/blend_gui.c:1513
+#: ../src/develop/blend_gui.c:1515
 msgid "vividlight"
 msgstr "lumière vive"
 
-#: ../src/develop/blend_gui.c:1514
+#: ../src/develop/blend_gui.c:1516
 msgid "linearlight"
 msgstr "lumière linéaire"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1517
 msgid "pinlight"
 msgstr "lumière ponctuelle"
 
-#: ../src/develop/blend_gui.c:1516 ../src/iop/channelmixer.c:439
+#: ../src/develop/blend_gui.c:1518 ../src/iop/channelmixer.c:439
 #: ../src/iop/colorize.c:472 ../src/iop/colorzones.c:1021
 #: ../src/iop/colorzones.c:1059
 msgid "lightness"
 msgstr "luminance"
 
-#: ../src/develop/blend_gui.c:1517 ../src/iop/atrous.c:1430
+#: ../src/develop/blend_gui.c:1519 ../src/iop/atrous.c:1430
 #: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
 msgid "chroma"
 msgstr "chroma"
 
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:1518 ../src/iop/channelmixer.c:437
+#: ../src/develop/blend_gui.c:1520 ../src/iop/channelmixer.c:437
 #: ../src/iop/colorize.c:448 ../src/iop/colorzones.c:1023
 #: ../src/iop/colorzones.c:1057 ../src/iop/graduatednd.c:1049
 #: ../src/iop/splittoning.c:542
 msgid "hue"
 msgstr "teinte"
 
-#: ../src/develop/blend_gui.c:1519
+#: ../src/develop/blend_gui.c:1521
 msgid "color"
 msgstr "couleur"
 
-#: ../src/develop/blend_gui.c:1520
+#: ../src/develop/blend_gui.c:1522
 msgid "coloradjustment"
 msgstr "ajustement des couleurs"
 
-#: ../src/develop/blend_gui.c:1521
+#: ../src/develop/blend_gui.c:1523
 msgid "Lab lightness"
 msgstr "luminance Lab"
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1524
 msgid "Lab color"
 msgstr "couleur Lab"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1525
+#: ../src/develop/blend_gui.c:1527
 msgid "difference (deprecated)"
 msgstr "différence (déprécié)"
 
-#: ../src/develop/blend_gui.c:1526
+#: ../src/develop/blend_gui.c:1528
 msgid "inverse (deprecated)"
 msgstr "inverse (déprécié)"
 
-#: ../src/develop/blend_gui.c:1527
+#: ../src/develop/blend_gui.c:1529
 msgid "normal (deprecated)"
 msgstr "normal (déprécié)"
 
-#: ../src/develop/blend_gui.c:1528
+#: ../src/develop/blend_gui.c:1530
 msgid "unbounded (deprecated)"
 msgstr "non limité (déprécié)"
 
-#: ../src/develop/blend_gui.c:1532
+#: ../src/develop/blend_gui.c:1534
 msgid "blend"
 msgstr "fusion"
 
-#: ../src/develop/blend_gui.c:1537
+#: ../src/develop/blend_gui.c:1539
 msgid "uniformly"
 msgstr "uniforme"
 
-#: ../src/develop/blend_gui.c:1548
+#: ../src/develop/blend_gui.c:1550
 msgid "parametric mask"
 msgstr "masque paramétrique"
 
-#: ../src/develop/blend_gui.c:1554
+#: ../src/develop/blend_gui.c:1556
 msgid "drawn & parametric mask"
 msgstr "masque dessiné et paramétrique"
 
-#: ../src/develop/blend_gui.c:1559
+#: ../src/develop/blend_gui.c:1561
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1268,43 +1268,43 @@ msgstr ""
 "activer la fusion: uniforme, avec masques dessinés, avec masques "
 "paramétriques ou une combinaison des deux"
 
-#: ../src/develop/blend_gui.c:1566
+#: ../src/develop/blend_gui.c:1568
 msgid "blend mode"
 msgstr "mode de fusion"
 
-#: ../src/develop/blend_gui.c:1567
+#: ../src/develop/blend_gui.c:1569
 msgid "choose blending mode"
 msgstr "détermine le mode de fusion"
 
-#: ../src/develop/blend_gui.c:1649 ../src/iop/watermark.c:1047
+#: ../src/develop/blend_gui.c:1651 ../src/iop/watermark.c:1047
 msgid "opacity"
 msgstr "opacité"
 
-#: ../src/develop/blend_gui.c:1652
+#: ../src/develop/blend_gui.c:1654
 msgid "set the opacity of the blending"
 msgstr "opacité de la fusion"
 
-#: ../src/develop/blend_gui.c:1658
+#: ../src/develop/blend_gui.c:1660
 msgid "combine masks"
 msgstr "combinaison des fusions"
 
-#: ../src/develop/blend_gui.c:1660
+#: ../src/develop/blend_gui.c:1662
 msgid "exclusive"
 msgstr "exclusif"
 
-#: ../src/develop/blend_gui.c:1663
+#: ../src/develop/blend_gui.c:1665
 msgid "inclusive"
 msgstr "inclusif"
 
-#: ../src/develop/blend_gui.c:1666
+#: ../src/develop/blend_gui.c:1668
 msgid "exclusive & inverted"
 msgstr "exclusif & inversé"
 
-#: ../src/develop/blend_gui.c:1669
+#: ../src/develop/blend_gui.c:1671
 msgid "inclusive & inverted"
 msgstr "inclusif & inversé"
 
-#: ../src/develop/blend_gui.c:1673
+#: ../src/develop/blend_gui.c:1675
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1312,27 +1312,27 @@ msgstr ""
 "comment combiner les masques dessinés et les différents canaux des masques "
 "paramétriques"
 
-#: ../src/develop/blend_gui.c:1679
+#: ../src/develop/blend_gui.c:1681
 msgid "invert mask"
 msgstr "inversion du masque"
 
-#: ../src/develop/blend_gui.c:1688
+#: ../src/develop/blend_gui.c:1690
 msgid "apply mask in normal or inverted mode"
 msgstr "applique le masque en mode normal ou inversé"
 
-#: ../src/develop/blend_gui.c:1695
+#: ../src/develop/blend_gui.c:1697
 msgid "mask blur"
 msgstr "masque d'adoucissement"
 
-#: ../src/develop/blend_gui.c:1697
+#: ../src/develop/blend_gui.c:1699
 msgid "radius for gaussian blur of blend mask"
 msgstr "rayon du flou pour le masque d'adoucissement"
 
-#: ../src/develop/blend_gui.c:1703
+#: ../src/develop/blend_gui.c:1705
 msgid "display mask"
 msgstr "affiche le masque"
 
-#: ../src/develop/blend_gui.c:1710
+#: ../src/develop/blend_gui.c:1712
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
@@ -1363,11 +1363,11 @@ msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1180 ../src/libs/masks.c:1007
+#: ../src/develop/imageop.c:1180 ../src/libs/masks.c:1009
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:1186 ../src/libs/masks.c:1010
+#: ../src/develop/imageop.c:1186 ../src/libs/masks.c:1012
 msgid "move down"
 msgstr "descendre"
 
@@ -1739,78 +1739,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:871
+#: ../src/gui/gtk.c:885
 msgctxt "accel"
 msgid "capture view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:872
+#: ../src/gui/gtk.c:886
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:873
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:874
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:897
+#: ../src/gui/gtk.c:911
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:904
+#: ../src/gui/gtk.c:918
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "augmenter la luminosité"
 
-#: ../src/gui/gtk.c:906
+#: ../src/gui/gtk.c:920
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "diminuer la luminosité"
 
-#: ../src/gui/gtk.c:908
+#: ../src/gui/gtk.c:922
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "augmenter le contraste"
 
-#: ../src/gui/gtk.c:910
+#: ../src/gui/gtk.c:924
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "diminuer le contraste"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:931
+#: ../src/gui/gtk.c:945
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:932
+#: ../src/gui/gtk.c:946
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:944
+#: ../src/gui/gtk.c:958
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:947
+#: ../src/gui/gtk.c:961
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:951
+#: ../src/gui/gtk.c:965
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -3436,9 +3436,8 @@ msgid "angle"
 msgstr "rotation"
 
 #: ../src/iop/colorbalance.c:80
-#, fuzzy
 msgid "color balance"
-msgstr "couleur bleue"
+msgstr "balance couleur"
 
 #. lift
 #: ../src/iop/colorbalance.c:553
@@ -8019,18 +8018,18 @@ msgstr "dégradé #%d"
 #: ../src/develop/masks/masks.c:141
 #, c-format
 msgid "ellipse #%d"
-msgstr "Ellipse #%d"
+msgstr "ellipse #%d"
 
 #: ../src/develop/masks/masks.c:142
-#, fuzzy, c-format
+#, c-format
 msgid "brush #%d"
-msgstr "groupe #%d"
+msgstr "pinceau #%d"
 
-#: ../src/develop/masks/masks.c:1098 ../src/libs/masks.c:898
+#: ../src/develop/masks/masks.c:1104 ../src/libs/masks.c:900
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1125
+#: ../src/develop/masks/masks.c:1131
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
@@ -8038,48 +8037,48 @@ msgstr "utiliser les mêmes masques que"
 msgid "mask manager"
 msgstr "gestion des masques"
 
-#: ../src/libs/masks.c:231
+#: ../src/libs/masks.c:233
 #, c-format
 msgid "group #%d"
 msgstr "groupe #%d"
 
-#: ../src/libs/masks.c:964
+#: ../src/libs/masks.c:966
 msgid "delete this shape"
 msgstr "supprimer ce masque"
 
-#: ../src/libs/masks.c:970
+#: ../src/libs/masks.c:972
 msgid "remove from group"
 msgstr "enlever du groupe"
 
-#: ../src/libs/masks.c:978
+#: ../src/libs/masks.c:980
 msgid "group the forms"
 msgstr "grouper les masques"
 
-#: ../src/libs/masks.c:987
+#: ../src/libs/masks.c:989
 msgid "use inversed shape"
 msgstr "inverser le masque"
 
-#: ../src/libs/masks.c:993
+#: ../src/libs/masks.c:995
 msgid "mode : union"
 msgstr "mode : union"
 
-#: ../src/libs/masks.c:996
+#: ../src/libs/masks.c:998
 msgid "mode : intersection"
 msgstr "mode : intersection"
 
-#: ../src/libs/masks.c:999
+#: ../src/libs/masks.c:1001
 msgid "mode : difference"
 msgstr "mode : différence"
 
-#: ../src/libs/masks.c:1002
+#: ../src/libs/masks.c:1004
 msgid "mode : exclusion"
 msgstr "mode : exclusion"
 
-#: ../src/libs/masks.c:1016
+#: ../src/libs/masks.c:1018
 msgid "cleanup unused shapes"
 msgstr "supprimer masques non utilisés"
 
-#: ../src/libs/masks.c:1442
+#: ../src/libs/masks.c:1444
 msgid "created shapes"
 msgstr "masques existants"
 
