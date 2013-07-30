@@ -1118,8 +1118,19 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   {
     dt_iop_module_t *crea_module = gui->creation_module;
 
-    if(gui->guipoints && gui->guipoints_count > 2)
+    if(gui->guipoints && gui->guipoints_count > 1)
     {
+
+      //if the path consists only of one x/y pair we add a second one close so we don't need to deal with this special case later
+      if(gui->guipoints_count == 2)
+      {
+        // add a helper node very close to the single spot
+        gui->guipoints[4] = gui->guipoints[2]+0.001f;
+        gui->guipoints[5] = gui->guipoints[3]-0.001f;
+        gui->guipoints_pressure[1] = gui->guipoints_pressure[0];
+        gui->guipoints_count += 1;
+      }
+
       //we transform the points
       dt_dev_distort_backtransform(darktable.develop, gui->guipoints+2, gui->guipoints_count-1);
 
@@ -1143,20 +1154,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       //we simplify the path and generate the nodes
       form->points = _brush_ramer_douglas_peucker(gui->guipoints+2, gui->guipoints_count-1, gui->guipoints_pressure, epsilon2, &template);
 
-      //if the path consists only of two endpoints we add a third point in the middle so we don't need to deal with this special case later
-      if(g_list_length(form->points) == 2)
-      {
-        dt_masks_point_brush_t *point1 = (g_list_first(form->points))->data;
-        dt_masks_point_brush_t *point2 = (g_list_last(form->points))->data;      
 
-        dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)malloc(sizeof(dt_masks_point_brush_t));
-        memcpy(point3, &template, sizeof(dt_masks_point_brush_t));
-
-        point3->corner[0] = (point2->corner[0] + point1->corner[0])/2.0f;
-        point3->corner[1] = (point2->corner[1] + point1->corner[1])/2.0f;
-
-        form->points = g_list_insert(form->points, point3, 1);
-      }
 
       //printf("guipoints_count %d, points %d\n", gui->guipoints_count, g_list_length(form->points));
 
@@ -1679,6 +1677,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     if(gui->guipoints_count == 2)
     {
       cairo_arc(cr, gui->guipoints[2], gui->guipoints[3], radius, 0, 2.0*M_PI);
+      cairo_fill(cr);
     }
     else if(gui->guipoints_count > 2)
     {
