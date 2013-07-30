@@ -1618,7 +1618,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
     }
     if (u == 0)
     {
-      shapes = g_list_remove(shapes,f);
+      dev->forms = g_list_remove(dev->forms,f);
       dt_masks_free_form(f);
       continue;
     }
