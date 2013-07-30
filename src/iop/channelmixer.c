@@ -510,25 +510,25 @@ void init_presets (dt_iop_module_so_t *self)
       0,0,0.1,1,0,0,0
     }, {0,0,0.1,0,1,0,0}, {0,0,0.800,0,0,1,0}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("B/W"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,1,0,0,0.21
     }, {0,0,0,0,1,0,0.72}, {0,0,0,0,0,1,0.07}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w artifacts boost"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("B/W artifacts boost"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,1,0,0,-0.275
     }, {0,0,0,0,1,0,-0.275}, {0,0,0,0,0,1,1.275}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w smooth skin"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("B/W smooth skin"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,1,0,0,1.0
     }, {0,0,0,0,0,1,0.325}, {0,0,0,0,0,0,-0.4}
   } , sizeof(dt_iop_channelmixer_params_t), 1);
-  dt_gui_presets_add_generic(_("b/w blue artifacts reduce"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
+  dt_gui_presets_add_generic(_("B/W blue artifacts reduce"), self->op, self->version(), &(dt_iop_channelmixer_params_t)
   {
     {
       0,0,0,0,0,0,0.4
