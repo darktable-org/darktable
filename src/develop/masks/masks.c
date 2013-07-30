@@ -1616,13 +1616,14 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
       }
       if (used[i] == 0) break;
     }
+
+    shapes = g_list_next(shapes);
+
     if (u == 0)
     {
       dev->forms = g_list_remove(dev->forms,f);
       dt_masks_free_form(f);
-      continue;
     }
-    shapes = g_list_next(shapes);
   }
   
   //and we save all that
