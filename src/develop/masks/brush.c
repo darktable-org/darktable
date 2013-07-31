@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of darktable,
     copyright (c) 2011 henrik andersson.
     copyright (c) 2012 aldric renaudin.
