@@ -28,7 +28,7 @@
 static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
   const int stepsize = 200000;
-  const int highlevel = 20000;
+  const int reserve = 20000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
 
@@ -45,7 +45,7 @@ static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max
     fprintf(stderr, "_brush_buffer_grow: memory size exceeded and detected too late :(\n");
   }
 
-  if(*buffer_count + highlevel > *buffer_max)
+  if(*buffer_count + reserve > *buffer_max)
   {
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
@@ -96,7 +96,7 @@ static float _brush_point_line_distance2(const float x, const float y, const flo
   return dx*dx + dy*dy;
 }
 
-/** remove unneaded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
+/** remove unneeded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
 static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *pressure, float epsilon2, const dt_masks_point_brush_t *template)
 {
   GList *ResultList = NULL;
@@ -394,7 +394,7 @@ static void _brush_points_recurs(float *p1, float *p2,
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 0.000001) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -575,7 +575,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
         float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
         float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
         float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
-        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, cw);
+        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, TRUE);
 
         if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
         if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
@@ -609,6 +609,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
 
+#if 0
     //we check gaps in the border (sharp edges)
     if (border && (fabsf((*border)[posb-2]-rb[0] > 1) || fabsf((*border)[posb-1]-rb[1]) > 1))
     {
@@ -616,6 +617,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       bmin[1] = (*border)[posb-1];
       //_brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, cw);
     }
+#endif
+
     (*points)[pos++] = rc[0];
     (*points)[pos++] = rc[1];
 
@@ -2183,6 +2186,8 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     p0[1] = points[i*2+1];
     p1[0] = border[i*2];
     p1[1] = border[i*2+1];
+
+    if(MAX(p0[0], p1[0]) < 0 || MIN(p0[0], p1[0]) >= width || MAX(p0[1], p1[1]) < 0 || MIN(p0[1], p1[1]) >= height) continue;
 
     _brush_falloff_roi(buffer, p0, p1, width, height, payload[i*2], payload[i*2+1]);
   }
