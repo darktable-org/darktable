@@ -51,7 +51,7 @@ groups ()
 int
 flags ()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 void init_key_accels(dt_iop_module_so_t *self)
