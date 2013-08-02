@@ -32,15 +32,34 @@
 #include "develop/masks/group.c"
 
 
-static void _set_hinter_message(dt_masks_form_gui_t *gui)
+static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formtype)
 {
   char msg[256] = "";
-  if (gui->creation) strcat(msg,_("ctrl+click to add a sharp node"));
-  else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between smooth/sharp node"));
-  else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
-  else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
-  else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
-  else if (gui->pivot_selected) strcat(msg,_("move to rotate shape"));
+
+  if(formtype&DT_MASKS_PATH)
+  {
+    if (gui->creation) strcat(msg,_("ctrl+click to add a sharp node"));
+    else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between smooth/sharp node"));
+    else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
+    else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
+    else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+  }
+  else if (formtype&DT_MASKS_GRADIENT)
+  {
+    if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+    else if (gui->pivot_selected) strcat(msg,_("move to rotate shape"));
+  }
+  else if (formtype&DT_MASKS_ELLIPSE)
+  {
+    if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to rotate"));
+    else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+  }
+  else if (formtype&DT_MASKS_BRUSH)
+  {
+    if (gui->creation) strcat(msg,_("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"));
+    else if (gui->border_selected) strcat(msg,_("scroll to set brush size"));
+    else if (gui->form_selected) strcat(msg,_("scroll to set hardness, ctrl+scroll to set shape opacity"));
+  }
 
   dt_control_hinter_message(darktable.control,msg);
 }
@@ -681,7 +700,7 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   else if (form->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
   else if (form->type & DT_MASKS_BRUSH) rep = dt_brush_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
 
-  if (gui) _set_hinter_message(gui);
+  if (gui) _set_hinter_message(gui, form->type);
 
   return rep;
 }
@@ -793,6 +812,8 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
   dev->form_gui->points = NULL;
   if (dev->form_gui->guipoints) free(dev->form_gui->guipoints);
   dev->form_gui->guipoints = NULL;
+  if (dev->form_gui->guipoints_payload) free(dev->form_gui->guipoints_payload);
+  dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
   dev->form_gui->pipe_hash = dev->form_gui->formid = 0;
   dev->form_gui->posx = dev->form_gui->posy = dev->form_gui->dx = dev->form_gui->dy = 0.0f;
@@ -815,6 +836,7 @@ void dt_masks_init_form_gui(dt_develop_t *dev)
   dt_masks_clear_form_gui(dev);
   dev->form_gui->edit_mode = DT_MASKS_EDIT_OFF;
   dev->form_gui->guipoints = NULL;
+  dev->form_gui->guipoints_payload = NULL;
   dev->form_gui->guipoints_count = 0;
 }
 

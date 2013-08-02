@@ -165,7 +165,7 @@ typedef struct dt_masks_form_gui_t
   GList *points;  //list of dt_masks_form_gui_points_t
 
   //points used to sample mouse moves
-  float *guipoints, *guipoints_pressure;
+  float *guipoints, *guipoints_payload;
   int guipoints_count;
 
   //values for mouse positions, etc...
