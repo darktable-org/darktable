@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-31 14:19+0200\n"
-"PO-Revision-Date: 2013-07-31 14:23+0200\n"
+"POT-Creation-Date: 2013-08-02 23:52+0200\n"
+"PO-Revision-Date: 2013-08-02 23:56+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -1063,7 +1063,7 @@ msgstr "inkommande"
 msgid "double click to reset"
 msgstr "dubbelklicka för återställning"
 
-#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1231
+#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1253
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1071,7 +1071,7 @@ msgstr[0] "%d form används"
 msgstr[1] "%d former används"
 
 #: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
-#: ../src/develop/masks/masks.c:1234
+#: ../src/develop/masks/masks.c:1256
 msgid "no mask used"
 msgstr "ingen markering används"
 
@@ -7844,60 +7844,79 @@ msgstr "återställ"
 msgid "could not allocate buffer for blending"
 msgstr "kunde inte tilldela buffert för blandning"
 
-#: ../src/develop/masks/masks.c:38
+#: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl+klick för att lägga till en skarp nod"
 
-#: ../src/develop/masks/masks.c:39
+#: ../src/develop/masks/masks.c:42
 msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+klick för att växla mellan kurv/skarp nod"
 
-#: ../src/develop/masks/masks.c:40
+#: ../src/develop/masks/masks.c:43
 msgid "right-click to reset feather value"
 msgstr "höger-klicka för att återställa fjädringsvärdet"
 
-#: ../src/develop/masks/masks.c:41
+#: ../src/develop/masks/masks.c:44
 msgid "ctrl+click to add a node"
 msgstr "ctrl+klick för att lägga till en nod"
 
-#: ../src/develop/masks/masks.c:42
+#: ../src/develop/masks/masks.c:45 ../src/develop/masks/masks.c:49
+#: ../src/develop/masks/masks.c:55
 msgid "ctrl+scroll to set shape opacity"
 msgstr "ctrl+scroll för att ställa in formens genomskinlighet"
 
-#: ../src/develop/masks/masks.c:43
+#: ../src/develop/masks/masks.c:50
 msgid "move to rotate shape"
 msgstr "flytta för att rotera formen"
 
-#: ../src/develop/masks/masks.c:138
+#: ../src/develop/masks/masks.c:54
+msgid "ctrl+click to rotate"
+msgstr "ctrl+klick för att rotera"
+
+#: ../src/develop/masks/masks.c:59
+msgid ""
+"scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
+"opacity"
+msgstr "scroll för att ställa in penselns storlek, shift+scroll för att ställa in dess hårdhet, ctrl+scroll för att ställa in dess ogenomskinlighet"
+
+#: ../src/develop/masks/masks.c:60
+msgid "scroll to set brush size"
+msgstr "scroll för att ställa in penselns storlek"
+
+#: ../src/develop/masks/masks.c:61
+msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
+msgstr "scroll för att ställa in hårdhet, ctrl+scroll för att ställa in formens ogenomskinlighet"
+
+#: ../src/develop/masks/masks.c:157
 #, c-format
 msgid "circle #%d"
 msgstr "cirkelform #%d"
 
-#: ../src/develop/masks/masks.c:139
+#: ../src/develop/masks/masks.c:158
 #, c-format
 msgid "path #%d"
 msgstr "slinga #%d"
 
-#: ../src/develop/masks/masks.c:140
+#: ../src/develop/masks/masks.c:159
 #, c-format
 msgid "gradient #%d"
 msgstr "gradient #%d"
 
-#: ../src/develop/masks/masks.c:141
+#: ../src/develop/masks/masks.c:160
 #, c-format
 msgid "ellipse #%d"
 msgstr "ellips #%d"
 
-#: ../src/develop/masks/masks.c:142
+#: ../src/develop/masks/masks.c:161
 #, c-format
 msgid "brush #%d"
 msgstr "pensel #%d"
 
-#: ../src/develop/masks/masks.c:1104 ../src/libs/masks.c:900
+#: ../src/develop/masks/masks.c:1126 ../src/libs/masks.c:900
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
-#: ../src/develop/masks/masks.c:1131
+#: ../src/develop/masks/masks.c:1153
 msgid "use same shapes as"
 msgstr "använd samma form som"
 
