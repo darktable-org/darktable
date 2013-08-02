@@ -74,15 +74,10 @@ static float _brush_point_line_distance2(const float x, const float y, const flo
 
   float xx, yy;
 
-  if (l == 0.0f || p <= 0.0f)
+  if (l == 0.0f)
   {
     xx = line_start[0];
     yy = line_start[1];
-  }
-  else if (p >= 1.0f)
-  {
-    xx = line_end[0];
-    yy = line_end[1];
   }
   else
   {
@@ -1269,7 +1264,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       template.hardness = MAX(MIN(masks_hardness, 1.0f), 0.0f);
       template.state = DT_MASKS_POINT_STATE_NORMAL;
 
-      const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness;
+      const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness*0.05f;
 
       //we simplify the path and generate the nodes
       form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2);
