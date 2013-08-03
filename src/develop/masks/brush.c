@@ -1543,18 +1543,18 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   {
     if(gui->guipoints && gui->guipoints_count < 100000)
     {
-      float wd = darktable.develop->preview_pipe->backbuf_width;
-      float ht = darktable.develop->preview_pipe->backbuf_height;
-      float px = pzx*wd;
-      float py = pzy*ht;
-
-      gui->guipoints[2*gui->guipoints_count] = px;
-      gui->guipoints[2*gui->guipoints_count+1] = py;
+      gui->guipoints[2*gui->guipoints_count] = pzx*darktable.develop->preview_pipe->backbuf_width;
+      gui->guipoints[2*gui->guipoints_count+1] = pzy*darktable.develop->preview_pipe->backbuf_height;
       gui->guipoints_payload[4*gui->guipoints_count] = gui->guipoints_payload[4*(gui->guipoints_count-1)];
       gui->guipoints_payload[4*gui->guipoints_count+1] = gui->guipoints_payload[4*(gui->guipoints_count-1)+1];
       gui->guipoints_payload[4*gui->guipoints_count+2] = gui->guipoints_payload[4*(gui->guipoints_count-1)+2];
       gui->guipoints_payload[4*gui->guipoints_count+3] = pressure;
       gui->guipoints_count++;
+    }
+    else
+    {
+      gui->posx = pzx*darktable.develop->preview_pipe->backbuf_width;
+      gui->posy = pzy*darktable.develop->preview_pipe->backbuf_height;
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -1812,20 +1812,29 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       float radius1 = masks_border*masks_hardness*MIN(wd,ht);
       float radius2 = masks_border*MIN(wd,ht);
 
-      float zoom_x, zoom_y;
-      DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-      DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-      float xcenter = (.5f+zoom_x)*wd;
-      float ycenter = (.5f+zoom_y)*ht;
+      float xpos, ypos;
+      if(gui->posx == 0 && gui->posy == 0)
+      {
+        float zoom_x, zoom_y;
+        DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+        DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+        xpos = (.5f+zoom_x)*wd;
+        ypos = (.5f+zoom_y)*ht;
+      }
+      else
+      {
+        xpos = gui->posx;
+        ypos = gui->posy;
+      }
 
       cairo_save(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, masks_density);
-      cairo_arc(cr, xcenter, ycenter, radius1, 0, 2.0*M_PI);
+      cairo_arc(cr, xpos, ypos, radius1, 0, 2.0*M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
-      cairo_arc(cr, xcenter, ycenter, radius2, 0, 2.0*M_PI);
+      cairo_arc(cr, xpos, ypos, radius2, 0, 2.0*M_PI);
       cairo_stroke(cr);
       cairo_restore(cr);
     }
