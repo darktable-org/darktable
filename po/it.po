@@ -7910,8 +7910,8 @@ msgid ""
 "scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set "
 "opacity"
 msgstr ""
-"Scroll per impostare la dimensione del pennello, shift+scroll per impostare "
-"la durezza, ctrl+scroll per impostare l'opacità"
+"Scroll per la dimensione, shift+scroll per la durezza, ctrl+scroll per "
+"l'opacità"
 
 #: ../src/develop/masks/masks.c:60
 msgid "scroll to set brush size"
