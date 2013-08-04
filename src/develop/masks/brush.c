@@ -135,20 +135,20 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     switch(psens)
     {
       case DT_MASKS_PRESSURE_HARDNESS_ABS:
-        point1->hardness = pressure;
+        point1->hardness = MAX(0.05f, pressure);
         break;
       case DT_MASKS_PRESSURE_HARDNESS_REL:
-        point1->hardness *= pressure;
+        point1->hardness = MAX(0.05f, point1->hardness*pressure);
         break;
       case DT_MASKS_PRESSURE_OPACITY_ABS:
-        point1->density = pressure;
+        point1->density = MAX(0.05f, pressure);
         break;
       case DT_MASKS_PRESSURE_OPACITY_REL:
-        point1->density *= pressure;
+        point1->density = MAX(0.05f, point1->density*pressure);
         break;
       case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-        point1->border[0] *= pressure;
-        point1->border[1] *= pressure;
+        point1->border[0] = MAX(0.005f, point1->border[0]*pressure);
+        point1->border[1] = MAX(0.005f, point1->border[1]*pressure);
         break;
       default:
       case DT_MASKS_PRESSURE_OFF:
@@ -169,20 +169,20 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     switch(psens)
     {
       case DT_MASKS_PRESSURE_HARDNESS_ABS:
-        pointn->hardness = pressure;
+        pointn->hardness = MAX(0.05f, pressure);
         break;
       case DT_MASKS_PRESSURE_HARDNESS_REL:
-        pointn->hardness *= pressure;
+        pointn->hardness = MAX(0.05f, pointn->hardness*pressure);
         break;
       case DT_MASKS_PRESSURE_OPACITY_ABS:
-        pointn->density = pressure;
+        pointn->density = MAX(0.05f, pressure);
         break;
       case DT_MASKS_PRESSURE_OPACITY_REL:
-        pointn->density *= pressure;
+        pointn->density = MAX(0.05f, pointn->density*pressure);
         break;
       case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-        pointn->border[0] *= pressure;
-        pointn->border[1] *= pressure;
+        pointn->border[0] = MAX(0.005f, pointn->border[0]*pressure);
+        pointn->border[1] = MAX(0.005f, pointn->border[1]*pressure);
         break;
       default:
       case DT_MASKS_PRESSURE_OFF:
@@ -1282,10 +1282,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   if (form->type & DT_MASKS_CLONE) masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"),0.5f);
   else masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"),0.5f);
 
-  float masks_density;
-  if (form->type & DT_MASKS_CLONE) masks_density = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_density"),1.0f);
-  else masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"),1.0f);
-
   float masks_hardness;
   if (form->type & DT_MASKS_CLONE) masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"),1.0f);
   else masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"),1.0f);
@@ -1318,15 +1314,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
         gui->guipoints[i*2] /= darktable.develop->preview_pipe->iwidth;
         gui->guipoints[i*2+1] /= darktable.develop->preview_pipe->iheight;
       }
-
-      //we define a template for each node
-      dt_masks_point_brush_t template;
-      template.corner[0] = template.corner[1] = 0.0f;
-      template.ctrl1[0] = template.ctrl1[1] = template.ctrl2[0] = template.ctrl2[1] = -1.0f;
-      template.border[0] = template.border[1] = MAX(0.005f, masks_border);
-      template.density = MAX(MIN(masks_density, 1.0f), 0.0f);
-      template.hardness = MAX(MIN(masks_hardness, 1.0f), 0.0f);
-      template.state = DT_MASKS_POINT_STATE_NORMAL;
 
       const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness*0.05f;
 
@@ -1920,19 +1907,19 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       switch(gui->pressure_sensitivity)
       {
         case DT_MASKS_PRESSURE_HARDNESS_ABS:
-          masks_hardness = pressure;
+          masks_hardness = MAX(0.05f, pressure);
           break;
         case DT_MASKS_PRESSURE_HARDNESS_REL:
-          masks_hardness *= pressure;
+          masks_hardness = MAX(0.05f, masks_hardness*pressure);
           break;
         case DT_MASKS_PRESSURE_OPACITY_ABS:
-          masks_density = pressure;
+          masks_density = MAX(0.05f, pressure);
           break;
         case DT_MASKS_PRESSURE_OPACITY_REL:
-          masks_density *= pressure;
+          masks_density = MAX(0.05f, masks_density*pressure);
           break;
         case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-          masks_border *= pressure;
+          masks_border = MAX(0.005f, masks_border*pressure);
           break;
         default:
         case DT_MASKS_PRESSURE_OFF:
@@ -1959,19 +1946,19 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         switch(gui->pressure_sensitivity)
         {
           case DT_MASKS_PRESSURE_HARDNESS_ABS:
-            masks_hardness = pressure;
+            masks_hardness = MAX(0.05f, pressure);
             break;
           case DT_MASKS_PRESSURE_HARDNESS_REL:
-            masks_hardness *= pressure;
+            masks_hardness = MAX(0.05f, masks_hardness*pressure);
             break;
           case DT_MASKS_PRESSURE_OPACITY_ABS:
-            masks_density = pressure;
+            masks_density = MAX(0.05f, pressure);
             break;
           case DT_MASKS_PRESSURE_OPACITY_REL:
-            masks_density *= pressure;
+            masks_density = MAX(0.05f, masks_density*pressure);
             break;
           case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-            masks_border *= pressure;
+            masks_border = MAX(0.005f, masks_border*pressure);
             break;
           default:
           case DT_MASKS_PRESSURE_OFF:
@@ -1995,9 +1982,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
       if (!stroked) cairo_stroke(cr);
 
-      float density = gui->guipoints_payload[4*(gui->guipoints_count-1)+2];
       cairo_set_line_width(cr, linewidth);
-      cairo_set_source_rgba(cr, .8, .8, .8, density);
+      cairo_set_source_rgba(cr, .8, .8, .8, opacity);
       cairo_arc(cr, gui->guipoints[2*(gui->guipoints_count-1)], gui->guipoints[2*(gui->guipoints_count-1)+1], radius, 0, 2.0*M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
