@@ -66,6 +66,17 @@ typedef enum dt_masks_edit_mode_t
 }
 dt_masks_edit_mode_t;
 
+typedef enum dt_masks_pressure_sensitivity_t
+{
+  DT_MASKS_PRESSURE_OFF = 0,
+  DT_MASKS_PRESSURE_HARDNESS_REL = 1,
+  DT_MASKS_PRESSURE_HARDNESS_ABS = 2,
+  DT_MASKS_PRESSURE_OPACITY_REL = 3,
+  DT_MASKS_PRESSURE_OPACITY_ABS = 4,
+  DT_MASKS_PRESSURE_BRUSHSIZE_REL = 5
+}
+dt_masks_pressure_sensitivity_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -196,6 +207,8 @@ typedef struct dt_masks_form_gui_t
   gboolean creation;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
+
+  dt_masks_pressure_sensitivity_t pressure_sensitivity;
 
   //ids
   int formid;

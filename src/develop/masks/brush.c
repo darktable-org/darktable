@@ -92,7 +92,7 @@ static float _brush_point_line_distance2(const float x, const float y, const flo
 }
 
 /** remove unneeded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
-static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *payload, float epsilon2)
+static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *payload, float epsilon2, dt_masks_pressure_sensitivity_t psens)
 {
   GList *ResultList = NULL;
 
@@ -111,8 +111,8 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
   if (dmax2 >= epsilon2)
   {
-    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, payload, epsilon2);
-    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, payload+index*4, epsilon2);
+    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, payload, epsilon2, psens);
+    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, payload+index*4, epsilon2, psens);
 
     // remove last element from ResultList1
     GList *end1 = g_list_last(ResultList1);
@@ -128,9 +128,33 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     point1->corner[1] = points[1];
     point1->ctrl1[0] = point1->ctrl1[1] = point1->ctrl2[0] = point1->ctrl2[1] = -1.0f;
     point1->border[0] = point1->border[1] = payload[0];
-    point1->hardness = payload[1]*payload[3];  // hardness*pressure
+    point1->hardness = payload[1];
     point1->density = payload[2];
     point1->state = DT_MASKS_POINT_STATE_NORMAL;
+    float pressure = payload[3];
+    switch(psens)
+    {
+      case DT_MASKS_PRESSURE_HARDNESS_ABS:
+        point1->hardness = pressure;
+        break;
+      case DT_MASKS_PRESSURE_HARDNESS_REL:
+        point1->hardness *= pressure;
+        break;
+      case DT_MASKS_PRESSURE_OPACITY_ABS:
+        point1->density = pressure;
+        break;
+      case DT_MASKS_PRESSURE_OPACITY_REL:
+        point1->density *= pressure;
+        break;
+      case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
+        point1->border[0] *= pressure;
+        point1->border[1] *= pressure;
+        break;
+      default:
+      case DT_MASKS_PRESSURE_OFF:
+        //ignore pressure value
+        break;
+    }
     ResultList = g_list_append(ResultList, (gpointer)point1);
 
     dt_masks_point_brush_t *pointn = malloc(sizeof(dt_masks_point_brush_t));
@@ -138,9 +162,33 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     pointn->corner[1] = points[(points_count-1)*2+1];
     pointn->ctrl1[0] = pointn->ctrl1[1] = pointn->ctrl2[0] = pointn->ctrl2[1] = -1.0f;
     pointn->border[0] = pointn->border[1] = payload[(points_count-1)*4];
-    pointn->hardness = payload[(points_count-1)*4+1]*payload[(points_count-1)*4+3];  // hardness*pressure
+    pointn->hardness = payload[(points_count-1)*4+1];
     pointn->density = payload[(points_count-1)*4+2];
     pointn->state = DT_MASKS_POINT_STATE_NORMAL;
+    pressure = payload[(points_count-1)*4+3];
+    switch(psens)
+    {
+      case DT_MASKS_PRESSURE_HARDNESS_ABS:
+        pointn->hardness = pressure;
+        break;
+      case DT_MASKS_PRESSURE_HARDNESS_REL:
+        pointn->hardness *= pressure;
+        break;
+      case DT_MASKS_PRESSURE_OPACITY_ABS:
+        pointn->density = pressure;
+        break;
+      case DT_MASKS_PRESSURE_OPACITY_REL:
+        pointn->density *= pressure;
+        break;
+      case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
+        pointn->border[0] *= pressure;
+        pointn->border[1] *= pressure;
+        break;
+      default:
+      case DT_MASKS_PRESSURE_OFF:
+        //ignore pressure value
+        break;
+    }
     ResultList = g_list_append(ResultList, (gpointer)pointn);
   }
 
@@ -1057,6 +1105,22 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
 
       gui->guipoints_count = 1;
 
+      gui->pressure_sensitivity = DT_MASKS_PRESSURE_OFF;
+      char *psens = dt_conf_get_string("pressure_sensitivity");
+      if(psens)
+      {
+        if(!strcmp(psens, "hardness (absolute)"))
+          gui->pressure_sensitivity = DT_MASKS_PRESSURE_HARDNESS_ABS;
+        else if(!strcmp(psens, "hardness (relative)"))
+          gui->pressure_sensitivity = DT_MASKS_PRESSURE_HARDNESS_REL;
+        else if(!strcmp(psens, "opacity (absolute)"))
+          gui->pressure_sensitivity = DT_MASKS_PRESSURE_OPACITY_ABS;
+        else if(!strcmp(psens, "opacity (relative)"))
+          gui->pressure_sensitivity = DT_MASKS_PRESSURE_OPACITY_REL;
+        else if(!strcmp(psens, "brush size (relative)"))
+          gui->pressure_sensitivity = DT_MASKS_PRESSURE_BRUSHSIZE_REL;
+      }
+
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1267,7 +1331,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness*0.05f;
 
       //we simplify the path and generate the nodes
-      form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2);
+      form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2, gui->pressure_sensitivity);
 
       //printf("guipoints_count %d, points %d\n", gui->guipoints_count, g_list_length(form->points));
 
@@ -1840,8 +1904,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     }
     else
     {
-      float masks_border, masks_hardness;
-      float radius, oldradius;
+      float masks_border, masks_hardness, masks_density;
+      float radius, oldradius, opacity, oldopacity, pressure;
       int stroked = 1;
 
       cairo_save (cr);
@@ -1850,9 +1914,38 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       float linewidth = cairo_get_line_width(cr);
       masks_border = gui->guipoints_payload[0];
       masks_hardness = gui->guipoints_payload[1];
+      masks_density = gui->guipoints_payload[2];
+      pressure = gui->guipoints_payload[3];
+
+      switch(gui->pressure_sensitivity)
+      {
+        case DT_MASKS_PRESSURE_HARDNESS_ABS:
+          masks_hardness = pressure;
+          break;
+        case DT_MASKS_PRESSURE_HARDNESS_REL:
+          masks_hardness *= pressure;
+          break;
+        case DT_MASKS_PRESSURE_OPACITY_ABS:
+          masks_density = pressure;
+          break;
+        case DT_MASKS_PRESSURE_OPACITY_REL:
+          masks_density *= pressure;
+          break;
+        case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
+          masks_border *= pressure;
+          break;
+        default:
+        case DT_MASKS_PRESSURE_OFF:
+          //ignore pressure value
+          break;
+      }
+
       radius = oldradius = masks_border*masks_hardness*MIN(wd,ht);
+      opacity = oldopacity = masks_density;
 
       cairo_set_line_width(cr, 2*radius);
+      cairo_set_source_rgba(cr, .1, .1, .1, opacity);
+
       cairo_move_to(cr, gui->guipoints[0], gui->guipoints[1]);
       for (int i = 1; i < gui->guipoints_count; i++)
       {
@@ -1860,13 +1953,43 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         stroked = 0;
         masks_border = gui->guipoints_payload[i*4];
         masks_hardness = gui->guipoints_payload[i*4+1];
+        masks_density = gui->guipoints_payload[i*4+2];
+        pressure = gui->guipoints_payload[i*4+3];
+
+        switch(gui->pressure_sensitivity)
+        {
+          case DT_MASKS_PRESSURE_HARDNESS_ABS:
+            masks_hardness = pressure;
+            break;
+          case DT_MASKS_PRESSURE_HARDNESS_REL:
+            masks_hardness *= pressure;
+            break;
+          case DT_MASKS_PRESSURE_OPACITY_ABS:
+            masks_density = pressure;
+            break;
+          case DT_MASKS_PRESSURE_OPACITY_REL:
+            masks_density *= pressure;
+            break;
+          case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
+            masks_border *= pressure;
+            break;
+          default:
+          case DT_MASKS_PRESSURE_OFF:
+            //ignore pressure value
+            break;
+        }
+
         radius = masks_border*masks_hardness*MIN(wd,ht);
-        if(radius != oldradius)
+        opacity = masks_density;
+
+        if(radius != oldradius || opacity != oldopacity)
         {
           cairo_stroke(cr);
           stroked = 1;
           cairo_set_line_width(cr, 2*radius);
+          cairo_set_source_rgba(cr, .1, .1, .1, opacity);
           oldradius = radius;
+          oldopacity = opacity;
           cairo_move_to(cr, gui->guipoints[i*2], gui->guipoints[i*2+1]);
         }
       }
