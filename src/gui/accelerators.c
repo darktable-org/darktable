@@ -606,7 +606,8 @@ void dt_accel_disconnect_list(GSList *list)
   while(list)
   {
     accel = (dt_accel_t*)list->data;
-    gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
+    if (accel)
+      gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
     list = g_slist_delete_link(list, list);
   }
 }
