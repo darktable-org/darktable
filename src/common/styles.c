@@ -562,8 +562,8 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
 
         item->params = NULL;
         item->blendop_params = NULL;
-        if (imgid != -1 && sqlite3_column_type(stmt,4)!=SQLITE_NULL)
-          item->selimg_num = sqlite3_column_int (stmt, 4);
+        if (imgid != -1 && sqlite3_column_type(stmt,3)!=SQLITE_NULL)
+          item->selimg_num = sqlite3_column_int (stmt, 3);
       }
       item->name = g_strdup (name);
       result = g_list_append (result,item);
