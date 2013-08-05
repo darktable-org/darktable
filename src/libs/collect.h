@@ -41,7 +41,7 @@ const char *dt_lib_collect_string[] =
   N_("publisher"),
   N_("rights"),
   N_("lens"),
-  N_("iso"),
+  N_("ISO"),
   N_("aperture"),
   N_("filename")
 };

@@ -80,7 +80,7 @@ load_button_clicked (GtkWidget *widget, dt_lib_module_t *self)
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.xmp");
-  gtk_file_filter_set_name(filter, _("xmp sidecar files"));
+  gtk_file_filter_set_name(filter, _("XMP sidecar files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -294,12 +294,12 @@ gui_init (dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
   d->load_button = loadbutton;
-  g_object_set(G_OBJECT(loadbutton), "tooltip-text", _("open an xmp sidecar file\nand apply it to selected images"), (char *)NULL);
+  g_object_set(G_OBJECT(loadbutton), "tooltip-text", _("open an XMP sidecar file\nand apply it to selected images"), (char *)NULL);
   gtk_box_pack_start(hbox, loadbutton, TRUE, TRUE, 0);
 
   GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
   d->write_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to xmp sidecar files"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("write history stack and tags to XMP sidecar files"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 

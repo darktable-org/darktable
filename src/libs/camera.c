@@ -594,7 +594,7 @@ gui_init (dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
 
-  if( (prop=_lib_property_add_new(lib, _("iso"),"iso"))!=NULL)
+  if( (prop=_lib_property_add_new(lib, _("ISO"),"iso"))!=NULL)
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);
@@ -604,7 +604,7 @@ gui_init (dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(prop->osd), "clicked", G_CALLBACK(_osd_button_clicked), prop);
   }
 
-  if( (prop=_lib_property_add_new(lib, _("wb"),"whitebalance"))!=NULL)
+  if( (prop=_lib_property_add_new(lib, _("WB"),"whitebalance"))!=NULL)
   {
     hbox = GTK_BOX(gtk_hbox_new(FALSE, 0));
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(prop->values), TRUE, TRUE, 0);

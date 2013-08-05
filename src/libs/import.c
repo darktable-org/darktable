@@ -399,8 +399,8 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
     gtk_box_pack_start(GTK_BOX (extra), recursive, FALSE, FALSE, 0);
 
     // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-    ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-    g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+    ignore_jpeg = gtk_check_button_new_with_label (_("ignore JPEG files"));
+    g_object_set(ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+JPEG in a directory."), NULL);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
     gtk_box_pack_start(GTK_BOX (extra), ignore_jpeg, FALSE, FALSE, 0);
   }
