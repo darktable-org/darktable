@@ -1323,7 +1323,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
 
       if (g_strcmp0(mount_name, "Local")==0)
       {
-        label = gtk_label_new (_("local hdd"));
+        label = gtk_label_new (_("local HDD"));
       }
       else
       {

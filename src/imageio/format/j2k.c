@@ -570,7 +570,7 @@ extension(dt_imageio_module_data_t *data_tmp)
 const char*
 name ()
 {
-  return _("jpeg 2000");
+  return _("JPEG 2000");
 }
 
 static void combobox_changed(GtkComboBox *widget, gpointer user_data)
@@ -610,7 +610,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)JP2_CFMT);
   if(format_last == JP2_CFMT) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
-  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("j2k"));
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("J2K"));
   gui->j2k = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)J2K_CFMT);
@@ -626,15 +626,15 @@ void gui_init(dt_imageio_module_format_t *self)
 
   hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-  GtkWidget *label = gtk_label_new(_("dcp mode"));
+  GtkWidget *label = gtk_label_new(_("DCP mode"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
   GtkWidget *combo = gtk_combo_box_new_text();
   gui->preset = GTK_COMBO_BOX(combo);
   gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("off"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("cinema2k, 24fps"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("cinema2k, 48fps"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("cinema4k, 24fps"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema2K, 24FPS"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema2K, 48FPS"));
+  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema4K, 24FPS"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo), preset_last);
   gtk_box_pack_start(GTK_BOX(hbox), combo, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(combobox_changed), NULL);

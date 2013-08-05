@@ -406,7 +406,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   if (!pathname)
   {
-    if (!iauto) dt_control_log(_("cannot find lightroom xmp!"));
+    if (!iauto) dt_control_log(_("cannot find lightroom XMP!"));
     return;
   }
 
@@ -431,7 +431,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }
@@ -453,7 +453,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   if (xpathObj == NULL)
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     xmlXPathFreeContext(xpathCtx);
     g_free(pathname);
     xmlFreeDoc(doc);
@@ -473,7 +473,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
       xmlXPathFreeObject(xpathObj);
       xmlFreeDoc(doc);
       xmlFree(value);
-      if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+      if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
       g_free(pathname);
       return;
     }
@@ -483,7 +483,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   {
     xmlXPathFreeObject(xpathObj);
     xmlXPathFreeContext(xpathCtx);
-    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }
@@ -504,7 +504,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   if (!entryNode || xmlStrcmp(entryNode->name, (const xmlChar *)"Description"))
   {
-    if (!iauto) dt_control_log(_("`%s' not a lightroom xmp!"), pathname);
+    if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);
     g_free(pathname);
     return;
   }

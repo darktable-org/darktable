@@ -451,12 +451,12 @@ void init_presets(dt_lib_module_t *self)
 
   // <title>\0<description>\0<rights>\0<creator>\0<publisher>
 
-  add_rights_preset(self, _("cc-by"), _("creative commons attribution (cc-by)"));
-  add_rights_preset(self, _("cc-by-sa"), _("creative commons attribution-sharealike (cc-by-sa)"));
-  add_rights_preset(self, _("cc-by-nd"), _("creative commons attribution-noderivs (cc-by-nd)"));
-  add_rights_preset(self, _("cc-by-nc"), _("creative commons attribution-noncommercial (cc-by-nc)"));
-  add_rights_preset(self, _("cc-by-nc-sa"), _("creative commons attribution-noncommercial-sharealike (cc-by-nc-sa)"));
-  add_rights_preset(self, _("cc-by-nc-nd"), _("creative commons attribution-noncommercial-noderivs (cc-by-nc-nd)"));
+  add_rights_preset(self, _("CC BY"), _("Creative Commons Attribution (CC BY)"));
+  add_rights_preset(self, _("CC BY-SA"), _("Creative Commons Attribution-ShareAlike (CC BY-SA)"));
+  add_rights_preset(self, _("CC BY-ND"), _("Creative Commons Attribution-NoDerivs (CC BY-ND)"));
+  add_rights_preset(self, _("CC BY-NC"), _("Creative Commons Attribution-NonCommercial (CC BY-NC)"));
+  add_rights_preset(self, _("CC BY-NC-SA"), _("Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"));
+  add_rights_preset(self, _("CC BY-NC-ND"), _("Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"));
   add_rights_preset(self, _("all rights reserved"), _("all rights reserved."));
 }
 
