@@ -559,10 +559,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->dither_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_add(g->dither_type, _("random"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 1-bit b&w"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 1-bit B&W"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 4-bit gray"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit rgb"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit rgb"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit RGB"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit RGB"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg auto"));
   dt_bauhaus_widget_set_label(g->dither_type, _("method"));
 

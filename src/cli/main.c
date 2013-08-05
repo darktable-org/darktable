@@ -94,7 +94,7 @@ int main(int argc, char *arg[])
       {
         k++;
         bpp = MAX(atoi(arg[k]), 0);
-        fprintf(stderr, "%s %d\n", _("TODO: sorry, due to api restrictions we currently cannot set the bpp to"), bpp);
+        fprintf(stderr, "%s %d\n", _("TODO: sorry, due to API restrictions we currently cannot set the BPP to"), bpp);
       }
       else if(!strcmp(arg[k], "--hq"))
       {

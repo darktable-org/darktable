@@ -438,15 +438,15 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
 
   // iso
-  label = gtk_label_new(_("iso"));
+  label = gtk_label_new(_("ISO"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_min, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
 

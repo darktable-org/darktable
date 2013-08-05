@@ -536,7 +536,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->color_mode_selector = gtk_combo_box_new_text();
   gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
-                            _("rgb"));
+                            _("RGB"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
                             _("Lab"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->color_mode_selector),
@@ -587,7 +587,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->samples_mode_selector = gtk_combo_box_new_text();
   gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_mode_selector),
-                            _("rgb"));
+                            _("RGB"));
   gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_mode_selector),
                             _("Lab"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_mode_selector),

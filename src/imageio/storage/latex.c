@@ -68,7 +68,7 @@ pair_t;
 const char*
 name (const struct dt_imageio_module_storage_t *self)
 {
-  return _("latex book template");
+  return _("LaTeX book template");
 }
 
 static void
@@ -135,12 +135,12 @@ gui_init (dt_imageio_module_storage_t *self)
     { "HOUR", _("$(HOUR) - hour") },
     { "MINUTE", _("$(MINUTE) - minute") },
     { "SECOND", _("$(SECOND) - second") },
-    { "EXIF_YEAR", _("$(EXIF_YEAR) - exif year") },
-    { "EXIF_MONTH", _("$(EXIF_MONTH) - exif month") },
-    { "EXIF_DAY", _("$(EXIF_DAY) - exif day") },
-    { "EXIF_HOUR", _("$(EXIF_HOUR) - exif hour") },
-    { "EXIF_MINUTE", _("$(EXIF_MINUTE) - exif minute") },
-    { "EXIF_SECOND", _("$(EXIF_SECOND) - exif second") },
+    { "EXIF_YEAR", _("$(EXIF_YEAR) - EXIF year") },
+    { "EXIF_MONTH", _("$(EXIF_MONTH) - EXIF month") },
+    { "EXIF_DAY", _("$(EXIF_DAY) - EXIF day") },
+    { "EXIF_HOUR", _("$(EXIF_HOUR) - EXIF hour") },
+    { "EXIF_MINUTE", _("$(EXIF_MINUTE) - EXIF minute") },
+    { "EXIF_SECOND", _("$(EXIF_SECOND) - EXIF second") },
     { "STARS", _("$(STARS) - star rating") },
     { "LABELS", _("$(LABELS) - colorlabels") },
     { "PICTURES_FOLDER", _("$(PICTURES_FOLDER) - pictures folder") },

@@ -89,7 +89,7 @@ gui_init (dt_lib_module_t *self)
   GtkBox *hbox;
   GtkWidget *label;
 
-  d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show osd"));
+  d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show OSD"));
   g_object_set(G_OBJECT(d->show_osd_checkbutton), "tooltip-text", _("toggle the visibility of the map overlays"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton), dt_conf_get_bool("plugins/map/show_map_osd"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->show_osd_checkbutton, TRUE, TRUE, 0);

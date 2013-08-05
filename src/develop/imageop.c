@@ -294,17 +294,17 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
 {
   if(!self->gui_init_simple)
   {
-    self->widget = gtk_label_new(_("error creating gui, see stderr"));
+    self->widget = gtk_label_new(_("error creating GUI, see stderr"));
     gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
-    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
+    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the GUI of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
     return;
   }
   dt_gui_simple_t *gui = self->gui_init_simple(self->so);
   if(!gui)
   {
-    self->widget = gtk_label_new(_("error creating gui, see stderr"));
+    self->widget = gtk_label_new(_("error creating GUI, see stderr"));
     gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
-    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the gui of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
+    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the GUI of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
     return;
   }
 
@@ -377,7 +377,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         }
         break;
       case DT_SIMPLE_GUI_NONE: // should never happen
-        g[i] = gtk_label_new(_("error creating gui, DT_SIMPLE_GUI_NONE could not be found"));
+        g[i] = gtk_label_new(_("error creating GUI, DT_SIMPLE_GUI_NONE could not be found"));
         gtk_label_set_justify(GTK_LABEL(g[i]), GTK_JUSTIFY_LEFT);
         break;
     }

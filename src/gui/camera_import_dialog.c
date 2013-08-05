@@ -319,8 +319,8 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("general"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label (_("ignore JPEG files"));
+  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+JPEG in a directory."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
   gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.ignore_jpeg, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT(data->settings.general.ignore_jpeg), "clicked",G_CALLBACK (_check_button_callback),data);
