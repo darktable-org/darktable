@@ -28,6 +28,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "gui/gtk.h"
 #include "dtgtk/label.h"
 #include "common/colorspaces.h"
+#include "common/opencl.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -74,6 +75,12 @@ typedef struct dt_iop_colorbalance_data_t
   float lift[CHANNEL_SIZE], gamma[CHANNEL_SIZE], gain[CHANNEL_SIZE];
 }
 dt_iop_colorbalance_data_t;
+
+typedef struct dt_iop_colorbalance_global_data_t
+{
+  int kernel_colorbalance;
+}
+dt_iop_colorbalance_global_data_t;
 
 const char* name()
 {
@@ -185,9 +192,61 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   }
 }
 
+#ifdef HAVE_OPENCL
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
+  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->data;
+
+  cl_int err = -999;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float lift[4] = {2.0f - (d->lift[CHANNEL_RED]   * d->lift[CHANNEL_FACTOR]),
+                         2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                         2.0f - (d->lift[CHANNEL_BLUE]  * d->lift[CHANNEL_FACTOR]),
+                         0.0f
+                        },
+              gamma[4] = {d->gamma[CHANNEL_RED]   * d->gamma[CHANNEL_FACTOR],
+                          d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
+                          d->gamma[CHANNEL_BLUE]  * d->gamma[CHANNEL_FACTOR],
+                          0.0f
+                         },
+              gamma_inv[4] = {(gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
+                              (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
+                              (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f,
+                              0.0f
+                             },
+              gain[4] = {d->gain[CHANNEL_RED]   * d->gain[CHANNEL_FACTOR],
+                         d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
+                         d->gain[CHANNEL_BLUE]  * d->gain[CHANNEL_FACTOR],
+                         0.0f
+                        };
+
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 4, 4*sizeof(float), (void *)&lift);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 5, 4*sizeof(float), (void *)&gain);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorbalance, 6, 4*sizeof(float), (void *)&gamma_inv);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorbalance, sizes);
+  if(err != CL_SUCCESS) goto error;
+  return TRUE;
+
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_colorbalance] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL;
   module->params = malloc(sizeof(dt_iop_colorbalance_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorbalance_params_t));
   module->default_enabled = 0;
@@ -211,7 +270,21 @@ void cleanup(dt_iop_module_t *module)
   module->gui_data = NULL; // just to be sure
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 8; // extended.cl, from programs.conf
+  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)malloc(sizeof(dt_iop_colorbalance_global_data_t));
+  module->data = gd;
+  gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_colorbalance);
+  free(module->data);
   module->data = NULL;
 }
 
