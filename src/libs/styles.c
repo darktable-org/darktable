@@ -445,7 +445,7 @@ gui_init (dt_lib_module_t *self)
   d->upload_button = uploadButton;
   g_object_set (uploadButton, "tooltip-text", _("upload style to the official darktable style collection"), (char *)NULL);
   g_signal_connect (uploadButton, "clicked", G_CALLBACK(upload_clicked),d);
-  gtk_box_pack_start(GTK_BOX (vbox2),uploadButton,TRUE,TRUE,0);
+  gtk_box_pack_start(GTK_BOX (hbox2),uploadButton,TRUE,TRUE,0);
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();

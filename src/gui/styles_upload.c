@@ -180,7 +180,7 @@ static gboolean _gui_styles_upload_response(GtkDialog *dialog, gint response_id,
     dt_control_upload_style(sd->beforeid, sd->afterid, nameorig, name, username, password, description, url);
     
     if (save_local)
-      dt_styles_update (nameorig, name, description, NULL);
+      dt_styles_update (nameorig, name, description, NULL, sd->afterid, NULL);
 
   }
   else
