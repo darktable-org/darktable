@@ -3530,7 +3530,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-36" height="0"/>
-		<Sensor black="520" white="16596"/>
+		<Sensor black="512" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="SLT-A65V">
 		<CFA width="2" height="2">
