@@ -356,25 +356,6 @@ static void _brush_init_ctrl_points (dt_masks_form_t *form)
   }
 }
 
-/* static */ gboolean _brush_is_clockwise(dt_masks_form_t *form)
-{
-  if (g_list_length(form->points) > 2)
-  {
-    float sum = 0.0f;
-    int nb = g_list_length(form->points);
-    for(int k = 0; k < nb; k++)
-    {
-      int k2 = (k+1)%nb;
-      dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k);
-      dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k2);
-      //edge k
-      sum += (point2->corner[0]-point1->corner[0])*(point2->corner[1]+point1->corner[1]);
-    }
-    return (sum < 0);
-  }
-  //return dummy answer
-  return TRUE;
-}
 
 /** fill the gap between 2 points with an arc of circle */
 /** this function is here because we can have gap in border, esp. if the corner is very sharp */
@@ -457,6 +438,11 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withborder)
     {
+      if (border_max[0] == -9999999.0f)
+      {
+        border_max[0] = border_min[0];
+        border_max[1] = border_min[1];
+      }
       rborder[0] = border[*pos_border] = border_max[0];
       rborder[1] = border[*pos_border+1] = border_max[1];
       *pos_border += 2;
@@ -492,7 +478,7 @@ static inline int _brush_cyclic_cursor(int n, int nb)
 
 
 /** get all points of the brush and the border */
-/** this take care of gaps and self-intersection and iop distortions */
+/** this takes care of gaps and iop distortions */
 static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int prio_max, dt_dev_pixelpipe_t *pipe,
                                     float **points, int *points_count, float **border, int *border_count, float **payload, int *payload_count, int source)
 {
@@ -526,15 +512,17 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   //we store all points
-  float dx,dy;
-  dx=dy=0.0f;
+  float dx = 0.0f, dy = 0.0f;
+
   int nb = g_list_length(form->points);
+
   if (source && nb>0)
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)g_list_nth_data(form->points,0);
     dx = (pt->corner[0]-form->source[0])*wd;
     dy = (pt->corner[1]-form->source[1])*ht;
   }
+
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k);
@@ -545,6 +533,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     (*points)[k*6+4] = pt->ctrl2[0]*wd-dx;
     (*points)[k*6+5] = pt->ctrl2[1]*ht-dy;
   }
+
   //for the border, we store value too
   if (border)
   {
@@ -558,6 +547,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       (*border)[k*6+5] = 0.0; //end index for the final gap
     }
   }
+
   //for the payload, we reserve an equivalent number of cells to keep it in sync 
   if (payload)
   {
@@ -685,16 +675,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
 
-#if 0
-    //we check gaps in the border (sharp edges)
-    if (border && (fabsf((*border)[posb-2]-rb[0] > 1) || fabsf((*border)[posb-1]-rb[1]) > 1))
-    {
-      bmin[0] = (*border)[posb-2];
-      bmin[1] = (*border)[posb-1];
-      //_brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, cw);
-    }
-#endif
-
     (*points)[pos++] = rc[0];
     (*points)[pos++] = rc[1];
 
@@ -707,7 +687,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (border)
     {
-
       if (rb[0] == -9999999.0f)
       {
         if ((*border)[posb-2] == -9999999.0f)
@@ -1168,7 +1147,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         //we recreate the form points
         dt_masks_gui_form_remove(form,gui,index);
         dt_masks_gui_form_create(form,gui,index);
-        gpt->clockwise = _brush_is_clockwise(form);
         //we save the move
         dt_masks_update_image(darktable.develop);
         return 1;
@@ -1180,7 +1158,6 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         gui->scrolly = pzy;
       }
       gui->point_edited = gui->point_dragging  = gui->point_selected;
-      gpt->clockwise = _brush_is_clockwise(form);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1427,7 +1404,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   else if (gui->seg_dragging>=0)
   {
     gui->seg_dragging = -1;
-    gpt->clockwise = _brush_is_clockwise(form);
     dt_masks_write_form(form,darktable.develop);
     dt_masks_update_image(darktable.develop);
     return 1;
@@ -1463,7 +1439,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _brush_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1480,7 +1455,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
 
     int p1x,p1y,p2x,p2y;
     _brush_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
-                           &p1x,&p1y,&p2x,&p2y,gpt->clockwise);
+                           &p1x,&p1y,&p2x,&p2y,TRUE);
     point->ctrl1[0] = (float)p1x/darktable.develop->preview_pipe->iwidth;
     point->ctrl1[1] = (float)p1y/darktable.develop->preview_pipe->iheight;
     point->ctrl2[0] = (float)p2x/darktable.develop->preview_pipe->iwidth;
@@ -1495,7 +1470,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _brush_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1550,7 +1524,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     //we recreate the form points
     dt_masks_gui_form_remove(form,gui,index);
     dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _brush_is_clockwise(form);
     //we save the move
     dt_masks_update_image(darktable.develop);
 
@@ -1569,7 +1542,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
       //we recreate the form points
       dt_masks_gui_form_remove(form,gui,index);
       dt_masks_gui_form_create(form,gui,index);
-      gpt->clockwise = _brush_is_clockwise(form);
       //we save the move
       dt_masks_update_image(darktable.develop);
     }
@@ -1610,7 +1582,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if (gui->point_dragging >=0)
+  else if (gui->point_dragging >= 0)
   {
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -1680,7 +1652,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 
     int p1x,p1y,p2x,p2y;
     _brush_feather_to_ctrl(point->corner[0]*darktable.develop->preview_pipe->iwidth,point->corner[1]*darktable.develop->preview_pipe->iheight,pts[0],pts[1],
-                           &p1x,&p1y,&p2x,&p2y,gpt->clockwise);
+                           &p1x,&p1y,&p2x,&p2y,TRUE);
     point->ctrl1[0] = (float)p1x/darktable.develop->preview_pipe->iwidth;
     point->ctrl1[1] = (float)p1y/darktable.develop->preview_pipe->iheight;
     point->ctrl2[0] = (float)p2x/darktable.develop->preview_pipe->iwidth;
@@ -1752,7 +1724,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     if (gpt->points[k*6+2]!=gpt->points[k*6+4] && gpt->points[k*6+3]!=gpt->points[k*6+5])
     {
       int ffx,ffy;
-      _brush_ctrl2_to_feather(gpt->points[k*6+2],gpt->points[k*6+3],gpt->points[k*6+4],gpt->points[k*6+5],&ffx,&ffy,gpt->clockwise);
+      _brush_ctrl2_to_feather(gpt->points[k*6+2],gpt->points[k*6+3],gpt->points[k*6+4],gpt->points[k*6+5],&ffx,&ffy,TRUE);
       if (pzx-ffx>-as && pzx-ffx<as && pzy-ffy>-as && pzy-ffy<as)
       {
         gui->feather_selected = k;
@@ -2069,7 +2041,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     cairo_line_to(cr, gui->points[k*6+4]+dx,gui->points[k*6+5]+dy);
     cairo_stroke(cr);*/
     int ffx,ffy;
-    _brush_ctrl2_to_feather(gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy,gpt->points[k*6+4]+dx,gpt->points[k*6+5]+dy,&ffx,&ffy,gpt->clockwise);
+    _brush_ctrl2_to_feather(gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy,gpt->points[k*6+4]+dx,gpt->points[k*6+5]+dy,&ffx,&ffy,TRUE);
     cairo_move_to(cr, gpt->points[k*6+2]+dx,gpt->points[k*6+3]+dy);
     cairo_line_to(cr,ffx,ffy);
     cairo_set_line_width(cr, 1.5/zoom_scale);
