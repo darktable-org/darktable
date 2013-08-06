@@ -206,7 +206,6 @@
 			<Vertical x="0" width="140"/>
 			<Horizontal y="4" height="46"/>
 		</BlackAreas>
-
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 60D" mode="sRaw1">
 		<Crop x="0" y="0" width="0" height="0"/>
@@ -216,6 +215,20 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
 	</Camera>  
+	<Camera make="Canon" model="Canon EOS 70D" decoder_version="1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="38" width="0" height="0"/>
+		<Sensor black="2049" white="15000"/>
+		<BlackAreas>
+			<Vertical x="2" width="68"/>
+			<Horizontal y="2" height="34"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 500D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
