@@ -2279,15 +2279,15 @@ tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
 
 /** check if content of params is all zero, indicating a non-initialized set of blend parameters
     which needs special care. */
-int
+gboolean
 dt_develop_blend_params_is_all_zero (const void *params, size_t length)
 {
-  int isallzero = TRUE;
   const char *data = (const char *)params;
 
-  for (size_t k = 0; k < length && isallzero; k++) isallzero = (data[k] == '\0');
+  for(size_t k = 0; k < length; k++)
+    if(data[k]) return FALSE;
 
-  return isallzero;
+  return TRUE;
 }
 
 
