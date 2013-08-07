@@ -5655,14 +5655,15 @@ const wb_data wb_preset[] =
   { "SONY", "SLT-A57", Flash, 6,		{ 3.726563, 1, 1.093750, 0 } },
   { "SONY", "SLT-A57", Flash, 7,		{ 3.855469, 1, 1.054688, 0 } },
 
-  { "SLT-A58", "SLT-A58", Daylight, 0,		   { 2.640625, 1, 1.546875, 0 } },
-  { "SLT-A58", "SLT-A58", Cloudy, 0,		   { 2.875000, 1, 1.414063, 0 } },
-  { "SLT-A58", "SLT-A58", Incandescent, 0,	   { 1.578125, 1, 2.843750, 0 } },
-  { "SLT-A58", "SLT-A58", WarmWhiteFluorescent, 0, { 1.859375, 1, 2.796875, 0 } },
-  { "SLT-A58", "SLT-A58", CoolWhiteFluorescent, 0, { 2.367188, 1, 2.238281, 0 } },
-  { "SLT-A58", "SLT-A58", DayWhiteFluorescent, 0,  { 2.550781, 1, 1.695313, 0 } },
-  { "SLT-A58", "SLT-A58", DaylightFluorescent, 0,  { 2.898438, 1, 1.472656, 0 } },
-  { "SLT-A58", "SLT-A58", Flash, 0,		   { 2.992188, 1, 1.355469, 0 } },
+  // firmware version 1.00
+  { "SONY", "SLT-A58", Daylight, 0,		{ 2.640625, 1, 1.546875, 0 } },
+  { "SONY", "SLT-A58", Cloudy, 0,		{ 2.875000, 1, 1.414063, 0 } },
+  { "SONY", "SLT-A58", Incandescent, 0,		{ 1.578125, 1, 2.843750, 0 } },
+  { "SONY", "SLT-A58", WarmWhiteFluorescent, 0,	{ 1.859375, 1, 2.796875, 0 } },
+  { "SONY", "SLT-A58", CoolWhiteFluorescent, 0,	{ 2.367188, 1, 2.238281, 0 } },
+  { "SONY", "SLT-A58", DayWhiteFluorescent, 0,	{ 2.550781, 1, 1.695313, 0 } },
+  { "SONY", "SLT-A58", DaylightFluorescent, 0,	{ 2.898438, 1, 1.472656, 0 } },
+  { "SONY", "SLT-A58", Flash, 0,		{ 2.992188, 1, 1.355469, 0 } },
 
   { "SONY", "SLT-A65V", Daylight, 0,		{ 2.628906, 1, 1.433594, 0 } },
   { "SONY", "SLT-A65V", Shade, 0,		{ 3.132813, 1, 1.191406, 0 } },
