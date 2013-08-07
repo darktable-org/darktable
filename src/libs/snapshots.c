@@ -113,12 +113,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   // convert to image coordinates:
-  const int32_t capwd = darktable.thumbnail_width;
-  const int32_t capht = darktable.thumbnail_height;
-  const int32_t width_i  = d->vp_width;
-  const int32_t height_i = d->vp_height;
-  if(width_i  > capwd) pointerx += (capwd-width_i) *.5f;
-  if(height_i > capht) pointery += (capht-height_i)*.5f;
+  double x_start = width  > darktable.thumbnail_width  ? (width - darktable.thumbnail_width) *.5f:0;
+  double y_start = height > darktable.thumbnail_height ? (height- darktable.thumbnail_height)*.5f:0;
 
   if(d->snapshot_image)
   {
@@ -139,7 +135,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     double w = d->vertical ? (d->inverted?(width * (1.0 - d->vp_xpointer)):width * d->vp_xpointer) : width;
     double h = d->vertical ? height : (d->inverted?(height * (1.0 - d->vp_ypointer)):height * d->vp_ypointer);
 
-    cairo_set_source_surface(cri, d->snapshot_image, 0, 0);
+    cairo_set_source_surface(cri, d->snapshot_image, x_start, y_start);
     //cairo_rectangle(cri, 0, 0, width*d->vp_xpointer, height);
     cairo_rectangle(cri,x,y,w,h);
     cairo_fill(cri);
@@ -149,7 +145,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_set_line_width(cri, (mouse_over_control ? 2.0 : 0.5) );
 
     if(d->vertical)
-  {
+    {
       cairo_move_to(cri, width*d->vp_xpointer, 0.0f);
       cairo_line_to(cri, width*d->vp_xpointer, height);
     }
@@ -189,13 +185,7 @@ static int _lib_snapshot_rotation_cnt = 0;
 int button_pressed (struct dt_lib_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
-  // convert to image coordinates:
-  const int32_t capwd = darktable.thumbnail_width;
-  const int32_t capht = darktable.thumbnail_height;
-  const int32_t width_i  = d->vp_width;
-  const int32_t height_i = d->vp_height;
-  if(width_i  > capwd) x += (capwd-width_i) *.5f;
-  if(height_i > capht) y += (capht-height_i)*.5f;
+  
   if(d->snapshot_image)
   {
     double xp = x/d->vp_width;
@@ -242,13 +232,6 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, double pre
 int mouse_moved(dt_lib_module_t *self, double x, double y, double pressure, int which)
 {
   dt_lib_snapshots_t *d=(dt_lib_snapshots_t *)self->data;
-  // convert to image coordinates:
-  const int32_t capwd = darktable.thumbnail_width;
-  const int32_t capht = darktable.thumbnail_height;
-  const int32_t width_i  = d->vp_width;
-  const int32_t height_i = d->vp_height;
-  if(width_i  > capwd) x += (capwd-width_i) *.5f;
-  if(height_i > capht) y += (capht-height_i)*.5f;
 
   if(d->snapshot_image)
   {
