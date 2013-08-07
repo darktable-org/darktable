@@ -908,8 +908,7 @@ dt_view_image_expose(
           if(!image_is_rejected) //if rejected: draw no stars
           {
             dt_view_star(cr, x, y, r1, r2);
-            // Only draw hovering effects in stars for the hovered image
-            if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+            if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
             {
               *image_over = DT_VIEW_STAR_1 + k;
               cairo_fill(cr);
@@ -932,8 +931,7 @@ dt_view_image_expose(
       if (image_is_rejected)
         cairo_set_source_rgb(cr, 1., 0., 0.);
 
-      // Only draw hovering effects in stars for the hovered image
-      if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+      if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
       {
         *image_over = DT_VIEW_REJECT; //mouse sensitive
         cairo_new_sub_path(cr);
