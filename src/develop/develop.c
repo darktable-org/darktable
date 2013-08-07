@@ -527,11 +527,8 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       snprintf(hist->multi_name,128,"%s",module->multi_name);
       /* allocate and set hist blend_params */
       hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-      memset(hist->blend_params, 0, sizeof(dt_develop_blend_params_t));
-
       memcpy(hist->params, module->params, module->params_size);
-      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-        memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
+      memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
       dev->history = g_list_append(dev->history, hist);
       dev->pipe->changed |= DT_DEV_PIPE_SYNCH;

@@ -357,6 +357,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 /** get blend version */
 int dt_develop_blend_version (void);
 
+/** check if content of params is all zero, indicating a non-initialized set of blend parameters which needs special care. */
+int dt_develop_blend_params_is_all_zero (const void *params, size_t length);
+
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght);
 

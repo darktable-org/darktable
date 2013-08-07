@@ -1749,6 +1749,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
+  // deal with all-zero parmameter sets. these occured in previous darktable versions when modules 
+  // without blend support stored zero-initialized data in history stack. most cases are already catched
+  // in dt_develop_blend_legacy_params() but some need to be dealt with in this place
+  if(dt_develop_blend_params_is_all_zero (d, sizeof(dt_develop_blend_params_t)))
+    *d = *(dt_develop_blend_params_t *)self->default_blendop_params;
+
   /* enable mode if there is some mask */
   unsigned int blend_mode = d->blend_mode;
   unsigned int mask_mode = d->mask_mode;
@@ -2019,6 +2025,12 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_mem dev_mask = NULL;
   float *mask = NULL;
 
+  // deal with all-zero parmameter sets. these occured in previous darktable versions when modules 
+  // without blend support stored zero-initialized data in history stack. most cases are already catched
+  // in dt_develop_blend_legacy_params() but some need to be dealt with in this place
+  if(dt_develop_blend_params_is_all_zero (d, sizeof(dt_develop_blend_params_t)))
+    *d = *(dt_develop_blend_params_t *)self->default_blendop_params;
+
   /* enable mode if there is some mask */
   const unsigned int mask_mode = d->mask_mode;
   const unsigned int blend_mode = d->blend_mode;
@@ -2264,11 +2276,38 @@ tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_i
   return;
 }
 
+
+/** check if content of params is all zero, indicating a non-initialized set of blend parameters
+    which needs special care. */
+int
+dt_develop_blend_params_is_all_zero (const void *params, size_t length)
+{
+  int isallzero = TRUE;
+  const char *data = (const char *)params;
+
+  for (size_t k = 0; k < length && isallzero; k++) isallzero = (data[k] == '\0');
+
+  return isallzero;
+}
+
+
 /** update blendop params from older versions */
 int
 dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int length)
 
-{  
+{ 
+  // first deal with all-zero parmameter sets, regardless of version number. these occured in previous darktable versions when modules 
+  // without blend support stored zero-initialized data in history stack. that's no problem unless the module gets blend 
+  // support later (e.g. module exposure). remedy: we simply initialize with the current default blend params in this case.
+  if(dt_develop_blend_params_is_all_zero (old_params, length))
+  {
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
+
+    *n = *d;
+    return 0;
+  }
+
   if(old_version == 1 && new_version == 6)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
