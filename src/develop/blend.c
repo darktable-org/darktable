@@ -1749,12 +1749,6 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
-  // deal with all-zero parmameter sets. these occured in previous darktable versions when modules 
-  // without blend support stored zero-initialized data in history stack. most cases are already catched
-  // in dt_develop_blend_legacy_params() but some need to be dealt with in this place
-  if(dt_develop_blend_params_is_all_zero (d, sizeof(dt_develop_blend_params_t)))
-    *d = *(dt_develop_blend_params_t *)self->default_blendop_params;
-
   /* enable mode if there is some mask */
   unsigned int blend_mode = d->blend_mode;
   unsigned int mask_mode = d->mask_mode;
@@ -2024,12 +2018,6 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_mem dev_m = NULL;
   cl_mem dev_mask = NULL;
   float *mask = NULL;
-
-  // deal with all-zero parmameter sets. these occured in previous darktable versions when modules 
-  // without blend support stored zero-initialized data in history stack. most cases are already catched
-  // in dt_develop_blend_legacy_params() but some need to be dealt with in this place
-  if(dt_develop_blend_params_is_all_zero (d, sizeof(dt_develop_blend_params_t)))
-    *d = *(dt_develop_blend_params_t *)self->default_blendop_params;
 
   /* enable mode if there is some mask */
   const unsigned int mask_mode = d->mask_mode;
@@ -2308,7 +2296,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 1 && new_version == 6)
+  if(old_version == 1 && new_version == 7)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
@@ -2324,7 +2312,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2 && new_version == 7)
   {
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
@@ -2345,7 +2333,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3 && new_version == 7)
   {
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
@@ -2365,7 +2353,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4 && new_version == 7)
   {
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
@@ -2386,7 +2374,7 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     return 0;
   }
 
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5 && new_version == 7)
   {
     if(length != sizeof(dt_develop_blend_params5_t)) return 1;
 
@@ -2397,6 +2385,19 @@ dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_p
     // versions. potentially bad history stacks can be identified by an active bit no. 32 in blendif.
     memcpy(n, o, sizeof(dt_develop_blend_params_t));  // start with a copy of version 5 parameters
     n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif) & ~(1u << DEVELOP_BLENDIF_active);
+    return 0;
+  }
+
+  if(old_version == 6 && new_version == 7)
+  {
+    if(length != sizeof(dt_develop_blend_params6_t)) return 1;
+
+    dt_develop_blend_params6_t *o = (dt_develop_blend_params6_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+
+    // version 6 is identical to version 7. we only incremented the version number to make sure that all-zero history stacks
+    // are dealt with correctly in the first check above
+    memcpy(n, o, sizeof(dt_develop_blend_params_t));  // just make a copy of version 6 parameters
     return 0;
   }
 
