@@ -1,0 +1,17 @@
+	<sect2 status="final" id="masks_manager"><title>Masks manager</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>[Here we need some sentences about our masks manager (and the right screenshot too)]
+
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/images/panel_snapshots.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect2>

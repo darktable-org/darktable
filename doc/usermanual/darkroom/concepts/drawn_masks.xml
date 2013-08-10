@@ -17,13 +17,28 @@
        </sect3>
 
        <sect3 status="final"><title>Usage</title>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>To draw a shape you need to click on one of the shape symbols. You will automatically be moved into 
+                                                edit mode in which you generate a new instance of the selected shape and change its properties.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
 
-           <para>To draw a shape you need to click on one of the shape symbols. You will automatically be moved into edit mode in which you generate
-           a new instance of the selected shape and change its properties. You leave edit mode by clicking on the 
+           <para>You leave edit mode by clicking on the 
            <inlinegraphic fileref="&shape_edit;" scalefit="1" width="2%" align="center"/> symbol. You can at any time go back to 
            edit mode and do further adjustments by clicking the edit symbol again. In edit mode you can also remove a shape by right-clicking on it - the shape is
-           removed from the current mask but it's still in the list of defined shapes.
-           If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit mode. Certain
+           removed from the current mask but it's still in the list of defined shapes.</para>
+
+           <para>If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit mode. Certain
            actions like dragging a complete shape or changing its size are blocked. Only finetuning changes like dragging a node are allowed.</para>
 
            <para>Currently five shapes are implemented.</para>
@@ -36,6 +51,20 @@
                If you have a graphic tablet with pen
                pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.
                Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>A brush stroke with controls and activated mask display.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/masks_brush_ex1.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
            </sect4>
 
            <sect4><title>circle</title>
@@ -44,12 +73,40 @@
                Use the scroll-wheel of your mouse while in the circle to change the diameter of the circle; scroll within the circle border to adjust the width 
                of the gradual decay. With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle - this is best observed with the mask displayed by pressing 
                the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>A circle shape with controls and activated mask display.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/masks_circle_ex1.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
            </sect4>
 
            <sect4><title>ellipse</title>
                <para>Clicking the <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/> symbol adds an ellipse shape. 
                The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse
                line. Click on the nodes to adjust the ellipse's eccentricity. <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>An ellipse shape with controls and activated mask display.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/masks_ellipse_ex1.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
            </sect4>
 
            <sect4><title>path</title>
@@ -62,6 +119,20 @@
                area with a gradual opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If a node is selected by clicking on it,
                a further control point appears - you can move it around to modify the curvature of the line. Dragging one of the control points on the border adjusts the border width just
                in that part of the shape.</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>A path shape with controls and activated mask display.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/masks_path_ex1.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
            </sect4>
 
            <sect4><title>gradient</title>
@@ -71,20 +142,35 @@
                to change the rotation of the gradient. Scrolling close to the center line changes the steepness of the gradient. Dotted lines indicate the distance
                beyond which the opacity is 100% and 0%, respectively. Between these dotted lines the opacity changes linearly. The gradient is best seen and modified
                when the mask is displayed by pressing the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
+		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>A gradient with controls and activated mask display.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/masks_gradient_ex1.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
            </sect4>
 
-           <para>The number of shapes that are used in the current mask is diplayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
-           have already been defined in the context of the current image - regardless if they are used in any module or not. You can click on any of these items in order to add 
-           it to the current mask. This way you can also bring back a shape to your mask in case you have deleted it previously.</para>
+           <sect4><title>drawn mask</title>
+              <para>The number of shapes that are used in the current mask is diplayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
+              have already been defined in the context of the current image - regardless if they are used in any module or not. You can click on any of these items in order to add 
+              it to the current mask. This way you can also bring back a shape to your mask in case you have deleted it accidentally.</para>
 
-           <para>A polarity button (<inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
-           <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>, respectively) allows to toggle between normal and inverted state of the 
-           drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.</para>
+              <para>A polarity button (<inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
+              <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>, respectively) allows to toggle between normal and inverted state of the 
+              drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.</para>
+           </sect4>
 
-           <para>More control about the interaction of multiple shapes within a mask can be found in the masks manager panel (see xyz). 
+           <para>More functionality to control the interaction of multiple shapes within a mask can be found in the masks manager panel (see <xref linkend="masks_manager"/>). 
            Here you can give individual names to your shapes which will help you to keep an overview. You can also select individual shapes for editing - a helpful
            feature if your masks happens to contain several shapes with overlapping control elements.</para>
-
       </sect3>
 		
 </sect2>

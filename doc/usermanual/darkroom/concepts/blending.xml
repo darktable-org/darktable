@@ -28,7 +28,20 @@
 
        <sect3 status="final"><title>Usage</title>
 
-           <para>Modules with blending support exhibit an additional combobox <quote>blend</quote> at the bottom of their GUI.</para>
+            <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>Modules with blending support exhibit an additional combobox <quote>blend</quote> at the bottom of their GUI.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+           </informaltable>
 
            <sect4><title>off</title>
                  <para>module's output is passed to the next module in pixelpipe without additional reprocessing. No further controls are displayed.</para>
