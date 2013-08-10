@@ -160,8 +160,8 @@
 
            <sect4><title>drawn mask</title>
               <para>The number of shapes that are used in the current mask is diplayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
-              have already been defined in the context of the current image - regardless if they are used in any module or not. You can click on any of these items in order to add 
-              it to the current mask. This way you can also bring back a shape to your mask in case you have deleted it accidentally.</para>
+              have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add 
+              it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</para>
 
               <para>A polarity button (<inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
               <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>, respectively) allows to toggle between normal and inverted state of the 

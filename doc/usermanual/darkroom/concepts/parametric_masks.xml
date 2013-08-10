@@ -4,7 +4,7 @@
 		%darktable_dtd;
 		]>
 	<sect2 status="final" id="parametric_masks"><title>Parametric masks</title>
-		<para>Parametric masks, formerly called <quote>conditional blending</quote> offer fine-grained selective control over how individual pixels are blended.
+		<para>Parametric masks, formerly called <quote>conditional blending</quote>, offer fine-grained selective control over how individual pixels are blended.
         	      It does so by automatically generating an intermediate blend mask from user defined parameters. These parameters are color 
         	      coordinates not the geometrical coordinates used in drawn masks.
 		</para>

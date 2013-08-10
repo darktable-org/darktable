@@ -31,16 +31,34 @@
                     </sect3>
 
 		    <sect3 status="final"><title>Managing instances</title>
-                           <para>When clicking on the <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="2%" align="center"/> icon a drop-down menu will appear.</para>
+                           <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="6*"/>
+				<colspec colwidth="4*"/>
+				<tbody>
+					<row>						
+						<entry>When clicking on the <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="2%" align="center"/> icon 
+                                                       a drop-down menu will appear.
+						</entry>
+						<entry>
+							<graphic fileref="darkroom/concepts/images/instances.png" scalefit="1" width="80%" align="center" />
+						</entry>
+					</row>
+				</tbody>
+                               </tgroup>
+                           </informaltable>
 
-                           <para>Selecting <quote>new</quote> generates a new module instance below any existing ones. Each new instance gets its own complete set of GUI controls
-                                 and a number appended to the base module name for distinction.</para>
+                           <para>Selecting <quote>new instance</quote> generates a new module instance below any existing ones. All parameters are set to default values.
+                                 The new instance gets its own complete set of GUI controls and a number appended to the base module name for distinction.</para>
 
-                           <para>To delete an instance just press <quote>delete</quote> from the drop-down menu.</para>
+                           <para>Selecting <quote>duplicate instance</quote> behaves in a similar way. The only difference: the new instance will inherit all parameter settings
+                                 from its parent.</para>
 
                            <para>darktable applies all modules in a defined order according to their type. Therefore all instances of a particular module 
                                  will occur together in the pixelpipe. You can however decide
                                  on the relative order in which the different instances of a module are applied by selecting <quote>move up</quote> or <quote>move down</quote> to shift the position of the
                                  instance among its peers.</para>
+
+                           <para>To delete an instance just press <quote>delete</quote> from the drop-down menu.</para>
+
                     </sect3>
         </sect2>
