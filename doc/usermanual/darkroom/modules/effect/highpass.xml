@@ -7,7 +7,8 @@
 					<row>						
 						<entry>Highpass acts as a high pass filter. The primary usage for this filter is in combination with a
 						blending operator. Try out blend mode <quote>soft light</quote> to get highpass sharpening. Use the opacity slider
-                                                to adjust the strength of the effect or even <emphasis>conditional blending</emphasis> (see <xref linkend="conditional_blending"/>)
+                                                to adjust the strength of the effect or use <emphasis>drawn masks</emphasis> (see <xref linkend="drawn_masks"/>) 
+                                                or <emphasis>parametric masks</emphasis> (see <xref linkend="parametric_masks"/>)
                                                 to limit the effect to only parts of your image.			
 						</entry>
 						<entry>
