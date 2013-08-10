@@ -31,6 +31,7 @@
 #include "lua/storage.h"
 #include "lua/events.h"
 #include "lua/styles.h"
+#include "lua/film.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -62,6 +63,7 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_storages,
   dt_lua_init_tags,
   dt_lua_init_events,
+  dt_lua_init_film,
   NULL
 };
 

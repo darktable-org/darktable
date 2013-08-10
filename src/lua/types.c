@@ -51,6 +51,10 @@ void to_char52(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_num(L,type_id,c_out,index,52);
 }
+void to_char512(lua_State* L, luaA_Type type_id, void* c_out, int index)
+{
+  to_char_num(L,type_id,c_out,index,512);
+}
 void to_char1024(lua_State* L, luaA_Type type_id, void* c_out, int index)
 {
   to_char_num(L,type_id,c_out,index,1024);
@@ -475,7 +479,9 @@ void dt_lua_initialize_types(lua_State *L)
   luaA_conversion_push(const char_32,push_char_array);
   luaA_conversion(char_52,push_char_array,to_char52);
   luaA_conversion_push(const char_52,push_char_array);
-  luaA_conversion(char_1024,push_char_array,to_char1024);
+  luaA_conversion(char_512,push_char_array,to_char512);
+  luaA_conversion_push(const char_512,push_char_array);
+  luaA_conversion(char_1024,push_char_array,to_char512);
   luaA_conversion_push(const char_1024,push_char_array);
   luaA_conversion(char_filename_length,push_char_array,to_charfilename_length);
   luaA_conversion_push(const char_filename_length,push_char_array);

@@ -17,6 +17,7 @@
  */
 #include "lua/database.h"
 #include "lua/image.h"
+#include "lua/film.h"
 #include "lua/types.h"
 #include "common/debug.h"
 #include "common/darktable.h"
@@ -53,6 +54,7 @@ static int import_images(lua_State *L)
       free(full_name);
       return luaL_error(L,"error while importing");
     }
+    luaA_push(L,dt_lua_film_t,&result);
   }
   else
   {
@@ -76,9 +78,10 @@ static int import_images(lua_State *L)
       free(full_name);
       return luaL_error(L,"error while importing");
     }
+    luaA_push(L,dt_lua_image_t,&result);
   }
   free(full_name);
-  return 0;
+  return 1;
 }
 
 static int database_len(lua_State*L)

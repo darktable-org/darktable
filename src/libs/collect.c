@@ -1711,7 +1711,7 @@ filmrolls_updated(gpointer instance, gpointer self)
 }
 
 static void
-filmrolls_imported(gpointer instance, gpointer self)
+filmrolls_imported(gpointer instance, int film_id,gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
 

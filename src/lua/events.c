@@ -22,6 +22,7 @@
 #include "lua/call.h"
 #include "lua/events.h"
 #include "lua/image.h"
+#include "lua/film.h"
 #include "gui/accelerators.h"
 #include "common/imageio_module.h"
 typedef struct event_handler{
@@ -306,6 +307,7 @@ static event_handler event_list[] = {
   //{"pre-export",register_chained_event,trigger_chained_event},
   {"shortcut",register_shortcut_event,trigger_keyed_event}, 
   {"post-import-image",register_multiinstance_event,trigger_multiinstance_event},
+  {"post-import-film",register_multiinstance_event,trigger_multiinstance_event},
   {"intermediate-export-image",register_multiinstance_event,trigger_multiinstance_event},
   //{"test",register_singleton_event,trigger_singleton_event},  // avoid error because of unused function
   {NULL,NULL,NULL}
@@ -435,6 +437,11 @@ static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
   dt_lua_trigger_event("post-import-image",1,0);
 }
 
+static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
+  luaA_push(darktable.lua_state,dt_lua_film_t,&id);
+  dt_lua_trigger_event("post-import-film",1,0);
+}
+
 int dt_lua_init_events(lua_State *L) {
   lua_newtable(L);
   lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
@@ -452,6 +459,7 @@ int dt_lua_init_events(lua_State *L) {
   lua_settable(L,-3);
   lua_pop(L,1);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,G_CALLBACK(on_image_imported),NULL);
+  dt_control_signal_connect(darktable.signals,DT_SIGNAL_FILMROLLS_IMPORTED,G_CALLBACK(on_film_imported),NULL);
   //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
   return 0;
