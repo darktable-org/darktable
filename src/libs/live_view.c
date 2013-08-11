@@ -374,26 +374,26 @@ gui_init (dt_lib_module_t *self)
 
   lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(lib->overlay_mode, _("overlay mode"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("normal"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("xor"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("add"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("saturate"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "add"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "saturate"));
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("multiply"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("screen"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("overlay"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("darken"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("lighten"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("color dodge"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("color burn"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("hard light"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("soft light"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("difference"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("exclusion"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL hue"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL saturation"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL color"));
-  dt_bauhaus_combobox_add(lib->overlay_mode, _("HSL luminosity"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "multiply"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "screen"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "overlay"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "darken"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "lighten"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "color dodge"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "color burn"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "hard light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "soft light"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "difference"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "exclusion"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL hue"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL saturation"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL color"));
+  dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL luminosity"));
 #endif
   g_object_set(G_OBJECT(lib->overlay_mode), "tooltip-text", _("mode of the overlay"), (char *)NULL);
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
