@@ -28,14 +28,6 @@
 
 	<para>You normally export multiple images from the lighttable view but you can also export the current image directly from the darkroom by using 
         the shortcut <emphasis>ctrl-e</emphasis>. Export parameters are then those currently selected in the lighttable.</para>
-
-        <para>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same
-		as the ones in the lighttable view.
-	</para>
-	<para>The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>. You can scroll with your mouse to quickly navigate
-              through the images and change the height of the filmstrip panel by dragging its top.</para>
-	<graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
-
 </sect1>
 
 <!-- Darkroom concepts -->

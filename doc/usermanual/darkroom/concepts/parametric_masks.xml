@@ -34,11 +34,11 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>[NEEDS TO BE REWORKED] When conditional blending is activated with option <quote>blend only, if..</quote> an additional set of tabbed controls 
+					<entry>When <emphasis>parametric mask</emphasis> is activated in combobox <quote>blend</quote> an additional set of tabbed controls 
 		                               is shown.
 					</entry>
 					<entry>
-						<graphic fileref="darkroom/modules/images/blendif_1.png" scalefit="1" width="80%" align="center" />
+						<graphic fileref="darkroom/concepts/images/blendif_1.png" scalefit="1" width="80%" align="center" />
 					</entry>
 				</row>
 			</tbody>
@@ -74,7 +74,9 @@
 		              unchanged: they can touch but they can not switch position.
 		        </para>
 		        <para>
-                              A polarity button to the right of the slider switches between include and exclude function modes with visual confirmation provided
+                              A polarity button ( <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center" /> and
+                              <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center" /> , respectively) to the right of the 
+                              slider switches between include and exclude function modes with visual confirmation provided
                               by exchanging the upper and the lower triangle markers. These two types of trapezoidal functions are represented graphically in the following
                               images.
 		        </para>
@@ -94,18 +96,18 @@
 
 				<row>						
 					<entry>
-		                                <graphic fileref="darkroom/modules/images/blendif_2a.png" scalefit="1" width="80%" align="center" />
+		                                <graphic fileref="darkroom/concepts/images/blendif_2a.png" scalefit="1" width="80%" align="center" />
 					</entry>
 					<entry>
-						<graphic fileref="darkroom/modules/images/blendif_3a.png" scalefit="1" width="80%" align="center" />
+						<graphic fileref="darkroom/concepts/images/blendif_3a.png" scalefit="1" width="80%" align="center" />
 					</entry>
 				</row>
 				<row>						
 					<entry>
-		                                <graphic fileref="darkroom/modules/images/blendif_2b.png" scalefit="1" width="80%" align="center" />
+		                                <graphic fileref="darkroom/concepts/images/blendif_2b.png" scalefit="1" width="80%" align="center" />
 					</entry>
 					<entry>
-						<graphic fileref="darkroom/modules/images/blendif_3b.png" scalefit="1" width="80%" align="center" />
+						<graphic fileref="darkroom/concepts/images/blendif_3b.png" scalefit="1" width="80%" align="center" />
 					</entry>
 				</row>
 				<row>						
@@ -128,11 +130,15 @@
 
 
 	        <sect4><title>Control buttons</title>
-		        <para>Control buttons help you when designing a parametric mask. With the color picker button 
+		        <para>Control buttons help you when designing a parametric mask.</para>
+                        <para>With the color picker button 
                               <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> 
                               you can select a probe from your image. The corresponding values for the real and virtual data channels are then displayed within 
-                              each color channel slider. 
-		              With the reset button <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" /> you can put all 
+                              each color channel slider.</para>
+                        <para>With the invert button <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" /> you can toggle the
+                              polarities of all channels (including a potentially activated drawn mask) and change the method how channels are combined into the
+                              final mask. More on that topic can be found in <xref linkend="combined_masks"/>.</para>
+		        <para>With the reset button <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center" /> you can put all 
                               settings back to their default state.
 		        </para>
 	        </sect4>
@@ -158,7 +164,7 @@
                                                         </para>
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/blendif_4.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/concepts/images/blendif_4.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 					<row>
@@ -170,7 +176,7 @@
 						</entry>
 
 						<entry>
-							<graphic fileref="darkroom/modules/images/blendif_5.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/concepts/images/blendif_5.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 					<row>
@@ -179,7 +185,7 @@
 							</para>
 						</entry>						
 						<entry>
-							<graphic fileref="darkroom/modules/images/blendif_6.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/concepts/images/blendif_6.png" scalefit="1" width="80%" align="center" />
 						</entry>						
 					</row>
 					<row>						
@@ -188,7 +194,7 @@
                                           		</para>
 						</entry>
 						<entry>
-							<graphic fileref="darkroom/modules/images/blendif_7.png" scalefit="1" width="80%" align="center" />
+							<graphic fileref="darkroom/concepts/images/blendif_7.png" scalefit="1" width="80%" align="center" />
 						</entry>
 					</row>
 				</tbody>

@@ -6,12 +6,14 @@
 <sect2 status="final" id="interacting"><title>Interacting with modules</title>
     <para>
           A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>.
-          Clicking on the name of the module expands the module's GUI with all parameters. If you expand too
-          many GUIs you may easily lose track - it's up to the user to do the housekeeping. Alternatively you can expand the
-          module's GUI with <emphasis>shift-click</emphasis>, which expands just the desired GUI while collapsing all others.
+          Clicking on the name of the module expands the module's GUI with all parameters. In its default setting darktable will
+          only expand one GUI at a time. If you click the expander bar of another module, the previous GUI gets collapsed.
+          If you want to see more than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis> - all
+          previously expanded GUIs remain opened. The expander bar behavior on <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively,
+          is controlled by a preference setting in gui options (see <xref linkend="gui_options"/>).
     </para>
     <para>
-          Expanding a module does not activate it. You need to click the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> 
+          Expanding a module does <emphasis>not</emphasis> activate it. You need to click the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> 
           icon to turn a module on or off.
     </para>
     <para>         

@@ -18,7 +18,7 @@
 			    <para>First configure the module's parameters then click the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> 
                             icon and select <quote>store new preset</quote>. The following dialog will be shown for configuring the preset:
 			    </para>
-			    <graphic fileref="darkroom/modules/images/new_preset.png" scalefit="1" width="60%" align="center" />
+			    <graphic fileref="darkroom/concepts/images/new_preset.png" scalefit="1" width="60%" align="center" />
 			    <para>
 				    The first two fields are used to name and describe the preset.
 			    </para>

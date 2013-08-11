@@ -43,47 +43,73 @@
 			</tgroup>
            </informaltable>
 
-           <sect4><title>off</title>
-                 <para>module's output is passed to the next module in pixelpipe without additional reprocessing. No further controls are displayed.</para>
+           <sect4><title>blend</title>
+              <para>Blending is activated with this combobox. Depending on the value selected additional control elements will show up.</para>
+
+              <sect5><title>off</title>
+                    <para>module's output is passed to the next module in pixelpipe without additional reprocessing. No further controls are displayed.</para>
+              </sect5>
+
+              <sect5><title>uniformily</title>
+                    <para>reprocessing takes place with the chosen blend mode and opacity value - the same for all pixels. Additional
+                    controls to select blend mode and opacity value are displayed. The default blend mode is <quote>normal</quote> with an opacity of 100%.</para>
+              </sect5>
+
+              <sect5><title>drawn mask</title>
+                   <para>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to draw
+                   a mask. If no mask elements are drawn all pixels have the same opacity, defined by the opacity slider. If you draw a mask element, 
+                   e.g. a circle, the inner area of the circle will get maximum opacity, surrounded by a transition area 
+                   or border with a gradual decay of opacity and the remaining image with an opacity of 0%. Different graphical shapes can be used.
+                   See <xref linkend="drawn_masks"/> for further details.</para>
+              </sect5>
+
+              <sect5><title>parametric mask</title>
+                   <para>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to
+                   adjust the opacity on a per-pixel basis determined by pixel values. In previous versions of darktable this was called 
+                   <quote>conditional blending</quote>. See <xref linkend="parametric_masks"/> for further details.</para>
+              </sect5>
+
+              <sect5><title>drawn and parametric mask</title>
+                   <para>this option combines drawn and parametric masks and shows the full set of both controls. See <xref linkend="combined_masks"/> to learn how to
+                   best use this combination.</para>
+              </sect5>
+
+           </sect4>        
+
+           <sect4><title>invert mask</title>
+                 <para>When <quote>drawn mask</quote> is selected there is an additional combobox to invert the mask by
+                       switching mask inversion <quote>on</quote> or <quote>off</quote>.</para>
            </sect4>
 
-           <sect4><title>uniformily</title>
-                 <para>reprocessing takes place with the chosen blend mode and opacity value - the same for all pixels. Additional
-                 controls to select blend mode and opacity value are displayed. The default blend mode is <quote>normal</quote> with an opacity of 100%.</para>
+           <sect4><title>combine masks</title>
+                 <para>When either <quote>parametric masks</quote>, or <quote>drawn and parametric mask</quote> are selected an additional combobox is shown that controls
+                       how the individual masks are combined to form the final mask.
+                       Details on the combination of individual masks can be found in <xref linkend="combined_masks"/>.</para>
            </sect4>
 
-           <sect4><title>drawn mask</title>
-                <para>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to draw
-                a mask. If no mask elements are drawn all pixels have the same opacity, defined by the opacity slider. If you draw a mask element, 
-                e.g. a circle, the inner area of the circle will get maximum opacity, surrounded by a transition area 
-                or border with a gradual decay of opacity and the remaining image with an opacity of 0%. Different graphical shapes can be used.
-                See <xref linkend="drawn_masks"/> for further details.</para>
-           </sect4>
+           <para>When blending with a mask there are some additional options to deal with the final mask: you may blur the mask, temporarily disable it, or display it as 
+                 an overlay image.</para>
 
-           <sect4><title>parametric mask</title>
-                <para>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to
-                adjust the opacity on a per-pixel basis determined by pixel values. In previous versions of darktable this was called 
-                <quote>conditional blending</quote>. See <xref linkend="parametric_masks"/> for further details.</para>
-           </sect4>
-
-           <sect4><title>drawn and parametric mask</title>
-                <para>this option combines drawn and parametric masks and shows the full set of both controls. See <xref linkend="combined_masks"/> to learn how to
-                best use this combination.</para>
-           </sect4>
-
-
-          <para>When blending with a mask is activated you additionally have an option to blur the mask. Blurring the mask creates a softer transition 
+           <sect4><title>mask blur</title>
+               <para>Blurring the mask creates a softer transition 
                 between blended and unblended parts of an image and avoids artifacts. The mask blur slider controls the radius of a gaussian blur applied 
-                to the final blend mask. The higher the radius, the stronger the blur or set to 0 for an unblurred mask.</para>
+                to the final blend mask. The higher the radius, the stronger the blur - or set to 0 for an unblurred mask.</para>
+           </sect4>
 
-          <para>Clicking on the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center" /> symbol will display the current mask as a yellow 
-          overlay over a black-and-white version of your image. Solid yellow
-          indicates an opacity of 100%; a fully visible gray background image without yellow overlay indicates an opacity of 0%.</para>
+           <sect4><title>temporarily switch off mask</title>
+               <para>Sometimes it is useful to visualize the module's effect without the mask taking action. You can do so by clicking on the 
+               <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center" /> symbol, which will 
+               temporarily deactivate the mask - the selected blend mode and opacity remain in effect. Switch this button on and off to see if the mask is acting on
+               the image as intended.</para>
+           </sect4>
 
-          <para>Sometimes it is useful to visualize the module's effect without the mask taking action. You can do so by clicking on the 
-          <inlinegraphic fileref="&icon_module_eye;" scalefit="1" width="2%" align="center" /> symbol, which will 
-          temporarily deactivate the mask - the selected blend mode and opacity remain in effect. Switch this button on and off to see if the module is acting on
-          the image as intended.</para>
+
+           <sect4><title>display mask</title>
+               <para>Clicking on the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center" /> symbol will display the current mask as a yellow 
+               overlay over a black-and-white version of your image. Solid yellow
+               indicates an opacity of 100%; a fully visible gray background image without yellow overlay indicates an opacity of 0%.</para>
+           </sect4>
+          
 
         </sect3>
 		
@@ -106,7 +132,7 @@
 										is a widely used workflow with other imaging softwares.				
 								</entry>
 								<entry>
-									<graphic fileref="darkroom/modules/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+									<graphic fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
 								</entry>
 							</row>
 						</tbody>
@@ -120,7 +146,7 @@
 							<tbody>
 								<row>
 									<entry>
-										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+										<graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
 										<para>This is the original image, pretty heavily processed: first <link linkend="monochrome">
@@ -132,7 +158,7 @@
 								</row>
 								<row>
 									<entry>
-										<graphic fileref="darkroom/modules/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+										<graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
 									</entry>						
 									<entry>
 										<para>Here we applied the highpass filter with the values shown above. 

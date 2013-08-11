@@ -44,13 +44,13 @@
            <para>Currently five shapes are implemented.</para>
 
            <sect4><title>brush</title>
-               <para>Clicking the <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/> symbol adds a brush stroke. 
-               Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse while keeping the button pressed. 
+               <para>Clicking the <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/> symbol adds a brush stroke.</para> 
+               <para>Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse while keeping the button pressed. 
                The brush stroke is finalized once you release the mouse button. Brush size, hardness and opacity can be changed by <emphasis>scrolling</emphasis>, 
-               <emphasis>shift+scrolling</emphasis>, and <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at any time on your way. 
-               If you have a graphic tablet with pen
-               pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.
-               Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
+               <emphasis>shift+scrolling</emphasis>, and <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at any time on your way.</para> 
+               <para>If you have a graphic tablet with pen
+               pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.</para>
+               <para>Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
@@ -68,8 +68,8 @@
            </sect4>
 
            <sect4><title>circle</title>
-               <para>Clicking the <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/> symbol adds a circle shape. 
-               Click into the canvas to place the circle. Left-click and drag the circle to a different position if needed.
+               <para>Clicking the <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/> symbol adds a circle shape.</para> 
+               <para>Click into the canvas to place the circle. Left-click and drag the circle to a different position if needed.
                Use the scroll-wheel of your mouse while in the circle to change the diameter of the circle; scroll within the circle border to adjust the width 
                of the gradual decay. With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle - this is best observed with the mask displayed by pressing 
                the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
@@ -90,8 +90,8 @@
            </sect4>
 
            <sect4><title>ellipse</title>
-               <para>Clicking the <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/> symbol adds an ellipse shape. 
-               The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse
+               <para>Clicking the <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/> symbol adds an ellipse shape.</para> 
+               <para>The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse
                line. Click on the nodes to adjust the ellipse's eccentricity. <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -111,9 +111,11 @@
 
            <sect4><title>path</title>
                <para>Clicking the <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/> symbol adds a shape defined by a user defined 
-               closed path. Left-click into the canvas to define path nodes; terminate the path by <emphasis>right-clicking</emphasis>
+               closed path.</para>
+               <para>Left-click into the canvas to define path nodes; terminate the path by <emphasis>right-clicking</emphasis>
                after the last point has been defined. Per default nodes are connected by smooth lines. If you want a node to define a sharp corner, you can do so
-               by creating it with <emphasis>ctrl+click</emphasis>. Later in edit mode you can convert existing nodes from smooth to sharp corners and vice versa by ctrl-clicking
+               by creating it with <emphasis>ctrl+click</emphasis>.</para>
+               <para>In edit mode you can convert existing nodes from smooth to sharp corners and vice versa by ctrl-clicking
                on them. You can insert further nodes by left-clicking on one of the line segments. The size of the complete shape can be modified by scrolling - 
                analogeous to the circle shape. The same holds true for the width of the border, i.e. the
                area with a gradual opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If a node is selected by clicking on it,
@@ -136,10 +138,11 @@
            </sect4>
 
            <sect4><title>gradient</title>
-               <para>Clicking the <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/> symbol adds a gradient to the mask. 
-               This does not generate a confined shape but produces a linear gradient extending
-               the whole image. Click into the canvas to define the position of the line where opacity is at 50%. The line has two anchor nodes which you can drag
-               to change the rotation of the gradient. Scrolling close to the center line changes the steepness of the gradient. Dotted lines indicate the distance
+               <para>Clicking the <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/> symbol adds a gradient to the mask.
+               This does not generate a confined shape but produces a linear gradient extending the whole image.</para>
+               <para>Click into the canvas to define the position of the line where opacity is at 50%. The line has two anchor nodes which you can drag
+               to change the rotation of the gradient.</para>
+               <para>Scrolling close to the center line changes the steepness of the gradient. Dotted lines indicate the distance
                beyond which the opacity is 100% and 0%, respectively. Between these dotted lines the opacity changes linearly. The gradient is best seen and modified
                when the mask is displayed by pressing the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -163,8 +166,8 @@
               have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add 
               it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</para>
 
-              <para>A polarity button (<inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
-              <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>, respectively) allows to toggle between normal and inverted state of the 
+              <para>A polarity button ( <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
+              <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/> , respectively) allows to toggle between normal and inverted state of the 
               drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.</para>
            </sect4>
 
