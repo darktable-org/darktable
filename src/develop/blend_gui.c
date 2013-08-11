@@ -1446,7 +1446,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 }
 
 static void
-_collect_blend_modes(GList **list, char *name, unsigned int mode)
+_collect_blend_modes(GList **list, const char *name, unsigned int mode)
 {
   dt_iop_blend_mode_t *bm;
   bm = g_malloc(sizeof(dt_iop_blend_mode_t));
@@ -1499,35 +1499,35 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->blend_modes_all = NULL;
 
     /** generate a list of all available blend modes */
-    _collect_blend_modes(&(bd->blend_modes_all), _("normal"), DEVELOP_BLEND_NORMAL2);
-    _collect_blend_modes(&(bd->blend_modes_all), _("normal bounded"), DEVELOP_BLEND_BOUNDED);
-    _collect_blend_modes(&(bd->blend_modes_all), _("lighten"), DEVELOP_BLEND_LIGHTEN);
-    _collect_blend_modes(&(bd->blend_modes_all), _("darken"), DEVELOP_BLEND_DARKEN);
-    _collect_blend_modes(&(bd->blend_modes_all), _("multiply"), DEVELOP_BLEND_MULTIPLY);
-    _collect_blend_modes(&(bd->blend_modes_all), _("average"), DEVELOP_BLEND_AVERAGE);
-    _collect_blend_modes(&(bd->blend_modes_all), _("addition"), DEVELOP_BLEND_ADD);
-    _collect_blend_modes(&(bd->blend_modes_all), _("subtract"), DEVELOP_BLEND_SUBSTRACT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("difference"), DEVELOP_BLEND_DIFFERENCE2);
-    _collect_blend_modes(&(bd->blend_modes_all), _("screen"), DEVELOP_BLEND_SCREEN);
-    _collect_blend_modes(&(bd->blend_modes_all), _("overlay"), DEVELOP_BLEND_OVERLAY);
-    _collect_blend_modes(&(bd->blend_modes_all), _("softlight"), DEVELOP_BLEND_SOFTLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("hardlight"), DEVELOP_BLEND_HARDLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("vividlight"), DEVELOP_BLEND_VIVIDLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("linearlight"), DEVELOP_BLEND_LINEARLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("pinlight"), DEVELOP_BLEND_PINLIGHT);
-    _collect_blend_modes(&(bd->blend_modes_all), _("lightness"), DEVELOP_BLEND_LIGHTNESS);
-    _collect_blend_modes(&(bd->blend_modes_all), _("chroma"), DEVELOP_BLEND_CHROMA);
-    _collect_blend_modes(&(bd->blend_modes_all), _("hue"), DEVELOP_BLEND_HUE);
-    _collect_blend_modes(&(bd->blend_modes_all), _("color"), DEVELOP_BLEND_COLOR);
-    _collect_blend_modes(&(bd->blend_modes_all), _("coloradjustment"), DEVELOP_BLEND_COLORADJUST);
-    _collect_blend_modes(&(bd->blend_modes_all), _("Lab lightness"), DEVELOP_BLEND_LAB_LIGHTNESS);
-    _collect_blend_modes(&(bd->blend_modes_all), _("Lab color"), DEVELOP_BLEND_LAB_COLOR);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal"), DEVELOP_BLEND_NORMAL2);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal bounded"), DEVELOP_BLEND_BOUNDED);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "lighten"), DEVELOP_BLEND_LIGHTEN);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "darken"), DEVELOP_BLEND_DARKEN);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "multiply"), DEVELOP_BLEND_MULTIPLY);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "average"), DEVELOP_BLEND_AVERAGE);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "addition"), DEVELOP_BLEND_ADD);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "subtract"), DEVELOP_BLEND_SUBSTRACT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "screen"), DEVELOP_BLEND_SCREEN);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "overlay"), DEVELOP_BLEND_OVERLAY);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "softlight"), DEVELOP_BLEND_SOFTLIGHT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "hardlight"), DEVELOP_BLEND_HARDLIGHT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "vividlight"), DEVELOP_BLEND_VIVIDLIGHT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "linearlight"), DEVELOP_BLEND_LINEARLIGHT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "pinlight"), DEVELOP_BLEND_PINLIGHT);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "lightness"), DEVELOP_BLEND_LIGHTNESS);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "chroma"), DEVELOP_BLEND_CHROMA);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "hue"), DEVELOP_BLEND_HUE);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "color"), DEVELOP_BLEND_COLOR);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "coloradjustment"), DEVELOP_BLEND_COLORADJUST);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab lightness"), DEVELOP_BLEND_LAB_LIGHTNESS);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "Lab color"), DEVELOP_BLEND_LAB_COLOR);
 
     /** deprecated blend modes: make them available as legacy history stacks might want them */
-    _collect_blend_modes(&(bd->blend_modes_all), _("difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE);
-    _collect_blend_modes(&(bd->blend_modes_all), _("inverse (deprecated)"), DEVELOP_BLEND_INVERSE);
-    _collect_blend_modes(&(bd->blend_modes_all), _("normal (deprecated)"), DEVELOP_BLEND_NORMAL);
-    _collect_blend_modes(&(bd->blend_modes_all), _("unbounded (deprecated)"), DEVELOP_BLEND_UNBOUNDED);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "inverse (deprecated)"), DEVELOP_BLEND_INVERSE);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "normal (deprecated)"), DEVELOP_BLEND_NORMAL);
+    _collect_blend_modes(&(bd->blend_modes_all), C_("blendmode", "unbounded (deprecated)"), DEVELOP_BLEND_UNBOUNDED);
 
 
     bd->masks_modes_combo = dt_bauhaus_combobox_new(module);
