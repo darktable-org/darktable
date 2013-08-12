@@ -509,11 +509,11 @@ void dtgtk_cairo_paint_masks_inverse(cairo_t *cr,gint x,gint y,gint w,gint h,gin
   gint s=w<h?w:h;
   cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
   cairo_scale(cr,s,s);
-
+  cairo_set_line_width(cr,0.15);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  cairo_set_source_rgb(cr, 0.6,0.6,0.6);
-  cairo_rectangle(cr,0.05,0.05,0.9,0.9);
-  cairo_arc_negative (cr, 0.5, 0.5, 0.35, 0, 6.2832);
+  cairo_arc(cr, 0.5, 0.5, 0.46, 0, 2.0*M_PI);
+  cairo_stroke(cr);
+  cairo_arc(cr, 0.5, 0.5, 0.46, 3.0*M_PI/2.0, M_PI/2.0);
   cairo_fill(cr);
   cairo_identity_matrix(cr);
 }
