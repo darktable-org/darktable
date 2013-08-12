@@ -171,7 +171,7 @@
               drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.</para>
            </sect4>
 
-           <para>More functionality to control the interaction of multiple shapes within a mask can be found in the masks manager panel (see <xref linkend="masks_manager"/>). 
+           <para>More functionality to control the interaction of multiple shapes within a mask can be found in the masks manager panel (see <xref linkend="mask_manager"/>). 
            Here you can give individual names to your shapes which will help you to keep an overview. You can also select individual shapes for editing - a helpful
            feature if your masks happens to contain several shapes with overlapping control elements.</para>
       </sect3>

@@ -32,6 +32,12 @@
 <!ENTITY shape_path "images/shape_path.png">
 <!ENTITY shape_gradient "images/shape_gradient.png">
 <!ENTITY shape_edit "images/shape_edit.png">
+<!ENTITY masks_used "images/masks_used.png">
+<!ENTITY masks_invert "images/masks_invert.png">
+<!ENTITY masks_union "images/masks_union.png">
+<!ENTITY masks_intersection "images/masks_intersection.png">
+<!ENTITY masks_difference "images/masks_difference.png">
+<!ENTITY masks_exclusion "images/masks_exclusion.png">
 
 
 
