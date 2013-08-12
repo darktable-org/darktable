@@ -1076,6 +1076,42 @@ dt_view_image_expose(
     cairo_stroke(cr);
   }
 
+
+  // draw custom metadata from accompanying text file:
+  if(dt_conf_get_bool("plugins/lighttable/draw_custom_metadata") && img && (zoom == 1))
+  {
+    char path[1024];
+    gboolean from_cache = FALSE;
+    dt_image_full_path(img->id, path, 1024, &from_cache);
+    char *c = path + strlen(path);
+    while((c > path) && (*c != '.')) c--;
+    c[1] = 't'; c[2] = 'x'; c[3] = 't'; c[4] = 0;
+    FILE *f = fopen(path, "rb");
+    if(f)
+    {
+      cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, .015*fscale);
+      // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+      int k = 0;
+      while(!feof(f))
+      {
+        int read = fscanf(f, "%[^\n]", path);
+        if(read != 1) break;
+        fgetc(f); // munch \n
+
+        cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
+        cairo_set_source_rgb(cr, .7, .7, .7);
+        cairo_text_path(cr, path);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.0);
+        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        cairo_stroke(cr);
+        k++;
+      }
+      fclose(f);
+    }
+  }
+
   if(img) dt_image_cache_read_release(darktable.image_cache, img);
   cairo_restore(cr);
   // if(zoom == 1) cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
