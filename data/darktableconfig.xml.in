@@ -1018,13 +1018,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="core">
-    <name>plugins/darkroom/dithering/dither_center_view</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription>dithering for darkroom mode</shortdescription>
-    <longdescription>center view will be dithered if this option is on and module dithering is activated (default for new images). switch this to off if you can accept display banding and prefer to have a slightly faster processing speed.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
       <enum>
