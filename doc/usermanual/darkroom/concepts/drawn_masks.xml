@@ -70,7 +70,7 @@
            <sect4><title>circle</title>
                <para>Clicking the <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/> symbol adds a circle shape.</para> 
                <para>Click into the canvas to place the circle. Left-click and drag the circle to a different position if needed.
-               Use the scroll-wheel of your mouse while in the circle to change the diameter of the circle; scroll within the circle border to adjust the width 
+               Use the scroll-wheel of your mouse while in the circle to change the diameter; scroll within the circle border to adjust the width 
                of the gradual decay. With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle - this is best observed with the mask displayed by pressing 
                the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -168,7 +168,8 @@
 
               <para>A polarity button ( <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
               <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/> , respectively) allows to toggle between normal and inverted state of the 
-              drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.</para>
+              drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa. You need this feature when combining drawn and parametric masks
+              (see <xref linkend="combined_masks"/>).</para>
            </sect4>
 
            <para>More functionality to control the interaction of multiple shapes within a mask can be found in the masks manager panel (see <xref linkend="mask_manager"/>). 

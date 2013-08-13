@@ -6,7 +6,7 @@
 <sect2 status="final" id="combined_masks"><title>Combining drawn and parametric masks</title>
 
     <para>This section describes how darktable combines individual masks to form the final mask of a module.
-          Individual masks are the result of the drawn mask and all the single channels of a parametric mask. 
+          Individual masks are the drawn mask and all the single channels of a parametric mask. 
           The topic is rather advanced - if you don't want to through all the theoretical details just jump 
           down where we describe two typical use cases.</para>
 
@@ -17,7 +17,7 @@
           each individual mask, defined by the plus or minus buttons, and the setting in the <quote>combine masks</quote>
           combobox (see <xref linkend="blending"/>).</para>
 
-          <para>Masks can be regarded as grayscale images which take up values between 0 and 1.0 for each
+          <para>Masks can be regarded as grayscale images which take up values between 0 and 1.0 (or from 0% to 100%) for each
           pixel.</para>
 
           <para>A straightforward way to combine masks is by multiplying the individual pixel values. The final mask

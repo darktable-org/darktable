@@ -68,15 +68,12 @@
                         <para>
 			      The filled triangles, or inside markers, indicate the closed (mostly narrower) edge of the trapezoidal function. The open triangles,
                               or outside markers, indicate the open (mostly wider) edge of the trapezoidal function.
-                        </para>
-		        <para>
-		              By default the markers are placed at the ends of the slider. The sequence of the markers always remains 
-		              unchanged: they can touch but they can not switch position.
+		              The sequence of the markers always remains unchanged: they can touch but they can not switch position.
 		        </para>
 		        <para>
                               A polarity button ( <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center" /> and
                               <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center" /> , respectively) to the right of the 
-                              slider switches between include and exclude function modes with visual confirmation provided
+                              slider switches between <emphasis>range select</emphasis> and <emphasis>range de-select</emphasis> function modes with visual confirmation provided
                               by exchanging the upper and the lower triangle markers. These two types of trapezoidal functions are represented graphically in the following
                               images.
 		        </para>
@@ -87,10 +84,10 @@
 			<tbody>
 				<row>						
 					<entry>
-		                                <para>Include function</para>
+		                                <para>Range select function</para>
 					</entry>
 					<entry>
-						<para>Exclude function</para>
+						<para>Range de-select function</para>
 					</entry>
 				</row>
 
@@ -116,7 +113,7 @@
 		                                </para>
 					</entry>
 					<entry>
-        		                        <para>A trapezoidal function that excludes a narrow range of values from blending.
+        		                        <para>A trapezoidal function that de-selects a narrow range of values from blending.
         		                        </para>
 					</entry>
 				</row>
@@ -126,6 +123,15 @@
 			</tgroup>
 			</informaltable>
 		        </para>
+                        <para>In their default state all markers are at their extreme positions, maximum left and maximum right, respectively. In this state a 
+                              <emphasis>range select</emphasis> function selects the whole range of values giving an <quote>all at 100%</quote> mask. Starting from there
+                              one can move the sliders inwards to gradually take out more an more parts of the image except of the remaining narrow range.
+                        </para>
+                        <para>A <emphasis>range de-select</emphasis> function per default deselects the whole range of values, giving an <quote>all-zero</quote> mask as
+                              a starting point. Moving the sliders inwards gradually extends the mask more and more except of the remaining narrow range.
+                        </para>
+                        <para>For more information on the polarity feature read <xref linkend="combined_masks"/>.
+                        </para>
 	        </sect4>
 
 

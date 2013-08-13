@@ -6,7 +6,7 @@
 				<tbody>
 					<row>						
 						<entry>This module is used to set the white balance. You have three ways to interact with it:
-							(a) Set up tint, temperature in and temperature out, (b) define the value of each channel,
+							(a) Set up tint and temperature, (b) define the value of each channel,
 							or (c) choose from predefined white balances.
 						</entry>
 						<entry>
@@ -22,8 +22,11 @@
 		<sect5><title>tint</title>
 			<para>Alter the colour tint of the image, from magenta (value &lt; 1) to green (value &gt; 1). The channel sliders will be updated when you adjust this parameter.</para>
 		</sect5>
-		<sect5><title>temperature in/out</title>
-			<para>Set the temperature in and temperature out (in Kelvin). The channel sliders will be updated when you adjust this parameter.</para>
+		<sect5><title>temperature</title>
+			<para>Set the color temperature (in Kelvin). The channel sliders will be updated when you adjust this parameter.
+                        darktable derives the color temperature from the EXIF data using some model assumptions. The value given
+                        is not meant to be authoritative. In the end only the updated channel values determine how the image is
+                        modified.</para>
 		</sect5>
 		<sect5><title>red, green and blue channels</title>
 			<para>Set the channel values on a scale from 0 to 8.</para>

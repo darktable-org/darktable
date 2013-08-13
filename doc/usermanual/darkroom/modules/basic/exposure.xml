@@ -17,6 +17,11 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
+
+                <para>You can activate multiple instances of this module each with different parameters acting on different parts of the image which you select by
+                      drawn masks (see <xref linkend="multiple_instances"/> and <xref linkend="drawn_masks"/>). The histogram is always linked
+                      to the lowest instance in pixelpipe.
+                </para>
 	</sect4>
 
 	<sect4><title>Usage</title>

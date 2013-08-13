@@ -2,22 +2,15 @@
 	<para>These options control some of the internals of darktable.
 	</para>
 
-	<sect4><title>memory in bytes to use for mipmap cache</title>
+	<sect4><title>memory in megabytes to use for mipmap cache</title>
 		<para>On order to speed-up display of filmrolls, darktable stores thumbnails in a cache on disk and loads it into memory at startup. This value controls the cache 
-		      size in bytes. It needs a restart if changed (default 536870912).
+		      size in megabytes. It needs a restart if changed (default 512MB).
 		</para>
         </sect4>
 
 	<sect4><title>number of background threads</title>
 		<para>This controls how many parallel threads are used to create thumbnails during import. On 32bit systems it is strongly recommended to set this to 1. 
                       Needs a restart if changed (default 2).
-		</para>
-        </sect4>
-
-	<sect4><title>export multiple images in parallel</title>
-		<para>Set this variable to the desired number of threads if you want multithreaded export to process multiple images at a time. Be warned: every thread will need about 
-                      1GB of memory. Setting this to 1 switches on per-image parallelization, which darktable does very efficiently and which normally obsoletes parallel exports.
-                      32bit systems need to set this to 1 (default 1).
 		</para>
         </sect4>
 
@@ -47,7 +40,7 @@
 		</para>
         </sect4>
 
-	<sect4><title>always use littlecms2 during export</title>
+	<sect4><title>always try to use littlecms2</title>
 		<para>If this option is activated, darktable will use system library littlecms2 instead of its own routines. This is about 28x slower than the default but might give more accurate results
                       in some cases (default off).
 		</para>
