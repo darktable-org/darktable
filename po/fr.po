@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-05 16:16+0200\n"
-"PO-Revision-Date: 2013-08-05 16:53+0100\n"
+"POT-Creation-Date: 2013-08-13 09:18+0200\n"
+"PO-Revision-Date: 2013-08-13 09:33+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -13,50 +13,50 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: ../build/src/preferences_gen.h:952
+#: ../build/src/preferences_gen.h:927
 msgid "GUI options"
 msgstr "Options d'interface"
 
-#: ../build/src/preferences_gen.h:955
+#: ../build/src/preferences_gen.h:930
 msgid "width of the side panels in pixels"
 msgstr "taille des panneaux latéraux en pixels"
 
-#: ../build/src/preferences_gen.h:969 ../build/src/preferences_gen.h:1088
-#: ../build/src/preferences_gen.h:1223 ../build/src/preferences_gen.h:1266
-#: ../build/src/preferences_gen.h:1290 ../build/src/preferences_gen.h:1405
-#: ../build/src/preferences_gen.h:1530 ../build/src/preferences_gen.h:1554
-#: ../build/src/preferences_gen.h:1579 ../src/lua/preferences.c:368
+#: ../build/src/preferences_gen.h:944 ../build/src/preferences_gen.h:1063
+#: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1241
+#: ../build/src/preferences_gen.h:1265 ../build/src/preferences_gen.h:1380
+#: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1529
+#: ../build/src/preferences_gen.h:1554 ../src/lua/preferences.c:368
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "double-cliquer pour réinitialiser `%d'"
 
-#: ../build/src/preferences_gen.h:972 ../build/src/preferences_gen.h:1509
+#: ../build/src/preferences_gen.h:947 ../build/src/preferences_gen.h:1484
 msgid "(needs a restart)"
 msgstr "(nécessite un redémarrage)"
 
-#: ../build/src/preferences_gen.h:979
+#: ../build/src/preferences_gen.h:954
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 
-#: ../build/src/preferences_gen.h:988 ../build/src/preferences_gen.h:1007
-#: ../build/src/preferences_gen.h:1026 ../build/src/preferences_gen.h:1045
-#: ../build/src/preferences_gen.h:1064 ../build/src/preferences_gen.h:1107
-#: ../build/src/preferences_gen.h:1126 ../build/src/preferences_gen.h:1144
-#: ../build/src/preferences_gen.h:1162 ../build/src/preferences_gen.h:1180
-#: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1242
-#: ../build/src/preferences_gen.h:1322 ../build/src/preferences_gen.h:1363
-#: ../build/src/preferences_gen.h:1382 ../build/src/preferences_gen.h:1424
-#: ../build/src/preferences_gen.h:1443 ../build/src/preferences_gen.h:1462
-#: ../build/src/preferences_gen.h:1598 ../build/src/preferences_gen.h:1617
-#: ../build/src/preferences_gen.h:1640 ../build/src/preferences_gen.h:1659
-#: ../build/src/preferences_gen.h:1678 ../build/src/preferences_gen.h:1710
-#: ../build/src/preferences_gen.h:1745 ../build/src/preferences_gen.h:1777
-#: ../src/lua/preferences.c:351 ../src/lua/preferences.c:359
+#: ../build/src/preferences_gen.h:963 ../build/src/preferences_gen.h:982
+#: ../build/src/preferences_gen.h:1001 ../build/src/preferences_gen.h:1020
+#: ../build/src/preferences_gen.h:1039 ../build/src/preferences_gen.h:1082
+#: ../build/src/preferences_gen.h:1101 ../build/src/preferences_gen.h:1119
+#: ../build/src/preferences_gen.h:1137 ../build/src/preferences_gen.h:1155
+#: ../build/src/preferences_gen.h:1173 ../build/src/preferences_gen.h:1217
+#: ../build/src/preferences_gen.h:1297 ../build/src/preferences_gen.h:1338
+#: ../build/src/preferences_gen.h:1357 ../build/src/preferences_gen.h:1399
+#: ../build/src/preferences_gen.h:1418 ../build/src/preferences_gen.h:1437
+#: ../build/src/preferences_gen.h:1573 ../build/src/preferences_gen.h:1592
+#: ../build/src/preferences_gen.h:1615 ../build/src/preferences_gen.h:1634
+#: ../build/src/preferences_gen.h:1666 ../build/src/preferences_gen.h:1701
+#: ../build/src/preferences_gen.h:1733 ../src/lua/preferences.c:351
+#: ../src/lua/preferences.c:359
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "double-cliquer pour réinitialiser `%s'"
 
-#: ../build/src/preferences_gen.h:991
+#: ../build/src/preferences_gen.h:966
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -65,43 +65,43 @@ msgstr ""
 "l'image à afficher à partir du raw. cela ralentit le logiciel mais affiche "
 "des miniatures plus exactes."
 
-#: ../build/src/preferences_gen.h:998
+#: ../build/src/preferences_gen.h:973
 msgid "ask before removing images from database"
 msgstr "demander avant d'enlever des images"
 
-#: ../build/src/preferences_gen.h:1010
+#: ../build/src/preferences_gen.h:985
 msgid "always ask the user before any image is removed from DB."
 msgstr "toujours demander avant d'enlever une image de la base de données"
 
-#: ../build/src/preferences_gen.h:1017
+#: ../build/src/preferences_gen.h:992
 msgid "ask before erasing images from disk"
 msgstr "demander avant de supprimer des images"
 
-#: ../build/src/preferences_gen.h:1029
+#: ../build/src/preferences_gen.h:1004
 msgid "always ask the user before any image file is deleted."
 msgstr "toujours demander avant de supprimer un fichier image"
 
-#: ../build/src/preferences_gen.h:1036
+#: ../build/src/preferences_gen.h:1011
 msgid "ask before moving images from film roll folder"
 msgstr "demander avant de déplacer des images vers un autre dossier"
 
-#: ../build/src/preferences_gen.h:1048
+#: ../build/src/preferences_gen.h:1023
 msgid "always ask the user before any image file is moved."
 msgstr "toujours demander avant de déplacer une image"
 
-#: ../build/src/preferences_gen.h:1055
+#: ../build/src/preferences_gen.h:1030
 msgid "ask before copying images to new film roll folder"
 msgstr "demander avant de copier des images vers un nouveau dossier"
 
-#: ../build/src/preferences_gen.h:1067
+#: ../build/src/preferences_gen.h:1042
 msgid "always ask the user before any image file is copied."
 msgstr "toujours demander avant de copier une image"
 
-#: ../build/src/preferences_gen.h:1074
+#: ../build/src/preferences_gen.h:1049
 msgid "number of folder levels to show in lists"
 msgstr "nombre de niveaux de dossiers à afficher"
 
-#: ../build/src/preferences_gen.h:1091
+#: ../build/src/preferences_gen.h:1066
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
@@ -109,11 +109,11 @@ msgstr ""
 "nombre de niveaux de dossier à afficher dans les noms, en partant de la "
 "droite"
 
-#: ../build/src/preferences_gen.h:1098
+#: ../build/src/preferences_gen.h:1073
 msgid "ignore JPEG images when importing film rolls"
 msgstr "ignorer les fichiers JPEG lors de l'importation d'un dossier"
 
-#: ../build/src/preferences_gen.h:1110
+#: ../build/src/preferences_gen.h:1085
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -122,49 +122,49 @@ msgstr ""
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
-#: ../build/src/preferences_gen.h:1117
+#: ../build/src/preferences_gen.h:1092
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "importer les dossiers de manière récursive"
 
-#: ../build/src/preferences_gen.h:1135
+#: ../build/src/preferences_gen.h:1110
 msgid "creator to be applied when importing"
 msgstr "auteur par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:1153
+#: ../build/src/preferences_gen.h:1128
 msgid "publisher to be applied when importing"
 msgstr "diffuseur par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:1171
+#: ../build/src/preferences_gen.h:1146
 msgid "rights to be applied when importing"
 msgstr "droits par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:1189
+#: ../build/src/preferences_gen.h:1164
 msgid "comma separated tags to be applied when importing"
 msgstr ""
 "liste de mots-clés (séparés par une virgule)\n"
 " à appliquer lors de l'importation"
 
-#: ../build/src/preferences_gen.h:1207
+#: ../build/src/preferences_gen.h:1182
 msgid "initial import rating"
 msgstr "étoile(s) à l'importation"
 
-#: ../build/src/preferences_gen.h:1226
+#: ../build/src/preferences_gen.h:1201
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
 
-#: ../build/src/preferences_gen.h:1233
+#: ../build/src/preferences_gen.h:1208
 msgid "enable filmstrip"
 msgstr "activer le bandeau"
 
-#: ../build/src/preferences_gen.h:1245
+#: ../build/src/preferences_gen.h:1220
 msgid "enable the filmstrip in darkroom and tethering modes."
 msgstr "activer le bandeau en modes chambre noire et capture"
 
-#: ../build/src/preferences_gen.h:1252
+#: ../build/src/preferences_gen.h:1227
 msgid "maximum width of image drawing area"
 msgstr "largeur maximale des images (pixels)"
 
-#: ../build/src/preferences_gen.h:1269
+#: ../build/src/preferences_gen.h:1244
 msgid ""
 "maximum width of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -174,11 +174,11 @@ msgstr ""
 "écran\n"
 "(nécessite un redémarrage et rend le cache caduque)"
 
-#: ../build/src/preferences_gen.h:1276
+#: ../build/src/preferences_gen.h:1251
 msgid "maximum height of image drawing area"
 msgstr "hauteur maximale des images (pixels)"
 
-#: ../build/src/preferences_gen.h:1293
+#: ../build/src/preferences_gen.h:1268
 msgid ""
 "maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -188,11 +188,11 @@ msgstr ""
 "écran\n"
 "(nécessite un redémarrage et rend le cache caduque)."
 
-#: ../build/src/preferences_gen.h:1300
+#: ../build/src/preferences_gen.h:1275
 msgid "compression of thumbnail images"
 msgstr "compression des miniatures"
 
-#: ../build/src/preferences_gen.h:1325
+#: ../build/src/preferences_gen.h:1300
 msgid ""
 "off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high "
 "quality - DXT1, same memory as low quality variant but slower."
@@ -201,11 +201,11 @@ msgstr ""
 "DXT1 (rapide) ;  haute qualité - DXT1, même consommation mémoire mais plus "
 "lent"
 
-#: ../build/src/preferences_gen.h:1332
+#: ../build/src/preferences_gen.h:1307
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
 
-#: ../build/src/preferences_gen.h:1366
+#: ../build/src/preferences_gen.h:1341
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -215,15 +215,15 @@ msgstr ""
 "l'attribut spécifié, absolue/relative - la pression est directement utilisée "
 "comme valeur de l'attribut ou multipliée avec la valeur pré-définie."
 
-#: ../build/src/preferences_gen.h:1373
+#: ../build/src/preferences_gen.h:1348
 msgid "ask before deleting a tag"
 msgstr "demander avant de supprimer un mot-clé"
 
-#: ../build/src/preferences_gen.h:1391
+#: ../build/src/preferences_gen.h:1366
 msgid "maximum number of images drawn on map"
 msgstr "nombre maximum d'images affichées sur la carte"
 
-#: ../build/src/preferences_gen.h:1408
+#: ../build/src/preferences_gen.h:1383
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
@@ -231,11 +231,11 @@ msgstr ""
 "nombre maximum d'images géolocalisées affichées sur la carte.augmenter ce "
 "nombre peut ralentir l'affichage de la carte (nécessite un redémarrage)."
 
-#: ../build/src/preferences_gen.h:1415
+#: ../build/src/preferences_gen.h:1390
 msgid "pretty print the image location"
 msgstr "affichage plus clair de la localisation d'image"
 
-#: ../build/src/preferences_gen.h:1427
+#: ../build/src/preferences_gen.h:1402
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
@@ -243,41 +243,41 @@ msgstr ""
 "affiche une représentation plus lisible de la localisation dans le module "
 "'informations de l'image'"
 
-#: ../build/src/preferences_gen.h:1434
+#: ../build/src/preferences_gen.h:1409
 msgid "expand a single lighttable module at a time"
 msgstr "déplier un seul module de la table lumineuse à la fois"
 
-#: ../build/src/preferences_gen.h:1446
+#: ../build/src/preferences_gen.h:1421
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "cette option échange le comportement du shift-clic de la table lumineuse"
 
-#: ../build/src/preferences_gen.h:1453
+#: ../build/src/preferences_gen.h:1428
 msgid "expand a single darkroom module at a time"
 msgstr "déplier un seul module de la chambre noire à la fois"
 
-#: ../build/src/preferences_gen.h:1465
+#: ../build/src/preferences_gen.h:1440
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "cette option échange le comportement du shift-clic de la chambre noire"
 
-#: ../build/src/preferences_gen.h:1488
+#: ../build/src/preferences_gen.h:1463
 msgid "core options"
 msgstr "fonctionnement"
 
-#: ../build/src/preferences_gen.h:1491
+#: ../build/src/preferences_gen.h:1466
 msgid "memory in megabytes to use for mipmap cache"
 msgstr "mémoire (en mégaoctets) à utiliser pour le cache mipmap"
 
-#: ../build/src/preferences_gen.h:1506
+#: ../build/src/preferences_gen.h:1481
 #, c-format
 msgid "double click to reset to `%<PRId64>'"
 msgstr "double-cliquer pour réinitialiser `%<PRId64>'"
 
-#: ../build/src/preferences_gen.h:1516
+#: ../build/src/preferences_gen.h:1491
 msgid "number of background threads"
 msgstr "nombre de fils d’exécution"
 
-#: ../build/src/preferences_gen.h:1533
+#: ../build/src/preferences_gen.h:1508
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -287,11 +287,11 @@ msgstr ""
 "la création des aperçus pendant l'importation. le cache augmentera jusqu'à "
 "deux fois ce chiffre (nécessite un redémarrage)."
 
-#: ../build/src/preferences_gen.h:1540
+#: ../build/src/preferences_gen.h:1515
 msgid "host memory limit (in MB) for tiling"
 msgstr "mémoire limite (en Mo) pour le tuilage"
 
-#: ../build/src/preferences_gen.h:1557
+#: ../build/src/preferences_gen.h:1532
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -304,12 +304,12 @@ msgstr ""
 "valeurs inférieures à 500 sont considérées égales à 500. nécessite un "
 "redémarrage."
 
-#: ../build/src/preferences_gen.h:1564
+#: ../build/src/preferences_gen.h:1539
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr ""
 "quantité minimale de mémoire (en Mo) pour la mémoire-tampon d'une tuile"
 
-#: ../build/src/preferences_gen.h:1582
+#: ../build/src/preferences_gen.h:1557
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -319,11 +319,11 @@ msgstr ""
 "quantité de mémoire minimale (en Mo) que le tuilage doit utiliser pour la "
 "mémoire-tampon. surcharge 'host_memory_limit'. nécessite un redémarrage."
 
-#: ../build/src/preferences_gen.h:1589
+#: ../build/src/preferences_gen.h:1564
 msgid "write sidecar file for each image"
 msgstr "écrire un fichier xmp redondant pour chaque image"
 
-#: ../build/src/preferences_gen.h:1601
+#: ../build/src/preferences_gen.h:1576
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -331,11 +331,11 @@ msgstr ""
 "ces fichiers pourront être réimportés dans une base de données différente "
 "par la suite, tout en préservant les modifications apportées aux images."
 
-#: ../build/src/preferences_gen.h:1608
+#: ../build/src/preferences_gen.h:1583
 msgid "activate OpenCL support"
 msgstr "activer le support d'OpenCL"
 
-#: ../build/src/preferences_gen.h:1620
+#: ../build/src/preferences_gen.h:1595
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -343,23 +343,23 @@ msgstr ""
 "si OpenCL est présent sur votre système, darktable l'utilise pour améliorer "
 "les performances. peut être désactivé à tout moment."
 
-#: ../build/src/preferences_gen.h:1624
+#: ../build/src/preferences_gen.h:1599
 msgid "not available on this system"
 msgstr "non disponible sur cette plateforme"
 
-#: ../build/src/preferences_gen.h:1631
+#: ../build/src/preferences_gen.h:1606
 msgid "always try to use LittleCMS 2"
 msgstr "toujours essayer d'utiliser LittleCMS2"
 
-#: ../build/src/preferences_gen.h:1643
+#: ../build/src/preferences_gen.h:1618
 msgid "this is significantly slower than the default."
 msgstr "plus lent que l'option par défaut."
 
-#: ../build/src/preferences_gen.h:1650
+#: ../build/src/preferences_gen.h:1625
 msgid "do high quality resampling during export"
 msgstr "ré-échantillonnage de haute qualité lors de l'exportation"
 
-#: ../build/src/preferences_gen.h:1662
+#: ../build/src/preferences_gen.h:1637
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
@@ -368,26 +368,11 @@ msgstr ""
 "l'image est développée en résolution maximale, puis échantillonnée à la fin. "
 "cela permet d'améliorer parfois la qualité mais est toujours plus lent."
 
-#: ../build/src/preferences_gen.h:1669
-msgid "dithering for darkroom mode"
-msgstr "homogénéisation pour la vue en chambre noire"
-
-#: ../build/src/preferences_gen.h:1681
-msgid ""
-"center view will be dithered if this option is on and module dithering is "
-"activated (default for new images). switch this to off if you can accept "
-"display banding and prefer to have a slightly faster processing speed."
-msgstr ""
-"la vue centrale va être homogénéisée si cette option est activée et si le "
-"module d'homogénéisation est activé (activé par défaut pour les nouvelles "
-"images). désactiver pour avoir une vitesse de développement légèrement plus "
-"rapide au prix de l'apparition de bandes."
-
-#: ../build/src/preferences_gen.h:1688
+#: ../build/src/preferences_gen.h:1644
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "méthode de dématriçage pour la vue en chambre noire"
 
-#: ../build/src/preferences_gen.h:1713
+#: ../build/src/preferences_gen.h:1669
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -398,11 +383,11 @@ msgstr ""
 "l'exportation. PPG et les modes d'interpolation ci-dessous représente la "
 "voie moyenne."
 
-#: ../build/src/preferences_gen.h:1720
+#: ../build/src/preferences_gen.h:1676
 msgid "pixel interpolator"
 msgstr "algorithme d'interpolation"
 
-#: ../build/src/preferences_gen.h:1748
+#: ../build/src/preferences_gen.h:1704
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -410,11 +395,11 @@ msgstr ""
 "algorithme d'interpolation utilisé pour la rotation et la correction des "
 "objectifs (bilinéaire, bicubique, lanczos2, lanczos3)"
 
-#: ../build/src/preferences_gen.h:1755
+#: ../build/src/preferences_gen.h:1711
 msgid "password storage backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
-#: ../build/src/preferences_gen.h:1780
+#: ../build/src/preferences_gen.h:1736
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr ""
 "interface pour trousseau de mots de passe : aucun, kwallet, gnome keyring"
@@ -470,8 +455,8 @@ msgstr ""
 
 #: ../src/common/collection.c:454 ../src/develop/lightroom.c:974
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
-#: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:568
-#: ../src/iop/colorbalance.c:606 ../src/iop/colorbalance.c:644
+#: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
+#: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
 #: ../src/iop/temperature.c:734 ../src/libs/collect.c:1139
 #: ../src/libs/collect.c:1141
 msgid "red"
@@ -484,8 +469,8 @@ msgstr "jaune"
 
 #: ../src/common/collection.c:456 ../src/develop/lightroom.c:978
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
-#: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:577
-#: ../src/iop/colorbalance.c:615 ../src/iop/colorbalance.c:653
+#: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
+#: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
 #: ../src/iop/temperature.c:735 ../src/libs/collect.c:1151
 #: ../src/libs/collect.c:1153
 msgid "green"
@@ -493,8 +478,8 @@ msgstr "vert"
 
 #: ../src/common/collection.c:457 ../src/develop/lightroom.c:980
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
-#: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:586
-#: ../src/iop/colorbalance.c:624 ../src/iop/colorbalance.c:662
+#: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
+#: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
 #: ../src/iop/temperature.c:736 ../src/libs/collect.c:1157
 #: ../src/libs/collect.c:1159
 msgid "blue"
@@ -554,7 +539,7 @@ msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/common/film.c:529
+#: ../src/common/film.c:522
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -570,14 +555,14 @@ msgstr ""
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1686
-#: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1126 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "activé(e)"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1536
-#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1129
+#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1126
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -1142,119 +1127,138 @@ msgstr "ajouter un masque au pinceau"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:377
+msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
 
 #: ../src/develop/blend_gui.c:1503
+msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normal écrêté"
 
 #: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:386
+msgctxt "blendmode"
 msgid "lighten"
 msgstr "éclaircir"
 
 #: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:385
+msgctxt "blendmode"
 msgid "darken"
 msgstr "assombrir"
 
 #: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:382
+msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplier"
 
 #: ../src/develop/blend_gui.c:1507
+msgctxt "blendmode"
 msgid "average"
 msgstr "moyenne"
 
 #: ../src/develop/blend_gui.c:1508
+msgctxt "blendmode"
 msgid "addition"
 msgstr "addition"
 
 #: ../src/develop/blend_gui.c:1509
+msgctxt "blendmode"
 msgid "subtract"
 msgstr "soustraire"
 
 #: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:391
+msgctxt "blendmode"
 msgid "difference"
 msgstr "différence"
 
 #: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:383
+msgctxt "blendmode"
 msgid "screen"
 msgstr "écran"
 
-#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:353
-#: ../src/libs/live_view.c:384
+#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:384
+msgctxt "blendmode"
 msgid "overlay"
 msgstr "superposer"
 
 #: ../src/develop/blend_gui.c:1513
+msgctxt "blendmode"
 msgid "softlight"
 msgstr "lumière douce"
 
 #: ../src/develop/blend_gui.c:1514
+msgctxt "blendmode"
 msgid "hardlight"
 msgstr "lumière dure"
 
 #: ../src/develop/blend_gui.c:1515
+msgctxt "blendmode"
 msgid "vividlight"
 msgstr "lumière vive"
 
 #: ../src/develop/blend_gui.c:1516
+msgctxt "blendmode"
 msgid "linearlight"
 msgstr "lumière linéaire"
 
 #: ../src/develop/blend_gui.c:1517
+msgctxt "blendmode"
 msgid "pinlight"
 msgstr "lumière ponctuelle"
 
-#: ../src/develop/blend_gui.c:1518 ../src/iop/channelmixer.c:439
-#: ../src/iop/colorize.c:472 ../src/iop/colorzones.c:1021
-#: ../src/iop/colorzones.c:1059
+#: ../src/develop/blend_gui.c:1518
+msgctxt "blendmode"
 msgid "lightness"
 msgstr "luminance"
 
-#: ../src/develop/blend_gui.c:1519 ../src/iop/atrous.c:1430
-#: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
+#: ../src/develop/blend_gui.c:1519
+msgctxt "blendmode"
 msgid "chroma"
 msgstr "chroma"
 
-#. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:1520 ../src/iop/channelmixer.c:437
-#: ../src/iop/colorize.c:448 ../src/iop/colorzones.c:1023
-#: ../src/iop/colorzones.c:1057 ../src/iop/graduatednd.c:1049
-#: ../src/iop/splittoning.c:542
+#: ../src/develop/blend_gui.c:1520
+msgctxt "blendmode"
 msgid "hue"
 msgstr "teinte"
 
 #: ../src/develop/blend_gui.c:1521
+msgctxt "blendmode"
 msgid "color"
 msgstr "couleur"
 
 #: ../src/develop/blend_gui.c:1522
+msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "ajustement des couleurs"
 
 #: ../src/develop/blend_gui.c:1523
+msgctxt "blendmode"
 msgid "Lab lightness"
-msgstr "luminance Lab"
+msgstr "clarté"
 
 #: ../src/develop/blend_gui.c:1524
+msgctxt "blendmode"
 msgid "Lab color"
 msgstr "couleur Lab"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:1527
+msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "différence (déprécié)"
 
 #: ../src/develop/blend_gui.c:1528
+msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "inverse (déprécié)"
 
 #: ../src/develop/blend_gui.c:1529
+msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normal (déprécié)"
 
 #: ../src/develop/blend_gui.c:1530
+msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "non limité (déprécié)"
 
@@ -1351,7 +1355,7 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
-#: ../src/develop/develop.c:963
+#: ../src/develop/develop.c:960
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module '%s' version non cohérentes: %d != %d"
@@ -1401,9 +1405,9 @@ msgstr "%s est activé"
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1444 ../src/gui/accelerators.c:714
-#: ../src/gui/accelerators.c:794 ../src/gui/accelerators.c:938
-#: ../src/gui/accelerators.c:963 ../src/gui/presets.c:197
+#: ../src/develop/imageop.c:1444 ../src/gui/accelerators.c:715
+#: ../src/gui/accelerators.c:795 ../src/gui/accelerators.c:939
+#: ../src/gui/accelerators.c:964 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
 #: ../src/iop/temperature.c:746 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:976
@@ -1547,7 +1551,7 @@ msgctxt "accel"
 msgid "edit"
 msgstr "modifier"
 
-#: ../src/gui/accelerators.c:778 ../src/libs/lib.c:371
+#: ../src/gui/accelerators.c:779 ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
@@ -2749,6 +2753,11 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "changer la luminance pour chaque taille"
 
+#: ../src/iop/atrous.c:1430 ../src/iop/equalizer.c:343
+#: ../src/iop/nlmeans.c:718
+msgid "chroma"
+msgstr "chroma"
+
 #: ../src/iop/atrous.c:1431
 msgid "change color saturation at each feature size"
 msgstr "changer la saturation pour chaque taille"
@@ -2916,7 +2925,7 @@ msgstr ""
 "force du flou\n"
 "pour le bleu"
 
-#: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:572
+#: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
 #: ../src/iop/lowpass.c:521 ../src/iop/shadhi.c:652 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "rayon"
@@ -3187,6 +3196,13 @@ msgstr "mixeur de canaux"
 msgid "destination"
 msgstr "canal de destination"
 
+#. dt_bauhaus_slider_set_format(g->gslider1, "");
+#: ../src/iop/channelmixer.c:437 ../src/iop/colorize.c:448
+#: ../src/iop/colorzones.c:1023 ../src/iop/colorzones.c:1057
+#: ../src/iop/graduatednd.c:1049 ../src/iop/splittoning.c:542
+msgid "hue"
+msgstr "teinte"
+
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:462 ../src/iop/colorzones.c:1022
@@ -3195,6 +3211,11 @@ msgstr "canal de destination"
 #: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "saturation"
+
+#: ../src/iop/channelmixer.c:439 ../src/iop/colorize.c:472
+#: ../src/iop/colorzones.c:1021 ../src/iop/colorzones.c:1059
+msgid "lightness"
+msgstr "clarté"
 
 #: ../src/iop/channelmixer.c:443
 msgid "gray"
@@ -3449,75 +3470,75 @@ msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/colorbalance.c:80
+#: ../src/iop/colorbalance.c:87
 msgid "color balance"
 msgstr "balance couleur"
 
 #. lift
-#: ../src/iop/colorbalance.c:553
+#: ../src/iop/colorbalance.c:626
 msgid "lift"
 msgstr "lift"
 
-#: ../src/iop/colorbalance.c:558
+#: ../src/iop/colorbalance.c:631
 msgid "factor of lift"
 msgstr "facteur de lift"
 
-#: ../src/iop/colorbalance.c:559 ../src/iop/colorbalance.c:597
-#: ../src/iop/colorbalance.c:635
+#: ../src/iop/colorbalance.c:632 ../src/iop/colorbalance.c:670
+#: ../src/iop/colorbalance.c:708
 msgid "factor"
 msgstr "facteur"
 
-#: ../src/iop/colorbalance.c:567
+#: ../src/iop/colorbalance.c:640
 msgid "factor of red for lift"
 msgstr "facteur rouge du lift"
 
-#: ../src/iop/colorbalance.c:576
+#: ../src/iop/colorbalance.c:649
 msgid "factor of green for lift"
 msgstr "facteur vert du lift"
 
-#: ../src/iop/colorbalance.c:585
+#: ../src/iop/colorbalance.c:658
 msgid "factor of blue for lift"
 msgstr "facteur bleu du lift"
 
 #. gamma
-#: ../src/iop/colorbalance.c:591 ../src/iop/profile_gamma.c:139
+#: ../src/iop/colorbalance.c:664 ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr "gamma"
 
-#: ../src/iop/colorbalance.c:596
+#: ../src/iop/colorbalance.c:669
 msgid "factor of gamma"
 msgstr "facteur gamma"
 
-#: ../src/iop/colorbalance.c:605
+#: ../src/iop/colorbalance.c:678
 msgid "factor of red for gamma"
 msgstr "facteur rouge du gamma"
 
-#: ../src/iop/colorbalance.c:614
+#: ../src/iop/colorbalance.c:687
 msgid "factor of green for gamma"
 msgstr "facteur vert du gamma"
 
-#: ../src/iop/colorbalance.c:623
+#: ../src/iop/colorbalance.c:696
 msgid "factor of blue for gamma"
 msgstr "facteur bleu du gamma"
 
 #. gain
-#: ../src/iop/colorbalance.c:629
+#: ../src/iop/colorbalance.c:702
 msgid "gain"
 msgstr "gain"
 
-#: ../src/iop/colorbalance.c:634
+#: ../src/iop/colorbalance.c:707
 msgid "factor of gain"
 msgstr "facteur du gain"
 
-#: ../src/iop/colorbalance.c:643
+#: ../src/iop/colorbalance.c:716
 msgid "factor of red for gain"
 msgstr "facteur rouge du gain"
 
-#: ../src/iop/colorbalance.c:652
+#: ../src/iop/colorbalance.c:725
 msgid "factor of green for gain"
 msgstr "facteur vert du gain"
 
-#: ../src/iop/colorbalance.c:661
+#: ../src/iop/colorbalance.c:734
 msgid "factor of blue for gain"
 msgstr "facteur bleu du gain"
 
@@ -3663,7 +3684,7 @@ msgstr "coloriser"
 #: ../src/iop/colorize.c:121
 msgctxt "accel"
 msgid "lightness"
-msgstr "luminance"
+msgstr "clarté"
 
 #: ../src/iop/colorize.c:122
 msgctxt "accel"
@@ -3688,11 +3709,11 @@ msgstr "mélange des sources"
 
 #: ../src/iop/colorize.c:481
 msgid "lightness of color"
-msgstr "luminance de la couleur"
+msgstr "clarté de la couleur"
 
 #: ../src/iop/colorize.c:482
 msgid "mix value of source lightness"
-msgstr "mélange des sources de luminance"
+msgstr "mélange des sources de clarté"
 
 #: ../src/iop/colormapping.c:147
 msgid "color mapping"
@@ -3959,7 +3980,7 @@ msgstr "PPG (rapide)"
 msgid "amaze (slow)"
 msgstr "amaze (lent)"
 
-#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
+#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
 #: ../src/iop/highlights.c:376
 msgid "method"
 msgstr "méthode"
@@ -4085,56 +4106,56 @@ msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
-#: ../src/iop/dither.c:98 ../src/iop/vignette.c:1134
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:1134
 msgid "dithering"
 msgstr "homogénéisation"
 
 #. add the preset.
-#: ../src/iop/dither.c:124
+#: ../src/iop/dither.c:123
 msgid "dither"
 msgstr "homogénéiser"
 
-#: ../src/iop/dither.c:561
+#: ../src/iop/dither.c:557
 msgid "random"
 msgstr "aléatoire"
 
-#: ../src/iop/dither.c:562
+#: ../src/iop/dither.c:558
 msgid "floyd-steinberg 1-bit B&W"
 msgstr "floyd-steinberg 1-bit N&B"
 
-#: ../src/iop/dither.c:563
+#: ../src/iop/dither.c:559
 msgid "floyd-steinberg 4-bit gray"
 msgstr "floyd-steinberg 4-bit gris"
 
-#: ../src/iop/dither.c:564
+#: ../src/iop/dither.c:560
 msgid "floyd-steinberg 8-bit RGB"
 msgstr "floyd-steinberg 8-bit RVB"
 
-#: ../src/iop/dither.c:565
+#: ../src/iop/dither.c:561
 msgid "floyd-steinberg 16-bit RGB"
 msgstr "floyd-steinberg 16-bit RVB"
 
-#: ../src/iop/dither.c:566
+#: ../src/iop/dither.c:562
 msgid "floyd-steinberg auto"
 msgstr "floyd-steinberg auto"
 
-#: ../src/iop/dither.c:571
+#: ../src/iop/dither.c:567
 msgid "radius for blurring step"
 msgstr "rayon du flou"
 
-#: ../src/iop/dither.c:583
+#: ../src/iop/dither.c:579
 msgid "the gradient range where to apply random dither"
 msgstr "gradient de la zone à homogénéiser"
 
-#: ../src/iop/dither.c:584
+#: ../src/iop/dither.c:580
 msgid "gradient range"
 msgstr "gradient"
 
-#: ../src/iop/dither.c:591
+#: ../src/iop/dither.c:587
 msgid "damping level of random dither"
 msgstr "amortissement pour l'homogénéisation aléatoire"
 
-#: ../src/iop/dither.c:592
+#: ../src/iop/dither.c:588
 msgid "damping"
 msgstr "amortissement"
 
@@ -6838,6 +6859,10 @@ msgstr "recule la mise au point par (petits pas)"
 msgid "move focus point out (big steps)"
 msgstr "recule la mise au point par (grands pas)"
 
+#: ../src/libs/live_view.c:353
+msgid "overlay"
+msgstr "superposer"
+
 #: ../src/libs/live_view.c:355
 msgid "selected image"
 msgstr "image sélectionnée"
@@ -6863,52 +6888,64 @@ msgid "overlay mode"
 msgstr "mode de superposition"
 
 #: ../src/libs/live_view.c:378
+msgctxt "blendmode"
 msgid "xor"
 msgstr "xor"
 
 #: ../src/libs/live_view.c:379
+msgctxt "blendmode"
 msgid "add"
 msgstr "ajouter"
 
 #: ../src/libs/live_view.c:380
+msgctxt "blendmode"
 msgid "saturate"
 msgstr "saturation"
 
 #: ../src/libs/live_view.c:387
+msgctxt "blendmode"
 msgid "color dodge"
 msgstr "décaler les couleurs"
 
 #: ../src/libs/live_view.c:388
+msgctxt "blendmode"
 msgid "color burn"
 msgstr "cramer les couleurs"
 
 #: ../src/libs/live_view.c:389
+msgctxt "blendmode"
 msgid "hard light"
 msgstr "lumière dure"
 
 #: ../src/libs/live_view.c:390
+msgctxt "blendmode"
 msgid "soft light"
 msgstr "lumière douce"
 
 #: ../src/libs/live_view.c:392
+msgctxt "blendmode"
 msgid "exclusion"
 msgstr "exclusion"
 
 #: ../src/libs/live_view.c:393
+msgctxt "blendmode"
 msgid "HSL hue"
-msgstr "teinte"
+msgstr "teinte HSL"
 
 #: ../src/libs/live_view.c:394
+msgctxt "blendmode"
 msgid "HSL saturation"
-msgstr "saturation"
+msgstr "saturation HSL"
 
 #: ../src/libs/live_view.c:395
+msgctxt "blendmode"
 msgid "HSL color"
-msgstr "couleur Lab"
+msgstr "couleur HSL"
 
 #: ../src/libs/live_view.c:396
+msgctxt "blendmode"
 msgid "HSL luminosity"
-msgstr "luminosité hsl"
+msgstr "clarté HSL"
 
 #: ../src/libs/live_view.c:398
 msgid "mode of the overlay"
@@ -8118,6 +8155,19 @@ msgstr "masques existants"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "options lua"
+
+#~ msgid "dithering for darkroom mode"
+#~ msgstr "homogénéisation pour la vue en chambre noire"
+
+#~ msgid ""
+#~ "center view will be dithered if this option is on and module dithering is "
+#~ "activated (default for new images). switch this to off if you can accept "
+#~ "display banding and prefer to have a slightly faster processing speed."
+#~ msgstr ""
+#~ "la vue centrale va être homogénéisée si cette option est activée et si le "
+#~ "module d'homogénéisation est activé (activé par défaut pour les nouvelles "
+#~ "images). désactiver pour avoir une vitesse de développement légèrement "
+#~ "plus rapide au prix de l'apparition de bandes."
 
 #~ msgid "iso"
 #~ msgstr "iso"
