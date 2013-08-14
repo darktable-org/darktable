@@ -223,11 +223,11 @@ int main(int argc, char *argv[])
   // our best state is in `best'
 
   fprintf(ff, "# err %f improved %d times\n", min, accepts);
-  fprintf(ff, "# copy paste into iop/basecurve.c:\n");
-  fprintf(ff, "# { \"new measured basecurve\", \"\", \"\", 0, 51200,                        {{{");
+  fprintf(ff, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
+  fprintf(ff, "# { \"new measured basecurve\", \"insert maker\", \"insert model\", 0, 51200,                        {{{");
   for(int k=0;k<best.m_numAnchors;k++)
     fprintf(ff, "{%f, %f}%s", best.m_anchors[k].x, best.m_anchors[k].y, k<best.m_numAnchors-1?", ":"}}, ");
-  fprintf(ff, "{%d}, {m}}, 0},\n", best.m_numAnchors);
+  fprintf(ff, "{%d}, {m}}, 0, 0},\n", best.m_numAnchors);
   CurveDataSample(&best, &csample);
   for(int k=0; k<0x10000; k++)
     fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));

@@ -733,12 +733,14 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     // only matching if filter is on:
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version, enabled from presets where operation=?1 and "
                                 "(filter=0 or ( "
-                                "?2 like model and ?3 like maker and ?4 like lens and "
+                                "?2 like model and ?3 like maker and "
+                                "?4 like lens and "
                                 "?5 between iso_min and iso_max and "
                                 "?6 between exposure_min and exposure_max and "
                                 "?7 between aperture_min and aperture_max and "
                                 "?8 between focal_length_min and focal_length_max and "
-                                "(isldr = 0 or isldr=?9) ) )"
+                                "(isldr = 0 or isldr=?9)"
+                                " ) )"
                                 "order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
@@ -748,7 +750,8 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, dt_image_is_ldr(image));
+    int ldr = dt_image_is_ldr(image) ? 1 : 2; // will match raw+hdr for 2, hdr might be just a converted high bit-depth raw, so we're on the safe side.
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, ldr);
   }
   else
   {
