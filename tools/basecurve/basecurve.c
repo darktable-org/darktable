@@ -93,6 +93,13 @@ int main(int argc, char *argv[])
     fprintf(stderr, "plot the results with `gnuplot plot'\n");
     exit(1);
   }
+  FILE *fb = fopen("basecurve.dat", "wb");
+  FILE *ff = fopen("fit.dat", "wb");
+  if(!fb || !ff)
+  {
+    fprintf(stderr, "could not open `basecurve.dat' or `fit.dat'\n");
+    exit(1);
+  }
   int num_nodes = 8;
   if(argc > 3)
     num_nodes = atol(argv[3]);
@@ -118,6 +125,8 @@ int main(int argc, char *argv[])
   if(offx < 0 || offy < 0)
   {
     fprintf(stderr, "jpeg is higher resolution than the raw? (%dx%d vs %dx%d)\n", jpgwd, jpght, wd, ht);
+    fclose(fb);
+    fclose(ff);
     exit(1);
   }
 
@@ -143,10 +152,10 @@ int main(int argc, char *argv[])
   }
 
   // output the histograms:
-  fprintf(stdout, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
+  fprintf(fb, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
   for(int k=0;k<0x10000;k++)
   {
-    fprintf(stdout, "%f %f %f %f %d %d %d\n", basecurve[k][0], basecurve[k][1], basecurve[k][2], (basecurve[k][0] + basecurve[k][1] + basecurve[k][2])/3.0f, cnt[k][0], cnt[k][1], cnt[k][2]);
+    fprintf(fb, "%f %f %f %f %d %d %d\n", basecurve[k][0], basecurve[k][1], basecurve[k][2], (basecurve[k][0] + basecurve[k][1] + basecurve[k][2])/3.0f, cnt[k][0], cnt[k][1], cnt[k][2]);
   }
 
   free(img);
@@ -213,16 +222,18 @@ int main(int argc, char *argv[])
 
   // our best state is in `best'
 
-  fprintf(stderr, "# err %f improved %d times\n", min, accepts);
-  fprintf(stderr, "# copy paste into iop/basecurve.c:\n");
-  fprintf(stderr, "# { \"new measured basecurve\", \"\", \"\", 0, 51200,                        {{{");
+  fprintf(ff, "# err %f improved %d times\n", min, accepts);
+  fprintf(ff, "# copy paste into iop/basecurve.c:\n");
+  fprintf(ff, "# { \"new measured basecurve\", \"\", \"\", 0, 51200,                        {{{");
   for(int k=0;k<best.m_numAnchors;k++)
-    fprintf(stderr, "{%f, %f}%s", best.m_anchors[k].x, best.m_anchors[k].y, k<best.m_numAnchors-1?", ":"}}, ");
-  fprintf(stderr, "{%d}, {m}}, 0},\n", best.m_numAnchors);
+    fprintf(ff, "{%f, %f}%s", best.m_anchors[k].x, best.m_anchors[k].y, k<best.m_numAnchors-1?", ":"}}, ");
+  fprintf(ff, "{%d}, {m}}, 0},\n", best.m_numAnchors);
   CurveDataSample(&best, &csample);
   for(int k=0; k<0x10000; k++)
-    fprintf(stderr, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
+    fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
 
+  fclose(fb);
+  fclose(ff);
 
   exit(0);
 }
