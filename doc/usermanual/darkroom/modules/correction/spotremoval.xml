@@ -5,7 +5,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Spot removal allows you to correct a zone in your image by using another zone as model.		
+						<entry>Spot removal allows you to correct an area in your image by using another area as model.		
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
@@ -17,10 +17,17 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Click on the area to be healed then drag to a clean area. The circle with line inside is the clean reference area.</para>	
-		<para>Use mouse scroll-wheel over the stroke to change its size.</para>
-		<para>Right-click on a stroke to delete it.</para>
-                <para>Close the module to complete the changes.</para>		
+                <para>This module uses some of the shapes that are offered in drawn masks, namely circles, ellipses and path shapes.
+                      The user interface and the controls are the same as in drawn masks and explained in more detail in
+                      <xref linkend="drawn_masks"/>.</para>
+                <para>Select the desired shape by clicking the corresponding icon, then click on the canvas to choose the area
+                      to be healed, i.e. the <emphasis>target area</emphasis>.</para>
+                <para>The <emphasis>source area</emphasis> is preliminary positioned at a location with a default distance to 
+                      the target. Source area and target area can then be shifted independently until the result matches your expectations. 
+                      An arrow helps to tell source from target area.</para>
+                <para>Use the shape specific controls to adjust its size, its border width, and other attributes.</para>
+		<para>Right-click on a shape to delete it.</para>
+                <para>Collapse the module to complete the changes.</para>		
 	</sect4>
 	
 	<sect4><title>Examples</title>
@@ -40,9 +47,8 @@
 								<graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>I have marked all the spots that I want to remove from the image. I first start by pressing the spot and drag to an area that
-									should be used as reference to remove the spot. The handle (circle) which has a line that ends in the center of the circle
-									indicates reference source.
+								<para>I have marked all the spots that I want to remove from the image with circle shapes and appropriately selected
+                                                                      source areas.
 								</para>
 							</entry>
 						</row>

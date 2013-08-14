@@ -56,6 +56,23 @@
 	                        </para>			
 	                </sect4>
 
+                        <sect4><title>Lab lightness</title>
+                                <para>Only offered for modules that work in the Lab color space, this blend mode mixes lightness from the input
+                                      and output images, while color data are taken unaltered from the input image. In contrast to blend mode
+                                      <quote>lightness</quote> this blend mode does not involve any color space conversion and does not clamp any data.
+                                      In some cases this is less prone to artifacts in comparison to <quote>lightness</quote>.
+                                </para>
+                        </sect4>
+
+                        <sect4><title>Lab color</title>
+                                <para>Only offered for modules that work in the Lab color space, this blend mode mixes Lab color channels a and b
+                                      from the input and output images, while lightness data are taken unaltered from the input image. In contrast to blend mode
+                                      <quote>color</quote> this blend mode does not involve any color space conversion and does not clamp any data.
+                                      In some cases this is less prone to artifacts in comparison to <quote>color</quote>.
+                                </para>
+                        </sect4>
+
+
 			<sect4><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments,
                                       e.g. module <link linkend="levels"><emphasis>levels</emphasis></link> and <link linkend="tone_curve">

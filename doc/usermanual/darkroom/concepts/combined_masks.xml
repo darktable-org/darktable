@@ -7,7 +7,7 @@
 
     <para>This section describes how darktable combines individual masks to form the final mask of a module.
           Individual masks are the drawn mask and all the single channels of a parametric mask. 
-          The topic is rather advanced - if you don't want to through all the theoretical details just jump 
+          The topic is rather advanced - if you don't want to go through all the theoretical details just jump 
           down where we describe two typical use cases.</para>
 
 
