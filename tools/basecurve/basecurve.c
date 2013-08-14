@@ -54,8 +54,8 @@ static inline float get_error(CurveData *c, CurveSample *csample, float (*basecu
   const float max = 1.0f, min = 0.0f;
   for(int k=0; k<0x10000; k++)
   {
-    // TODO: more error for lower values => logscale?
     float d = (basecurve[k][1] - (min + (max-min)*csample->m_Samples[k]*(1.0f/0x10000)));
+    // way more error for lower values of x:
     d *= 0x10000-k;
     if(k < 655) d *= 100;
     sqrerr += d*d;
@@ -87,11 +87,16 @@ int main(int argc, char *argv[])
 {
   if(argc < 3)
   {
-    fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit)\n", argv[0]);
+    fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes]\n", argv[0]);
     fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
     fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
+    fprintf(stderr, "plot the results with `gnuplot plot'\n");
     exit(1);
   }
+  int num_nodes = 8;
+  if(argc > 3)
+    num_nodes = atol(argv[3]);
+  if(num_nodes > 20) num_nodes = 20; // basecurve doesn't support more than that.
   int wd, ht, jpgwd, jpght;
   uint16_t *img = read_ppm16(argv[1], &wd, &ht);
   if(!img) exit(1);
@@ -157,7 +162,7 @@ int main(int argc, char *argv[])
 
   // type = 2 (monotone hermite)
   curr.m_spline_type = 2;
-  curr.m_numAnchors = 8;
+  curr.m_numAnchors = num_nodes;
   curr.m_min_x = 0.0;
   curr.m_max_x = 1.0;
   curr.m_min_y = 0.0;
@@ -208,13 +213,16 @@ int main(int argc, char *argv[])
 
   // our best state is in `best'
 
-  fprintf(stderr, "# err %f improved %d times, anchor pos ", min, accepts);
+  fprintf(stderr, "# err %f improved %d times\n", min, accepts);
+  fprintf(stderr, "# copy paste into iop/basecurve.c:\n");
+  fprintf(stderr, "# { \"new measured basecurve\", \"\", \"\", 0, 51200,                        {{{");
   for(int k=0;k<best.m_numAnchors;k++)
-    fprintf(stderr, "%f ", best.m_anchors[k].x);
-  fprintf(stderr, "\n");
+    fprintf(stderr, "{%f, %f}%s", best.m_anchors[k].x, best.m_anchors[k].y, k<best.m_numAnchors-1?", ":"}}, ");
+  fprintf(stderr, "{%d}, {m}}, 0},\n", best.m_numAnchors);
   CurveDataSample(&best, &csample);
   for(int k=0; k<0x10000; k++)
     fprintf(stderr, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
+
 
   exit(0);
 }
