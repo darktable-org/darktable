@@ -47,18 +47,22 @@ read_ppm8(const char *filename, int *wd, int *ht)
   return p;
 }
 
-static inline float get_error(CurveData *c, CurveSample *csample, float (*basecurve)[3])
+static inline float get_error(CurveData *c, CurveSample *csample, float (*basecurve)[3], int (*cnt)[3])
 {
   CurveDataSample(c, csample);
   float sqrerr = 0.0f;
   const float max = 1.0f, min = 0.0f;
   for(int k=0; k<0x10000; k++)
   {
-    float d = (basecurve[k][1] - (min + (max-min)*csample->m_Samples[k]*(1.0f/0x10000)));
-    // way more error for lower values of x:
-    d *= 0x10000-k;
-    if(k < 655) d *= 100;
-    sqrerr += d*d;
+    // too few samples? no error if we ignore it.
+    if(cnt[k][1] > 8)
+    {
+      float d = (basecurve[k][1] - (min + (max-min)*csample->m_Samples[k]*(1.0f/0x10000)));
+      // way more error for lower values of x:
+      d *= 0x10000-k;
+      if(k < 655) d *= 100;
+      sqrerr += d*d;
+    }
   }
   return sqrerr;
 }
@@ -204,7 +208,7 @@ int main(int argc, char *argv[])
     { // mutate
       mutate(&curr, &tent, basecurve);
     }
-    float m = get_error(&tent, &csample, basecurve);
+    float m = get_error(&tent, &csample, basecurve, cnt);
     if(m < min)
     {
       accepts ++;
