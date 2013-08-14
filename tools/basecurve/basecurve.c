@@ -1,8 +1,11 @@
+#define _XOPEN_SOURCE 600
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
+
+#include "../../src/common/curve_tools.c"
 
 static uint16_t*
 read_ppm16(const char *filename, int *wd, int *ht)
@@ -42,6 +45,41 @@ read_ppm8(const char *filename, int *wd, int *ht)
     return 0;
   }
   return p;
+}
+
+static inline float get_error(CurveData *c, CurveSample *csample, float (*basecurve)[3])
+{
+  CurveDataSample(c, csample);
+  float sqrerr = 0.0f;
+  const float max = 1.0f, min = 0.0f;
+  for(int k=0; k<0x10000; k++)
+  {
+    // TODO: more error for lower values => logscale?
+    float d = (basecurve[k][1] - (min + (max-min)*csample->m_Samples[k]*(1.0f/0x10000)));
+    d *= 0x10000-k;
+    if(k < 655) d *= 100;
+    sqrerr += d*d;
+  }
+  return sqrerr;
+}
+
+static inline void mutate(CurveData *c, CurveData *t, float (*basecurve)[3])
+{
+  for(int k=1;k<c->m_numAnchors-1;k++)
+  {
+    float min = (c->m_anchors[k-1].x + c->m_anchors[k].x)/2.0f;
+    float max = (c->m_anchors[k+1].x + c->m_anchors[k].x)/2.0f;
+    const float x = min + drand48()*(max-min);
+    uint32_t pos = x*0x10000;
+    if(pos >= 0x10000) pos = 0xffff;
+    if(pos < 0) pos = 0;
+    t->m_anchors[k].x = x;
+    t->m_anchors[k].y = basecurve[pos][1];
+  }
+  t->m_anchors[0].x = 0.0f;
+  t->m_anchors[0].y = basecurve[0][1];
+  t->m_anchors[t->m_numAnchors-1].x = 1.0f;
+  t->m_anchors[t->m_numAnchors-1].y = basecurve[0xffff][1];
 }
 
 
@@ -108,5 +146,75 @@ int main(int argc, char *argv[])
 
   free(img);
   free(jpg);
+
+  // now do the fitting:
+  CurveData curr, tent, best;
+  CurveSample csample;
+  const int res = 0x10000;
+  csample.m_samplingRes = res;
+  csample.m_outputRes = 0x10000;
+  csample.m_Samples = (uint16_t *)malloc(sizeof(uint16_t)*0x10000);
+
+  // type = 2 (monotone hermite)
+  curr.m_spline_type = 2;
+  curr.m_numAnchors = 8;
+  curr.m_min_x = 0.0;
+  curr.m_max_x = 1.0;
+  curr.m_min_y = 0.0;
+  curr.m_max_y = 1.0;
+
+  best = tent = curr;
+
+  float min = FLT_MAX;
+  const float p_large = .0f;
+  float curr_m = FLT_MIN;
+  int accepts = 0;
+
+  const int samples = 1000;
+  for(int i=0;i<samples;i++)
+  {
+    if(i == 0 || drand48() < p_large)
+    { // large step
+      for(int k=0;k<tent.m_numAnchors;k++)
+      {
+        float x = k/(tent.m_numAnchors-1.0f);
+        x *= x*x; // move closer to 0
+        uint32_t pos = x*0x10000;
+        if(pos >= 0x10000) pos = 0xffff;
+        if(pos < 0) pos = 0;
+        tent.m_anchors[k].x = x;
+        tent.m_anchors[k].y = basecurve[pos][1];
+      }
+    }
+    else
+    { // mutate
+      mutate(&curr, &tent, basecurve);
+    }
+    float m = get_error(&tent, &csample, basecurve);
+    if(m < min)
+    {
+      accepts ++;
+      best = tent;
+      min = m;
+    }
+    // fittness: 1/MSE
+    const float a = curr_m/m;
+    if(drand48() < a || i == 0)
+    { // accept new state
+      curr = tent;
+      curr_m = m;
+    }
+  }
+
+  // our best state is in `best'
+
+  fprintf(stderr, "# err %f improved %d times, anchor pos ", min, accepts);
+  for(int k=0;k<best.m_numAnchors;k++)
+    fprintf(stderr, "%f ", best.m_anchors[k].x);
+  fprintf(stderr, "\n");
+  CurveDataSample(&best, &csample);
+  for(int k=0; k<0x10000; k++)
+    fprintf(stderr, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
+
   exit(0);
 }

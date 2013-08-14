@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
-#include <glib.h>
 #include "curve_tools.h"
 
 #define EPSILON 2*FLT_MIN
@@ -747,7 +746,9 @@ int CurveDataSample(CurveData *curve, CurveSample *sample)
       //within range, we can sample the curve
       val = interpolate_val( n, x, i*res, y,
                              ypp, curve->m_spline_type) * (sample->m_outputRes-1) + 0.5;
-      sample->m_Samples[i] = MIN(MAX(val,minY),maxY);
+      if(val > maxY) val = maxY;
+      if(val < minY) val = minY;
+      sample->m_Samples[i] = val;
     }
   }
 
