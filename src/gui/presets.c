@@ -573,8 +573,8 @@ menuitem_update_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 
   // commit all the module fields
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set operation=?1, op_version=?2, op_params=?3, enabled=?4, "
-                              "blendop_params=?5, blendop_version=?6 where name=?7", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE presets SET op_version=?2, op_params=?3, enabled=?4, "
+                              "blendop_params=?5, blendop_version=?6 WHERE name=?7 AND operation=?1", -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
