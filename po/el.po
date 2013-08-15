@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-08-11 20:27+0200\n"
-"PO-Revision-Date: 2013-08-11 23:25+0100\n"
+"PO-Revision-Date: 2013-08-15 19:05+0100\n"
 "Last-Translator: Dimitrios Psychogios <jinxos@linux.com>\n"
 "Language-Team: \n"
 "Language: el_GR\n"
@@ -1289,11 +1289,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1568
 msgid "blend mode"
-msgstr "λειτουργία ανάμειξης"
+msgstr "λειτουργία μίξης"
 
 #: ../src/develop/blend_gui.c:1569
 msgid "choose blending mode"
-msgstr "επιλέξτε τρόπο ανάμειξης"
+msgstr "επιλέξτε τρόπο μίξης"
 
 #: ../src/develop/blend_gui.c:1651 ../src/iop/watermark.c:1047
 msgid "opacity"
@@ -1301,7 +1301,7 @@ msgstr "αδιαφάνεια"
 
 #: ../src/develop/blend_gui.c:1654
 msgid "set the opacity of the blending"
-msgstr "ορίστε την αδιαφάνεια ανάμειξης"
+msgstr "ορίστε την αδιαφάνεια μίξης"
 
 #: ../src/develop/blend_gui.c:1660
 msgid "combine masks"
@@ -4872,7 +4872,7 @@ msgstr "βαθμός φίλτρου gaussian blur"
 
 #: ../src/iop/lowpass.c:526 ../src/iop/shadhi.c:643
 msgid "soften with"
-msgstr "μαλάκωμα με"
+msgstr "απάλυνση με"
 
 #: ../src/iop/lowpass.c:527 ../src/iop/shadhi.c:644
 msgid "gaussian"
@@ -5128,7 +5128,7 @@ msgstr "όριο ενεργοποίησης όξυνσης"
 
 #: ../src/iop/soften.c:88
 msgid "soften"
-msgstr "μαλάκωμα"
+msgstr "απάλυνση"
 
 #: ../src/iop/soften.c:106 ../src/iop/vignette.c:160
 msgctxt "accel"
@@ -6047,7 +6047,7 @@ msgstr "περιορισμός ιστογράμματος σε επιλογή"
 
 #: ../src/libs/colorpicker.c:614
 msgid "display sample areas on image"
-msgstr "εμφάνιση περιοχών δειγματοληψίας στην εικόνα"
+msgstr "εμφάνιση περιοχών δειγματοληψίας"
 
 #: ../src/libs/copy_history.c:50
 msgid "history stack"
@@ -7907,7 +7907,7 @@ msgstr "επανάληψη"
 
 #: ../src/develop/blend.c:1848 ../src/develop/blend.c:2069
 msgid "could not allocate buffer for blending"
-msgstr "αδυναμία διάθεσης μνήμης για ανάμειξη."
+msgstr "αδυναμία διάθεσης μνήμης για μίξη."
 
 #: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"
