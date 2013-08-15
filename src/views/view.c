@@ -897,7 +897,6 @@ dt_view_image_expose(
     {
 
       // draw mouseover hover effects, set event hook for mouse button down!
-      *image_over = DT_VIEW_DESERT;
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
       cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
