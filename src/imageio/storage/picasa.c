@@ -1285,7 +1285,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
 /* plugin name */
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("picasa webalbum");
+  return _("google+ photos");
 }
 
 /* construct widget above */
@@ -1480,7 +1480,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, caption, description, imgid);
   if (photoid == NULL)
   {
-    dt_control_log(_("unable to export photo to webalbum"));
+    dt_control_log(_("unable to export photo to google+ album"));
     result = 0;
     goto cleanup;
   }
@@ -1497,7 +1497,7 @@ cleanup:
   if (result)
   {
     //this makes sense only if the export was successful
-    dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
+    dt_control_log(_("%d/%d exported to google+ album"), num, total );
   }
   return 0;
 }
