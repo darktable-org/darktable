@@ -41,6 +41,7 @@ else ifeq ($(findstring Darwin,$(PLATFORM)),Darwin)
 	SHARED_LIB_SUFFIX:=.so
 	STATIC_LIB_PREFIX:=lib
 	STATIC_LIB_SUFFIX:=.a
+	EXE_SUFFIX:=
 else ifeq ($(findstring MINGW,$(PLATFORM)),MINGW)
 	LUA_INCLUDE_DIR?= -I./lua52/include
 	LUA_LIBRARY?= -llua52
@@ -62,14 +63,14 @@ $(SHARED_LIB): $(LIB_OBJ_FILES)
 
 $(STATIC_LIB): $(LIB_OBJ_FILES)
 	$(AR) rcs $@ $^
-  
+
 # Demos
 
 demos: $(DEMO_TARGETS)
 
 $(DEMO_TARGETS): demos/demo_%$(EXE_SUFFIX): obj/demo_%.o $(STATIC_LIB)
 	$(CC) $(LAC_LDFLAGS) $(LDFLAGS) -o $@ $^ $(LAC_LIBS)
- 
+
 # Clean
 
 clean:

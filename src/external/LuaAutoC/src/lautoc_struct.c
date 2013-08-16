@@ -20,7 +20,7 @@ typedef struct {
 static luaA_Hashtable* struct_table = NULL;
 
 void luaA_struct_open(void) {
-  struct_table = luaA_hashtable_new(256);
+  struct_table = luaA_hashtable_new(257);
 }
 
 static void struct_entry_delete(struct_entry* se) {

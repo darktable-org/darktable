@@ -25,7 +25,7 @@ static int birdie_index(lua_State* L) {
 static int birdie_newindex(lua_State* L) {
   const char* membername = lua_tostring(L, -2);
   birdie* self = get_instance_ptr(L);
-  luaA_struct_to_member_name(L, membername, self, membername, -1);
+  luaA_struct_to_member_name(L, birdie, self, membername, -1);
   return 0;
 }
 
@@ -51,13 +51,13 @@ int main(int argc, char **argv) {
   luaL_dostring(L, ""
     "Birdie = {}\n"
     "setmetatable(Birdie, Birdie)\n"
-    "Birdie.__index = birdie_index\n"
-    "Birdie.__newindex = birdie_newindex\n"
     "function Birdie.__call()\n"
     "  local self = {}\n"
     "  setmetatable(self, Birdie)\n"
     "  return self\n"
     "end\n"
+    "Birdie.__index = birdie_index\n"
+    "Birdie.__newindex = birdie_newindex\n"
     "\n"
     "bird = Birdie()\n"
     "print(bird.name)\n"

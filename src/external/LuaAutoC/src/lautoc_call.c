@@ -4,7 +4,9 @@
 
 #include "lautoc.h"
 
-#define MAX_ARG_NUM 10
+enum {
+  MAX_ARG_NUM = 10,
+};
 
 typedef struct {
   char* name;
@@ -19,8 +21,8 @@ static luaA_Hashtable* func_ptr_table;
 static luaA_Hashtable* func_name_table;
 
 void luaA_call_open(void) {
-  func_ptr_table = luaA_hashtable_new(1024);
-  func_name_table = luaA_hashtable_new(1024);
+  func_ptr_table = luaA_hashtable_new(1021);
+  func_name_table = luaA_hashtable_new(1021);
 }
 
 static void func_entry_delete(func_entry* fe) {
@@ -35,8 +37,10 @@ void luaA_call_close(void) {
   luaA_hashtable_delete(func_name_table);
 }
 
-#define RET_STACK_SIZE 128
-#define ARG_STACK_SIZE 1024
+enum {
+  RET_STACK_SIZE = 128,
+  ARG_STACK_SIZE = 1024,
+};
 
 static char ret_stack[RET_STACK_SIZE];
 static void* ret_stack_ptr = ret_stack;
@@ -67,16 +71,16 @@ static int luaA_call_entry(lua_State* L, func_entry* fe) {
   int ret_data_size = luaA_type_size(fe->ret_type);
   int arg_data_size = total_arg_size(fe);
   
-  int ret_using_heap = 0; int arg_using_heap = 0;
+  bool ret_using_heap = false; bool arg_using_heap = false;
   void* ret_data = ret_stack_ptr;
   void* arg_data = arg_stack_ptr;
   
   if (ret_data_size > ret_stack_space()) {
-    ret_using_heap = 1; ret_data = malloc(ret_data_size);
+    ret_using_heap = true; ret_data = malloc(ret_data_size);
   }
   
   if (arg_data_size > arg_stack_space()) {
-    arg_using_heap = 1; arg_data = malloc(arg_data_size);
+    arg_using_heap = true; arg_data = malloc(arg_data_size);
   }
   
   /* Pop args in reverse order but place in memory in forward order */
@@ -108,10 +112,16 @@ static int luaA_call_entry(lua_State* L, func_entry* fe) {
   return count;
 }
 
+static void luaA_ptr_string(void* func_ptr, char* out) {
+  memcpy(out, "*", 1);
+  memcpy(out + 1, func_ptr, sizeof(void*));
+  memcpy(out + 1 + sizeof(void*), "\0", 1);
+}
+
 int luaA_call(lua_State* L, void* func_ptr) {
   
-  char ptr_string[128];
-  sprintf(ptr_string, "%p", func_ptr);
+  char ptr_string[sizeof(void*) + 2];
+  luaA_ptr_string(func_ptr, ptr_string);
   
   func_entry* fe = luaA_hashtable_get(func_ptr_table, ptr_string);
   if (fe != NULL) {
@@ -135,7 +145,7 @@ int luaA_call_name(lua_State* L, const char* func_name) {
   return 0;
 }
 
-void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, const char* name, luaA_Type ret_t, int num_args, ...) {
+void luaA_function_reg_typeid(lua_State* L, void* src_func, luaA_Func auto_func, const char* name, luaA_Type ret_t, int num_args, ...) {
 
   if (num_args >= MAX_ARG_NUM) {
     lua_pushfstring(L, "luaA_func_add: Function has %i arguments - maximum supported is %i!", num_args, MAX_ARG_NUM);
@@ -153,14 +163,15 @@ void luaA_function_typeid(lua_State* L, void* src_func, luaA_Func auto_func, con
   fe->ret_type = ret_t;
   fe->num_args = num_args;
   
-  va_list argl;
-  va_start(argl, num_args);
+  va_list va;
+  va_start(va, num_args);
   for(int i = 0; i < num_args; i++) {
-    fe->arg_types[i] = va_arg(argl, luaA_Type);
+    fe->arg_types[i] = va_arg(va, luaA_Type);
   }
+  va_end(va);
   
-  char ptr_string[128];
-  sprintf(ptr_string, "%p", src_func);
+  char ptr_string[sizeof(void*) + 2];
+  luaA_ptr_string(src_func, ptr_string);
   
   luaA_hashtable_set(func_name_table, name, fe);
   luaA_hashtable_set(func_ptr_table, ptr_string, fe);

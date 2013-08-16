@@ -18,7 +18,6 @@ static luaA_Bucket* luaA_bucket_new(const char* string, void* item) {
   strcpy(b->string, string);
   
   b->next = NULL;
-  b->prev = NULL;
   
   return b;
 }
@@ -70,8 +69,8 @@ void* luaA_hashtable_get(luaA_Hashtable* ht, const char* string) {
     return NULL;
   }
   
-  while(1){
-    if (strcmp(b->string, string) == 0){ return b->item; }
+  while (true) {
+    if (strcmp(b->string, string) == 0) { return b->item; }
     if (b->next == NULL) { return NULL; }
     else {b = b->next; }
   }
@@ -91,7 +90,7 @@ void luaA_hashtable_set(luaA_Hashtable* ht, const char* string, void* item) {
     return;
   }
   
-  while(1) {
+  while (true) {
     
     if( strcmp(b->string, string) == 0) {
       b->item = item;
@@ -99,9 +98,7 @@ void luaA_hashtable_set(luaA_Hashtable* ht, const char* string, void* item) {
     }
   
     if( b->next == NULL) {    
-      luaA_Bucket* new_bucket = luaA_bucket_new(string, item);
-      b->next = new_bucket;
-      new_bucket->prev = b;
+      b->next = luaA_bucket_new(string, item);
       return;
     }
   
