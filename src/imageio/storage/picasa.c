@@ -598,7 +598,7 @@ static int _picasa_api_get_feed(_picasa_api_context_t *ctx)
 const char*
 name ()
 {
-  return _("picasa webalbum");
+  return _("google+ photos");
 }
 
 
@@ -908,7 +908,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   if( p->picasa_api->current_album == NULL )
     if( _picasa_api_create_album( p->picasa_api ) != 201 )
     {
-      dt_control_log("failed to create picasa album");
+      dt_control_log("failed to create google+ album");
       fail = 1;
     }
 
@@ -933,7 +933,7 @@ store (dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_forma
   fprintf(stderr,"tempfile: %s\n",fname);
   if(fd==-1)
   {
-    dt_control_log("failed to create temporary image for picasa export");
+    dt_control_log("failed to create temporary image for google+ export");
     return 1;
   }
   close(fd);
@@ -991,7 +991,7 @@ cleanup:
   }
 
   if(!result)
-    dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
+    dt_control_log(_("%d/%d exported to google+ album"), num, total );
   return result;
 }
 
