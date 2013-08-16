@@ -1749,12 +1749,24 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
-  /* enable mode if there is some mask */
-  unsigned int blend_mode = d->blend_mode;
-  unsigned int mask_mode = d->mask_mode;
+  const unsigned int blend_mode = d->blend_mode;
+  const unsigned int mask_mode = d->mask_mode;
+  const unsigned int xoffs = roi_out->x - roi_in->x;
+  const unsigned int yoffs = roi_out->y - roi_in->y;
 
   /* check if blend is disabled */
   if (!d || !(mask_mode & DEVELOP_MASK_ENABLED)) return;
+
+  /* we can only handle blending if roi_out and roi_in have the same scale and
+     if roi_out fits into the area given by roi_in */
+  if (roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0 
+      || ((xoffs > 0 || yoffs > 0) && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
+  {
+    //printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+    //printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    return;
+  }
 
   /* select the blend operator */
   switch (blend_mode)
@@ -1912,6 +1924,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
     /* only true if mask_display was set by an _earlier_ module */
     const int mask_display = piece->pipe->mask_display;
+    const int iwidth = roi_in->width;
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -1922,10 +1935,11 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #endif
     for (int y=0; y<roi_out->height; y++)
     {
-      int index = ch * y * roi_out->width;
+      int iindex = ch * ((y + yoffs) * iwidth + xoffs);
+      int oindex = ch * y * roi_out->width;
       int stride = ch * roi_out->width;
-      float *in = (float *)i + index;
-      float *out = (float *)o + index;
+      float *in = (float *)i + iindex;
+      float *out = (float *)o + oindex;
       float *m = (float *)mask + y * roi_out->width;
       _blend_make_mask(cst, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m, stride);
     }
@@ -1934,7 +1948,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     {
       if(gaussian)
       {
-        const float sigma = radius * roi_in->scale / piece ->iscale;
+        const float sigma = radius * roi_out->scale / piece ->iscale;
 
         const float mmax[] = { 1.0f };
         const float mmin[] = { 0.0f };
@@ -1979,10 +1993,11 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 #endif
     for (int y=0; y<roi_out->height; y++)
     {
-      int index = ch * y * roi_out->width;
+      int iindex = ch * ((y + yoffs) * iwidth + xoffs);
+      int oindex = ch * y * roi_out->width;
       int stride = ch * roi_out->width;
-      float *in = (float *)i + index;
-      float *out = (float *)o + index;
+      float *in = (float *)i + iindex;
+      float *out = (float *)o + oindex;
       float *m = (float *)mask + y * roi_out->width;
       blend(cst, in, out, m, stride, blendflag);
 
@@ -2019,12 +2034,25 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_mem dev_mask = NULL;
   float *mask = NULL;
 
-  /* enable mode if there is some mask */
-  const unsigned int mask_mode = d->mask_mode;
   const unsigned int blend_mode = d->blend_mode;
+  const unsigned int mask_mode = d->mask_mode;
+  const unsigned int xoffs = roi_out->x - roi_in->x;
+  const unsigned int yoffs = roi_out->y - roi_in->y;
 
   /* check if blend is disabled: just return, output is already in dev_out */
   if (!d || !(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
+
+  /* we can only handle blending if roi_out and roi_in have the same scale and
+     if roi_out fits into the area given by roi_in */
+  if (roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0 
+      || ((xoffs > 0 || yoffs > 0) && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
+
+  {
+    //printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+    //printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+    dt_control_log(_("skipped blending in module '%s': roi's do not match"), self->op);
+    return TRUE;
+  }
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
   int kernel_mask = darktable.blendop->kernel_blendop_mask_Lab;
@@ -2053,13 +2081,14 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int devid = piece->pipe->devid;
   const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
   const unsigned blendif = d->blendif;
   const int maskblur = fabs(d->radius) <= 0.1f ? 0 : 1;
   const int gaussian = d->radius > 0.0f ? 1 : 0;
   const float radius = fabs(d->radius);
   const unsigned int mask_combine = d->mask_combine;
+  const int offs[2] = { xoffs, yoffs };
 
   /* quick workaround for masks to be opencl compliant */
   /* the first mask creation may need to be compute by opencl too */
@@ -2136,6 +2165,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_m);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 9, sizeof(unsigned), (void *)&mask_mode);
   dt_opencl_set_kernel_arg(devid, kernel_mask, 10, sizeof(unsigned), (void *)&mask_combine);
+  dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2*sizeof(int), (void *)&offs);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2143,7 +2173,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   {
     if(gaussian)
     {
-      const float sigma = radius * roi_in->scale / piece ->iscale;
+      const float sigma = radius * roi_out->scale / piece ->iscale;
       const float mmax[] = { 1.0f };
       const float mmin[] = { 0.0f };
 
@@ -2179,6 +2209,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
   dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(int), (void *)&blendflag);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, 2*sizeof(int), (void *)&offs);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -2190,6 +2221,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 2, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 4, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, darktable.blendop->kernel_blendop_copy_alpha, 5, 2*sizeof(int), (void *)&offs);
     err = dt_opencl_enqueue_kernel_2d(devid, darktable.blendop->kernel_blendop_copy_alpha, sizes);
     if(err != CL_SUCCESS) goto error;
   }
