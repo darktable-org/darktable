@@ -76,20 +76,11 @@ typedef enum ComboAlbumModel
   COMBO_ALBUM_MODEL_NB_COL
 } ComboAlbumModel;
 
-typedef enum ComboPrivacyModel
-{
-  COMBO_PRIVACY_MODEL_NAME_COL = 0,
-  COMBO_PRIVACY_MODEL_VAL_COL,
-  COMBO_PRIVACY_MODEL_NB_COL
-} ComboPrivacyModel;
-
-
 typedef enum PicasaAlbumPrivacyPolicy
 {
   PICASA_ALBUM_PRIVACY_PUBLIC,
   PICASA_ALBUM_PRIVACY_PRIVATE,
 } PicasaAlbumPrivacyPolicy;
-
 
 /**
  * Represents informations about an album
@@ -175,11 +166,9 @@ typedef struct dt_storage_picasa_gui_data_t
   //  === album creation section ===
   GtkLabel *label_album_title;
   GtkLabel *label_album_summary;
-  GtkLabel *label_album_privacy;
 
   GtkEntry *entry_album_title;
   GtkEntry *entry_album_summary;
-  GtkComboBox *comboBox_privacy;
 
   GtkBox *hbox_album;
 
@@ -1311,12 +1300,10 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   //create labels
   ui->label_album_title = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label_album_summary = GTK_LABEL(  gtk_label_new( _("summary") ) );
-  ui->label_album_privacy = GTK_LABEL(gtk_label_new(_("privacy")));
   ui->label_status = GTK_LABEL(gtk_label_new(NULL));
 
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_title), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_summary), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album_privacy), 0.0, 0.5);
 
   //create entries
   GtkListStore *model_username  = gtk_list_store_new (COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); //text, token, refresh_token, id
@@ -1349,17 +1336,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_combo_box_set_row_separator_func(ui->comboBox_album,combobox_separator,ui->comboBox_album,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox_album), TRUE, TRUE, 0);
 
-  ui->comboBox_privacy= GTK_COMBO_BOX(gtk_combo_box_new_text());
-  GtkListStore *list_store = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_INT);
-  GtkTreeIter iter;
-  gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("private"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
-  gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("public"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
-
-  gtk_combo_box_set_model(ui->comboBox_privacy, GTK_TREE_MODEL(list_store));
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox_privacy), 1); // Set default permission to private
   ui->button_login = GTK_BUTTON(gtk_button_new_with_label(_("login")));
   ui->connected = FALSE;
 
@@ -1390,8 +1366,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_title), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_summary), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_summary), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_privacy), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->comboBox_privacy), TRUE, FALSE, 0);
 
   //connect buttons to signals
   g_signal_connect(G_OBJECT(ui->button_login), "clicked", G_CALLBACK(ui_login_clicked), (gpointer)ui);
@@ -1400,7 +1374,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 
   g_object_unref(model_username);
   g_object_unref(model_album);
-  g_object_unref(list_store);
 }
 
 /* destroy resources */
@@ -1575,12 +1548,9 @@ void *get_params(struct dt_imageio_module_storage_t *self)
     p->album_id[0] = 0;
     p->album_title = g_strdup(gtk_entry_get_text(ui->entry_album_title));
     p->album_summary = g_strdup(gtk_entry_get_text(ui->entry_album_summary));
-    GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_privacy);
-    GtkTreeIter iter;
-    int permission = -1;
-    gtk_combo_box_get_active_iter(ui->comboBox_privacy, &iter);
-    gtk_tree_model_get(model, &iter, COMBO_PRIVACY_MODEL_VAL_COL, &permission, -1);
-    p->album_permission = permission;
+
+    /* Hardcode the album as private, to avoid problems with the old Picasa interface */
+    p->album_permission = 1;
   }
   else
   {
