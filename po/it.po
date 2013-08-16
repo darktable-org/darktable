@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-13 12:13+0200\n"
+"POT-Creation-Date: 2013-08-16 20:26+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -2146,7 +2146,7 @@ msgstr "Lunghezza focale minima"
 msgid "maximum focal length"
 msgstr "Lunghezza focale massima"
 
-#: ../src/gui/presets.c:147 ../src/gui/presets.c:789 ../src/gui/presets.c:802
+#: ../src/gui/presets.c:147 ../src/gui/presets.c:792 ../src/gui/presets.c:805
 #: ../src/libs/lib.c:73
 msgid "(default)"
 msgstr "(Predefinito)"
@@ -2184,23 +2184,23 @@ msgstr "Sovrascrivo preset?"
 msgid "name of the preset"
 msgstr "Nome del preset"
 
-#: ../src/gui/presets.c:812
+#: ../src/gui/presets.c:815
 msgid "disabled: wrong module version"
 msgstr "Disabilitato: versione del modulo errata"
 
-#: ../src/gui/presets.c:832 ../src/libs/lib.c:446
+#: ../src/gui/presets.c:835 ../src/libs/lib.c:446
 msgid "edit this preset.."
 msgstr "Modifica questo preset..."
 
-#: ../src/gui/presets.c:836 ../src/libs/lib.c:450
+#: ../src/gui/presets.c:839 ../src/libs/lib.c:450
 msgid "delete this preset"
 msgstr "Elimina questo preset"
 
-#: ../src/gui/presets.c:842 ../src/libs/lib.c:457
+#: ../src/gui/presets.c:845 ../src/libs/lib.c:457
 msgid "store new preset.."
 msgstr "Salva nuovo preset..."
 
-#: ../src/gui/presets.c:849 ../src/libs/lib.c:464
+#: ../src/gui/presets.c:852 ../src/libs/lib.c:464
 msgid "update preset"
 msgstr "Aggiorna preset"
 
@@ -2366,7 +2366,7 @@ msgstr "Impossibile scrivere nella directory `%s'!"
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1191 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1484
+#: ../src/imageio/storage/picasa.c:1457
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "Impossibile esportare il file `%s'!"
@@ -2401,7 +2401,7 @@ msgstr ""
 "aperta. Devi eseguire il login con il tuo account Facebook e autorizzare "
 "Darktable per l'upload delle foto prima di continuare."
 
-#: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:837
+#: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:826
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
@@ -2411,37 +2411,37 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "Autenticazione Facebook"
 
-#: ../src/imageio/storage/facebook.c:620 ../src/imageio/storage/picasa.c:851
+#: ../src/imageio/storage/facebook.c:620 ../src/imageio/storage/picasa.c:840
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:640 ../src/imageio/storage/picasa.c:871
+#: ../src/imageio/storage/facebook.c:640 ../src/imageio/storage/picasa.c:860
 msgid "please enter the validation URL"
 msgstr "Inserisci l'url di validazione"
 
-#: ../src/imageio/storage/facebook.c:651 ../src/imageio/storage/picasa.c:883
+#: ../src/imageio/storage/facebook.c:651 ../src/imageio/storage/picasa.c:872
 msgid "the given URL is not valid, it should look like: "
 msgstr " L'url inserito non è valido, dovrebbe essere simile a:"
 
-#: ../src/imageio/storage/facebook.c:757 ../src/imageio/storage/picasa.c:1014
+#: ../src/imageio/storage/facebook.c:757 ../src/imageio/storage/picasa.c:1003
 msgid "new account"
 msgstr "Nuovo account"
 
-#: ../src/imageio/storage/facebook.c:764 ../src/imageio/storage/picasa.c:1021
+#: ../src/imageio/storage/facebook.c:764 ../src/imageio/storage/picasa.c:1010
 msgid "other account"
 msgstr "Altro account"
 
-#: ../src/imageio/storage/facebook.c:795 ../src/imageio/storage/picasa.c:1051
+#: ../src/imageio/storage/facebook.c:795 ../src/imageio/storage/picasa.c:1040
 msgid "unable to retrieve the album list"
 msgstr "Impossibile trovare la lista degli album"
 
 #: ../src/imageio/storage/facebook.c:803 ../src/imageio/storage/flickr.c:388
-#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1059
+#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1048
 msgid "create new album"
 msgstr "Crea un nuovo album"
 
-#: ../src/imageio/storage/facebook.c:925 ../src/imageio/storage/picasa.c:1107
-#: ../src/imageio/storage/picasa.c:1267
+#: ../src/imageio/storage/facebook.c:925 ../src/imageio/storage/picasa.c:1096
+#: ../src/imageio/storage/picasa.c:1256
 msgid "logout"
 msgstr "Logout"
 
@@ -2449,8 +2449,8 @@ msgstr "Logout"
 #: ../src/imageio/storage/facebook.c:929 ../src/imageio/storage/facebook.c:942
 #: ../src/imageio/storage/facebook.c:969
 #: ../src/imageio/storage/facebook.c:1072 ../src/imageio/storage/flickr.c:526
-#: ../src/imageio/storage/picasa.c:1113 ../src/imageio/storage/picasa.c:1271
-#: ../src/imageio/storage/picasa.c:1284 ../src/imageio/storage/picasa.c:1363
+#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1260
+#: ../src/imageio/storage/picasa.c:1273 ../src/imageio/storage/picasa.c:1339
 msgid "login"
 msgstr "Login"
 
@@ -2462,17 +2462,17 @@ msgstr "Album di Facebook"
 #. xmp
 #: ../src/imageio/storage/facebook.c:1019 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
-#: ../src/imageio/storage/picasa.c:1312 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1301 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:100
 msgid "title"
 msgstr "Titolo"
 
 #: ../src/imageio/storage/facebook.c:1020 ../src/imageio/storage/flickr.c:481
-#: ../src/imageio/storage/picasa.c:1313
+#: ../src/imageio/storage/picasa.c:1302
 msgid "summary"
 msgstr "Sommario"
 
-#: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/picasa.c:1314
+#: ../src/imageio/storage/facebook.c:1021
 msgid "privacy"
 msgstr "Privacy"
 
@@ -2484,7 +2484,7 @@ msgstr "Solo io"
 msgid "friends"
 msgstr "Amici"
 
-#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/picasa.c:1358
+#: ../src/imageio/storage/facebook.c:1065
 msgid "public"
 msgstr "Pubblico"
 
@@ -2492,15 +2492,15 @@ msgstr "Pubblico"
 msgid "friends of friends"
 msgstr "Amici degli Amici"
 
-#: ../src/imageio/storage/facebook.c:1200 ../src/imageio/storage/picasa.c:1493
+#: ../src/imageio/storage/facebook.c:1200 ../src/imageio/storage/picasa.c:1466
 msgid "unable to create album, no title provided"
 msgstr "Non è possibile creare un album senza titolo"
 
-#: ../src/imageio/storage/facebook.c:1207 ../src/imageio/storage/picasa.c:1500
+#: ../src/imageio/storage/facebook.c:1207 ../src/imageio/storage/picasa.c:1473
 msgid "unable to create album"
 msgstr "Impossibile creare un nuovo album"
 
-#: ../src/imageio/storage/facebook.c:1217 ../src/imageio/storage/picasa.c:1510
+#: ../src/imageio/storage/facebook.c:1217
 msgid "unable to export photo to webalbum"
 msgstr "Non è possibile esportare foto nell'album"
 
@@ -2627,7 +2627,7 @@ msgid "enter the title of the book"
 msgstr "Inserisci il titolo del libro"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:834
+#: ../src/imageio/storage/picasa.c:823
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your picasa account there and authorize darktable to "
@@ -2637,23 +2637,23 @@ msgstr ""
 "aperta. Devi eseguire il login con il tuo account Picasa e autorizzare "
 "Darktable per l'upload delle foto prima di continuare."
 
-#: ../src/imageio/storage/picasa.c:845
+#: ../src/imageio/storage/picasa.c:834
 msgid "picasa authentication"
 msgstr "Autenticazione Picasa"
 
-#: ../src/imageio/storage/picasa.c:1299
-msgid "picasa webalbum"
-msgstr "Album Picasa"
+#: ../src/imageio/storage/picasa.c:1288
+msgid "google+ photos"
+msgstr "Google+ foto"
 
-#: ../src/imageio/storage/picasa.c:1356
-msgid "private"
-msgstr "Privato"
+#: ../src/imageio/storage/picasa.c:1483
+msgid "unable to export photo to google+ album"
+msgstr "Non è possibile esportare foto nell'album Google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1527
+#: ../src/imageio/storage/picasa.c:1500
 #, c-format
-msgid "%d/%d exported to picasa webalbum"
-msgstr "%d/%d esportati nell'album Picasa"
+msgid "%d/%d exported to google+ album"
+msgstr "%d/%d esportati nell'album Google+"
 
 #: ../src/iop/atrous.c:114
 msgid "equalizer"
@@ -2783,11 +2783,11 @@ msgstr "Contrasto pesante"
 
 #: ../src/iop/basecurve.c:99
 msgid "canon EOS like"
-msgstr "Canon eos"
+msgstr "Canon EOS"
 
 #: ../src/iop/basecurve.c:100
 msgid "canon EOS like alternate"
-msgstr "Canon Eos come alternativa"
+msgstr "Canon EOS come alternativa"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
@@ -2849,11 +2849,11 @@ msgstr "Fotogenetic (punta & scatta)"
 msgid "fotogenetic (EV3)"
 msgstr "Fotogenetic (EV3) "
 
-#: ../src/iop/basecurve.c:187
+#: ../src/iop/basecurve.c:190
 msgid "base curve"
 msgstr "Curva base"
 
-#: ../src/iop/basecurve.c:709
+#: ../src/iop/basecurve.c:714
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "Ascissa: input, Ordinata: output. Lavorano sui canali RGB"
 
@@ -4725,7 +4725,7 @@ msgstr "Aberrazioni cromatiche trasversali del rosso"
 
 #: ../src/iop/lens.c:1914
 msgid "TCA red"
-msgstr "TCA red"
+msgstr "TCA Rosso"
 
 #: ../src/iop/lens.c:1919
 msgid "Transversal Chromatic Aberration blue"
@@ -8063,6 +8063,15 @@ msgstr "Forme create"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "Opzioni lua"
+
+#~ msgid "picasa webalbum"
+#~ msgstr "Album Picasa"
+
+#~ msgid "private"
+#~ msgstr "Privato"
+
+#~ msgid "%d/%d exported to picasa webalbum"
+#~ msgstr "%d/%d esportati nell'album Picasa"
 
 #~ msgid "dithering for darkroom mode"
 #~ msgstr "Dithering in modalità Camera Oscura"
