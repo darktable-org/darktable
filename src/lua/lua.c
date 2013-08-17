@@ -17,16 +17,19 @@
  */
 #include "lua/lua.h"
 
-#if 0
-printf("%s %d\n",__FUNCTION__,__LINE__);
-for(int i=1 ; i<=lua_gettop(L); i++)
+void dt_lua_debug_stack_internal(lua_State *L, const char* function, int line)
 {
-  printf("\t%d:%s %s\n",i,lua_typename(L,lua_type(L,i)),luaL_tolstring(L,i,NULL));
-  lua_pop(L,1);
+  printf("lua stack at %s:%d\n",function,line);
+  for(int i=1 ; i<=lua_gettop(L); i++)
+  {
+    printf("\t%d:%s %s\n",i,lua_typename(L,lua_type(L,i)),luaL_tolstring(L,i,NULL));
+    lua_pop(L,1);
+  }
 }
-static void debug_table(lua_State * L,int t)
+void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int line)
 {
   /* table is in the stack at index 't' */
+  printf("lua table at index %d at %s:%d\n",t,function,line);
   lua_pushnil(L);  /* first key */
   while (lua_next(L, t-1) != 0)
   {
@@ -38,7 +41,6 @@ static void debug_table(lua_State * L,int t)
     lua_pop(L, 1);
   }
 }
-#endif
 
 
 int dt_lua_push_darktable_lib(lua_State* L)
