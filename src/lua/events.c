@@ -148,8 +148,10 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     GdkModifierType modifier,
     gpointer p)
 {
+  dt_lua_lock();
   lua_pushstring(darktable.lua_state,(char*)p);
   dt_lua_trigger_event("shortcut",1,0);
+  dt_lua_unlock();
   return TRUE;
 }
 
@@ -349,9 +351,6 @@ static int dt_lua_trigger_event_internal(const char*event,int nargs,int nresults
 }
 static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
   int res;
-#ifdef _OPENMP
-#pragma omp critical(running_lua)
-#endif
   {
     res = dt_lua_trigger_event_internal(event,nargs,nresults);
   }
@@ -361,6 +360,7 @@ static int dt_lua_trigger_event(const char*event,int nargs,int nresults) {
 #if 0
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
+  warning to self : add locking
   lua_State* L = darktable.lua_state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
@@ -427,19 +427,25 @@ static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
      gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state,filename);
   dt_lua_trigger_event("intermediate-export-image",2,0);
+  dt_lua_unlock();
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_image_t,&id);
   dt_lua_trigger_event("post-import-image",1,0);
+  dt_lua_unlock();
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_film_t,&id);
   dt_lua_trigger_event("post-import-film",1,0);
+  dt_lua_unlock();
 }
 
 int dt_lua_init_events(lua_State *L) {
