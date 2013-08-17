@@ -107,7 +107,6 @@ void dt_lua_init(lua_State*L,const int init_gui)
     (*cur_type)(L);
     cur_type++;
   }
-  dt_lua_push_darktable_lib(L);
   // build the table containing the configuration info
 
   lua_getglobal(L,"package");
