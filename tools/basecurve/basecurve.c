@@ -81,9 +81,9 @@ static inline void mutate(CurveData *c, CurveData *t, float (*basecurve)[3])
     t->m_anchors[k].y = basecurve[pos][1];
   }
   t->m_anchors[0].x = 0.0f;
-  t->m_anchors[0].y = basecurve[0][1];
+  t->m_anchors[0].y = 0.0f;//basecurve[0][1];
   t->m_anchors[t->m_numAnchors-1].x = 1.0f;
-  t->m_anchors[t->m_numAnchors-1].y = basecurve[0xffff][1];
+  t->m_anchors[t->m_numAnchors-1].y = 1.0f;//basecurve[0xffff][1];
 }
 
 
