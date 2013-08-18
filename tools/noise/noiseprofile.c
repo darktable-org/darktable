@@ -51,45 +51,89 @@ kth_smallest(elem_type a[], int n, int k)
 
 #define median(a,n) kth_smallest(a,n,(((n)&1)?((n)/2):(((n)/2)-1)))
 
-
-
 static float*
 read_pfm(const char *filename, int *wd, int*ht)
 {
   FILE *f = fopen(filename, "rb");
-  if(!f) return 0;
-  fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht);
-  fgetc(f); // eat only one newline
+  if(f == NULL) {
+    return NULL;
+  }
 
-  float *p = (float *)malloc(sizeof(float)*3*(*wd)*(*ht));
-  fread(p, sizeof(float)*3, (*wd)*(*ht), f);
+  if (fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht) != 2) {
+    fclose(f);
+    return NULL;
+  }
+
+  if (fgetc(f) == EOF) { // eat only one newline
+    fclose(f);
+    return NULL;
+  }
+
+  float *p = malloc(sizeof(float)*3*(*wd)*(*ht));
+  if (p == NULL) {
+    fclose(f);
+    return NULL;
+  }
+
+  if (fread(p, sizeof(float)*3, (*wd)*(*ht), f) == 0) {
+    fclose(f);
+    free(p);
+    return NULL;
+  };
+
   fclose(f);
+
   return p;
 }
 
 static float*
 read_histogram(const char *filename, int *bins)
 {
-  *bins = 0;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return 0;
+  if (bins != NULL) {
+    *bins = 0;
+  } else {
+    return NULL;
+  }
 
-  while(!feof(f))
-  {
-    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f\n");
+  FILE *f = fopen(filename, "rb");
+  if(f == NULL) {
+    return NULL;
+  }
+
+  while(!feof(f)) {
+    if (fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f\n") != 10) {
+      fclose(f);
+      return NULL;
+    }
+
     (*bins) ++;
   }
-  fseek(f, 0, SEEK_SET);
-  // second round, alloc and read
+
+  if (fseek(f, 0, SEEK_SET) == -1) {
+    fclose(f);
+    return NULL;
+  }
+
   float *hist = (float *)malloc(3*sizeof(float)*(*bins));
-  int k=0;
-  while(!feof(f))
+  if (hist == NULL) {
+    fclose(f);
+    return NULL;
+  }
+
+  int k = 0;
+  while(feof(f) != 0)
   {
-    fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %f %f %f\n", hist + 3*k, hist+3*k+1, hist+3*k+2);
+    if (fscanf(f, "%*f %*f %*f %*f %*f %*f %*f %f %f %f\n", hist + 3*k, hist+3*k+1, hist+3*k+2) != 10) {
+      free(hist);
+      fclose(f);
+      return NULL;
+    }
+
     k++;
   }
 
   fclose(f);
+
   return hist;
 }
 
@@ -130,7 +174,6 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 }
 #endif
 
-
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
 
@@ -156,6 +199,11 @@ int main(int argc, char *arg[])
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
+  if(input == NULL) {
+    fprintf(stderr, "error: reading '%s' failed\n", arg[1]);
+    exit(1);
+  }
+
   float max = 0.0f;
   // sanity checks:
   // for(int k=0;k<3*wd*ht;k++) input[k] = clamp(input[k], 0.0f, 1.0f);
@@ -201,7 +249,16 @@ int main(int argc, char *arg[])
   {
     int bins = 0;
     float *hist = read_histogram(arg[3], &bins);
-    float *inv_hist = (float *)malloc(3*sizeof(float)*bins);
+    if (hist == NULL) {
+      fprintf(stderr, "error: reading '%s' failed\n", arg[3]);
+      exit(1);
+    }
+    float *inv_hist = malloc(3*sizeof(float)*bins);
+    if (inv_hist == NULL) {
+      fprintf(stderr, "error: memory allocation failed\n");
+      free(hist);
+      exit(1);
+    }
     invert_histogram(hist, inv_hist, bins);
 #if 1
     // output curves and their inverse:
@@ -220,6 +277,9 @@ int main(int argc, char *arg[])
         input[3*k+c] = (1.0f-f)*inv_hist[3*bin+c] + f*inv_hist[3*(bin+1)+c];
       }
     }
+
+    free(hist);
+    free(inv_hist);
   }
 
   float std[N][3] = {{0.0f}};
@@ -275,7 +335,12 @@ int main(int argc, char *arg[])
 #endif
 
   // sort pairs (LL,HH) for each color channel:
-  float *llhh = (float *)malloc(sizeof(float)*wd*ht/2);
+  float *llhh = malloc(sizeof(float)*wd*ht/2);
+  if (llhh == NULL) {
+    fprintf(stderr, "error: memory allocation failed\n");
+    exit(1);
+  }
+
   for(int c=0;c<3;c++)
   {
     int k = 0;
