@@ -64,6 +64,7 @@ static lua_CFunction init_funcs[] =
   dt_lua_init_tags,
   dt_lua_init_events,
   dt_lua_init_film,
+  dt_lua_init_call,
   NULL
 };
 

@@ -28,7 +28,7 @@
 typedef struct event_handler{
   const char* evt_name;
   lua_CFunction on_register;
-  void (*on_event)(lua_State * L,const char* evt_name, int nargs);
+  int (*on_event)(lua_State * L,const char* evt_name, int nargs);
 } event_handler;
 
 static void queue_event(const char*event,int nargs);
@@ -111,27 +111,27 @@ static int register_keyed_event(lua_State* L) {
 }
 
 
-static void trigger_keyed_event(lua_State * L,const char* evt_name, int nargs) {
+static int trigger_keyed_event(lua_State * L,const char* evt_name, int nargs) {
   // -1..-n are our args
   const int top_marker=lua_gettop(L);
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_getfield(L,-1,evt_name);
   if(lua_isnil(L,-1)) {
     lua_pop(L,2+nargs);
-    return;
+    return 0;
   }
   const char*key=luaL_checkstring(L,-nargs-2); // first arg is the key itself
   lua_getfield(L,-1,key);
   if(lua_isnil(L,-1)) {
     lua_pop(L,2+nargs);
-    return ;
+    return  0;
   }
   // prepare the call
   lua_insert(L,top_marker-nargs+1);
   lua_pushstring(L,evt_name);// param 1 is the event
   lua_insert(L,top_marker-nargs+2);
   lua_pop(L,2);
-  dt_lua_do_chunk(L,nargs+1,0);
+  return dt_lua_do_chunk(L,nargs+1,0);
 }
 
 /*
@@ -196,19 +196,20 @@ static int register_multiinstance_event(lua_State* L) {
   return 0;
 }
 
-static void trigger_multiinstance_event(lua_State * L,const char* evt_name, int nargs) {
+static int trigger_multiinstance_event(lua_State * L,const char* evt_name, int nargs) {
   // -1..-n are our args
   const int top_marker=lua_gettop(L);
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_getfield(L,-1,evt_name);
   if(lua_isnil(L,-1)) {
     lua_pop(L,2+nargs);
-    return;
+    return 0;
   }
   lua_remove(L,-2);
 
 
   lua_pushnil(L);  /* first key */
+  int nresult = 0;
   while (lua_next(L, top_marker +1) != 0) {
     /* uses 'key' (at index -2) and 'value' (at index -1)  value is the function to call*/
     // prepare the call
@@ -216,8 +217,9 @@ static void trigger_multiinstance_event(lua_State * L,const char* evt_name, int 
     for(int i = 0 ; i<nargs ;i++) { // event dependant parameters
       lua_pushvalue(L, top_marker -nargs +1 +i); 
     }
-    dt_lua_do_chunk(L,nargs+1,0);
+    nresult += dt_lua_do_chunk(L,nargs+1,0);
   }
+  return nresult;
 }
 
 #if 0
@@ -320,59 +322,31 @@ static int lua_register_event(lua_State *L) {
 
 }
 
-static void trigger_event(lua_State * L,const char*event,int nargs) {
+
+
+static int trigger_event(lua_State * L) {
+  const char * event = luaL_checkstring(L,-2);
+  int nargs = luaL_checknumber(L,-1);
+  lua_pop(L,2);
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_list");
   if(lua_isnil(L,-1)) {// events have been disabled
-    lua_pop(L,1+nargs);
-    return ;
+    lua_settop(L,0);
+    return 0;
   }
   lua_getfield(L,-1,event);
   event_handler * handler =  lua_touserdata(L,-1);
   lua_pop(L,2);
-  handler->on_event(L,event,nargs);
-
+  return handler->on_event(L,event,nargs);
 }
+
+
 static void queue_event(const char*event,int nargs) {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_queue");
-  lua_State * L = lua_newthread(darktable.lua_state);
-  luaL_ref(darktable.lua_state,-2);
-  lua_pop(darktable.lua_state,1);
-  lua_xmove(darktable.lua_state,L,nargs);
-  lua_pushstring(L,event);
-  lua_pushnumber(L,nargs);
-}
-
-gboolean poll_events(gpointer data)
-{
-  dt_lua_lock();
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_queue");
-  lua_rawgeti(darktable.lua_state,-1,1);
-  if(lua_isnoneornil(darktable.lua_state,-1)) {
-    lua_pop(darktable.lua_state,2);
-    dt_lua_unlock();
-    return TRUE;
-  }
-  lua_State * L = lua_tothread(darktable.lua_state,-1);
-  const char * event = luaL_checkstring(L,-2);
-  int nargs = luaL_checknumber(L,-1);
-  lua_pop(L,2);
-  trigger_event(L,event,nargs);
-  /* L is finished, remove it from the stack */
-  lua_pop(darktable.lua_state,1);
-  /* swap down the table of events */
-  lua_len(darktable.lua_state,-1);
-
-  int tsize = lua_tonumber(darktable.lua_state,-1);
-  lua_pop(darktable.lua_state,1);
-  for ( int pos = 1;pos<tsize; pos++) {
-    lua_rawgeti(darktable.lua_state, -1, pos+1);
-    lua_rawseti(darktable.lua_state, -2, pos);  /* t[pos] = t[pos+1] */
-  }
-  lua_pushnil(darktable.lua_state);
-  lua_rawseti(darktable.lua_state, -2, tsize);  /* t[tsize] = nil */
-  lua_pop(darktable.lua_state,1);
-  dt_lua_unlock();
-  return TRUE;
+  lua_pushcfunction(darktable.lua_state,trigger_event);
+  lua_insert(darktable.lua_state,-nargs -1);
+  lua_pushstring(darktable.lua_state,event);
+  lua_pushnumber(darktable.lua_state,nargs);
+  dt_lua_delay_chunk(darktable.lua_state,nargs+2);
+  
 }
 #if 0
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
@@ -467,8 +441,6 @@ static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
 
 int dt_lua_init_events(lua_State *L) {
   lua_newtable(L);
-  lua_setfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_queue");
-  lua_newtable(L);
   lua_setfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
   lua_newtable(L);
   event_handler * handler = event_list;
@@ -487,7 +459,6 @@ int dt_lua_init_events(lua_State *L) {
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_FILMROLLS_IMPORTED,G_CALLBACK(on_film_imported),NULL);
   //dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,G_CALLBACK(on_export_selection),NULL);
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,G_CALLBACK(on_export_image_tmpfile),NULL);
-  g_idle_add(poll_events,NULL);
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

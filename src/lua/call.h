@@ -30,6 +30,13 @@ int dt_lua_dofile(lua_State *L,const char* filename);
 
 /** directly run a lua chunk */
 int dt_lua_do_chunk(lua_State *L,int nargs,int nresults);
+
+/** queue a lua call for "later" (next gtk_idle) */
+void dt_lua_delay_chunk(lua_State *L,int nargs);
+
+
+int dt_lua_init_call(lua_State *L);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
