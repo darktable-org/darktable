@@ -36,7 +36,9 @@ typedef enum dt_masks_type_t
   DT_MASKS_PATH = 2,
   DT_MASKS_GROUP = 4,
   DT_MASKS_CLONE = 8,
-  DT_MASKS_GRADIENT = 16
+  DT_MASKS_GRADIENT = 16,
+  DT_MASKS_ELLIPSE = 32,
+  DT_MASKS_BRUSH = 64
 }
 dt_masks_type_t;
 
@@ -64,6 +66,17 @@ typedef enum dt_masks_edit_mode_t
 }
 dt_masks_edit_mode_t;
 
+typedef enum dt_masks_pressure_sensitivity_t
+{
+  DT_MASKS_PRESSURE_OFF = 0,
+  DT_MASKS_PRESSURE_HARDNESS_REL = 1,
+  DT_MASKS_PRESSURE_HARDNESS_ABS = 2,
+  DT_MASKS_PRESSURE_OPACITY_REL = 3,
+  DT_MASKS_PRESSURE_OPACITY_ABS = 4,
+  DT_MASKS_PRESSURE_BRUSHSIZE_REL = 5
+}
+dt_masks_pressure_sensitivity_t;
+
 /** structure used to store 1 point for a circle */
 typedef struct dt_masks_point_circle_t
 {
@@ -72,6 +85,16 @@ typedef struct dt_masks_point_circle_t
   float border;
 }
 dt_masks_point_circle_t;
+
+/** structure used to store 1 point for an ellipse */
+typedef struct dt_masks_point_ellipse_t
+{
+  float center[2];
+  float radius[2];
+  float rotation;
+  float border;
+}
+dt_masks_point_ellipse_t;
 
 /** structure used to store 1 point for a path form */
 typedef struct dt_masks_point_path_t
@@ -83,6 +106,19 @@ typedef struct dt_masks_point_path_t
   dt_masks_points_states_t state;
 }
 dt_masks_point_path_t;
+
+/** structure used to store 1 point for a brush form */
+typedef struct dt_masks_point_brush_t
+{
+  float corner[2];
+  float ctrl1[2];
+  float ctrl2[2];
+  float border[2];
+  float density;
+  float hardness;
+  dt_masks_points_states_t state;
+}
+dt_masks_point_brush_t;
 
 /** structure used to store anchor for a gradient */
 typedef struct dt_masks_point_gradient_t
@@ -139,13 +175,17 @@ typedef struct dt_masks_form_gui_t
   //points used to draw the form
   GList *points;  //list of dt_masks_form_gui_points_t
 
+  //points used to sample mouse moves
+  float *guipoints, *guipoints_payload;
+  int guipoints_count;
+
   //values for mouse positions, etc...
   float posx, posy, dx, dy, scrollx,scrolly;
   gboolean form_selected;
   gboolean border_selected;
   gboolean source_selected;
   gboolean pivot_selected;
-  int edit_mode;
+  dt_masks_edit_mode_t edit_mode;
   int point_selected;
   int point_edited;
   int feather_selected;
@@ -167,6 +207,8 @@ typedef struct dt_masks_form_gui_t
   gboolean creation;
   gboolean creation_closing_form;
   dt_iop_module_t *creation_module;
+
+  dt_masks_pressure_sensitivity_t pressure_sensitivity;
 
   //ids
   int formid;
@@ -201,14 +243,15 @@ void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
 
 /** function used to manipulate forms for masks */
-void dt_masks_init_formgui(dt_develop_t *dev);
+void dt_masks_init_form_gui(dt_develop_t *dev);
 void dt_masks_change_form_gui(dt_masks_form_t *newform);
+void dt_masks_clear_form_gui(dt_develop_t *dev);
 void dt_masks_reset_form_gui(void);
 void dt_masks_reset_show_masks_icons(void);
 
-int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, int which);
+int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, double y, double pressure, int which);
 int dt_masks_events_button_released (struct dt_iop_module_t *module, double x, double y, int which, uint32_t state);
-int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, int which, int type, uint32_t state);
+int dt_masks_events_button_pressed (struct dt_iop_module_t *module, double x, double y, double pressure, int which, int type, uint32_t state);
 int dt_masks_events_mouse_scrolled (struct dt_iop_module_t *module, double x, double y, int up, uint32_t state);
 void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
 
@@ -221,7 +264,7 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp);
 
 void dt_masks_iop_edit_toggle_callback(GtkToggleButton *togglebutton, struct dt_iop_module_t *module);
 void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module_t *module);
-void dt_masks_set_edit_mode(struct dt_iop_module_t *module, int value);
+void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value);
 void dt_masks_iop_update(struct dt_iop_module_t *module);
 void dt_masks_iop_combo_populate(struct dt_iop_module_t **m);
 void dt_masks_iop_use_same_as(struct dt_iop_module_t *module, struct dt_iop_module_t *src);

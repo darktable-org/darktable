@@ -72,15 +72,16 @@
 			<para>Many darktable modules can be combined with blending operators for even more development options.</para>
 		</listitem>
 		<listitem>
-			<para>A powerful blend mask feature gives you fine control on module's effect to different parts of an image steered by pixel values.</para>
+			<para>A powerful blend mask feature gives you fine control on module's effect to different parts of an image. You can at your choice draw a mask using
+                              various shapes or define a parametric mask based on pixel values.</para>
 		</listitem>
 		<listitem>
 			<para>Most modules can exist as multiple instances. Together with the blend mask feature, you can let an operation have 
                               different effects on different parts of the image.</para>
 		</listitem>
                 <listitem><para>darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser that always just works (tm). It's designed as a module where the 
-                          denoising performance only depends on camera and ISO setting. A database of profiles contains parameters for well over
-                          70 popular camera models.</para>
+                          denoising performance only depends on camera and ISO setting. A database of profiles contains parameters for over
+                          100 popular camera models.</para>
                 </listitem>
 
 

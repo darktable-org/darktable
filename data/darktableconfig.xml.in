@@ -61,42 +61,42 @@
     <name>opencl_memory_headroom</name>
     <type>int</type>
     <default>300</default>
-    <shortdescription>amount of opencl memory (in MB) which we assume as being reserved for the driver</shortdescription>
-    <longdescription>this amount of memory (in MB) will be substracted from total gpu memory in order to calculate the available opencl memory. too low values will lead to out-of-memory situations in opencl processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
+    <shortdescription>amount of OpenCL memory (in MB) which we assume as being reserved for the driver</shortdescription>
+    <longdescription>this amount of memory (in MB) will be substracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_avoid_atomics</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>do not run opencl kernels which require atomic operations</shortdescription>
-    <longdescription>if set to TRUE darktable will not use opencl kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on cpu for the affected modules. useful if your opencl implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
+    <shortdescription>do not run OpenCL kernels which require atomic operations</shortdescription>
+    <longdescription>if set to TRUE darktable will not use OpenCL kernels which contain atomic operations (example bilateral). pixelpipe processing will be done on CPU for the affected modules. useful if your OpenCL implementation freezes/crashes on atomics or if they are processed with a bad performance.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_number_event_handles</name>
     <type>int</type>
     <default>25</default>
-    <shortdescription>the number of opencl event handles darktable can use</shortdescription>
+    <shortdescription>the number of OpenCL event handles darktable can use</shortdescription>
     <longdescription>a positive non-zero integer defines the number of event handles that darktable may have opened on a device. a value of -1 does not pose any restrictions, bearing the risk of hitting the device's resource limits. a value of zero completely prevents the use of event handles.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_async_pixelpipe</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>run opencl pixelpipe asynchronously</shortdescription>
-    <longdescription>if set to TRUE opencl pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential opencl errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
+    <shortdescription>run OpenCL pixelpipe asynchronously</shortdescription>
+    <longdescription>if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>copy back opencl buffers into pixelpipe cache after each module</shortdescription>
-    <longdescription>this brings pixelpipe cache and opencl buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down opencl considerably.</longdescription>
+    <shortdescription>copy back OpenCL buffers into pixelpipe cache after each module</shortdescription>
+    <longdescription>this brings pixelpipe cache and OpenCL buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down OpenCL considerably.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_micro_nap</name>
     <type>int</type>
     <default>1000</default>
-    <shortdescription>pause opencl processing for this number of microseconds from time to time</shortdescription>
+    <shortdescription>pause OpenCL processing for this number of microseconds from time to time</shortdescription>
     <longdescription>for slow GPUs this gives your graphics driver some time to breathe to do needed screen updates. can be left at zero for fast devices.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -111,14 +111,14 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>whether to use pinned memory transfer during tiling</shortdescription>
-    <longdescription>during tiling huge amounts of memory need to be transfered between host and device. for some opencl implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, NVIDIA to the second.</longdescription>
+    <longdescription>during tiling huge amounts of memory need to be transfered between host and device. for some OpenCL implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, nvidia to the second.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>don't use embedded preview jpeg but half-size raw</shortdescription>
-    <longdescription>check this option to not use the embedded jpeg from the raw file but process the raw data. this is slower but gives you color managed thumbnails.</longdescription>
+    <shortdescription>don't use embedded preview JPEG but half-size raw</shortdescription>
+    <longdescription>check this option to not use the embedded JPEG from the raw file but process the raw data. this is slower but gives you color managed thumbnails.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>write_sidecar_files</name>
@@ -131,29 +131,29 @@
     <name>opencl</name>
     <type>bool</type>
     <default>${DEFCONFIG_OPENCL}</default>
-    <shortdescription>activate opencl support</shortdescription>
-    <longdescription>if found, use opencl runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
+    <shortdescription>activate OpenCL support</shortdescription>
+    <longdescription>if found, use OpenCL runtime on your system for improved processing speed. can be switched on and off at any time.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
     <type>string</type>
     <default/>
-    <shortdescription>system library with opencl runtime</shortdescription>
-    <longdescription>opencl runtime library is normally detected automatically by darktable. if your opencl runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</longdescription>
+    <shortdescription>system library with OpenCL runtime</shortdescription>
+    <longdescription>OpenCL runtime library is normally detected automatically by darktable. if your OpenCL runtime is at an unusual place and cannot be detected, enter the full pathname here. leave empty for default behavior.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_memory_requirement</name>
     <type>int</type>
     <default>768</default>
-    <shortdescription>minmum amount of GPU memory (MB) required to activate opencl</shortdescription>
-    <longdescription>opencl will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
+    <shortdescription>minmum amount of GPU memory (MB) required to activate OpenCL</shortdescription>
+    <longdescription>OpenCL will only be activated if your graphics card has at least this amount of memory. reducing the value will allow cards with less GPU memory to be used - but at the risk of lower system stability and occasional crashes. values below 200 will be treated as 200.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_size_roundup</name>
     <type>int</type>
     <default>16</default>
-    <shortdescription>round opencl work group sizes to a multiple of</shortdescription>
-    <longdescription>in opencl processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on opencl performance.</longdescription>
+    <shortdescription>round OpenCL work group sizes to a multiple of</shortdescription>
+    <longdescription>in OpenCL processing round width/height of global work groups to a multiple of this value. reasonable values are powers of 2. this parameter can have high impact on OpenCL performance.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>maximum_number_tiles</name>
@@ -167,7 +167,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>ask before removing images from database</shortdescription>
-    <longdescription>always ask the user before any image is removed from db.</longdescription>
+    <longdescription>always ask the user before any image is removed from DB.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>ask_before_delete</name>
@@ -201,7 +201,7 @@
     <name>config_version</name>
     <type>int</type>
     <default>0</default>
-    <shortdescription>version of these dt-gconf entries</shortdescription>
+    <shortdescription>version of these dt-GConf entries</shortdescription>
     <longdescription>if this number is smaller than the darktable internal version number, the values here will be synched with the new defaults.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -258,13 +258,6 @@
     <type>string</type>
     <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
     <shortdescription>rename pattern for captured images</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/camera/import/delete_originals</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if originals on camera should be deleted</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -390,8 +383,8 @@
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>FALSE</default>
-    <shortdescription>ignore jpeg images when importing film rolls</shortdescription>
-    <longdescription>when having raw+jpeg images together in one directory it makes no sense to import both. with this flag one can ignore all jpegs found.</longdescription>
+    <shortdescription>ignore JPEG images when importing film rolls</shortdescription>
+    <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>ui_last/import_recursive</name>
@@ -495,13 +488,29 @@
     </type>
     <default>off</default>
     <shortdescription>compression of thumbnail images</shortdescription>
-    <longdescription>off - no compression in memory, jpg on disk. low quality - dxt1 (fast). high quality - dxt1, same memory as low quality variant but slower.</longdescription>
+    <longdescription>off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high quality - DXT1, same memory as low quality variant but slower.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>pressure_sensitivity</name>
+    <type>
+      <enum>
+        <option>off</option>
+        <option>hardness (relative)</option>
+        <option>hardness (absolute)</option>
+        <option>opacity (relative)</option>
+        <option>opacity (absolute)</option>
+        <option>brush size (relative)</option>
+      </enum>
+    </type>
+    <default>off</default>
+    <shortdescription>pen pressure control for brush masks</shortdescription>
+    <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
     <default>89</default>
-    <shortdescription>jpeg quality of on-disk thumbnails</shortdescription>
+    <shortdescription>JPEG quality of on-disk thumbnails</shortdescription>
     <longdescription>affects only the thumbnail cache used for quick startup.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -977,8 +986,8 @@
     <name>plugins/lighttable/export/force_lcms2</name>
     <type>bool</type>
     <default>FALSE</default>
-    <shortdescription>always try to use littlecms2</shortdescription>
-    <longdescription>this is significantly slower as the default.</longdescription>
+    <shortdescription>always try to use LittleCMS 2</shortdescription>
+    <longdescription>this is significantly slower than the default.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/high_quality_processing</name>
@@ -1009,24 +1018,17 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="core">
-    <name>plugins/darkroom/dithering/dither_center_view</name>
-    <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription>dithering for darkroom mode</shortdescription>
-    <longdescription>center view will be dithered if this option is on and module dithering is activated (default for new images). switch this to off if you can accept display banding and prefer to have a slightly faster processing speed.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
       <enum>
         <option>always bilinear (fast)</option>
-        <option>at most ppg (reasonable)</option>
+        <option>at most PPG (reasonable)</option>
         <option>full (possibly slow)</option>
       </enum>
     </type>
-    <default>at most ppg (reasonable)</default>
+    <default>at most PPG (reasonable)</default>
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
-    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using ppg + interpolation modes specified below, full will use exactly the settings for full-size export.</longdescription>
+    <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified below, full will use exactly the settings for full-size export.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/pixel_interpolator</name>
@@ -1066,7 +1068,7 @@
   <dtconfig>
     <name>plugins/lighttable/export/format_name</name>
     <type>string</type>
-    <default>jpeg</default>
+    <default>JPEG</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1136,14 +1138,14 @@
     <name>plugins/lighttable/export/iccprofile</name>
     <type>string</type>
     <default>image</default>
-    <shortdescription>icc profile to use for export</shortdescription>
+    <shortdescription>ICC profile to use for export</shortdescription>
     <longdescription>this overrides the per-image settings, if not set to `image'.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/iccintent</name>
     <type>int</type>
     <default>-1</default>
-    <shortdescription>icc rendering intent</shortdescription>
+    <shortdescription>ICC rendering intent</shortdescription>
     <longdescription>if non-negative, this overrides the per-image output color profile rendering intent on export.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1833,9 +1835,58 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_radius_a</name>
+    <type>float</type>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_radius_b</name>
+    <type>float</type>
+    <default>0.01414</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_border</name>
+    <type>float</type>
+    <default>0.02</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/ellipse_rotation</name>
+    <type>float</type>
+    <default>90.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/spots/path_border</name>
     <type>float</type>
     <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/brush_border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/brush_density</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/spots/brush_hardness</name>
+    <type>float</type>
+    <default>0.66</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -2021,6 +2072,34 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/radius_a</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/radius_b</name>
+    <type>float</type>
+    <default>0.03535</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/ellipse/rotation</name>
+    <type>float</type>
+    <default>90.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/path/border</name>
     <type>float</type>
     <default>0.05</default>
@@ -2045,6 +2124,27 @@
     <name>plugins/darkroom/masks/gradient/steepness</name>
     <type>float</type>
     <default>0.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/border</name>
+    <type>float</type>
+    <default>0.05</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/density</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/masks/brush/hardness</name>
+    <type>float</type>
+    <default>0.66</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

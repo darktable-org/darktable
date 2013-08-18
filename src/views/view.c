@@ -455,7 +455,7 @@ void dt_view_manager_mouse_enter (dt_view_manager_t *vm)
   if(v->mouse_enter) v->mouse_enter(v);
 }
 
-void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int which)
+void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, double pressure, int which)
 {
   if(vm->current_view < 0) return;
   dt_view_t *v = vm->view + vm->current_view;
@@ -469,7 +469,7 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
 
     /* does this module belong to current view ?*/
     if (plugin->mouse_moved && plugin->views() & v->view(v) )
-      if(plugin->mouse_moved(plugin, x, y, which))
+      if(plugin->mouse_moved(plugin, x, y, pressure, which))
         handled = TRUE;
 
     /* get next plugin */
@@ -478,7 +478,7 @@ void dt_view_manager_mouse_moved (dt_view_manager_t *vm, double x, double y, int
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->mouse_moved)
-    v->mouse_moved(v, x, y, which);
+    v->mouse_moved(v, x, y, pressure, which);
 
 }
 
@@ -510,7 +510,7 @@ int dt_view_manager_button_released (dt_view_manager_t *vm, double x, double y, 
   return 0;
 }
 
-int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state)
+int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   if(vm->current_view < 0) return 0;
   dt_view_t *v = vm->view + vm->current_view;
@@ -524,7 +524,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
     /* does this module belong to current view ?*/
     if (plugin->button_pressed && plugin->views() & v->view(v) )
-      if(plugin->button_pressed(plugin, x, y, which,type,state))
+      if(plugin->button_pressed(plugin, x, y, pressure, which,type,state))
         handled = TRUE;
 
     /* get next plugin */
@@ -533,7 +533,7 @@ int dt_view_manager_button_pressed (dt_view_manager_t *vm, double x, double y, i
 
   /* if not handled by any plugin let pass to view handler*/
   if(!handled && v->button_pressed)
-    return v->button_pressed(v, x, y, which,type,state);
+    return v->button_pressed(v, x, y, pressure, which,type,state);
 
   return 0;
 }
@@ -882,14 +882,21 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  int show_status;
+
+  if (v->view(v) == DT_VIEW_LIGHTTABLE)
+    show_status = dt_conf_get_bool("lighttable/ui/expose_statuses");
+  else
+    show_status = 0;
+
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview)
+  if(imgsel == imgid || full_preview || show_status)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
 
       // draw mouseover hover effects, set event hook for mouse button down!
-      *image_over = DT_VIEW_DESERT;
       cairo_set_line_width(cr, 1.5);
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
       cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
@@ -918,7 +925,8 @@ dt_view_image_expose(
           if(!image_is_rejected) //if rejected: draw no stars
           {
             dt_view_star(cr, x, y, r1, r2);
-            if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+            // Only draw hovering effects in stars for the hovered image
+            if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
             {
               *image_over = DT_VIEW_STAR_1 + k;
               cairo_fill(cr);
@@ -941,7 +949,8 @@ dt_view_image_expose(
       if (image_is_rejected)
         cairo_set_source_rgb(cr, 1., 0., 0.);
 
-      if((px - x)*(px - x) + (py - y)*(py - y) < r1*r1)
+      // Only draw hovering effects in stars for the hovered image
+      if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
       {
         *image_over = DT_VIEW_REJECT; //mouse sensitive
         cairo_new_sub_path(cr);
@@ -1099,6 +1108,42 @@ dt_view_image_expose(
     cairo_set_line_width(cr, 1.0);
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
+  }
+
+
+  // draw custom metadata from accompanying text file:
+  if(dt_conf_get_bool("plugins/lighttable/draw_custom_metadata") && img && (zoom == 1))
+  {
+    char path[1024];
+    gboolean from_cache = FALSE;
+    dt_image_full_path(img->id, path, 1024, &from_cache);
+    char *c = path + strlen(path);
+    while((c > path) && (*c != '.')) c--;
+    c[1] = 't'; c[2] = 'x'; c[3] = 't'; c[4] = 0;
+    FILE *f = fopen(path, "rb");
+    if(f)
+    {
+      cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+      cairo_set_font_size (cr, .015*fscale);
+      // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+      int k = 0;
+      while(!feof(f))
+      {
+        int read = fscanf(f, "%[^\n]", path);
+        if(read != 1) break;
+        fgetc(f); // munch \n
+
+        cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
+        cairo_set_source_rgb(cr, .7, .7, .7);
+        cairo_text_path(cr, path);
+        cairo_fill_preserve(cr);
+        cairo_set_line_width(cr, 1.0);
+        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+        cairo_stroke(cr);
+        k++;
+      }
+      fclose(f);
+    }
   }
 
   if(img) dt_image_cache_read_release(darktable.image_cache, img);

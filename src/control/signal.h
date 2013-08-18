@@ -69,7 +69,10 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_FILMROLLS_CHANGED,
 
-  /** \brief This signal is raised only when a filmroll is imported */
+  /** \brief This signal is raised only when a filmroll is imported
+    1 :  int the film_id for the film that triggered the import. in case of recursion, other filmrolls might be affected
+    no return
+   */
   DT_SIGNAL_FILMROLLS_IMPORTED,
 
   /** \brief This signal is raised only when a filmroll is removed */

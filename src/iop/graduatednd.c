@@ -484,7 +484,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 }
 
 int
-mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   int32_t zoom, closeup;
@@ -543,7 +543,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 }
 
 int
-button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   float pzx, pzy;
@@ -951,7 +951,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_params = malloc(sizeof(dt_iop_graduatednd_params_t));
   module->default_enabled = 0;
-  module->priority = 254; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 245; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_graduatednd_params_t);
   module->gui_data = NULL;
   dt_iop_graduatednd_params_t tmp = (dt_iop_graduatednd_params_t)
@@ -1016,7 +1016,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
   dt_bauhaus_slider_set_format(g->scale1,"%.2fev");
   dt_bauhaus_widget_set_label(g->scale1,_("density"));
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in ev for the filter"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);
 

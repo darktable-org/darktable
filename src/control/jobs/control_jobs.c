@@ -243,7 +243,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   dt_control_backgroundjobs_progress(darktable.control, jid, 1.0f);
 
   while(*c != '/' && c > pathname) c--;
-  dt_control_log(_("wrote merged hdr `%s'"), c+1);
+  dt_control_log(_("wrote merged HDR `%s'"), c+1);
 
   // import new image
   gchar *directory = g_path_get_dirname((const gchar *)pathname);
@@ -478,7 +478,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   gpx = dt_gpx_new(filename);
   if (!gpx)
   {
-    dt_control_log(_("failed to parse gpx file"));
+    dt_control_log(_("failed to parse GPX file"));
     goto bail_out;
   }
 
@@ -545,7 +545,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   }
   while((t = g_list_next(t)) != NULL);
 
-  dt_control_log(_("applied matched gpx location onto %d image(s)"), cntr);
+  dt_control_log(_("applied matched GPX location onto %d image(s)"), cntr);
 
   g_time_zone_unref(tz_camera);
   g_time_zone_unref(tz_utc);
@@ -587,8 +587,18 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
 /* enumerator of selected images */
 void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
-  /* get sorted list of selected images */
-  t->index = dt_collection_get_selected(darktable.collection);
+  GList *list = NULL;
+  long int imgid = dt_view_get_image_to_act_on();
+
+  if(imgid < 0) {
+    /* get sorted list of selected images */
+    t->index = dt_collection_get_selected(darktable.collection);
+  }
+  else {
+    /* Create a list with only one image */
+    list = g_list_append (list, (gpointer)imgid);
+    t->index = list;
+  }
 }
 
 void dt_control_merge_hdr_job_init(dt_job_t *job)

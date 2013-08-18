@@ -472,7 +472,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform[0] && d->cmatrix[0] == -666.0f)
   {
-    dt_control_log(_("unsupported input profile has been replaced by linear rgb!"));
+    dt_control_log(_("unsupported input profile has been replaced by linear RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
@@ -622,7 +622,7 @@ void init(dt_iop_module_t *module)
   module->default_params = malloc(sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 345; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 333; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -738,9 +738,9 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "eprofile"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("DNG embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
@@ -750,9 +750,9 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "alternate"))
       dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("adobe RGB (compatible)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
     else if(!strcmp(prof->name, "infrared"))
@@ -770,9 +770,9 @@ static void update_profile_list(dt_iop_module_t *self)
   {
     dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)l->data;
     if(!strcmp(prof->name, "eprofile"))
-      dt_bauhaus_combobox_add(g->cbox2, _("embedded icc profile"));
+      dt_bauhaus_combobox_add(g->cbox2, _("embedded ICC profile"));
     else if(!strcmp(prof->name, "ematrix"))
-      dt_bauhaus_combobox_add(g->cbox2, _("dng embedded matrix"));
+      dt_bauhaus_combobox_add(g->cbox2, _("DNG embedded matrix"));
     else if(!strcmp(prof->name, "cmatrix"))
       dt_bauhaus_combobox_add(g->cbox2, _("standard color matrix"));
     else if(!strcmp(prof->name, "darktable"))
@@ -782,7 +782,7 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "alternate"))
       dt_bauhaus_combobox_add(g->cbox2, _("alternate color matrix"));
     else if(!strcmp(prof->name, "sRGB"))
-      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. jpg)"));
+      dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rgb"))
@@ -903,7 +903,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->cbox2, 0);
 
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("icc profiles in %s/color/in or %s/color/in"), confdir, datadir);
+  snprintf(tooltip, 1024, _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox2), "value-changed",

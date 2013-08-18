@@ -424,7 +424,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t*)self->data;
   /* bring a filechooser to select the gpx file to apply to selection */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("open gpx file"),
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(_("open GPX file"),
                            GTK_WINDOW (win),
                            GTK_FILE_CHOOSER_ACTION_OPEN,
                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -438,7 +438,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.gpx");
-  gtk_file_filter_set_name(filter, _("gps data exchange format"));
+  gtk_file_filter_set_name(filter, _("GPS data exchange format"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -449,7 +449,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   // add time zone selection
   GtkWidget *extra_box = gtk_hbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
-  g_object_set(G_OBJECT(label), "tooltip-text", _("most cameras don't store the time zone in exif. give the correct time zone so the gpx data can be correctly matched"), (char *)NULL);
+  g_object_set(G_OBJECT(label), "tooltip-text", _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data can be correctly matched"), (char *)NULL);
   GtkWidget *tz_selection = gtk_combo_box_new_text();
   gtk_combo_box_append_text(GTK_COMBO_BOX(tz_selection), "UTC");
   gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
@@ -603,8 +603,8 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   /* gpx */
-  button = gtk_button_new_with_label(_("apply gpx track file"));
-  g_object_set(G_OBJECT(button), "tooltip-text", _("parses a gpx file and updates location of selected images"), (char *)NULL);
+  button = gtk_button_new_with_label(_("apply GPX track file"));
+  g_object_set(G_OBJECT(button), "tooltip-text", _("parses a GPX file and updates location of selected images"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_gpx_callback), self);
 
@@ -627,10 +627,10 @@ void init_key_accels(dt_lib_module_t *self)
 //                         GDK_Delete, 0);
 //   dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
 //   dt_accel_register_lib(self,
-//                         NC_("accel", "rotate selected images 90 degrees cw"),
+//                         NC_("accel", "rotate selected images 90 degrees CW"),
 //                         0, 0);
 //   dt_accel_register_lib(self,
-//                         NC_("accel", "rotate selected images 90 degrees ccw"),
+//                         NC_("accel", "rotate selected images 90 degrees CCW"),
 //                         0, 0);
 //   dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
 //   dt_accel_register_lib(self, NC_("accel", "duplicate"), 0, 0);
@@ -643,9 +643,9 @@ void connect_key_accels(dt_lib_module_t *self)
 //
 //   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
 //   dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
-//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees cw",
+//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW",
 //                               d->rotate_cw_button);
-//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees ccw",
+//   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW",
 //                               d->rotate_ccw_button);
 //   dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
 //   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);

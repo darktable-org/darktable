@@ -168,7 +168,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
   hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
 
-  button = gtk_button_new_with_label(_("create hdr"));
+  button = gtk_button_new_with_label(_("create HDR"));
   d->create_hdr_button = button;
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)7);
@@ -186,20 +186,20 @@ gui_init (dt_lib_module_t *self)
   GtkBox *hbox2 = GTK_BOX(gtk_hbox_new(TRUE, 5));
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 0);
   d->rotate_ccw_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees ccw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CCW"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)4);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, 1);
   d->rotate_cw_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees cw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate selected images 90 degrees CW"), (char *)NULL);
   gtk_box_pack_start(hbox2, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)5);
   gtk_box_pack_start(hbox, GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("reset rotation"));
   d->reset_button = button;
-  g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to exif data"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("reset rotation to EXIF data"), (char *)NULL);
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), (gpointer)6);
 
@@ -249,12 +249,12 @@ void init_key_accels(dt_lib_module_t *self)
                         GDK_KEY_Delete, 0);
   dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
   dt_accel_register_lib(self,
-                        NC_("accel", "rotate selected images 90 degrees cw"),
+                        NC_("accel", "rotate selected images 90 degrees CW"),
                         0, 0);
   dt_accel_register_lib(self,
-                        NC_("accel", "rotate selected images 90 degrees ccw"),
+                        NC_("accel", "rotate selected images 90 degrees CCW"),
                         0, 0);
-  dt_accel_register_lib(self, NC_("accel", "create hdr"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_KEY_d, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
   // Grouping keys
@@ -268,11 +268,11 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
   dt_accel_connect_button_lib(self, "delete from disk", d->delete_button);
-  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees cw",
+  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW",
                               d->rotate_cw_button);
-  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees ccw",
+  dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW",
                               d->rotate_ccw_button);
-  dt_accel_connect_button_lib(self, "create hdr", d->create_hdr_button);
+  dt_accel_connect_button_lib(self, "create HDR", d->create_hdr_button);
   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
   // Grouping keys

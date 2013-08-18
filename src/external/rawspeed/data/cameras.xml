@@ -206,7 +206,6 @@
 			<Vertical x="0" width="140"/>
 			<Horizontal y="4" height="46"/>
 		</BlackAreas>
-
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 60D" mode="sRaw1">
 		<Crop x="0" y="0" width="0" height="0"/>
@@ -216,6 +215,20 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="65535"/>
 	</Camera>  
+	<Camera make="Canon" model="Canon EOS 70D" decoder_version="1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="38" width="0" height="0"/>
+		<Sensor black="2049" white="15000"/>
+		<BlackAreas>
+			<Vertical x="2" width="68"/>
+			<Horizontal y="2" height="34"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 500D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3121,6 +3134,16 @@
 			<Hint name="msb_override" value="false"/>
 		</Hints>    
 	</Camera>  
+	<Camera make="SAMSUNG" model="NX2000" decoder_version="3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-10" height="-18"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="SAMSUNG" model="NX300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -3171,8 +3194,8 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="520" white="16596"/>
+		<Crop x="0" y="0" width="-12" height="0"/>
+		<Sensor black="800" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="DSC-RX1R">
 		<CFA width="2" height="2">
@@ -3507,7 +3530,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-36" height="0"/>
-		<Sensor black="520" white="16596"/>
+		<Sensor black="512" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="SLT-A65V">
 		<CFA width="2" height="2">

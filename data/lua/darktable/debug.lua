@@ -36,6 +36,8 @@ local function key(object)
 	end
 	if user_type == "dt_lua_image_t" then
 		return "dt_lua_image_t"..object.id
+	elseif user_type == "dt_lua_film_t" then
+		return "dt_lua_film_t"..object.id
 	end
 	return object
 end

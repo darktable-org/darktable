@@ -239,7 +239,7 @@ static gchar *fb_extract_token_from_url(const gchar *url)
     }
     if (urlchunks[i + 1] == NULL) //this shouldn't happens but we never know...
     {
-      g_printerr(_("[facebook] unexpected url format\n"));
+      g_printerr(_("[facebook] unexpected URL format\n"));
       break;
     }
   }
@@ -603,7 +603,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
                    "loaded. you have to login into your facebook account there "
                    "and authorize darktable to upload photos before continuing.");
-  gchar *text2 = _("step 2: paste your browser url and click the ok button once "
+  gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
                    "you are done.");
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -617,7 +617,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
 
   GtkWidget *entry = gtk_entry_new();
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("url:"))), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(fb_auth_dialog->vbox), hbox, TRUE, TRUE, 0);
 
@@ -637,7 +637,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
     {
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(fb_auth_dialog),
           "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED "\" ><small>%s</small></span>",
-          text1, text2, _("please enter the validation url"));
+          text1, text2, _("please enter the validation URL"));
       continue;
     }
     token = fb_extract_token_from_url(replyurl);
@@ -648,7 +648,7 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
         GTK_MESSAGE_DIALOG(fb_auth_dialog),
         "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>",
         text1, text2,
-        _("the given url is not valid, it should look like: "),
+        _("the given URL is not valid, it should look like: "),
         FB_WS_BASE_URL"connect/login_success.html?...");
   }
   gtk_widget_destroy(GTK_WIDGET(fb_auth_dialog));

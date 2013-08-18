@@ -481,7 +481,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_params = malloc(sizeof(dt_iop_grain_params_t));
   module->default_enabled = 0;
-  module->priority = 763; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 771; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_grain_params_t);
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t)
@@ -513,7 +513,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scale1, _("coarseness"));
   dt_bauhaus_slider_set_format(g->scale1,"%.0fISO");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~iso of the film)"), (char *)NULL);
+  g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~ISO of the film)"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (scale_callback), self);
 

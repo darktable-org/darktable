@@ -91,7 +91,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_exif_exposure] = _("exposure");
   _md_labels[md_exif_focal_length] = _("focal length");
   _md_labels[md_exif_focus_distance] = _("focus distance");
-  _md_labels[md_exif_iso] = _("iso");
+  _md_labels[md_exif_iso] = _("ISO");
   _md_labels[md_exif_datetime] = _("datetime");
   _md_labels[md_exif_width] = _("width");
   _md_labels[md_exif_height] = _("height");

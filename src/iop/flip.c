@@ -367,7 +367,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_flip_params_t);
   module->gui_data = NULL;
-  module->priority = 236; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 228; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -433,13 +433,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_size_request(button, -1, 24);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees ccw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees CCW"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER|1);
   gtk_widget_set_size_request(button, -1, 24);
-  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees cw"), (char *)NULL);
+  g_object_set(G_OBJECT(button), "tooltip-text", _("rotate 90 degrees CW"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
 }
@@ -451,9 +451,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees ccw"),
+  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CCW"),
                         GDK_KEY_bracketleft, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees cw"),
+  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CW"),
                         GDK_KEY_bracketright, 0);
 }
 
@@ -462,10 +462,10 @@ void connect_key_accels(dt_iop_module_t *self)
   GClosure *closure;
   closure = g_cclosure_new(G_CALLBACK(rotate_cw_key),
                            (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees cw", closure);
+  dt_accel_connect_iop(self, "rotate 90 degrees CW", closure);
   closure = g_cclosure_new(G_CALLBACK(rotate_ccw_key),
                            (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees ccw", closure);
+  dt_accel_connect_iop(self, "rotate 90 degrees CCW", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

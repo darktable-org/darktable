@@ -77,7 +77,6 @@ typedef struct _camera_import_dialog_t
     struct
     {
       GtkWidget *ignore_jpeg;
-      GtkWidget *delete_originals;
       GtkWidget *date_override;
       GtkWidget *date_entry;
     } general;
@@ -112,10 +111,6 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
   if( cb == cid->settings.general.ignore_jpeg )
   {
     dt_conf_set_bool ("ui_last/import_ignore_jpegs", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.ignore_jpeg)));
-  }
-  else if( cb == cid->settings.general.delete_originals )
-  {
-    dt_conf_set_bool ("plugins/capture/camera/import/delete_originals", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.delete_originals)));
   }
   else if (cb==cid->settings.general.date_override )
   {
@@ -324,18 +319,11 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("general"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
 
   // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label (_("ignore jpeg files"));
-  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+jpeg in a directory."), NULL);
+  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label (_("ignore JPEG files"));
+  g_object_set(data->settings.general.ignore_jpeg, "tooltip-text", _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are raw+JPEG in a directory."), NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.ignore_jpeg), dt_conf_get_bool("ui_last/import_ignore_jpegs"));
   gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.ignore_jpeg, FALSE, FALSE, 0);
   g_signal_connect (G_OBJECT(data->settings.general.ignore_jpeg), "clicked",G_CALLBACK (_check_button_callback),data);
-
-  data->settings.general.delete_originals = gtk_check_button_new_with_label(_("delete originals after import"));
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.general.delete_originals ,FALSE,FALSE,0);
-  if( dt_conf_get_bool("plugins/capture/camera/import/delete_originals") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.general.delete_originals ), TRUE);
-
-  g_object_set(data->settings.general.delete_originals ,"tooltip-text",_("check this option if you want to delete images on camera after download to computer"),(char *)NULL);
-  g_signal_connect (G_OBJECT(data->settings.general.delete_originals), "clicked",G_CALLBACK (_check_button_callback),data);
 
   GtkWidget *hbox=gtk_hbox_new(FALSE,5);
   data->settings.general.date_override=gtk_check_button_new_with_label(_("override today's date"));

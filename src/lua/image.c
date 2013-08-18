@@ -22,6 +22,7 @@
 #include "lua/tags.h"
 #include "lua/database.h"
 #include "lua/styles.h"
+#include "lua/film.h"
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/image.h"
@@ -83,6 +84,7 @@ typedef enum
   IS_RAW,
   RATING,
   ID,
+  FILM,
   CREATOR,
   PUBLISHER,
   TITLE,
@@ -102,6 +104,7 @@ const char *image_fields_name[] =
   "is_raw",
   "rating",
   "id",
+  "film",
   "creator",
   "publisher",
   "title",
@@ -181,6 +184,9 @@ static int image_index(lua_State *L)
       }
     case ID:
       lua_pushinteger(L,my_image->id);
+      break;
+    case FILM:
+      luaA_push(L,dt_lua_film_t,&my_image->film_id);
       break;
     case CREATOR:
       {
@@ -485,7 +491,7 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","group_leader","apply_style","create_style",NULL) ; // make these fields read-only
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader","apply_style","create_style",NULL) ; // make these fields read-only
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);

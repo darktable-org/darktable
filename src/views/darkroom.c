@@ -554,7 +554,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_formgui(dev);
+  dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
@@ -1057,7 +1057,7 @@ void enter(dt_view_t *self)
     dev->form_gui = (dt_masks_form_gui_t *) malloc(sizeof(dt_masks_form_gui_t));
     memset(dev->form_gui,0,sizeof(dt_masks_form_gui_t));
   }
-  dt_masks_init_formgui(dev);
+  dt_masks_init_form_gui(dev);
   dev->form_visible = NULL;
   dev->form_gui->pipe_hash = 0;
   dev->form_gui->formid = 0;
@@ -1354,7 +1354,7 @@ void mouse_leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   const int32_t capwd = darktable.thumbnail_width;
   const int32_t capht = darktable.thumbnail_height;
@@ -1405,10 +1405,10 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
     return;
   }
   //masks
-  if (dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, which);
+  if (dev->form_visible) handled = dt_masks_events_mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
   //module
-  if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, which);
+  if(dev->gui_module && dev->gui_module->mouse_moved) handled = dev->gui_module->mouse_moved(dev->gui_module, x, y, pressure, which);
   if(handled) return;
 
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
@@ -1459,7 +1459,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   const int32_t capwd = darktable.thumbnail_width;
   const int32_t capht = darktable.thumbnail_height;
@@ -1492,10 +1492,10 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     return 1;
   }
   //masks
-  if (dev->form_visible) handled = dt_masks_events_button_pressed(dev->gui_module, x, y, which, type, state);
+  if (dev->form_visible) handled = dt_masks_events_button_pressed(dev->gui_module, x, y, pressure, which, type, state);
   if(handled) return handled;
   //module
-  if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, which, type, state);
+  if(dev->gui_module && dev->gui_module->button_pressed) handled = dev->gui_module->button_pressed(dev->gui_module, x, y, pressure, which, type, state);
   if(handled) return handled;
 
   if(which == 1 && type == GDK_2BUTTON_PRESS) return 0;

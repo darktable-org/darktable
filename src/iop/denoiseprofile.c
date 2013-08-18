@@ -1469,7 +1469,7 @@ void reload_defaults(dt_iop_module_t *module)
         g->interpolated = *(g->profiles[i-1]);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        snprintf(name, 512, _("found match for iso %d"), g->profiles[i-1]->iso);
+        snprintf(name, 512, _("found match for ISO %d"), g->profiles[i-1]->iso);
         break;
       }
       if(g->profiles[i]->iso == iso)
@@ -1477,7 +1477,7 @@ void reload_defaults(dt_iop_module_t *module)
         g->interpolated = *(g->profiles[i]);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        snprintf(name, 512, _("found match for iso %d"), g->profiles[i]->iso);
+        snprintf(name, 512, _("found match for ISO %d"), g->profiles[i]->iso);
         break;
       }
       if(g->profiles[i-1]->iso < iso &&
@@ -1486,7 +1486,7 @@ void reload_defaults(dt_iop_module_t *module)
         dt_noiseprofile_interpolate(g->profiles[i-1], g->profiles[i], &g->interpolated);
         // signal later autodetection in commit_params:
         g->interpolated.a[0] = -1.0;
-        snprintf(name, 512, _("interpolated from iso %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
+        snprintf(name, 512, _("interpolated from ISO %d and %d"), g->profiles[i-1]->iso, g->profiles[i]->iso);
         break;
       }
     }
@@ -1513,7 +1513,7 @@ void init(dt_iop_module_t *module)
 {
   module->params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
   module->default_params = malloc(sizeof(dt_iop_denoiseprofile_params_t));
-  module->priority = 145; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 140; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
   module->data = NULL;

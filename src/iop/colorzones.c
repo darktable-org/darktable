@@ -386,7 +386,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_params = malloc(sizeof(dt_iop_colorzones_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
-  module->priority = 545; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 561; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
   dt_iop_colorzones_params_t tmp;
@@ -1029,7 +1029,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
-  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick gui color from image"), (char *)NULL);
+  g_object_set(G_OBJECT(tb), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
   g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(request_pick_toggled), self);
   gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
 

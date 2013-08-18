@@ -518,7 +518,7 @@ void reset(dt_view_t *self)
   //DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 }
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_capture_t *lib = (dt_capture_t*)self->data;
   dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
@@ -572,7 +572,7 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_camera_t *cam = (dt_camera_t*)darktable.camctl->active_camera;
   dt_capture_t *lib = (dt_capture_t*)self->data;

@@ -389,6 +389,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   /* get grid stride */
   const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  lib->images_in_row = iir;
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
@@ -789,6 +790,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   center = lib->center;
   track  = lib->track;
 
+  lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
 
   cairo_set_source_rgb (cr, .2, .2, .2);
@@ -1107,6 +1109,16 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 }
 
 static gboolean
+expose_status_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
+                         guint keyval, GdkModifierType modifier, gpointer data)
+{
+  const gboolean status = dt_conf_get_bool("lighttable/ui/expose_statuses");
+  dt_conf_set_bool("lighttable/ui/expose_statuses", status==TRUE?FALSE:TRUE);
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
+static gboolean
 go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                          guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1352,7 +1364,7 @@ int scrolled(dt_view_t *self, double x, double y, int up, int state)
 }
 
 
-void mouse_moved(dt_view_t *self, double x, double y, int which)
+void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
 {
   dt_control_queue_redraw_center();
 }
@@ -1367,7 +1379,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
-int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->modifiers = state;
@@ -1613,6 +1625,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
   dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
+  dt_accel_register_view(self, NC_("accel", "expose statuses"), 0, 0);
+
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"),
                          GDK_KEY_g, 0);
@@ -1682,6 +1696,11 @@ void connect_key_accels(dt_view_t *self)
               (gpointer)DT_VIEW_REJECT, NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
+  // expose image status
+  closure = g_cclosure_new(
+              G_CALLBACK(expose_status_accel_callback),
+              (gpointer)self, NULL);
+  dt_accel_connect_view(self, "expose statuses", closure);
 
   // Navigation keys
   closure = g_cclosure_new(

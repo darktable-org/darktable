@@ -20,8 +20,8 @@
 
   <sect4><title>Usage</title>
                 <para>The darktable team, with the help of many users, has measured noise profiles for various cameras. Differentiated by ISO settings
-                      we evaluated how the noise statistics develop with brightness for the three color channels. Our set of profiles already covers over 70 popular 
-                      camera models from different manufacturers.</para>
+                      we evaluated how the noise statistics develop with brightness for the three color channels. Our set of profiles already covers about 100 popular 
+                      camera models from all major manufacturers.</para>
     <sect5><title>profile</title>
       <para>Based on EXIF data of your RAW file, darktable will automatically determine the camera model and ISO setting. If found in its database,
                               the corresponding noise profile will be used. If your image has an intermediate ISO value, the statistical properties

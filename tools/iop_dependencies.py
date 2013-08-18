@@ -315,6 +315,9 @@ def add_edges(gr):
   gr.add_edge(('colorzones', 'equalizer'))
   gr.add_edge(('equalizer', 'colorin'))
 
+  # colorbalance needs a Lab buffer and should be after clipping. probably.
+  gr.add_edge(('clipping', 'colorbalance'))
+  gr.add_edge(('colorbalance', 'colorin'))
 
 gr = digraph()
 gr.add_nodes([
@@ -329,6 +332,7 @@ gr.add_nodes([
 'channelmixer',
 'clahe', # deprecated
 'clipping',
+'colorbalance',
 'colorcorrection',
 'colorin',
 'colorize',

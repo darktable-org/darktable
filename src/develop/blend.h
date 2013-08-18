@@ -29,7 +29,7 @@
 #include "develop/pixelpipe.h"
 #include "common/opencl.h"
 
-#define DEVELOP_BLEND_VERSION				(6)
+#define DEVELOP_BLEND_VERSION				(7)
 
 
 #define DEVELOP_BLEND_MASK_FLAG		  0x80
@@ -229,6 +229,30 @@ typedef struct dt_develop_blend_params5_t
 }
 dt_develop_blend_params5_t;
 
+/** blend legacy parameters version 6 (identical to version 7) */
+typedef struct dt_develop_blend_params6_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+  uint32_t mask_mode;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** blur radius */
+  float radius;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
+}
+dt_develop_blend_params6_t;
+
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
 {
@@ -252,6 +276,7 @@ typedef struct dt_develop_blend_params_t
   float blendif_parameters[4*DEVELOP_BLENDIF_SIZE];
 }
 dt_develop_blend_params_t;
+
 
 
 typedef struct dt_blendop_t
@@ -332,7 +357,9 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_combo;
   GtkWidget *masks_path;
   GtkWidget *masks_circle;
+  GtkWidget *masks_ellipse;
   GtkWidget *masks_gradient;
+  GtkWidget *masks_brush;
   GtkWidget *masks_edit;
   GtkWidget *masks_polarity;
   int *masks_combo_ids;
@@ -354,6 +381,9 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
 /** get blend version */
 int dt_develop_blend_version (void);
+
+/** check if content of params is all zero, indicating a non-initialized set of blend parameters which needs special care. */
+gboolean dt_develop_blend_params_is_all_zero (const void *params, size_t length);
 
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params (dt_iop_module_t *module, const void *const old_params, const int old_version, void *new_params, const int new_version, const int lenght);

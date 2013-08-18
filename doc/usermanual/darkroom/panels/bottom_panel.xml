@@ -6,7 +6,7 @@
 
 	<sect2 status="final" id="darkroom_bottom_panel"><title>Bottom panel</title>
             <para>The bottom panel provides quick access to apply presets and styles to your image and allows to activate
-                  the over/underexposure warning.
+                  the over/underexposure warning. You can also activate a filmstrip for quick navigation within the current collection.
             </para>
 
             <sect3 status="final"><title>Quick access to favorite presets</title>
@@ -56,4 +56,13 @@
                             <para>Sets the threshold for overexposure warning, expressed as a percentage of the maximal brightness.</para>
                       </sect5>			
           </sect3>
+
+          <sect3 status="final" id="darkroom_filmstrip"><title>Filmstrip</title>
+                 <para>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same
+                       as the ones in the lighttable view.</para>
+                 <para>The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>. You can scroll with your mouse to quickly navigate
+                       through the images and change the height of the filmstrip panel by dragging its top.</para>
+                 <graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+          </sect3>
+
       </sect2>

@@ -54,9 +54,9 @@ typedef GdkCursorType dt_cursor_t;
 // called from gui
 void *dt_control_expose(void *voidptr);
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-void dt_control_button_pressed(double x, double y, int which, int type, uint32_t state);
+void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state);
 void dt_control_button_released(double x, double y, int which, uint32_t state);
-void dt_control_mouse_moved(double x, double y, int which);
+void dt_control_mouse_moved(double x, double y, double pressure, int which);
 void dt_control_mouse_leave();
 void dt_control_mouse_enter();
 int  dt_control_key_pressed(guint key, guint state);

@@ -76,20 +76,11 @@ typedef enum ComboAlbumModel
   COMBO_ALBUM_MODEL_NB_COL
 } ComboAlbumModel;
 
-typedef enum ComboPrivacyModel
-{
-  COMBO_PRIVACY_MODEL_NAME_COL = 0,
-  COMBO_PRIVACY_MODEL_VAL_COL,
-  COMBO_PRIVACY_MODEL_NB_COL
-} ComboPrivacyModel;
-
-
 typedef enum PicasaAlbumPrivacyPolicy
 {
   PICASA_ALBUM_PRIVACY_PUBLIC,
   PICASA_ALBUM_PRIVACY_PRIVATE,
 } PicasaAlbumPrivacyPolicy;
-
 
 /**
  * Represents informations about an album
@@ -175,11 +166,9 @@ typedef struct dt_storage_picasa_gui_data_t
   //  === album creation section ===
   GtkLabel *label_album_title;
   GtkLabel *label_album_summary;
-  GtkLabel *label_album_privacy;
 
   GtkEntry *entry_album_title;
   GtkEntry *entry_album_summary;
-  GtkComboBox *comboBox_privacy;
 
   GtkBox *hbox_album;
 
@@ -834,7 +823,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
                    "loaded. you have to login into your picasa account there "
                    "and authorize darktable to upload photos before continuing.");
-  gchar *text2 = _("step 2: paste your browser url and click the ok button once "
+  gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
                    "you are done.");
 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -848,7 +837,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   GtkWidget *entry = gtk_entry_new();
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("url:"))), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(picasa_auth_dialog->vbox), hbox, TRUE, TRUE, 0);
 
@@ -868,7 +857,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
     {
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(picasa_auth_dialog),
           "%s\n\n%s\n\n<span foreground=\"" MSGCOLOR_RED "\" ><small>%s</small></span>",
-          text1, text2, _("please enter the validation url"));
+          text1, text2, _("please enter the validation URL"));
       continue;
     }
     //token = picasa_extract_token_from_url(replyurl);
@@ -880,7 +869,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
         GTK_MESSAGE_DIALOG(picasa_auth_dialog),
         "%s\n\n%s%s\n\n<span foreground=\"" MSGCOLOR_RED "\"><small>%s</small></span>",
         text1, text2,
-        _("the given url is not valid, it should look like: "),
+        _("the given URL is not valid, it should look like: "),
         GOOGLE_WS_BASE_URL"connect/login_success.html?...");
   }
   gtk_widget_destroy(GTK_WIDGET(picasa_auth_dialog));
@@ -1296,7 +1285,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
 /* plugin name */
 const char *name(const struct dt_imageio_module_storage_t *self)
 {
-  return _("picasa webalbum");
+  return _("google+ photos");
 }
 
 /* construct widget above */
@@ -1311,12 +1300,10 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   //create labels
   ui->label_album_title = GTK_LABEL(  gtk_label_new( _("title") ) );
   ui->label_album_summary = GTK_LABEL(  gtk_label_new( _("summary") ) );
-  ui->label_album_privacy = GTK_LABEL(gtk_label_new(_("privacy")));
   ui->label_status = GTK_LABEL(gtk_label_new(NULL));
 
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_title), 0.0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(ui->label_album_summary), 0.0, 0.5);
-  gtk_misc_set_alignment(GTK_MISC(ui->label_album_privacy), 0.0, 0.5);
 
   //create entries
   GtkListStore *model_username  = gtk_list_store_new (COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING); //text, token, refresh_token, id
@@ -1349,17 +1336,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_combo_box_set_row_separator_func(ui->comboBox_album,combobox_separator,ui->comboBox_album,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox_album), TRUE, TRUE, 0);
 
-  ui->comboBox_privacy= GTK_COMBO_BOX(gtk_combo_box_new_text());
-  GtkListStore *list_store = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_INT);
-  GtkTreeIter iter;
-  gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("private"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
-  gtk_list_store_append(list_store, &iter);
-  gtk_list_store_set(list_store, &iter, COMBO_PRIVACY_MODEL_NAME_COL, _("public"), COMBO_PRIVACY_MODEL_VAL_COL, PICASA_ALBUM_PRIVACY_PRIVATE, -1);
-
-  gtk_combo_box_set_model(ui->comboBox_privacy, GTK_TREE_MODEL(list_store));
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox_privacy), 1); // Set default permission to private
   ui->button_login = GTK_BUTTON(gtk_button_new_with_label(_("login")));
   ui->connected = FALSE;
 
@@ -1390,8 +1366,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_title), TRUE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_summary), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->entry_album_summary), TRUE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox_album_labels), GTK_WIDGET(ui->label_album_privacy), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox_album_fields), GTK_WIDGET(ui->comboBox_privacy), TRUE, FALSE, 0);
 
   //connect buttons to signals
   g_signal_connect(G_OBJECT(ui->button_login), "clicked", G_CALLBACK(ui_login_clicked), (gpointer)ui);
@@ -1400,7 +1374,6 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 
   g_object_unref(model_username);
   g_object_unref(model_album);
-  g_object_unref(list_store);
 }
 
 /* destroy resources */
@@ -1507,7 +1480,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, caption, description, imgid);
   if (photoid == NULL)
   {
-    dt_control_log(_("unable to export photo to webalbum"));
+    dt_control_log(_("unable to export photo to google+ album"));
     result = 0;
     goto cleanup;
   }
@@ -1524,7 +1497,7 @@ cleanup:
   if (result)
   {
     //this makes sense only if the export was successful
-    dt_control_log(_("%d/%d exported to picasa webalbum"), num, total );
+    dt_control_log(_("%d/%d exported to google+ album"), num, total );
   }
   return 0;
 }
@@ -1575,12 +1548,9 @@ void *get_params(struct dt_imageio_module_storage_t *self)
     p->album_id[0] = 0;
     p->album_title = g_strdup(gtk_entry_get_text(ui->entry_album_title));
     p->album_summary = g_strdup(gtk_entry_get_text(ui->entry_album_summary));
-    GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_privacy);
-    GtkTreeIter iter;
-    int permission = -1;
-    gtk_combo_box_get_active_iter(ui->comboBox_privacy, &iter);
-    gtk_tree_model_get(model, &iter, COMBO_PRIVACY_MODEL_VAL_COL, &permission, -1);
-    p->album_permission = permission;
+
+    /* Hardcode the album as private, to avoid problems with the old Picasa interface */
+    p->album_permission = 1;
   }
   else
   {

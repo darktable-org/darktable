@@ -83,7 +83,6 @@ dt_iop_dither_gui_data_t;
 typedef struct dt_iop_dither_data_t
 {
   int dither_type;
-  int dither_center_view;
   struct
   {
     float radius;
@@ -246,10 +245,8 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
           nearest_color = NULL;
           break;
       }
-      // no automatic dithering for preview and thumbnail and also not for center view if according
-      // config variable is FALSE
-      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL ||
-          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && !data->dither_center_view))
+      // no automatic dithering for preview and thumbnail
+      if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
         nearest_color = NULL;
       break;
   }
@@ -482,7 +479,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_dither_data_t *d = (dt_iop_dither_data_t *)piece->data;
 
   d->dither_type = p->dither_type;
-  d->dither_center_view = dt_conf_get_bool("plugins/darkroom/dithering/dither_center_view");
   memcpy(&(d->random.range), &(p->random.range), sizeof(p->random.range));
   d->random.radius = p->random.radius;
   d->random.damping = p->random.damping;
@@ -528,7 +524,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_dither_params_t));
   module->default_params = malloc(sizeof(dt_iop_dither_params_t));
   module->default_enabled = 0;
-  module->priority = 981; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 982; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_dither_params_t);
   module->gui_data = NULL;
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
@@ -559,10 +555,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->dither_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_add(g->dither_type, _("random"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 1-bit b&w"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 1-bit B&W"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 4-bit gray"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit rgb"));
-  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit rgb"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 8-bit RGB"));
+  dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg 16-bit RGB"));
   dt_bauhaus_combobox_add(g->dither_type, _("floyd-steinberg auto"));
   dt_bauhaus_widget_set_label(g->dither_type, _("method"));
 
@@ -587,7 +583,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
 #endif
 
-  g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 0.100, p->random.damping, 3);
+  g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 1.0, p->random.damping, 3);
   g_object_set (GTK_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->damping,_("damping"));
   dt_bauhaus_slider_set_format(g->damping,"%.0fdB");

@@ -438,15 +438,15 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
 
   // iso
-  label = gtk_label_new(_("iso"));
+  label = gtk_label_new(_("ISO"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_min, 0);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
-  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum iso value"), (char *)NULL);
+  g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
 
@@ -574,8 +574,8 @@ menuitem_update_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 
   // commit all the module fields
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set operation=?1, op_version=?2, op_params=?3, enabled=?4, "
-                              "blendop_params=?5, blendop_version=?6 where name=?7", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE presets SET op_version=?2, op_params=?3, enabled=?4, "
+                              "blendop_params=?5, blendop_version=?6 WHERE name=?7 AND operation=?1", -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
@@ -733,12 +733,14 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     // only matching if filter is on:
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, op_params, writeprotect, description, blendop_params, op_version, enabled from presets where operation=?1 and "
                                 "(filter=0 or ( "
-                                "?2 like model and ?3 like maker and ?4 like lens and "
+                                "?2 like model and ?3 like maker and "
+                                "?4 like lens and "
                                 "?5 between iso_min and iso_max and "
                                 "?6 between exposure_min and exposure_max and "
                                 "?7 between aperture_min and aperture_max and "
                                 "?8 between focal_length_min and focal_length_max and "
-                                "(isldr = 0 or isldr=?9) ) )"
+                                "(isldr = 0 or isldr=?9)"
+                                " ) )"
                                 "order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, image->exif_model, strlen(image->exif_model), SQLITE_TRANSIENT);
@@ -748,7 +750,8 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, dt_image_is_ldr(image));
+    int ldr = dt_image_is_ldr(image) ? 1 : 2; // will match raw+hdr for 2, hdr might be just a converted high bit-depth raw, so we're on the safe side.
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, ldr);
   }
   else
   {

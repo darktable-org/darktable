@@ -436,7 +436,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 
 //FIXME: Pumping of the opposite direction when changing width/height. See two FIXMEs further down.
 int
-mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_vignette_gui_data_t *g = (dt_iop_vignette_gui_data_t *)self->gui_data;
   dt_iop_vignette_params_t *p   = (dt_iop_vignette_params_t *)self->params;
@@ -627,7 +627,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
 }
 
 int
-button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   if(which == 1)
     return 1;
@@ -1076,7 +1076,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_params = malloc(sizeof(dt_iop_vignette_params_t));
   module->default_enabled = 0;
-  module->priority = 872; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 877; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_vignette_params_t);
   module->gui_data = NULL;
   dt_iop_vignette_params_t tmp = (dt_iop_vignette_params_t)

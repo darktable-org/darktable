@@ -239,7 +239,7 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 781; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 789; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:
@@ -356,8 +356,8 @@ void gui_cleanup  (dt_iop_module_t *self)
 
 /** additional, optional callbacks to capture darkroom center events. */
 // void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state);
+// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
+// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 

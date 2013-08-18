@@ -1,4 +1,21 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2011--2013 Ulrich Pegelow
 
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 float4 Lab_2_LCH(float4 Lab)
 {
@@ -114,7 +131,6 @@ float Hue_2_RGB(float v1, float v2, float vH)
 
 
 
-
 float4 HSL_2_RGB(const float4 HSL)
 {
   float R, G, B;
@@ -144,3 +160,32 @@ float4 HSL_2_RGB(const float4 HSL)
   // returns RGB scaled to [0; 1] for each channel
   return (float4)(R, G, B, HSL.w);
 }
+
+
+// XYZ -> sRGB matrix, D65
+float4 XYZ_to_sRGB(float4 XYZ)
+{
+  float4 sRGB;
+
+  sRGB.x =  3.1338561f * XYZ.x - 1.6168667f * XYZ.y - 0.4906146f * XYZ.z;
+  sRGB.y = -0.9787684f * XYZ.x + 1.9161415f * XYZ.y + 0.0334540f * XYZ.z;
+  sRGB.z =  0.0719453f * XYZ.x - 0.2289914f * XYZ.y + 1.4052427f * XYZ.z;
+  sRGB.w = XYZ.w;
+
+  return sRGB;
+}
+
+
+// sRGB -> XYZ matrix, D65
+float4 sRGB_to_XYZ(float4 sRGB)
+{
+  float4 XYZ;
+
+  XYZ.x = 0.4360747f * sRGB.x + 0.3850649f * sRGB.y + 0.1430804f * sRGB.z;
+  XYZ.y = 0.2225045f * sRGB.x + 0.7168786f * sRGB.y + 0.0606169f * sRGB.z;
+  XYZ.z = 0.0139322f * sRGB.x + 0.0971045f * sRGB.y + 0.7141733f * sRGB.z;
+  XYZ.w = sRGB.w;
+
+  return XYZ;
+}
+

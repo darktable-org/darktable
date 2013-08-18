@@ -482,6 +482,11 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
     // transform back to current module coordinates
     dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fbox, 2);
 
+    fbox[0] -= roi->x;
+    fbox[1] -= roi->y;
+    fbox[2] -= roi->x;
+    fbox[3] -= roi->y;
+
     // re-order edges of bounding box
     box[0] = fminf(fbox[0], fbox[2]);
     box[1] = fminf(fbox[1], fbox[3]);
@@ -525,8 +530,8 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
     // transform back to current module coordinates
     dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fpoint, 1);
     
-    point[0] = fpoint[0];
-    point[1] = fpoint[1];
+    point[0] = fpoint[0] - roi->x;
+    point[1] = fpoint[1] - roi->y;
 
     // do not continue if point is outside of roi
     if(point[0] >= width || point[1] >= height || point[0] < 0 || point[1] < 0) return;
@@ -582,6 +587,11 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
 
   // transform back to current module coordinates
   dt_dev_distort_backtransform_plus(darktable.develop, darktable.develop->preview_pipe, module->priority, 99999, fbox, 2);
+
+  fbox[0] -= roi->x;
+  fbox[1] -= roi->y;
+  fbox[2] -= roi->x;
+  fbox[3] -= roi->y;
 
   // re-order edges of bounding box
   box[0] = fminf(fbox[0], fbox[2]);

@@ -72,10 +72,10 @@ static const char EveningSun[] = N_("evening sun");
 static const char Underwater[] = N_("underwater");
 static const char BlackNWhite[] = N_("black & white");
 
-const char uf_spot_wb[] = "spot wb";
-const char uf_manual_wb[] = N_("manual wb");
-const char uf_camera_wb[] = N_("camera wb");
-const char uf_auto_wb[] = N_("auto wb");
+const char uf_spot_wb[] = "spot WB";
+const char uf_manual_wb[] = N_("manual WB");
+const char uf_camera_wb[] = N_("camera WB");
+const char uf_auto_wb[] = N_("auto WB");
 
 const wb_data wb_preset[] =
 {
@@ -3110,18 +3110,44 @@ const wb_data wb_preset[] =
   { "NIKON", "D3100", DaylightFluorescent, 0,	{ 2.214844, 1, 1.015625, 0 } },
   { "NIKON", "D3100", HighTempMercuryVaporFluorescent, 0, { 2.589844, 1, 1.250000, 0 } },
 
-  { "NIKON", "D3200", DirectSunlight, 0,	{ 2.0508, 1, 1.2734, 0 } },
-  { "NIKON", "D3200", Flash, 0,			{ 2.3203, 1, 1.1484, 0 } },
-  { "NIKON", "D3200", Cloudy, 0,		{ 2.1719, 1, 1.1641, 0 } },
-  { "NIKON", "D3200", Shade, 0,			{ 2.4492, 1, 1.0508, 0 } },
-  { "NIKON", "D3200", Incandescent, 0,		{ 1.3594, 1, 1.9648, 0 } },
-  { "NIKON", "D3200", SodiumVaporFluorescent, 0, { 1.2773, 1, 2.0938, 0 } },
-  { "NIKON", "D3200", WarmWhiteFluorescent, 0,	{ 1.3516, 1, 1.7734, 0 } },
-  { "NIKON", "D3200", WhiteFluorescent, 0,	{ 1.5039, 1, 1.9727, 0 } },
-  { "NIKON", "D3200", CoolWhiteFluorescent, 0,	{ 1.8203, 1, 1.7969, 0 } },
-  { "NIKON", "D3200", DayWhiteFluorescent, 0,	{ 1.8789, 1, 1.2617, 0 } },
-  { "NIKON", "D3200", DaylightFluorescent, 0,	{ 2.1094, 1, 1.0313, 0 } },
-  { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 0, { 2.4453, 1, 1.2500, 0 } },
+  /* Firmware version 1.01 */
+  /* -6/+6 fine tuning is A6/B6 in amber-blue and zero in green-magenta */
+  { "NIKON", "D3200", DirectSunlight, -6,	{ 2.199219, 1, 1.140625, 0 } },
+  { "NIKON", "D3200", DirectSunlight, 0,	{ 2.050781, 1, 1.273438, 0 } },
+  { "NIKON", "D3200", DirectSunlight, 6,	{ 1.882813, 1, 1.406250, 0 } },
+  { "NIKON", "D3200", Flash, -6,		{ 2.515625, 1, 1.062500, 0 } },
+  { "NIKON", "D3200", Flash, 0,			{ 2.320313, 1, 1.148438, 0 } },
+  { "NIKON", "D3200", Flash, 6,			{ 2.121094, 1, 1.218750, 0 } },
+  { "NIKON", "D3200", Cloudy, -6,		{ 2.355469, 1, 1.078125, 0 } },
+  { "NIKON", "D3200", Cloudy, 0,		{ 2.171875, 1, 1.164063, 0 } },
+  { "NIKON", "D3200", Cloudy, 6,		{ 2.031250, 1, 1.300781, 0 } },
+  { "NIKON", "D3200", Shade, -6,		{ 2.750000, 1, 1.000000, 0 } },
+  { "NIKON", "D3200", Shade, 0,			{ 2.449219, 1, 1.050781, 0 } },
+  { "NIKON", "D3200", Shade, 6,			{ 2.242188, 1, 1.121094, 0 } },
+  { "NIKON", "D3200", Incandescent, -6,		{ 1.468750, 1, 1.796875, 0 } },
+  { "NIKON", "D3200", Incandescent, 0,		{ 1.359375, 1, 1.964844, 0 } },
+  { "NIKON", "D3200", Incandescent, 6,		{ 1.269531, 1, 2.144531, 0 } },
+  { "NIKON", "D3200", SodiumVaporFluorescent, -6, { 1.390625, 1, 1.917969, 0 } },
+  { "NIKON", "D3200", SodiumVaporFluorescent, 0, { 1.277344, 1, 2.093750, 0 } },
+  { "NIKON", "D3200", SodiumVaporFluorescent, 6, { 1.203125, 1, 2.281250, 0 } },
+  { "NIKON", "D3200", WarmWhiteFluorescent, -6,	{ 1.453125, 1, 1.679688, 0 } },
+  { "NIKON", "D3200", WarmWhiteFluorescent, 0,	{ 1.351563, 1, 1.773438, 0 } },
+  { "NIKON", "D3200", WarmWhiteFluorescent, 6,	{ 1.246094, 1, 1.878906, 0 } },
+  { "NIKON", "D3200", WhiteFluorescent, -6,	{ 1.800781, 1, 1.812500, 0 } },
+  { "NIKON", "D3200", WhiteFluorescent, 0,	{ 1.503906, 1, 1.972656, 0 } },
+  { "NIKON", "D3200", WhiteFluorescent, 6,	{ 1.085938, 1, 2.253906, 0 } },
+  { "NIKON", "D3200", CoolWhiteFluorescent, -6,	{ 2.085938, 1, 1.628906, 0 } },
+  { "NIKON", "D3200", CoolWhiteFluorescent, 0,	{ 1.820313, 1, 1.796875, 0 } },
+  { "NIKON", "D3200", CoolWhiteFluorescent, 6,	{ 1.531250, 1, 1.957031, 0 } },
+  { "NIKON", "D3200", DayWhiteFluorescent, -6,	{ 2.027344, 1, 1.117188, 0 } },
+  { "NIKON", "D3200", DayWhiteFluorescent, 0,	{ 1.878906, 1, 1.261719, 0 } },
+  { "NIKON", "D3200", DayWhiteFluorescent, 6,	{ 1.742188, 1, 1.398438, 0 } },
+  { "NIKON", "D3200", DaylightFluorescent, -6,	{ 2.296875, 1, 1.000000, 0 } },
+  { "NIKON", "D3200", DaylightFluorescent, 0,	{ 2.109375, 1, 1.031250, 0 } },
+  { "NIKON", "D3200", DaylightFluorescent, 6,	{ 1.957031, 1, 1.183594, 0 } },
+  { "NIKON", "D3200", HighTempMercuryVaporFluorescent, -6, { 2.542969, 1, 1.117188, 0 } },
+  { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 0, { 2.445313, 1, 1.250000, 0 } },
+  { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 6, { 2.324219, 1, 1.394531, 0 } },
 
   { "NIKON", "D5000", DirectSunlight, 0,	{ 1.800781, 1, 1.308594, 0 } },
   { "NIKON", "D5000", Flash, 0,			{ 1.976562, 1, 1.152344, 0 } },
@@ -5654,6 +5680,16 @@ const wb_data wb_preset[] =
   { "SONY", "SLT-A57", Flash, 5,		{ 3.605469, 1, 1.128906, 0 } },
   { "SONY", "SLT-A57", Flash, 6,		{ 3.726563, 1, 1.093750, 0 } },
   { "SONY", "SLT-A57", Flash, 7,		{ 3.855469, 1, 1.054688, 0 } },
+
+  // firmware version 1.00
+  { "SONY", "SLT-A58", Daylight, 0,		{ 2.640625, 1, 1.546875, 0 } },
+  { "SONY", "SLT-A58", Cloudy, 0,		{ 2.875000, 1, 1.414063, 0 } },
+  { "SONY", "SLT-A58", Incandescent, 0,		{ 1.578125, 1, 2.843750, 0 } },
+  { "SONY", "SLT-A58", WarmWhiteFluorescent, 0,	{ 1.859375, 1, 2.796875, 0 } },
+  { "SONY", "SLT-A58", CoolWhiteFluorescent, 0,	{ 2.367188, 1, 2.238281, 0 } },
+  { "SONY", "SLT-A58", DayWhiteFluorescent, 0,	{ 2.550781, 1, 1.695313, 0 } },
+  { "SONY", "SLT-A58", DaylightFluorescent, 0,	{ 2.898438, 1, 1.472656, 0 } },
+  { "SONY", "SLT-A58", Flash, 0,		{ 2.992188, 1, 1.355469, 0 } },
 
   { "SONY", "SLT-A65V", Daylight, 0,		{ 2.628906, 1, 1.433594, 0 } },
   { "SONY", "SLT-A65V", Shade, 0,		{ 3.132813, 1, 1.191406, 0 } },

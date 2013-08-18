@@ -1323,7 +1323,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
 
       if (g_strcmp0(mount_name, "Local")==0)
       {
-        label = gtk_label_new (_("local hdd"));
+        label = gtk_label_new (_("local HDD"));
       }
       else
       {
@@ -1711,7 +1711,7 @@ filmrolls_updated(gpointer instance, gpointer self)
 }
 
 static void
-filmrolls_imported(gpointer instance, gpointer self)
+filmrolls_imported(gpointer instance, int film_id,gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
 

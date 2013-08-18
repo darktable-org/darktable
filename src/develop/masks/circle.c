@@ -145,7 +145,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
   return 0;
 }
 
-static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float pzx, float pzy, int which, int type, uint32_t state,
+static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (which != 1) return 0;
@@ -214,7 +214,7 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module,float 
       //we save the move
       dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
       //and we switch in edit mode to show all the forms
-      dt_masks_set_edit_mode(crea_module, TRUE);
+      dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
       dt_masks_iop_update(crea_module);
       gui->creation_module = NULL;
     }
@@ -264,7 +264,7 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module,float
 {
   if (which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
-    dt_masks_init_formgui(darktable.develop);
+    dt_masks_clear_form_gui(darktable.develop);
     //we hide the form
     if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
     else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
@@ -351,7 +351,7 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module,float
   return 0;
 }
 
-static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module,float pzx, float pzy, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
+static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if (gui->form_dragging || gui->source_dragging)
   {
@@ -467,7 +467,7 @@ static void dt_circle_events_post_expose(cairo_t *cr,float zoom_scale,dt_masks_f
   //draw the source if any
   if (gpt->source_count>6)
   {
-    const float radius = fabs(gpt->points[3] - gpt->points[1]);
+    const float radius = fabs(gpt->points[2] - gpt->points[0]);
 
 
     

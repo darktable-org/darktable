@@ -61,7 +61,7 @@ typedef struct dt_view_t
   float vscroll_size, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_viewport_size, hscroll_pos;
   const char *(*name)     (struct dt_view_t *self); // get translatable name
-  uint32_t (*view)        (struct dt_view_t *self); // get the view type
+  uint32_t (*view)        (const struct dt_view_t *self); // get the view type
   void (*init)            (struct dt_view_t *self); // init *data
   void (*cleanup)         (struct dt_view_t *self); // cleanup *data
   void (*expose)          (struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery); // expose the module (gtk callback)
@@ -73,9 +73,9 @@ typedef struct dt_view_t
   // event callbacks:
   int  (*mouse_enter)     (struct dt_view_t *self);
   int  (*mouse_leave)     (struct dt_view_t *self);
-  int  (*mouse_moved)     (struct dt_view_t *self, double x, double y, int which);
+  int  (*mouse_moved)     (struct dt_view_t *self, double x, double y, double pressure, int which);
   int  (*button_released) (struct dt_view_t *self, double x, double y, int which, uint32_t state);
-  int  (*button_pressed)  (struct dt_view_t *self, double x, double y, int which, int type, uint32_t state);
+  int  (*button_pressed)  (struct dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
   int  (*key_pressed)     (struct dt_view_t *self, guint key, guint state);
   int  (*key_released)    (struct dt_view_t *self, guint key, guint state);
   void (*configure)       (struct dt_view_t *self, int width, int height);
@@ -266,9 +266,9 @@ const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm);
 
 void dt_view_manager_mouse_enter     (dt_view_manager_t *vm);
 void dt_view_manager_mouse_leave     (dt_view_manager_t *vm);
-void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, int which);
+void dt_view_manager_mouse_moved     (dt_view_manager_t *vm, double x, double y, double pressure, int which);
 int dt_view_manager_button_released  (dt_view_manager_t *vm, double x, double y, int which, uint32_t state);
-int dt_view_manager_button_pressed   (dt_view_manager_t *vm, double x, double y, int which, int type, uint32_t state);
+int dt_view_manager_button_pressed   (dt_view_manager_t *vm, double x, double y, double pressure, int which, int type, uint32_t state);
 int dt_view_manager_key_pressed      (dt_view_manager_t *vm, guint key, guint state);
 int dt_view_manager_key_released     (dt_view_manager_t *vm, guint key, guint state);
 void dt_view_manager_configure       (dt_view_manager_t *vm, int width, int height);

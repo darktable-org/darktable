@@ -37,13 +37,15 @@
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#include <xmmintrin.h>
 
 #define MAX_RADIUS  32
 #define BOX_ITERATIONS 8
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
+#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
+
 DT_MODULE(1)
 
 typedef struct dt_iop_soften_params_t
@@ -144,106 +146,92 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   int rad = mrad*(fmin(100.0,data->size+1)/100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  /* horizontal blur out into out */
-  const int range = 2*radius+1;
-  const int hr = range/2;
-
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanline[3]= {0};
-  scanline[0]  = malloc((size*sizeof(float))*ch);
-  scanline[1]  = malloc((size*sizeof(float))*ch);
-  scanline[2]  = malloc((size*sizeof(float))*ch);
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
-    int index=0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#endif
+    /* horizontal blur out into out */
     for(int y=0; y<roi_out->height; y++)
     {
-      for(int k=0; k<3; k++)
+      __m128 scanline[size];
+      int index = y * roi_out->width;
+      __m128 L = _mm_setzero_ps();
+      int hits = 0;
+      for(int x=-radius; x<roi_out->width; x++)
       {
-        float L=0;
-        int hits = 0;
-        for(int x=-hr; x<roi_out->width; x++)
+        int op = x - radius-1;
+        int np = x+radius;
+        if(op>=0)
         {
-          int op = x - hr-1;
-          int np = x+hr;
-          if(op>=0)
-          {
-            L-=out[(index+op)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->width)
-          {
-            L+=out[(index+np)*ch+k];
-            hits++;
-          }
-          if(x>=0)
-            scanline[k][x] = L/hits;
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+op)*ch]));
+          hits--;
         }
+        if(np < roi_out->width)
+        {
+          L =  _mm_add_ps(L, _mm_load_ps(&out[(index+np)*ch]));
+          hits++;
+        }
+        if(x>=0)
+          scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
       }
 
-      for (int k=0; k<3; k++)
-        for (int x=0; x<roi_out->width; x++)
-          out[(index+x)*ch+k] = scanline[k][x];
-
-      index+=roi_out->width;
+      for (int x=0; x<roi_out->width; x++)
+        _mm_store_ps(&out[(index+x)*ch], scanline[x]);
     }
 
     /* vertical pass on blurlightness */
-    const int opoffs = -(hr+1)*roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
+    const int opoffs = -(radius+1)*roi_out->width;
+    const int npoffs = (radius)*roi_out->width;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(out,roi_out) schedule(static)
+#endif
     for(int x=0; x < roi_out->width; x++)
     {
-      for(int k=0; k<3; k++)
+      __m128 scanline[size];
+      __m128 L = _mm_setzero_ps();
+      int hits=0;
+      int index = -radius*roi_out->width+x;
+      for(int y=-radius; y<roi_out->height; y++)
       {
-        float L=0;
-        int hits=0;
-        int index = -hr*roi_out->width+x;
-        for(int y=-hr; y<roi_out->height; y++)
-        {
-          int op=y-hr-1;
-          int np= y + hr;
+        int op=y-radius-1;
+        int np= y + radius;
 
-          if(op>=0)
-          {
-            L-=out[(index+opoffs)*ch+k];
-            hits--;
-          }
-          if(np < roi_out->height)
-          {
-            L+=out[(index+npoffs)*ch+k];
-            hits++;
-          }
-          if(y>=0)
-            scanline[k][y] = L/hits;
-          index += roi_out->width;
+        if(op>=0)
+        {
+          L = _mm_sub_ps(L, _mm_load_ps(&out[(index+opoffs)*ch]));
+          hits--;
         }
+        if(np < roi_out->height)
+        {
+          L = _mm_add_ps(L, _mm_load_ps(&out[(index+npoffs)*ch]));
+          hits++;
+        }
+        if(y>=0)
+          scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
+        index += roi_out->width;
       }
 
-      for(int k=0; k<3; k++)
-        for (int y=0; y<roi_out->height; y++)
-          out[(y*roi_out->width+x)*ch+k] = scanline[k][y];
-
+      for (int y=0; y<roi_out->height; y++)
+        _mm_store_ps(&out[(y*roi_out->width+x)*ch], scanline[y]);
     }
   }
 
 
-  const float amount = data->amount/100.0;
+  const __m128 amount = _mm_set1_ps(data->amount/100.0);
+  const __m128 amount_1 = _mm_set1_ps(1-(data->amount)/100.0);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
   for(int k=0; k<roi_out->width*roi_out->height; k++)
   {
     int index = ch*k;
-    out[index+0] = in[index+0]*(1-amount) + CLIP(out[index+0])*amount;
-    out[index+1] = in[index+1]*(1-amount) + CLIP(out[index+1])*amount;
-    out[index+2] = in[index+2]*(1-amount) + CLIP(out[index+2])*amount;
-    out[index+3] = in[index+3];
+    _mm_store_ps(&out[index],
+                 _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
+                            _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
   }
-
-  for(int i=0; i<3; ++i)
-    if(scanline[i])
-      free(scanline[i]);
 }
 
 #ifdef HAVE_OPENCL
@@ -543,7 +531,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_soften_params_t));
   module->default_params = malloc(sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 836; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 842; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t)

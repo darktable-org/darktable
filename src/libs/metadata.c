@@ -28,6 +28,8 @@
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 
+#include <gdk/gdkkeysyms.h>
+
 DT_MODULE(1)
 
 typedef struct dt_lib_metadata_t
@@ -43,6 +45,7 @@ typedef struct dt_lib_metadata_t
   gboolean           multi_creator;
   gboolean           multi_publisher;
   gboolean           multi_rights;
+  gboolean           editing;
   GtkWidget *clear_button;
   GtkWidget *apply_button;
 }
@@ -106,7 +109,7 @@ static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList *
 
 static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
 {
-// 	early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
+//   early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
   int imgsel = -1;
@@ -207,7 +210,9 @@ static void write_metadata(dt_lib_module_t *self)
 
   int32_t mouse_over_id;
 
-  mouse_over_id = dt_view_get_image_to_act_on();
+  d->editing = FALSE;
+
+  mouse_over_id = d->imgsel;
 
   gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
   gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
@@ -246,10 +251,29 @@ static void apply_button_clicked(GtkButton *button, gpointer user_data)
   write_metadata(user_data);
 }
 
-static void enter_pressed(GtkEntry *entry, gpointer user_data)
+static gboolean key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-  write_metadata(user_data);
-  gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+  dt_lib_module_t *self = (dt_lib_module_t*)user_data;
+  dt_lib_metadata_t *d = (dt_lib_metadata_t*)self->data;
+
+  switch(event->keyval)
+  {
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      write_metadata(user_data);
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      break;
+    case GDK_KEY_Escape:
+      update(user_data, FALSE);
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      break;
+    case GDK_KEY_Tab:
+      write_metadata(user_data);
+      break;
+    default:
+      d->editing = TRUE;
+  }
+  return FALSE;
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -265,7 +289,14 @@ int position()
 static void _mouse_over_image_callback(gpointer instace,gpointer user_data)
 {
   dt_lib_module_t *self=(dt_lib_module_t *)user_data;
+  dt_lib_metadata_t *d = (dt_lib_metadata_t*)self->data;
+
   /* lets trigger an expose for a redraw of widget */
+  if(d->editing)
+  {
+    write_metadata(user_data);
+    gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+  }
   gtk_widget_queue_draw(GTK_WIDGET(self->widget));
 }
 
@@ -310,7 +341,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), completion);
-  g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->title))), "activate", G_CALLBACK (enter_pressed), self);
+  g_signal_connect (GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))), "key-press-event", G_CALLBACK (key_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->title), 1, 2, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("description"));
@@ -323,7 +354,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), completion);
-  g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->description))), "activate", G_CALLBACK (enter_pressed), self);
+  g_signal_connect (GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))), "key-press-event", G_CALLBACK (key_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->description), 1, 2, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("creator"));
@@ -336,7 +367,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), completion);
-  g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->creator))), "activate", G_CALLBACK (enter_pressed), self);
+  g_signal_connect (GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))), "key-press-event", G_CALLBACK (key_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->creator), 1, 2, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("publisher"));
@@ -349,7 +380,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), completion);
-  g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->publisher))), "activate", G_CALLBACK (enter_pressed), self);
+  g_signal_connect (GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))), "key-press-event", G_CALLBACK (key_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->publisher), 1, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   label = gtk_label_new(_("rights"));
@@ -362,7 +393,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_set_completion(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), completion);
-  g_signal_connect (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(d->rights))), "activate", G_CALLBACK (enter_pressed), self);
+  g_signal_connect (GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))), "key-press-event", G_CALLBACK (key_pressed), self);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->rights), 1, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   g_object_unref(completion);
@@ -420,12 +451,12 @@ void init_presets(dt_lib_module_t *self)
 
   // <title>\0<description>\0<rights>\0<creator>\0<publisher>
 
-  add_rights_preset(self, _("cc-by"), _("creative commons attribution (cc-by)"));
-  add_rights_preset(self, _("cc-by-sa"), _("creative commons attribution-sharealike (cc-by-sa)"));
-  add_rights_preset(self, _("cc-by-nd"), _("creative commons attribution-noderivs (cc-by-nd)"));
-  add_rights_preset(self, _("cc-by-nc"), _("creative commons attribution-noncommercial (cc-by-nc)"));
-  add_rights_preset(self, _("cc-by-nc-sa"), _("creative commons attribution-noncommercial-sharealike (cc-by-nc-sa)"));
-  add_rights_preset(self, _("cc-by-nc-nd"), _("creative commons attribution-noncommercial-noderivs (cc-by-nc-nd)"));
+  add_rights_preset(self, _("CC BY"), _("Creative Commons Attribution (CC BY)"));
+  add_rights_preset(self, _("CC BY-SA"), _("Creative Commons Attribution-ShareAlike (CC BY-SA)"));
+  add_rights_preset(self, _("CC BY-ND"), _("Creative Commons Attribution-NoDerivs (CC BY-ND)"));
+  add_rights_preset(self, _("CC BY-NC"), _("Creative Commons Attribution-NonCommercial (CC BY-NC)"));
+  add_rights_preset(self, _("CC BY-NC-SA"), _("Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"));
+  add_rights_preset(self, _("CC BY-NC-ND"), _("Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"));
   add_rights_preset(self, _("all rights reserved"), _("all rights reserved."));
 }
 

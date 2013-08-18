@@ -26,11 +26,6 @@
                       quality resampling during export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>), else the final scaling step will 
                       counteract dithering.</para>
 
-                <para>Some users might want to avoid the additional processing overhead of this module while doing interactive work - knowing that the final results in file output is good
-                      enough :) In that case there is a configuration parameter <quote>dithering for darkroom mode</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>). 
-                      Dithering of center view in darkroom mode is skipped if this config parameter is de-activated. This is a speed-up option, which only affects monitor display, not file 
-                      exports.</para>
-
                 <para>Viewing from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of 
                       a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in the center 
                       view, in the navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. 

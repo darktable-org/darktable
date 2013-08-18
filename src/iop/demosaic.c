@@ -1144,7 +1144,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_params = malloc(sizeof(dt_iop_demosaic_params_t));
   module->default_enabled = 1;
-  module->priority = 127; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 122; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
@@ -1312,7 +1312,7 @@ void gui_init     (struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   g->demosaic_method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->demosaic_method, _("ppg (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
   dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);

@@ -228,7 +228,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
   return film->id;
 }
 
-int dt_film_import_blocking(const char *dirname)
+int dt_film_import(const char *dirname)
 {
   int rc;
   sqlite3_stmt *stmt;
@@ -433,7 +433,7 @@ void dt_film_import1(dt_film_t *film)
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
-  //dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED);
+  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED,film->id);
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
   if(cfr && cfr->dir)
@@ -457,13 +457,6 @@ void dt_film_import1(dt_film_t *film)
 #endif
 }
 
-
-int dt_film_import(const char *dirname)
-{
-  int v = dt_film_import_blocking(dirname);
-  dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED);
-  return v;
-}
 
 
 void dt_film_remove_empty()

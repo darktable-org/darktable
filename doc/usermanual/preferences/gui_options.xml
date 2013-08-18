@@ -62,6 +62,10 @@
 		</para>
         </sect4>
 
+        <sect4><title>comma separated tags to be applied when importing</title>
+                <para>If you want to add further tags when importing images, you can give them as a comma separated list (default none).</para>
+        </sect4>
+
 	<sect4><title>initial import rating</title>
 		<para>Initial star rating (from 0 to 5) for all images when importing a filmroll (default 1).
 		</para>
@@ -87,6 +91,12 @@
 		</para>
         </sect4>
 
+        <sect4><title>pen pressure control for brush masks</title>
+                <para>Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes (see <xref linkend="drawn_masks"/>). You can control the brush width, its
+                hardness and its opacity. <quote>Absolute</quote> control means that the pressure reading directly defines the attribute with a value between 0% and 100%. <quote>Relative</quote>
+                means that the pressure reading adjusts the attribute between zero and the pre-defined default value (default off).</para>
+        </sect4>
+
 	<sect4><title>ask before deleting a tag</title>
 		<para>Always ask user before deleting a tag from an image (default on).
 		</para>
@@ -102,4 +112,15 @@
 		</para>
         </sect4>
 
+        <sect4><title>expand a single lighttable module at a time</title>
+                <para>Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by <emphasis>clicking</emphasis> collapses any currently expanded panel.
+                If you want to expand a panel without collapsing the others you do so with <emphasis>shift+click</emphasis>. Disabling this option reverts the meaning of <emphasis>click</emphasis>
+                and <emphasis>shift+click</emphasis> (default off).</para>
+        </sect4>
+
+        <sect4><title>expand a single darkroom module at a time</title>
+                <para>Controls how darkroom modules are expanded. If this option is enabled, expanding a module by <emphasis>clicking</emphasis> collapses any currently expanded module.
+                If you want to expand a module without collapsing the others you do so with <emphasis>shift+click</emphasis>. Disabling this option reverts the meaning of <emphasis>click</emphasis>
+                and <emphasis>shift+click</emphasis> (default on).</para>
+        </sect4>
 </sect1>

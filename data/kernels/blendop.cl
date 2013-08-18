@@ -261,14 +261,14 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
 
 __kernel void
 blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -283,7 +283,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 #if 0
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -303,14 +303,14 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 // TODO: review after some time (May 2013) if this is still needed.
 __kernel void
 blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
   
@@ -325,14 +325,14 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
-             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+             const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
@@ -346,7 +346,7 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 
 __kernel void
 blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag)
+             const int blend_mode, const int blendflag, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -357,7 +357,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -623,7 +623,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag)
+             const int blend_mode, const int blendflag, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -632,7 +632,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
   float o;
 
-  float a = read_imagef(in_a, sampleri, (int2)(x, y)).x;
+  float a = read_imagef(in_a, sampleri, (int2)(x, y) + offs).x;
   float b = read_imagef(in_b, sampleri, (int2)(x, y)).x;
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -757,7 +757,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 __kernel void
 blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
-             const int blend_mode, const int blendflag)
+             const int blend_mode, const int blendflag, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -768,7 +768,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
   float4 ta, tb, to;
   float d, s;
 
-  float4 a = read_imagef(in_a, sampleri, (int2)(x, y));
+  float4 a = read_imagef(in_a, sampleri, (int2)(x, y) + offs);
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float opacity = read_imagef(mask, sampleri, (int2)(x, y)).x;
 
@@ -926,7 +926,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
 
 __kernel void
-blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height)
+blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __write_only image2d_t out, const int width, const int height, const int2 offs)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -934,7 +934,7 @@ blendop_copy_alpha (__read_only image2d_t in_a, __read_only image2d_t in_b, __wr
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in_a, sampleri, (int2)(x, y));
-  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y)).w;
+  pixel.w = read_imagef(in_b, sampleri, (int2)(x, y) + offs).w;
 
   write_imagef(out, (int2)(x, y), pixel);
 }

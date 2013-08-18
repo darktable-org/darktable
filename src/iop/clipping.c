@@ -1565,7 +1565,7 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
-  module->priority = 381; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 385; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -2328,7 +2328,7 @@ float dist_seg (float xa,float ya,float xb,float yb,float xc,float yc)
   return un2-ah2;
 }
 
-int mouse_moved(struct dt_iop_module_t *self, double x, double y, int which)
+int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
@@ -2671,7 +2671,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   return 1;
 }
 
-int button_pressed(struct dt_iop_module_t *self, double x, double y, int which, int type, uint32_t state)
+int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
 
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
