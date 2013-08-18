@@ -117,7 +117,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   dt_iop_dither_params_t tmp = (dt_iop_dither_params_t)
   {
-    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f }
+    DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -80.0f }
   };
   // add the preset.
   dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
@@ -583,7 +583,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(rlabel), GTK_WIDGET(g->range_label), FALSE, FALSE, 0);
 #endif
 
-  g->damping = dt_bauhaus_slider_new_with_range(self, -80.0, 0.0, 10.0, p->random.damping, 3);
+  g->damping = dt_bauhaus_slider_new_with_range(self, -200.0, 0.0, 10.0, p->random.damping, 3);
   g_object_set (GTK_OBJECT(g->damping), "tooltip-text", _("damping level of random dither"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->damping,_("damping"));
   dt_bauhaus_slider_set_format(g->damping,"%.0fbB");
