@@ -434,7 +434,7 @@ dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *se
                     (int)floor(flt_light * 255 + 0.5));
 
 
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   if(width % 2 == 0) width--;
   if(height % 2 == 0) height--;
   double center_x = (float)width / 2.0, center_y = (float)height / 2.0;
@@ -442,7 +442,7 @@ dt_iop_area_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *se
   double r_outside = diameter / 2.0, r_inside = r_outside * 0.87;
   double r_outside_2 = r_outside * r_outside, r_inside_2 = r_inside * r_inside;
 
-  cr = gdk_cairo_create(widget->window);
+  cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   // clear the background
   cairo_set_source_rgb(cr, flt_bg, flt_bg, flt_bg);

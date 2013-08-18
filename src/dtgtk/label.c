@@ -60,11 +60,11 @@ static void  _label_size_request(GtkWidget *widget,GtkRequisition *requisition)
 
   widget->allocation = *allocation;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (gtk_widget_get_realized(widget)) {
      gdk_window_move_resize(
-         widget->window,
-         allocation->x, allocation->y,
-         allocation->width, allocation->height
+         gtk_widget_get_window(widget),
+         allocation.x, allocation.y,
+         allocation.width, allocation.height
      );
    }
 }*/
@@ -92,10 +92,12 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   if(style->depth == -1) return FALSE;
   int state = gtk_widget_get_state(widget);
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   // Formatting the display of text and draw it...
   PangoLayout *layout;
@@ -111,7 +113,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   // Begin cairo drawing
 
   cairo_t *cr;
-  cr = gdk_cairo_create(widget->window);
+  cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   cairo_set_source_rgba(cr,
                         /* style->fg[state].red/65535.0,
@@ -177,7 +179,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
   int lx=x+4, ly=y+((height/2.0)-(ph/2.0));
   if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_RIGHT ) lx=x+width-pw-6;
   else if( DTGTK_LABEL(widget)->flags&DARKTABLE_LABEL_ALIGN_CENTER ) lx=(width/2.0)-(pw/2.0);
-  gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"label",lx,ly,layout);
+  gtk_paint_layout(style,gtk_widget_get_window(widget), state,TRUE,&t,widget,"label",lx,ly,layout);
 
   return FALSE;
 }

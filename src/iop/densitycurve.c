@@ -879,7 +879,7 @@ static gboolean dt_iop_densitycurve_button_press(GtkWidget *widget, GdkEventButt
     dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
 
     const int inset = DT_GUI_CURVE_EDITOR_INSET;
-    int width = widget->allocation.width, height = widget->allocation.height;
+    int width = allocation.width, height = allocation.height;
     width -= 2*inset;
     height -= 2*inset;
     const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
@@ -945,7 +945,7 @@ static gboolean dt_iop_densitycurve_expose(GtkWidget *widget, GdkEventExpose *ev
   dt_iop_densitycurve_sort(user_data);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -1067,7 +1067,7 @@ static gboolean dt_iop_densitycurve_motion_notify(GtkWidget *widget, GdkEventMot
   dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
 //  dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width); // variate only y coordinate
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
@@ -1128,7 +1128,7 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
   dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   width -= 2*inset;
   height -= 2*inset;
 
@@ -1327,7 +1327,7 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, dt_iop_zonesystem_params_t *p)
   //dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
   const int inset = DT_ZONESYSTEM_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 

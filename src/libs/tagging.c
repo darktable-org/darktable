@@ -602,7 +602,7 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
 
   d->floating_tag_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
-  GTK_WIDGET_SET_FLAGS(d->floating_tag_window, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
   gtk_window_set_has_frame(GTK_WINDOW(d->floating_tag_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);

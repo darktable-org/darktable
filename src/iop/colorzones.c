@@ -576,8 +576,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     dt_draw_curve_set_point(c->minmax_curve, DT_IOP_COLORZONES_BANDS+1, p.equalizer_x[ch][1]+1.0, p.equalizer_y[ch][1]);
   else
     dt_draw_curve_set_point(c->minmax_curve, DT_IOP_COLORZONES_BANDS+1, p.equalizer_x[ch][1]+1.0, p.equalizer_y[ch][DT_IOP_COLORZONES_BANDS-1]);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
@@ -816,8 +819,11 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   if(c->dragging)
@@ -884,8 +890,11 @@ colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_
   else if(event->button == 1)
   {
     c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
+
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
     const int inset = DT_IOP_COLORZONES_INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;

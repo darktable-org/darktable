@@ -328,7 +328,9 @@ expose_borders (GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   // draw arrows on borders
   if(!dt_control_running()) return TRUE;
   long int which = (long int)user_data;
-  float width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  float width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   GtkStyle *style = gtk_widget_get_style(dt_ui_center(darktable.gui->ui));
@@ -462,8 +464,8 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
   dt_control_expose(NULL);
   if(darktable.gui->pixmap)
-    gdk_draw_drawable(da->window,
-                      da->style->fg_gc[GTK_WIDGET_STATE(da)], darktable.gui->pixmap,
+    gdk_draw_drawable(gtk_widget_get_window(da),
+                      gtk_widget_get_style(da)->fg_gc[gtk_widget_get_state(da)], darktable.gui->pixmap,
                       // Only copy the area that was exposed.
                       event->area.x, event->area.y,
                       event->area.x, event->area.y,
@@ -620,13 +622,13 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
   if (oldw != event->width || oldh != event->height)
   {
     //create our new pixmap with the correct size.
-    GdkPixmap *tmppixmap = gdk_pixmap_new(da->window, event->width,  event->height, -1);
+    GdkPixmap *tmppixmap = gdk_pixmap_new(gtk_widget_get_window(da), event->width,  event->height, -1);
     //copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
     //pixmaps from being painted upon resize
     int minw = oldw, minh = oldh;
     if(event->width  < minw) minw = event->width;
     if(event->height < minh) minh = event->height;
-    gdk_draw_drawable(tmppixmap, da->style->fg_gc[GTK_WIDGET_STATE(da)], darktable.gui->pixmap, 0, 0, 0, 0, minw, minh);
+    gdk_draw_drawable(tmppixmap, gtk_widget_get_style(da)->fg_gc[gtk_widget_get_state(da)], darktable.gui->pixmap, 0, 0, 0, 0, minw, minh);
     //we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
     g_object_unref(darktable.gui->pixmap);
     darktable.gui->pixmap = tmppixmap;
@@ -680,10 +682,10 @@ static gboolean
 button_pressed (GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
   double pressure = 1.0;
-  if(event->device->source == GDK_SOURCE_PEN)
+  if(gdk_device_get_source(event->device) == GDK_SOURCE_PEN)
   {
-    gdouble axes[event->device->num_axes];
-    gdk_device_get_state(event->device, w->window, axes, NULL);
+    gdouble axes[gdk_device_get_n_axes(event->device)];
+    gdk_device_get_state(event->device, gtk_widget_get_window(w), axes, NULL);
     gdk_device_get_axis(event->device, axes, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_button_pressed(event->x, event->y, pressure, event->button, event->type, event->state & 0xf);
@@ -704,10 +706,10 @@ static gboolean
 mouse_moved (GtkWidget *w, GdkEventMotion *event, gpointer user_data)
 {
   double pressure = 1.0;
-  if(event->device->source == GDK_SOURCE_PEN)
+  if(gdk_device_get_source(event->device) == GDK_SOURCE_PEN)
   {
-    gdouble axes[event->device->num_axes];
-    gdk_device_get_state(event->device, w->window, axes, NULL);
+    gdouble axes[gdk_device_get_n_axes(event->device)];
+    gdk_device_get_state(event->device, gtk_widget_get_window(w), axes, NULL);
     gdk_device_get_axis(event->device, axes, GDK_AXIS_PRESSURE, &pressure);
   }
   dt_control_mouse_moved(event->x, event->y, pressure, event->state & 0xf);
@@ -868,9 +870,9 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_gui_presets_init();
 
   widget = dt_ui_center(darktable.gui->ui);
-  GTK_WIDGET_UNSET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
-  // GTK_WIDGET_SET_FLAGS (widget, GTK_DOUBLE_BUFFERED);
-  GTK_WIDGET_SET_FLAGS   (widget, GTK_APP_PAINTABLE);
+  gtk_widget_set_double_buffered(widget, FALSE);
+  // gtk_widget_set_double_buffered(widget, TRUE);
+  gtk_widget_set_app_paintable(widget, TRUE);
 
   // TODO: make this work as: libgnomeui testgnome.c
   /*  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
@@ -985,11 +987,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice*)input_devices->data;
-    dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", device->name, device->has_cursor?"with cursor":"no cursor", SOURCE_NAMES[device->source], MODE_NAMES[device->mode], device->num_axes, device->num_keys);
-    for(int i = 0; i < device->num_axes; i++)
+    dt_print(DT_DEBUG_INPUT, "%s (%s), source: %s, mode: %s, %d axes, %d keys\n", gdk_device_get_name(device), gdk_device_get_has_cursor(device)?"with cursor":"no cursor", SOURCE_NAMES[gdk_device_get_source(device)], MODE_NAMES[gdk_device_get_mode(device)], gdk_device_get_n_axes(device), gdk_device_get_n_keys(device));
+    for(int i = 0; i < gdk_device_get_n_axes(device); i++)
     {
-      GdkDeviceAxis* axis = &device->axes[i];
-      dt_print(DT_DEBUG_INPUT, "  %s [%f .. %f]\n", AXIS_NAMES[axis->use], axis->min, axis->max);
+      dt_print(DT_DEBUG_INPUT, "  %s\n", AXIS_NAMES[gdk_device_get_axis_use(device, i)]);
     }
     dt_print(DT_DEBUG_INPUT, "\n");
     input_devices = g_list_next(input_devices);
@@ -1014,11 +1015,13 @@ void dt_gui_gtk_cleanup(dt_gui_gtk_t *gui)
 void dt_gui_gtk_run(dt_gui_gtk_t *gui)
 {
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
-  darktable.gui->pixmap = gdk_pixmap_new(widget->window, widget->allocation.width, widget->allocation.height, -1);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  darktable.gui->pixmap = gdk_pixmap_new(gtk_widget_get_window(widget), allocation.width, allocation.height, -1);
   //need to pre-configure views to avoid crash caused by expose-event coming before configure-event
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;
-  dt_view_manager_configure(darktable.view_manager, widget->allocation.width - 2*tb, widget->allocation.height - 2*tb);
+  dt_view_manager_configure(darktable.view_manager, allocation.width - 2*tb, allocation.height - 2*tb);
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
   gtk_osxapplication_ready(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL));
@@ -1275,7 +1278,7 @@ void dt_ui_container_focus_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWid
 {
   g_return_if_fail(GTK_IS_CONTAINER(ui->containers[c]));
 
-  if (GTK_WIDGET(ui->containers[c]) != w->parent)
+  if (GTK_WIDGET(ui->containers[c]) != gtk_widget_get_parent(gtk_widget_get_parent(w)))
     return;
 
   gtk_container_set_focus_child(GTK_CONTAINER(ui->containers[c]), w);
@@ -1598,12 +1601,11 @@ void dt_gui_enable_extended_input_devices()
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice*)input_devices->data;
-    if(device != core_pointer && device->source == GDK_SOURCE_PEN)
+    if(device != core_pointer && gdk_device_get_source(device) == GDK_SOURCE_PEN)
     {
-      for(int i = 0; i < device->num_axes; i++)
+      for(int i = 0; i < gdk_device_get_n_axes(device); i++)
       {
-        GdkDeviceAxis* axis = &device->axes[i];
-        if(axis->use == GDK_AXIS_PRESSURE)
+        if(gdk_device_get_axis_use (device, i) == GDK_AXIS_PRESSURE)
         {
           gdk_device_set_mode(device, GDK_MODE_SCREEN);
           break;
@@ -1621,12 +1623,11 @@ void dt_gui_disable_extended_input_devices()
   while(input_devices)
   {
     GdkDevice *device = (GdkDevice*)input_devices->data;
-    if(device != core_pointer && device->source == GDK_SOURCE_PEN)
+    if(device != core_pointer && gdk_device_get_source(device) == GDK_SOURCE_PEN)
     {
-      for(int i = 0; i < device->num_axes; i++)
+      for(int i = 0; i < gdk_device_get_n_axes(device); i++)
       {
-        GdkDeviceAxis* axis = &device->axes[i];
-        if(axis->use == GDK_AXIS_PRESSURE)
+        if(gdk_device_get_axis_use (device, i) == GDK_AXIS_PRESSURE)
         {
           gdk_device_set_mode(device, GDK_MODE_DISABLED);
           break;

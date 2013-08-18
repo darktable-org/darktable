@@ -638,9 +638,9 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
   gint w,h;
   gint ww,wh;
   GtkRequisition requisition;
-  gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
-  gdk_window_get_size(dt_ui_main_window(darktable.gui->ui)->window,&ww,&wh);
-  gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  gdk_window_get_size(gtk_widget_get_window(GTK_WIDGET(data)),&w,&h);
+  gdk_window_get_size(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),&ww,&wh);
+  gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
 
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
 
@@ -648,7 +648,9 @@ _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpoint
   if (*x < ww/2)
     (*x)+=w-requisition.width;
 
-  (*y)+=GTK_WIDGET(data)->allocation.height;
+  GtkAllocation allocation_data;
+  gtk_widget_get_allocation(GTK_WIDGET(data), &allocation_data);
+  (*y)+=allocation_data.height;
 }
 
 static void

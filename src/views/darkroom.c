@@ -1125,7 +1125,7 @@ void enter(dt_view_t *self)
     GtkWidget *alignment = gtk_alignment_new(0.5, 0.5, 1, 1);
     GtkWidget *vbox = gtk_vbox_new(TRUE, 5);
 
-    GTK_WIDGET_SET_FLAGS(dev->overexposed.floating_window, GTK_CAN_FOCUS);
+    gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_has_frame(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);

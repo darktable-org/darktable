@@ -561,6 +561,11 @@ add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
 #
 add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
 
+#
+# Use accessor functions instead of direct access
+#
+add_definitions("-DGSEAL_ENABLE")
+
 ###### GTK+3 port ######
 
 

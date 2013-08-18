@@ -80,14 +80,18 @@ static inline gdouble _screen_to_scale(GtkWidget *widget, gint screen)
 {
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
 
-  return ((gdouble)screen - gslider->margins) / ((gdouble)widget->allocation.width - 2*gslider->margins);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return ((gdouble)screen - gslider->margins) / ((gdouble)allocation.width - 2*gslider->margins);
 }
 
 static inline gint _scale_to_screen(GtkWidget *widget, gdouble scale)
 {
   GtkDarktableGradientSlider *gslider=DTGTK_GRADIENT_SLIDER(widget);
 
-  return (gint)(scale * (widget->allocation.width - 2*gslider->margins) + gslider->margins);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  return (gint)(scale * (allocation.width - 2*gslider->margins) + gslider->margins);
 }
 
 
@@ -350,11 +354,11 @@ static void  _gradient_slider_size_request(GtkWidget *widget,GtkRequisition *req
 
   widget->allocation = *allocation;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (gtk_widget_get_realized(widget)) {
      gdk_window_move_resize(
-         widget->window,
-         allocation->x, allocation->y,
-         allocation->width, allocation->height
+         gtk_widget_get_window(widget),
+         allocation.x, allocation.y,
+         allocation.width, allocation.height
      );
    }
 }*/
@@ -367,11 +371,13 @@ static void _gradient_slider_realize(GtkWidget *widget)
   g_return_if_fail(widget != NULL);
   g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
 
-  GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+  gtk_widget_set_realized(widget, TRUE);
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   attributes.window_type = GDK_WINDOW_CHILD;
-  attributes.x = widget->allocation.x;
-  attributes.y = widget->allocation.y;
+  attributes.x = allocation.x;
+  attributes.y = allocation.y;
   attributes.width = 100;
   attributes.height = 17;
 
@@ -379,15 +385,15 @@ static void _gradient_slider_realize(GtkWidget *widget)
   attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK |  GDK_LEAVE_NOTIFY_MASK | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK;
   attributes_mask = GDK_WA_X | GDK_WA_Y;
 
-  widget->window = gdk_window_new(
+  gtk_widget_set_window(widget, gdk_window_new(
                      gtk_widget_get_parent_window (widget),
                      & attributes, attributes_mask
-                   );
+                   ));
 
-  gdk_window_set_user_data(widget->window, widget);
+  gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
 
-  widget->style = gtk_style_attach(widget->style, widget->window);
-  gtk_style_set_background(widget->style, widget->window, GTK_STATE_NORMAL);
+  gtk_widget_set_style(widget, gtk_style_attach(gtk_widget_get_style(widget), gtk_widget_get_window(widget)));
+  gtk_style_set_background(gtk_widget_get_style(widget), gtk_widget_get_window(widget), GTK_STATE_NORMAL);
 }
 
 
@@ -427,15 +433,17 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
   if(!style) style = gtk_rc_get_style(widget);
   int state = gtk_widget_get_state(widget);
 
-  /*int x = widget->allocation.x;
-  int y = widget->allocation.y;*/
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  /*int x = allocation.x;
+  int y = allocation.y;*/
+  int width = allocation.width;
+  int height = allocation.height;
   int margins = gslider->margins;
 
   // Begin cairo drawing
   cairo_t *cr;
-  cr = gdk_cairo_create(widget->window);
+  cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   // First build the cairo gradient and then fill the gradient
   float gheight=height/2.0;

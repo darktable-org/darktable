@@ -1721,11 +1721,13 @@ _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointe
 {
   gint w,h;
   GtkRequisition requisition;
-  gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
-  gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  gdk_window_get_size(gtk_widget_get_window(GTK_WIDGET(data)),&w,&h);
+  gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
 
-  (*y)+=GTK_WIDGET(data)->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(data), &allocation);
+  (*y)+=allocation.height;
 }
 
 static void
