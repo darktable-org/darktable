@@ -1193,10 +1193,10 @@ void dt_view_toggle_selection(int imgid)
 /**
  * \brief Reset filter
  */
-void dt_view_filter_reset_for_import(const dt_view_manager_t *vm)
+void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
 {
   if (vm->proxy.filter.module && vm->proxy.filter.reset_filter)
-    vm->proxy.filter.reset_filter(vm->proxy.filter.module);
+    vm->proxy.filter.reset_filter(vm->proxy.filter.module, smart_filter);
 }
 
 void dt_view_filmstrip_scroll_relative(const int diff, int offset)
