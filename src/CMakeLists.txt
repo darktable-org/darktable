@@ -537,7 +537,7 @@ add_subdirectory(external/squish)
 add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
 
-if(LUA52_FOUND)
+if(USE_LUA & LUA52_FOUND)
 	# liblautoc for lua automated interface generation
 	add_dependencies(lib_darktable lautoc)
 	add_library(lautoc_static STATIC IMPORTED)
@@ -545,7 +545,7 @@ if(LUA52_FOUND)
 	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
 	add_subdirectory(external/LuaAutoC)
-endif(LUA52_FOUND)
+endif(USE_LUA & LUA52_FOUND)
 
 ###### GTK+3 port ######
 
