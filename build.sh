@@ -25,7 +25,7 @@ OPT_UNITY=-1
 OPT_TETHERING=-1
 OPT_EXPERIMENTAL_IOP=-1
 OPT_GEO=-1
-OPT_LUA=-1
+OPT_LUA=0
 
 # ---------------------------------------------------------------------------
 # Parse options
