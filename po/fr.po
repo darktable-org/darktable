@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-16 20:51+0200\n"
-"PO-Revision-Date: 2013-08-16 20:53+0100\n"
+"POT-Creation-Date: 2013-08-19 11:23+0200\n"
+"PO-Revision-Date: 2013-08-19 11:26+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8019,7 +8019,14 @@ msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
-#: ../src/develop/blend.c:1848 ../src/develop/blend.c:2069
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "fusion ignorée dans le module '%s': paramètres incompatibles"
+
+#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
 msgid "could not allocate buffer for blending"
 msgstr "impossible d'allouer la mémoire pour la fusion"
 
