@@ -965,7 +965,25 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   long int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
-  while(t)
+  guint tagid = 0;
+  const int total = g_list_length(t);
+  double fraction=0;
+  gboolean is_copy = (long int)job->user_data == 1;
+  char message[512]= {0};
+
+  if (is_copy)
+    snprintf(message, 512, ngettext ("creating local copie for %d image", "creating local copies for %d images", total), total);
+  else
+    snprintf(message, 512, ngettext ("removing local copie for %d image", "removing local copies for %d images", total), total);
+
+  dt_control_log(message);
+
+  /* create a cancellable bgjob ui template */
+  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
+  const dt_control_t *control = darktable.control;
+
+  while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
     imgid = (long int)t->data;
     if ((long int)job->user_data == 1)
@@ -973,7 +991,12 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     else
       dt_image_local_copy_reset(imgid);
     t = g_list_delete_link(t, t);
+
+    fraction += 1.0/total;
+    dt_control_backgroundjobs_progress(control, jid, fraction);
   }
+
+  dt_control_backgroundjobs_destroy(control, jid);
   return 0;
 }
 
