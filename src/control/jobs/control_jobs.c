@@ -978,6 +978,8 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   dt_control_log(message);
 
+  dt_tag_new("darktable|local-copy",&tagid);
+
   /* create a cancellable bgjob ui template */
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
@@ -987,9 +989,15 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   {
     imgid = (long int)t->data;
     if ((long int)job->user_data == 1)
+    {
       dt_image_local_copy_set(imgid);
+      dt_tag_attach(tagid, imgid);
+    }
     else
+    {
       dt_image_local_copy_reset(imgid);
+      dt_tag_detach(tagid, imgid);
+    }
     t = g_list_delete_link(t, t);
 
     fraction += 1.0/total;
