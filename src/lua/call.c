@@ -110,7 +110,7 @@ void dt_lua_delay_chunk(lua_State *L,int nargs) {
   int my_id = luaL_ref(L,-2);
   lua_pop(L,1);
   lua_xmove(L,new_thread,nargs+1);
-  g_idle_add(poll_events,GINT_TO_POINTER(my_id));
+  gdk_threads_add_idle(poll_events,GINT_TO_POINTER(my_id));
 }
 
 
