@@ -7,10 +7,12 @@
 </chapterinfo>
 <title>Darkroom</title>
 <para>The darkroom view is where you develop your image.</para>
-<screenshot>
+<para>
+      <screenshot>
 	<screeninfo>The darkroom view</screeninfo>
 	<graphic fileref="images/darkroom_view.png" scalefit="1" width="80%"></graphic>
-</screenshot>
+      </screenshot>
+</para>
 
 <sect1 status="final"><title>Overview</title>
 	<para>Darkroom mode is for photograpic development of the image you selected from the lighttable. Lots of tools, named

@@ -11,7 +11,10 @@
         </para>
 
 	<para>Double clicking on a user-defined preset will open a menu.</para>
+
+        <para>
 	      <graphic fileref="preferences/images/presets.png" scalefit="1" width="60%" align="center" />
+        </para>
 
 
 	  <sect4><title>auto apply this preset to matching images</title>

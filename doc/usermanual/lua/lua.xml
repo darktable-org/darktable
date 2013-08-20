@@ -13,35 +13,25 @@
 	</chapterinfo>
    <title>Scripting with Lua</title>
    <para>darktable comes with a versatile scripting interface for functionality enhancement.</para>
-   <para>In a typical use case you define actions which are performed when certain events are triggered.
-         One example is calling an external application during file export in order to perform additional processing steps.
+   <para>
+	<screenshot>
+		<screeninfo>Scipting with Lua</screeninfo>
+		<graphic fileref="images/lua_view.png" scalefit="1" width="80%"></graphic>
+	</screenshot>
+   </para>
+
+   <sect1 id="lua_usage"><title>Lua usage</title>
+   <para>In a typical use case you want to define actions which darktable performs whenever certain events are triggered.
+         One example is calling an external application during file export in order to apply additional processing steps outside of darktable.
    </para>
    <para>darktable uses <ulink url="http://www.lua.org/"><emphasis>Lua</emphasis></ulink>, which is an
          independent project founded in 1993, providing a powerful, fast, lightweight, embeddable scripting 
          language. Lua is widely used by many open source applications, in commercial programs, and for game programming.
    </para>
-   <para/>
-	<screenshot>
-		<screeninfo>Scipting with Lua</screeninfo>
-		<graphic fileref="images/lua_view.png" scalefit="1" width="80%"></graphic>
-	</screenshot>
 
-   <sect1 id="lua_usage"><title>Lua usage</title>
-      <para>This section documents the principles of Lua developement.</para>
-      <itemizedlist>
-         <listitem>
-            <para>darktable uses Lua version 5.2, see <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink> 
-            </para>
-         </listitem>
-         <listitem>
-            <para>for a documentation of darktable's Lua API see <xref linkend="lua_api"/>
-            </para>
-         </listitem>
-         <listitem>
-            <para>for user provided scripts see <xref linkend="lua_scripts"/>
-            </para>
-         </listitem>
-      </itemizedlist>
+   <para>darktable uses Lua version 5.2. Describing the principles and syntax of Lua would be beyond the scope of this usermanual. For a detailed introduction 
+         see the <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
+   </para>
 
       <sect2 id="lua_a_note_about_beta">
          <title>A note about beta</title>
@@ -104,7 +94,7 @@
       <sect2 id="lua_darktable_print_error">
          <title>darktable.print_error</title>
          <para>This function will print its parameter if the Lua logdomain is activated.</para>
-         <para><emphasis>Syntax:</emphasis> darktable.print_error(&lt;string&gt;)</para>
+         <para><emphasis>Syntax:</emphasis> darktable.print_error(string)</para>
          <variablelist>
             <varlistentry><term><emphasis>string</emphasis></term>
             <listitem>
@@ -125,7 +115,7 @@
       <sect2 id="lua_database_duplicate">
          <title>database.duplicate</title>
          <para>Creates a duplicate of an image and returns it.</para>
-         <para><emphasis>Syntax:</emphasis> database.duplicate(image)</para>
+         <para><emphasis>Syntax:</emphasis> database.duplicate(image) : image</para>
             <variablelist>
              <varlistentry><term><emphasis>image</emphasis></term>
                <listitem>
@@ -135,7 +125,7 @@
              </varlistentry>
              <varlistentry><term>returns</term>
                <listitem>
-                  <para>the new image object </para>
+                  <para>the new image object</para>
                </listitem>
              </varlistentry>
             </variablelist>
@@ -144,9 +134,20 @@
        <sect2 id="lua_database_import">
             <title>database.import</title>
             <para>Imports the corresponding directory or file.</para>
-            <para><emphasis>Syntax:</emphasis> database.import(&lt;path or file&gt;)</para>
-            <para>If it is an image, returns the image object.</para>
-            <para>If it is a directory, returns the corresponding film object.</para>
+            <para><emphasis>Syntax:</emphasis> database.import(path_or_file) : object</para>
+            <variablelist>
+             <varlistentry><term><emphasis>path_or_file</emphasis></term>
+               <listitem>
+                  <para>
+                      if it is a directory, returns the corresponding film object; if it is an image, returns the image object</para>
+               </listitem>
+             </varlistentry>
+             <varlistentry><term>returns</term>
+               <listitem>
+                  <para>the film or image object</para>
+               </listitem>
+             </varlistentry>
+            </variablelist>
             <para>NOTE: if the image are set to be imported recursively in preferences, only the toplevel film is returned (the one whose path was given as a parameter).</para>
             <para>NOTE2: if the parameter is a directory, the call is non-blocking. The film object will not have the newly imported images yet. Use a post-import-film 
                   filtering on that film to react when images are actually imported.</para>
@@ -155,6 +156,7 @@
       <sect2 id="lua_darktable_films">
          <title>darktable.films</title>
          <para>Pseudo table containing objects describing the films.</para>
+         <para><emphasis>Syntax:</emphasis> darktable.film : pseudo table</para>
       </sect2>
 
       <sect2 id="lua_darktable_preferences">
@@ -335,7 +337,7 @@
          <sect3 id="lua_darktable_gui_selection">
             <title>darktable.gui.selection</title>
             <para>Allows to change the set of selected images.</para>
-            <para><emphasis>Syntax:</emphasis> darktable.gui.selection(&lt;selection&gt;)</para>
+            <para><emphasis>Syntax:</emphasis> darktable.gui.selection(selection)</para>
             <variablelist>
               <varlistentry><term><emphasis>selection</emphasis></term>
                <listitem>
@@ -725,7 +727,7 @@
          <sect3 id="lua_darktable_styles_create">
             <title>darktable.styles.create</title>
             <para>Create a new style based on an image.</para>
-            <para><emphasis>Syntax:</emphasis> darktable.styles.create(image, name, [description]) : &lt;style&gt;</para>
+            <para><emphasis>Syntax:</emphasis> darktable.styles.create(image, name, [description]) : style</para>
             <variablelist>
               <varlistentry><term><emphasis>image</emphasis></term>
                <listitem>
@@ -770,9 +772,9 @@
          <sect3 id="lua_darktable_styles_duplicate">
             <title>darktable.styles.duplicate</title>
             <para>Create a new style based on an existing style.</para>
-            <para><emphasis>Syntax:</emphasis> darktable.styles.delete(style)</para>
+            <para><emphasis>Syntax:</emphasis> darktable.styles.delete(style) : style</para>
             <variablelist>
-              <varlistentry><term><emphasis>syle</emphasis></term>
+              <varlistentry><term><emphasis>style</emphasis></term>
                <listitem>
                   <para>
                       the style to base the new style on</para>

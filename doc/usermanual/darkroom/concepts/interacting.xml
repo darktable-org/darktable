@@ -6,7 +6,10 @@
 <sect2 status="final" id="interacting"><title>Interacting with modules</title>
     <para>
           A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>.
-          Clicking on the name of the module expands the module's GUI with all parameters. In its default setting darktable will
+          Clicking on the name of the module expands the module's GUI with all parameters.
+    </para>
+    <para>
+          In its default setting darktable will
           only expand one GUI at a time. If you click the expander bar of another module, the previous GUI gets collapsed.
           If you want to see more than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis> - all
           previously expanded GUIs remain opened. The expander bar behavior on <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively,
@@ -33,7 +36,7 @@
      <para>The most frequently used control elements of modules are sliders, comboboxes and curves.
      </para>
      <sect4><title>Sliders</title>
-     <para>For each slider, you can interact in four different ways, depending on the level of control you need.
+     <para>Sliders offer four different ways of interaction, depending on the level of control you need.
      </para>
                   <orderedlist>
 			   <listitem>

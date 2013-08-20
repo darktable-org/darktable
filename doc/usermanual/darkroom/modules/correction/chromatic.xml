@@ -21,7 +21,8 @@
 
 
                 <para>The underlying model assumes as input an uncropped photographic image. The module is likely to fail 
-                      when you zoom into the image, as in that case it will only receive part of your photograph as input. As a consequence, chromatic aberrations do not
-                      get corrected properly. This limitation only applies to interactive work, not to file export.</para>
+                      when you zoom into the image, as in that case it will only receive parts of your photograph as input in darktable's pixelpipe. 
+                      As a consequence, chromatic aberrations do not
+                      get corrected properly in the center view. This limitation only applies to interactive work, not to file export.</para>
 	</sect4>
 </sect3>

@@ -24,7 +24,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-                <para>A configuration parameter <quote>always use littlecms2 during export</quote> in darktable's <emphasis>core options</emphasis> (see <xref linkend="core_options"/>)
+                <para>A configuration parameter <quote>always try to use littlecms2</quote> in darktable's <emphasis>core options</emphasis> (see <xref linkend="core_options"/>)
                       defines how darktable renders colors for display and export. If the configuration parameter is disabled darktable uses a simplified and very fast internal rendering algorithm. If
                       the option is checked the external library <ulink url="http://www.littlecms.com/"><emphasis>littlecms2</emphasis></ulink> with higher accuracy and significantly
                       higher processing overhead is used instead.

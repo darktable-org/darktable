@@ -60,13 +60,13 @@
                    a mask. If no mask elements are drawn all pixels have the same opacity, defined by the opacity slider. If you draw a mask element, 
                    e.g. a circle, the inner area of the circle will get maximum opacity, surrounded by a transition area 
                    or border with a gradual decay of opacity and the remaining image with an opacity of 0%. Different graphical shapes can be used.
-                   See <xref linkend="drawn_masks"/> for further details.</para>
+                   See <xref linkend="drawn_mask"/> for further details.</para>
               </sect5>
 
               <sect5><title>parametric mask</title>
                    <para>reprocessing takes place with the chosen blend mode and opacity. Additional controls are displayed which allow you to
                    adjust the opacity on a per-pixel basis determined by pixel values. In previous versions of darktable this was called 
-                   <quote>conditional blending</quote>. See <xref linkend="parametric_masks"/> for further details.</para>
+                   <quote>conditional blending</quote>. See <xref linkend="parametric_mask"/> for further details.</para>
               </sect5>
 
               <sect5><title>drawn and parametric mask</title>

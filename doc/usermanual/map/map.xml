@@ -8,10 +8,12 @@
 </chapterinfo>
 <title>Map</title>
 <para>The Map view is were you geotag your images.</para>
-<screenshot>
+<para>
+    <screenshot>
 	<screeninfo>The map view</screeninfo>
 	<graphic fileref="map/images/map_view.png" scalefit="1" width="80%"></graphic>
-</screenshot>
+    </screenshot>
+</para>
 
 <sect1 status="final">
   <title>Overview</title>

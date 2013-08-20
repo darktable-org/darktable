@@ -4,10 +4,10 @@
 		%darktable_dtd;
 		]>
 
-<sect2 status="final" id="drawn_masks"><title>Drawn masks</title>
+<sect2 status="final" id="drawn_mask"><title>Drawn mask</title>
 
        <sect3 status="final"><title>Overview</title>
-           <para>With the drawn masks feature you can construct a mask by drawing directly on the center canvas. Different drawing operators, called shapes,
+           <para>With the drawn mask feature you can construct a mask by drawing directly on the center canvas. Different drawing operators, called shapes,
            are at your hand and can be used alone and in combination. A flexible editing feature allows you to change single aspects of a shape, remove shapes
            or import shapes already defined in other modules.</para>
 

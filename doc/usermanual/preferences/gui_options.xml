@@ -92,7 +92,7 @@
         </sect4>
 
         <sect4><title>pen pressure control for brush masks</title>
-                <para>Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes (see <xref linkend="drawn_masks"/>). You can control the brush width, its
+                <para>Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes (see <xref linkend="drawn_mask"/>). You can control the brush width, its
                 hardness and its opacity. <quote>Absolute</quote> control means that the pressure reading directly defines the attribute with a value between 0% and 100%. <quote>Relative</quote>
                 means that the pressure reading adjusts the attribute between zero and the pre-defined default value (default off).</para>
         </sect4>

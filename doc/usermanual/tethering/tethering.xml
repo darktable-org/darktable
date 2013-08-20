@@ -7,10 +7,12 @@
 </chapterinfo>
 <title>Tethering</title>
 <para>The tethering view allows you to capture images directly into darktable from your connected camera.</para>
-<screenshot>
-  <screeninfo>The tethering view</screeninfo>
-  <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
-</screenshot>
+<para>
+  <screenshot>
+     <screeninfo>The tethering view</screeninfo>
+     <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
+  </screenshot>
+</para>
 
 <sect1 status="final">
   <title>Overview</title>

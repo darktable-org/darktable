@@ -13,10 +13,12 @@
 	</chapterinfo>
 	<title>Lighttable</title>
 	<para>The lighttable is where you manage all your images, ratings, export and much more.</para>
-	<screenshot>
+        <para>
+              <screenshot>
 		<screeninfo>The lighttable view</screeninfo>
 		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
-	</screenshot>
+              </screenshot>
+        </para>
 
 	<sect1 status="final"><title>Overview</title>
 		<para></para>

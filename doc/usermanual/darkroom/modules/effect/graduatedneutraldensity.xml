@@ -160,7 +160,7 @@
 						<row>
 							<entry>
                                                                <para>darktable's graduated density filter together with the parametric 
-                                                                     masks feature (see <xref linkend="parametric_masks"/>) comes in handy. We can add a lightness 
+                                                                     mask feature (see <xref linkend="parametric_mask"/>) comes in handy. We can add a lightness 
                                                                      gradient that is just inverted in relation to the hardware filter. As we only want to compensate the unnatural
                                                                      decay of lightness in the tree trunks, we combine the module with a suited blend mask.
                                                                </para>

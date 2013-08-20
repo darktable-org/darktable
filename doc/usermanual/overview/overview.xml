@@ -72,16 +72,18 @@
 			<para>Many darktable modules can be combined with blending operators for even more development options.</para>
 		</listitem>
 		<listitem>
-			<para>A powerful blend mask feature gives you fine control on module's effect to different parts of an image. You can at your choice draw a mask using
+			<para>A powerful mask feature gives you fine control on module's effect to different parts of an image. You can at your choice draw a mask using
                               various shapes or define a parametric mask based on pixel values.</para>
 		</listitem>
 		<listitem>
-			<para>Most modules can exist as multiple instances. Together with the blend mask feature, you can let an operation have 
+			<para>Most modules can exist as multiple instances. Together with the mask feature, you can let an operation have 
                               different effects on different parts of the image.</para>
 		</listitem>
                 <listitem><para>darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser that always just works (tm). It's designed as a module where the 
                           denoising performance only depends on camera and ISO setting. A database of profiles contains parameters for over
                           100 popular camera models.</para>
+                </listitem>
+                <listitem><para>darktable comes with a versatile scripting interface for functionality enhancement using Lua as a scripting language.</para>
                 </listitem>
 
 
@@ -170,7 +172,9 @@
 			The filmstrip allows you to interact with images while you are not in lighttable mode. For example, you can, while developing an image in darkroom mode,
 			switch to another image to develop, by double clicking the thumbnail in the filmstrip. You can also rate the images as you do in lighttable, copy/paste history stack, etc.
 			</para>
-			<graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+                        <para>
+			   <graphic fileref="overview/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+                        </para>
         	</sect2>
 
 		<sect2 status="final" id="preferences"><title>Preferences</title>
@@ -185,6 +189,8 @@
 
 
 	<sect1 status="final" id="darktable_basic_workflow"><title>darktable basic workflow</title>
+                <para>This section tries to give a first rough overview of a typical darktable workflow. Novice users may take this as a starting point. We describe 
+                      how to get an image into darktable, which basic steps are typically part of a raw development workflow, and how to export the final result.</para>
 		<sect2 status ="final"><title>Importing images</title>
 			<para>To begin with darktable, you first need to import images. The import module is in the left pane of the lighttable
                                 view (<xref linkend="import"/>). You can either import
@@ -243,7 +249,7 @@
 				<para>The <link linkend="whitebalance"><emphasis>white balance</emphasis></link> module controls the white balance or color temperature of the image. It's always 
                                       enabled and reads 
                                       its default values from camera metadata embedded in the image. The most common change is fine-tuning the 
-                                      white balance, which is done using the <quote>temperature in</quote> slider. Moving this slider left will make the color balance cooler, and moving
+                                      white balance, which is done using the <quote>temperature</quote> slider. Moving this slider left will make the color balance cooler, and moving
                                       it right will make it warmer.
 				</para>
 			</sect3>

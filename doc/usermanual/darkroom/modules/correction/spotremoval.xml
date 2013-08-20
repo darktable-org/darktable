@@ -18,8 +18,8 @@
 
 	<sect4><title>Usage</title>
                 <para>This module uses some of the shapes that are offered in drawn masks, namely circles, ellipses and path shapes.
-                      The user interface and the controls are the same as in drawn masks and explained in more detail in
-                      <xref linkend="drawn_masks"/>.</para>
+                      The user interface and the controls are the same as in drawn mask and explained in more detail in
+                      <xref linkend="drawn_mask"/>.</para>
                 <para>Select the desired shape by clicking the corresponding icon, then click on the canvas to choose the area
                       to be healed, i.e. the <emphasis>target area</emphasis>.</para>
                 <para>The <emphasis>source area</emphasis> is preliminary positioned at a location with a default distance to 

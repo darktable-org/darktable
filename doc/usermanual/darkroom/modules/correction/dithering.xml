@@ -42,8 +42,8 @@
 		</sect5>
 
 		<sect5><title>damping</title>
-			<para>This slider is only displayed if you choose method <quote>random</quote>. It controls the level of added random noise expressed as a damping factor in dB. A value
-                              of -80dB is a good fit for 8-bit output formats.</para>
+			<para>This slider is only displayed if you choose method <quote>random</quote>. It controls the level of added random noise expressed as a damping factor in a
+                              10*log<subscript>2</subscript> basis. A value of -80 is a good fit for 8-bit output formats and -160 for 16-bit ones.</para>
 		</sect5>
   	</sect4>
 

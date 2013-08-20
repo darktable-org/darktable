@@ -62,7 +62,9 @@
                        as the ones in the lighttable view.</para>
                  <para>The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>. You can scroll with your mouse to quickly navigate
                        through the images and change the height of the filmstrip panel by dragging its top.</para>
-                 <graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+                 <para>
+                      <graphic fileref="darkroom/images/filmstrip.png" scalefit="1" width="80%" align="center" />
+                 </para>
           </sect3>
 
       </sect2>

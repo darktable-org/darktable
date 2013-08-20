@@ -15,8 +15,10 @@
 	                                in that folder will show up in a filmroll with the same name as the imported folder. If single images are imported, they
 	                                will show up in the filmroll called <quote>single images</quote>.
 				</para>
-		
-				<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
+
+                                <para>
+                         		<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
+                                </para>
 
 				<para>Clicking on <quote>import single image</quote> or <quote>import filmroll</quote> opens a file selector dialog. Navigate through the filesystem,
                                       and select the item to import. On the lower part of the dialog, are some further import options. 

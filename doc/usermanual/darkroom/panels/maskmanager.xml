@@ -19,7 +19,7 @@
 				<tbody>
 					<row>						
 						<entry>In the top line of the masks manager panel you find buttons to create new shapes. They are the same as in the
-                                                       <emphasis>drawn masks</emphasis> GUI (see <xref linkend="drawn_masks"/> for more details).
+                                                       <emphasis>drawn mask</emphasis> GUI (see <xref linkend="drawn_mask"/> for more details).
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_maskmanager_1.png" scalefit="1" width="80%" align="center" />
@@ -67,8 +67,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Right-clicking on the shape name opens a drop-down menu. Here you define the way how the shape interacts
-                                                       to form the mask. You can also remove from the that mask.
+						<entry>Right-clicking on the shape name opens a drop-down menu. Here you define the way how the individual shapes interact
+                                                       to form the mask. You can also remove shapes from that mask.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_maskmanager_2.png" scalefit="1" width="80%" align="center" />
@@ -92,9 +92,9 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>We use as an example a combination of a gradient followed by a path to demonstrate the effect of the set operators
-                                                       which we apply to the path shape. As a convention we say that a pixel is <quote>selected</quote> in a mask or shape if it has a value 
-                                                       higher than zero.
+						<entry>We use as an example a combination of a gradient followed by a path to demonstrate the effect of the set operator
+                                                       which we apply to the path shape. As a convention we say that a pixel is <quote>selected</quote> in a 
+                                                       mask or shape if it has a value higher than zero.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/panel_maskmanager_ex1.png" scalefit="1" width="80%" align="center" />

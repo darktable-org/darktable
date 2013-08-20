@@ -22,6 +22,11 @@
 					</tbody>
 				</tgroup>
 			</informaltable>
+
+                                <para>All settings of this panel can be saved for later reuse. Press the <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> 
+                                      button to manage your presets.
+                                </para>
+
 				<sect4><title>target storage</title>
 					<para>Where to store your selected images. Different back-ends are implemented, including file on disk, a LaTeX book template and
                                               various web albums. Depending on the selected target, you will be asked to give additional information, like filenames, or account
@@ -141,7 +146,7 @@ exiftool -XMP:all=   image.jpg
 
 				<sect4><title>profile</title>
 					<para>This defines the output color profile. Select <quote>image settings</quote> if you want the settings in the <emphasis>output color profile</emphasis>
-                                              module of the individual images to take precedence.
+                                              (see <xref linkend="output_color_profile"/>) module of the individual images to take precedence.
 					</para>
 				</sect4>
 				<sect4><title>style</title>
