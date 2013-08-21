@@ -403,7 +403,7 @@ void dt_control_create_database_schema()
                         "folder varchar(1024))",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table images (id integer primary key autoincrement, group_id integer, film_id integer, "
+                        "create table images (id integer primary key autoincrement, sub_id integer, group_id integer, film_id integer, "
                         "width int, height int, filename varchar, maker varchar, model varchar, "
                         "lens varchar, exposure real, aperture real, iso real, focal_length real, "
                         "focus_distance real, datetime_taken char(20), flags integer, "
@@ -668,6 +668,12 @@ void dt_control_init(dt_control_t *s)
                    NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "alter table images add column lightmap blob",
+                   NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "alter table images add column sub_id integer",
+                   NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "update images set sub_id = 0 where sub_id is NULL",
                    NULL, NULL, NULL);
       /*      sqlite3_exec(dt_database_get(darktable.db),
                          "alter table film_rolls add column external_drive varchar(1024)",

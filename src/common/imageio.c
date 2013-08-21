@@ -36,6 +36,7 @@
 #include "common/imageio_pfm.h"
 #include "common/imageio_rgbe.h"
 #include "common/imageio_gm.h"
+#include "common/imageio_raw_video.h"
 #include "common/imageio_rawspeed.h"
 #include "common/image_compression.h"
 #include "common/mipmap_cache.h"
@@ -817,6 +818,10 @@ dt_imageio_open(
   /* silly check using file extensions: */
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_hdr(filename))
     ret = dt_imageio_open_hdr(img, filename, a);
+
+  /* maybe it's a raw video as produced by magick lantern */
+  if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL && dt_imageio_is_raw_video(filename))
+    ret = dt_imageio_open_raw_video(img, filename, a);
 
 #ifdef HAVE_RAWSPEED
   if(ret != DT_IMAGEIO_OK && ret != DT_IMAGEIO_CACHE_FULL)

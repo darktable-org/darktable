@@ -23,6 +23,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/imageio_raw_video.h"
 #include "common/grouping.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
@@ -326,13 +327,13 @@ int32_t dt_image_duplicate(const int32_t imgid)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into images "
-                              "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
+                              "(id, sub_id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                               "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                               "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
                               "raw_auto_bright_threshold, raw_black, raw_maximum, "
                               "caption, description, license, sha1sum, orientation, histogram, lightmap, "
                               "longitude, latitude, color_matrix, colorspace) "
-                              "select null, group_id, film_id, width, height, filename, maker, model, lens, "
+                              "select null, sub_id, group_id, film_id, width, height, filename, maker, model, lens, "
                               "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                               "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
                               "raw_auto_bright_threshold, raw_black, raw_maximum, "
@@ -481,7 +482,7 @@ int dt_image_altered(const uint32_t imgid)
   return altered;
 }
 
-
+// TODO: sub_id
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
@@ -548,8 +549,8 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into images (id, film_id, filename, caption, description, "
-                              "license, sha1sum, flags) values (null, ?1, ?2, '', '', '', '', ?3)",
+                              "insert into images (id, sub_id, film_id, filename, caption, description, "
+                              "license, sha1sum, flags) values (null, 0, ?1, ?2, '', '', '', '', ?3)",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgfname, strlen(imgfname),
@@ -705,13 +706,32 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     dt_lightroom_import(id, NULL, TRUE);
   }
 
+  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,id);
+
+  lv_rec_file_footer_t *footer = dt_imageio_raw_video_get_footer(fname);
+  if(footer != NULL)
+  {
+    for(int frame = 1; frame < footer->frameCount; frame++)
+    {
+      int32_t newid = dt_image_duplicate(id);
+      const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, newid);
+      dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+      img->sub_id = frame;
+      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+      dt_image_cache_read_release(darktable.image_cache, img);
+
+      dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,newid);
+    }
+  }
+
+  free(footer);
+
   g_free(imgfname);
   g_free(fname);
   g_free(basename);
   g_free(sql_pattern);
   g_free(globbuf);
 
-  dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_IMPORT,id);
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
   // keywords side pane when trying to use it, which can lock up the whole dt GUI ..
@@ -732,6 +752,7 @@ void dt_image_init(dt_image_t *img)
   img->group_id = -1;
   img->flags = 0;
   img->id = -1;
+  img->sub_id = 0;
   img->exif_inited = 0;
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));
@@ -912,13 +933,13 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
       // update database
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "insert into images "
-                                  "(id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
+                                  "(id, sub_id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
                                   "aperture, iso, focal_length, focus_distance, datetime_taken, flags, "
                                   "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
                                   "raw_auto_bright_threshold, raw_black, raw_maximum, "
                                   "caption, description, license, sha1sum, orientation, histogram, lightmap, "
                                   "longitude, latitude, color_matrix, colorspace) "
-                                  "select null, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
+                                  "select null, sub_id, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
                                   "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
                                   "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
                                   "raw_auto_bright_threshold, raw_black, raw_maximum, "

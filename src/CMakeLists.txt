@@ -34,6 +34,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_png.c"
   "common/imageio_module.c"
   "common/imageio_pfm.c"
+  "common/imageio_raw_video.c"
   "common/imageio_rgbe.c"
   "common/imageio_tiff.c"
   "common/imageio_gm.c"

@@ -1099,7 +1099,13 @@ dt_view_image_expose(
 
     cairo_move_to (cr, .02*fscale, .04*fscale);
     // cairo_show_text(cr, img->filename);
-    cairo_text_path(cr, img->filename);
+    gchar *filename;
+    if(img->sub_id == 0)
+      filename = strdup(img->filename);
+    else
+      filename = g_strdup_printf("%s [%d]", img->filename, img->sub_id);
+    cairo_text_path(cr, filename);
+    g_free(filename);
     char exifline[50];
     cairo_move_to (cr, .02*fscale, .08*fscale);
     dt_image_print_exif(img, exifline, 50);

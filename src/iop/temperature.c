@@ -34,6 +34,7 @@
 #include "libraw/libraw.h"
 #include "iop/wb_presets.c"
 #include "bauhaus/bauhaus.h"
+#include "common/imageio_raw_video.h"
 
 DT_MODULE(2)
 
@@ -435,66 +436,87 @@ void reload_defaults(dt_iop_module_t *module)
   {
     gboolean from_cache = TRUE;
     dt_image_full_path(module->dev->image_storage.id, filename, DT_MAX_PATH_LEN, &from_cache);
-    libraw_data_t *raw = libraw_init(0);
+    lv_rec_file_footer_t *footer;
+    float pre_mul[3] = {1.0, 1.0, 1.0};
+    gboolean use_defaults = FALSE;
 
-    ret = libraw_open_file(raw, filename);
-    if(!ret)
+    if((footer = dt_imageio_raw_video_get_footer(filename)) != NULL)
     {
-      module->default_enabled = 1;
+      dt_imageio_raw_video_get_wb_coeffs(footer, tmp.coeffs, pre_mul);
+      free(footer);
+    }
+    else
+    {
+      libraw_data_t *raw = libraw_init(0);
+      ret = libraw_open_file(raw, filename);
+      if(!ret)
+      {
+        module->default_enabled = 1;
 
-      for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
-      if(tmp.coeffs[0] <= 0.0)
-      {
-        for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
-      }
-      if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
-      {
-        // could not get useful info, try presets:
-        char makermodel[1024];
-        char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
-                                            module->dev->image_storage.exif_maker,
-                                            module->dev->image_storage.exif_model);
-        for(int i=0; i<wb_preset_count; i++)
+        for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
+        if(tmp.coeffs[0] <= 0.0)
         {
-          if(!strcmp(wb_preset[i].make,  makermodel) &&
-              !strcmp(wb_preset[i].model, model))
-          {
-            // just take the first preset we find for this camera
-            for(int k=0; k<3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
-            break;
-          }
+          for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
         }
         if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
         {
-          // final security net: hardcoded default that fits most cams.
-          tmp.coeffs[0] = 2.0f;
-          tmp.coeffs[1] = 1.0f;
-          tmp.coeffs[2] = 1.5f;
+          // could not get useful info, try presets:
+          char makermodel[1024];
+          char *model = makermodel;
+          dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
+                                              module->dev->image_storage.exif_maker,
+                                              module->dev->image_storage.exif_model);
+          for(int i=0; i<wb_preset_count; i++)
+          {
+            if(!strcmp(wb_preset[i].make,  makermodel) &&
+                !strcmp(wb_preset[i].model, model))
+            {
+              // just take the first preset we find for this camera
+              for(int k=0; k<3; k++) tmp.coeffs[k] = wb_preset[i].channel[k];
+              break;
+            }
+          }
+          if(tmp.coeffs[0] == 0 || tmp.coeffs[1] == 0 || tmp.coeffs[2] == 0)
+            use_defaults = TRUE;
         }
+        else
+        {
+          tmp.coeffs[0] /= tmp.coeffs[1];
+          tmp.coeffs[2] /= tmp.coeffs[1];
+          tmp.coeffs[1] = 1.0f;
+        }
+
+        for(int c = 0; c < 3; c++)
+          pre_mul[c] = raw->color.pre_mul[c];
       }
       else
-      {
-        tmp.coeffs[0] /= tmp.coeffs[1];
-        tmp.coeffs[2] /= tmp.coeffs[1];
-        tmp.coeffs[1] = 1.0f;
-      }
-      // remember daylight wb used for temperature/tint conversion,
-      // assuming it corresponds to CIE daylight
-      if(module->gui_data)
-      {
-        dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
-        for(int c = 0; c < 3; c++)
-          g->daylight_wb[c] = raw->color.pre_mul[c];
-        float temp, tint, mul[3];
-        for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
-        convert_rgb_to_k(mul, &temp, &tint);
-        dt_bauhaus_slider_set_default(g->scale_k,    temp);
-        dt_bauhaus_slider_set_default(g->scale_tint, tint);
-      }
+        use_defaults = TRUE;
 
+      libraw_close(raw);
     }
-    libraw_close(raw);
+
+    if(use_defaults)
+    {
+      // final security net: hardcoded default that fits most cams.
+      tmp.coeffs[0] = 2.0f;
+      tmp.coeffs[1] = 1.0f;
+      tmp.coeffs[2] = 1.5f;
+    }
+
+    // remember daylight wb used for temperature/tint conversion,
+    // assuming it corresponds to CIE daylight
+    if(module->gui_data)
+    {
+      dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
+      for(int c = 0; c < 3; c++)
+        g->daylight_wb[c] = pre_mul[c];
+      float temp, tint, mul[3];
+      for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
+      convert_rgb_to_k(mul, &temp, &tint);
+      dt_bauhaus_slider_set_default(g->scale_k,    temp);
+      dt_bauhaus_slider_set_default(g->scale_tint, tint);
+    }
+
   }
 
   memcpy(module->params, &tmp, sizeof(dt_iop_temperature_params_t));

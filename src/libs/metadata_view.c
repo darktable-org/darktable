@@ -215,7 +215,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     snprintf(value,vl,"%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
-    _metadata_update_value(d->metadata[md_internal_filename], img->filename);
+    if(img->sub_id == 0)
+      snprintf(value,vl,"%s", img->filename);
+    else
+      snprintf(value,vl,"%s [%d]", img->filename, img->sub_id);
+    _metadata_update_value(d->metadata[md_internal_filename], value);
 
     gboolean from_cache = FALSE;
     dt_image_full_path(img->id, pathname, DT_MAX_PATH_LEN, &from_cache);
