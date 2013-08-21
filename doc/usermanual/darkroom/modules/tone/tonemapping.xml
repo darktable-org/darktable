@@ -1,4 +1,16 @@
 <sect3 status="final" id="tonemapping"><title>Tonemapping</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>tonemapping</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>tonemapping</primary>
+        </indexterm>
+        <indexterm>
+           <primary>tonemapping</primary>
+           <seealso>global tonemap</seealso>
+        </indexterm>
+
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

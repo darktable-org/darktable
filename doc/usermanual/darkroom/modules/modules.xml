@@ -4,6 +4,9 @@
 		%darktable_dtd;
 		]>
 <sect1 status="final" id="modules"><title>Modules</title>
+        <indexterm class="startofrange" id="ix.modules">
+           <primary>modules</primary>
+        </indexterm>
 	<para>Modules are organized into five functional groups: basic, tone, color, correction and effect.
         You either view all modules in one long list or instead click on a group to just display modules belonging to that group.
 	</para>
@@ -14,4 +17,6 @@
 	<xi:include href="color/group_color.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	<xi:include href="correction/group_correction.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	<xi:include href="effect/group_effect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+        <indexterm class="endofrange" startref="ix.modules"/>
 </sect1>

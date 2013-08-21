@@ -29,6 +29,10 @@
 	<!-- Blending operators -->
 	<xi:include href="blend_operators.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+        <indexterm class="startofrange" id="ix.masks">
+           <primary>masks</primary>
+        </indexterm>
+
 	<!-- Drawn masks  -->
 	<xi:include href="drawn_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
@@ -37,5 +41,6 @@
 
 	<!-- Combined masks  -->
 	<xi:include href="combined_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	
-</sect1>
+
+        <indexterm class="endofrange" startref="ix.masks"/>
+	</sect1>

@@ -1,4 +1,7 @@
 <sect1 status="final" id="darktable_and_memory"><title>darktable and memory</title>
+        <indexterm class="startofrange" id="ix.memory">
+           <primary>memory setup</primary>
+        </indexterm>
 	<para>darktable's memory requirements are high. A simple calculation makes this clear. If you have a 20MPx image, darktable for precision reasons will store this internally as a 
               4 × 32-bit floating point cell for each pixel. Each full image of this size will need about 300MB of memory. As we want to process the image, we will at least need two 
               buffers for each module – one for input and one for output. If we have a more complex module, its algorithm 	might additionally require several intermediate buffers of 
@@ -43,6 +46,10 @@
 	</sect2>
 	
 	<sect2 status="final"><title>Setting up darktable on 32-bit systems</title>
+                <indexterm>
+                   <primary>memory setup</primary>
+                   <secondary>32-bit systems</secondary>
+                </indexterm>
 		<para>As we’ve seen 32-bit systems are difficult environments for darktable. Still many users are successfully running darktable on them, if the basic requirements in terms of 
                       total system memory and the topics mentioned in the paragraphs above are addressed properly.</para>
 
@@ -84,6 +91,11 @@
 	</sect2>
 
 	<sect2 status="final"><title>darktable on 64-bit systems</title>
+                <indexterm>
+                   <primary>memory setup</primary>
+                   <secondary>64-bit systems</secondary>
+                </indexterm>
+
 		<para>There's not much to be said here. Of course also 64-bit systems require a sufficient amount of main memory, so the 4GB plus swap recommendation holds true. On the other 
                       hand, 64-bit architectures do not suffer from the specific 32-bit limitations like small address space and fragmentation madness.</para>
 
@@ -94,5 +106,6 @@
                       Linux. The only thing you need to do: invest some time into the migration. In the end we strongly recommend moving to a 64-bit version of Linux.
                       There really is no reason not to upgrade to 64-bit.</para>
 	</sect2>
+        <indexterm class="endofrange" startref="ix.memory"/>
 </sect1>
 

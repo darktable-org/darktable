@@ -5,6 +5,9 @@
 		]>
 
 <sect2 status="final" id="blending"><title>Blending</title>
+        <indexterm>
+           <primary>blending</primary>
+        </indexterm>
 
 	<sect3 status="final"><title>Overview</title>
 

@@ -6,6 +6,15 @@
 
 <sect2 status="final" id="mask_manager"><title>Mask manager</title>
 
+    <indexterm>
+      <primary>darkroom panels</primary>
+      <secondary>mask manager</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>mask manager</primary>
+    </indexterm>
+
     <sect3><title>Overview</title>
          <para>The masks manager panel is the central place where you manage all masks and shapes within the context of the
          current image. Here you create, delete and change shapes or give them unique names. You can add shapes

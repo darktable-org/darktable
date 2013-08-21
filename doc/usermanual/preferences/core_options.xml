@@ -1,4 +1,8 @@
 <sect1 status="final" id="core_options"><title>Core options</title>
+        <indexterm>
+           <primary>preferences and settings</primary>
+           <secondary>core options</secondary>
+        </indexterm>
 	<para>These options control some of the internals of darktable.
 	</para>
 

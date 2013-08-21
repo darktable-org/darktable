@@ -5,6 +5,10 @@
 		]>
 
 	<sect2 status="final" id="multiple_instances"><title>Multiple instances</title>
+                    <indexterm>
+                      <primary>multiple instances</primary>
+                    </indexterm>
+
 		    <para>Many of darktable's modules can be applied multiple times. Each instance of that module behaves like any other module, taking its input from the module
                           below in the pixelpipe delivering its output to the module above.</para>
 

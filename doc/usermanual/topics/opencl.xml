@@ -1,4 +1,11 @@
 <sect1 status="final" id="darktable_and_opencl"><title>darktable and OpenCL</title>
+        <indexterm class="startofrange" id="ix.opencl">
+           <primary>OpenCL</primary>
+        </indexterm>
+        <indexterm>
+           <primary>GPU computing</primary>
+        </indexterm>
+
 	<para>darktable can use GPU acceleration via OpenCL to improve performance.</para>
 
 	<sect2 status="final"><title>The background</title>
@@ -300,6 +307,7 @@ darktable --disable-opencl
 		In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL discourage you; also darktable's CPU code is highly optimized for performance!</para>
 	</sect2>
 
+        <indexterm class="endofrange" startref="ix.opencl"/>
 </sect1>
 
 

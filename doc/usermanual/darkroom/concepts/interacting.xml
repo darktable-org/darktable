@@ -4,6 +4,10 @@
 		%darktable_dtd;
 		]>
 <sect2 status="final" id="interacting"><title>Interacting with modules</title>
+    <indexterm>
+       <primary>module usage</primary>
+    </indexterm>
+
     <para>
           A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>.
           Clicking on the name of the module expands the module's GUI with all parameters.
@@ -36,6 +40,16 @@
      <para>The most frequently used control elements of modules are sliders, comboboxes and curves.
      </para>
      <sect4><title>Sliders</title>
+     <indexterm>
+        <primary>module usage</primary>
+        <secondary>sliders</secondary>
+     </indexterm>
+
+     <indexterm>
+        <primary>sliders</primary>
+     </indexterm>
+
+
      <para>Sliders offer four different ways of interaction, depending on the level of control you need.
      </para>
                   <orderedlist>
@@ -83,6 +97,16 @@
       </sect4>
 
       <sect4><title>Comboboxes</title>
+           <indexterm>
+             <primary>module usage</primary>
+             <secondary>comboboxes</secondary>
+           </indexterm>
+
+           <indexterm>
+             <primary>comboboxes</primary>
+           </indexterm>
+
+
              <para>Clicking on a combobox will open a list of available options. Click on the item you want to select. Sometimes the selection list opens close to the
                    bottom or top of the screen and only part of the items are visible; scroll with your mouse wheel to bring up the full list.
              </para>

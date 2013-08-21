@@ -6,6 +6,9 @@
 </keywordset>
 </chapterinfo>
 <title>Darkroom</title>
+<indexterm class="startofrange" id="ix.darkroom">
+   <primary>darkroom</primary>
+</indexterm>
 <para>The darkroom view is where you develop your image.</para>
 <para>
       <screenshot>
@@ -44,4 +47,5 @@
 <!-- Examples -->
 <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<indexterm class="endofrange" startref="ix.darkroom"/>
 </chapter>

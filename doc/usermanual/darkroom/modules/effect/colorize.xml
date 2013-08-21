@@ -1,4 +1,11 @@
 <sect3 status="final" id="colorize"><title>Colorize</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>colorize</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>colorize</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

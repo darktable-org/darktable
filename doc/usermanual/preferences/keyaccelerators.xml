@@ -1,4 +1,9 @@
 <sect1 status="final" id="shortcuts"><title>Shortcuts</title>
+  <indexterm>
+     <primary>preferences and settings</primary>
+     <secondary>shortcuts</secondary>
+  </indexterm>
+
   <para>darktable has a large set of keyboard shortcuts that, with the work of Robert Bieber,
         is now user configurable through the preference pane.
   </para>

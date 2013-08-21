@@ -1,4 +1,13 @@
 	<sect2 status="final" id="snapshots"><title>Snapshots</title>
+                <indexterm>
+                   <primary>darkroom panels</primary>
+                   <secondary>snapshots</secondary>
+                </indexterm>
+
+                <indexterm>
+                   <primary>snapshots</primary>
+                </indexterm>
+
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>

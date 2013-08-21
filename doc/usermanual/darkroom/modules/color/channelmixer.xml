@@ -1,4 +1,11 @@
 <sect3 status="final" id="channel_mixer"><title>Channel mixer</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>channel mixer</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>channel mixer</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

@@ -1,4 +1,11 @@
 <sect3 status="final" id="zone_system"><title>Zone system</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>zone system</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>zone system</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

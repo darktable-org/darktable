@@ -11,6 +11,12 @@
 			<keyword>lua</keyword>
 		</keywordset>
 	</chapterinfo>
+   <indexterm class="startofrange" id="ix.lua">
+      <primary>Lua</primary>
+   </indexterm>
+   <indexterm>
+      <primary>scripting</primary>
+   </indexterm>
    <title>Scripting with Lua</title>
    <para>darktable comes with a versatile scripting interface for functionality enhancement.</para>
    <para>
@@ -86,12 +92,19 @@
 
 
    <sect1 status="draft" id="lua_api"><title>Lua API</title>
+   <indexterm>
+      <primary>Lua API</primary>
+   </indexterm>
       <para>To access the darktable specific functions you must first load the darktable environment:</para>
 <programlisting>darktable = require "darktable"
 </programlisting>
       <para>All functions and data are accessed through this environment.</para>
 
       <sect2 id="lua_darktable_print_error">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.print_error</secondary>
+         </indexterm>
          <title>darktable.print_error</title>
          <para>This function will print its parameter if the Lua logdomain is activated.</para>
          <para><emphasis>Syntax:</emphasis> darktable.print_error(string)</para>
@@ -107,6 +120,10 @@
 
       <sect2 id="lua_darktable_database">
          <title>darktable.database</title>
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.database</secondary>
+         </indexterm>
          <para>Allows to access the database of images, note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes</para>
          <para>Images are indexed as in a table and can be iterated with ipairs, but not directly added or deleted.</para>
          <para><emphasis>Syntax:</emphasis> darktable.database : table-like of images</para>
@@ -114,6 +131,10 @@
 
       <sect2 id="lua_database_duplicate">
          <title>database.duplicate</title>
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>database.duplicate</secondary>
+         </indexterm>
          <para>Creates a duplicate of an image and returns it.</para>
          <para><emphasis>Syntax:</emphasis> database.duplicate(image) : image</para>
             <variablelist>
@@ -132,6 +153,10 @@
        </sect2>
 
        <sect2 id="lua_database_import">
+            <indexterm>
+               <primary>Lua API</primary>
+               <secondary>database.import</secondary>
+            </indexterm>
             <title>database.import</title>
             <para>Imports the corresponding directory or file.</para>
             <para><emphasis>Syntax:</emphasis> database.import(path_or_file) : object</para>
@@ -154,12 +179,20 @@
       </sect2>
 
       <sect2 id="lua_darktable_films">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.films</secondary>
+         </indexterm>
          <title>darktable.films</title>
          <para>Pseudo table containing objects describing the films.</para>
          <para><emphasis>Syntax:</emphasis> darktable.film : pseudo table</para>
       </sect2>
 
       <sect2 id="lua_darktable_preferences">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.preferences</secondary>
+         </indexterm>
          <title>darktable.preferences</title>
          <para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
          <para>Preference-handling functions take a <emphasis>script</emphasis> parameter. This is a string used to avoid name collision in preferences (i.e namespace).
@@ -168,6 +201,10 @@
                <quote>bool</quote>, and <quote>integer</quote>.</para>
 
          <sect3 id="lua_darktable_preferences_register">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.preferences.register</secondary>
+         </indexterm>
             <title>darktable.preferences.register</title>
             <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the 
                   user (you can still read and write invisible preferences).</para>
@@ -219,6 +256,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_preferences_read">
+            <indexterm>
+               <primary>Lua API</primary>
+               <secondary>darktable.preferences.read</secondary>
+            </indexterm>
             <title>darktable.preferences.read</title>
             <para>Reads a value from a Lua preference.</para>
             <para><emphasis>Syntax:</emphasis> darktable.preferences.read(script, name, type) : value</para>
@@ -251,6 +292,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_preferences_write">
+            <indexterm>
+              <primary>Lua API</primary>
+              <secondary>darktable.preferences.write</secondary>
+            </indexterm>
             <title>darktable.preferences.write</title>
             <para>Writes a value to a Lua preference.</para>
             <para><emphasis>Syntax:</emphasis> darktable.preferences.write(script, name, type, value)</para>
@@ -284,6 +329,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_print">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.print</secondary>
+         </indexterm>
          <title>darktable.print</title>
          <para>Will print a string to the darktable control log (the long overlayed window that appears over the main panel).</para>
          <para><emphasis>Syntax:</emphasis> darktable.print(string)</para>
@@ -298,6 +347,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_configuration">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.configuration</secondary>
+         </indexterm>
          <title>darktable.configuration</title>
          <para>This table regroups values that describe details of the configuration of darktable.</para>
          <sect3 id="lua_darktable_configuration_version">
@@ -333,6 +386,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_gui">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.gui</secondary>
+         </indexterm>
          <title>darktable.gui</title>
          <sect3 id="lua_darktable_gui_selection">
             <title>darktable.gui.selection</title>
@@ -355,23 +412,35 @@
             </variablelist>
          </sect3>
 
-         <sect3 id="lua_dt_gui_hovered">
-            <title>dt.gui.hovered</title>
+         <sect3 id="lua_darktable_gui_hovered">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.gui.hovered</secondary>
+         </indexterm>
+            <title>darktable.gui.hovered</title>
             <para>The image under the cursor or nil if no image is hovered.</para>
-            <para><emphasis>Syntax:</emphasis> dt.gui.hovered : image</para>
+            <para><emphasis>Syntax:</emphasis> darktable.gui.hovered : image</para>
          </sect3>
 
-         <sect3 id="lua_dt_gui_action_images">
-            <title>dt.gui.action_images</title>
+         <sect3 id="lua_darktable_gui_action_images">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.gui.action_images</secondary>
+         </indexterm>
+            <title>darktable.gui.action_images</title>
             <para>A table of images on which the user expects us to act. It is based on both the hovered image and the selection and isconsistent with the way darktable works.</para>
             <para>It is recommanded to use this table to implement Lua actions rather than <emphasis>dt.gui.hovered</emphasis> or <emphasis>dt.gui.selected</emphasis>
                   to be consistant with darktable's gui.</para>
-            <para><emphasis>Syntax:</emphasis> dt.gui.action_images : table</para>
+            <para><emphasis>Syntax:</emphasis> darktable.gui.action_images : table</para>
          </sect3>
       </sect2>
 
 
       <sect2 id="lua_darktable_modules">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.modules</secondary>
+         </indexterm>
          <title>darktable.modules</title>
          <para>This table describe the different loadable modules of darktable.</para>
          <sect3 id="lua_darktable_modules_format">
@@ -432,6 +501,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_modules_storage">
+            <indexterm>
+              <primary>Lua API</primary>
+              <secondary>darktable.modules.storage</secondary>
+            </indexterm>
             <title>darktable.modules.storage</title>
             <para><emphasis>Syntax:</emphasis> darktable.modules.storage.*</para>
             <para>Each entry is a function that will return a new object used to configure and describe the storage.</para>
@@ -488,6 +561,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_register_storage">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.register_storage</secondary>
+         </indexterm>
          <title>darktable.register_storage</title>
          <para>Allows to implement a new storage that will be entirely implemented in Lua. The user provides a callback that will be called once 
                for each image, and a second callback that will be called when all images are processed.</para>
@@ -530,6 +607,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_tags">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.tags</secondary>
+         </indexterm>
          <title>darktable.tags</title>
          <para>Allows access to all existing tags.</para>
          <para><emphasis>Syntax:</emphasis> darktable.tags : pseudo table</para>
@@ -579,6 +660,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_register_event">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.register_event</secondary>
+         </indexterm>
          <title>darktable.register_event</title>
          <para>This function register a callback to be called when a given event happened.</para>
          <para><emphasis>Syntax:</emphasis> darktable.register_event(event_type, callback, ...)</para>
@@ -721,6 +806,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_styles">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.styles</secondary>
+         </indexterm>
          <title>darktable.styles</title>
          <para>Allow you to access the styles. Styles are indexed by numbers.</para>
          <para><emphasis>Syntax:</emphasis> darktable.styles : pseudo table</para>
@@ -756,6 +845,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_styles_delete">
+            <indexterm>
+              <primary>Lua API</primary>
+              <secondary>darktable.styles.delete</secondary>
+            </indexterm>
             <title>darktable.styles.delete</title>
             <para>Deletes an existing style.</para>
             <para><emphasis>Syntax:</emphasis> darktable.styles.delete(style)</para>
@@ -770,6 +863,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_styles_duplicate">
+            <indexterm>
+               <primary>Lua API</primary>
+               <secondary>darktable.styles.duplicate</secondary>
+            </indexterm>
             <title>darktable.styles.duplicate</title>
             <para>Create a new style based on an existing style.</para>
             <para><emphasis>Syntax:</emphasis> darktable.styles.delete(style) : style</para>
@@ -801,6 +898,10 @@
          </sect3>
 
          <sect3 id="lua_darktable_styles_apply">
+            <indexterm>
+               <primary>Lua API</primary>
+               <secondary>darktable.styles.apply</secondary>
+            </indexterm>
             <title>darktable.styles.apply</title>
             <para>Apply a style to an image. Order of parameters can be inverted.</para>
             <para><emphasis>Syntax:</emphasis> darktable.styles.apply(style, image)</para>
@@ -822,6 +923,10 @@
       </sect2>
 
       <sect2 id="lua_darktable_debug">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>darktable.debug</secondary>
+         </indexterm>
          <title>darktable.debug</title>
          <para>This section must be activated separately by calling:</para>
 <programlisting>require "darktable.debug"
@@ -854,12 +959,20 @@
 
 
          <sect3 id="lua_darktable_debug_debug">
+             <indexterm>
+                <primary>Lua API</primary>
+                <secondary>darktable.debug.debug</secondary>
+            </indexterm>
             <title>darktable.debug.debug</title>
             <para>Initialized to false, set it to true to also dump information about metatables.</para>
             <para><emphasis>Syntax:</emphasis> darktable.debug.debug : boolean</para>
          </sect3>
 
          <sect3 id="lua_darktable_debug_type">
+            <indexterm>
+               <primary>Lua API</primary>
+               <secondary>darktable.debug.type</secondary>
+            </indexterm>
             <title>darktable.debug.type</title>
             <para>Similar to the system function <emphasis>type</emphasis> but will report the correct type of darktable 
                   specific objects instead of <emphasis>userdata</emphasis>.
@@ -869,6 +982,10 @@
       </sect2>
 
       <sect2 id="lua_film_type">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>film type</secondary>
+         </indexterm>
          <title>film type</title>
          <para>Film object, represents an imported directory on the disk.</para>
          <variablelist>
@@ -888,6 +1005,10 @@
       </sect2>
 
       <sect2 id="lua_image_type">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>image type</secondary>
+         </indexterm>
          <title>image type</title>
          <para>Image objects represent an image in the database. This is slightly different from a file on disk since a file 
                can have multiple developements.</para>
@@ -1146,6 +1267,10 @@
       </sect2>
 
       <sect2 id="lua_style_type">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>style type</secondary>
+         </indexterm>
          <title>style type</title>
          <para>The style object allows you to read and manipulate styles.</para>
          <variablelist>
@@ -1188,6 +1313,10 @@
       </sect2>
 
       <sect2 id="lua_tag_type">
+         <indexterm>
+             <primary>Lua API</primary>
+             <secondary>tag type</secondary>
+         </indexterm>
          <title>tag type</title>
          <para>Tag object represents a tag in the database. They can be compared, they can be transformed into text with <quote>tostring</quote>.</para>
          <variablelist>
@@ -1347,7 +1476,7 @@ print(dt_debug.dump(_G,"Global environement")
             <para>This is always a bug in darktable's Lua API. Please open a bug report and attach the script that caused the crash.</para>
          </sect2>
    </sect1>
-
+   <indexterm class="endofrange" startref="ix.lua"/>
 </chapter>
 
 

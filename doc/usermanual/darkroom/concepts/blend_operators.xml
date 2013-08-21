@@ -5,6 +5,10 @@
 		]>
 
 <sect2 status="final" id="blending_operators"><title>Blending operators</title>
+                <indexterm>
+                   <primary>blending operators</primary>
+                </indexterm>
+
         	<para>There are several blend modes implemented and more might be added in future. For now all the common ones are there and
 		      you will recognize a few of them from other imaging software. A good introduction on many
                       common blend modes is given in <ulink url="http://docs.gimp.org/2.8/en/gimp-concepts-layer-modes.html">

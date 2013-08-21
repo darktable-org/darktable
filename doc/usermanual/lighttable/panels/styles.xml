@@ -1,4 +1,11 @@
 <sect2 status="final" id="styles"><title>Styles</title>
+        <indexterm>
+           <primary>lighttable panels</primary>
+           <secondary>styles</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>styles</primary>
+        </indexterm>
 	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 			<colspec colwidth="6*"/>
 			<colspec colwidth="4*"/>

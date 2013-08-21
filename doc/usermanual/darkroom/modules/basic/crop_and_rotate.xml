@@ -1,4 +1,17 @@
 <sect3 status="final" id="crop_and_rotate"><title>Crop and rotate</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>crop and rotate</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>crop and rotate</primary>
+        </indexterm>
+        <indexterm>
+           <primary>cropping an image</primary>
+        </indexterm>
+        <indexterm>
+           <primary>rotating an image</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

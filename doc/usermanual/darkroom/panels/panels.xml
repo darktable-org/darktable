@@ -1,4 +1,9 @@
 <sect1 status="final" id="darkroom_panels"><title>Darkroom panels</title>
+
+        <indexterm class="startofrange" id="ix.darkroom_panels">
+           <primary>darkroom panels</primary>
+        </indexterm>
+
 	<para>This section contains documentation for panels that are specific to the
 	darkroom view.
 	</para>
@@ -17,4 +22,6 @@
 
         <!-- Bottom -->
 	<xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>        
+
+        <indexterm class="endofrange" startref="ix.darkroom_panels"/>
 </sect1>

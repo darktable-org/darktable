@@ -4,6 +4,13 @@
 		%darktable_dtd;
 		]>
 <sect3 status="final" id="color_zones"><title>Color zones</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>color zones</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>color zones</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

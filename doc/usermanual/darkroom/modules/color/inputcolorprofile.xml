@@ -1,4 +1,16 @@
 <sect3 status="final" id="input_color_profile"><title>Input color profile</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>input color profile</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>input color profile</primary>
+        </indexterm>
+        <indexterm>
+           <primary>color management</primary>
+           <secondary>input color profile</secondary>
+        </indexterm>
+             
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

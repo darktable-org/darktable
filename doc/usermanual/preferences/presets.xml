@@ -1,4 +1,12 @@
 <sect1 status="final" id="presets"><title>Presets</title>
+        <indexterm>
+           <primary>preferences and settings</primary>
+           <secondary>presets</secondary>
+        </indexterm>
+        <indexterm>
+            <primary>presets</primary>
+        </indexterm>
+
 	<para>This menu gives you an overview of the presets that are defined for darktable's modules. In this dialog you can 
               select whether a certain user defined preset shall be auto-applied to matching images.
         </para>

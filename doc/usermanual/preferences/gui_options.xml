@@ -1,4 +1,9 @@
 <sect1 status="final" id="gui_options"><title>GUI options</title>
+        <indexterm>
+           <primary>preferences and settings</primary>
+           <secondary>GUI options</secondary>
+        </indexterm>
+
 	<para>These options control the look and feel of darktable.
 	</para>
 

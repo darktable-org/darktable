@@ -1,4 +1,11 @@
 <sect3 status="final" id="splittoning"><title>Splittoning</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>splittoning</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>splittoning</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth="6*"/>

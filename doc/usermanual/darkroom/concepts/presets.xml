@@ -5,6 +5,15 @@
 		]>
 
 	<sect2 status="final" id="module_presets"><title>Module presets</title>
+                    <indexterm>
+                       <primary>presets</primary>
+                       <secondary>module presets</secondary>
+                    </indexterm>
+
+                    <indexterm>
+                       <primary>module presets</primary>
+                    </indexterm>
+
 		    <para>
 			    Presets are stored configurations for a module's parameters. Some modules already have internal pre-defined presets but you can also define your own. Both internal 
                             and user-defined presets are displayed by clicking the <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/> icon with the

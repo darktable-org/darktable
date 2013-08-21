@@ -5,6 +5,11 @@
 		]>
 
 	<sect2 status="final" id="darkroom_bottom_panel"><title>Bottom panel</title>
+            <indexterm>
+               <primary>darkroom panels</primary>
+               <secondary>bottom panel</secondary>
+            </indexterm>
+
             <para>The bottom panel provides quick access to apply presets and styles to your image and allows to activate
                   the over/underexposure warning. You can also activate a filmstrip for quick navigation within the current collection.
             </para>
@@ -23,6 +28,25 @@
             </sect3>
 
            <sect3 status="final" id="overexposed"><title>Over/underexposed warning</title>
+                  <indexterm>
+                     <primary>darkroom panels</primary>
+                     <secondary>overexposed warning</secondary>
+                  </indexterm>
+
+                  <indexterm>
+                     <primary>darkroom panels</primary>
+                     <secondary>underexposed warning</secondary>
+                  </indexterm>
+
+                  <indexterm>
+                     <primary>overexposed warning</primary>
+                  </indexterm>
+
+                  <indexterm>
+                     <primary>underexposed warning</primary>
+                  </indexterm>
+
+
                   <para>By clicking the <inlinegraphic fileref="&icon_module_overexposed;" scalefit="1" width="2%" align="center" /> icon an over/underexposed
                         warning is toggled on or off. Pixels outside the dynamic range, close to pure white or close to pure black, are prominently displayed in a
                         signal color. You can also activate the over/underexposure warning with the keyboard shortcut <quote>o</quote>.
@@ -58,6 +82,11 @@
           </sect3>
 
           <sect3 status="final" id="darkroom_filmstrip"><title>Filmstrip</title>
+                  <indexterm>
+                     <primary>darkroom panels</primary>
+                     <secondary>filmstrip</secondary>
+                  </indexterm>
+
                  <para>The optional filmstrip can be used to quickly switch between images while remaining in the darkroom view. The images viewed are the same
                        as the ones in the lighttable view.</para>
                  <para>The filmstrip can be switched on and off using the shortcut <emphasis>ctrl-f</emphasis>. You can scroll with your mouse to quickly navigate

@@ -5,6 +5,13 @@
 		]>
 
 <sect3 status="final" id="tone_curve"><title>Tone curve</title>
+        <indexterm>
+           <primary>modules</primary>
+           <secondary>tone curve</secondary>
+        </indexterm>
+        <indexterm>
+           <primary>tone curve</primary>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
