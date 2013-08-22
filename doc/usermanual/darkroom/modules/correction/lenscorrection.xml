@@ -6,10 +6,6 @@
         <indexterm>
            <primary>lens correction</primary>
         </indexterm>
-        <indexterm>
-           <primary>chromatic aberration</primary>
-           <seealso>lens correction</seealso>
-        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

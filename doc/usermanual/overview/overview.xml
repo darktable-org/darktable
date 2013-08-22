@@ -189,6 +189,9 @@
 
 
 	<sect1 status="final" id="darktable_basic_workflow"><title>darktable basic workflow</title>
+                <indexterm>
+                     <primary>basic workflow</primary>
+                </indexterm>
                 <para>This section tries to give a first rough overview of a typical darktable workflow. Novice users may take this as a starting point. We describe 
                       how to get an image into darktable, which basic steps are typically part of a raw development workflow, and how to export the final result.</para>
 		<sect2 status ="final"><title>Importing images</title>
@@ -221,9 +224,13 @@
 				</para>
 
 				<para>Each change made on a module while developing an image is turned into a <link linkend="history"><emphasis>history stack</emphasis></link> item.
-                                      The history is stored in a database
-				      and in an XMP sidecar file for the specific image. Changes are stored automatically without the need to press a "save" button, 
-                                      therefore you can safely leave darkroom mode or darktable, and come back later to continue your work.
+                                      The history is stored in a database and in an XMP sidecar file for the specific image.</para>
+
+                                <para>All changes are stored automatically. You can safely leave darkroom mode or quit darktable at any time and come back later to continue your work.
+                                      That said darktable does not need a <quote>save</quote> button and it does not have one.
+                                      <indexterm>
+                                           <primary>save button</primary>
+                                      </indexterm>
 				</para>
 
 				<para>

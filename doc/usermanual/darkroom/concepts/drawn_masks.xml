@@ -46,10 +46,21 @@
            actions like dragging a complete shape or changing its size are blocked. Only finetuning changes like dragging a node are allowed.</para>
 
            <para>Currently five shapes are implemented.</para>
+           <indexterm>
+               <primary>mask shapes</primary>
+           </indexterm>
+           <indexterm>
+               <primary>shapes</primary>
+               <see>mask shapes</see>
+           </indexterm>
 
            <sect4><title>brush</title>
                <indexterm>
                   <primary>brush</primary>
+               </indexterm>
+               <indexterm>
+                  <primary>mask shapes</primary>
+                  <secondary>brush</secondary>
                </indexterm>
                <para>Clicking the <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/> symbol adds a brush stroke.</para> 
                <para>Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse while keeping the button pressed. 
@@ -78,6 +89,10 @@
                <indexterm>
                   <primary>circle</primary>
                </indexterm>
+               <indexterm>
+                  <primary>mask shapes</primary>
+                  <secondary>circle</secondary>
+               </indexterm>
                <para>Clicking the <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/> symbol adds a circle shape.</para> 
                <para>Click into the canvas to place the circle. Left-click and drag the circle to a different position if needed.
                Use the scroll-wheel of your mouse while in the circle to change the diameter; scroll within the circle border to adjust the width 
@@ -103,6 +118,10 @@
                <indexterm>
                   <primary>ellipse</primary>
                </indexterm>
+               <indexterm>
+                  <primary>mask shapes</primary>
+                  <secondary>ellipse</secondary>
+               </indexterm>
                <para>Clicking the <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/> symbol adds an ellipse shape.</para> 
                <para>The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse
                line. Click on the nodes to adjust the ellipse's eccentricity. <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.</para>
@@ -125,6 +144,10 @@
            <sect4><title>path</title>
                <indexterm>
                   <primary>path</primary>
+               </indexterm>
+               <indexterm>
+                  <primary>mask shapes</primary>
+                  <secondary>path</secondary>
                </indexterm>
                <para>Clicking the <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/> symbol adds a shape defined by a user defined 
                closed path.</para>
@@ -156,6 +179,10 @@
            <sect4><title>gradient</title>
                <indexterm>
                   <primary>gradient</primary>
+               </indexterm>
+               <indexterm>
+                  <primary>mask shapes</primary>
+                  <secondary>gradient</secondary>
                </indexterm>
                <para>Clicking the <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/> symbol adds a gradient to the mask.
                This does not generate a confined shape but produces a linear gradient extending the whole image.</para>
