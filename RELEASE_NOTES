@@ -10,42 +10,4 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
-* updated rawspeed r553. Support for
- * Canon EOS 700D
- * Nikon Coolpix P330
-* New Olymbus base curve
-* Updated Adobe Coeffs
 
-Enhanced color matrices:
-* Canon 700D (from Canon 650D)
-* Canon 100D (from Canon 650D)
-* Sony NEX-7
-
-White balance presets:
-* Some updates from UFRaw
-* Canon 100D
-* Canon 700D
-* Sony SLT-A37
-* Nikon Coolpix P330
-
-Noise profiles:
-* Canon EOS-M
-* Olympus E-600 (from: Olympus E-30)
-* Olympus E-620 (from: Olympus E-30)
-* Samsung WB2000
-* Sony A99v
-* Panasonic DMC-G10 iso 100
-* Nikon D60
-
-Bug fixes:
-* 0 star rating working again
-* LT: ctrl+d duplicates per default now
-* Some fixes concerning locale handling
-* double click on film strip jumps to image
-* remember position in collections
-* ctrl+k jumps to previous collection
-* Blending parameters are preserved when module is deactivated
-* In full-preview (alt-1) ratings and labels are only applied to image shown
-* Various OpenCL fixes, e.g. compilation on Mac OS X
-* libsquish compilation now optional
-* dr: deactivate interpolation at 200% zoom
