@@ -1080,8 +1080,7 @@ dt_view_image_expose(
   if(dt_conf_get_bool("plugins/lighttable/draw_custom_metadata") && img && (zoom == 1))
   {
     char path[1024];
-    gboolean from_cache = FALSE;
-    dt_image_full_path(img->id, path, 1024, &from_cache);
+    dt_image_full_path(img->id, path, 1024);
     char *c = path + strlen(path);
     while((c > path) && (*c != '.')) c--;
     c[1] = 't'; c[2] = 'x'; c[3] = 't'; c[4] = 0;
