@@ -10,4 +10,38 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+Hardware Support:
+* Update to RawSpeed r558
+* Oplympus E-P5 (incl. preliminary Adobe Coeff.)
+* Samsung NX2000
+* Sony RX100m2
+* Sony SLT-A58 (updated)
 
+White Balance Presets:
+* Sony NEX-5R
+* Sony SLT-A58
+* Nikon D3200 (updated)
+
+Noise Profiles:
+* Canon EOS 1100D == Canon EOS Rebel T3
+* Canon PowerShot S95
+* Canon PowerShot G11
+* Nikon Coolpix P330
+
+Fixes and improvements:
+* OS X: fix Facebook uploads
+* Adjustments to default lowpass blur settings
+* Adjustments to dithering slider ranges
+* Metadata viwer: fix display of focal lenth: inicate unit and hide if invalid.
+* cacorrect: fix segfault for small buffers
+* Color pickers: fix various issues, e.g. #9482
+* More guides for Crop & Rotate
+* Improve light table usability: when viewing images in fullscreen wrap around at line end when pressing right arrow key
+* Soften: massive speed improvements by using SSE and OpenMP
+* Deleting images from camera is not supported anymore for safety.
+* Exposure module now supports multiple instances
+* Support for custom meta data burn in (see commit 6ac7ba055440aa27f79f0a67ac112799a0e7785e)
+* OpenMP support for nVidia GeForce GT330
+* PFM: load timestamp as date & time taken.
+* Fix bug prohibiting image rating by mouse
+* Update Picasa uploader: references Google+ now
