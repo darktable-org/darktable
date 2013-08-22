@@ -655,7 +655,7 @@ msgstr "importerer billede %s"
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "tager %d billede"
-msgstr[1] "tager % billeder"
+msgstr[1] "tager %d billeder"
 
 #: ../src/control/jobs/camera_jobs.c:100
 msgid "please set your camera to manual mode first!"
@@ -2172,7 +2172,7 @@ msgstr "kunne ikke eksportere til fil `%s'!"
 #: ../src/imageio/storage/gallery.c:355 ../src/imageio/storage/latex.c:338
 #, c-format
 msgid "%d/%d exported to `%s%s'"
-msgstr "%d/%d eksporteret til `%s'"
+msgstr "%d/%d eksporteret til `%s%s'"
 
 #: ../src/imageio/storage/email.c:53
 msgid "send as email"
@@ -4219,7 +4219,7 @@ msgid ""
 "mounts:\t\t%s"
 msgstr ""
 "producent:\t\t%s\n"
-"model:\t\t%s%s\n"
+"model:\t\t%s\n"
 "brændvidde:\t%s\n"
 "blænde:\t\t%s\n"
 "beskæringsfaktor:\t%.1f\n"
