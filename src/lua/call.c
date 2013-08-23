@@ -96,8 +96,8 @@ static gboolean poll_events(gpointer data)
   lua_State * L = lua_tothread(darktable.lua_state,-1);
   dt_lua_do_chunk(L,lua_gettop(L) -1,0);
   /* L is finished, remove it from the stack */
-  lua_pop(darktable.lua_state,1);
-  luaL_unref(darktable.lua_state,-1,my_id);
+  luaL_unref(darktable.lua_state,-2,my_id);
+  lua_pop(darktable.lua_state,2);
   dt_lua_unlock();
   return FALSE;
 }
