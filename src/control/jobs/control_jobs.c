@@ -972,9 +972,9 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   char message[512]= {0};
 
   if (is_copy)
-    snprintf(message, 512, ngettext ("creating local copie for %d image", "creating local copies for %d images", total), total);
+    snprintf(message, 512, ngettext ("creating local copy of %d image", "creating local copies of %d images", total), total);
   else
-    snprintf(message, 512, ngettext ("removing local copie for %d image", "removing local copies for %d images", total), total);
+    snprintf(message, 512, ngettext ("removing local copy of %d image", "removing local copies of %d images", total), total);
 
   dt_control_log(message);
 
