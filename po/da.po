@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-06 20:54+0200\n"
-"PO-Revision-Date: 2013-08-06 20:45+0200\n"
+"POT-Creation-Date: 2013-08-23 19:03+0200\n"
+"PO-Revision-Date: 2013-08-23 19:10+0200\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <da@li.org>\n"
 "Language: da_DK\n"
@@ -14,50 +14,50 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 1.5\n"
 
-#: ../build/src/preferences_gen.h:952
+#: ../build/src/preferences_gen.h:927
 msgid "GUI options"
 msgstr "GUI-valgmuligheder"
 
-#: ../build/src/preferences_gen.h:955
+#: ../build/src/preferences_gen.h:930
 msgid "width of the side panels in pixels"
 msgstr "bredde af sidepanelerne i pixels"
 
-#: ../build/src/preferences_gen.h:969 ../build/src/preferences_gen.h:1088
-#: ../build/src/preferences_gen.h:1223 ../build/src/preferences_gen.h:1266
-#: ../build/src/preferences_gen.h:1290 ../build/src/preferences_gen.h:1405
-#: ../build/src/preferences_gen.h:1530 ../build/src/preferences_gen.h:1554
-#: ../build/src/preferences_gen.h:1579 ../src/lua/preferences.c:368
+#: ../build/src/preferences_gen.h:944 ../build/src/preferences_gen.h:1063
+#: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1241
+#: ../build/src/preferences_gen.h:1265 ../build/src/preferences_gen.h:1380
+#: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1529
+#: ../build/src/preferences_gen.h:1554 ../src/lua/preferences.c:368
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dobbeltklik for at nulstille til `%d'"
 
-#: ../build/src/preferences_gen.h:972 ../build/src/preferences_gen.h:1509
+#: ../build/src/preferences_gen.h:947 ../build/src/preferences_gen.h:1484
 msgid "(needs a restart)"
 msgstr "(genstart nødvendig)"
 
-#: ../build/src/preferences_gen.h:979
+#: ../build/src/preferences_gen.h:954
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr "brug ikke indbygget preview-JPEG men halv-størrelse raw"
 
-#: ../build/src/preferences_gen.h:988 ../build/src/preferences_gen.h:1007
-#: ../build/src/preferences_gen.h:1026 ../build/src/preferences_gen.h:1045
-#: ../build/src/preferences_gen.h:1064 ../build/src/preferences_gen.h:1107
-#: ../build/src/preferences_gen.h:1126 ../build/src/preferences_gen.h:1144
-#: ../build/src/preferences_gen.h:1162 ../build/src/preferences_gen.h:1180
-#: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1242
-#: ../build/src/preferences_gen.h:1322 ../build/src/preferences_gen.h:1363
-#: ../build/src/preferences_gen.h:1382 ../build/src/preferences_gen.h:1424
-#: ../build/src/preferences_gen.h:1443 ../build/src/preferences_gen.h:1462
-#: ../build/src/preferences_gen.h:1598 ../build/src/preferences_gen.h:1617
-#: ../build/src/preferences_gen.h:1640 ../build/src/preferences_gen.h:1659
-#: ../build/src/preferences_gen.h:1678 ../build/src/preferences_gen.h:1710
-#: ../build/src/preferences_gen.h:1745 ../build/src/preferences_gen.h:1777
-#: ../src/lua/preferences.c:351 ../src/lua/preferences.c:359
+#: ../build/src/preferences_gen.h:963 ../build/src/preferences_gen.h:982
+#: ../build/src/preferences_gen.h:1001 ../build/src/preferences_gen.h:1020
+#: ../build/src/preferences_gen.h:1039 ../build/src/preferences_gen.h:1082
+#: ../build/src/preferences_gen.h:1101 ../build/src/preferences_gen.h:1119
+#: ../build/src/preferences_gen.h:1137 ../build/src/preferences_gen.h:1155
+#: ../build/src/preferences_gen.h:1173 ../build/src/preferences_gen.h:1217
+#: ../build/src/preferences_gen.h:1297 ../build/src/preferences_gen.h:1338
+#: ../build/src/preferences_gen.h:1357 ../build/src/preferences_gen.h:1399
+#: ../build/src/preferences_gen.h:1418 ../build/src/preferences_gen.h:1437
+#: ../build/src/preferences_gen.h:1573 ../build/src/preferences_gen.h:1592
+#: ../build/src/preferences_gen.h:1615 ../build/src/preferences_gen.h:1634
+#: ../build/src/preferences_gen.h:1666 ../build/src/preferences_gen.h:1701
+#: ../build/src/preferences_gen.h:1733 ../src/lua/preferences.c:351
+#: ../src/lua/preferences.c:359
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dobbeltklik for at nulstille til `%s'"
 
-#: ../build/src/preferences_gen.h:991
+#: ../build/src/preferences_gen.h:966
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -66,54 +66,54 @@ msgstr ""
 "filen, men bearbejd raw-data i stedet. dette er langsommere men giver dig "
 "farvestyrede miniaturer."
 
-#: ../build/src/preferences_gen.h:998
+#: ../build/src/preferences_gen.h:973
 msgid "ask before removing images from database"
 msgstr "spørg før fjernelse af billeder fra database"
 
-#: ../build/src/preferences_gen.h:1010
+#: ../build/src/preferences_gen.h:985
 msgid "always ask the user before any image is removed from DB."
 msgstr "spørg altid brugeren før et billede fjernes fra databasen."
 
-#: ../build/src/preferences_gen.h:1017
+#: ../build/src/preferences_gen.h:992
 msgid "ask before erasing images from disk"
 msgstr "spørg før billeder slettes fra disken"
 
-#: ../build/src/preferences_gen.h:1029
+#: ../build/src/preferences_gen.h:1004
 msgid "always ask the user before any image file is deleted."
 msgstr "spørg altid brugeren før et billede slettes."
 
-#: ../build/src/preferences_gen.h:1036
+#: ../build/src/preferences_gen.h:1011
 msgid "ask before moving images from film roll folder"
 msgstr "spørg før billeder flyttes fra filmrulle-mappen"
 
-#: ../build/src/preferences_gen.h:1048
+#: ../build/src/preferences_gen.h:1023
 msgid "always ask the user before any image file is moved."
 msgstr "spørg altid brugeren før en billedfil flyttes."
 
-#: ../build/src/preferences_gen.h:1055
+#: ../build/src/preferences_gen.h:1030
 msgid "ask before copying images to new film roll folder"
 msgstr "spørg før billeder kopieres til ny filmrulle-mappe"
 
-#: ../build/src/preferences_gen.h:1067
+#: ../build/src/preferences_gen.h:1042
 msgid "always ask the user before any image file is copied."
 msgstr "spørg altid brugeren før et billede kopieres."
 
-#: ../build/src/preferences_gen.h:1074
+#: ../build/src/preferences_gen.h:1049
 msgid "number of folder levels to show in lists"
 msgstr "antal mappeniveauer der vises i lister"
 
-#: ../build/src/preferences_gen.h:1091
+#: ../build/src/preferences_gen.h:1066
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr ""
 "antallet af mappeniveauer, der vises i filmrullenavne, startende fra højre"
 
-#: ../build/src/preferences_gen.h:1098
+#: ../build/src/preferences_gen.h:1073
 msgid "ignore JPEG images when importing film rolls"
 msgstr "ignorér JPEG-billeder under import af filmruller"
 
-#: ../build/src/preferences_gen.h:1110
+#: ../build/src/preferences_gen.h:1085
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -122,49 +122,49 @@ msgstr ""
 "mening at importere begge dele. Med denne indstilling kan alle fundne "
 "JPEG'er ignoreres."
 
-#: ../build/src/preferences_gen.h:1117
+#: ../build/src/preferences_gen.h:1092
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "gennemse mapper rekursivt under importering af filmruller"
 
-#: ../build/src/preferences_gen.h:1135
+#: ../build/src/preferences_gen.h:1110
 msgid "creator to be applied when importing"
 msgstr "skaber der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1153
+#: ../build/src/preferences_gen.h:1128
 msgid "publisher to be applied when importing"
 msgstr "udgiver der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1171
+#: ../build/src/preferences_gen.h:1146
 msgid "rights to be applied when importing"
 msgstr "rettigheder der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1189
+#: ../build/src/preferences_gen.h:1164
 msgid "comma separated tags to be applied when importing"
 msgstr "kommaseparerede mærker der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1207
+#: ../build/src/preferences_gen.h:1182
 msgid "initial import rating"
 msgstr "indledende vurdering under importering"
 
-#: ../build/src/preferences_gen.h:1226
+#: ../build/src/preferences_gen.h:1201
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
 "indledende stjernevurdering for alle billeder under importering af en "
 "filmrulle"
 
-#: ../build/src/preferences_gen.h:1233
+#: ../build/src/preferences_gen.h:1208
 msgid "enable filmstrip"
 msgstr "aktivér filmstrip"
 
-#: ../build/src/preferences_gen.h:1245
+#: ../build/src/preferences_gen.h:1220
 msgid "enable the filmstrip in darkroom and tethering modes."
 msgstr "aktivér filmstrip i mørkekammer- og tethering-tilstand."
 
-#: ../build/src/preferences_gen.h:1252
+#: ../build/src/preferences_gen.h:1227
 msgid "maximum width of image drawing area"
 msgstr "maksimal bredde af billedeområde"
 
-#: ../build/src/preferences_gen.h:1269
+#: ../build/src/preferences_gen.h:1244
 msgid ""
 "maximum width of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -174,11 +174,11 @@ msgstr ""
 "skærm\n"
 "(genstart nødvendig, og nuværende gemte billedminiaturer invalideres)."
 
-#: ../build/src/preferences_gen.h:1276
+#: ../build/src/preferences_gen.h:1251
 msgid "maximum height of image drawing area"
 msgstr "maksimal højde af billedområde"
 
-#: ../build/src/preferences_gen.h:1293
+#: ../build/src/preferences_gen.h:1268
 msgid ""
 "maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -188,11 +188,11 @@ msgstr ""
 "skærm\n"
 "(genstart nødvendig, og nuværende gemte billedminiaturer invalideres)."
 
-#: ../build/src/preferences_gen.h:1300
+#: ../build/src/preferences_gen.h:1275
 msgid "compression of thumbnail images"
 msgstr "kompression af billedminiaturer"
 
-#: ../build/src/preferences_gen.h:1325
+#: ../build/src/preferences_gen.h:1300
 msgid ""
 "off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high "
 "quality - DXT1, same memory as low quality variant but slower."
@@ -201,11 +201,11 @@ msgstr ""
 "(hurtig). høj kvalitet - DXT1, samme hukommelse som lav kvalitet, men "
 "langsommere."
 
-#: ../build/src/preferences_gen.h:1332
+#: ../build/src/preferences_gen.h:1307
 msgid "pen pressure control for brush masks"
 msgstr "styring af pennetryk for penselmasker"
 
-#: ../build/src/preferences_gen.h:1366
+#: ../build/src/preferences_gen.h:1341
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -215,15 +215,15 @@ msgstr ""
 "- trykaflæsningsspecificeret attribut, absolut/relativ - trykaflæsning "
 "bruges direkte som attribut eller multipliceres med prædefineret indstilling."
 
-#: ../build/src/preferences_gen.h:1373
+#: ../build/src/preferences_gen.h:1348
 msgid "ask before deleting a tag"
 msgstr "spørg før et mærke slettes"
 
-#: ../build/src/preferences_gen.h:1391
+#: ../build/src/preferences_gen.h:1366
 msgid "maximum number of images drawn on map"
 msgstr "maksimalt antal billeder på kort"
 
-#: ../build/src/preferences_gen.h:1408
+#: ../build/src/preferences_gen.h:1383
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
@@ -231,11 +231,11 @@ msgstr ""
 "det maksimale antal geomærkede billeder, der vises på kortet. forøgelse af "
 "dette antal kan sløve kortet ned (genstart nødvendig)."
 
-#: ../build/src/preferences_gen.h:1415
+#: ../build/src/preferences_gen.h:1390
 msgid "pretty print the image location"
 msgstr "vis billedplacering pænt"
 
-#: ../build/src/preferences_gen.h:1427
+#: ../build/src/preferences_gen.h:1402
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
@@ -243,44 +243,44 @@ msgstr ""
 "vis en mere læsbar repræsentation af placeringen i billedinformations-"
 "modulet."
 
-#: ../build/src/preferences_gen.h:1434
+#: ../build/src/preferences_gen.h:1409
 msgid "expand a single lighttable module at a time"
 msgstr "udvid et enkelt lysbordsmodul ad gangen"
 
-#: ../build/src/preferences_gen.h:1446
+#: ../build/src/preferences_gen.h:1421
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "denne valgmulighed slår muligheden for at shift-klikke til og fra i "
 "lysbordtilstand"
 
-#: ../build/src/preferences_gen.h:1453
+#: ../build/src/preferences_gen.h:1428
 msgid "expand a single darkroom module at a time"
 msgstr "udvid et enkelt mørkekammermodul ad gangen"
 
-#: ../build/src/preferences_gen.h:1465
+#: ../build/src/preferences_gen.h:1440
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "denne valgmulighed slår muligheden for at shift-klikke til og fra i "
 "mørkekammertilstand"
 
-#: ../build/src/preferences_gen.h:1488
+#: ../build/src/preferences_gen.h:1463
 msgid "core options"
 msgstr "grundvalgmuligheder"
 
-#: ../build/src/preferences_gen.h:1491
+#: ../build/src/preferences_gen.h:1466
 msgid "memory in megabytes to use for mipmap cache"
 msgstr "hukommelse i megabytes til brug for mipmap cache"
 
-#: ../build/src/preferences_gen.h:1506
+#: ../build/src/preferences_gen.h:1481
 #, c-format
 msgid "double click to reset to `%<PRId64>'"
 msgstr "dobbeltklik for at nulstille til `%<PRId64>'"
 
-#: ../build/src/preferences_gen.h:1516
+#: ../build/src/preferences_gen.h:1491
 msgid "number of background threads"
 msgstr "antal baggrundstråde"
 
-#: ../build/src/preferences_gen.h:1533
+#: ../build/src/preferences_gen.h:1508
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -290,11 +290,11 @@ msgstr ""
 "importering. cache vil vokse til maksimalt det dobbelte af dette tal for "
 "fuldopløste billedbuffers (genstart nødvendig)."
 
-#: ../build/src/preferences_gen.h:1540
+#: ../build/src/preferences_gen.h:1515
 msgid "host memory limit (in MB) for tiling"
 msgstr "værts hukommelsesgrænse (i MB) for tiling"
 
-#: ../build/src/preferences_gen.h:1557
+#: ../build/src/preferences_gen.h:1532
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -307,11 +307,11 @@ msgstr ""
 "tiles. ved at sætte dette til 0 vil enhver begrænsning ses bort fra. værdier "
 "under 500 vil opfattes som 500 (genstart nødvendig)."
 
-#: ../build/src/preferences_gen.h:1564
+#: ../build/src/preferences_gen.h:1539
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "minimal mængde hukommelse (i MB) for en enkelt buffer i tiling"
 
-#: ../build/src/preferences_gen.h:1582
+#: ../build/src/preferences_gen.h:1557
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -322,11 +322,11 @@ msgstr ""
 "enkelt billedbuffer. vægtes højere end heuristics baseret på "
 "host_memory_limit (genstart nødvendig)."
 
-#: ../build/src/preferences_gen.h:1589
+#: ../build/src/preferences_gen.h:1564
 msgid "write sidecar file for each image"
 msgstr "skriv metadatafil for hvert billede"
 
-#: ../build/src/preferences_gen.h:1601
+#: ../build/src/preferences_gen.h:1576
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -334,11 +334,11 @@ msgstr ""
 "disse redundante filer kan senere re-importeres til en anden database, med "
 "dine ændringer til billedet gemt."
 
-#: ../build/src/preferences_gen.h:1608
+#: ../build/src/preferences_gen.h:1583
 msgid "activate OpenCL support"
 msgstr "aktivér OpenCL support"
 
-#: ../build/src/preferences_gen.h:1620
+#: ../build/src/preferences_gen.h:1595
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -346,23 +346,23 @@ msgstr ""
 "brug OpenCL runtime på dit system (hvis den findes) for øget "
 "bearbejdningshastighed. kan sætte til og fra på et vilkårligt tidspunkt."
 
-#: ../build/src/preferences_gen.h:1624
+#: ../build/src/preferences_gen.h:1599
 msgid "not available on this system"
 msgstr "ikke tilgængelig på dette system"
 
-#: ../build/src/preferences_gen.h:1631
+#: ../build/src/preferences_gen.h:1606
 msgid "always try to use LittleCMS 2"
 msgstr "prøv altid at bruge LittleCMS 2"
 
-#: ../build/src/preferences_gen.h:1643
+#: ../build/src/preferences_gen.h:1618
 msgid "this is significantly slower than the default."
 msgstr "dette er betydeligt langsommere end standardindstillingen."
 
-#: ../build/src/preferences_gen.h:1650
+#: ../build/src/preferences_gen.h:1625
 msgid "do high quality resampling during export"
 msgstr "udfør højkvalitets-resampling under eksportering"
 
-#: ../build/src/preferences_gen.h:1662
+#: ../build/src/preferences_gen.h:1637
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
@@ -372,26 +372,11 @@ msgstr ""
 "helt til sidst. dette kan nogle gange resultere i bedre kvalitet men vil "
 "altid være langsommere."
 
-#: ../build/src/preferences_gen.h:1669
-msgid "dithering for darkroom mode"
-msgstr "dithering for mørkekammer-tilstand"
-
-#: ../build/src/preferences_gen.h:1681
-msgid ""
-"center view will be dithered if this option is on and module dithering is "
-"activated (default for new images). switch this to off if you can accept "
-"display banding and prefer to have a slightly faster processing speed."
-msgstr ""
-"centervisning vil blive dithered hvis denne valgmulighed er sat til, og "
-"moduldithering er aktiveret (standard for nye billeder). slå fra hvis du kan "
-"acceptere display banding og foretrækker at have en smule hurtigere "
-"behandlingstid."
-
-#: ../build/src/preferences_gen.h:1688
+#: ../build/src/preferences_gen.h:1644
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "demosaicing for mørkekammer-tilstand (zoomet ud)"
 
-#: ../build/src/preferences_gen.h:1713
+#: ../build/src/preferences_gen.h:1669
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -402,11 +387,11 @@ msgstr ""
 "interpoleringstilstand specificeret herunder, fuld bruger præcis de samme "
 "indstillinger som fuld-størrelseseksport."
 
-#: ../build/src/preferences_gen.h:1720
+#: ../build/src/preferences_gen.h:1676
 msgid "pixel interpolator"
 msgstr "pixel-interpolator"
 
-#: ../build/src/preferences_gen.h:1748
+#: ../build/src/preferences_gen.h:1704
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -414,11 +399,11 @@ msgstr ""
 "pixel-interpolator, der bruges ved rotering og objektivkorrektion (bilineær, "
 "bikubisk, lanczos2, lanczos3)."
 
-#: ../build/src/preferences_gen.h:1755
+#: ../build/src/preferences_gen.h:1711
 msgid "password storage backend to use"
 msgstr "backend for opbevaring af passwords"
 
-#: ../build/src/preferences_gen.h:1780
+#: ../build/src/preferences_gen.h:1736
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "backend for password-opbevaring: ingen, kwallet, gnome keyring"
 
@@ -553,7 +538,7 @@ msgid_plural "importing %d images"
 msgstr[0] "importerer %d billede"
 msgstr[1] "importerer %d billeder"
 
-#: ../src/common/film.c:529
+#: ../src/common/film.c:522
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -569,14 +554,14 @@ msgstr ""
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1686
-#: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1126 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "til"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1536
-#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1129
+#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1126
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -906,40 +891,54 @@ msgstr "kopierer %d billede"
 msgid "copying %d images"
 msgstr "kopierer %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1008
+#: ../src/control/jobs/control_jobs.c:975
+#, c-format
+msgid "creating local copie for %d image"
+msgid_plural "creating local copies for %d images"
+msgstr[0] "opretter lokal kopi af %d billede"
+msgstr[1] "opretter lokal kopier af %d billeder"
+
+#: ../src/control/jobs/control_jobs.c:977
+#, c-format
+msgid "removing local copie for %d image"
+msgid_plural "removing local copies for %d images"
+msgstr[0] "fjerner lokal kopi af %d billede"
+msgstr[1] "fjerner lokale kopier af %d billeder"
+
+#: ../src/control/jobs/control_jobs.c:1039
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "hentning af parametre fra opbevaringsmodul `%s' fejlede, eksport afbrydes.."
 
-#: ../src/control/jobs/control_jobs.c:1012
+#: ../src/control/jobs/control_jobs.c:1043
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "eksporterer %d billede.."
 msgstr[1] "eksporterer %d billeder.."
 
-#: ../src/control/jobs/control_jobs.c:1014
+#: ../src/control/jobs/control_jobs.c:1045
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "eksporterer %d billede til %s"
 msgstr[1] "eksporterer %d billeder til %s"
 
-#: ../src/control/jobs/control_jobs.c:1078
-#: ../src/control/jobs/control_jobs.c:1079 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1109
+#: ../src/control/jobs/control_jobs.c:1110 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "billede `%s' er i øjeblikket utilgængeligt"
 
-#: ../src/control/jobs/control_jobs.c:1157
+#: ../src/control/jobs/control_jobs.c:1188
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "føjer tidsforskel til %d billede"
 msgstr[1] "føjer tidsforskel til %d billeder"
 
-#: ../src/control/jobs/control_jobs.c:1177
+#: ../src/control/jobs/control_jobs.c:1208
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "føjede tidsforskel til %d billede(r)"
@@ -1124,121 +1123,140 @@ msgstr "tilføj pensel"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:377
+msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
 
 #: ../src/develop/blend_gui.c:1503
+msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normal begrænset"
 
 #: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:386
+msgctxt "blendmode"
 msgid "lighten"
 msgstr "lysn"
 
 #: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:385
+msgctxt "blendmode"
 msgid "darken"
 msgstr "mørkn"
 
 #: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:382
+msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplicér"
 
 #: ../src/develop/blend_gui.c:1507
+msgctxt "blendmode"
 msgid "average"
 msgstr "gennemsnit"
 
 #: ../src/develop/blend_gui.c:1508
+msgctxt "blendmode"
 msgid "addition"
 msgstr "addér"
 
 #: ../src/develop/blend_gui.c:1509
+msgctxt "blendmode"
 msgid "subtract"
 msgstr "subtraktér"
 
 #: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:391
+msgctxt "blendmode"
 msgid "difference"
 msgstr "forskel"
 
 #: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:383
+msgctxt "blendmode"
 msgid "screen"
 msgstr "skærm"
 
-#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:353
-#: ../src/libs/live_view.c:384
+#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:384
+msgctxt "blendmode"
 msgid "overlay"
 msgstr "overlægning"
 
 #: ../src/develop/blend_gui.c:1513
+msgctxt "blendmode"
 msgid "softlight"
 msgstr "softlight"
 
 #: ../src/develop/blend_gui.c:1514
+msgctxt "blendmode"
 msgid "hardlight"
 msgstr "hardlight"
 
 #: ../src/develop/blend_gui.c:1515
+msgctxt "blendmode"
 msgid "vividlight"
 msgstr "vividlight"
 
 #: ../src/develop/blend_gui.c:1516
+msgctxt "blendmode"
 msgid "linearlight"
 msgstr "linearlight"
 
 #: ../src/develop/blend_gui.c:1517
+msgctxt "blendmode"
 msgid "pinlight"
 msgstr "pinlight"
 
 # Valør på norsk. Også på dansk?
-#: ../src/develop/blend_gui.c:1518 ../src/iop/channelmixer.c:439
-#: ../src/iop/colorize.c:472 ../src/iop/colorzones.c:1021
-#: ../src/iop/colorzones.c:1059
+#: ../src/develop/blend_gui.c:1518
+msgctxt "blendmode"
 msgid "lightness"
 msgstr "lysskarphed"
 
-#: ../src/develop/blend_gui.c:1519 ../src/iop/atrous.c:1430
-#: ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
+#: ../src/develop/blend_gui.c:1519
+msgctxt "blendmode"
 msgid "chroma"
 msgstr "kroma"
 
-#. dt_bauhaus_slider_set_format(g->gslider1, "");
-#: ../src/develop/blend_gui.c:1520 ../src/iop/channelmixer.c:437
-#: ../src/iop/colorize.c:448 ../src/iop/colorzones.c:1023
-#: ../src/iop/colorzones.c:1057 ../src/iop/graduatednd.c:1049
-#: ../src/iop/splittoning.c:542
+#: ../src/develop/blend_gui.c:1520
+msgctxt "blendmode"
 msgid "hue"
 msgstr "farvetone"
 
 #: ../src/develop/blend_gui.c:1521
+msgctxt "blendmode"
 msgid "color"
 msgstr "farve"
 
 #: ../src/develop/blend_gui.c:1522
+msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "farveændring"
 
 # Valør på norsk. Også på dansk?
 #: ../src/develop/blend_gui.c:1523
+msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lab lysskarphed"
 
 #: ../src/develop/blend_gui.c:1524
+msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Lab farve"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:1527
+msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "forskel (forældet)"
 
 #: ../src/develop/blend_gui.c:1528
+msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "inverteret (forældet)"
 
 #: ../src/develop/blend_gui.c:1529
+msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normal (forældet)"
 
 #: ../src/develop/blend_gui.c:1530
+msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "ubegrænset (forældet)"
 
@@ -1334,7 +1352,7 @@ msgstr "vis maske"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "slå midlertidigt blend-maske fra. kun for modul i fokus"
 
-#: ../src/develop/develop.c:963
+#: ../src/develop/develop.c:960
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' versionsuoverensstemmelse: %d != %d"
@@ -2119,7 +2137,7 @@ msgstr "minimum brændvidde"
 msgid "maximum focal length"
 msgstr "maksimum brændvidde"
 
-#: ../src/gui/presets.c:147 ../src/gui/presets.c:789 ../src/gui/presets.c:802
+#: ../src/gui/presets.c:147 ../src/gui/presets.c:792 ../src/gui/presets.c:805
 #: ../src/libs/lib.c:73
 msgid "(default)"
 msgstr "(standard)"
@@ -2157,23 +2175,23 @@ msgstr "overskriv forudindstilling?"
 msgid "name of the preset"
 msgstr "navn på forudstillingen"
 
-#: ../src/gui/presets.c:812
+#: ../src/gui/presets.c:815
 msgid "disabled: wrong module version"
 msgstr "slået fra: forkert modulversion"
 
-#: ../src/gui/presets.c:832 ../src/libs/lib.c:446
+#: ../src/gui/presets.c:835 ../src/libs/lib.c:446
 msgid "edit this preset.."
 msgstr "redigér denne forudindstilling.."
 
-#: ../src/gui/presets.c:836 ../src/libs/lib.c:450
+#: ../src/gui/presets.c:839 ../src/libs/lib.c:450
 msgid "delete this preset"
 msgstr "slet denne forudindstilling"
 
-#: ../src/gui/presets.c:842 ../src/libs/lib.c:457
+#: ../src/gui/presets.c:845 ../src/libs/lib.c:457
 msgid "store new preset.."
 msgstr "gem ny forudindstilling.."
 
-#: ../src/gui/presets.c:849 ../src/libs/lib.c:464
+#: ../src/gui/presets.c:852 ../src/libs/lib.c:464
 msgid "update preset"
 msgstr "opdatér forudindstilling"
 
@@ -2339,7 +2357,7 @@ msgstr "kunne ikke skrive til mappe `%s'!"
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1191 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1484
+#: ../src/imageio/storage/picasa.c:1457
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunne ikke eksportere til fil `%s'!"
@@ -2374,7 +2392,7 @@ msgstr ""
 "nu ind på din facebook-konto dér og autorisér darktable til at uploade fotos "
 "før du går videre."
 
-#: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:837
+#: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:826
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
@@ -2384,37 +2402,37 @@ msgstr ""
 msgid "facebook authentication"
 msgstr "facebook-autentificering"
 
-#: ../src/imageio/storage/facebook.c:620 ../src/imageio/storage/picasa.c:851
+#: ../src/imageio/storage/facebook.c:620 ../src/imageio/storage/picasa.c:840
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:640 ../src/imageio/storage/picasa.c:871
+#: ../src/imageio/storage/facebook.c:640 ../src/imageio/storage/picasa.c:860
 msgid "please enter the validation URL"
 msgstr "skriv venligst validerings-URL'en"
 
-#: ../src/imageio/storage/facebook.c:651 ../src/imageio/storage/picasa.c:883
+#: ../src/imageio/storage/facebook.c:651 ../src/imageio/storage/picasa.c:872
 msgid "the given URL is not valid, it should look like: "
 msgstr "den givne URL er ikke gyldig; den skal se ud som: "
 
-#: ../src/imageio/storage/facebook.c:757 ../src/imageio/storage/picasa.c:1014
+#: ../src/imageio/storage/facebook.c:757 ../src/imageio/storage/picasa.c:1003
 msgid "new account"
 msgstr "ny konto"
 
-#: ../src/imageio/storage/facebook.c:764 ../src/imageio/storage/picasa.c:1021
+#: ../src/imageio/storage/facebook.c:764 ../src/imageio/storage/picasa.c:1010
 msgid "other account"
 msgstr "anden konto"
 
-#: ../src/imageio/storage/facebook.c:795 ../src/imageio/storage/picasa.c:1051
+#: ../src/imageio/storage/facebook.c:795 ../src/imageio/storage/picasa.c:1040
 msgid "unable to retrieve the album list"
 msgstr "kan ikke modtage albumlisten"
 
 #: ../src/imageio/storage/facebook.c:803 ../src/imageio/storage/flickr.c:388
-#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1059
+#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1048
 msgid "create new album"
 msgstr "opret nyt album"
 
-#: ../src/imageio/storage/facebook.c:925 ../src/imageio/storage/picasa.c:1107
-#: ../src/imageio/storage/picasa.c:1267
+#: ../src/imageio/storage/facebook.c:925 ../src/imageio/storage/picasa.c:1096
+#: ../src/imageio/storage/picasa.c:1256
 msgid "logout"
 msgstr "log ud"
 
@@ -2422,8 +2440,8 @@ msgstr "log ud"
 #: ../src/imageio/storage/facebook.c:929 ../src/imageio/storage/facebook.c:942
 #: ../src/imageio/storage/facebook.c:969
 #: ../src/imageio/storage/facebook.c:1072 ../src/imageio/storage/flickr.c:526
-#: ../src/imageio/storage/picasa.c:1113 ../src/imageio/storage/picasa.c:1271
-#: ../src/imageio/storage/picasa.c:1284 ../src/imageio/storage/picasa.c:1363
+#: ../src/imageio/storage/picasa.c:1102 ../src/imageio/storage/picasa.c:1260
+#: ../src/imageio/storage/picasa.c:1273 ../src/imageio/storage/picasa.c:1339
 msgid "login"
 msgstr "log ind"
 
@@ -2435,17 +2453,17 @@ msgstr "facebook webalbum"
 #. xmp
 #: ../src/imageio/storage/facebook.c:1019 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
-#: ../src/imageio/storage/picasa.c:1312 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1301 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:100
 msgid "title"
 msgstr "titel"
 
 #: ../src/imageio/storage/facebook.c:1020 ../src/imageio/storage/flickr.c:481
-#: ../src/imageio/storage/picasa.c:1313
+#: ../src/imageio/storage/picasa.c:1302
 msgid "summary"
 msgstr "sammenfatning"
 
-#: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/picasa.c:1314
+#: ../src/imageio/storage/facebook.c:1021
 msgid "privacy"
 msgstr "privatliv"
 
@@ -2457,7 +2475,7 @@ msgstr "kun mig"
 msgid "friends"
 msgstr "venner"
 
-#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/picasa.c:1358
+#: ../src/imageio/storage/facebook.c:1065
 msgid "public"
 msgstr "offentlig"
 
@@ -2465,15 +2483,15 @@ msgstr "offentlig"
 msgid "friends of friends"
 msgstr "venners venner"
 
-#: ../src/imageio/storage/facebook.c:1200 ../src/imageio/storage/picasa.c:1493
+#: ../src/imageio/storage/facebook.c:1200 ../src/imageio/storage/picasa.c:1466
 msgid "unable to create album, no title provided"
 msgstr "kan ikke oprette album; ingen titel angivet"
 
-#: ../src/imageio/storage/facebook.c:1207 ../src/imageio/storage/picasa.c:1500
+#: ../src/imageio/storage/facebook.c:1207 ../src/imageio/storage/picasa.c:1473
 msgid "unable to create album"
 msgstr "kan ikke oprette album"
 
-#: ../src/imageio/storage/facebook.c:1217 ../src/imageio/storage/picasa.c:1510
+#: ../src/imageio/storage/facebook.c:1217
 msgid "unable to export photo to webalbum"
 msgstr "kan ikke eksportere foto til webalbum"
 
@@ -2600,7 +2618,7 @@ msgid "enter the title of the book"
 msgstr "skriv titlen på bogen"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:834
+#: ../src/imageio/storage/picasa.c:823
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your picasa account there and authorize darktable to "
@@ -2610,23 +2628,23 @@ msgstr ""
 "nu ind på din picsa-konto dér og autorisér darktable til at uploade fotos "
 "før du går videre."
 
-#: ../src/imageio/storage/picasa.c:845
+#: ../src/imageio/storage/picasa.c:834
 msgid "picasa authentication"
 msgstr "picasa-autentificering"
 
-#: ../src/imageio/storage/picasa.c:1299
-msgid "picasa webalbum"
-msgstr "picasa webalbum"
+#: ../src/imageio/storage/picasa.c:1288
+msgid "google+ photos"
+msgstr "google+-fotos"
 
-#: ../src/imageio/storage/picasa.c:1356
-msgid "private"
-msgstr "privat"
+#: ../src/imageio/storage/picasa.c:1483
+msgid "unable to export photo to google+ album"
+msgstr "kan ikke eksportere foto til google+-album"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1527
+#: ../src/imageio/storage/picasa.c:1500
 #, c-format
-msgid "%d/%d exported to picasa webalbum"
-msgstr "%d/%d eksporteret til picasa webalbum"
+msgid "%d/%d exported to google+ album"
+msgstr "%d/%d eksporteret til google+-album"
 
 #: ../src/iop/atrous.c:114
 msgid "equalizer"
@@ -2724,6 +2742,11 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "ændr lysskarphed ved hver konturstørrelse"
 
+#: ../src/iop/atrous.c:1430 ../src/iop/equalizer.c:343
+#: ../src/iop/nlmeans.c:718
+msgid "chroma"
+msgstr "kroma"
+
 #: ../src/iop/atrous.c:1431
 msgid "change color saturation at each feature size"
 msgstr "ændr farvemætning ved hver konturstørrelse"
@@ -2817,11 +2840,11 @@ msgstr "fotogenerisk (point & shoot)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenerisk (EV3)"
 
-#: ../src/iop/basecurve.c:187
+#: ../src/iop/basecurve.c:191
 msgid "base curve"
 msgstr "grundkurve"
 
-#: ../src/iop/basecurve.c:709
+#: ../src/iop/basecurve.c:715
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse: input, ordinat: output. virker på RGB-kanaler"
 
@@ -2885,7 +2908,7 @@ msgstr "hvor meget grøn skal udjævnes"
 msgid "how much to blur blue"
 msgstr "hvor meget blå skal udjævnes"
 
-#: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:572
+#: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
 #: ../src/iop/lowpass.c:521 ../src/iop/shadhi.c:652 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "radius"
@@ -3155,6 +3178,13 @@ msgstr "kanalmikser"
 msgid "destination"
 msgstr "destination"
 
+#. dt_bauhaus_slider_set_format(g->gslider1, "");
+#: ../src/iop/channelmixer.c:437 ../src/iop/colorize.c:448
+#: ../src/iop/colorzones.c:1023 ../src/iop/colorzones.c:1057
+#: ../src/iop/graduatednd.c:1049 ../src/iop/splittoning.c:542
+msgid "hue"
+msgstr "farvetone"
+
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
 #: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
 #: ../src/iop/colorize.c:462 ../src/iop/colorzones.c:1022
@@ -3163,6 +3193,12 @@ msgstr "destination"
 #: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "mætning"
+
+# Valør på norsk. Også på dansk?
+#: ../src/iop/channelmixer.c:439 ../src/iop/colorize.c:472
+#: ../src/iop/colorzones.c:1021 ../src/iop/colorzones.c:1059
+msgid "lightness"
+msgstr "lysskarphed"
 
 #: ../src/iop/channelmixer.c:443
 msgid "gray"
@@ -3920,7 +3956,7 @@ msgstr "PPG (hurtig)"
 msgid "amaze (slow)"
 msgstr "amaze (langsom)"
 
-#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:567
+#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
 #: ../src/iop/highlights.c:376
 msgid "method"
 msgstr "metode"
@@ -4045,56 +4081,56 @@ msgstr "matchnings-radius for lapperne. forøg for mere skarphed"
 msgid "finetune denoising strength"
 msgstr "finjustér styrke for støjfjernelse"
 
-#: ../src/iop/dither.c:98 ../src/iop/vignette.c:1134
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:1134
 msgid "dithering"
 msgstr "dithering"
 
 #. add the preset.
-#: ../src/iop/dither.c:124
+#: ../src/iop/dither.c:123
 msgid "dither"
 msgstr "dither"
 
-#: ../src/iop/dither.c:561
+#: ../src/iop/dither.c:557
 msgid "random"
 msgstr "tilfældigt"
 
-#: ../src/iop/dither.c:562
+#: ../src/iop/dither.c:558
 msgid "floyd-steinberg 1-bit B&W"
 msgstr "floyd-steinberg 1-bit S&H"
 
-#: ../src/iop/dither.c:563
+#: ../src/iop/dither.c:559
 msgid "floyd-steinberg 4-bit gray"
 msgstr "floyd-steinberg 4-bit grå"
 
-#: ../src/iop/dither.c:564
+#: ../src/iop/dither.c:560
 msgid "floyd-steinberg 8-bit RGB"
 msgstr "floyd-steinberg 8-bit RGB"
 
-#: ../src/iop/dither.c:565
+#: ../src/iop/dither.c:561
 msgid "floyd-steinberg 16-bit RGB"
 msgstr "floyd-steinberg 16-bit RGB"
 
-#: ../src/iop/dither.c:566
+#: ../src/iop/dither.c:562
 msgid "floyd-steinberg auto"
 msgstr "floyd-steinberg automatisk"
 
-#: ../src/iop/dither.c:571
+#: ../src/iop/dither.c:567
 msgid "radius for blurring step"
 msgstr "radius for udjævningsskridt"
 
-#: ../src/iop/dither.c:583
+#: ../src/iop/dither.c:579
 msgid "the gradient range where to apply random dither"
 msgstr "gradientrækkevidde hvor tilfældig dither skal udføres"
 
-#: ../src/iop/dither.c:584
+#: ../src/iop/dither.c:580
 msgid "gradient range"
 msgstr "gradientrækkevidde"
 
-#: ../src/iop/dither.c:591
+#: ../src/iop/dither.c:587
 msgid "damping level of random dither"
 msgstr "dæmpningsniveau for tilfældig dither"
 
-#: ../src/iop/dither.c:592
+#: ../src/iop/dither.c:588
 msgid "damping"
 msgstr "dæmpning"
 
@@ -6734,6 +6770,10 @@ msgstr "flyt fokuspunkt ud (små trin)"
 msgid "move focus point out (big steps)"
 msgstr "flyt fokuspunkt ud (store trin)"
 
+#: ../src/libs/live_view.c:353
+msgid "overlay"
+msgstr "overlægning"
+
 #: ../src/libs/live_view.c:355
 msgid "selected image"
 msgstr "valgt billede"
@@ -6759,50 +6799,62 @@ msgid "overlay mode"
 msgstr "overlægningstilstand"
 
 #: ../src/libs/live_view.c:378
+msgctxt "blendmode"
 msgid "xor"
 msgstr "xor"
 
 #: ../src/libs/live_view.c:379
+msgctxt "blendmode"
 msgid "add"
 msgstr "add"
 
 #: ../src/libs/live_view.c:380
+msgctxt "blendmode"
 msgid "saturate"
 msgstr "mætning"
 
 #: ../src/libs/live_view.c:387
+msgctxt "blendmode"
 msgid "color dodge"
 msgstr "colour dodge"
 
 #: ../src/libs/live_view.c:388
+msgctxt "blendmode"
 msgid "color burn"
 msgstr "colour burn"
 
 #: ../src/libs/live_view.c:389
+msgctxt "blendmode"
 msgid "hard light"
 msgstr "hårdt lys"
 
 #: ../src/libs/live_view.c:390
+msgctxt "blendmode"
 msgid "soft light"
 msgstr "blødt lys"
 
 #: ../src/libs/live_view.c:392
+msgctxt "blendmode"
 msgid "exclusion"
 msgstr "eksklusion"
 
 #: ../src/libs/live_view.c:393
+msgctxt "blendmode"
 msgid "HSL hue"
 msgstr "HSL farvetone"
 
 #: ../src/libs/live_view.c:394
+msgctxt "blendmode"
 msgid "HSL saturation"
 msgstr "HSL-mætning"
 
 #: ../src/libs/live_view.c:395
+msgctxt "blendmode"
 msgid "HSL color"
 msgstr "HSL-farve"
 
 #: ../src/libs/live_view.c:396
+msgctxt "blendmode"
 msgid "HSL luminosity"
 msgstr "HSL-luminositet"
 
@@ -7843,7 +7895,14 @@ msgctxt "accel"
 msgid "redo"
 msgstr "gentag"
 
-#: ../src/develop/blend.c:1848 ../src/develop/blend.c:2069
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "sprang blending i modul '%s' over: roi passer ikke sammen"
+
+#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
 msgid "could not allocate buffer for blending"
 msgstr "kunne ikke allokere buffer til blending"
 
@@ -7978,6 +8037,28 @@ msgstr "oprettede forme"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "lua-valgmuligheder"
+
+#~ msgid "dithering for darkroom mode"
+#~ msgstr "dithering for mørkekammer-tilstand"
+
+#~ msgid ""
+#~ "center view will be dithered if this option is on and module dithering is "
+#~ "activated (default for new images). switch this to off if you can accept "
+#~ "display banding and prefer to have a slightly faster processing speed."
+#~ msgstr ""
+#~ "centervisning vil blive dithered hvis denne valgmulighed er sat til, og "
+#~ "moduldithering er aktiveret (standard for nye billeder). slå fra hvis du "
+#~ "kan acceptere display banding og foretrækker at have en smule hurtigere "
+#~ "behandlingstid."
+
+#~ msgid "picasa webalbum"
+#~ msgstr "picasa webalbum"
+
+#~ msgid "private"
+#~ msgstr "privat"
+
+#~ msgid "%d/%d exported to picasa webalbum"
+#~ msgstr "%d/%d eksporteret til picasa webalbum"
 
 #~ msgid "iso"
 #~ msgstr "iso"
