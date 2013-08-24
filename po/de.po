@@ -5843,7 +5843,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:295
 msgid "load sidecar file"
-msgstr "Begleitdatei laden"
+msgstr "XMP laden"
 
 #: ../src/libs/copy_history.c:297
 msgid ""
@@ -5855,7 +5855,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:300
 msgid "write sidecar files"
-msgstr "Begleitdatei schreiben"
+msgstr "XMP schreiben"
 
 #: ../src/libs/copy_history.c:302
 msgid "write history stack and tags to xmp sidecar files"
@@ -5889,12 +5889,12 @@ msgstr "einfügen"
 #: ../src/libs/copy_history.c:345
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "Begleitdateien laden"
+msgstr "XMP-Begleitdateien laden"
 
 #: ../src/libs/copy_history.c:346
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "Begleitdateien schreiben"
+msgstr "XMP-Begleitdateien schreiben"
 
 #: ../src/libs/export.c:70
 msgid "export selected"
