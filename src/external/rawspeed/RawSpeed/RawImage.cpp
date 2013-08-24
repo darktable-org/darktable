@@ -45,7 +45,7 @@ RawImageData::RawImageData(void):
 RawImageData::RawImageData(iPoint2D _dim, uint32 _bpc, uint32 _cpp) :
     dim(_dim),
     blackLevel(-1), whitePoint(65536),
-    dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc),
+    dataRefCount(0), data(0), cpp(_cpp), bpp(_bpc * _cpp),
     uncropped_dim(0, 0) {
   blackLevelSeparate[0] = blackLevelSeparate[1] = blackLevelSeparate[2] = blackLevelSeparate[3] = -1;
   subsampling.x = subsampling.y = 1;
@@ -320,6 +320,68 @@ void RawImageData::fixBadPixelsThread( int start_y, int end_y )
   }
 }
 
+void RawImageData::blitFrom(RawImage src, iPoint2D srcPos, iPoint2D size, iPoint2D destPos )
+{
+  iRectangle2D src_rect(srcPos, size);
+  iRectangle2D dest_rect(destPos, size);
+  src_rect = src_rect.getOverlap(iRectangle2D(iPoint2D(0,0), src->dim));
+  dest_rect = dest_rect.getOverlap(iRectangle2D(iPoint2D(0,0), dim));
+
+  iPoint2D blitsize = src_rect.dim.getSmallest(dest_rect.dim);
+  if (blitsize.area() <= 0)
+    return;
+
+  // TODO: Move offsets after crop.
+  BitBlt(getData(dest_rect.pos.x, dest_rect.pos.y), pitch, src->getData(src_rect.pos.x, src_rect.pos.y), src->pitch, blitsize.x*bpp, blitsize.y);
+}
+
+/* Does not take cfa into consideration */
+void RawImageData::expandBorder(iRectangle2D validData)
+{
+  validData = validData.getOverlap(iRectangle2D(0,0,dim.x, dim.y));
+  if (validData.pos.x > 0) {
+    for (int y = 0; y < dim.y; y++ ) {
+      uchar8* src_pos = getData(validData.pos.x, y);
+      uchar8* dst_pos = getData(validData.pos.x-1, y);
+      for (int x = validData.pos.x; x >= 0; x--) {
+        for (uint32 i = 0; i < bpp; i++) {
+          dst_pos[i] = src_pos[i];
+        }
+        dst_pos -= bpp;
+      }
+    }
+  }
+
+  if (validData.getRight() < dim.x) {
+    int pos = validData.getRight();
+    for (int y = 0; y < dim.y; y++ ) {
+      uchar8* src_pos = getData(pos-1, y);
+      uchar8* dst_pos = getData(pos, y);
+      for (int x = pos; x < dim.x; x++) {
+        for (uint32 i = 0; i < bpp; i++) {
+          dst_pos[i] = src_pos[i];
+        }
+        dst_pos += bpp;
+      }
+    }
+  }
+
+  if (validData.pos.y > 0) {
+    uchar8* src_pos = getData(0, validData.pos.y);
+    for (int y = 0; y < validData.pos.y; y++ ) {
+      uchar8* dst_pos = getData(0, y);
+      memcpy(dst_pos, src_pos, dim.x*bpp);
+    }
+  }
+  if (validData.getBottom() < dim.y) {
+    uchar8* src_pos = getData(0, validData.getBottom()-1);
+    for (int y = validData.getBottom(); y < dim.y; y++ ) {
+      uchar8* dst_pos = getData(0, y);
+      memcpy(dst_pos, src_pos, dim.x*bpp);
+    }
+  }
+}
+
 RawImageData* RawImage::operator->() {
   return p_;
 }
@@ -329,6 +391,8 @@ RawImageData& RawImage::operator*() {
 }
 
 RawImage& RawImage::operator=(const RawImage & p) {
+  if (this == &p)      // Same object?
+    return *this;      // Yes, so skip assignment, and just return *this.
   RawImageData* const old = p_;
   p_ = p.p_;
   ++p_->dataRefCount;

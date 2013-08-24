@@ -57,6 +57,7 @@ public:
   void setCpp(uint32 val);
   virtual void createData();
   virtual void destroyData();
+  void blitFrom(const RawImage src, iPoint2D srcPos, iPoint2D size, iPoint2D destPos);
   RawSpeed::RawImageType getDataType() const { return dataType; }
   uchar8* getData();
   uchar8* getData(uint32 x, uint32 y);    // Not super fast, but safe. Don't use per pixel.
@@ -68,6 +69,7 @@ public:
   virtual void calculateBlackAreas() = 0;
   virtual void transferBadPixelsToMap();
   virtual void fixBadPixels();
+  void expandBorder(iRectangle2D validData);
 
   bool isAllocated() {return !!data;}
   void createBadPixelMap();

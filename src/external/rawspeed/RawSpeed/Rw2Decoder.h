@@ -51,6 +51,7 @@ public:
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual void checkSupportInternal(CameraMetaData *meta);
   TiffIFD *mRootIFD;
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
   virtual void decodeThreaded(RawDecoderThread* t);
 private:

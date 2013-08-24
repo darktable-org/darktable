@@ -82,6 +82,10 @@ public:
   /* The delivered class gives information on what part of the image should be decoded. */
   virtual void decodeThreaded(RawDecoderThread* t);
 
+  /* Allows access to the root IFD structure */
+  /* If image isn't TIFF based NULL will be returned */
+  virtual TiffIFD* getRootIFD() {return NULL;}
+
   /* The decoded image - undefined if image has not or could not be decoded. */
   /* Remember this is automatically refcounted, so a reference is retained until this class is destroyed */
   RawImage mRaw; 
