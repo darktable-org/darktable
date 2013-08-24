@@ -83,14 +83,12 @@ int dt_lua_dofile(lua_State *L,const char* filename)
 
 static gboolean poll_events(gpointer data)
 {
-  dt_lua_lock();
   int my_id = GPOINTER_TO_INT(data);
   lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
   lua_rawgeti(darktable.lua_state,-1,my_id);
   if(lua_isnoneornil(darktable.lua_state,-1)) {
     lua_pop(darktable.lua_state,2);
     luaL_error(darktable.lua_state,"Unknown thread was called for delay action");
-    dt_lua_unlock();
     return FALSE;
   }
   lua_State * L = lua_tothread(darktable.lua_state,-1);
@@ -98,7 +96,6 @@ static gboolean poll_events(gpointer data)
   /* L is finished, remove it from the stack */
   luaL_unref(darktable.lua_state,-2,my_id);
   lua_pop(darktable.lua_state,2);
-  dt_lua_unlock();
   return FALSE;
 }
 
