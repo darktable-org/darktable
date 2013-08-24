@@ -25,6 +25,8 @@
 namespace RawSpeed {
 
 CameraMetaData::CameraMetaData() {
+  doc = NULL;
+  ctxt = NULL;
 }
 
 CameraMetaData::CameraMetaData(const char *docname) {

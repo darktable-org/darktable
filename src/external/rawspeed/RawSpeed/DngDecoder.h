@@ -38,6 +38,7 @@ public:
   virtual RawImage decodeRawInternal();
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual void checkSupportInternal(CameraMetaData *meta);
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
   TiffIFD *mRootIFD;
   bool mFixLjpeg;

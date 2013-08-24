@@ -70,8 +70,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="52" width="0" height="0"/>
-		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
-		<Sensor black="2026" white="15304"/>
+		<Sensor black="0" white="16383"/>
 		<BlackAreas>
 			<Vertical x="0" width="72"/>
 			<Horizontal y="8" height="44"/>
@@ -223,12 +222,42 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="72" y="38" width="0" height="0"/>
-		<Sensor black="2049" white="15000"/>
+		<Sensor black="2026" white="13653" iso_min="0" iso_max="199"/>
+		<Sensor black="2026" white="16383" iso_min="6400" iso_max="25600"/>
+		<Sensor black="2026" white="15387"/>
 		<BlackAreas>
-			<Vertical x="2" width="68"/>
-			<Horizontal y="2" height="34"/>
+			<Vertical x="0" width="72"/>
+			<Horizontal y="0" height="38"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 70D" mode="sRaw1">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+	</Camera>  
+	<Camera make="Canon" model="Canon EOS 70D" mode="sRaw2">
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="65535"/>
+	</Camera>
+	<Camera make="Canon" model="Canon EOS 700D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="72" y="52" width="0" height="0"/>
+		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
+		<Sensor black="2026" white="16383" iso_min="6400" iso_max = "25600"/>
+		<Sensor black="2026" white="15304"/>
+		<BlackAreas>
+			<Vertical x="0" width="70"/>
+			<Horizontal y="4" height="50"/>
+		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS REBEL T5i</Alias>
+			<Alias>Canon EOS Kiss X7i</Alias>
+		</Aliases>
+	</Camera>  	
 	<Camera make="Canon" model="Canon EOS 500D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -301,25 +330,6 @@
 		<Aliases>
 			<Alias>Canon EOS REBEL T4i</Alias>
 			<Alias>Canon EOS Kiss X6i</Alias>
-		</Aliases>
-	</Camera>
-	<Camera make="Canon" model="Canon EOS 700D">
-		<CFA width="2" height="2">
-			<Color x="0" y="0">RED</Color>
-			<Color x="1" y="0">GREEN</Color>
-			<Color x="0" y="1">GREEN</Color>
-			<Color x="1" y="1">BLUE</Color>
-		</CFA>
-		<Crop x="76" y="56" width="0" height="0"/>
-		<Sensor black="2026" white="13584" iso_min="0" iso_max = "199"/>
-		<Sensor black="2026" white="15304"/>
-		<BlackAreas>
-			<Vertical x="0" width="70"/>
-			<Horizontal y="4" height="44"/>
-		</BlackAreas>
-		<Aliases>
-			<Alias>Canon EOS REBEL T5i</Alias>
-			<Alias>Canon EOS Kiss X7i</Alias>
 		</Aliases>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 5D">
@@ -686,7 +696,9 @@
 		<Sensor black="120" white="4095"/>
 		<BlackAreas>
 			<Vertical x="0" width="10"/>
+			<Vertical x="3696" width="48"/>
 			<Horizontal y="0" height="14"/>
+			<Horizontal y="2778" height="6"/>
 		</BlackAreas>
 	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G10">
@@ -1626,6 +1638,16 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="E-P5">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+    <Sensor black="250" white="4095"/>
+  </Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-PM1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1669,16 +1691,6 @@
 		<Crop x="0" y="0" width="-26" height="0"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
-        <Camera make="OLYMPUS IMAGING CORP." model="E-P5">
-                <CFA width="2" height="2">
-                        <Color x="0" y="0">RED</Color>
-                        <Color x="1" y="0">GREEN</Color>
-                        <Color x="0" y="1">GREEN</Color>
-                        <Color x="1" y="1">BLUE</Color>
-                </CFA>
-                <Crop x="0" y="0" width="0" height="0"/>
-                <Sensor black="250" white="4095"/>
-        </Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="XZ-1">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -3143,7 +3155,7 @@
 		</CFA>
 		<Crop x="0" y="0" width="-10" height="-18"/>
 		<Sensor black="0" white="4095"/>
-	</Camera>
+	</Camera>  
 	<Camera make="SAMSUNG" model="NX300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -3530,7 +3542,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-36" height="0"/>
-		<Sensor black="512" white="16300"/>
+		<Sensor black="520" white="16596"/>
 	</Camera>
 	<Camera make="SONY" model="SLT-A65V">
 		<CFA width="2" height="2">

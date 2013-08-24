@@ -41,6 +41,7 @@ public:
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual void checkSupportInternal(CameraMetaData *meta);
   TiffIFD *mRootIFD;
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 private:
   bool D100IsCompressed(uint32 offset);
   void DecodeUncompressed();

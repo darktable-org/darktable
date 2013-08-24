@@ -39,6 +39,7 @@ public:
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
   virtual void decodeThreaded(RawDecoderThread* t);
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
   void DecodeARW(ByteStream &input, uint32 w, uint32 h);
   void DecodeARW2(ByteStream &input, uint32 w, uint32 h, uint32 bpp);

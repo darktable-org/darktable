@@ -36,6 +36,7 @@ public:
   virtual RawImage decodeRawInternal();
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  virtual TiffIFD* getRootIFD() {return mRootIFD;}
   virtual ~Cr2Decoder(void);
 protected:
   int sraw_coeffs[3];
