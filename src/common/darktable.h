@@ -44,7 +44,7 @@
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <lua/lua_external.h>
+#include <lua/lua.h>
 
 #ifdef __APPLE__
 #include <mach/mach.h>
