@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-21 00:28+0200\n"
-"PO-Revision-Date: 2013-08-21 00:32+0200\n"
+"POT-Creation-Date: 2013-08-27 09:10+0200\n"
+"PO-Revision-Date: 2013-08-27 09:11+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -897,15 +897,15 @@ msgstr "kopierar %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:975
 #, c-format
-msgid "creating local copie for %d image"
-msgid_plural "creating local copies for %d images"
+msgid "creating local copy of %d image"
+msgid_plural "creating local copies of %d images"
 msgstr[0] "skapa lokala kopia för %d bild"
 msgstr[1] "skapa lokala kopior för %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:977
 #, c-format
-msgid "removing local copie for %d image"
-msgid_plural "removing local copies for %d images"
+msgid "removing local copy of %d image"
+msgid_plural "removing local copies of %d images"
 msgstr[0] "ta bort %d bilds lokala kopia"
 msgstr[1] "ta bort %d bilders lokala kopior"
 
