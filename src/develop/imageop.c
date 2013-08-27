@@ -864,13 +864,6 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
 
-  //we cleanup the module
-  dt_accel_disconnect_list(module->accel_closures);
-  dt_accel_cleanup_locals_iop(module);
-  module->accel_closures = NULL;
-  dt_iop_cleanup_module(module) ;
-  free(module);
-
   //if module was priority 0, then we set next to priority 0
   if (is_zero)
   {
@@ -886,6 +879,14 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
       history = g_list_next(history);
     }
   }
+
+  //we cleanup the module
+  dt_accel_disconnect_list(module->accel_closures);
+  dt_accel_cleanup_locals_iop(module);
+  module->accel_closures = NULL;
+  dt_iop_cleanup_module(module) ;
+  free(module);
+  module = NULL;
 
   //we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
