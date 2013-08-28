@@ -963,9 +963,12 @@ void dt_dev_read_history(dt_develop_t *dev)
       }
       else
       {
-        //quick and dirty hack to handle spot removal legacy_params
-        memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
-        memcpy(hist->module->blend_params, hist->module->default_blendop_params,sizeof(dt_develop_blend_params_t));
+        if (!strcmp(hist->module->op,"spots") && modversion == 1)
+        {
+          //quick and dirty hack to handle spot removal legacy_params
+          memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
+          memcpy(hist->module->blend_params, hist->module->default_blendop_params,sizeof(dt_develop_blend_params_t));
+        }
       }
     }
     else
