@@ -562,7 +562,8 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
   }
 
   /* try switch to mode */
-  dt_ctl_switch_mode_to (mode);
+  if(mode != DT_MODE_NONE)
+    dt_ctl_switch_mode_to (mode);
   return TRUE;
 }
 
