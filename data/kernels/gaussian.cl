@@ -227,7 +227,7 @@ lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
 
 kernel void 
 lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
-            read_only image2d_t table, global float *a)
+            read_only image2d_t ctable, global float *ca, read_only image2d_t ltable, global float *la)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -240,7 +240,8 @@ lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width
   const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
   const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
 
-  o.x = lookup_unbounded(table, i.x/100.0f, a);
+  o.x = lookup_unbounded(ctable, i.x/100.0f, ca);
+  o.x = lookup_unbounded(ltable, o.x/100.0f, la);
   o.y = clamp(i.y*saturation, Labmin.y, Labmax.y);
   o.z = clamp(i.z*saturation, Labmin.z, Labmax.z);
   o.w = i.w;
