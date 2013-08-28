@@ -127,6 +127,7 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'highpass'))
   gr.add_edge(('colorout', 'colorcontrast'))
   gr.add_edge(('colorout', 'colorize'))
+  gr.add_edge(('colorout', 'colisa'))
   gr.add_edge(('bloom', 'colorin'))
   gr.add_edge(('nlmeans', 'colorin'))
   gr.add_edge(('colortransfer', 'colorin'))
@@ -149,6 +150,7 @@ def add_edges(gr):
   gr.add_edge(('highpass', 'colorin'))
   gr.add_edge(('colorcontrast', 'colorin'))
   gr.add_edge(('colorize', 'colorin'))
+  gr.add_edge(('colisa', 'colorin'))
   
   # spot removal works on demosaiced data
   # and needs to be before geometric distortions:
@@ -164,6 +166,7 @@ def add_edges(gr):
   gr.add_edge(('tonecurve', 'monochrome'))
   gr.add_edge(('levels', 'monochrome'))
   gr.add_edge(('relight', 'monochrome'))
+  gr.add_edge(('colisa', 'monochrome'))
   
   # want to splittone evenly, even when changing contrast:
   gr.add_edge(('colorcorrection', 'zonesystem'))
@@ -270,6 +273,7 @@ def add_edges(gr):
   gr.add_edge(('levels', 'colormapping'))
   gr.add_edge(('monochrome', 'colormapping'))
   gr.add_edge(('zonesystem', 'colormapping'))
+  gr.add_edge(('colisa', 'colormapping'))
   gr.add_edge(('colorcorrection', 'colormapping'))
   gr.add_edge(('relight', 'colormapping'))
   gr.add_edge(('lowpass', 'colormapping'))
@@ -285,6 +289,13 @@ def add_edges(gr):
 
   # levels come after tone curve
   gr.add_edge(('levels', 'tonecurve'))
+
+  # colisa comes before other contrast adjustments:
+  gr.add_edge(('zonesystem', 'colisa'))
+  gr.add_edge(('tonecurve', 'colisa'))
+  gr.add_edge(('levels', 'colisa'))
+  gr.add_edge(('relight', 'colisa'))
+
   # want to do highpass filtering after lowpass:
   gr.add_edge(('highpass', 'lowpass'))
 
@@ -294,6 +305,7 @@ def add_edges(gr):
   gr.add_edge(('levels', 'shadhi'))
   gr.add_edge(('zonesystem', 'shadhi'))
   gr.add_edge(('relight', 'shadhi'))
+  gr.add_edge(('colisa', 'shadhi'))
 
   # the bilateral filter, in linear input rgb
   gr.add_edge(('colorin', 'bilateral'))
@@ -332,6 +344,7 @@ gr.add_nodes([
 'channelmixer',
 'clahe', # deprecated
 'clipping',
+'colisa',
 'colorbalance',
 'colorcorrection',
 'colorin',
