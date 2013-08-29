@@ -2155,7 +2155,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 
   //printf("crop to xmin %f, xmax %f, ymin %f, ymax %f - start %d (%f, %f)\n", xmin, xmax, ymin, ymax, point_start, path[2*point_start], path[2*point_start+1]);
 
-  if(point_start < 0) return 0;   // no point within roi found. should normally not happen but we can't continue from here
+  if(point_start < 0) return 0;   // no point means roi lies completely within path
 
   // find the crossing points with xmin and replace segment by nodes on border
   for(int k=0; k<point_count; k++)
@@ -2309,8 +2309,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
   //we get buffers for all points
   float *points, *border, *cpoints = NULL;
-  int points_count,border_count;
+  int points_count, border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (points_count <= 2) return 0;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2404,11 +2405,11 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   memcpy(cpoints, points, 2*points_count*sizeof(float));
 
   //now we clip cpoints to roi
-  const int no_points = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
+  const int roi_in_path = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
 
 
   //only if non-feathered part of shape lies within roi
-  if(!no_points && points_count > 2)
+  if(!roi_in_path)
   {
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
@@ -2470,50 +2471,55 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
-  }
 
-  //now we fill the falloff
-  int p0[2], p1[2];
-  int last0[2] = {-100,-100};
-  int last1[2] = {-100,-100};
-  int next = 0;
-  for (int i=nb_corner*3; i<border_count; i++)
+    //now we fill the falloff
+    int p0[2], p1[2];
+    int last0[2] = {-100,-100};
+    int last1[2] = {-100,-100};
+    int next = 0;
+    for (int i=nb_corner*3; i<border_count; i++)
+    {
+      p0[0] = floorf(points[i*2] + 0.5f);
+      p0[1] = ceilf(points[i*2+1]);
+      if (next > 0)
+      {
+        p1[0] = border[next*2];
+        p1[1] = border[next*2+1];
+      }
+      else
+      {
+        p1[0] = border[i*2];
+        p1[1] = border[i*2+1];
+      }
+
+      //now we check p1 value to know if we have to skip a part
+      if (next == i) next = 0;
+      while (p1[0] == -999999)
+      {
+        if (p1[1] == -999999) next = i-1;
+        else next = p1[1];
+        p1[0] = border[next*2];
+        p1[1] = border[next*2+1];
+      }
+
+      //and we draw the falloff
+      if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
+      {
+        _path_falloff_roi(buffer, p0, p1, width, height);
+        last0[0] = p0[0];
+        last0[1] = p0[1];
+        last1[0] = p1[0];
+        last1[1] = p1[1];
+      }
+    }
+
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  }
+  else
   {
-    p0[0] = floorf(points[i*2] + 0.5f);
-    p0[1] = ceilf(points[i*2+1]);
-    if (next > 0)
-    {
-      p1[0] = border[next*2];
-      p1[1] = border[next*2+1];
-    }
-    else
-    {
-      p1[0] = border[i*2];
-      p1[1] = border[i*2+1];
-    }
-
-    //now we check p1 value to know if we have to skip a part
-    if (next == i) next = 0;
-    while (p1[0] == -999999)
-    {
-      if (p1[1] == -999999) next = i-1;
-      else next = p1[1];
-      p1[0] = border[next*2];
-      p1[1] = border[next*2+1];
-    }
-
-    //and we draw the falloff
-    if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
-    {
-      _path_falloff_roi(buffer, p0, p1, width, height);
-      last0[0] = p0[0];
-      last0[1] = p0[1];
-      last1[0] = p1[0];
-      last1[1] = p1[1];
-    }
+    // roi lies completely within path
+    for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
   }
-
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
 
   free(points);
   free(border);
