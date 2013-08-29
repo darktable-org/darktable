@@ -744,7 +744,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   {
     fileop_callback(GPOINTER_TO_INT(t->data), film_id);
     t = g_list_delete_link(t, t);
-    fraction=1.0/total;
+    fraction+=1.0/total;
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
 
