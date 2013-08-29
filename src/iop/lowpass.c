@@ -602,7 +602,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_widget_set_label(g->radius,_("radius"));
   dt_bauhaus_widget_set_label(g->contrast,_("contrast"));
-  dt_bauhaus_widget_set_label(g->lightness,_("lightness"));
+  dt_bauhaus_widget_set_label(g->lightness,C_("lowpass", "lightness"));
   dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
 
   g->bilat  = dt_bauhaus_combobox_new(self);
