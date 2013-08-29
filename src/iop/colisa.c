@@ -185,12 +185,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 #endif
   for(int k=0; k<width*height; k++)
   {
-    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->ctable[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
-                  dt_iop_eval_exp(data->cunbounded_coeffs, out[k*ch+0]/100.0f);
-    out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->ltable[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
-                  dt_iop_eval_exp(data->lunbounded_coeffs, out[k*ch+0]/100.0f);
-    out[k*ch+1] *= data->saturation;
-    out[k*ch+2] *= data->saturation;
+    float L     = (in[k*ch+0] < 100.0f) ? data->ctable[CLAMP((int)(in[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
+                  dt_iop_eval_exp(data->cunbounded_coeffs, in[k*ch+0]/100.0f);
+    out[k*ch+0] = (L < 100.0f) ? data->ltable[CLAMP((int)(L/100.0f*0x10000ul), 0, 0xffff)] :
+                  dt_iop_eval_exp(data->lunbounded_coeffs, L/100.0f);
+    out[k*ch+1] = in[k*ch+1]*data->saturation;
+    out[k*ch+2] = in[k*ch+2]*data->saturation;
     out[k*ch+3] = in[k*ch+3];
   }
 }
