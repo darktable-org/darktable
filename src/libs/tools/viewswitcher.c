@@ -217,14 +217,18 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w,GdkEventBut
   if(ev->button == 1)
   {
     /* FIXME: get rid of these mappings and old DT_xxx */
-    if ((long)user_data == DT_VIEW_MAP)
-      dt_ctl_switch_mode_to(DT_MAP);
-    else if ((long)user_data == DT_VIEW_LIGHTTABLE)
+    if ((long)user_data == DT_VIEW_LIGHTTABLE)
       dt_ctl_switch_mode_to(DT_LIBRARY);
     else if ((long)user_data == DT_VIEW_DARKROOM)
       dt_ctl_switch_mode_to(DT_DEVELOP);
+#ifdef HAVE_GPHOTO2
     else if ((long)user_data == DT_VIEW_TETHERING)
       dt_ctl_switch_mode_to(DT_CAPTURE);
+#endif
+#ifdef HAVE_MAP
+    else if ((long)user_data == DT_VIEW_MAP)
+      dt_ctl_switch_mode_to(DT_MAP);
+#endif
 
     return TRUE;
   }

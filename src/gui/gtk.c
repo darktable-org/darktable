@@ -562,10 +562,11 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
       mode = DT_LIBRARY;
       break;
 
+#ifdef HAVE_MAP
     case DT_GUI_VIEW_SWITCH_TO_MAP:
       mode = DT_MAP;
       break;
-
+#endif
   }
 
   /* try switch to mode */
