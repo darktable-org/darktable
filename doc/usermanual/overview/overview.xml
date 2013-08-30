@@ -309,13 +309,14 @@
 				</para>
 			</sect3>
 
-			<sect3 status="final"><title>Adjusting global contrast</title>
-				<para>Almost each workflow will cover as one basic element the adjustment of 
-                                      global contrast. You will want to control how the image tonal values cover the available range of your output 
-                                      medium. darktable offers several alternative modules to take 
-                                      care of that. In one of them, the <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
-                                      gradient curve. The <link linkend="levels"><emphasis>levels</emphasis></link> module offers a much simpler interface, with just three 
-                                      sliders. In addition, there is a <link linkend="zone_system"><emphasis>zone system</emphasis></link> module which allows control over tonal values
+			<sect3 status="final"><title>Adjusting tonal values</title>
+				<para>Almost each workflow covers as one basic element the adjustment of 
+                                      tonal values. You will want to control how the image's tonal values cover the available range of your output 
+                                      medium by adjusting global contrast and the overall brightness of your image. darktable offers several alternative modules to take 
+                                      care of that. The most basic one is the <link linkend="contrast_lightness_saturation"><emphasis>contrast lightness saturation</emphasis></link> module.
+                                      In the <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
+                                      gradient curve. The <link linkend="levels"><emphasis>levels</emphasis></link> module offers a concise interface, with three 
+                                      markers in a histogram. In addition, there is a <link linkend="zone_system"><emphasis>zone system</emphasis></link> module which allows control over tonal values
                                       by zones, inspired by the work of Ansel Adams.
 				</para>
 			</sect3>

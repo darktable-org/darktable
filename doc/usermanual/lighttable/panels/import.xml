@@ -95,6 +95,10 @@
                                      BMP, DCM, GIF, JNG, JPC, JP2, MIFF, MNG, PBM, PGM, PNM, PPM.</para>
 
 				<sect4><title>Camera RAW files</title>
+                                        <indexterm>
+                                           <primary>import</primary>
+                                           <secondary>RAW files</secondary>
+                                        </indexterm>
 					<para>darktable reads RAW files using two open source libraries: RawSpeed (developed by Klaus Post) and - failing that - with LibRaw. The number of supported 
                                               cameras and file formats is constantly increasing. It is beyond the scope of this manual to give an exhaustive list. Most modern camera models 
                                               are supported, and new ones tend to get added very quickly. darktable does not decode images from cameras with non-Bayer sensors (e.g. Fuji X-Pro1 or 
@@ -102,6 +106,10 @@
 					</para>
 				</sect4>
 				<sect4><title>LDR image files</title>
+                                        <indexterm>
+                                           <primary>import</primary>
+                                           <secondary>LDR files</secondary>
+                                        </indexterm>
 					<para>darktable natively reads <quote>ordinary</quote> images in JPEG, 8-bit/16-bit PNG and 8-bit/16-bit TIFF format. JPEG2000 is also supported if the 
                                               required libraries
                                               are built into darktable at compile time. Similarly, if darktable was compiled with GraphicsMagick support, there are further import formats,
@@ -109,6 +117,13 @@
 					</para>
 				</sect4>
 				<sect4><title>HDR image files</title>
+                                        <indexterm>
+                                           <primary>import</primary>
+                                           <secondary>HDR files</secondary>
+                                        </indexterm>
+                                        <indexterm>
+                                           <primary>HDR images</primary>
+                                        </indexterm>
 					<para>darktable reads high dynamic range images in OpenEXR, RGBE and PFM format.
 					</para>
 				</sect4>
