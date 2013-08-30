@@ -792,9 +792,11 @@ int dt_control_running()
 
 void dt_control_quit()
 {
+#ifdef HAVE_MAP
   // since map mode doesn't like to quit we just switch to lighttable mode. hacky, but it works :(
   if(dt_conf_get_int("ui_last/view") == DT_MAP) // we are in map mode where no expose is running
     dt_ctl_switch_mode_to(DT_LIBRARY);
+#endif
 
   dt_gui_gtk_quit();
   // thread safe quit, 1st pass:
