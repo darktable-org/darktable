@@ -23,6 +23,7 @@ src/control/jobs/develop_jobs.c
 src/control/jobs/film_jobs.c
 src/control/jobs/image_jobs.c
 src/develop/blend_gui.c
+src/develop/blend.c
 src/develop/develop.c
 src/develop/imageop.c
 src/develop/lightroom.c
@@ -64,6 +65,7 @@ src/iop/cacorrect.c
 src/iop/channelmixer.c
 src/iop/clahe.c
 src/iop/clipping.c
+src/iop/colisa.c
 src/iop/colorbalance.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
