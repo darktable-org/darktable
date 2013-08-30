@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-29 21:42+0200\n"
-"PO-Revision-Date: 2013-08-29 21:44+0200\n"
+"POT-Creation-Date: 2013-08-30 23:35+0200\n"
+"PO-Revision-Date: 2013-08-31 00:18+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -681,11 +681,11 @@ msgstr "stil fil med namn '%s' existerar redan"
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/control/control.c:1372 ../src/control/control.c:1375
+#: ../src/control/control.c:1374 ../src/control/control.c:1377
 msgid "working.."
 msgstr "arbetar.."
 
-#: ../src/control/control.c:1456
+#: ../src/control/control.c:1458
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
@@ -1355,6 +1355,17 @@ msgstr "visningsmask"
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "struntade i blandning i modul '%s': roi:er stämmer inte"
+
+#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
+msgid "could not allocate buffer for blending"
+msgstr "kunde inte tilldela buffert för blandning"
+
 #: ../src/develop/develop.c:960
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1749,78 +1760,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:886
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "capture view"
 msgstr "tjudring"
 
-#: ../src/gui/gtk.c:887
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:889
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrum"
 
-#: ../src/gui/gtk.c:889
+#: ../src/gui/gtk.c:890
 msgctxt "accel"
 msgid "map view"
 msgstr "karta"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:912
+#: ../src/gui/gtk.c:913
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:919
+#: ../src/gui/gtk.c:920
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "öka ljushet"
 
-#: ../src/gui/gtk.c:921
+#: ../src/gui/gtk.c:922
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "minska ljushet"
 
-#: ../src/gui/gtk.c:923
+#: ../src/gui/gtk.c:924
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "öka kontrast"
 
-#: ../src/gui/gtk.c:925
+#: ../src/gui/gtk.c:926
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "minska kontrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:946
+#: ../src/gui/gtk.c:947
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:947
+#: ../src/gui/gtk.c:948
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:959
+#: ../src/gui/gtk.c:960
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:962
+#: ../src/gui/gtk.c:963
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:966
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -2860,7 +2871,7 @@ msgstr "lokal kontrast"
 msgid "coarseness"
 msgstr "grovhet"
 
-#: ../src/iop/bilat.c:272 ../src/iop/lowpass.c:604
+#: ../src/iop/bilat.c:272 ../src/iop/colisa.c:382 ../src/iop/lowpass.c:604
 msgid "contrast"
 msgstr "kontrast"
 
@@ -3189,11 +3200,12 @@ msgid "hue"
 msgstr "nyans"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
-#: ../src/iop/colorize.c:462 ../src/iop/colorzones.c:1022
-#: ../src/iop/colorzones.c:1058 ../src/iop/graduatednd.c:1064
-#: ../src/iop/lowpass.c:606 ../src/iop/soften.c:572
-#: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
+#: ../src/iop/channelmixer.c:438 ../src/iop/colisa.c:384
+#: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:462
+#: ../src/iop/colorzones.c:1022 ../src/iop/colorzones.c:1058
+#: ../src/iop/graduatednd.c:1064 ../src/iop/lowpass.c:606
+#: ../src/iop/soften.c:572 ../src/iop/splittoning.c:554
+#: ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "mättnad"
 
@@ -3455,6 +3467,42 @@ msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
 
+#: ../src/iop/colisa.c:78
+msgid "contrast brightness saturation"
+msgstr "kontrast ljusstyrka färgmättnad"
+
+#: ../src/iop/colisa.c:95 ../src/iop/lowpass.c:140
+msgctxt "accel"
+msgid "contrast"
+msgstr "kontrast"
+
+#: ../src/iop/colisa.c:96 ../src/iop/soften.c:106 ../src/iop/vignette.c:160
+msgctxt "accel"
+msgid "brightness"
+msgstr "ljushet"
+
+#: ../src/iop/colisa.c:97 ../src/iop/colorcorrection.c:114
+#: ../src/iop/lowpass.c:142 ../src/iop/soften.c:105 ../src/iop/vignette.c:161
+msgctxt "accel"
+msgid "saturation"
+msgstr "mättnad"
+
+#: ../src/iop/colisa.c:383 ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
+msgid "brightness"
+msgstr "ljushet"
+
+#: ../src/iop/colisa.c:390
+msgid "contrast adjustment"
+msgstr "kontrastjustering"
+
+#: ../src/iop/colisa.c:391
+msgid "brightness adjustment"
+msgstr "justering av ljusstyrka"
+
+#: ../src/iop/colisa.c:392
+msgid "color saturation adjustment"
+msgstr "justering av färgmättnad"
+
 #: ../src/iop/colorbalance.c:87
 msgid "color balance"
 msgstr "färgbalans"
@@ -3573,12 +3621,6 @@ msgstr "värmande filter"
 #: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "kylande filter"
-
-#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:142
-#: ../src/iop/soften.c:105 ../src/iop/vignette.c:161
-msgctxt "accel"
-msgid "saturation"
-msgstr "mättnad"
 
 #: ../src/iop/colorcorrection.c:270
 msgid ""
@@ -4845,11 +4887,6 @@ msgstr "blåton i skuggor"
 msgid "lowpass"
 msgstr "lågpass"
 
-#: ../src/iop/lowpass.c:140
-msgctxt "accel"
-msgid "contrast"
-msgstr "kontrast"
-
 #: ../src/iop/lowpass.c:552
 msgid "local contrast mask"
 msgstr "lokal kontrastmask"
@@ -5141,11 +5178,6 @@ msgstr "tröskelvärde för aktivering av skärpa"
 msgid "soften"
 msgstr "uppmjukning"
 
-#: ../src/iop/soften.c:106 ../src/iop/vignette.c:160
-msgctxt "accel"
-msgid "brightness"
-msgstr "ljushet"
-
 #: ../src/iop/soften.c:565
 msgid "the size of blur"
 msgstr "storleken på uppmjukningen"
@@ -5153,10 +5185,6 @@ msgstr "storleken på uppmjukningen"
 #: ../src/iop/soften.c:573
 msgid "the saturation of blur"
 msgstr "färgmättnad av uppmjukningen"
-
-#: ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
-msgid "brightness"
-msgstr "ljushet"
 
 #: ../src/iop/soften.c:581
 msgid "the brightness of blur"
@@ -7918,17 +7946,6 @@ msgstr "ångra"
 msgctxt "accel"
 msgid "redo"
 msgstr "återställ"
-
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "struntade i blandning i modul '%s': roi:er stämmer inte"
-
-#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
-msgid "could not allocate buffer for blending"
-msgstr "kunde inte tilldela buffert för blandning"
 
 #: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"
