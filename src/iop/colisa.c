@@ -41,7 +41,7 @@ DT_MODULE(1)
 typedef struct dt_iop_colisa_params_t
 {
   float contrast;
-  float lightness;
+  float brightness;
   float saturation;
 }
 dt_iop_colisa_params_t;
@@ -49,7 +49,7 @@ dt_iop_colisa_params_t;
 typedef struct dt_iop_colisa_gui_data_t
 {
   GtkWidget *contrast;
-  GtkWidget *lightness;
+  GtkWidget *brightness;
   GtkWidget *saturation;
 }
 dt_iop_colisa_gui_data_t;
@@ -57,12 +57,12 @@ dt_iop_colisa_gui_data_t;
 typedef struct dt_iop_colisa_data_t
 {
   float contrast;
-  float lightness;
+  float brightness;
   float saturation;
   float ctable[0x10000];        // precomputed look-up table for contrast curve
   float cunbounded_coeffs[3];   // approximation for extrapolation of contrast curve
-  float ltable[0x10000];        // precomputed look-up table for lightness curve
-  float lunbounded_coeffs[3];   // approximation for extrapolation of lightness curve
+  float ltable[0x10000];        // precomputed look-up table for brightness curve
+  float lunbounded_coeffs[3];   // approximation for extrapolation of brightness curve
 }
 dt_iop_colisa_data_t;
 
@@ -75,7 +75,7 @@ dt_iop_colisa_global_data_t;
 
 const char *name()
 {
-  return _("contrast lightness saturation");
+  return _("contrast brightness saturation");
 }
 
 int flags()
@@ -93,7 +93,7 @@ groups ()
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
 }
 
@@ -102,7 +102,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_iop_colisa_gui_data_t *g = (dt_iop_colisa_gui_data_t*)self->gui_data;
 
   dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->lightness));
+  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
   dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
 }
 
@@ -207,12 +207,12 @@ contrast_callback (GtkWidget *slider, gpointer user_data)
 }
 
 static void
-lightness_callback (GtkWidget *slider, gpointer user_data)
+brightness_callback (GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)self->params;
-  p->lightness = dt_bauhaus_slider_get(slider);
+  p->brightness = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -234,7 +234,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   dt_iop_colisa_data_t *d = (dt_iop_colisa_data_t *)piece->data;
 
   d->contrast = p->contrast + 1.0f;           // rescale from [-1;+1] to [0;+2] (zero meaning no contrast -> gray plane)
-  d->lightness = p->lightness * 2.0f;         // rescale from [-1;+1] to [-2;+2]
+  d->brightness = p->brightness * 2.0f;       // rescale from [-1;+1] to [-2;+2]
   d->saturation = p->saturation + 1.0f;       // rescale from [-1;+1] to [0;+2] (zero meaning no saturation -> b&w)
 
   // generate precomputed contrast curve
@@ -272,8 +272,8 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   dt_iop_estimate_exp(xc, yc, 4, d->cunbounded_coeffs);
 
 
-  // generate precomputed lightness curve
-  const float gamma = (d->lightness >= 0.0f) ? 1.0f/(1.0f + d->lightness) : (1.0f - d->lightness);
+  // generate precomputed brightness curve
+  const float gamma = (d->brightness >= 0.0f) ? 1.0f/(1.0f + d->brightness) : (1.0f - d->brightness);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -283,7 +283,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
     d->ltable[k] = 100.0f*powf((float)k/0x10000, gamma);
   }
 
-  // now the extrapolation stuff for the lightness curve:
+  // now the extrapolation stuff for the brightness curve:
   const float xl[4] = {0.7f, 0.8f, 0.9f, 1.0f};
   const float yl[4] = {d->ltable[CLAMP((int)(xl[0]*0x10000ul), 0, 0xffff)],
                        d->ltable[CLAMP((int)(xl[1]*0x10000ul), 0, 0xffff)],
@@ -316,7 +316,7 @@ gui_update(struct dt_iop_module_t *self)
   dt_iop_colisa_gui_data_t *g = (dt_iop_colisa_gui_data_t *)self->gui_data;
   dt_iop_colisa_params_t *p = (dt_iop_colisa_params_t *)module->params;
   dt_bauhaus_slider_set(g->contrast, p->contrast);
-  dt_bauhaus_slider_set(g->lightness, p->lightness);
+  dt_bauhaus_slider_set(g->brightness, p->brightness);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
 }
 
@@ -376,25 +376,25 @@ gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
   g->contrast = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->contrast, 2);
-  g->lightness = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->lightness, 2);
+  g->brightness = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->brightness, 2);
   g->saturation = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->saturation, 2);
 
   dt_bauhaus_widget_set_label(g->contrast,_("contrast"));
-  dt_bauhaus_widget_set_label(g->lightness,_("lightness"));
+  dt_bauhaus_widget_set_label(g->brightness,_("brightness"));
   dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lightness, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
 
   gtk_object_set(GTK_OBJECT(g->contrast), "tooltip-text", _("contrast adjustment"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->lightness), "tooltip-text", _("lightness adjustment"), (char *)NULL);
+  gtk_object_set(GTK_OBJECT(g->brightness), "tooltip-text", _("brightness adjustment"), (char *)NULL);
   gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("color saturation adjustment"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->contrast), "value-changed",
                     G_CALLBACK (contrast_callback), self);
-  g_signal_connect (G_OBJECT (g->lightness), "value-changed",
-                    G_CALLBACK (lightness_callback), self);
+  g_signal_connect (G_OBJECT (g->brightness), "value-changed",
+                    G_CALLBACK (brightness_callback), self);
   g_signal_connect (G_OBJECT (g->saturation), "value-changed",
                     G_CALLBACK (saturation_callback), self);
 }

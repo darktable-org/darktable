@@ -1,7 +1,7 @@
-<sect3 status="draft" id="contrast_lightness_saturation"><title>Contrast Lightness Saturation</title>
+<sect3 status="draft" id="contrast_brightness_saturation"><title>Contrast Brightness Saturation</title>
         <indexterm>
            <primary>modules</primary>
-           <secondary>contrast lightness saturation</secondary>
+           <secondary>contrast brightness saturation</secondary>
         </indexterm>
         <indexterm>
            <primary>contrast</primary>
@@ -9,7 +9,7 @@
            <seealso>levels</seealso>
         </indexterm>
         <indexterm>
-           <primary>lightness</primary>
+           <primary>brightness</primary>
            <seealso>tone curve</seealso>
            <seealso>levels</seealso>
         </indexterm>
@@ -25,7 +25,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module offers a very basic tool for adjusting an image's contrast, lightness and saturation.
+						<entry>This module offers a very basic tool for adjusting an image's contrast, brightness and saturation.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/colisa.png" scalefit="1" width="80%" align="center" />
@@ -38,10 +38,10 @@
 
 	<sect4><title>Usage</title>
 		<para>The module has sliders for each of the three affected attributes. In their neutral position (zero) the image remains unchanged. Shifting
-                      a sliders left to negative values reduces contrast, lightness and saturation, respectively. Shifting it right to positive values leads to an increase.
+                      a sliders left to negative values reduces contrast, brightness and saturation, respectively. Shifting it right to positive values leads to an increase.
 		</para>
 
-                <para>Much more versatility for contrast and lightness adjustment is offered by the <emphasis>tone curve</emphasis>, <emphasis>levels</emphasis>, and
+                <para>Much more versatility for contrast and brightness adjustment is offered by the <emphasis>tone curve</emphasis>, <emphasis>levels</emphasis>, and
                       <emphasis>zone system</emphasis> modules (see <xref linkend="tone_curve"/>, <xref linkend="levels"/>, and <xref linkend="zone_system"/>). Likewise
                       you may adjust color saturation in a more detailed way with the <emphasis>tone curve</emphasis>, <emphasis>color contrast</emphasis>, and 
                       <emphasis>color zones</emphasis> modules (see <xref linkend="tone_curve"/>, <xref linkend="color_contrast"/>, and <xref linkend="color_zones"/>).
@@ -49,8 +49,8 @@
 		<sect5><title>contrast</title>
 			<para>This slider adjusts the image's contrast.</para>
 		</sect5>
-		<sect5><title>lightness</title>
-			<para>This slider adjusts the image's lightness.</para>
+		<sect5><title>brightness</title>
+			<para>This slider adjusts the image's brightness.</para>
 		</sect5>	
 		<sect5><title>saturation</title>
 			<para>This slider adjusts the color saturation.</para>
