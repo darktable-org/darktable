@@ -125,10 +125,10 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,const gchar *message)
 {
-  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)self->data;
-
   /* lets make this threadsafe */
   gboolean i_own_lock = dt_control_gdk_lock();
+
+  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t *)self->data;
 
   /* initialize a new job */
   dt_bgjob_t *j=(dt_bgjob_t*)g_malloc(sizeof(dt_bgjob_t));
@@ -179,9 +179,9 @@ static const guint * _lib_backgroundjobs_create(dt_lib_module_t *self,int type,c
 
 static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
 {
-  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
-
   gboolean i_own_lock = dt_control_gdk_lock();
+
+  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if(j)
@@ -248,8 +248,8 @@ static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const gui
 static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key, double progress)
 {
   if(!darktable.control->running) return;
-  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
   gboolean i_own_lock = dt_control_gdk_lock();
+  dt_lib_backgroundjobs_t *d = (dt_lib_backgroundjobs_t*)self->data;
 
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if(j)
