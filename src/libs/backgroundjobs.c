@@ -189,8 +189,9 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
     g_hash_table_remove(d->jobs, key);
 
     /* remove job widget from jobbox */
-    if(GTK_IS_WIDGET(j->widget))
+    if(j->widget && GTK_IS_WIDGET(j->widget))
       gtk_container_remove(GTK_CONTAINER(d->jobbox),j->widget);
+    j->widget = 0;
 
 #ifdef HAVE_UNITY
     unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
