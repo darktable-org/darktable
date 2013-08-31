@@ -192,6 +192,18 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
     if(GTK_IS_WIDGET(j->widget))
       gtk_container_remove(GTK_CONTAINER(d->jobbox),j->widget);
 
+#ifdef HAVE_UNITY
+    unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
+    unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+#endif
+#ifdef MAC_INTEGRATION
+#ifdef GTK_TYPE_OSX_APPLICATION
+    gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
+#else
+    gtkosx_application_attention_request(g_object_new(GTKOSX_TYPE_APPLICATION, NULL), INFO_REQUEST);
+#endif
+#endif
+
     /* if jobbox is empty lets hide */
     if(g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox)))==0)
       gtk_widget_hide(d->jobbox);
@@ -241,40 +253,12 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
   dt_bgjob_t *j = (dt_bgjob_t*)g_hash_table_lookup(d->jobs, key);
   if(j)
   {
-    /* check if progress is above 1.0 and destroy bgjob if finished */
-    /* FIXME: actually we are having some rounding issues, where the */
-    /* FIXME: last item doesn't bring to total to 1.0 flat */
-    /* FIXME: so this is why we have the ugly kludge below */
-    if (progress > 0.999999)
-    {
-      if (GTK_IS_WIDGET(j->widget))
-        gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
+    if( j->type == 0 )
+      gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
 
 #ifdef HAVE_UNITY
-      unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
-      unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+    unity_launcher_entry_set_progress( j->darktable_launcher, progress );
 #endif
-#ifdef MAC_INTEGRATION
-#ifdef GTK_TYPE_OSX_APPLICATION
-      gtk_osxapplication_attention_request(g_object_new(GTK_TYPE_OSX_APPLICATION, NULL), INFO_REQUEST);
-#else
-      gtkosx_application_attention_request(g_object_new(GTKOSX_TYPE_APPLICATION, NULL), INFO_REQUEST);
-#endif
-#endif
-
-      /* hide jobbox if there are no jobs left */
-      if (g_list_length(gtk_container_get_children(GTK_CONTAINER(d->jobbox))) == 0 )
-        gtk_widget_hide(d->jobbox);
-    }
-    else
-    {
-      if( j->type == 0 )
-        gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
-
-#ifdef HAVE_UNITY
-      unity_launcher_entry_set_progress( j->darktable_launcher, progress );
-#endif
-    }
   }
 
   if(i_own_lock) dt_control_gdk_unlock();
