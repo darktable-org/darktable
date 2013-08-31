@@ -1287,8 +1287,42 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   }
   else module->multi_priority = priority;
 
+  // since we do not rename the module we need to check that an old module does not have the same name. Indeed the multi_priority
+  // are always rebased to start from 0, to it may be the case that the same multi_name be generated when duplicating a module.
+  int pname = module->multi_priority;
+  char mname[128];
+
+  do
+  {
+    snprintf(mname,128,"%d",pname);
+    gboolean dup=FALSE;
+
+    if (priority < 0)
+    {
+      GList *modules = g_list_first(base->dev->iop);
+      while(modules)
+      {
+        dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+        if(mod->instance == base->instance)
+        {
+          if (strcmp(mname,mod->multi_name)==0)
+          {
+            dup=TRUE;
+            break;
+          }
+        }
+        modules = g_list_next(modules);
+      }
+    }
+
+    if (dup)
+      pname++;
+    else
+      break;
+  } while(1);
+
   //the multi instance name
-  snprintf(module->multi_name,128,"%d",module->multi_priority);
+  strcpy(module->multi_name, mname);
   //we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, sort_plugins);
 
