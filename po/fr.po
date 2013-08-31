@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-29 15:25+0200\n"
-"PO-Revision-Date: 2013-08-29 15:26+0100\n"
+"POT-Creation-Date: 2013-08-31 09:51+0200\n"
+"PO-Revision-Date: 2013-08-31 09:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -681,11 +681,11 @@ msgstr "le fichier du style '%s' existe"
 msgid "style %s was successfully imported"
 msgstr "le style '%s' a été importé"
 
-#: ../src/control/control.c:1372 ../src/control/control.c:1375
+#: ../src/control/control.c:1374 ../src/control/control.c:1377
 msgid "working.."
 msgstr "en cours..."
 
-#: ../src/control/control.c:1456
+#: ../src/control/control.c:1458
 #, c-format
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
@@ -1369,6 +1369,17 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "désactive temporairement le masque de fusion. uniquement pour le module actif"
 
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "fusion ignorée dans le module '%s': paramètres incompatibles"
+
+#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
+msgid "could not allocate buffer for blending"
+msgstr "impossible d'allouer la mémoire pour la fusion"
+
 #: ../src/develop/develop.c:960
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1771,78 +1782,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:886
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "capture view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:887
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:889
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:889
+#: ../src/gui/gtk.c:890
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:912
+#: ../src/gui/gtk.c:913
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:919
+#: ../src/gui/gtk.c:920
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "augmenter la luminosité"
 
-#: ../src/gui/gtk.c:921
+#: ../src/gui/gtk.c:922
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "diminuer la luminosité"
 
-#: ../src/gui/gtk.c:923
+#: ../src/gui/gtk.c:924
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "augmenter le contraste"
 
-#: ../src/gui/gtk.c:925
+#: ../src/gui/gtk.c:926
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "diminuer le contraste"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:946
+#: ../src/gui/gtk.c:947
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:947
+#: ../src/gui/gtk.c:948
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:959
+#: ../src/gui/gtk.c:960
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:962
+#: ../src/gui/gtk.c:963
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:966
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -2881,7 +2892,7 @@ msgstr "contraste local"
 msgid "coarseness"
 msgstr "granularité"
 
-#: ../src/iop/bilat.c:272 ../src/iop/lowpass.c:604
+#: ../src/iop/bilat.c:272 ../src/iop/colisa.c:382 ../src/iop/lowpass.c:604
 msgid "contrast"
 msgstr "contraste"
 
@@ -3218,11 +3229,12 @@ msgid "hue"
 msgstr "teinte"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
-#: ../src/iop/colorize.c:462 ../src/iop/colorzones.c:1022
-#: ../src/iop/colorzones.c:1058 ../src/iop/graduatednd.c:1064
-#: ../src/iop/lowpass.c:606 ../src/iop/soften.c:572
-#: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
+#: ../src/iop/channelmixer.c:438 ../src/iop/colisa.c:384
+#: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:462
+#: ../src/iop/colorzones.c:1022 ../src/iop/colorzones.c:1058
+#: ../src/iop/graduatednd.c:1064 ../src/iop/lowpass.c:606
+#: ../src/iop/soften.c:572 ../src/iop/splittoning.c:554
+#: ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "saturation"
 
@@ -3484,6 +3496,43 @@ msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
 
+#: ../src/iop/colisa.c:78
+msgid "contrast brightness saturation"
+msgstr "contraste luminance saturation"
+
+#: ../src/iop/colisa.c:95 ../src/iop/lowpass.c:140
+msgctxt "accel"
+msgid "contrast"
+msgstr "contraste"
+
+#: ../src/iop/colisa.c:96 ../src/iop/lowpass.c:141 ../src/iop/soften.c:106
+#: ../src/iop/vignette.c:160
+msgctxt "accel"
+msgid "brightness"
+msgstr "luminance"
+
+#: ../src/iop/colisa.c:97 ../src/iop/colorcorrection.c:114
+#: ../src/iop/lowpass.c:142 ../src/iop/soften.c:105 ../src/iop/vignette.c:161
+msgctxt "accel"
+msgid "saturation"
+msgstr "saturation"
+
+#: ../src/iop/colisa.c:383 ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
+msgid "brightness"
+msgstr "luminance"
+
+#: ../src/iop/colisa.c:390
+msgid "contrast adjustment"
+msgstr "ajustement du contraste"
+
+#: ../src/iop/colisa.c:391
+msgid "brightness adjustment"
+msgstr "ajustement de la luminance"
+
+#: ../src/iop/colisa.c:392
+msgid "color saturation adjustment"
+msgstr "ajustement de la saturation"
+
 #: ../src/iop/colorbalance.c:87
 msgid "color balance"
 msgstr "balance couleur"
@@ -3603,12 +3652,6 @@ msgstr "filtre chaud"
 msgid "cooling filter"
 msgstr "filtre froid"
 
-#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:142
-#: ../src/iop/soften.c:105 ../src/iop/vignette.c:161
-msgctxt "accel"
-msgid "saturation"
-msgstr "saturation"
-
 #: ../src/iop/colorcorrection.c:270
 msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
@@ -3695,7 +3738,7 @@ msgstr "profils ICC dans %s/color/in ou %s/color/in"
 msgid "colorize"
 msgstr "coloriser"
 
-#: ../src/iop/colorize.c:121 ../src/iop/lowpass.c:141
+#: ../src/iop/colorize.c:121
 msgctxt "accel"
 msgid "lightness"
 msgstr "clarté"
@@ -4885,11 +4928,6 @@ msgstr "teinte bleue des ombres"
 msgid "lowpass"
 msgstr "filtre passe-bas"
 
-#: ../src/iop/lowpass.c:140
-msgctxt "accel"
-msgid "contrast"
-msgstr "contraste"
-
 #: ../src/iop/lowpass.c:552
 msgid "local contrast mask"
 msgstr "masque de contraste local"
@@ -4916,7 +4954,7 @@ msgstr "ordre du filtre de flou gaussien"
 
 #: ../src/iop/lowpass.c:605
 msgctxt "lowpass"
-msgid "lightness"
+msgid "brightness"
 msgstr "luminance"
 
 #: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:643
@@ -4940,7 +4978,7 @@ msgid "contrast of lowpass filter"
 msgstr "contraste du filtre passe-bas"
 
 #: ../src/iop/lowpass.c:620
-msgid "lightness adjustment of lowpass filter"
+msgid "brightness adjustment of lowpass filter"
 msgstr "luminance du filtre passe-bas"
 
 #: ../src/iop/lowpass.c:621
@@ -5187,11 +5225,6 @@ msgstr "seuil d'activation du renforcement"
 msgid "soften"
 msgstr "effet Orton (adoucir)"
 
-#: ../src/iop/soften.c:106 ../src/iop/vignette.c:160
-msgctxt "accel"
-msgid "brightness"
-msgstr "luminance"
-
 #: ../src/iop/soften.c:565
 msgid "the size of blur"
 msgstr "taille du flou"
@@ -5199,10 +5232,6 @@ msgstr "taille du flou"
 #: ../src/iop/soften.c:573
 msgid "the saturation of blur"
 msgstr "saturation du flou"
-
-#: ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
-msgid "brightness"
-msgstr "luminance"
 
 #: ../src/iop/soften.c:581
 msgid "the brightness of blur"
@@ -8043,17 +8072,6 @@ msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "fusion ignorée dans le module '%s': paramètres incompatibles"
-
-#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
-msgid "could not allocate buffer for blending"
-msgstr "impossible d'allouer la mémoire pour la fusion"
-
 #: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"
 msgstr "ctrl-clic pour ajouter un nœud aïgu"
@@ -8186,6 +8204,10 @@ msgstr "masques existants"
 #: ../src/lua/preferences.c:333
 msgid "lua options"
 msgstr "options lua"
+
+#~ msgctxt "lowpass"
+#~ msgid "lightness"
+#~ msgstr "luminance"
 
 #~ msgid "picasa webalbum"
 #~ msgstr "album web picasa"
