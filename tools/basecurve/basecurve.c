@@ -7,6 +7,44 @@
 
 #include "../../src/common/curve_tools.c"
 
+// copied from iop/basecurve.c:
+typedef struct dt_iop_basecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_basecurve_node_t;
+#define MAXNODES 20
+typedef struct dt_iop_basecurve_params_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+}
+dt_iop_basecurve_params_t;
+
+// copied from exif.cc:
+// encode binary blob into text:
+void text_encode (const unsigned char *input, char *output, const int len)
+{
+  const char hex[16] =
+  {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8',
+    '9', 'a', 'b', 'c', 'd', 'e', 'f'
+  };
+  for(int i=0; i<len; i++)
+  {
+    const int hi = input[i] >> 4;
+    const int lo = input[i] & 15;
+    output[2*i]   = hex[hi];
+    output[2*i+1] = hex[lo];
+  }
+  output[2*len] = '\0';
+}
+
+
 static uint16_t*
 read_ppm16(const char *filename, int *wd, int *ht)
 {
@@ -238,6 +276,26 @@ int main(int argc, char *argv[])
 
   fclose(fb);
   fclose(ff);
+  // TODO: output basecurve as sqlite3 command
+  char encoded[2048];
+
+  dt_iop_basecurve_params_t params;
+  memset(&params, 0, sizeof(params));
+  for(int k=0;k<best.m_numAnchors;k++)
+  {
+    params.basecurve[0][k].x = best.m_anchors[k].x;
+    params.basecurve[0][k].y = best.m_anchors[k].y;
+  }
+  params.basecurve_nodes[0] = best.m_numAnchors;
+  params.basecurve_type[0] = MONOTONE_HERMITE;
+
+  text_encode ((uint8_t *)&params, encoded, sizeof(params));
+
+  fprintf(stdout, "to test your new basecurve, copy/paste the following line into your shell.\n");
+  fprintf(stdout, "note that it is a smart idea to backup your database before messing with it on this level.\n");
+  fprintf(stdout, "(you have been warned :) )\n\n");
+  // the big binary blob is a canonical blend mode option (switched off).
+  fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',2,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
 
   exit(0);
 }
