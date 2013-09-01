@@ -38,7 +38,12 @@ LibRaw_byte_buffer::~LibRaw_byte_buffer()
 
 LibRaw_byte_buffer *LibRaw_abstract_datastream::make_byte_buffer(unsigned int sz)
 {
+  if(sz> 2*1024*1024*1024) // 2GB is enough
+      throw LIBRAW_EXCEPTION_ALLOC;
+
     LibRaw_byte_buffer *ret = new LibRaw_byte_buffer(sz);
+    if(!ret) // failed new should throw std::exception
+      throw LIBRAW_EXCEPTION_ALLOC;
     read(ret->get_buffer(),sz,1);
     return ret;
 }
@@ -316,7 +321,10 @@ int LibRaw_buffer_datastream::scanf_one(const char *fmt, void* val)
 
 LibRaw_byte_buffer *LibRaw_buffer_datastream::make_byte_buffer(unsigned int sz)
 {
+
     LibRaw_byte_buffer *ret = new LibRaw_byte_buffer(0);
+    if(!ret) // failed new should throw std::exception
+      throw LIBRAW_EXCEPTION_ALLOC;
     if(streampos + sz > streamsize)
         sz = streamsize - streampos;
     ret->set_buffer(buf+streampos,sz);
