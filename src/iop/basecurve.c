@@ -543,7 +543,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_set_line_width(cr, 2.);
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, -height*c->draw_ys[0]);
+  cairo_move_to(cr, 0, height*to_log(c->draw_ys[0], c->loglogscale));
   for(int k=1; k<DT_IOP_TONECURVE_RES; k++)
   {
     const float xx = k/(DT_IOP_TONECURVE_RES-1.0);
