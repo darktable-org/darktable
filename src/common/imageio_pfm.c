@@ -55,12 +55,6 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf) goto error_cache_full;
 
-  // we don't have exif data, so at least fill the date with something useful:
-  struct stat statbuf;
-  stat(filename, &statbuf);
-  struct tm result;
-  strftime(img->exif_datetime_taken, 20, "%Y-%m-%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
-
   if(cols == 3)
   {
     ret = fread(buf, 3*sizeof(float), img->width*img->height, f);

@@ -1693,7 +1693,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
 
-    bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 50.0, 0.1, 0.0, 1);
+    bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->radius_slider, _("mask blur"));
     dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
     gtk_object_set(GTK_OBJECT(bd->radius_slider), "tooltip-text", _("radius for gaussian blur of blend mask"), (char *)NULL);

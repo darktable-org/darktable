@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-20 18:41+0200\n"
+"POT-Creation-Date: 2013-08-31 13:02+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -561,14 +561,14 @@ msgstr ""
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1686
-#: ../src/develop/develop.c:1126 ../src/libs/live_view.c:406
+#: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "Abilitato"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
 #: ../src/common/history.c:286 ../src/common/styles.c:559
 #: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1536
-#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1126
+#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1129
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -687,11 +687,11 @@ msgstr "File di stile per %s già esistente"
 msgid "style %s was successfully imported"
 msgstr "Lo stile %s è stato importato con successo"
 
-#: ../src/control/control.c:1372 ../src/control/control.c:1375
+#: ../src/control/control.c:1374 ../src/control/control.c:1377
 msgid "working.."
 msgstr "Elaborazione..."
 
-#: ../src/control/control.c:1456
+#: ../src/control/control.c:1458
 #, c-format
 msgid "switch to %s mode"
 msgstr "Passa alla modalità %s"
@@ -908,15 +908,15 @@ msgstr "Copia in corso %d immagini"
 
 #: ../src/control/jobs/control_jobs.c:975
 #, c-format
-msgid "creating local copie for %d image"
-msgid_plural "creating local copies for %d images"
+msgid "creating local copy of %d image"
+msgid_plural "creating local copies of %d images"
 msgstr[0] "Creazione copia locale per %d immagine"
 msgstr[1] "Creazione copie locali per %d immagini"
 
 #: ../src/control/jobs/control_jobs.c:977
 #, c-format
-msgid "removing local copie for %d image"
-msgid_plural "removing local copies for %d images"
+msgid "removing local copy of %d image"
+msgid_plural "removing local copies of %d images"
 msgstr[0] "Rimozione copia locale per %d immagine"
 msgstr[1] "Rimozione copie locali per %d immagini"
 
@@ -1368,6 +1368,17 @@ msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "Disattiva temporaneamente la maschera di fusione. Per il solo modulo in uso"
 
+#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
+#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
+#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#, c-format
+msgid "skipped blending in module '%s': roi's do not match"
+msgstr "Fusione non effettuata nel modulo '%s': mancata corrispondenza"
+
+#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
+msgid "could not allocate buffer for blending"
+msgstr "Impossibile allocare il buffer per la fusione"
+
 #: ../src/develop/develop.c:960
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
@@ -1383,41 +1394,41 @@ msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
 msgstr ""
 "Errore nella creazione dell'interfaccia, DT_SIMPLE_GUI_NONE non trovato"
 
-#: ../src/develop/imageop.c:1170
+#: ../src/develop/imageop.c:1171
 msgid "new instance"
 msgstr "Nuova istanza"
 
-#: ../src/develop/imageop.c:1175
+#: ../src/develop/imageop.c:1176
 msgid "duplicate instance"
 msgstr ""
 "Duplica questa istanza con\n"
 "le stesse impostazioni"
 
-#: ../src/develop/imageop.c:1180 ../src/libs/masks.c:1009
+#: ../src/develop/imageop.c:1181 ../src/libs/masks.c:1009
 msgid "move up"
 msgstr "Sposta su"
 
-#: ../src/develop/imageop.c:1186 ../src/libs/masks.c:1012
+#: ../src/develop/imageop.c:1187 ../src/libs/masks.c:1012
 msgid "move down"
 msgstr "Sposta giù"
 
 #. delete
-#: ../src/develop/imageop.c:1192 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:1193 ../src/libs/image.c:146
 #: ../src/libs/styles.c:396 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "Elimina"
 
-#: ../src/develop/imageop.c:1214 ../src/develop/imageop.c:2072
+#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2073
 #, c-format
 msgid "%s is switched on"
 msgstr "%s è abilitato"
 
-#: ../src/develop/imageop.c:1214 ../src/develop/imageop.c:2072
+#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2073
 #, c-format
 msgid "%s is switched off"
 msgstr "%s è disabilitato"
 
-#: ../src/develop/imageop.c:1444 ../src/gui/accelerators.c:715
+#: ../src/develop/imageop.c:1445 ../src/gui/accelerators.c:715
 #: ../src/gui/accelerators.c:795 ../src/gui/accelerators.c:939
 #: ../src/gui/accelerators.c:964 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
@@ -1426,41 +1437,41 @@ msgstr "%s è disabilitato"
 msgid "preset"
 msgstr "Preimpostazione"
 
-#: ../src/develop/imageop.c:1485
+#: ../src/develop/imageop.c:1486
 msgctxt "accel"
 msgid "fusion"
 msgstr "Fusione"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1490
+#: ../src/develop/imageop.c:1491
 msgctxt "accel"
 msgid "show module"
 msgstr "Visualizza modulo"
 
-#: ../src/develop/imageop.c:1491
+#: ../src/develop/imageop.c:1492
 msgctxt "accel"
 msgid "enable module"
 msgstr "Abilita modulo"
 
-#: ../src/develop/imageop.c:1494 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1495 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Ripristina i parametri del modulo"
 
-#: ../src/develop/imageop.c:1496 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1497 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Mostra il menù dei preset"
 
-#: ../src/develop/imageop.c:2042
+#: ../src/develop/imageop.c:2043
 msgid "multiple instances actions"
 msgstr "Azioni delle istanze multiple"
 
-#: ../src/develop/imageop.c:2051 ../src/libs/lib.c:835
+#: ../src/develop/imageop.c:2052 ../src/libs/lib.c:835
 msgid "reset parameters"
 msgstr "Ripristina parametri"
 
-#: ../src/develop/imageop.c:2060 ../src/gui/preferences.c:403
+#: ../src/develop/imageop.c:2061 ../src/gui/preferences.c:403
 #: ../src/libs/lib.c:848
 msgid "presets"
 msgstr "Preset"
@@ -1765,78 +1776,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Usa il formato AAAA-MM-GG per sovrascrivere la data"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:885
+#: ../src/gui/gtk.c:887
 msgctxt "accel"
 msgid "capture view"
 msgstr "Vista modalità di acquisizione"
 
-#: ../src/gui/gtk.c:886
+#: ../src/gui/gtk.c:888
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "Vista Tavolo Luminoso"
 
-#: ../src/gui/gtk.c:887
+#: ../src/gui/gtk.c:889
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "Vista Camera Oscura"
 
-#: ../src/gui/gtk.c:888
+#: ../src/gui/gtk.c:890
 msgctxt "accel"
 msgid "map view"
 msgstr "Vista Mappa"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:911
+#: ../src/gui/gtk.c:913
 msgctxt "accel"
 msgid "quit"
 msgstr "Chiudi"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:918
+#: ../src/gui/gtk.c:920
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "Aumenta luminosità"
 
-#: ../src/gui/gtk.c:920
+#: ../src/gui/gtk.c:922
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "Diminuisci luminosità"
 
-#: ../src/gui/gtk.c:922
+#: ../src/gui/gtk.c:924
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "Aumenta contrasto"
 
-#: ../src/gui/gtk.c:924
+#: ../src/gui/gtk.c:926
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "Diminuisci contrasto"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:945
+#: ../src/gui/gtk.c:947
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Passa a schermo intero"
 
-#: ../src/gui/gtk.c:946
+#: ../src/gui/gtk.c:948
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Chiudi schermo intero"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:958
+#: ../src/gui/gtk.c:960
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Nascondi bordi laterali"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:961
+#: ../src/gui/gtk.c:963
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Nascondi testata"
 
 #. View-switch
-#: ../src/gui/gtk.c:965
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "switch view"
 msgstr "Cambia vista"
@@ -2879,7 +2890,7 @@ msgstr "Contrasto locale"
 msgid "coarseness"
 msgstr "Ruvidezza"
 
-#: ../src/iop/bilat.c:272 ../src/iop/lowpass.c:522
+#: ../src/iop/bilat.c:272 ../src/iop/colisa.c:382 ../src/iop/lowpass.c:604
 msgid "contrast"
 msgstr "Contrasto"
 
@@ -2891,7 +2902,7 @@ msgstr "Dettaglio"
 msgid "denoise (bilateral filter)"
 msgstr "Riduzione rumore (filtro bilaterale)"
 
-#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:102 ../src/iop/shadhi.c:148
+#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:148
 #: ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "radius"
@@ -2932,7 +2943,7 @@ msgid "how much to blur blue"
 msgstr "Quanto sfocare il blu"
 
 #: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
-#: ../src/iop/lowpass.c:521 ../src/iop/shadhi.c:652 ../src/iop/sharpen.c:572
+#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:652 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "Raggio"
 
@@ -3211,11 +3222,12 @@ msgid "hue"
 msgstr "Tonalità"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:438 ../src/iop/colorcorrection.c:289
-#: ../src/iop/colorize.c:462 ../src/iop/colorzones.c:1022
-#: ../src/iop/colorzones.c:1058 ../src/iop/graduatednd.c:1064
-#: ../src/iop/lowpass.c:523 ../src/iop/soften.c:572
-#: ../src/iop/splittoning.c:554 ../src/iop/vignette.c:1129
+#: ../src/iop/channelmixer.c:438 ../src/iop/colisa.c:384
+#: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:462
+#: ../src/iop/colorzones.c:1022 ../src/iop/colorzones.c:1058
+#: ../src/iop/graduatednd.c:1064 ../src/iop/lowpass.c:606
+#: ../src/iop/soften.c:572 ../src/iop/splittoning.c:554
+#: ../src/iop/vignette.c:1129
 msgid "saturation"
 msgstr "Saturazione"
 
@@ -3479,6 +3491,43 @@ msgctxt "accel"
 msgid "angle"
 msgstr "Angolo "
 
+#: ../src/iop/colisa.c:78
+msgid "contrast brightness saturation"
+msgstr "Contrasto luminosità saturazione"
+
+#: ../src/iop/colisa.c:95 ../src/iop/lowpass.c:140
+msgctxt "accel"
+msgid "contrast"
+msgstr "Contrasto"
+
+#: ../src/iop/colisa.c:96 ../src/iop/lowpass.c:141 ../src/iop/soften.c:106
+#: ../src/iop/vignette.c:160
+msgctxt "accel"
+msgid "brightness"
+msgstr "Luminosità"
+
+#: ../src/iop/colisa.c:97 ../src/iop/colorcorrection.c:114
+#: ../src/iop/lowpass.c:142 ../src/iop/soften.c:105 ../src/iop/vignette.c:161
+msgctxt "accel"
+msgid "saturation"
+msgstr "Saturazione "
+
+#: ../src/iop/colisa.c:383 ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
+msgid "brightness"
+msgstr "Luminosità"
+
+#: ../src/iop/colisa.c:390
+msgid "contrast adjustment"
+msgstr "Regolazione contrasto"
+
+#: ../src/iop/colisa.c:391
+msgid "brightness adjustment"
+msgstr "Regolazione luminosità"
+
+#: ../src/iop/colisa.c:392
+msgid "color saturation adjustment"
+msgstr "Regolazione saturazione colore"
+
 #: ../src/iop/colorbalance.c:87
 msgid "color balance"
 msgstr "Bilanciamento colore"
@@ -3597,12 +3646,6 @@ msgstr "Filtro di riscaldamento"
 #: ../src/iop/colorcorrection.c:109
 msgid "cooling filter"
 msgstr "Filtro di rafreddamento"
-
-#: ../src/iop/colorcorrection.c:114 ../src/iop/lowpass.c:104
-#: ../src/iop/soften.c:105 ../src/iop/vignette.c:161
-msgctxt "accel"
-msgid "saturation"
-msgstr "Saturazione "
 
 #: ../src/iop/colorcorrection.c:270
 msgid ""
@@ -4865,64 +4908,68 @@ msgstr "Spostamento del blu"
 msgid "blueness in shadows"
 msgstr "Blu nelle ombre"
 
-#: ../src/iop/lowpass.c:86
+#: ../src/iop/lowpass.c:105
 msgid "lowpass"
 msgstr "Passa-basso"
 
-#: ../src/iop/lowpass.c:103
-msgctxt "accel"
-msgid "contrast"
-msgstr "Contrasto"
-
-#: ../src/iop/lowpass.c:471
+#: ../src/iop/lowpass.c:552
 msgid "local contrast mask"
 msgstr "Maschera di contrasto locale"
 
-#: ../src/iop/lowpass.c:507
+#: ../src/iop/lowpass.c:588
 msgid "filter order"
 msgstr "Ordine filtro"
 
-#: ../src/iop/lowpass.c:510
+#: ../src/iop/lowpass.c:591
 msgid "0th order"
 msgstr "Ordine 0"
 
-#: ../src/iop/lowpass.c:511
+#: ../src/iop/lowpass.c:592
 msgid "1st order"
 msgstr "Ordine 1"
 
-#: ../src/iop/lowpass.c:512
+#: ../src/iop/lowpass.c:593
 msgid "2nd order"
 msgstr "Ordine 2"
 
-#: ../src/iop/lowpass.c:513
+#: ../src/iop/lowpass.c:594
 msgid "filter order of gaussian blur"
 msgstr "Ordine filtro della sfocatura gaussiana"
 
-#: ../src/iop/lowpass.c:526 ../src/iop/shadhi.c:643
+#: ../src/iop/lowpass.c:605
+msgctxt "lowpass"
+msgid "brightness"
+msgstr "Luminosità"
+
+#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:643
 msgid "soften with"
 msgstr "Ammorbidisci con"
 
-#: ../src/iop/lowpass.c:527 ../src/iop/shadhi.c:644
+#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:644
 msgid "gaussian"
 msgstr "Gaussiano"
 
-#: ../src/iop/lowpass.c:528 ../src/iop/shadhi.c:645
+#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:645
 msgid "bilateral filter"
 msgstr "Filtro bilaterale"
 
-#: ../src/iop/lowpass.c:534
+#: ../src/iop/lowpass.c:618
 msgid "radius of gaussian/bilateral blur"
 msgstr "Raggio della sfocatura gaussiana/bilaterale"
 
-#: ../src/iop/lowpass.c:535
+#: ../src/iop/lowpass.c:619
 msgid "contrast of lowpass filter"
 msgstr "Contrasto del filtro passa-basso"
 
-#: ../src/iop/lowpass.c:536
+#: ../src/iop/lowpass.c:620
+msgid "brightness adjustment of lowpass filter"
+msgstr "Luminosità del filtro passa-basso"
+
+#: ../src/iop/lowpass.c:621
 msgid "color saturation of lowpass filter"
 msgstr "Saturazione colore del filtro passa-basso"
 
-#: ../src/iop/lowpass.c:537
+#: ../src/iop/lowpass.c:622
 msgid "which filter to use for blurring"
 msgstr "Quale filtro usare per la sfocatura"
 
@@ -5157,11 +5204,6 @@ msgstr "Soglia per attivare la nitidezza"
 msgid "soften"
 msgstr "Sfumatura"
 
-#: ../src/iop/soften.c:106 ../src/iop/vignette.c:160
-msgctxt "accel"
-msgid "brightness"
-msgstr "Luminosità"
-
 #: ../src/iop/soften.c:565
 msgid "the size of blur"
 msgstr "Dimensione della sfumatura"
@@ -5169,10 +5211,6 @@ msgstr "Dimensione della sfumatura"
 #: ../src/iop/soften.c:573
 msgid "the saturation of blur"
 msgstr "Saturazione della sfumatura"
-
-#: ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
-msgid "brightness"
-msgstr "Luminosità"
 
 #: ../src/iop/soften.c:581
 msgid "the brightness of blur"
@@ -6475,7 +6513,7 @@ msgstr "Crea una minima coda di sviluppo che produce la stessa immagine"
 msgid "create a style from the current history stack"
 msgstr "Crea uno stile dall'attuale coda di sviluppo"
 
-#: ../src/libs/history.c:184 ../src/libs/snapshots.c:382
+#: ../src/libs/history.c:184 ../src/libs/snapshots.c:365
 msgid "original"
 msgstr "Originale"
 
@@ -7224,11 +7262,11 @@ msgid "take snapshot"
 msgstr "Scatta un'istantanea"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:308
+#: ../src/libs/snapshots.c:291
 msgid "take snapshot"
 msgstr "Scatta un'istantanea"
 
-#: ../src/libs/snapshots.c:312
+#: ../src/libs/snapshots.c:295
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -7236,7 +7274,7 @@ msgstr ""
 "Prende un'istantanea da confrontare con un'altra immagine o la stessa in un "
 "altro punto dello sviluppo "
 
-#: ../src/libs/snapshots.c:390
+#: ../src/libs/snapshots.c:373
 msgid "unknown"
 msgstr "Sconosciuto"
 
@@ -7940,17 +7978,6 @@ msgstr "Annulla"
 msgctxt "accel"
 msgid "redo"
 msgstr "Ripristina"
-
-#. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
-#. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
-#, c-format
-msgid "skipped blending in module '%s': roi's do not match"
-msgstr "Fusione non effettuata nel modulo '%s': mancata corrispondenza"
-
-#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
-msgid "could not allocate buffer for blending"
-msgstr "Impossibile allocare il buffer per la fusione"
 
 #: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"

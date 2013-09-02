@@ -170,6 +170,7 @@ static void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_
 
   *inside = 1;
   *near = 0;
+  *inside_border = 1;
 
   if (dt_ellipse_point_in_polygon(x, y, gpt->points+10, gpt->points_count-5) >= 0) *inside_border = 0;
   if (dt_ellipse_point_close_to_path(x, y, as, gpt->points+10, gpt->points_count-5)) *near = 1;

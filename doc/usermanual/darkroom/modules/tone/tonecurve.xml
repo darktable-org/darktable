@@ -19,7 +19,7 @@
 				<tbody>
 					<row>						
 						<entry>This module is a classic digital photography tool. Unlike other image manipulation software, however, darktable's tone curve
-                                                acts in Lab color space. Thus, is offers three independent curves for L, a, and b channels.
+                                                acts in Lab color space. Thus, it offers three independent curves for L, a, and b channels.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" />

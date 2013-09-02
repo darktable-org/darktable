@@ -36,7 +36,7 @@
 
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
-#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_RES 256
 #define MAXNODES 20
 
 
@@ -160,12 +160,14 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkHBox *hbox;
   GtkDrawingArea *area;
+  GtkWidget *scale;
   double mouse_x, mouse_y;
   int selected;
   double selected_offset, selected_y, selected_min, selected_max;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+  int loglogscale;
 }
 dt_iop_basecurve_gui_data_t;
 
@@ -423,6 +425,19 @@ dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
   return TRUE;
 }
 
+static float to_log(const float x, float base)
+{
+  if(base)
+    return logf(x*(base-1.0f) + 1.0f)/logf(base);
+  else return x;
+}
+static float to_lin(const float x, float base)
+{
+  if(base)
+    return (powf(base, x) - 1.0f)/(base - 1.0f);
+  else return x;
+}
+
 static gboolean
 dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
@@ -492,20 +507,24 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill(cr);
 
-#if 1
+  cairo_translate(cr, 0, height);
+  cairo_scale(cr, 1.0f, -1.0f);
+
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  dt_draw_grid(cr, 4, 0, 0, width, height);
+  if(c->loglogscale)
+    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale);
+  else
+    dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw nodes positions
   cairo_set_line_width(cr, 1.);
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  cairo_translate(cr, 0, height);
-
   for(int k=0; k<nodes; k++)
   {
-    cairo_arc(cr, basecurve[k].x*width, -basecurve[k].y*height, 3, 0, 2.*M_PI);
+    const float x = to_log(basecurve[k].x, c->loglogscale), y = to_log(basecurve[k].y, c->loglogscale);
+    cairo_arc(cr, x*width, y*height, 3, 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
@@ -515,7 +534,8 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
-    cairo_arc(cr, basecurve[c->selected].x*width, -basecurve[c->selected].y*height, 4, 0, 2.*M_PI);
+    const float x = to_log(basecurve[c->selected].x, c->loglogscale), y = to_log(basecurve[c->selected].y, c->loglogscale);
+    cairo_arc(cr, x*width, y*height, 4, 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
@@ -523,18 +543,21 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_set_line_width(cr, 2.);
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-  cairo_move_to(cr, 0, -height*c->draw_ys[0]);
+  cairo_move_to(cr, 0, height*to_log(c->draw_ys[0], c->loglogscale));
   for(int k=1; k<DT_IOP_TONECURVE_RES; k++)
   {
     const float xx = k/(DT_IOP_TONECURVE_RES-1.0);
     if(xx > xm)
     {
       const float yy = dt_iop_eval_exp(unbounded_coeffs, xx);
-      cairo_line_to(cr, xx*width, - height*yy);
+      const float x = to_log(xx, c->loglogscale), y = to_log(yy, c->loglogscale);
+      cairo_line_to(cr, x*width, height*y);
     }
     else
     {
-      cairo_line_to(cr, xx*width, - height*c->draw_ys[k]);
+      const float yy = c->draw_ys[k];
+      const float x = to_log(xx, c->loglogscale), y = to_log(yy, c->loglogscale);
+      cairo_line_to(cr, x*width, height*y);
     }
   }
   cairo_stroke(cr);
@@ -546,7 +569,6 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_destroy(cr_pixmap);
   cairo_surface_destroy(cst);
   return TRUE;
-#endif
 }
 
 static
@@ -566,19 +588,20 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
 
   const float mx = c->mouse_x/(float)width;
   const float my = 1.0f - c->mouse_y/(float)height;
+  const float linx = to_lin(mx, c->loglogscale), liny = to_lin(my, c->loglogscale);
 
   if(event->state & GDK_BUTTON1_MASK)
   {
     // got a vertex selected:
     if(c->selected >= 0)
     {
-      basecurve[c->selected].x = mx;
-      basecurve[c->selected].y = my;
+      basecurve[c->selected].x = linx;
+      basecurve[c->selected].y = liny;
 
       // delete vertex if order has changed:
       if(nodes > 2)
-        if((c->selected > 0 && basecurve[c->selected-1].x >= mx) ||
-            (c->selected < nodes-1 && basecurve[c->selected+1].x <= mx))
+        if((c->selected > 0 && basecurve[c->selected-1].x >= linx) ||
+           (c->selected < nodes-1 && basecurve[c->selected+1].x <= linx))
         {
           for(int k=c->selected; k<nodes-1; k++)
           {
@@ -593,11 +616,11 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     else if(nodes < 20 && c->selected >= -1)
     {
       // no vertex was close, create a new one!
-      if(basecurve[0].x > mx)
+      if(basecurve[0].x > linx)
         c->selected = 0;
       else for(int k=1; k<nodes; k++)
         {
-          if(basecurve[k].x > mx)
+          if(basecurve[k].x > linx)
           {
             c->selected = k;
             break;
@@ -610,8 +633,8 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
         basecurve[i].y = basecurve[i-1].y;
       }
       // found a new point
-      basecurve[c->selected].x = mx;
-      basecurve[c->selected].y = my;
+      basecurve[c->selected].x = linx;
+      basecurve[c->selected].y = liny;
       p->basecurve_nodes[ch] ++;
       dt_dev_add_history_item(darktable.develop, self, TRUE);
     }
@@ -624,8 +647,8 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
     int nearest = -1;
     for(int k=0; k<nodes; k++)
     {
-      float dist = (my - basecurve[k].y)*(my - basecurve[k].y)
-                   + (mx - basecurve[k].x)*(mx - basecurve[k].x);
+      float dist = (my - to_log(basecurve[k].y, c->loglogscale))*(my - to_log(basecurve[k].y, c->loglogscale))
+                 + (mx - to_log(basecurve[k].x, c->loglogscale))*(mx - to_log(basecurve[k].x, c->loglogscale));
       if(dist < min)
       {
         min = dist;
@@ -696,6 +719,17 @@ scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
   return TRUE;
 }
 
+static void
+scale_callback (GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
+  if(dt_bauhaus_combobox_get(widget))
+    g->loglogscale = 64;
+  else
+    g->loglogscale = 0;
+  gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -709,6 +743,7 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k=0; k<p->basecurve_nodes[0]; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->basecurve[0][k].x, p->basecurve[0][k].y);
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
+  c->loglogscale = 0;
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
@@ -718,6 +753,15 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_drawing_area_size(c->area, 0, 258);
+
+  c->scale = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->scale, _("scale"));
+  dt_bauhaus_combobox_add(c->scale, _("linear"));
+  dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
+  gtk_object_set(GTK_OBJECT(c->scale), "tooltip-text", _("scale to use in the graph. use logarithmic scale for more precise control near the blacks"), (char *)NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->scale,  TRUE, TRUE, 0);
+  g_signal_connect (G_OBJECT (c->scale), "value-changed",
+                    G_CALLBACK (scale_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",

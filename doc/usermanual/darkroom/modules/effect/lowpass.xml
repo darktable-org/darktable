@@ -42,9 +42,9 @@
                               absolute values increase contrast; lower absolute values reduce contrast. A value of zero leads to
                               a neutral plane.</para>
 		</sect5>
-		<sect5><title>lightness</title>
-			<para>Changes the lightness. Negative values result in a darker image. Positive
-                              values increase the image's lightness.</para>
+		<sect5><title>brightness</title>
+			<para>Changes the brightness. Negative values result in a darker image. Positive
+                              values increase the image's brightness.</para>
 		</sect5>			
 		<sect5><title>saturation</title>
 			<para>Changes the color saturation. Negative values result in complementary colors by inverting the
@@ -75,7 +75,7 @@
 							<entry>
 								<graphic fileref="darkroom/modules/images/lowpass_ex3.png" scalefit="1" width="90%" align="center" />
 							</entry>						
-							<entry><para>Resulting image from lowpass filter ...</para></entry>
+							<entry><para>Intermediate result after lowpass filter ...</para></entry>
 						</row>
 						<row>
 							<entry>

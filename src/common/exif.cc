@@ -50,6 +50,10 @@ extern "C"
 #include <cassert>
 #include <glib.h>
 #include <string>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #define DT_XMP_KEYS_NUM 15 // the number of XmpBag XmpSeq keys that dt uses
 
@@ -792,6 +796,12 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
   catch (Exiv2::AnyError& e)
   {
+    // at least set datetime taken to something useful in case there is no exif data in this file (pfm)
+    struct stat statbuf;
+    stat(path, &statbuf);
+    struct tm result;
+    strftime(img->exif_datetime_taken, 20, "%Y-%m-%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;

@@ -100,6 +100,9 @@
 		</sect2>
 
 		<sect2 status="final" id="image_grouping"><title>Image grouping</title>
+                        <indexterm>
+                          <primary>group images</primary>
+                        </indexterm>
 			<para>Grouping images helps improve structure and clarity of your image collection when 
                               displayed in lighttable view.
 			</para>

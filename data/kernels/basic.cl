@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2009--2013 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
 }
 
 float
-lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
+lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -1256,4 +1256,26 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the contrast lightness saturation module */
+kernel void 
+colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
+        read_only image2d_t ctable, global const float *ca, read_only image2d_t ltable, global const float *la)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 o;
+
+  o.x = lookup_unbounded(ctable, i.x/100.0f, ca);
+  o.x = lookup_unbounded(ltable, o.x/100.0f, la);
+  o.y = i.y*saturation;
+  o.z = i.z*saturation;
+  o.w = i.w;
+
+  write_imagef(out, (int2)(x, y), o);
+}
 
