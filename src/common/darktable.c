@@ -54,6 +54,8 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <locale.h>
 
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
@@ -114,8 +116,7 @@ static int dprintf(int fd,const char *fmt, ...)
 static
 void _dt_sigsegv_handler(int param)
 {
-  FILE *fd;
-  gchar buf[PIPE_BUF];
+  pid_t pid;
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
@@ -125,23 +126,25 @@ void _dt_sigsegv_handler(int param)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), datadir);
 
-  if((fd = popen(command, "r")) != NULL)
+  if(fout != STDOUT_FILENO)
+    close(fout);
+
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
+  gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
+  gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
+
+  if((pid = fork()) != -1)
   {
-    gboolean read_something = FALSE;
-    while((fgets(buf, PIPE_BUF, fd)) != NULL)
+    if(pid)
     {
-      read_something = TRUE;
-      dprintf(fout, "%s", buf);
+      waitpid(pid, NULL, 0);
+      g_printerr("backtrace written to %s\n", name_used);
     }
-    pclose(fd);
-    if(fout != STDOUT_FILENO)
+    else
     {
-      if(read_something)
-        g_printerr("backtrace written to %s\n", name_used);
-      else
+      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", log_arg, "-x", comm_arg, NULL))
       {
         delete_file = TRUE;
         g_printerr("an error occured while trying to execute gdb. please check if gdb is installed on your system.\n");
@@ -154,11 +157,11 @@ void _dt_sigsegv_handler(int param)
     g_printerr("an error occured while trying to execute gdb.\n");
   }
 
-  if(fout != STDOUT_FILENO)
-    close(fout);
   if(delete_file)
     g_unlink(name_used);
-  g_free(command);
+  g_free(pid_arg);
+  g_free(comm_arg);
+  g_free(log_arg);
   g_free(name_used);
 
   /* pass it further to the old handler*/
