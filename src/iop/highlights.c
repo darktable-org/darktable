@@ -206,19 +206,24 @@ void process(
           }
           else
           {
-            // go for all 9 neighbours
-            const float near_clip = 0.9f*clip;
+            // go for all 4 neighbours
+            const float near_clip = 0.96f*clip;
+            const float post_clip = 1.04f*clip;
             float blend = 0.0f;
             float max = 0.0f;
-            for(int jj=-1; jj<=1; jj++)
+            for(int jj=0; jj<=1; jj++)
             {
-              for(int ii=-1; ii<=1; ii++)
+              for(int ii=0; ii<=1; ii++)
               {
                 const float val = in[jj*roi_out->width + ii];
-                blend = fmaxf(blend, (fminf(clip, val) - near_clip)/(clip-near_clip));
+                // blend = fmaxf(blend, (fminf(clip, val) - near_clip)/(clip-near_clip));
+                blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
+                // blend += (fminf(near_clip, val) - clip)/(near_clip-clip);
                 max = fmaxf(max, val);
               }
             }
+            blend = fminf(1.0f, blend/3.0f); // usually one channel clips last (mostly red), so wait for the 3 other pixels to clip before going to 1.0f
+            // blend /= 9.0f;
             if(blend > 0)
             {
               // the computed blend weight will be 1 as soon as one pixel is overexposed.
