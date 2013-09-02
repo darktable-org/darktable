@@ -1,2 +1,3 @@
+set logging redirect on
 where
 thread apply all bt full
