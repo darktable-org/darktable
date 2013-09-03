@@ -26,7 +26,6 @@
 gboolean dt_tag_new(const char *name,guint *tagid)
 {
   int rt;
-  guint id = 0;
   sqlite3_stmt *stmt;
 
   if (!name || name[0] == '\0')
@@ -52,15 +51,15 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  if (sqlite3_step(stmt) == SQLITE_ROW)
-    id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  if( tagid != NULL)
-    *tagid=id;
+  if (tagid != NULL)
+  {
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+      *tagid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
 
   return TRUE;
 }
