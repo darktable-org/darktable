@@ -219,14 +219,16 @@ int dt_control_load_config(dt_control_t *c)
 int dt_control_write_config(dt_control_t *c)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   gint x, y;
   gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
   dt_conf_set_int ("ui_last/window_x",  x);
   dt_conf_set_int ("ui_last/window_y",  y);
-  dt_conf_set_int ("ui_last/window_w",  widget->allocation.width);
-  dt_conf_set_int ("ui_last/window_h",  widget->allocation.height);
+  dt_conf_set_int ("ui_last/window_w",  allocation.width);
+  dt_conf_set_int ("ui_last/window_h",  allocation.height);
   dt_conf_set_bool("ui_last/maximized",
-                   (gdk_window_get_state(widget->window) & GDK_WINDOW_STATE_MAXIMIZED));
+                   (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
 
   sqlite3_stmt *stmt;
   dt_pthread_mutex_lock(&(darktable.control->global_mutex));
@@ -308,7 +310,7 @@ void dt_ctl_set_display_profile()
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if ( screen==NULL )
     screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window (screen, widget->window);
+  int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
   char *atom_name;
   if (monitor > 0)
     atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
@@ -336,7 +338,7 @@ void dt_ctl_set_display_profile()
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if ( screen==NULL )
     screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
+  int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
 
   CMProfileRef prof = NULL;
   CMGetProfileByAVID(monitor, &prof);
@@ -785,7 +787,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor* cursor = gdk_cursor_new(curs);
-  gdk_window_set_cursor(widget->window, cursor);
+  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   gdk_cursor_destroy(cursor);
 }
 
@@ -1396,8 +1398,10 @@ void *dt_control_expose(void *voidptr)
 
 gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-  const int width = widget->allocation.width;
-  const int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  const int width = allocation.width;
+  const int height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   dt_draw_endmarker(cr, width, height, (long int)user_data);

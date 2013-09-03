@@ -326,7 +326,7 @@ static void _lib_keywords_drag_data_get_callback(GtkWidget *w,
     path = gtk_tree_model_get_path(model,&iter);
     gchar *sp = gtk_tree_path_to_string(path);
 
-    gtk_selection_data_set(data,data->target, 8, (const guchar *)sp, strlen(sp));
+    gtk_selection_data_set(data, gtk_selection_data_get_target(data), 8, (const guchar *)sp, strlen(sp));
   }
 
 }
@@ -404,12 +404,12 @@ static void _lib_keywords_drag_data_received_callback(GtkWidget *w,
   GtkTreeViewDropPosition dpos;
   GtkTreeModel *model = gtk_tree_view_get_model(d->view);
 
-  if (data->format == 8)
+  if (gtk_selection_data_get_format(data) == 8)
   {
     if (gtk_tree_view_get_dest_row_at_pos(d->view, x, y, &dpath, &dpos))
     {
       /* fetch tree iter of source and dest dnd operation */
-      GtkTreePath *spath = gtk_tree_path_new_from_string((char *)data->data);
+      GtkTreePath *spath = gtk_tree_path_new_from_string((char *)gtk_selection_data_get_data(data));
 
       char dtag[1024];
       char stag[1024];

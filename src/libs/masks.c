@@ -105,7 +105,7 @@ static void _bt_add_circle (GtkWidget *widget, GdkEventButton *e, dt_iop_module_
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   }
   else _tree_add_circle(NULL,NULL);
 }
@@ -127,7 +127,7 @@ static void _bt_add_ellipse (GtkWidget *widget, GdkEventButton *e, dt_iop_module
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   }
   else _tree_add_ellipse(NULL,NULL);
 }
@@ -150,7 +150,7 @@ static void _bt_add_path (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t 
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   }
   else _tree_add_path(NULL,NULL);
 }
@@ -172,7 +172,7 @@ static void _bt_add_gradient (GtkWidget *widget, GdkEventButton *e, dt_iop_modul
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   }
   else _tree_add_gradient(NULL,NULL);
 }
@@ -196,7 +196,7 @@ static void _bt_add_brush (GtkWidget *widget, GdkEventButton *e, dt_iop_module_t
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
   }
   else _tree_add_brush(NULL,NULL);
 }
@@ -769,7 +769,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
           {
             dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
             bd->masks_shown = 1;
-            GTK_TOGGLE_BUTTON(bd->masks_edit)->active = 1;
+            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
             gtk_widget_queue_draw (bd->masks_edit);
           }
         }
@@ -1207,11 +1207,10 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   //if (lm->treeview) gtk_widget_destroy(lm->treeview);
   //we set the add shape icons inactive
-  GTK_TOGGLE_BUTTON(lm->bt_circle)->active = FALSE;
-  GTK_TOGGLE_BUTTON(lm->bt_ellipse)->active = FALSE;
-  GTK_TOGGLE_BUTTON(lm->bt_path)->active = FALSE;
-  GTK_TOGGLE_BUTTON(lm->bt_gradient)->active = FALSE;
-
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_circle), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_ellipse), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_path), FALSE);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_gradient), FALSE);
 
   GtkTreeStore *treestore;
   //we store : text ; *module ; groupid ; formid

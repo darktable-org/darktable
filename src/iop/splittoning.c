@@ -388,7 +388,10 @@ static void
 colorpick_button_callback(GtkButton *button,gpointer user_data)
 {
   GtkColorSelectionDialog  *csd=(GtkColorSelectionDialog  *)user_data;
-  gtk_dialog_response(GTK_DIALOG(csd),(GTK_WIDGET(button)==csd->ok_button)?GTK_RESPONSE_ACCEPT:0);
+  GtkWidget *okButton = 0;
+  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
+
+  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button)==okButton)?GTK_RESPONSE_ACCEPT:0);
 }
 
 static void
@@ -401,11 +404,16 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
   gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
-  g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
 
+  GtkWidget *okButton, *cancelButton = 0;
+  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
+  g_object_get(G_OBJECT(csd), "cancel-button", &cancelButton, NULL);
+
+  g_signal_connect (G_OBJECT (okButton), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+  g_signal_connect (G_OBJECT (cancelButton), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+  
   GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
   GdkColor c;
   float color[3],h,s,l;

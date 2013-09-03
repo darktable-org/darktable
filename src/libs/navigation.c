@@ -101,8 +101,8 @@ void gui_init(dt_lib_module_t *self)
                         | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
-  GTK_WIDGET_UNSET_FLAGS (self->widget, GTK_DOUBLE_BUFFERED);
-  GTK_WIDGET_SET_FLAGS   (self->widget, GTK_APP_PAINTABLE);
+  gtk_widget_set_double_buffered(self->widget, FALSE);
+  gtk_widget_set_app_paintable(self->widget, TRUE);
   g_signal_connect (G_OBJECT (self->widget), "expose-event",
                     G_CALLBACK (_lib_navigation_expose_callback), self);
   g_signal_connect (G_OBJECT (self->widget), "button-press-event",
@@ -140,7 +140,9 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
   const int inset = DT_NAVIGATION_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
 
   dt_develop_t *dev = darktable.develop;
 
@@ -343,7 +345,9 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
 static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  _lib_navigation_set_position(self, event->x, event->y, widget->allocation.width, widget->allocation.height);
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
   gint x, y; // notify gtk for motion_hint.
   gdk_window_get_pointer(event->window, &x, &y, NULL);
   return TRUE;
@@ -417,8 +421,10 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
-  int w = widget->allocation.width;
-  int h = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int w = allocation.width;
+  int h = allocation.height;
   if (event->x >= w-2*DT_NAVIGATION_INSET-d->zoom_h-d->zoom_w && event->y <= w-2*DT_NAVIGATION_INSET && event->y >= h-2*DT_NAVIGATION_INSET-d->zoom_h && event->y <= h-2*DT_NAVIGATION_INSET)
   {
     //we show the zoom menu
