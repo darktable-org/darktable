@@ -148,10 +148,10 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   if (!strcmp(source,dest)) return;
 
   char query[1024];
-  gchar *tag;
+  gchar *tag = g_strrstr(source,"|");
 
-  if (g_strrstr(source,"|")) tag = g_strrstr (source,"|");
-  else tag = g_strconcat("|", source, NULL);
+  if (!tag)
+    tag = g_strconcat("|", source, NULL);
 
   if (!strcmp(dest," "))
   {
