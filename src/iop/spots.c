@@ -159,7 +159,7 @@ static void _add_path(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *sel
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
     return;
   }
   //we want to be sure that the iop has focus
@@ -179,7 +179,7 @@ static void _add_circle(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *s
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
     return;
   }
   //we want to be sure that the iop has focus
@@ -199,7 +199,7 @@ static void _add_ellipse(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *
     dt_masks_form_t *form = darktable.develop->form_visible;
     if (form) dt_masks_free_form(form);
     dt_masks_change_form_gui(NULL);
-    GTK_TOGGLE_BUTTON(widget)->active = FALSE;
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
     return;
   }
   //we want to be sure that the iop has focus

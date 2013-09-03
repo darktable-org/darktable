@@ -475,7 +475,9 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -581,8 +583,10 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   int nodes = p->basecurve_nodes[ch];
   dt_iop_basecurve_node_t *basecurve = p->basecurve[ch];
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
@@ -692,9 +696,11 @@ dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer
 static gboolean
 area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   GtkRequisition r;
-  r.width  = widget->allocation.width;
-  r.height = widget->allocation.width;
+  r.width  = allocation.width;
+  r.height = allocation.width;
   gtk_widget_size_request(widget, &r);
   return TRUE;
 }

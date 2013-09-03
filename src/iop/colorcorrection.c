@@ -324,7 +324,9 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
   dt_iop_colorcorrection_params_t *p  = (dt_iop_colorcorrection_params_t *)self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -395,7 +397,9 @@ dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
   const float mouse_x = CLAMP(event->x - inset, 0, width);
   const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
   const float ma = (2.0*mouse_x - width) *DT_COLORCORRECTION_MAX/(float)width;
