@@ -60,10 +60,14 @@
 typedef enum dt_ctl_gui_mode_t
 {
   DT_LIBRARY = 0,
-  DT_DEVELOP = 1,
-  DT_CAPTURE = 2,
-  DT_MAP = 3,
-  DT_MODE_NONE = 4
+  DT_DEVELOP,
+#ifdef HAVE_GPHOTO2
+  DT_CAPTURE,
+#endif
+#ifdef HAVE_MAP
+  DT_MAP,
+#endif
+  DT_MODE_NONE
 }
 dt_ctl_gui_mode_t;
 
