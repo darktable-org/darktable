@@ -994,7 +994,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   if(self->dt->gui->reset)
     return;
-  gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(g->gslider2));
 
   p->hue = hue;
   dt_dev_add_history_item(darktable.develop, self, TRUE);

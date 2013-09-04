@@ -89,7 +89,7 @@ dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
 {
-  GtkComboBox *combobox1;		                                             // watermark
+  GtkComboBoxText *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
@@ -788,7 +788,7 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename,0,64);
-  snprintf(p->filename,64,"%s",gtk_combo_box_get_active_text(g->combobox1));
+  snprintf(p->filename,64,"%s",gtk_combo_box_text_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -801,7 +801,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   g_signal_handlers_block_by_func (g->combobox1,watermark_callback,self);
 
   // Clear combobox...
-  GtkTreeModel *model=gtk_combo_box_get_model(g->combobox1);
+  GtkTreeModel *model=gtk_combo_box_get_model(GTK_COMBO_BOX(g->combobox1));
   gtk_list_store_clear (GTK_LIST_STORE(model));
 
   // check watermarkdir and update combo with entries...
@@ -822,7 +822,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
-      gtk_combo_box_append_text( g->combobox1, d_name );
+      gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
     g_dir_close(dir) ;
@@ -835,13 +835,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
-      gtk_combo_box_append_text( g->combobox1, d_name );
+      gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
     g_dir_close(dir) ;
   }
 
-  _combo_box_set_active_text( g->combobox1, p->filename );
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
 
   g_signal_handlers_unblock_by_func (g->combobox1,watermark_callback,self);
 
@@ -992,7 +992,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale3, p->xoffset);
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
-  _combo_box_set_active_text( g->combobox1, p->filename );
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
 }
 
@@ -1034,7 +1034,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Add the marker combobox
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
-  g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);

@@ -272,7 +272,7 @@ static gboolean _live_sample_leave(GtkWidget *widget, GdkEvent *event,
 static void _remove_sample(GtkButton *widget, gpointer data)
 {
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t*)data;
-  gtk_widget_hide_all(sample->container);
+  gtk_widget_hide(sample->container);
   gtk_widget_destroy(sample->output_button);
   gtk_widget_destroy(sample->output_label);
   gtk_widget_destroy(sample->delete_button);
@@ -492,10 +492,10 @@ void gui_init(dt_lib_module_t *self)
   // The picker button, output selectors and label
   gtk_box_pack_start(GTK_BOX(output_row), output_options, TRUE, TRUE, 0);
 
-  data->size_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->size_selector),
+  data->size_selector = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->size_selector),
                             _("point"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->size_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->size_selector),
                             _("area"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector),
                            dt_conf_get_int("ui_last/colorpicker_size"));
@@ -517,12 +517,12 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(output_options), picker_subrow, TRUE, TRUE, 0);
 
-  data->statistic_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+  data->statistic_selector = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->statistic_selector),
                             _("mean"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->statistic_selector),
                             _("min"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->statistic_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->statistic_selector),
                             _("max"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->statistic_selector),
                            dt_conf_get_int("ui_last/colorpicker_mode"));
@@ -534,10 +534,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->statistic_selector), "changed",
                    G_CALLBACK(_statistic_changed), self);
 
-  data->color_mode_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
+  data->color_mode_selector = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector),
                             _("RGB"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->color_mode_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->color_mode_selector),
                             _("Lab"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->color_mode_selector),
                            dt_conf_get_int("ui_last/colorpicker_model"));
@@ -569,12 +569,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), samples_label, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(container), samples_options_row, TRUE, TRUE, 0);
 
-  data->samples_statistic_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_statistic_selector),
+  data->samples_statistic_selector = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_statistic_selector),
                             _("mean"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_statistic_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_statistic_selector),
                             _("min"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_statistic_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_statistic_selector),
                             _("max"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_statistic_selector),
                            dt_conf_get_int("ui_last/colorsamples_mode"));
@@ -585,10 +585,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(data->samples_statistic_selector), "changed",
                    G_CALLBACK(_samples_statistic_changed), self);
 
-  data->samples_mode_selector = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_mode_selector),
+  data->samples_mode_selector = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector),
                             _("RGB"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(data->samples_mode_selector),
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(data->samples_mode_selector),
                             _("Lab"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->samples_mode_selector),
                            dt_conf_get_int("ui_last/colorsamples_model"));

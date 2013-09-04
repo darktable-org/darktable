@@ -1073,7 +1073,7 @@ static void ui_reset_albums_creation(struct dt_storage_picasa_gui_data_t *ui)
 {
   gtk_entry_set_text(ui->entry_album_summary, "");
   gtk_entry_set_text(ui->entry_album_title, "");
-  gtk_widget_hide_all(GTK_WIDGET(ui->hbox_album));
+  gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
 }
 
 static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_picasa_gui_data_t *ui)

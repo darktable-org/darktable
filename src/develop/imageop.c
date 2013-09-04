@@ -1165,38 +1165,38 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
 
-  GtkWidget *menu = gtk_menu_new();
+  GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
 
   item = gtk_menu_item_new_with_label(_("new instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a new instance of this module to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_copy_callback), module);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("duplicate instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a copy of this instance to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_duplicate_callback), module);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move up"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_up);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move down"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance down"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_down);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("delete"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("delete this instance"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
-  gtk_widget_show_all(menu);
+  gtk_widget_show_all(GTK_WIDGET(menu));
   //popup
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 }
@@ -2098,7 +2098,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
 
-  gtk_widget_hide_all(pluginui);
+  gtk_widget_hide(pluginui);
 
   module->expander = expander;
 

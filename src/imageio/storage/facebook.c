@@ -957,7 +957,7 @@ static void ui_reset_albums_creation(struct dt_storage_facebook_gui_data_t *ui)
   gtk_list_store_clear(model_album);
   gtk_entry_set_text(ui->entry_album_summary, "");
   gtk_entry_set_text(ui->entry_album_title, "");
-  gtk_widget_hide_all(GTK_WIDGET(ui->hbox_album));
+  gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
 }
 
 static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_facebook_gui_data_t *ui)
@@ -1057,7 +1057,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_combo_box_set_row_separator_func(ui->comboBox_album,combobox_separator,ui->comboBox_album,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox_album), TRUE, TRUE, 0);
 
-  ui->comboBox_privacy= GTK_COMBO_BOX(gtk_combo_box_new_text());
+  ui->comboBox_privacy= GTK_COMBO_BOX(gtk_combo_box_text_new());
   GtkListStore *list_store = gtk_list_store_new (COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_INT);
   GtkTreeIter iter;
   gtk_list_store_append(list_store, &iter);

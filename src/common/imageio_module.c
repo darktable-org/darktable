@@ -147,7 +147,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
     }
     module->gui_data = NULL;
     module->gui_init(module);
-    if(module->widget) gtk_widget_ref(module->widget);
+    if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
   }
@@ -249,7 +249,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
     }
     module->gui_data = NULL;
     module->gui_init(module);
-    if(module->widget) gtk_widget_ref(module->widget);
+    if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     dt_imageio_insert_storage(module);
   }
@@ -274,7 +274,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
     module->cleanup(module);
-    if(module->widget) gtk_widget_unref(module->widget);
+    if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
@@ -282,7 +282,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   while(iio->plugins_storage)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
-    if(module->widget) gtk_widget_unref(module->widget);
+    if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);

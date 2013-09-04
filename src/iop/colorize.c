@@ -252,7 +252,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, color[0], color[1], color[2]);  // Update saturation end color
 
-  gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(g->gslider2));
 
   p->hue = hue;
   dt_dev_add_history_item(darktable.develop, self, TRUE);

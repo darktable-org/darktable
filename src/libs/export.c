@@ -226,7 +226,7 @@ set_format_by_name (dt_lib_export_t *d, const char *name)
 static void
 format_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  gchar *name = gtk_combo_box_get_active_text(d->format);
+  gchar *name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->format));
   darktable.gui->reset = 1;
   if(name) set_format_by_name (d, name);
   darktable.gui->reset = 0;
@@ -323,7 +323,7 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
 static void
 storage_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  gchar *name = gtk_combo_box_get_active_text(d->storage);
+  gchar *name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->storage));
   darktable.gui->reset = 1;
   if(name) set_storage_by_name (d, name);
   darktable.gui->reset = 0;
@@ -362,7 +362,7 @@ style_changed (GtkComboBox *widget, dt_lib_export_t *d)
     dt_conf_set_string("plugins/lighttable/export/style", "");
   else
   {
-    gchar *style = gtk_combo_box_get_active_text(d->style);
+    gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
     dt_conf_set_string("plugins/lighttable/export/style", style);
   }
 }
@@ -419,7 +419,7 @@ void _update_formats_combobox(dt_lib_export_t *d)
   {
     dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
     if( storage->supported( storage, format ) )
-      gtk_combo_box_append_text(d->format, format->name());
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->format), format->name());
 
     it = g_list_next(it);
   }
@@ -451,7 +451,7 @@ static void on_storage_list_changed(gpointer instance,dt_lib_module_t *self)
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    gtk_combo_box_append_text(d->storage, module->name(module));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->storage), module->name(module));
     it = g_list_next(it);
   }
   gtk_combo_box_set_active(d->storage,dt_imageio_get_index_of_storage(storage));
@@ -471,12 +471,12 @@ gui_init (dt_lib_module_t *self)
   label = dtgtk_label_new(_("target storage"), DARKTABLE_LABEL_TAB | DARKTABLE_LABEL_ALIGN_RIGHT);
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 0, 1, GTK_FILL|GTK_EXPAND, 0, 0, 0);
-  d->storage = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  d->storage = GTK_COMBO_BOX(gtk_combo_box_text_new());
   GList *it = darktable.imageio->plugins_storage;
   while(it)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
-    gtk_combo_box_append_text(d->storage, module->name(module));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->storage), module->name(module));
     it = g_list_next(it);
   }
   dt_control_signal_connect(darktable.signals,DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,G_CALLBACK(on_storage_list_changed),self);
@@ -493,7 +493,7 @@ gui_init (dt_lib_module_t *self)
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_set_row_spacing(GTK_TABLE(self->widget), 2, 20);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 2, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->format = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  d->format = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->format), 0, 2, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
   g_signal_connect (G_OBJECT (d->format), "changed",
@@ -534,12 +534,12 @@ gui_init (dt_lib_module_t *self)
   label = gtk_label_new(_("intent"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->intent = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(d->intent, _("image settings"));
-  gtk_combo_box_append_text(d->intent, _("perceptual"));
-  gtk_combo_box_append_text(d->intent, _("relative colorimetric"));
-  gtk_combo_box_append_text(d->intent, C_("rendering intent", "saturation"));
-  gtk_combo_box_append_text(d->intent, _("absolute colorimetric"));
+  d->intent = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("image settings"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("perceptual"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("relative colorimetric"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), C_("rendering intent", "saturation"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->intent), _("absolute colorimetric"));
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->intent), 1, 2, 8, 9, GTK_EXPAND|GTK_FILL, 0, 0, 0);
 
   //  Add profile combo
@@ -611,18 +611,18 @@ gui_init (dt_lib_module_t *self)
   label = gtk_label_new(_("profile"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->profile = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  d->profile = GTK_COMBO_BOX(gtk_combo_box_text_new());
   dt_ellipsize_combo(d->profile);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_SHRINK|GTK_EXPAND|GTK_FILL, 0, 0, 0);
   // gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  gtk_combo_box_append_text(d->profile, _("image settings"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("image settings"));
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     if(!strcmp(prof->name, "X profile"))
-      gtk_combo_box_append_text(d->profile, _("system display profile"));
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("system display profile"));
     else
-      gtk_combo_box_append_text(d->profile, prof->name);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
     l = g_list_next(l);
   }
 
@@ -637,17 +637,17 @@ gui_init (dt_lib_module_t *self)
   label = gtk_label_new(_("style"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->style = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  d->style = GTK_COMBO_BOX(gtk_combo_box_text_new());
 
   dt_ellipsize_combo(d->style);
 
-  gtk_combo_box_append_text(d->style, _("none"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), _("none"));
 
   GList *styles = dt_styles_get_list("");
   while (styles)
   {
     dt_style_t *style=(dt_style_t *)styles->data;
-    gtk_combo_box_append_text(d->style, style->name);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->style), style->name);
     styles=g_list_next(styles);
   }
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->style), 1, 2, 10, 11, GTK_EXPAND|GTK_FILL, 0, 0, 0);

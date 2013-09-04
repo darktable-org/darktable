@@ -570,7 +570,7 @@ add_definitions("-DGSEAL_ENABLE")
 #  Do not use deprecated symbols
 #
 add_definitions("-DGDK_DISABLE_DEPRECATED")
-#add_definitions("-DGTK_DISABLE_DEPRECATED")
+add_definitions("-DGTK_DISABLE_DEPRECATED")
 add_definitions("-Werror=implicit-function-declaration")
 
 ###### GTK+3 port ######
