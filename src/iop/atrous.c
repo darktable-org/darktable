@@ -1003,7 +1003,9 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   int ch2 = (int)c->channel2;
   for(int k=0; k<BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
   const int inset = INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
@@ -1251,7 +1253,9 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   const int inset = INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   int ch2 = c->channel;
@@ -1341,7 +1345,9 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;

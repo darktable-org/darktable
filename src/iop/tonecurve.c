@@ -422,8 +422,10 @@ static gboolean
 area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GtkRequisition r;
-  r.width  = widget->allocation.width;
-  r.height = widget->allocation.width;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  r.width  = allocation.width;
+  r.height = allocation.width;
   gtk_widget_size_request(widget, &r);
   return TRUE;
 }
@@ -653,7 +655,9 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -856,7 +860,9 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   if (autoscale_ab && ch != ch_L) goto finally;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 

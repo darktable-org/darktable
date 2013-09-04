@@ -85,12 +85,12 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
   g_return_if_fail(allocation != NULL);
 
-  widget->allocation = *allocation;
+  gtk_widget_get_allocation(widget, allocation);
 
-  if (GTK_WIDGET_REALIZED(widget))
+  if (gtk_widget_get_realized(widget))
   {
     gdk_window_move_resize(
-      widget->window,
+      gtk_widget_get_window(widget),
       allocation->x, allocation->y,
       allocation->width, allocation->height
     );
@@ -142,12 +142,14 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 
   /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
+  cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   /* draw standard button background if not transparent nor flat styled */
   if( (flags & CPF_STYLE_FLAT ))
@@ -166,8 +168,8 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   else if( !(flags & CPF_BG_TRANSPARENT) )
   {
     /* draw default boxed button */
-    gtk_paint_box (widget->style, widget->window,
-                   GTK_WIDGET_STATE (widget),
+    gtk_paint_box (gtk_widget_get_style(widget), gtk_widget_get_window(widget),
+                   gtk_widget_get_state(widget),
                    GTK_SHADOW_OUT, NULL, widget, "button",
                    x, y, width, height);
   }
@@ -210,7 +212,7 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
     //if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
     //GdkRectangle t={x,y,x+width,y+height};
-    //gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
+    //gtk_paint_layout(style,gtk_widget_get_window(widget), state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
     cairo_translate(cr, lx, ly);
     pango_cairo_show_layout (cr,layout);
   }

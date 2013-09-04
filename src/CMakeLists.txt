@@ -122,7 +122,7 @@ include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GTK2 2.6 REQUIRED gtk)
+find_package(GTK2 2.22 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
@@ -560,6 +560,11 @@ add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
 # Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
 #
 add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
+
+#
+# Use accessor functions instead of direct access
+#
+add_definitions("-DGSEAL_ENABLE")
 
 ###### GTK+3 port ######
 

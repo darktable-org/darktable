@@ -51,6 +51,7 @@ endif(USE_LUA)
 # Install other system shares
 #
 install(FILES darktable.desktop DESTINATION ./share/applications)
+install(FILES darktable.appdata.xml DESTINATION ./share/appdata)
 
 #
 # Install watermarks

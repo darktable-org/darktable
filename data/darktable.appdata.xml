@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <id type="desktop">darktable.desktop</id>
+  <licence>CC0</licence>
+  <description>
+    <p>
+      Darktable manages your digital negatives in a database and lets you 
+      view them through a lighttable. It also enables you to develop RAW
+      images and enhance them in a darkroom.
+    </p>
+    <p>
+      Darktable supports most modern camera's RAW formats, and does all 
+      of it's processing at very high precision.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default" width="1366" height="768">http://darktable.org/images/darktable-appdata.jpg</screenshot>
+  </screenshots>
+  <url type="homepage">http://www.darktable.org/</url>
+  <updatecontact>darktable-users@lists.sourceforge.net</updatecontact>
+</application>

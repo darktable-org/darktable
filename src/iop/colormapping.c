@@ -908,8 +908,10 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = 5;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   cairo_set_source_rgb (cr, .2, .2, .2);

@@ -839,7 +839,10 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(picasa_auth_dialog->vbox), hbox, TRUE, TRUE, 0);
+
+  GtkBox *picasaauthdialog_vbox = 0;
+  g_object_get(G_OBJECT(picasa_auth_dialog), "vbox", &picasaauthdialog_vbox, NULL);
+  gtk_box_pack_end(picasaauthdialog_vbox, hbox, TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(picasa_auth_dialog));
 

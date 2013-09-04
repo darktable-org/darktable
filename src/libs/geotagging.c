@@ -362,7 +362,7 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   gdk_window_get_size(gtk_widget_get_window(center),&center_w,&center_h);
 
   d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  GTK_WIDGET_SET_FLAGS(d->floating_window, GTK_CAN_FOCUS);
+  gtk_widget_set_can_focus(d->floating_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
   gtk_window_set_has_frame(GTK_WINDOW(d->floating_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
