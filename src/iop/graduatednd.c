@@ -219,11 +219,12 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
   float pts[4] = {xa*self->dev->preview_pipe->backbuf_width, ya*self->dev->preview_pipe->backbuf_height,
                   xb*self->dev->preview_pipe->backbuf_width, yb*self->dev->preview_pipe->backbuf_height
                  };
-  dt_dev_distort_backtransform(self->dev,pts,2);
-  pts[0] /= self->dev->preview_pipe->iwidth;
-  pts[2] /= self->dev->preview_pipe->iwidth;
-  pts[1] /= self->dev->preview_pipe->iheight;
-  pts[3] /= self->dev->preview_pipe->iheight;
+  dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,2);
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+  pts[0] /= (float)piece->buf_out.width;
+  pts[2] /= (float)piece->buf_out.width;
+  pts[1] /= (float)piece->buf_out.height;
+  pts[3] /= (float)piece->buf_out.height;
 
   //we first need to find the rotation angle
   //weird dichotomic solution : we may use something more cool ...
@@ -291,47 +292,52 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
   const float v=(-rotation/180)*M_PI;
   const float sinv=sin(v);
   float pts[4];
+  
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+  if (!piece) return 0;
+  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  
   //if sinv=0 then this is just the offset
   if (sinv==0)
   {
     if (v==0)
     {
-      pts[0] = self->dev->preview_pipe->iwidth*0.1;
-      pts[2] = self->dev->preview_pipe->iwidth*0.9;
-      pts[1] = pts[3] = self->dev->preview_pipe->iheight*offset/100.0;
+      pts[0] = wp*0.1;
+      pts[2] = wp*0.9;
+      pts[1] = pts[3] = hp*offset/100.0;
     }
     else
     {
-      pts[2] = self->dev->preview_pipe->iwidth*0.1;
-      pts[0] = self->dev->preview_pipe->iwidth*0.9;
-      pts[1] = pts[3] = self->dev->preview_pipe->iheight*(1.0-offset/100.0);
+      pts[2] = wp*0.1;
+      pts[0] = wp*0.9;
+      pts[1] = pts[3] = hp*(1.0-offset/100.0);
     }
   }
   else
   {
     //otherwise we determine the extremities
     const float cosv=cos(v);
-    float xx1 = (sinv - cosv + 1.0 - offset/50.0)*self->dev->preview_pipe->iwidth*0.5/sinv;
-    float xx2 = (sinv + cosv + 1.0 - offset/50.0)*self->dev->preview_pipe->iwidth*0.5/sinv;
+    float xx1 = (sinv - cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
+    float xx2 = (sinv + cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
     float yy1 = 0;
-    float yy2 = self->dev->preview_pipe->iheight;
-    float a = self->dev->preview_pipe->iheight/(xx2-xx1);
+    float yy2 = hp;
+    float a = hp/(xx2-xx1);
     float b = -xx1*a;
     //now ensure that the line isn't outside image borders
-    if (xx2>self->dev->preview_pipe->iwidth)
+    if (xx2>wp)
     {
-      yy2 = a*self->dev->preview_pipe->iwidth+b;
-      xx2=self->dev->preview_pipe->iwidth;
+      yy2 = a*wp+b;
+      xx2=wp;
     }
     if (xx2<0)
     {
       yy2 = b;
       xx2=0;
     }
-    if (xx1>self->dev->preview_pipe->iwidth)
+    if (xx1>wp)
     {
-      yy1 = a*self->dev->preview_pipe->iwidth+b;
-      xx1=self->dev->preview_pipe->iwidth;
+      yy1 = a*wp+b;
+      xx1=wp;
     }
     if (xx1<0)
     {
@@ -388,7 +394,8 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
     }
   }
   //now we want that points to take care of distort modules
-  if (!dt_dev_distort_transform(self->dev,pts,2)) return 0;
+  
+  if (!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts, 2)) return 0;
   *xa = pts[0]/self->dev->preview_pipe->backbuf_width;
   *ya = pts[1]/self->dev->preview_pipe->backbuf_height;
   *xb = pts[2]/self->dev->preview_pipe->backbuf_width;
