@@ -636,8 +636,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
            (cache->compression_type == 1 ? "low quality compression" : "slow high quality compression"));
 
   // adjust numbers to be large enough to hold what mem limit suggests.
-  // we want at least 100MB, and consider 2G just still reasonable.
-  uint32_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u<<20, ((uint64_t)4)<<30);
+  // we want at least 100MB, and consider 8G just still reasonable.
+  size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u<<20, ((uint64_t)8)<<30);
   const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads")*dt_conf_get_int("parallel_export"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
@@ -697,9 +697,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // XXX this needs adjustment for video mode (more full-res thumbs for replay)
     // TODO: collect hit/miss stats and auto-adjust to user browsing behaviour
     // TODO: can #prefetches be collected this way, too?
-    const uint32_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
-    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem2/cache->mip[k].buffer_size)));
-    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
+    const size_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
+    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((double)max_mem2/cache->mip[k].buffer_size)));
+    while(thumbnails > parallel && (size_t)thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
@@ -786,8 +786,9 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
   }
   for(int k=(int)DT_MIPMAP_F; k<=(int)DT_MIPMAP_FULL; k++)
   {
-    printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost,
-           cache->mip[k].cache.cost_quota,
+    printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", k,
+           (uint32_t)cache->mip[k].cache.cost,
+           (uint32_t)cache->mip[k].cache.cost_quota,
            100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
            dt_cache_size(&cache->mip[k].cache),
            dt_cache_capacity(&cache->mip[k].cache));
