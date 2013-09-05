@@ -11,8 +11,9 @@ The release team should empty this file after each release.
 ==========================================================================================
 
 Hardware Support:
-* Update to RawSpeed r558
-* Oplympus E-P5 (incl. preliminary Adobe Coeff.)
+* Update to RawSpeed r570
+* Canon 70D (preliminary)
+* Olympus E-P5 (incl. preliminary Adobe Coeff.)
 * Samsung NX2000
 * Sony RX100m2
 * Sony SLT-A58 (updated)
@@ -21,12 +22,19 @@ White Balance Presets:
 * Sony NEX-5R
 * Sony SLT-A58
 * Nikon D3200 (updated)
+* Pentax K20D
+
+Enhanced Color Matrix:
+* Pentax K20D
 
 Noise Profiles:
 * Canon EOS 1100D == Canon EOS Rebel T3
 * Canon PowerShot S95
 * Canon PowerShot G11
 * Nikon Coolpix P330
+* Sony A580
+* Fuji X10
+* Pentax K20D
 
 Fixes and improvements:
 * OS X: fix Facebook uploads
@@ -45,3 +53,6 @@ Fixes and improvements:
 * PFM: load timestamp as date & time taken.
 * Fix bug prohibiting image rating by mouse
 * Update Picasa uploader: references Google+ now
+* Some fixes for mem leaks, deadlocks, background jobs
+* Fixes of on-screen handles for Crop&Rotate and GND modules
+* Increased maximum cache size to 4GB
