@@ -20,6 +20,7 @@
 #define DT_COMMON_CACHE_H
 
 #include <inttypes.h>
+#include <stddef.h>
 
 struct dt_cache_segment_t;
 struct dt_cache_bucket_t;
