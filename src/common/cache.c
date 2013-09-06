@@ -345,7 +345,7 @@ optimize_cacheline_use(dt_cache_t         *cache,
 
 
 void
-dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t cost_quota)
+dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, size_t cache_line_size, size_t cost_quota)
 {
   const uint32_t adj_num_threads = nearest_power_of_two(num_threads);
   // FIXME: if switching this on, lru lists need to move, too! (because they work by bucket and not by key)

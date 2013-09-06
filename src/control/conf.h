@@ -149,7 +149,7 @@ static inline int dt_conf_get_int(const char *name)
   return val;
 }
 
-static inline int dt_conf_get_int64(const char *name)
+static inline int64_t dt_conf_get_int64(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
