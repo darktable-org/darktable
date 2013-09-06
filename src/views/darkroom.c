@@ -962,7 +962,10 @@ static gboolean _overexposed_show_popup(gpointer user_data)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   gtk_widget_show_all(d->overexposed.floating_window);
   gdk_window_get_origin(gtk_widget_get_window(d->overexposed.button), &px, &py);
-  gdk_window_get_size(gtk_widget_get_window(d->overexposed.floating_window), &window_w, &window_h);
+
+  window_w = gdk_window_get_width(gtk_widget_get_window(d->overexposed.floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(d->overexposed.floating_window));
+
   gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
   x = px + wx - window_w + 5;
   y = py + wy - window_h - 5;

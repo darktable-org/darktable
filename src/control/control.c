@@ -800,7 +800,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor* cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  gdk_cursor_destroy(cursor);
+  gdk_cursor_unref(cursor);
 }
 
 int dt_control_running()
@@ -1282,7 +1282,7 @@ void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
   if(!darktable.gui->pixmap) return NULL;
-  gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
+  gdk_pixmap_get_size(darktable.gui->pixmap, &width, &height);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
