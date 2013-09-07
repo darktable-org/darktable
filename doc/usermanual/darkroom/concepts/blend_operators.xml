@@ -18,8 +18,9 @@
 		<sect3><title>blend modes</title>
 
 			<sect4><title>normal</title>
-				<para>This will probably be the most used blend mode. It just mixes input and output and therefore 
-				      reduces the strength of a module's effect.
+				<para>This will probably be the most used blend mode. It just mixes input and output and, depending on the opacity value, it 
+				      reduces the strength of a module's effect. Generally this is also the blend mode of choice if you want
+                                      to apply a module's effect locally using masks.
 			        </para>			
 			</sect4>
 
