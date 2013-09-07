@@ -1860,8 +1860,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   //in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    float wd = darktable.develop->preview_pipe->iwidth;
+    float ht = darktable.develop->preview_pipe->iheight;
 
     if(gui->guipoints_count == 0)
     {
