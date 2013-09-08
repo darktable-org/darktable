@@ -2371,6 +2371,39 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
   }
 
+  //if not this still might mean that path fully encircles roi -> we need to check that
+  if (!path_in_roi)
+  {
+    int nb = 0;
+    int last = -9999;
+    int x = width/2;
+    int y = height/2;
+
+    for (int i=nb_corner*3; i< points_count; i++)
+    {
+      int yy = (int) points[2*i+1];
+      if (yy != last && yy == y)
+      {
+        if (points[2*i] > x) nb++;
+      }
+      last = yy;
+    }
+    //if there is an uneven number of intersection points roi lies within path
+    if (nb & 1)
+    {
+      path_in_roi = 1;
+      path_encircles_roi = 1;
+    }
+  }
+
+  //if path and feather completely lie outside of roi -> we're done/mask remains empty
+  if(!path_in_roi && !feather_in_roi)
+  {
+    free(points);
+    free(border);
+    return 1;
+  }
+
   //now check if feather is at least partially within roi
   for (int i=nb_corner*3; i < border_count; i++)
   {
@@ -2421,14 +2454,6 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
-  //if path and feather completely lie outside of roi -> we're done/mask remains empty
-  if(!path_in_roi && !feather_in_roi)
-  {
-    free(points);
-    free(border);
-    return 1;
-  }
-
   //deal with path if it does not lie outside of roi
   if(path_in_roi)
   {
@@ -2443,7 +2468,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     memcpy(cpoints, points, 2*points_count*sizeof(float));
 
     //now we clip cpoints to roi -> catch special case when roi lies completely within path
-    path_encircles_roi = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
+    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1);
+    path_encircles_roi = path_encircles_roi || !crop_success;
 
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
