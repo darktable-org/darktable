@@ -484,7 +484,7 @@ int dt_image_altered(const uint32_t imgid)
 
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR) || dt_util_get_file_size(filename) == 0)
     return 0;
   const char *cc = filename + strlen(filename);
   for(; *cc!='.'&&cc>filename; cc--);

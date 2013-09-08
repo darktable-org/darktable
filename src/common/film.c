@@ -315,6 +315,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
 
     /* return if no more files are in current dir */
     if (!filename) break;
+    if(filename[0] == '.') continue;
 
     /* build full path for filename */
     fullname = g_build_filename(G_DIR_SEPARATOR_S, path, filename, NULL);
@@ -325,7 +326,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
       *result = _film_recursive_get_files(fullname, recursive, result);
       g_free(fullname);
     }
-    /* or test if we found a support image format to import */
+    /* or test if we found a supported image format to import */
     else if (!g_file_test(fullname, G_FILE_TEST_IS_DIR) &&
              dt_supported_image(filename))
       *result = g_list_append(*result, fullname);
