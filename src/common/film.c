@@ -380,12 +380,13 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
 
     /* return if no more files are in current dir */
     if (!filename) break;
+    if(filename[0] == '.') continue;
 
     /* build full path for filename */
     fullname = g_build_filename(G_DIR_SEPARATOR_S, path, filename, NULL);
 
     /* recurse into directory if we hit one and we doing a recursive import */
-    if (recursive && filename[0] != '.' && g_file_test(fullname, G_FILE_TEST_IS_DIR))
+    if (recursive && g_file_test(fullname, G_FILE_TEST_IS_DIR))
     {
       *result = _film_recursive_get_files(fullname, recursive, result);
       g_free(fullname);
