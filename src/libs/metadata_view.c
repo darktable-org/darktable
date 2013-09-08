@@ -134,9 +134,16 @@ int position()
   return 299;
 }
 
-/* helper which eliminates non-ascii and non-printable characters from a string */
+/* helper which eliminates non-printable characters from a string
+
+Strings which are already in valid UTF-8 are retained.
+*/
 static void _filter_non_printable(char *string, int length)
 {
+  /* explicitly tell the validator to ignore the trailing nulls, otherwise this fails */
+  if (g_utf8_validate(string, -1, 0))
+    return;
+
   unsigned char *str = (unsigned char *)string;
   int n = 0;
 
