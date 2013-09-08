@@ -290,7 +290,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label;
   GtkEntryCompletion *completion;
 
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)malloc(sizeof(dt_lib_metadata_t));
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   d->imgsel = -1;
