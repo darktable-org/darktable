@@ -20,6 +20,8 @@
 #if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
 #include <pwd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "darktable.h"
 #endif
 
@@ -236,6 +238,16 @@ size_t dt_utf8_strlcpy(char *dest, const char *src,size_t n)
     dest[s - src] = '\0';
   }
   return s - src;
+}
+
+off_t dt_util_get_file_size(const char *filename)
+{
+  struct stat st;
+
+  if(stat(filename, &st) == 0)
+    return st.st_size;
+
+  return -1;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
