@@ -10,6 +10,10 @@
            <primary>denoise</primary>
            <secondary>equalizer</secondary>
         </indexterm>
+        <indexterm>
+           <primary>clarity</primary>
+           <see>equalizer</see>
+        </indexterm>
 	<sect4><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -17,7 +21,7 @@
 				<tbody>
 					<row>						
 						<entry>This versatile module can be used to achieve a variety
-            of effects, such as: bloom, denoising, and local contrast
+            of effects, such as: bloom, denoising, clarity, and local contrast
             enhancement. It works in the wavelet domain and parameters
             can be tuned for each frequency band separately.
 						</entry>
@@ -128,6 +132,6 @@
     leave darkroom mode all changes will be consolidated into the spline curves.</para>
 
     <para>Have a look at the presets where there are a broad variety of examples that will provide a good starting point to gain an intuitive understanding
-    of the controls.</para>
+    of the controls. Among others there are two presets to enhance an image's <quote>clarity</quote>.</para>
    </sect4>
 </sect3>
