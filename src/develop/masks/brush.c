@@ -2440,31 +2440,43 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   return 1;
 }
 
-
-
 /** we write a falloff segment respecting limits of buffer */
-static void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
+static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
 {
-  //segment length
-  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
-  const int solid = (int)l*hardness;
-  const int soft = l - solid;
+  //segment length (increase by 1 to avoid division-by-zero special case handling)
+  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1])) + 1;
+  const int solid = hardness*l;
 
-  const float lx = p1[0]-p0[0];
-  const float ly = p1[1]-p0[1];
+  const float lx = (float)(p1[0]-p0[0])/(float)l;
+  const float ly = (float)(p1[1]-p0[1])/(float)l;
 
-  const int dx = lx < 0 ? -1 : 1;
-  const int dy = ly < 0 ? -1 : 1;
+  const int dx = lx <= 0 ? -1 : 1;
+  const int dy = ly <= 0 ? -1 : 1;
+  const int dpx = dx;
+  const int dpy = dy*bw;
+  
+  float fx = p0[0];
+  float fy = p0[1];
+
+  float op = density;
+  float dop = density/(float)(l - solid);
 
   for (int i=0 ; i<l; i++)
   {
-    //position
-    const int x = (int)((float)i*lx/(float)l) + p0[0];
-    const int y = (int)((float)i*ly/(float)l) + p0[1];
-    const float op = density*((i <= solid) ? 1.0f : 1.0-(float)(i - solid)/(float)soft);
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+    const int x = fx;
+    const int y = fy;
+
+    fx += lx;
+    fy += ly;
+    if (i > solid) op -= dop;
+
+    if (x < 0 || x >= bw || y < 0 || y >= bh) continue;
+
+    float *buf = *buffer + y*bw + x;
+
+    *buf = fmaxf(*buf, op);
+    if (x+dx >= 0 && x+dx < bw) buf[dpx] = fmaxf(buf[dpx], op);   //this one is to avoid gaps due to int rounding
+    if (y+dy >= 0 && y+dy < bh) buf[dpy] = fmaxf(buf[dpy], op);   //this one is to avoid gaps due to int rounding
   }
 }
 
