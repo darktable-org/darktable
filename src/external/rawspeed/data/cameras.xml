@@ -1572,6 +1572,16 @@
 		<Crop x="0" y="0" width="2576" height="1924"/>
 		<Sensor black="32" white="1023"/>
 	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="E-M1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>	
 	<Camera make="OLYMPUS IMAGING CORP." model="E-M5">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -2476,6 +2486,38 @@
 		<Crop x="20" y="18" width="-86" height="-28"/>
 		<Sensor black="0" white="65535"/>
 	</Camera>
+	<Camera make="Panasonic" model = "DMC-FZ70">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-182" height="0"/>
+		<Sensor black="120" white="4097"/>
+		<Aliases>
+			<Alias>DMC-FZ72</Alias>
+		</Aliases>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-FZ70" mode="4:3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-182" height="0"/>
+		<Sensor black="120" white="4097"/>
+		<Aliases>
+			<Alias>DMC-FZ72</Alias>
+		</Aliases>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>	
 	<Camera make="Panasonic" model = "DMC-FZ100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
