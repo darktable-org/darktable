@@ -143,7 +143,7 @@ public:
   virtual void apply(RawImage &in, RawImage &out, int startY, int endY);
 private:
   int mFirstPlane, mPlanes, mRowPitch, mColPitch;
-  ushort16 mLookup[65535];
+  ushort16 mLookup[65536];
 };
 
 class OpcodeMapPolynomial: public DngOpcode
@@ -156,7 +156,7 @@ public:
 private:
   int mFirstPlane, mPlanes, mRowPitch, mColPitch, mDegree;
   double mCoefficient[9];
-  ushort16 mLookup[65535];
+  ushort16 mLookup[65536];
 };
 
 class OpcodeDeltaPerRow: public DngOpcode
