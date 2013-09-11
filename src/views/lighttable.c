@@ -1107,9 +1107,9 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_surface_destroy (surface);
     cairo_restore(cr);
   }
-#else
-  dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
+  else
 #endif
+  dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
