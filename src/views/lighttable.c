@@ -1084,6 +1084,11 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   dt_image_full_path(lib->full_preview_id, filename, 2048, &from_cache);
   if(lib->full_res_thumb_id != lib->full_preview_id)
   {
+    if(lib->full_res_thumb)
+    {
+      free(lib->full_res_thumb);
+      lib->full_res_thumb = 0; 
+    }
     int error = dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, &lib->full_res_thumb_wd, &lib->full_res_thumb_ht, &lib->full_res_thumb_orientation);
     if(!error)
       lib->full_res_thumb_id = lib->full_preview_id;
@@ -1093,7 +1098,8 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd);
     cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
     cairo_save(cr);
-    cairo_translate(cr, -(lib->full_res_thumb_wd - width) * pointerx/(width), -(lib->full_res_thumb_ht - height) * pointery/(height));
+    if(pointerx >= 0 && pointery >= 0)
+      cairo_translate(cr, -(lib->full_res_thumb_wd - width) * CLAMP(pointerx/(float)width, 0.0f, 1.0f), -(lib->full_res_thumb_ht - height) * CLAMP(pointery/(float)height, 0.0f, 1.0f));
     cairo_set_source_surface (cr, surface, 0, 0);
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, lib->full_res_thumb_wd, lib->full_res_thumb_ht);
