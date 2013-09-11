@@ -58,6 +58,56 @@
 #include <strings.h>
 #include <glib/gstdio.h>
 
+
+// load a full-res thumbnail:
+int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *width, int32_t *height, int32_t *orientation)
+{
+  int ret = 0;
+  int res = 1;
+  // raw image thumbnail
+  libraw_data_t *raw = libraw_init(0);
+  libraw_processed_image_t *image = NULL;
+  ret = libraw_open_file(raw, filename);
+  if(ret) goto libraw_fail;
+  ret = libraw_unpack_thumb(raw);
+  if(ret) goto libraw_fail;
+  ret = libraw_adjust_sizes_info_only(raw);
+  if(ret) goto libraw_fail;
+
+  image = libraw_dcraw_make_mem_thumb(raw, &ret);
+  if(!image || ret) goto libraw_fail;
+  *orientation = raw->sizes.flip;
+  if(image->type == LIBRAW_IMAGE_JPEG)
+  {
+    dt_imageio_jpeg_t jpg;
+    if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
+    *buffer = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+    if(!buffer) goto libraw_fail;
+    *width = jpg.width;
+    *height = jpg.height;
+    if(dt_imageio_jpeg_decompress(&jpg, *buffer))
+    {
+      free(*buffer);
+      *buffer = 0;
+      goto libraw_fail;
+    }
+    res = 0;
+  }
+
+  // clean up raw stuff.
+  libraw_recycle(raw);
+  libraw_close(raw);
+  free(image);
+  if(0)
+  {
+libraw_fail:
+    // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
+    libraw_close(raw);
+    res = 1;
+  }
+  return res;
+}
+
 // =================================================
 //   begin libraw wrapper functions:
 // =================================================

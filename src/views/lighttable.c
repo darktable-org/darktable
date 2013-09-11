@@ -91,6 +91,9 @@ typedef struct dt_library_t
   GdkColor star_color;
   int images_in_row;
 
+  uint8_t *full_res_thumb;
+  int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht, full_res_thumb_orientation;
+
   int32_t last_mouse_over_id;
 
   int32_t collection_count;
@@ -327,6 +330,8 @@ void init(dt_view_t *self)
   lib->full_preview = 0;
   lib->full_preview_id = -1;
   lib->last_mouse_over_id = -1;
+  lib->full_res_thumb = 0;
+  lib->full_res_thumb_id = -1;
 
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
 
@@ -1072,7 +1077,33 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   lib->image_over = DT_VIEW_DESERT;
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_paint(cr);
+
+#if 1
+  gboolean from_cache = FALSE;
+  char filename[2048];
+  dt_image_full_path(lib->full_preview_id, filename, 2048, &from_cache);
+  if(lib->full_res_thumb_id != lib->full_preview_id)
+  {
+    int error = dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, &lib->full_res_thumb_wd, &lib->full_res_thumb_ht, &lib->full_res_thumb_orientation);
+    if(!error)
+      lib->full_res_thumb_id = lib->full_preview_id;
+  }
+  if(lib->full_res_thumb_id == lib->full_preview_id)
+  {
+    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd);
+    cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
+    cairo_save(cr);
+    cairo_translate(cr, -(lib->full_res_thumb_wd - width) * pointerx/(width), -(lib->full_res_thumb_ht - height) * pointery/(height));
+    cairo_set_source_surface (cr, surface, 0, 0);
+      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    cairo_rectangle(cr, 0, 0, lib->full_res_thumb_wd, lib->full_res_thumb_ht);
+    cairo_fill(cr);
+    cairo_surface_destroy (surface);
+    cairo_restore(cr);
+  }
+#else
   dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
+#endif
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
