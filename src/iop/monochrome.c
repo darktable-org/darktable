@@ -376,7 +376,9 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
   dt_iop_monochrome_params_t *p  = (dt_iop_monochrome_params_t *)self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -433,7 +435,9 @@ static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotio
   if(g->dragging)
   {
     const int inset = DT_COLORCORRECTION_INSET;
-    int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
     const float mouse_x = CLAMP(event->x - inset, 0, width);
     const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
     p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;
@@ -463,7 +467,9 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     else
     {
       const int inset = DT_COLORCORRECTION_INSET;
-      int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
       const float mouse_x = CLAMP(event->x - inset, 0, width);
       const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
       p->a = PANEL_WIDTH*(mouse_x - width  * 0.5f)/(float)width;

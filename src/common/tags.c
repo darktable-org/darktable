@@ -148,10 +148,10 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   if (!strcmp(source,dest)) return;
 
   char query[1024];
-  gchar *tag;
+  gchar *tag = g_strrstr(source,"|");
 
-  if (g_strrstr(source,"|")) tag = g_strrstr (source,"|");
-  else tag = g_strconcat("|", source, NULL);
+  if (!tag)
+    tag = g_strconcat("|", source, NULL);
 
   if (!strcmp(dest," "))
   {
@@ -505,8 +505,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT INTO memory.taglist (id, count) "
                         "SELECT DISTINCT(TXT.id2), TXT.count FROM tagxtag TXT "
-                        "WHERE TXT.id1 IN "
-                        "(SELECT id from memory.tagq) AND TXT.count > 0 "
+                        "WHERE TXT.count > 0 "
+                        " AND TXT.id1 IN (SELECT id FROM memory.tagq) "
                         "ORDER BY TXT.count DESC",
                         NULL, NULL, NULL);
 
@@ -517,8 +517,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT OR REPLACE INTO memory.taglist (id, count) "
                         "SELECT DISTINCT(TXT.id1), TXT.count FROM tagxtag TXT "
-                        "WHERE TXT.id2 IN "
-                        "(SELECT id from memory.tagq) AND TXT.count > 0 "
+                        "WHERE TXT.count > 0 "
+                        " AND TXT.id2 IN (SELECT id FROM memory.tagq) "
                         "ORDER BY TXT.count DESC",
                         NULL, NULL, NULL);
 

@@ -2307,6 +2307,15 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int height = roi->height;
   const float scale = roi->scale;
 
+  // we need to take care of four different cases:
+  // 1) path and feather are outside of roi
+  // 2) path is outside of roi, feather reaches into roi
+  // 3) roi lies completely within path
+  // 4) all other situations :)
+  int path_in_roi = 0;
+  int feather_in_roi = 0;
+  int path_encircles_roi = 0;
+
   //we get buffers for all points
   float *points, *border, *cpoints = NULL;
   int points_count, border_count;
@@ -2342,7 +2351,6 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     border[2*i] = xx * scale - px;
     border[2*i+1] = yy * scale - py;
   }
-
   for (int i=nb_corner*3; i < points_count; i++)
   {
     float xx = points[2*i];
@@ -2351,14 +2359,84 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     points[2*i+1] = yy * scale - py;
   }
 
-  //now we want to find the area, so we search min/max points
+  //now check if path is at least partially within roi
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    int xx = points[i*2];
+    int yy = points[i*2+1];
+    if(xx > 1 && yy > 1 && xx < width-2 && yy < height-2)
+    {
+      path_in_roi = 1;
+      break;
+    }
+  }
+
+  //if not this still might mean that path fully encircles roi -> we need to check that
+  if (!path_in_roi)
+  {
+    int nb = 0;
+    int last = -9999;
+    int x = width/2;
+    int y = height/2;
+
+    for (int i=nb_corner*3; i< points_count; i++)
+    {
+      int yy = (int) points[2*i+1];
+      if (yy != last && yy == y)
+      {
+        if (points[2*i] > x) nb++;
+      }
+      last = yy;
+    }
+    //if there is an uneven number of intersection points roi lies within path
+    if (nb & 1)
+    {
+      path_in_roi = 1;
+      path_encircles_roi = 1;
+    }
+  }
+
+  //if path and feather completely lie outside of roi -> we're done/mask remains empty
+  if(!path_in_roi && !feather_in_roi)
+  {
+    free(points);
+    free(border);
+    return 1;
+  }
+
+  //now check if feather is at least partially within roi
+  for (int i=nb_corner*3; i < border_count; i++)
+  {
+    int xx = border[i*2];
+    int yy = border[i*2+1];
+    if (xx == -999999)
+    {
+      if (yy == -999999) break; //that means we have to skip the end of the border path
+      i = yy-1;
+      continue;
+    }
+    if(xx > 1 && yy > 1 && xx < width-2 && yy < height-2)
+    {
+      feather_in_roi = 1;
+      break;
+    }
+  }
+
+  // now get min/max values
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    float xx = points[i*2];
+    float yy = points[i*2+1];
+    xmin = fminf(xx,xmin);
+    xmax = fmaxf(xx,xmax);
+    ymin = fminf(yy,ymin);
+    ymax = fmaxf(yy,ymax);
+  }
   for (int i=nb_corner*3; i < border_count; i++)
   {
-    //we look at the borders
     float xx = border[i*2];
     float yy = border[i*2+1];
     if (xx == -999999)
@@ -2372,107 +2450,103 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     ymin = fminf(yy,ymin);
     ymax = fmaxf(yy,ymax);
   }
-  for (int i=nb_corner*3; i < points_count; i++)
-  {
-    //we look at the path too
-    float xx = points[i*2];
-    float yy = points[i*2+1];
-    xmin = fminf(xx,xmin);
-    xmax = fmaxf(xx,xmax);
-    ymin = fminf(yy,ymin);
-    ymax = fmaxf(yy,ymax);
-  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
-  //check if the path completely lies outside of roi -> we're done/mask remains empty
-  if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
+  //deal with path if it does not lie outside of roi
+  if(path_in_roi)
   {
-    free(points);
-    free(border);
-    return 1;
-  }
+    //second copy of path which we can modify when cropping to roi
+    cpoints = malloc(2*points_count*sizeof(float));
+    if (cpoints == NULL)
+    {
+      free(points);
+      free(border);
+      return 0;
+    }
+    memcpy(cpoints, points, 2*points_count*sizeof(float));
 
-  //second copy of path which can be altered when cropping to roi
-  cpoints = malloc(2*points_count*sizeof(float));
-  if (cpoints == NULL)
-  {
-    free(points);
-    free(border);
-    return 0;
-  }
-  memcpy(cpoints, points, 2*points_count*sizeof(float));
+    //now we clip cpoints to roi -> catch special case when roi lies completely within path
+    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1);
+    path_encircles_roi = path_encircles_roi || !crop_success;
 
-  //now we clip cpoints to roi
-  const int roi_in_path = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
-
-
-  //only if non-feathered part of shape lies within roi
-  if(!roi_in_path)
-  {
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
 
-    //edge-flag polygon fill: we write all the point around the path into the buffer
-    float xlast = cpoints[(points_count-1)*2];
-    float ylast = cpoints[(points_count-1)*2+1];
-
-    for (int i=nb_corner*3; i<points_count; i++)
+    if(path_encircles_roi)
     {
-      float xstart = xlast;
-      float ystart = ylast;
+      // roi lies completely within path
+      for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
+    }
+    else
+    {
+      // all other cases
 
-      float xend = xlast = cpoints[i*2];
-      float yend = ylast = cpoints[i*2+1];
+      //edge-flag polygon fill: we write all the point around the path into the buffer
+      float xlast = cpoints[(points_count-1)*2];
+      float ylast = cpoints[(points_count-1)*2+1];
 
-      if(ystart > yend)
+      for (int i=nb_corner*3; i<points_count; i++)
       {
-        float tmp;
-        tmp = ystart, ystart = yend, yend = tmp;
-        tmp = xstart, xstart = xend, xend = tmp;
-      }
+        float xstart = xlast;
+        float ystart = ylast;
 
-      const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
+        float xend = xlast = cpoints[i*2];
+        float yend = ylast = cpoints[i*2+1];
 
-      for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
-      {
-        const float xcross = xstart + m * (yy - ystart);
+        if(ystart > yend)
+        {
+          float tmp;
+          tmp = ystart, ystart = yend, yend = tmp;
+          tmp = xstart, xstart = xend, xend = tmp;
+        }
+
+        const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
+
+        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
+        {
+          const float xcross = xstart + m * (yy - ystart);
           
-        int xx = floorf(xcross);
-        if ((float)xx + 0.5f <= xcross) xx++;
+          int xx = floorf(xcross);
+          if ((float)xx + 0.5f <= xcross) xx++;
 
-        if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
+          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
 
-        (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+          (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+        }
       }
-    }
 
-    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
-    start2 = dt_get_wtime();
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      start2 = dt_get_wtime();
 
-    //we fill the inside plain
-    //we don't need to deal with parts of shape outside of roi
-    xmin = fmaxf(xmin, 0);
-    xmax = fminf(xmax, width-1);
-    ymin = fmaxf(ymin, 0);
-    ymax = fminf(ymax, height-1);
+      //we fill the inside plain
+      //we don't need to deal with parts of shape outside of roi
+      xmin = fmaxf(xmin, 0);
+      xmax = fminf(xmax, width-1);
+      ymin = fmaxf(ymin, 0);
+      ymax = fminf(ymax, height-1);
 
-    for (int yy=ymin; yy<=ymax; yy++)
-    {
-      int state = 0;
-      for (int xx=xmin ; xx<=xmax; xx++)
+      for (int yy=ymin; yy<=ymax; yy++)
       {
-        float v = (*buffer)[yy*width+xx];
-        if (v > 0.5f) state = !state;
-        if (state) (*buffer)[yy*width+xx] = 1.0f;
+        int state = 0;
+        for (int xx=xmin ; xx<=xmax; xx++)
+        {
+          float v = (*buffer)[yy*width+xx];
+          if (v > 0.5f) state = !state;
+          if (state) (*buffer)[yy*width+xx] = 1.0f;
+        }
       }
+
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      start2 = dt_get_wtime();
     }
+    free(cpoints);
+  }
 
-    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
-    start2 = dt_get_wtime();
-
-    //now we fill the falloff
+  //deal with feather if it does not lie outside of roi
+  if(feather_in_roi)
+  {
     int p0[2], p1[2];
     int last0[2] = {-100,-100};
     int last1[2] = {-100,-100};
@@ -2515,15 +2589,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   }
-  else
-  {
-    // roi lies completely within path
-    for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
-  }
 
   free(points);
   free(border);
-  free(cpoints);
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name, dt_get_wtime()-start);
 

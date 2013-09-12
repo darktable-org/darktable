@@ -405,6 +405,34 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   }
 }
 
+/** draw a circle with given radius. can be used to terminate a stroke and to draw junctions where attributes (opacity) change */
+static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
+{
+  //we want to find the start angle
+  float a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
+
+  //we determine the radius too
+  float rad = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
+
+  //determine the max length of the circle arc
+  int l = 2.0f*M_PI*rad;
+  if (l<2) return;
+
+  //and now we add the points
+  float incra = 2.0f*M_PI/l;
+  float aa = a1+incra;
+  for (int i=0; i<l; i++)
+  {
+    points[*pos_points] = cmax[0];
+    points[*pos_points+1] = cmax[1];
+    *pos_points += 2;
+    border[*pos_border] = cmax[0]+rad*cosf(aa);
+    border[*pos_border+1] = cmax[1]+rad*sinf(aa);
+    *pos_border += 2;
+    aa += incra;
+  }
+}
+
 /** recursive function to get all points of the brush AND all point of the border */
 /** the function take care to avoid big gaps between points */
 static void _brush_points_recurs(float *p1, float *p2,
@@ -567,6 +595,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   posp = 6*nb;
 
   int cw = 1;
+  int start_stamp = 0;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
@@ -579,7 +608,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     int k1 = _brush_cyclic_cursor(n+1, nb);
     int k2 = _brush_cyclic_cursor(n+2, nb);
 
-    if(k == k1) cw *= -1;
     dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k1);
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k2);
@@ -606,35 +634,40 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       memcpy(p4, pd, 7*sizeof(float));
     }
 
-    //special case render endpoints
-    if (k == k1)
+    // 1st. special case: render abrupt transitions between different opacity and/or hardness values 
+    if ((fabs(p1[5] - p2[5]) > 0.05f || fabs(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2*nb-1))
     {
-      if (border)
+      if(n == 0)
       {
-        float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
-        float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
-        float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
-        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, TRUE);
-
-        if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
-        if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+        start_stamp = 1;    // remember to deal with the first node as a final step
       }
-
-      if (payload)
+      else
       {
-        for (int k = posp/2; k < pos/2; k++)
+        if (border)
         {
-          (*payload)[posp] = p1[5];
-          (*payload)[posp+1] = p1[6];
-          posp += 2;
+          float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
+          float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
+          _brush_points_stamp(cmax, bmin, *points, &pos, *border, &posb, TRUE);
 
-          if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+          if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+          if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+        }
+
+        if (payload)
+        {
+          for (int k = posp/2; k < pos/2; k++)
+          {
+            (*payload)[posp] = p1[5];
+            (*payload)[posp+1] = p1[6];
+            posp += 2;
+
+            if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+          }
         }
       }
-      continue;
     }
 
-    //special case: render transition point between different brush sizes
+    // 2nd. special case: render transition point between different brush sizes
     if (fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
       if (border)
@@ -659,6 +692,36 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
           if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
         }
       }
+    }
+
+    // 3rd. special case: render endpoints
+    if (k == k1)
+    {
+      if (border)
+      {
+        float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
+        float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
+        float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
+        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, TRUE);
+
+        if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+        if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+      }
+
+      if (payload)
+      {
+        for (int k = posp/2; k < pos/2; k++)
+        {
+          (*payload)[posp] = p1[5];
+          (*payload)[posp+1] = p1[6];
+          posp += 2;
+
+          if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+        }
+      }
+
+      cw *= -1;
+      continue;
     }
 
     //and we determine all points by recursion (to be sure the distance between 2 points is <=1)
@@ -973,7 +1036,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       if (gui->guipoints_count > 0)
       {
-        gui->guipoints_payload[4*(gui->guipoints_count-1)+1] = masks_density;
+        gui->guipoints_payload[4*(gui->guipoints_count-1)+2] = masks_density;
       }
     }
 
@@ -1860,8 +1923,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   //in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    float wd = darktable.develop->preview_pipe->iwidth;
+    float ht = darktable.develop->preview_pipe->iheight;
 
     if(gui->guipoints_count == 0)
     {
@@ -2377,31 +2440,43 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   return 1;
 }
 
-
-
 /** we write a falloff segment respecting limits of buffer */
-static void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
+static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
 {
-  //segment length
-  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
-  const int solid = (int)l*hardness;
-  const int soft = l - solid;
+  //segment length (increase by 1 to avoid division-by-zero special case handling)
+  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1])) + 1;
+  const int solid = hardness*l;
 
-  const float lx = p1[0]-p0[0];
-  const float ly = p1[1]-p0[1];
+  const float lx = (float)(p1[0]-p0[0])/(float)l;
+  const float ly = (float)(p1[1]-p0[1])/(float)l;
 
-  const int dx = lx < 0 ? -1 : 1;
-  const int dy = ly < 0 ? -1 : 1;
+  const int dx = lx <= 0 ? -1 : 1;
+  const int dy = ly <= 0 ? -1 : 1;
+  const int dpx = dx;
+  const int dpy = dy*bw;
+  
+  float fx = p0[0];
+  float fy = p0[1];
+
+  float op = density;
+  float dop = density/(float)(l - solid);
 
   for (int i=0 ; i<l; i++)
   {
-    //position
-    const int x = (int)((float)i*lx/(float)l) + p0[0];
-    const int y = (int)((float)i*ly/(float)l) + p0[1];
-    const float op = density*((i <= solid) ? 1.0f : 1.0-(float)(i - solid)/(float)soft);
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+    const int x = fx;
+    const int y = fy;
+
+    fx += lx;
+    fy += ly;
+    if (i > solid) op -= dop;
+
+    if (x < 0 || x >= bw || y < 0 || y >= bh) continue;
+
+    float *buf = *buffer + y*bw + x;
+
+    *buf = fmaxf(*buf, op);
+    if (x+dx >= 0 && x+dx < bw) buf[dpx] = fmaxf(buf[dpx], op);   //this one is to avoid gaps due to int rounding
+    if (y+dy >= 0 && y+dy < bh) buf[dpy] = fmaxf(buf[dpy], op);   //this one is to avoid gaps due to int rounding
   }
 }
 

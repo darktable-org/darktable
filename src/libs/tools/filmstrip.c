@@ -479,7 +479,7 @@ static gboolean _lib_filmstrip_size_handle_button_callback(GtkWidget *w, GdkEven
     if (e->type == GDK_BUTTON_PRESS)
     {
       /* store current  mousepointer position */
-      gdk_window_get_pointer(dt_ui_main_window(darktable.gui->ui)->window, &d->size_handle_x, &d->size_handle_y, NULL);
+      gdk_window_get_pointer(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)), &d->size_handle_x, &d->size_handle_y, NULL);
       gtk_widget_get_size_request(d->filmstrip, NULL, &d->size_handle_height);
       d->size_handle_is_dragging = TRUE;
     }
@@ -496,7 +496,7 @@ static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, 
   if (d->size_handle_is_dragging)
   {
     gint x,y,sx,sy;
-    gdk_window_get_pointer (dt_ui_main_window(darktable.gui->ui)->window, &x, &y, NULL);
+    gdk_window_get_pointer (gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)), &x, &y, NULL);
     gtk_widget_get_size_request (d->filmstrip,&sx,&sy);
     sy = CLAMP(d->size_handle_height+(d->size_handle_y - y), 64,400);
 
@@ -692,8 +692,10 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  int32_t width = widget->allocation.width;
-  int32_t height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int32_t width = allocation.width;
+  int32_t height = allocation.height;
 
   gdouble pointerx = strip->pointerx;
   gdouble pointery = strip->pointery;
@@ -705,7 +707,7 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
   DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
   /* create cairo surface */
-  cairo_t *cr = gdk_cairo_create(widget->window);
+  cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
   /* fill background */
   cairo_set_source_rgb (cr, .2, .2, .2);
@@ -1088,7 +1090,7 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
     case DND_TARGET_IMGID:
     {
       int id = ((count == 1) ? mouse_over_id : -1);
-      gtk_selection_data_set(selection_data, selection_data-> target, _DWORD, (guchar*) &id, sizeof(id));
+      gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _DWORD, (guchar*) &id, sizeof(id));
       break;
     }
     default: // return the location of the file as a last resort
@@ -1100,7 +1102,7 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
         gboolean from_cache = TRUE;
         dt_image_full_path(mouse_over_id, pathname, DT_MAX_PATH_LEN, &from_cache);
         gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
-        gtk_selection_data_set(selection_data, selection_data-> target, _BYTE, (guchar*) uri, strlen(uri));
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar*) uri, strlen(uri));
         g_free(uri);
       }
       else
@@ -1119,7 +1121,7 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
         }
         sqlite3_finalize(stmt);
         gchar* uri_list = dt_util_glist_to_str("\r\n", images, count);
-        gtk_selection_data_set(selection_data, selection_data-> target, _BYTE, (guchar*) uri_list, strlen(uri_list));
+        gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar*) uri_list, strlen(uri_list));
         g_free(uri_list);
       }
       break;

@@ -1236,9 +1236,9 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
 {
   gboolean success = FALSE;
 
-  if((selection_data != NULL) && (selection_data->length >= 0))
+  if((selection_data != NULL) && (gtk_selection_data_get_length(selection_data) >= 0))
   {
-    gchar **uri_list = g_strsplit_set((gchar*)selection_data->data, "\r\n", 0);
+    gchar **uri_list = g_strsplit_set((gchar*)gtk_selection_data_get_data(selection_data), "\r\n", 0);
     if(uri_list)
     {
       gchar **image_to_load = uri_list;

@@ -20,6 +20,7 @@
 #define DT_COMMON_CACHE_H
 
 #include <inttypes.h>
+#include <stddef.h>
 
 struct dt_cache_segment_t;
 struct dt_cache_bucket_t;
@@ -35,8 +36,8 @@ typedef struct dt_cache_t
   int32_t lru, mru;
   int cache_mask;
   int optimize_cacheline;
-  int cost;
-  int cost_quota;
+  size_t cost;
+  size_t cost_quota;
   // one fat lru lock, no use locking segments and possibly rolling back changes.
   uint32_t lru_lock;
 
@@ -52,7 +53,7 @@ typedef struct dt_cache_t
 dt_cache_t;
 
 
-void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, int32_t cache_line_size, int32_t optimize_cacheline);
+void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, size_t cache_line_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
 
 // don't do memory allocation, but assign static memory to the buckets, given

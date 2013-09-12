@@ -127,7 +127,7 @@ dt_gui_contrast_init ()
 
   /* realize window to ensure style is applied before copy */
   gtk_widget_realize(window);
-  _main_window_orginal_style = gtk_style_copy (window->style);
+  _main_window_orginal_style = gtk_style_copy (gtk_widget_get_style(window));
 
   /* get clearlooks-brightbg original style */
 
@@ -135,7 +135,7 @@ dt_gui_contrast_init ()
   GtkWidget *ev = gtk_event_box_new();
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER,ev);
   gtk_widget_realize(ev);
-  _module_orginal_style = gtk_style_copy (ev->style);
+  _module_orginal_style = gtk_style_copy (gtk_widget_get_style(ev));
 
   gtk_widget_destroy(ev);
 

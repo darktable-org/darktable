@@ -94,8 +94,8 @@ void gui_init(dt_lib_module_t *self)
                         | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
-  GTK_WIDGET_UNSET_FLAGS (da, GTK_DOUBLE_BUFFERED);
-  GTK_WIDGET_SET_FLAGS   (da, GTK_APP_PAINTABLE);
+  gtk_widget_set_double_buffered(da, FALSE);
+  gtk_widget_set_app_paintable(da, TRUE);
   g_signal_connect (G_OBJECT (da), "expose-event",
                     G_CALLBACK (_lib_ratings_expose_callback), self);
   g_signal_connect (G_OBJECT (da), "button-press-event",
@@ -127,7 +127,9 @@ static gboolean _lib_ratings_expose_callback(GtkWidget *widget, GdkEventExpose *
 
   if(!darktable.control->running) return TRUE;
 
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
 
   /* get current style */
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);

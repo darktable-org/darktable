@@ -502,7 +502,9 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
   const int inset = DT_ZONESYSTEM_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -596,7 +598,9 @@ static gboolean dt_iop_zonesystem_bar_button_press(GtkWidget *widget, GdkEventBu
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   const int inset = DT_ZONESYSTEM_INSET;
-  int width = widget->allocation.width - 2*inset;/*, height = widget->allocation.height - 2*inset;*/
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width - 2*inset;/*, height = allocation.height - 2*inset;*/
 
   /* calculate zonemap */
   float zonemap[MAX_ZONE_SYSTEM_SIZE]= {-1};
@@ -674,7 +678,9 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   const int inset = DT_ZONESYSTEM_INSET;
-  int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
 
   /* calculate zonemap */
   float zonemap[MAX_ZONE_SYSTEM_SIZE]= {-1};
@@ -722,7 +728,9 @@ static gboolean
 dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   const int inset = 2;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
 
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;

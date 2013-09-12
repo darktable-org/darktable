@@ -2108,10 +2108,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if (g->k_show == 1 && p->k_type > 0)
   {
     //points in screen space
-    float iwd = dev->preview_pipe->iwidth;
-    float iht = dev->preview_pipe->iheight;
-    float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
-    if (dt_dev_distort_transform(self->dev,pts,4))
+    dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+    if (!piece) return;
+
+    float wp = piece->buf_out.width, hp = piece->buf_out.height;
+    float pts[8] = {p->kxa*wp, p->kya*hp, p->kxb*wp, p->kyb*hp, p->kxc*wp, p->kyc*hp, p->kxd*wp, p->kyd*hp};
+    if (dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts,4))
     {
       if (p->k_type == 3)
       {
@@ -2364,8 +2366,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if (g->k_drag == TRUE && g->k_selected >= 0)
     {
       float pts[2] = {pzx*wd,pzy*ht};
-      dt_dev_distort_backtransform(self->dev,pts,1);
-      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
+      dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,1);
+      dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+      float xx=pts[0]/(float)piece->buf_out.width, yy=pts[1]/(float)piece->buf_out.height;
       if (g->k_selected == 0)
       {
         if (p->k_sym == 1 || p->k_sym == 3) p->kxa = fminf(xx,(p->kxc+p->kxd-0.01f)/2.0f), p->kxb = p->kxc-p->kxa+p->kxd;
@@ -2569,8 +2572,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if (g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = {pzx*wd,pzy*ht};
-      dt_dev_distort_backtransform(self->dev,pts,1);
-      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
+      dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,1);
+      dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+      float xx=pts[0]/(float)piece->buf_out.width, yy=pts[1]/(float)piece->buf_out.height;
       //are we near a keystone point ?
       g->k_selected = -1;
       g->k_selected_segment = -1;
@@ -2704,11 +2708,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
         dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
         pzx += 0.5f;
         pzy += 0.5f;
-
-        float iwd = self->dev->preview_pipe->iwidth;
-        float iht = self->dev->preview_pipe->iheight;
-        float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
-        dt_dev_distort_transform(self->dev,pts,4);
+        
+        dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+        float wp = piece->buf_out.width, hp = piece->buf_out.height;
+        float pts[8] = {p->kxa*wp, p->kya*hp, p->kxb*wp, p->kyb*hp, p->kxc*wp, p->kyc*hp, p->kxd*wp, p->kyd*hp};
+        dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts,4);
+    
         float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
         float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
         float ext = 10.0/(zoom_scale);
