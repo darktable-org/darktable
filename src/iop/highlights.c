@@ -206,24 +206,25 @@ void process(
           }
           else
           {
-            // go for all 9 neighbours
-            const float near_clip = 0.9f*clip;
+            // analyse one bayer block to get same number of rggb pixels each time
+            const float near_clip = 0.96f*clip;
+            const float post_clip = 1.10f*clip;
             float blend = 0.0f;
-            float max = 0.0f;
-            for(int jj=-1; jj<=1; jj++)
+            float mean = 0.0f;
+            for(int jj=0; jj<=1; jj++)
             {
-              for(int ii=-1; ii<=1; ii++)
+              for(int ii=0; ii<=1; ii++)
               {
                 const float val = in[jj*roi_out->width + ii];
-                blend = fmaxf(blend, (fminf(clip, val) - near_clip)/(clip-near_clip));
-                max = fmaxf(max, val);
+                mean += val*0.25f;
+                blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
               }
             }
+            blend = CLAMP(blend, 0.0f, 1.0f);
             if(blend > 0)
             {
-              // the computed blend weight will be 1 as soon as one pixel is overexposed.
-              // it'll be 0 below near_clip and grow gradually in between.
-              out[0] = blend*max + (1.f-blend)*in[0];
+              // recover:
+              out[0] = blend*mean + (1.f-blend)*in[0];
             }
             else out[0] = in[0];
           }
