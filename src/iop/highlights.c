@@ -210,7 +210,6 @@ void process(
             const float near_clip = 0.96f*clip;
             const float post_clip = 1.10f*clip;
             float blend = 0.0f;
-            // float max = 0.0f, min = FLT_MAX;
             float mean = 0.0f;
             for(int jj=0; jj<=1; jj++)
             {
@@ -218,35 +217,13 @@ void process(
               {
                 const float val = in[jj*roi_out->width + ii];
                 mean += val*0.25f;
-#if 0
-                if(val > max)
-                {
-                  max = val;
-                  blend = (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
-                }
-#endif
-#if 0
-                if(val >= clip)
-                {
-                  max = fmaxf(max, val);
-                  min = fminf(min, val);
-                  blend = CLAMP((max-min)/.03f, 0.0f, 1.0f);
-                }
-#endif
-                // blend = fmaxf(blend, (fminf(clip, val) - near_clip)/(clip-near_clip));
                 blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
-                // blend += (fminf(near_clip, val) - clip)/(near_clip-clip);
-                /// max = fmaxf(max, val);
               }
             }
-            // TODO: try max again :(
-            blend = fminf(1.0f, blend/3.0f); // usually one channel clips last (mostly red), so wait for the 3 other pixels to clip before going to 1.0f
-            // blend /= 9.0f;
+            blend = CLAMP(blend, 0.0f, 1.0f);
             if(blend > 0)
-            // if(max >= clip)
             {
-              // the computed blend weight will be 1 as soon as one pixel is overexposed.
-              // it'll be 0 below near_clip and grow gradually in between.
+              // recover:
               out[0] = blend*mean + (1.f-blend)*in[0];
             }
             else out[0] = in[0];
