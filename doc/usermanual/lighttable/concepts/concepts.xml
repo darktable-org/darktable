@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+<sect1 status="final" id="lighttable_concepts"><title>Lighttable concepts</title>
+        <para>
+        This section explains some of the underlying concepts on how darktable organizes images in the lighttable.</para>
+
+        <!-- Filtering and sort order -->
+	<xi:include href="filtering.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+	<!-- Image grouping -->
+	<xi:include href="grouping.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</sect1>
+
+
