@@ -195,6 +195,107 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
   if (gui) dt_dev_masks_list_change(darktable.develop);
 }
 
+int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
+{
+  //we create a new empty form
+  dt_masks_form_t *fbase = dt_masks_get_from_id (dev,formid);
+  if (!fbase) return -1;
+  dt_masks_form_t *fdest = dt_masks_create(fbase->type);
+  _check_id(fdest);
+  
+  //we copy the base values
+  fdest->source[0] = fbase->source[0];
+  fdest->source[1] = fbase->source[1];
+  fdest->version = fbase->version;
+  snprintf(fdest->name,128,_("copy of %s"),fbase->name);
+  
+  darktable.develop->forms = g_list_append(dev->forms,fdest);
+  
+  //we copy all the points
+  if (fbase->type & DT_MASKS_GROUP)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+      dt_masks_point_group_t *npt = (dt_masks_point_group_t *) malloc(sizeof(dt_masks_point_group_t));
+      
+      npt->formid = dt_masks_form_duplicate(dev,pt->formid);
+      npt->parentid = fdest->formid;
+      npt->state = pt->state;
+      npt->opacity = pt->opacity;
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }
+  }
+  else if (fbase->type & DT_MASKS_CIRCLE)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
+      dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *) malloc(sizeof(dt_masks_point_circle_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_circle_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }
+  }
+  else if (fbase->type & DT_MASKS_PATH)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
+      dt_masks_point_path_t *npt = (dt_masks_point_path_t *) malloc(sizeof(dt_masks_point_path_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_path_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_GRADIENT)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_gradient_t *pt = (dt_masks_point_gradient_t *)pts->data;
+      dt_masks_point_gradient_t *npt = (dt_masks_point_gradient_t *) malloc(sizeof(dt_masks_point_gradient_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_gradient_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_ELLIPSE)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
+      dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *) malloc(sizeof(dt_masks_point_ellipse_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_ellipse_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_BRUSH)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)pts->data;
+      dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *) malloc(sizeof(dt_masks_point_brush_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_brush_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  
+  //we save the form
+  dt_masks_write_form(fdest,dev);
+  
+  //and we return it's id
+  return fdest->formid;
+}
+
 int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count, float **border, int *border_count, int source)
 {
   if (form->type & DT_MASKS_CIRCLE)
