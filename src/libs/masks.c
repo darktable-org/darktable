@@ -782,6 +782,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
   free(grp);
   dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = grp2;
+  darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 }
 
