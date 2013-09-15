@@ -453,8 +453,6 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE INDEX tags_id_index ON tags(id)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
@@ -604,8 +602,6 @@ void dt_control_init(dt_control_t *s)
                    "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "CREATE INDEX tags_id_index ON tags(id)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
