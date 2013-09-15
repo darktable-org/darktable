@@ -593,7 +593,7 @@ int dt_imageio_export_with_flags(
 
           h->params = s->params;
           h->blend_params = s->blendop_params;
-          h->enabled = 1;
+          h->enabled = s->enabled;
           h->module = m;
           h->multi_priority = 1;
           strcpy(h->multi_name, "");

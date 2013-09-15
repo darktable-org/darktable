@@ -40,7 +40,7 @@ typedef struct dt_style_t
 
 typedef struct dt_style_item_t
 {
-  int num, selimg_num;
+  int num, selimg_num, enabled;
   gchar *name;
   dt_iop_params_t *params;
   dt_develop_blend_params_t *blendop_params;
