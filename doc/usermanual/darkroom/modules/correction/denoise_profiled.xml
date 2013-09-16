@@ -40,8 +40,9 @@
     <sect5><title>mode</title>
       <para>This module can eliminate noise with two different core algorithms. <quote>non-local means</quote> is a bit better suited to tackle luma (lightness) noise; <quote>
                               wavelet</quote> has its strength in eliminating chroma (color) noise. If needed you can apply two instances of this module (see <xref linkend="multiple_instances"/>).
-                              The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote>; the <quote>wavelet</quote> instance with
-                              blend mode <quote>color</quote>. For more information on blend modes have a look at <xref linkend="blending_operators"/>.</para>
+                              The <quote>non-local means</quote> instance should be combined with blend mode <quote>lightness</quote> or <quote>HSV lightness</quote>; 
+                              the <quote>wavelet</quote> instance with blend mode <quote>color</quote> or <quote>HSV color</quote>. 
+                              For more information on blend modes have a look at <xref linkend="blending_operators"/>.</para>
     </sect5>
     <sect5><title>patch size</title>
       <para>This slider is only available if mode <quote>non-local means</quote> is selected. It controls the size of the patches being matched

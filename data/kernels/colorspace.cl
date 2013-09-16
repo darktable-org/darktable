@@ -161,6 +161,86 @@ float4 HSL_2_RGB(const float4 HSL)
   return (float4)(R, G, B, HSL.w);
 }
 
+float4 RGB_2_HSV(const float4 RGB)
+{
+  float4 HSV;
+
+  float minv = fmin(RGB.x, fmin(RGB.y, RGB.z));
+  float maxv = fmax(RGB.x, fmax(RGB.y, RGB.z));
+  float delta = maxv - minv;
+
+  HSV.z = maxv;
+  HSV.w = RGB.w;
+
+  if (fabs(maxv) > 1e-6f && fabs(delta) > 1e-6f)
+  { 
+    HSV.y = delta / maxv;
+  }
+  else
+  {
+    HSV.x = 0.0f;
+    HSV.y = 0.0f;
+    return HSV;
+  }
+
+  if (RGB.x == maxv)
+   HSV.x = (RGB.y - RGB.z) / delta;
+  else if (RGB.y == maxv)
+   HSV.x = 2.0f + (RGB.z - RGB.x) / delta;
+  else
+   HSV.x = 4.0f + (RGB.x - RGB.y) / delta;
+
+  HSV.x /= 6.0f;
+
+  if(HSV.x < 0)
+    HSV.x += 1.0f;
+
+  return HSV;
+}
+
+float4 HSV_2_RGB(const float4 HSV)
+{
+  float4 RGB;
+
+  if (fabs(HSV.y) < 1e-6f)
+  {
+    RGB.x = RGB.y = RGB.z = HSV.z;
+    RGB.w = HSV.w;
+    return RGB;
+  }
+
+  int i = floor(6.0f*HSV.x);
+  float v = HSV.z;
+  float w = HSV.w;
+  float p = v * (1.0f - HSV.y);
+  float q = v * (1.0f - HSV.y * (6.0f*HSV.x - i));
+  float t = v * (1.0f - HSV.y * (1.0f - (6.0f*HSV.x - i)));
+
+  switch (i)
+  {
+    case 0:
+      RGB = (float4)(v, t, p, w);
+      break;
+    case 1:
+      RGB = (float4)(q, v, p, w);
+      break;
+    case 2:
+      RGB = (float4)(p, v, t, w);
+      break;
+    case 3:
+      RGB = (float4)(p, q, v, w);
+      break;
+    case 4:
+      RGB = (float4)(t, p, v, w);
+      break;
+    case 5:
+    default:
+      RGB = (float4)(v, p, q, w);
+      break;
+  }
+  return RGB;
+}
+
 
 // XYZ -> sRGB matrix, D65
 float4 XYZ_to_sRGB(float4 XYZ)
