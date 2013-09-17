@@ -732,7 +732,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
     (void)setenv("GTK2_RC_FILES", gtkrc, 1);
   else
-    fprintf(stderr, "[gtk_init] could not found darktable.gtkrc");
+    fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
 
   /* lets zero mem */
   memset(gui,0,sizeof(dt_gui_gtk_t));
