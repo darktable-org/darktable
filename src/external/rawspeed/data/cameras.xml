@@ -2240,7 +2240,7 @@
 			<Color x="1" y="1">RED</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-194" height="0"/>
-		<Sensor black="150" white="4096"/>
+		<Sensor black="142" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
@@ -2253,7 +2253,7 @@
 			<Color x="1" y="1">RED</Color>
 		</CFA>
 		<Crop x="0" y="0" width="-194" height="0"/>
-		<Sensor black="150" white="4096"/>
+		<Sensor black="142" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
