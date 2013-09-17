@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+	<sect2 status="final" id="filtering_and_sort_order"><title>Filtering and sort order</title>
+		<para>The filtering and sort order of images in the lighttable are accessed and changed in the top bar.
+		You can select among a few predefined filters, and ordering like <quote>date</quote>, <quote>color labels</quote>
+                or <quote>rating</quote>.
+		</para>
+	</sect2>
+
+

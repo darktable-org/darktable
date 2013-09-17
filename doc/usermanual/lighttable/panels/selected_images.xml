@@ -77,6 +77,19 @@
 			resets the image rotation to the value in the EXIF data.
 			</para>
 		</sect4>
+                <sect4><title>cache locally</title>
+                        <indexterm>
+                           <primary>local copies</primary>
+                        </indexterm>
+                        <para>This action will create local copies of the selected images into the local drive. These copies will then be used when the original 
+                        images are not accessible (see <xref linkend="local_copies"/>).
+                        </para>
+                </sect4>
+                <sect4><title>reset cache</title>
+                        <para>This action will synchronize back the XMP sidecars if needed and will remove the local copies. Note that if a local copy has 
+                        been modified and the external storage is not accessible the local copy won't be deleted (see <xref linkend="local_copies"/>).
+                        </para>
+                </sect4>
 		<sect4><title>group</title>
                         <indexterm>
                            <primary>group images</primary>
