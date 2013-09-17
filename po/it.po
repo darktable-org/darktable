@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-06 18:34+0200\n"
+"POT-Creation-Date: 2013-09-17 19:55+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -534,18 +534,18 @@ msgstr "Errore nel caricamento del file `%s'"
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRORE: cartella temporanea errata: %s\n"
 
-#: ../src/common/film.c:361
+#: ../src/common/film.c:362
 msgid "no supported images were found to be imported"
 msgstr "Non sono state trovate immagini da importare "
 
-#: ../src/common/film.c:373
+#: ../src/common/film.c:374
 #, c-format
 msgid "importing %d image"
 msgid_plural "importing %d images"
 msgstr[0] "Importazione %d immagine"
 msgstr[1] "Importazione %d immagini"
 
-#: ../src/common/film.c:522
+#: ../src/common/film.c:523
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
@@ -559,16 +559,16 @@ msgstr ""
 "incollare in un'altra"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1686
+#: ../src/common/history.c:286 ../src/common/styles.c:561
+#: ../src/common/styles.c:563 ../src/develop/blend_gui.c:1690
 #: ../src/develop/develop.c:1129 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "Abilitato"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:559
-#: ../src/common/styles.c:561 ../src/develop/blend_gui.c:1536
-#: ../src/develop/blend_gui.c:1683 ../src/develop/develop.c:1129
+#: ../src/common/history.c:286 ../src/common/styles.c:561
+#: ../src/common/styles.c:563 ../src/develop/blend_gui.c:1538
+#: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1129
 #: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
@@ -604,19 +604,6 @@ msgstr ""
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "L'immagine `%s' non è disponibile!"
-
-#. If a style is to be applied during export, add the iop params into the history
-#. set export style to "none" by default
-#: ../src/common/imageio.c:565 ../src/common/variables.c:220
-#: ../src/control/control.c:120 ../src/iop/clipping.c:1459
-#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1719
-#: ../src/iop/clipping.c:1762 ../src/iop/clipping.c:1781
-#: ../src/iop/lens.c:1741 ../src/libs/export.c:176 ../src/libs/export.c:179
-#: ../src/libs/export.c:639 ../src/libs/live_view.c:324
-#: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
-#, c-format
-msgid "none"
-msgstr "Nessuno"
 
 #: ../src/common/imageio.c:574
 #, c-format
@@ -654,8 +641,8 @@ msgstr "Stile con nome '%s' già esistente"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:226 ../src/common/styles.c:230
 #: ../src/common/styles.c:300 ../src/common/styles.c:361
-#: ../src/common/styles.c:489 ../src/common/styles.c:1000
-#: ../src/common/styles.c:1024
+#: ../src/common/styles.c:489 ../src/common/styles.c:1002
+#: ../src/common/styles.c:1026
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -672,26 +659,35 @@ msgstr "Stile '%s' è stato creato con successo"
 msgid "no image selected!"
 msgstr "Nessuna immagine selezionata!"
 
-#: ../src/common/styles.c:646
+#: ../src/common/styles.c:648
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "Impossibile sovrascrivere il file di stile per %s"
 
-#: ../src/common/styles.c:652
+#: ../src/common/styles.c:654
 #, c-format
 msgid "style file for %s exists"
 msgstr "File di stile per %s già esistente"
 
-#: ../src/common/styles.c:891
+#: ../src/common/styles.c:893
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "Lo stile %s è stato importato con successo"
 
-#: ../src/control/control.c:1376 ../src/control/control.c:1379
+#: ../src/common/variables.c:220 ../src/iop/clipping.c:1459
+#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1719
+#: ../src/iop/clipping.c:1762 ../src/iop/clipping.c:1781
+#: ../src/iop/lens.c:1741 ../src/libs/export.c:644 ../src/libs/live_view.c:324
+#: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
+#, c-format
+msgid "none"
+msgstr "Nessuno"
+
+#: ../src/control/control.c:1388 ../src/control/control.c:1391
 msgid "working.."
 msgstr "Elaborazione..."
 
-#: ../src/control/control.c:1462
+#: ../src/control/control.c:1474
 #, c-format
 msgid "switch to %s mode"
 msgstr "Passa alla modalità %s"
@@ -1089,7 +1085,7 @@ msgstr "Input"
 msgid "double click to reset"
 msgstr "Doppio click per ripristinare"
 
-#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1254
+#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1355
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1097,11 +1093,11 @@ msgstr[0] "%d forma in uso"
 msgstr[1] "%d forme in uso"
 
 #: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
-#: ../src/develop/masks/masks.c:1257
+#: ../src/develop/masks/masks.c:1358
 msgid "no mask used"
 msgstr "Nessuna maschera in uso"
 
-#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1544
+#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1546
 msgid "drawn mask"
 msgstr "Maschera disegnata"
 
@@ -1113,28 +1109,28 @@ msgstr "Mostra e modifica elementi della maschera"
 msgid "toggle polarity of drawn mask"
 msgstr "Inverti polarità della maschera disegnata"
 
-#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:860
-#: ../src/libs/masks.c:896 ../src/libs/masks.c:1448
+#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:884
+#: ../src/libs/masks.c:920 ../src/libs/masks.c:1478
 msgid "add gradient"
 msgstr "Aggiungi gradiente"
 
 #: ../src/develop/blend_gui.c:1263 ../src/iop/spots.c:558
-#: ../src/libs/masks.c:856 ../src/libs/masks.c:892 ../src/libs/masks.c:1455
+#: ../src/libs/masks.c:880 ../src/libs/masks.c:916 ../src/libs/masks.c:1485
 msgid "add path"
 msgstr "Aggiungi tracciato"
 
 #: ../src/develop/blend_gui.c:1270 ../src/iop/spots.c:565
-#: ../src/libs/masks.c:852 ../src/libs/masks.c:888 ../src/libs/masks.c:1462
+#: ../src/libs/masks.c:876 ../src/libs/masks.c:912 ../src/libs/masks.c:1492
 msgid "add ellipse"
 msgstr "Aggiungi ellisse"
 
 #: ../src/develop/blend_gui.c:1277 ../src/iop/spots.c:572
-#: ../src/libs/masks.c:848 ../src/libs/masks.c:884 ../src/libs/masks.c:1469
+#: ../src/libs/masks.c:872 ../src/libs/masks.c:908 ../src/libs/masks.c:1499
 msgid "add circle"
 msgstr "Aggiungi forma circolare"
 
-#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:880
-#: ../src/libs/masks.c:1476
+#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:904
+#: ../src/libs/masks.c:1506
 msgid "add brush"
 msgstr "Aggiungi pennello"
 
@@ -1254,44 +1250,54 @@ msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Colore Lab"
 
+#: ../src/develop/blend_gui.c:1525
+msgctxt "blendmode"
+msgid "HSV lightness"
+msgstr "Luminosità HSV"
+
+#: ../src/develop/blend_gui.c:1526
+msgctxt "blendmode"
+msgid "HSV color"
+msgstr "Colore HSV"
+
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1527
+#: ../src/develop/blend_gui.c:1529
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "Differenza (deprecato)"
 
-#: ../src/develop/blend_gui.c:1528
+#: ../src/develop/blend_gui.c:1530
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "Inverso (deprecato)"
 
-#: ../src/develop/blend_gui.c:1529
+#: ../src/develop/blend_gui.c:1531
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "Normale (deprecato)"
 
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1532
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "Illimitato (deprecato)"
 
-#: ../src/develop/blend_gui.c:1534
+#: ../src/develop/blend_gui.c:1536
 msgid "blend"
 msgstr "Fusione"
 
-#: ../src/develop/blend_gui.c:1539
+#: ../src/develop/blend_gui.c:1541
 msgid "uniformly"
 msgstr "Uniformità"
 
-#: ../src/develop/blend_gui.c:1550
+#: ../src/develop/blend_gui.c:1552
 msgid "parametric mask"
 msgstr "Maschera parametrica"
 
-#: ../src/develop/blend_gui.c:1556
+#: ../src/develop/blend_gui.c:1558
 msgid "drawn & parametric mask"
 msgstr "Maschera parametrica e disegnata"
 
-#: ../src/develop/blend_gui.c:1561
+#: ../src/develop/blend_gui.c:1563
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1299,43 +1305,43 @@ msgstr ""
 "Attiva la fusione: uniformemente, con maschera disegnata,\n"
 "con maschera parametrica, combinazione di entrambe"
 
-#: ../src/develop/blend_gui.c:1568
+#: ../src/develop/blend_gui.c:1570
 msgid "blend mode"
 msgstr "Modalità di fusione"
 
-#: ../src/develop/blend_gui.c:1569
+#: ../src/develop/blend_gui.c:1571
 msgid "choose blending mode"
 msgstr "Seleziona il metodo di fusione"
 
-#: ../src/develop/blend_gui.c:1651 ../src/iop/watermark.c:1047
+#: ../src/develop/blend_gui.c:1655 ../src/iop/watermark.c:1047
 msgid "opacity"
 msgstr "Opacità"
 
-#: ../src/develop/blend_gui.c:1654
+#: ../src/develop/blend_gui.c:1658
 msgid "set the opacity of the blending"
 msgstr "Imposta l'opacità della fusione"
 
-#: ../src/develop/blend_gui.c:1660
+#: ../src/develop/blend_gui.c:1664
 msgid "combine masks"
 msgstr "Combina le maschere"
 
-#: ../src/develop/blend_gui.c:1662
+#: ../src/develop/blend_gui.c:1666
 msgid "exclusive"
 msgstr "Esclusiva"
 
-#: ../src/develop/blend_gui.c:1665
+#: ../src/develop/blend_gui.c:1669
 msgid "inclusive"
 msgstr "Inclusiva"
 
-#: ../src/develop/blend_gui.c:1668
+#: ../src/develop/blend_gui.c:1672
 msgid "exclusive & inverted"
 msgstr "Esclusiva & invertita"
 
-#: ../src/develop/blend_gui.c:1671
+#: ../src/develop/blend_gui.c:1675
 msgid "inclusive & inverted"
 msgstr "Inclusiva & invertita"
 
-#: ../src/develop/blend_gui.c:1675
+#: ../src/develop/blend_gui.c:1679
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1343,39 +1349,39 @@ msgstr ""
 "Come combinare la maschera disegnata e i differenti canali della maschera "
 "parametrica"
 
-#: ../src/develop/blend_gui.c:1681
+#: ../src/develop/blend_gui.c:1685
 msgid "invert mask"
 msgstr "Inverti la maschera"
 
-#: ../src/develop/blend_gui.c:1690
+#: ../src/develop/blend_gui.c:1694
 msgid "apply mask in normal or inverted mode"
 msgstr "Applica la maschera in modalità normale o invertita"
 
-#: ../src/develop/blend_gui.c:1697
+#: ../src/develop/blend_gui.c:1701
 msgid "mask blur"
 msgstr "Sfocatura maschera"
 
-#: ../src/develop/blend_gui.c:1699
+#: ../src/develop/blend_gui.c:1703
 msgid "radius for gaussian blur of blend mask"
 msgstr "Raggio della sfocatura gaussiana della maschera di fusione"
 
-#: ../src/develop/blend_gui.c:1705
+#: ../src/develop/blend_gui.c:1709
 msgid "display mask"
 msgstr "Visualizza maschera"
 
-#: ../src/develop/blend_gui.c:1712
+#: ../src/develop/blend_gui.c:1716
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "Disattiva temporaneamente la maschera di fusione. Per il solo modulo in uso"
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1767 ../src/develop/blend.c:2053
+#: ../src/develop/blend.c:1927 ../src/develop/blend.c:2219
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "Fusione non effettuata nel modulo '%s': mancata corrispondenza"
 
-#: ../src/develop/blend.c:1860 ../src/develop/blend.c:2098
+#: ../src/develop/blend.c:2026 ../src/develop/blend.c:2264
 msgid "could not allocate buffer for blending"
 msgstr "Impossibile allocare il buffer per la fusione"
 
@@ -1404,11 +1410,11 @@ msgstr ""
 "Duplica questa istanza con\n"
 "le stesse impostazioni"
 
-#: ../src/develop/imageop.c:1181 ../src/libs/masks.c:1009
+#: ../src/develop/imageop.c:1181 ../src/libs/masks.c:1039
 msgid "move up"
 msgstr "Sposta su"
 
-#: ../src/develop/imageop.c:1187 ../src/libs/masks.c:1012
+#: ../src/develop/imageop.c:1187 ../src/libs/masks.c:1042
 msgid "move down"
 msgstr "Sposta giù"
 
@@ -1428,9 +1434,9 @@ msgstr "%s è abilitato"
 msgid "%s is switched off"
 msgstr "%s è disabilitato"
 
-#: ../src/develop/imageop.c:1445 ../src/gui/accelerators.c:715
-#: ../src/gui/accelerators.c:795 ../src/gui/accelerators.c:939
-#: ../src/gui/accelerators.c:964 ../src/gui/presets.c:197
+#: ../src/develop/imageop.c:1445 ../src/gui/accelerators.c:758
+#: ../src/gui/accelerators.c:838 ../src/gui/accelerators.c:1005
+#: ../src/gui/accelerators.c:1030 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
 #: ../src/iop/temperature.c:746 ../src/libs/import.c:491 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:978
@@ -1528,52 +1534,57 @@ msgstr ""
 msgid "double-click to reset"
 msgstr "Doppio click per ripristinare"
 
-#: ../src/gui/accelerators.c:34 ../src/gui/accelerators.c:78
+#: ../src/gui/accelerators.c:34 ../src/gui/accelerators.c:84
 msgctxt "accel"
 msgid "global"
 msgstr "Globale"
 
-#: ../src/gui/accelerators.c:41 ../src/gui/accelerators.c:85
+#: ../src/gui/accelerators.c:41 ../src/gui/accelerators.c:91
 msgctxt "accel"
 msgid "views"
 msgstr "Viste"
 
 #: ../src/gui/accelerators.c:48 ../src/gui/accelerators.c:62
 #: ../src/gui/accelerators.c:65 ../src/gui/accelerators.c:68
-#: ../src/gui/accelerators.c:71 ../src/gui/accelerators.c:94
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:117
-#: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:127
+#: ../src/gui/accelerators.c:71 ../src/gui/accelerators.c:100
+#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:133
 msgctxt "accel"
 msgid "image operations"
 msgstr "Operazioni dell'immagine"
 
-#: ../src/gui/accelerators.c:55 ../src/gui/accelerators.c:103
+#: ../src/gui/accelerators.c:55 ../src/gui/accelerators.c:109
 msgctxt "accel"
 msgid "modules"
 msgstr "Moduli"
 
-#: ../src/gui/accelerators.c:63 ../src/gui/accelerators.c:115
+#: ../src/gui/accelerators.c:63 ../src/gui/accelerators.c:121
 msgctxt "accel"
 msgid "increase"
 msgstr "Aumenta"
 
-#: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:120
+#: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:126
 msgctxt "accel"
 msgid "decrease"
 msgstr "Diminuisci"
 
-#: ../src/gui/accelerators.c:69 ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:69 ../src/gui/accelerators.c:131
 msgctxt "accel"
 msgid "reset"
 msgstr "Ripristina "
 
-#: ../src/gui/accelerators.c:72 ../src/gui/accelerators.c:130
+#: ../src/gui/accelerators.c:72 ../src/gui/accelerators.c:136
 #: ../src/libs/styles.c:71
 msgctxt "accel"
 msgid "edit"
 msgstr "Modifica "
 
-#: ../src/gui/accelerators.c:779 ../src/libs/lib.c:371
+#: ../src/gui/accelerators.c:78 ../src/gui/accelerators.c:143
+msgctxt "accel"
+msgid "lua"
+msgstr "Lua"
+
+#: ../src/gui/accelerators.c:822 ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
 msgstr "Elimina preset per il modulo obsoleto"
 
@@ -2058,7 +2069,7 @@ msgstr "Importa "
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:613 ../src/libs/export.c:665
+#: ../src/gui/preferences.c:613 ../src/libs/export.c:670
 #: ../src/libs/styles.c:410
 msgid "export"
 msgstr "Esporta"
@@ -3725,7 +3736,7 @@ msgstr "Adobe RGB (compatibile)"
 
 #: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
-#: ../src/libs/export.c:565
+#: ../src/libs/export.c:570
 msgid "linear RGB"
 msgstr "RGB lineare"
 
@@ -3743,7 +3754,7 @@ msgid "Lab"
 msgstr "Lab"
 
 #: ../src/iop/colorin.c:897 ../src/iop/denoiseprofile.c:1723
-#: ../src/libs/export.c:606
+#: ../src/libs/export.c:611
 msgid "profile"
 msgstr "Profilo"
 
@@ -3879,23 +3890,23 @@ msgid "output intent"
 msgstr "Intento uscita"
 
 #: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
-#: ../src/libs/export.c:534
+#: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "Percettivo"
 
 #: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
-#: ../src/libs/export.c:535
+#: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "Colorimetrico relativo"
 
 #: ../src/iop/colorout.c:871 ../src/iop/colorout.c:878
-#: ../src/libs/export.c:536
+#: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturazione"
 
 #: ../src/iop/colorout.c:872 ../src/iop/colorout.c:879
-#: ../src/libs/export.c:537
+#: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "Colorimetrico assoluto"
 
@@ -3916,12 +3927,12 @@ msgid "display profile"
 msgstr "Profilo monitor"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:905 ../src/libs/export.c:618
+#: ../src/iop/colorout.c:905 ../src/libs/export.c:623
 msgid "system display profile"
 msgstr "Profilo monitor di sistema"
 
 #: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/libs/export.c:546
+#: ../src/iop/colorout.c:917 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (sicuro per il web)"
 
@@ -4048,7 +4059,7 @@ msgid "amaze (slow)"
 msgstr "amaze (lenta)"
 
 #: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
-#: ../src/iop/highlights.c:376
+#: ../src/iop/highlights.c:377
 msgid "method"
 msgstr "Metodo"
 
@@ -4486,19 +4497,19 @@ msgstr "Intensità della grana applicata"
 msgid "highlight reconstruction"
 msgstr "Recupero alteluci"
 
-#: ../src/iop/highlights.c:377
+#: ../src/iop/highlights.c:378
 msgid "clip highlights"
 msgstr "Taglio alteluci"
 
-#: ../src/iop/highlights.c:378
+#: ../src/iop/highlights.c:379
 msgid "reconstruct in LCh"
 msgstr "Ricostruisci in LCh"
 
-#: ../src/iop/highlights.c:379
+#: ../src/iop/highlights.c:380
 msgid "highlight reconstruction method"
 msgstr "Metodo ricostruzione alteluci"
 
-#: ../src/iop/highlights.c:382
+#: ../src/iop/highlights.c:383
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -4506,7 +4517,7 @@ msgstr ""
 "Regola manualmente la soglia di tosaggio contro le alteluci magenta (non "
 "dovrebbe mai essere necessario modificarlo)"
 
-#: ../src/iop/highlights.c:384
+#: ../src/iop/highlights.c:385
 msgid "clipping threshold"
 msgstr "Soglia di tosaggio"
 
@@ -6277,19 +6288,19 @@ msgstr "Scrivi file XMP"
 msgid "export selected"
 msgstr "Esporta selezionati"
 
-#: ../src/libs/export.c:466
+#: ../src/libs/export.c:471
 msgid "target storage"
 msgstr "Destinazione"
 
-#: ../src/libs/export.c:487
+#: ../src/libs/export.c:492
 msgid "file format"
 msgstr "Formato file"
 
-#: ../src/libs/export.c:502
+#: ../src/libs/export.c:507
 msgid "global options"
 msgstr "Impostazioni esportazione"
 
-#: ../src/libs/export.c:506
+#: ../src/libs/export.c:511
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -6297,7 +6308,7 @@ msgstr ""
 "Larghezza massima del file generato\n"
 "impostare 0 per dimensioni originali"
 
-#: ../src/libs/export.c:508
+#: ../src/libs/export.c:513
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -6313,47 +6324,47 @@ msgstr ""
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #.
-#: ../src/libs/export.c:520
+#: ../src/libs/export.c:525
 msgid "max size"
 msgstr "Dimensione max"
 
-#: ../src/libs/export.c:525
+#: ../src/libs/export.c:530
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:529
+#: ../src/libs/export.c:534
 msgid "intent"
 msgstr "Intento"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:533 ../src/libs/export.c:613
+#: ../src/libs/export.c:538 ../src/libs/export.c:618
 msgid "image settings"
 msgstr "Impostazione immagine"
 
-#: ../src/libs/export.c:553
+#: ../src/libs/export.c:558
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/libs/export.c:626
+#: ../src/libs/export.c:631
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "Profili ICC di uscita in %s/color/out o %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:632
+#: ../src/libs/export.c:637
 msgid "style"
 msgstr "Stile"
 
-#: ../src/libs/export.c:649
+#: ../src/libs/export.c:654
 msgid "temporary style to append while exporting"
 msgstr "Stile temporaneo da aggiungere durante l'esportazione"
 
-#: ../src/libs/export.c:667
+#: ../src/libs/export.c:672
 msgid "export with current settings (ctrl-e)"
 msgstr "Esporta con le impostazioni correnti (Ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:872 ../src/libs/styles.c:69
+#: ../src/libs/export.c:877 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1683
 msgctxt "accel"
 msgid "export"
@@ -8064,11 +8075,16 @@ msgstr "Ellisse #%d"
 msgid "brush #%d"
 msgstr "Pennello #%d"
 
-#: ../src/develop/masks/masks.c:1127 ../src/libs/masks.c:900
+#: ../src/develop/masks/masks.c:210
+#, c-format
+msgid "copy of %s"
+msgstr "Copia di %s"
+
+#: ../src/develop/masks/masks.c:1228 ../src/libs/masks.c:924
 msgid "add existing shape"
 msgstr "Aggiungi forma esistente"
 
-#: ../src/develop/masks/masks.c:1154
+#: ../src/develop/masks/masks.c:1255
 msgid "use same shapes as"
 msgstr "Usa la stessa forma di"
 
@@ -8081,43 +8097,47 @@ msgstr "Gestore maschere"
 msgid "group #%d"
 msgstr "Raggruppa #%d"
 
-#: ../src/libs/masks.c:966
+#: ../src/libs/masks.c:990
 msgid "delete this shape"
 msgstr "Elimina questa forma"
 
-#: ../src/libs/masks.c:972
+#: ../src/libs/masks.c:995
+msgid "duplicate this shape"
+msgstr "Duplica questa forma"
+
+#: ../src/libs/masks.c:1002
 msgid "remove from group"
 msgstr "Rimuovi dal gruppo"
 
-#: ../src/libs/masks.c:980
+#: ../src/libs/masks.c:1010
 msgid "group the forms"
 msgstr "Raggruppa le forme"
 
-#: ../src/libs/masks.c:989
+#: ../src/libs/masks.c:1019
 msgid "use inversed shape"
 msgstr "Usa forme invertite"
 
-#: ../src/libs/masks.c:995
+#: ../src/libs/masks.c:1025
 msgid "mode : union"
 msgstr "Modalità : unione"
 
-#: ../src/libs/masks.c:998
+#: ../src/libs/masks.c:1028
 msgid "mode : intersection"
 msgstr "Modalità : intersezione"
 
-#: ../src/libs/masks.c:1001
+#: ../src/libs/masks.c:1031
 msgid "mode : difference"
 msgstr "Modalità : differenza"
 
-#: ../src/libs/masks.c:1004
+#: ../src/libs/masks.c:1034
 msgid "mode : exclusion"
 msgstr "Modalità : esclusione"
 
-#: ../src/libs/masks.c:1018
+#: ../src/libs/masks.c:1048
 msgid "cleanup unused shapes"
 msgstr "Elimina forme non in uso"
 
-#: ../src/libs/masks.c:1443
+#: ../src/libs/masks.c:1473
 msgid "created shapes"
 msgstr "Forme create"
 
