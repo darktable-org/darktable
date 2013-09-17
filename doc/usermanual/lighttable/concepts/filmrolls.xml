@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+	<sect2 status="final" id="filmrolls"><title>Filmrolls</title>
+                <indexterm>
+                   <primary>filmrolls</primary>
+                </indexterm>
+		<para>The basic element for organizing images in darktable is called a filmroll - a kind of virtual folder. 
+                Whenever you import images from disk, the images are organized in a filmroll whose name is derived from the
+                name of the disk folder. Re-importing a disk folder will add any new images to the existing filmroll; images already
+                present in the filmroll are not touched.
+                </para>
+
+                <para>It is important to note that importing images in darktable does not involve a 
+                physical copy step. Importing a folder into darktable is therefore <emphasis>not</emphasis> a backup operation of that folder.
+		</para>
+	</sect2>
+
+
