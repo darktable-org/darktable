@@ -61,11 +61,11 @@
          <para>At startup, darktable will run two Lua scripts:</para>
          <itemizedlist>
             <listitem>
-               <para>a script called <emphasis>rc.lua</emphasis> in <emphasis>$DARKTABLE/share/darktable</emphasis> 
+               <para>a script called <emphasis>luarc</emphasis> in <emphasis>$DARKTABLE/share/darktable</emphasis> 
                </para>
             </listitem>
             <listitem>
-               <para>a script called <emphasis>rc.lua</emphasis> in the user's configuration directory</para>
+               <para>a script called <emphasis>luarc</emphasis> in the user's configuration directory</para>
             </listitem>
          </itemizedlist>
          <para>$DARKTABLE is used here to represent your system's darktable installation directory.</para>
@@ -86,7 +86,7 @@
          </itemizedlist>
          <para>In other word, if you place a file called <emphasis>c.lua</emphasis> in the directory <emphasis>~/.config/darktable/lua/a/b/</emphasis> then <quote>@require "a.b.c"</quote>
           will find your script. The normal way to install a script is to copy it in <emphasis>~/.config/darktable/lua/</emphasis> then adding a <quote>require</quote> line to the file 
-          <emphasis>~/.config/darktable/rc.lua</emphasis>.</para>
+          <emphasis>~/.config/darktable/luarc</emphasis>.</para>
       </sect2>
    </sect1>
 
@@ -1391,7 +1391,7 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
 </programlisting>
          <para>This script is an example of storage implemented in Lua. This is not complete nor polished but it shows how to implement a storage module in Lua.</para>
          <para>The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might not exist).</para>
-         <para>Add the following line in the file <emphasis>~/.config/darktable/rc.lua</emphasis> (again, the file might not exist):</para>
+         <para>Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (again, the file might not exist):</para>
 <programlisting>require "mosaic"
 </programlisting>
          <para>A new entry <emphasis>mosaic generator</emphasis> will be added to the storage list. Using it will create a mosaic of selected images in a temporary directory.</para>
@@ -1432,7 +1432,7 @@ end,"switch selection with temporary buffer")
 </programlisting>
          <para>This script will add a couple of shortcuts to help manipulate selection.</para>
          <para>The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might not exist).</para>
-         <para>Add the following line in the file <emphasis>~/.config/darktable/rc.lua</emphasis> (again, the file might not exist):</para>
+         <para>Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (again, the file might not exist):</para>
 <programlisting>require "save_selection"
 </programlisting>
          <para>New options will appear under global-&gt;lua. These shortcuts allow you to save and restore the current selection to/from five different save bufffers.</para>
