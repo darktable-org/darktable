@@ -524,10 +524,11 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count FROM tags T JOIN memory.taglist MT ON "
-                              "MT.id = T.id WHERE T.id in "
-                              "(SELECT DISTINCT(MT.id) FROM memory.taglist MT) "
-                              "AND T.name NOT LIKE 'darktable|%%' ORDER BY T.id ASC",
+                              "SELECT T.name, T.id FROM tags T "
+                              "JOIN memory.taglist MT ON MT.id = T.id "
+                              "WHERE T.id IN (SELECT DISTINCT(MT.id) FROM memory.taglist MT) "
+                              "  AND T.name NOT LIKE 'darktable|%%' "
+                              "ORDER BY MT.count DESC",
                               -1, &stmt, NULL);
 
   /* ... and create the result list to send upwards */

@@ -77,6 +77,20 @@
                                 </para>
                         </sect4>
 
+                        <sect4><title>HSV lightness</title>
+                                <para>Only offered for modules that work in the RGB color space, this blend mode mixes lightness from the input
+                                      and output images, while color data are taken only from the input image. In contrast to blend mode
+                                      <quote>lightness</quote> this one does not involve clamping.
+                                </para>
+                        </sect4>
+
+                        <sect4><title>HSV color</title>
+                                <para>Only offered for modules that work in the RGB color space, this blend mode mixes color 
+                                      from the input and output images, while lightness data are taken only from the input image. In contrast to blend mode
+                                      <quote>color</quote> this one does not involve clamping.
+                                </para>
+                        </sect4>
+
 
 			<sect4><title>coloradjustment</title>
 				<para>Some modules act predominantly on the tonal values of an image but also perform some color saturation adjustments,

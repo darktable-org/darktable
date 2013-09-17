@@ -691,7 +691,30 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   lm->gui_reset = 0;
   _lib_masks_recreate_list(self);
 }
+static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
+  //we get the selected node
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+  GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection,NULL));
+  if (!items) return;
+  GtkTreePath *item = (GtkTreePath *)items->data;
+  GtkTreeIter iter;
+  if (gtk_tree_model_get_iter (model,&iter,item))
+  {
+    GValue gv3 = {0,};
+    gtk_tree_model_get_value (model,&iter,TREE_FORMID,&gv3);
+    int id = g_value_get_int(&gv3);
+
+    int nid = dt_masks_form_duplicate(darktable.develop,id);
+    if (nid <= 0) return;
+    dt_dev_masks_list_change(darktable.develop);
+    dt_dev_masks_selection_change(darktable.develop,nid,TRUE);
+    //_lib_masks_recreate_list(self);
+  }  
+}
 static void _tree_cell_editing_started (GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path, gpointer data)
 {
   dt_control_key_accelerators_off (darktable.control);
@@ -782,6 +805,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
   free(grp);
   dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = grp2;
+  darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 }
 
@@ -966,6 +990,12 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       item = gtk_menu_item_new_with_label(_("delete this shape"));
       g_signal_connect(item, "activate",(GCallback) _tree_delete_shape, self);
       gtk_menu_append(menu, item);
+      if (nb == 1)
+      {
+        item = gtk_menu_item_new_with_label(_("duplicate this shape"));
+        g_signal_connect(item, "activate",(GCallback) _tree_duplicate_shape, self);
+        gtk_menu_append(menu, item);
+      }
     }
     else if (nb>0 && depth < 3)
     {

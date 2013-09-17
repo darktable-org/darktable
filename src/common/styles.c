@@ -525,6 +525,8 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
 
       item->selimg_num = -1;
 
+      item->enabled = sqlite3_column_int(stmt, 2);
+
       if (params)
       {
         // when we get the parameters we do not want to get the operation localized as this

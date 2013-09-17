@@ -256,7 +256,7 @@ process_next_image()
   buf.write_image = write_image;
   dat.max_width  = width;
   dat.max_height = height;
-  strcpy(dat.style, "none");
+  dat.style[0] = '\0';
 
   // get random image id from sql
   int32_t id = 0;

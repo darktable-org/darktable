@@ -116,8 +116,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
   dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);
 
-  // set export style to "none" by default
-  dt_conf_set_string ("plugins/lighttable/export/style", _("none"));
+  // set export style to _("none") by default
+  dt_conf_set_string ("plugins/lighttable/export/style", "");
 }
 
 void dt_ctl_settings_init(dt_control_t *s)
@@ -449,6 +449,12 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
   // quick hack to detect if the db is already used by another process
@@ -592,6 +598,12 @@ void dt_control_init(dt_control_t *s)
                    NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),

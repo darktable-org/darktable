@@ -904,6 +904,7 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
     // replace MAXXUM with DYNAX for wb presets.
     if(!strcmp(maker, "MINOLTA") && !strncmp(model, "MAXXUM", 6))
       snprintf(e, size - (d-maker), "DYNAX %s", model+7);
+    // need FinePix gone from some fuji cameras to match dcraws description:
     else if(!strncmp(model, "FinePix", 7))
       snprintf(e, size - (d-maker), "%s", model + 8);
     else snprintf(e, size - (d-maker), "%s", model);

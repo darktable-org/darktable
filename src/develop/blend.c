@@ -69,7 +69,6 @@ static inline void _RGB_2_HSL(const float *RGB, float *HSL)
   HSL[2] = L;
 }
 
-
 static inline float _Hue_2_RGB(float v1, float v2, float vH)
 {
   if (vH < 0.0f) vH += 1.0f;
@@ -79,7 +78,6 @@ static inline float _Hue_2_RGB(float v1, float v2, float vH)
   if ((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
   return (v1);
 }
-
 
 static inline void _HSL_2_RGB(const float *HSL, float *RGB)
 {
@@ -106,6 +104,93 @@ static inline void _HSL_2_RGB(const float *HSL, float *RGB)
   }
 }
 
+static inline void _RGB_2_HSV(const float *RGB, float *HSV)
+{
+  float r = RGB[0], g = RGB[1], b = RGB[2];
+  float *h = HSV, *s = HSV+1, *v = HSV+2;
+
+  float min = fminf(r, fminf(g, b));
+  float max = fmaxf(r, fmaxf(g, b));
+  float delta = max - min;
+
+  *v = max;
+
+  if (fabs(max) > 1e-6f && fabs(delta) > 1e-6f)
+  { 
+    *s = delta / max;
+  }
+  else
+  {
+    *s = 0.0f;
+    *h = 0.0f;
+    return;
+  }
+
+  if (r == max)
+   *h = (g - b) / delta;
+  else if (g == max)
+   *h = 2.0f + (b - r) / delta;
+  else
+   *h = 4.0f + (r - g) / delta;
+
+  *h /= 6.0f;
+
+  if(*h < 0)
+    *h += 1.0f;
+}
+
+static inline void _HSV_2_RGB(const float *HSV, float *RGB)
+{
+  float h = 6.0f*HSV[0], s = HSV[1], v = HSV[2];
+  float *r = RGB, *g = RGB+1, *b = RGB+2;
+
+  if (fabs(s) < 1e-6f)
+  {
+    *r = *g = *b = v;
+    return;
+  }
+
+  int i = floorf(h);
+  float f = h - i;
+  float p = v * (1.0f - s);
+  float q = v * (1.0f - s * f);
+  float t = v * (1.0f - s * (1.0f - f));
+
+  switch (i)
+  {
+    case 0:
+      *r = v;
+      *g = t;
+      *b = p;
+      break;
+    case 1:
+      *r = q;
+      *g = v;
+      *b = p;
+      break;
+    case 2:
+      *r = p;
+      *g = v;
+      *b = t;
+      break;
+    case 3:
+      *r = p;
+      *g = q;
+      *b = v;
+      break;
+    case 4:
+      *r = t;
+      *g = p;
+      *b = v;
+      break;
+    case 5:
+    default:
+      *r = v;
+      *g = p;
+      *b = q;
+      break;
+  }
+}
 
 static inline void _Lab_2_LCH(const float *Lab, float *LCH)
 {
@@ -118,8 +203,6 @@ static inline void _Lab_2_LCH(const float *Lab, float *LCH)
   LCH[1] = sqrtf(Lab[1]*Lab[1] + Lab[2]*Lab[2]);
   LCH[2] = var_H;
 }
-
-
 
 static inline void _LCH_2_Lab(const float *LCH, float *Lab)
 {
@@ -1741,6 +1824,83 @@ static void _blend_Lab_color(dt_iop_colorspace_type_t cst,const float *a, float 
   }
 }
 
+/* blend only lightness in HSV color space without any clamping (a noop for other color spaces) */
+static void _blend_HSV_lightness(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSV(&a[j], ta);
+      _RGB_2_HSV(&b[j], tb);
+
+      // hue and saturation from input image
+      tb[0] = ta[0];
+      tb[1] = ta[1];
+
+      // blend lightness between input and output
+      tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
+
+      _HSV_2_RGB(tb, &b[j]);
+    }
+    else
+      for(int k=0; k<channels; k++)
+        b[j+k] =  a[j+k];		// Noop for Lab and RAW without clamping
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+}
+
+
+/* blend only color in HSV color space without any clamping (a noop for other color spaces) */
+static void _blend_HSV_color(dt_iop_colorspace_type_t cst,const float *a, float *b, const float *mask, int stride, int flag)
+{
+  float ta[3], tb[3];
+  int channels = _blend_colorspace_channels(cst);
+
+  for(int i=0, j=0; j<stride; i++, j+=4)
+  {
+    float local_opacity = mask[i];
+
+    if(cst==iop_cs_rgb)
+    {
+      _RGB_2_HSV(&a[j], ta);
+      _RGB_2_HSV(&b[j], tb);
+
+      // convert from polar to cartesian coordinates
+      float xa = ta[1]*cosf(2.0f*M_PI*ta[0]);
+      float ya = ta[1]*sinf(2.0f*M_PI*ta[0]);
+      float xb = tb[1]*cosf(2.0f*M_PI*tb[0]);
+      float yb = tb[1]*sinf(2.0f*M_PI*tb[0]);
+
+      // blend color vectors of input and output
+      float xc = xa * (1.0f - local_opacity) + xb * local_opacity;
+      float yc = ya * (1.0f - local_opacity) + yb * local_opacity;
+
+      tb[0] = atan2f(yc, xc)/(2.0f*M_PI);
+      if (tb[0] < 0.0f) tb[0] += 1.0f;
+      tb[1] = sqrtf(xc*xc + yc*yc);
+
+      // lightness from input image
+      tb[2] = ta[2];
+
+      _HSV_2_RGB(tb, &b[j]);
+
+    }
+    else
+      for(int k=0; k<channels; k++)
+        b[j+k] =  a[j+k];		// Noop for Lab and RAW without clamping
+
+
+    if(cst != iop_cs_RAW) b[j+3] = local_opacity;
+  }
+}
+
 
 
 void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out)
@@ -1843,6 +2003,12 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
     case DEVELOP_BLEND_LAB_COLOR:
       blend = _blend_Lab_color;
+      break;
+    case DEVELOP_BLEND_HSV_LIGHTNESS:
+      blend = _blend_HSV_lightness;
+      break;
+    case DEVELOP_BLEND_HSV_COLOR:
+      blend = _blend_HSV_color;
       break;
 
       /* fallback to normal blend */

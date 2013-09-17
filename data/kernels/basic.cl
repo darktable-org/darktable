@@ -76,19 +76,13 @@ highlights_4f (read_only image2d_t in, write_only image2d_t out, const int width
 
   if(x >= width || y >= height) return;
 
+  // 4f/pixel means that this has been debayered already.
+  // it's thus hopeless to recover highlights here (this code path is just used for preview and non-raw images)
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  switch(mode)
-  {
-    case 1: // DT_IOP_HIGHLIGHTS_LCH
-      if(pixel.x > clip || pixel.y > clip || pixel.z > clip)
-        pixel.x = pixel.y = pixel.z = 0.299f * pixel.x + 0.587f * pixel.y + 0.144f*pixel.z;
-      break;
-    default: // 0, DT_IOP_HIGHLIGHTS_CLIP
-      pixel.x = fmin(clip, pixel.x);
-      pixel.y = fmin(clip, pixel.y);
-      pixel.z = fmin(clip, pixel.z);
-      break;
-  }
+  // default: // 0, DT_IOP_HIGHLIGHTS_CLIP
+  pixel.x = fmin(clip, pixel.x);
+  pixel.y = fmin(clip, pixel.y);
+  pixel.z = fmin(clip, pixel.z);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -103,25 +97,29 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
 
   // just carry over other 3 channels:
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float near_clip = 0.9f*clip;
-  float maxp = 0.0f;
+  const float near_clip = 0.96f*clip;
+  const float post_clip = 1.10f*clip;
+  float mean = 0.0f;
   float blend = 0.0f;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
-      // go through all 9 neighbours
-      for(int jj=-1;jj<=1;jj++)
+    {
+      // go through a bayer block of 2x2
+      for(int jj=0;jj<=1;jj++)
       {
-        for(int ii=-1;ii<=1;ii++)
+        for(int ii=0;ii<=1;ii++)
         {
           float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
-          blend = fmax(blend, (fmin(clip, px) - near_clip)/(clip-near_clip));
-          maxp = fmax(maxp, px);
+          mean += px*.25f;
+          blend += (fmin(post_clip, px) - near_clip)/(post_clip-near_clip);
         }
       }
+      blend = clamp(blend, 0.0f, 1.0f);
       if(blend > 0.0f)
-        pixel.x = blend*maxp + (1.0f-blend)*pixel.x;
+        pixel.x = blend*mean + (1.0f-blend)*pixel.x;
       break;
+    }
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
       pixel.x = fmin(clip, pixel.x);
       break;

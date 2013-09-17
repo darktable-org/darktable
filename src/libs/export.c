@@ -173,10 +173,10 @@ gui_reset (dt_lib_module_t *self)
   {
     rc = _combo_box_set_active_text(d->style, style);
     if (rc == FALSE)
-      _combo_box_set_active_text(d->style, _("none"));
+      gtk_combo_box_set_active(d->style, 0);
   }
   else
-    _combo_box_set_active_text(d->style, _("none"));
+    gtk_combo_box_set_active(d->style, 0);
   g_free(style);
 
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
@@ -358,8 +358,13 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
 static void
 style_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  gchar *style = gtk_combo_box_get_active_text(d->style);
-  dt_conf_set_string("plugins/lighttable/export/style", style);
+  if(gtk_combo_box_get_active(d->style) == 0)
+    dt_conf_set_string("plugins/lighttable/export/style", "");
+  else
+  {
+    gchar *style = gtk_combo_box_get_active_text(d->style);
+    dt_conf_set_string("plugins/lighttable/export/style", style);
+  }
 }
 
 int
