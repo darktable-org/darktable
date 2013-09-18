@@ -7,7 +7,7 @@
 	</para>
 
 	<sect4><title>memory in megabytes to use for mipmap cache</title>
-		<para>On order to speed-up display of filmrolls, darktable stores thumbnails in a cache on disk and loads it into memory at startup. This value controls the cache 
+		<para>On order to speed-up display of film rolls, darktable stores thumbnails in a cache on disk and loads it into memory at startup. This value controls the cache 
 		      size in megabytes. It needs a restart if changed (default 512MB).
 		</para>
         </sect4>

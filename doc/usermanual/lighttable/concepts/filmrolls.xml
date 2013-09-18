@@ -5,14 +5,14 @@
 		%darktable_dtd;
 		]>
 
-	<sect2 status="final" id="filmrolls"><title>Filmrolls</title>
+	<sect2 status="final" id="film_rolls"><title>Film rolls</title>
                 <indexterm>
-                   <primary>filmrolls</primary>
+                   <primary>film rolls</primary>
                 </indexterm>
-		<para>The basic element for organizing images in darktable is called a filmroll - a kind of virtual folder. 
-                Whenever you import images from disk, the images are organized in a filmroll whose name is derived from the
-                name of the disk folder. Re-importing a disk folder will add any new images to the existing filmroll; images already
-                present in the filmroll are not touched.
+		<para>The basic element for organizing images in darktable is called a film roll - a kind of virtual folder. 
+                Whenever you import images from disk, the images are organized in a film roll whose name is derived from the
+                name of the disk folder. Re-importing a disk folder will add any new images to the existing film roll; images already
+                present in the film roll are not touched.
                 </para>
 
                 <para>It is important to note that importing images in darktable does not involve a 

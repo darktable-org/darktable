@@ -20,7 +20,7 @@
 
 <sect1 status="final">
   <title>Overview</title>
-  <para>Map view will show you a world map with the currently open image, or filmroll of images, pinned
+  <para>Map view will show you a world map with the currently open image, or film roll of images, pinned
   to their geotagged location. This requires that the image was geotagged by a camera with that feature.
   Some newer cameras, including smartphones, are already equipped with GPS receivers. Other cameras may 
   need additional GPS hardware to do this.

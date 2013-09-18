@@ -35,8 +35,8 @@
     being displayed in the lighttable view.
     </para>
 
-    <para>The default collection is based on the filmroll attribute - it displays all images of the last imported filmroll or 
-    any other filmroll chosen.
+    <para>The default collection is based on the film roll attribute - it displays all images of the last imported film roll or 
+    any other film roll chosen.
     </para>
 
     <para>The left combobox lets you choose from the available attributes:
@@ -46,8 +46,8 @@
          <colspec colwidth='3*'/>
          <tbody>
             <row>
-               <entry>filmroll</entry>
-               <entry><para>the filmroll to which the image belongs</para></entry>
+               <entry>film roll</entry>
+               <entry><para>the film roll to which the image belongs</para></entry>
             </row>
             <row>
                <entry>folders</entry>
