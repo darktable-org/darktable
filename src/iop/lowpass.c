@@ -600,13 +600,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->brightness, 2);
   g->saturation = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
 
-  dt_bauhaus_widget_set_label(g->radius,_("radius"));
-  dt_bauhaus_widget_set_label(g->contrast,_("contrast"));
-  dt_bauhaus_widget_set_label(g->brightness,C_("lowpass", "brightness"));
-  dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
+  dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
 
   g->bilat  = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->bilat, _("soften with"));
+  dt_bauhaus_widget_set_label(g->bilat, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
   dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
 

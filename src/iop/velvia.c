@@ -343,14 +343,14 @@ void gui_init(struct dt_iop_module_t *self)
   /* strength */
   g->strength_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1, p->strength, 0);
   dt_bauhaus_slider_set_format(g->strength_scale,"%.0f%%");
-  dt_bauhaus_widget_set_label(g->strength_scale,_("strength"));
+  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength"));
   g_object_set(G_OBJECT(g->strength_scale), "tooltip-text", _("the strength of saturation boost"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->strength_scale), "value-changed",
                     G_CALLBACK (strength_callback), self);
 
   /* bias */
   g->bias_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.01, p->bias, 2);
-  dt_bauhaus_widget_set_label(g->bias_scale,_("mid-tones bias"));
+  dt_bauhaus_widget_set_label(g->bias_scale, NULL, _("mid-tones bias"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->bias_scale), TRUE, TRUE, 0);

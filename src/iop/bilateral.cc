@@ -345,10 +345,10 @@ extern "C"
     g_object_set(G_OBJECT(g->scale4), "tooltip-text", _("how much to blur green"), (char *)NULL);
     g_object_set(G_OBJECT(g->scale5), "tooltip-text", _("how much to blur blue"), (char *)NULL);
 
-    dt_bauhaus_widget_set_label(g->scale1,_("radius"));
-    dt_bauhaus_widget_set_label(g->scale3,_("red"));
-    dt_bauhaus_widget_set_label(g->scale4,_("green"));
-    dt_bauhaus_widget_set_label(g->scale5,_("blue"));
+    dt_bauhaus_widget_set_label(g->scale1, NULL, _("radius"));
+    dt_bauhaus_widget_set_label(g->scale3, NULL, _("red"));
+    dt_bauhaus_widget_set_label(g->scale4, NULL, _("green"));
+    dt_bauhaus_widget_set_label(g->scale5, NULL, _("blue"));
 
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(self->widget), g->scale3, TRUE, TRUE, 0);

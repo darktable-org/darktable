@@ -374,7 +374,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->mode = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->mode, _("method"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, _("method"));
   dt_bauhaus_combobox_add(g->mode, _("clip highlights"));
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
   g_object_set(G_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
@@ -382,7 +382,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);
   g_object_set(G_OBJECT(g->clip), "tooltip-text", _("manually adjust the clipping threshold against"
                " magenta highlights (you shouldn't ever need to touch this)"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->clip, _("clipping threshold"));
+  dt_bauhaus_widget_set_label(g->clip, NULL, _("clipping threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->clip, TRUE, TRUE, 0);
 
 

@@ -547,7 +547,7 @@ gui_init_tab(
   GtkWidget* hue;
   *pphue = hue =( dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2));
   dt_bauhaus_slider_set_stop(hue, 0.0f, 1.0f, 0.0f, 0.0f);
-  dt_bauhaus_widget_set_label(hue, _("hue"));
+  dt_bauhaus_widget_set_label(hue, NULL, _("hue"));
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.498f, 0.0f, 1.0f, 1.0f);
@@ -559,7 +559,7 @@ gui_init_tab(
   // saturation slider
   GtkWidget* saturation;
   *ppsaturation = saturation = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(saturation, _("saturation"));
+  dt_bauhaus_widget_set_label(saturation, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 1.0f, 1.0f, 1.0f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   g_object_set(G_OBJECT(saturation), "tooltip-text", _("select the saturation tone"), (char *)NULL);
@@ -598,12 +598,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->balance*100.0, 2);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f");
-  dt_bauhaus_widget_set_label(g->scale1, _("balance"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("balance"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
   dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("compress"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compress"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 

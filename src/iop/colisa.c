@@ -379,9 +379,9 @@ gui_init(struct dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->brightness, 2);
   g->saturation = dt_bauhaus_slider_new_with_range(self,-1.0, 1.0, 0.01, p->saturation, 2);
 
-  dt_bauhaus_widget_set_label(g->contrast,_("contrast"));
-  dt_bauhaus_widget_set_label(g->brightness,_("brightness"));
-  dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
+  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
+  dt_bauhaus_widget_set_label(g->brightness, NULL, _("brightness"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);

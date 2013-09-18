@@ -753,16 +753,27 @@ void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
   d->defpos = (def-d->min)/(d->max-d->min);
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *text)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, 256); // keep valgrind happy
-  strncpy(w->label, text, 256);
+  strncpy(w->label, label, 256);
 
   if(w->module)
   {
     // construct control path name and insert into keymap:
-    gchar *path = g_strdup_printf("%s.%s", w->module->name(), w->label);
+    gchar *path;
+    if(section && section[0] != '\0')
+    {
+      path = g_strdup_printf("%s.%s.%s", w->module->name(), section, w->label);
+      gchar *section_path = g_strdup_printf("%s.%s", w->module->name(), section);
+      if(!g_list_find_custom(darktable.bauhaus->key_val, section_path, (GCompareFunc)strcmp))
+        darktable.bauhaus->key_val = g_list_insert_sorted(darktable.bauhaus->key_val, section_path, (GCompareFunc)strcmp);
+      else
+        g_free(section_path);
+    }
+    else
+      path = g_strdup_printf("%s.%s", w->module->name(), w->label);
     if(!g_hash_table_lookup(darktable.bauhaus->keymap, path))
     {
       // also insert into sorted tab-complete list.

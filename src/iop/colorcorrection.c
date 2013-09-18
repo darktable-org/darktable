@@ -286,7 +286,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->slider,_("saturation"));
+  dt_bauhaus_widget_set_label(g->slider, NULL, _("saturation"));
 
   g_signal_connect (G_OBJECT (g->slider), "value-changed",
                     G_CALLBACK (sat_callback), self);

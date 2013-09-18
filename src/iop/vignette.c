@@ -1123,15 +1123,15 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set_format(g->scale,"%.02f%%");
   dt_bauhaus_slider_set_format(g->falloff_scale,"%.02f%%");
-  dt_bauhaus_widget_set_label(g->scale,_("scale"));
-  dt_bauhaus_widget_set_label(g->falloff_scale,_("fall-off strength"));
-  dt_bauhaus_widget_set_label(g->brightness,_("brightness"));
-  dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
-  dt_bauhaus_widget_set_label(g->center_x,_("horizontal center"));
-  dt_bauhaus_widget_set_label(g->center_y,_("vertical center"));
-  dt_bauhaus_widget_set_label(g->shape,_("shape"));
-  dt_bauhaus_widget_set_label(g->whratio,_("width/height ratio"));
-  dt_bauhaus_widget_set_label(g->dithering, _("dithering"));
+  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
+  dt_bauhaus_widget_set_label(g->falloff_scale, NULL, _("fall-off strength"));
+  dt_bauhaus_widget_set_label(g->brightness, NULL, _("brightness"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
+  dt_bauhaus_widget_set_label(g->center_x, NULL, _("horizontal center"));
+  dt_bauhaus_widget_set_label(g->center_y, NULL, _("vertical center"));
+  dt_bauhaus_widget_set_label(g->shape, NULL, _("shape"));
+  dt_bauhaus_widget_set_label(g->whratio, NULL, _("width/height ratio"));
+  dt_bauhaus_widget_set_label(g->dithering, NULL, _("dithering"));
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->whratio), !p->autoratio);
 

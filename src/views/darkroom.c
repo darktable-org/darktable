@@ -1146,7 +1146,7 @@ void enter(dt_view_t *self)
     /** let's fill the encapsulating widgets */
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, _("color scheme"));
+    dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, _("black & white"));
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
@@ -1161,7 +1161,7 @@ void enter(dt_view_t *self)
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL,0.0, 100.0, 0.1, 2.0, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower,"%.0f%%");
-    dt_bauhaus_widget_set_label(lower,_("lower threshold"));
+    dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
     g_object_set(G_OBJECT(lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
     g_signal_connect (G_OBJECT (lower), "value-changed",
                       G_CALLBACK (lower_callback), dev);
@@ -1171,7 +1171,7 @@ void enter(dt_view_t *self)
     GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 98.0, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper,"%.0f%%");
-    dt_bauhaus_widget_set_label(upper,_("upper threshold"));
+    dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
     g_object_set(G_OBJECT(upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
     g_signal_connect (G_OBJECT (upper), "value-changed",
                       G_CALLBACK (upper_callback), dev);

@@ -381,14 +381,14 @@ void gui_init(struct dt_iop_module_t *self)
   /* exposure */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-2.0, 2.0,0.05, p->ev, 2);
   dt_bauhaus_slider_set_format(g->scale1,"%.2fEV");
-  dt_bauhaus_widget_set_label(g->scale1,_("exposure"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("exposure"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the fill-light in EV"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (ev_callback), self);
   /* width*/
   g->scale2 = dt_bauhaus_slider_new_with_range(self,2, 10, 0.5, p->width, 1);
   dt_bauhaus_slider_set_format(g->scale2,"%.1f");
-  dt_bauhaus_widget_set_label(g->scale2,_("width"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("width"));
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("width of fill-light area defined in zones"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
