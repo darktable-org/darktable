@@ -590,7 +590,10 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
   gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
-  gdk_window_get_size(gtk_widget_get_window(center),&w,&h);
+
+  w = gdk_window_get_width(gtk_widget_get_window(center));
+  h = gdk_window_get_height(gtk_widget_get_window(center));
+
   x = px + 0.5*(w-FLOATING_ENTRY_WIDTH);
   y = py + h - 50;
 
