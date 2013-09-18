@@ -215,6 +215,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
   if(height < border2 || width < border2)
   {
     // already copied buffer over above. these small sizes aren't safe to run through the code below.
+    free(Gtmp);
     return;
   }
 
