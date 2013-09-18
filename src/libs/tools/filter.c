@@ -96,17 +96,17 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
 
   /* create the filter combobox */
-  d->filter = widget = gtk_combo_box_new_text();
+  d->filter = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("unstarred only"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ +");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ +");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ +");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ +");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "★ ★ ★ ★ ★ ");
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rejected only"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("all except rejected"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("all"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("unstarred only"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "★ +");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "★ ★ +");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "★ ★ ★ +");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "★ ★ ★ ★ +");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "★ ★ ★ ★ ★ ");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rejected only"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("all except rejected"));
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),
@@ -121,13 +121,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
 
   /* sort combobox */
-  d->sort = widget = gtk_combo_box_new_text();
+  d->sort = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("filename"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("time"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("rating"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("id"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("color label"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("filename"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("time"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("rating"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("id"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("color label"));
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget),

@@ -50,7 +50,7 @@ GtkWidget*
 dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, int param_size)
 {
   GtkDarktableResetLabel *label;
-  label = gtk_type_new (dtgtk_reset_label_get_type());
+  label = g_object_new(dtgtk_reset_label_get_type(), NULL);
   label->module = module;
   label->offset = param - (void *)module->params;
   label->size = param_size;
@@ -66,23 +66,24 @@ dtgtk_reset_label_new (const gchar *text, dt_iop_module_t *module, void *param, 
   return (GtkWidget *)label;
 }
 
-GtkType dtgtk_reset_label_get_type()
+GType dtgtk_reset_label_get_type()
 {
-  static GtkType dtgtk_reset_label_type = 0;
+  static GType dtgtk_reset_label_type = 0;
   if (!dtgtk_reset_label_type)
   {
-    static const GtkTypeInfo dtgtk_reset_label_info =
+    static const GTypeInfo dtgtk_reset_label_info =
     {
-      "GtkDarktableResetLabel",
-      sizeof(GtkDarktableResetLabel),
       sizeof(GtkDarktableResetLabelClass),
-      (GtkClassInitFunc) _reset_label_class_init,
-      (GtkObjectInitFunc) _reset_label_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _reset_label_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableResetLabel),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _reset_label_init,
     };
-    dtgtk_reset_label_type = gtk_type_unique (GTK_TYPE_EVENT_BOX, &dtgtk_reset_label_info);
+    dtgtk_reset_label_type = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableResetLabel", &dtgtk_reset_label_info, 0);
   }
   return dtgtk_reset_label_type;
 }

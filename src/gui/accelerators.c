@@ -433,7 +433,7 @@ static gboolean slider_increase_callback(GtkAccelGroup *accel_group,
   if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
 
   gtk_adjustment_set_value(slider->adjustment, value);
-  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
 }
@@ -448,7 +448,7 @@ static gboolean slider_decrease_callback(GtkAccelGroup *accel_group,
   if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
 
   gtk_adjustment_set_value(slider->adjustment, value);
-  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
 }
@@ -459,7 +459,7 @@ static gboolean slider_reset_callback(GtkAccelGroup *accel_group,
 {
   GtkDarktableSlider *slider=DTGTK_SLIDER(data);
   gtk_adjustment_set_value(slider->adjustment, slider->default_value);
-  gtk_widget_draw(GTK_WIDGET(slider),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
   g_signal_emit_by_name(G_OBJECT(slider),"value-changed");
   return TRUE;
 }

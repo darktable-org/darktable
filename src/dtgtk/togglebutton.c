@@ -102,7 +102,9 @@ static void _togglebutton_destroy(GtkObject *object)
   GtkDarktableToggleButtonClass *klass;
   g_return_if_fail(object != NULL);
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(object));
-  klass = gtk_type_class(gtk_widget_get_type());
+
+  //FIXME: or it should be g_type_class_ref () ?
+  klass = g_type_class_peek(gtk_widget_get_type());
   if (GTK_OBJECT_CLASS(klass)->destroy)
   {
     (* GTK_OBJECT_CLASS(klass)->destroy) (object);
@@ -227,7 +229,7 @@ GtkWidget*
 dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableToggleButton *button;
-  button = gtk_type_new(dtgtk_togglebutton_get_type());
+  button = g_object_new(dtgtk_togglebutton_get_type(), NULL);
   button->icon=paint;
   button->icon_flags=paintflags;
   return (GtkWidget *)button;
@@ -242,23 +244,24 @@ dtgtk_togglebutton_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc p
   return button;
 }
 
-GtkType dtgtk_togglebutton_get_type()
+GType dtgtk_togglebutton_get_type()
 {
-  static GtkType dtgtk_togglebutton_type = 0;
+  static GType dtgtk_togglebutton_type = 0;
   if (!dtgtk_togglebutton_type)
   {
-    static const GtkTypeInfo dtgtk_togglebutton_info =
+    static const GTypeInfo dtgtk_togglebutton_info =
     {
-      "GtkDarktableToggleButton",
-      sizeof(GtkDarktableToggleButton),
       sizeof(GtkDarktableToggleButtonClass),
-      (GtkClassInitFunc) _togglebutton_class_init,
-      (GtkObjectInitFunc) _togglebutton_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _togglebutton_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableToggleButton),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _togglebutton_init,
     };
-    dtgtk_togglebutton_type = gtk_type_unique(GTK_TYPE_TOGGLE_BUTTON, &dtgtk_togglebutton_info);
+    dtgtk_togglebutton_type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON, "GtkDarktableToggleButton", &dtgtk_togglebutton_info, 0);
   }
   return dtgtk_togglebutton_type;
 }

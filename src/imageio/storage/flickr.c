@@ -63,12 +63,12 @@ typedef struct dt_storage_flickr_gui_data_t
 
   GtkLabel *label1,*label2,*label3, *label4,*label5,*label6,*label7,*labelPerms;    // username, password, albums, status, albumtitle, albumsummary, albumrights
   GtkEntry *entry1,*entry2,*entry3,*entry4;                             // username, password, albumtitle,albumsummary
-  GtkComboBox *comboBox1;                                               // album box
+  GtkComboBoxText *comboBox1;                                               // album box
   GtkCheckButton *checkButton2;                                         // export tags
   GtkDarktableButton *dtbutton1;                                        // refresh albums
   GtkButton *button;                                                    // login button. These buttons call the same functions
   GtkBox *hbox1;                                                        // Create album options...
-  GtkComboBox *permsComboBox;                                           // Permissions for flickr
+  GtkComboBoxText *permsComboBox;                                           // Permissions for flickr
 
   char *user_token;
 
@@ -376,7 +376,7 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
   }
 
   // First clear the model of data except first item (Create new album)
-  GtkTreeModel *model=gtk_combo_box_get_model(ui->comboBox1);
+  GtkTreeModel *model=gtk_combo_box_get_model(GTK_COMBO_BOX(ui->comboBox1));
   gtk_list_store_clear (GTK_LIST_STORE(model));
 
   ui->albums = _flickr_api_photosets(ui->flickr_api, gtk_entry_get_text(ui->entry1));
@@ -384,25 +384,25 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
   {
 
     // Add standard action
-    gtk_combo_box_append_text( ui->comboBox1, _("without album") );
-    gtk_combo_box_append_text( ui->comboBox1, _("create new album") );
-    gtk_combo_box_append_text( ui->comboBox1, "" );// Separator
+    gtk_combo_box_text_append_text(ui->comboBox1, _("without album") );
+    gtk_combo_box_text_append_text(ui->comboBox1, _("create new album") );
+    gtk_combo_box_text_append_text(ui->comboBox1, "" );// Separator
 
     // Then add albums from list...
     for(i=0; ui->albums[i]; i++)
     {
       char data[512]= {0};
       sprintf(data,"%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
-      gtk_combo_box_append_text( ui->comboBox1, g_strdup(data));
+      gtk_combo_box_text_append_text(ui->comboBox1, g_strdup(data));
     }
-    gtk_combo_box_set_active( ui->comboBox1, 3);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 3);
     gtk_widget_hide( GTK_WIDGET(ui->hbox1) ); // Hide create album box...
   }
   else
   {
     // Failed to parse feed of album...
     // Lets notify somehow...
-    gtk_combo_box_set_active( ui->comboBox1, 0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 0);
   }
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), TRUE);
 
@@ -412,7 +412,7 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
 void static flickr_album_changed(GtkComboBox *cb,gpointer data)
 {
   dt_storage_flickr_gui_data_t * ui=(dt_storage_flickr_gui_data_t *)data;
-  gchar *value=gtk_combo_box_get_active_text(ui->comboBox1);
+  gchar *value=gtk_combo_box_text_get_active_text(ui->comboBox1);
   if( value!=NULL && strcmp( value, _("create new album") ) == 0 )
   {
     gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox1), FALSE);
@@ -516,9 +516,9 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_entry_set_text( ui->entry4, _("exported from darktable") );
 
   GtkWidget *albumlist=gtk_hbox_new(FALSE,0);
-  ui->comboBox1=GTK_COMBO_BOX( gtk_combo_box_new_text()); // Available albums
+  ui->comboBox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new()); // Available albums
 
-  dt_ellipsize_combo(ui->comboBox1);
+  dt_ellipsize_combo(GTK_COMBO_BOX(ui->comboBox1));
 
   ui->dtbutton1 = DTGTK_BUTTON( dtgtk_button_new(dtgtk_cairo_paint_refresh,0) );
   g_object_set(G_OBJECT(ui->dtbutton1), "tooltip-text", _("refresh album list"), (char *)NULL);
@@ -527,19 +527,19 @@ gui_init (dt_imageio_module_storage_t *self)
   g_object_set(G_OBJECT(ui->button), "tooltip-text", _("flickr login"), (char *)NULL);
 
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
-  gtk_combo_box_set_row_separator_func(ui->comboBox1,combobox_separator,ui->comboBox1,NULL);
+  gtk_combo_box_set_row_separator_func(GTK_COMBO_BOX(ui->comboBox1), combobox_separator,ui->comboBox1,NULL);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->dtbutton1), FALSE, FALSE, 0);
 
   ui->checkButton2 = GTK_CHECK_BUTTON( gtk_check_button_new_with_label(_("export tags")) );
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON( ui->checkButton2 ),TRUE);
 
-  ui->permsComboBox = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(ui->permsComboBox, _("you"));
-  gtk_combo_box_append_text(ui->permsComboBox, _("friends"));
-  gtk_combo_box_append_text(ui->permsComboBox, _("family"));
-  gtk_combo_box_append_text(ui->permsComboBox, _("friends + family"));
-  gtk_combo_box_append_text(ui->permsComboBox, _("everyone"));
+  ui->permsComboBox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("you"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("family"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("friends + family"));
+  gtk_combo_box_text_append_text(ui->permsComboBox, _("everyone"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(ui->permsComboBox), 0); // Set default permission to private
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox0, TRUE, FALSE, 5);
@@ -594,7 +594,7 @@ gui_init (dt_imageio_module_storage_t *self)
 
   if( _username )
     g_free (_username);
-  gtk_combo_box_set_active( ui->comboBox1, 0);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 0);
 }
 
 void
@@ -771,7 +771,7 @@ get_params(dt_imageio_module_storage_t *self)
   {
     // We are authenticated and off to actually export images..
     d->flickr_api = ui->flickr_api;
-    int index = gtk_combo_box_get_active(ui->comboBox1);
+    int index = gtk_combo_box_get_active(GTK_COMBO_BOX(ui->comboBox1));
     if( index >= 0 )
     {
       switch(index)
