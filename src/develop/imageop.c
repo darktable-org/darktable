@@ -325,7 +325,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         g[i] = dt_bauhaus_slider_new_with_range(self, it->slider.min, it->slider.max, it->slider.step, it->slider.defval, it->slider.digits);
         if(it->slider.format)
           dt_bauhaus_slider_set_format(g[i], it->slider.format);
-        dt_bauhaus_widget_set_label(g[i], _(it->slider.label));
+        dt_bauhaus_widget_set_label(g[i], NULL, _(it->slider.label));
         if(it->slider.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->slider.value_changed), it->slider.parameter?it->slider.parameter:self);
         else
@@ -340,7 +340,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         g[i] = dt_bauhaus_combobox_new(self);
         for(char** combo_iter = it->combobox.entries; *combo_iter != NULL; combo_iter++)
           dt_bauhaus_combobox_add(g[i], *combo_iter);
-        dt_bauhaus_widget_set_label(g[i], _(it->combobox.label));
+        dt_bauhaus_widget_set_label(g[i], NULL, _(it->combobox.label));
         dt_bauhaus_combobox_set(g[i], it->combobox.defval);
         if(it->combobox.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->combobox.value_changed), it->combobox.parameter?it->combobox.parameter:self);
@@ -1719,9 +1719,7 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 static void
 _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
-  gint w,h;
   GtkRequisition requisition;
-  gdk_window_get_size(gtk_widget_get_window(GTK_WIDGET(data)),&w,&h);
   gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
 

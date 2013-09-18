@@ -1054,14 +1054,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");
-  dt_bauhaus_widget_set_label(c->strength,_("mix"));
+  dt_bauhaus_widget_set_label(c->strength, NULL, _("mix"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   g_signal_connect (G_OBJECT (c->strength), "value-changed", G_CALLBACK (strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->select_by, _("select by"));
+  dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
   g_object_set(G_OBJECT(c->select_by), "tooltip-text", _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));

@@ -1471,7 +1471,7 @@ void gui_init (struct dt_iop_module_t *self)
 
   // mix slider
   c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  dt_bauhaus_widget_set_label(c->mix, _("mix"));
+  dt_bauhaus_widget_set_label(c->mix, NULL, _("mix"));
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);

@@ -12,35 +12,36 @@
                         <indexterm>
                              <primary>camera import</primary>
                         </indexterm>
-		 	<para>This panel is for importing images into filmrolls. You can either import a complete folder,
-      				by pressing <quote>import filmroll</quote>, or a single image with <quote>import single image</quote>. You can also import directly from a connected camera.
+		 	<para>This panel is for importing images into film rolls. You can either import a complete folder,
+      				by pressing <quote>import folder</quote>, or a single image with <quote>import image</quote>. You can also import directly from a connected camera.
 		  	</para>
 
-
-			<para>All filmrolls are available in a list, which can be filtered using the editbox to fast find the filmroll of interest.
-				Double click on a filmroll in the list and it will open in the lighttable.
-				You can also click the items in <emphasis>recently used collections</emphasis> (see <xref linkend="recently_used_collections"/>) to open the latest 
-                                ones you have worked with.
+			<para>Imported images are organized as film rolls (see <xref linkend="film_rolls"/>). 
+                              All film rolls are accessible through the <emphasis>collect images</emphasis> module (see <xref linkend="collect_images"/>). If you set the selection attribute
+                              to <quote>film roll</quote> you get a list of available film rolls, which can be filtered using the editbox to fast find the one of interest.
+			      Double-click on a film roll in the list and it will open in the lighttable.
+			      You can also click the items in <emphasis>recently used collections</emphasis> (see <xref linkend="recently_used_collections"/>) to open the latest 
+                              ones you have worked with.
 			</para>
 
 			<sect3 status="final"><title>Import from filesystem</title>
-				<para>A filmroll is analogous to a folder in the filesystem. You can import either a single image, or a folder. If a folder is imported, the images
-	                                in that folder will show up in a filmroll with the same name as the imported folder. If single images are imported, they
-	                                will show up in the filmroll called <quote>single images</quote>.
+				<para>You can import either a single image, or a folder. If a folder is imported, the images
+	                              in that folder will show up in a film roll with the same name as the imported folder. If single images are imported, they
+	                              will show up in the film roll called <quote>single images</quote>.
 				</para>
 
                                 <para>
                          		<graphic fileref="lighttable/images/panel_import.png" scalefit="1" width="60%" align="center"></graphic>
                                 </para>
 
-				<para>Clicking on <quote>import single image</quote> or <quote>import filmroll</quote> opens a file selector dialog. Navigate through the filesystem,
+				<para>Clicking on <quote>import image</quote> or <quote>import folder</quote> opens a file selector dialog. Navigate through the filesystem,
                                       and select the item to import. On the lower part of the dialog, are some further import options. 
                                 </para>
                                 <para>
                                       As the name implies, checking <quote>import directories recursively</quote> will import images in the currently selected directory, and all 
                                       subdirectories.
                                       It is not recommended, and wastes resources, to do this on an exhaustive list of images. darktable would generate thumbnails for all of them,
-                                      but in the end only keep the recent ones in its cache. It is better to import images in smaller chunks, making logical filmrolls.
+                                      but in the end only keep the recent ones in its cache. It is better to import images in smaller chunks, making logical film rolls.
                                 </para>
                                 <para>Checking <quote>ignore jpeg files</quote> is a good choice if there are JPEG images in the same folder that you do not want to process;
                                       eg. if the camera stores RAW+JPEG, you often only want to work on the RAWs, leaving the JPEG images alone.
@@ -66,7 +67,7 @@
 				        Depending on the camera's support, buttons with actions will be available such as <quote>import images</quote> and <quote>tethering</quote>.
 				</para>
 				<sect4><title>Import images</title>
-					<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a filmroll in
+					<para>This will bring up an import dialog, showing the images on camera that can be selected for import into a film roll in
 						darktable.
 					</para>
 				</sect4>

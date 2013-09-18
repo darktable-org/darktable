@@ -635,11 +635,13 @@ dt_lib_gui_reset_callback (GtkButton *button, gpointer user_data)
 static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
-  gint w,h;
-  gint ww,wh;
+  gint w;
+  gint ww;
   GtkRequisition requisition;
-  gdk_window_get_size(gtk_widget_get_window(GTK_WIDGET(data)),&w,&h);
-  gdk_window_get_size(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),&ww,&wh);
+
+  w = gdk_window_get_width(gtk_widget_get_window(GTK_WIDGET(data)));
+  ww = gdk_window_get_width(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
+
   gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
 
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);

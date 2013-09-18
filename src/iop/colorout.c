@@ -865,13 +865,13 @@ void gui_init(struct dt_iop_module_t *self)
   // TODO:
   g->cbox1 = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox1, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->cbox1, _("output intent"));
+  dt_bauhaus_widget_set_label(g->cbox1, NULL, _("output intent"));
   dt_bauhaus_combobox_add(g->cbox1, _("perceptual"));
   dt_bauhaus_combobox_add(g->cbox1, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->cbox1, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(g->cbox1, _("absolute colorimetric"));
   g->cbox4 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cbox4, _("display intent"));
+  dt_bauhaus_widget_set_label(g->cbox4, NULL, _("display intent"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox4, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->cbox4, _("perceptual"));
   dt_bauhaus_combobox_add(g->cbox4, _("relative colorimetric"));
@@ -889,9 +889,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->cbox2 = dt_bauhaus_combobox_new(self);
   g->cbox3 = dt_bauhaus_combobox_new(self);
   g->cbox5 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cbox2, _("output profile"));
-  dt_bauhaus_widget_set_label(g->cbox5, _("softproof profile"));
-  dt_bauhaus_widget_set_label(g->cbox3, _("display profile"));
+  dt_bauhaus_widget_set_label(g->cbox2, NULL, _("output profile"));
+  dt_bauhaus_widget_set_label(g->cbox5, NULL, _("softproof profile"));
+  dt_bauhaus_widget_set_label(g->cbox3, NULL, _("display profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox2, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox5, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->cbox3, TRUE, TRUE, 0);

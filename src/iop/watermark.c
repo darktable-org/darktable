@@ -1044,10 +1044,10 @@ void gui_init(struct dt_iop_module_t *self)
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale1,_("opacity"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("opacity"));
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("scale"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("scale"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -1056,7 +1056,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->sizeto, _("larger border"));
   dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
-  dt_bauhaus_widget_set_label(g->sizeto,_("scale on"));
+  dt_bauhaus_widget_set_label(g->sizeto, NULL, _("scale on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->sizeto, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
 
@@ -1077,10 +1077,10 @@ void gui_init(struct dt_iop_module_t *self)
   // x/y offset
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->xoffset, 3);
   dt_bauhaus_slider_set_format(g->scale3, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale3,_("x offset"));
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("x offset"));
   g->scale4 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->yoffset, 3);
   dt_bauhaus_slider_set_format(g->scale4, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale4,_("y offset"));
+  dt_bauhaus_widget_set_label(g->scale4, NULL, _("y offset"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 

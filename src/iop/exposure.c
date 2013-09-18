@@ -398,12 +398,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 3);
   g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->black,"%.3f");
-  dt_bauhaus_widget_set_label(g->black,_("black"));
+  dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->exposure,"%.2fEV");
-  dt_bauhaus_widget_set_label(g->exposure,_("exposure"));
+  dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);

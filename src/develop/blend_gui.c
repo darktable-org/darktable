@@ -1230,7 +1230,7 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
     GtkWidget *abox = gtk_hbox_new(FALSE, 0);
 
     bd->masks_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_combo, _("drawn mask"));
+    dt_bauhaus_widget_set_label(bd->masks_combo, _("blend"), _("drawn mask"));
     dt_bauhaus_combobox_add(bd->masks_combo, _("no mask used"));
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
     g_signal_connect (G_OBJECT (bd->masks_combo), "value-changed", G_CALLBACK (dt_masks_iop_value_changed_callback), module);
@@ -1533,7 +1533,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->masks_modes_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_modes_combo, _("blend"));
+    dt_bauhaus_widget_set_label(bd->masks_modes_combo, _("blend"), _("blend"));
 
     dt_bauhaus_combobox_add(bd->masks_modes_combo, _("off"));
     bd->masks_modes = g_list_append(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED));
@@ -1567,7 +1567,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend mode"));
+    dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
     gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
 
     /** populate combobox depending on the color space this module acts in */
@@ -1652,7 +1652,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->opacity_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 1, 100.0, 0);
-    dt_bauhaus_widget_set_label(bd->opacity_slider, _("opacity"));
+    dt_bauhaus_widget_set_label(bd->opacity_slider, _("blend"), _("opacity"));
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
     gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
@@ -1661,7 +1661,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->masks_combine_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_combine_combo, _("combine masks"));
+    dt_bauhaus_widget_set_label(bd->masks_combine_combo, _("blend"), _("combine masks"));
 
     dt_bauhaus_combobox_add(bd->masks_combine_combo, _("exclusive"));
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM_EXCL));
@@ -1682,7 +1682,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->masks_invert_combo = dt_bauhaus_combobox_new(module);
-    dt_bauhaus_widget_set_label(bd->masks_invert_combo, _("invert mask"));
+    dt_bauhaus_widget_set_label(bd->masks_invert_combo, _("blend"), _("invert mask"));
 
     dt_bauhaus_combobox_add(bd->masks_invert_combo, _("off"));
     bd->masks_invert = g_list_append(bd->masks_invert, GUINT_TO_POINTER(DEVELOP_COMBINE_NORM));
@@ -1698,7 +1698,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
-    dt_bauhaus_widget_set_label(bd->radius_slider, _("mask blur"));
+    dt_bauhaus_widget_set_label(bd->radius_slider, _("blend"), _("mask blur"));
     dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
     gtk_object_set(GTK_OBJECT(bd->radius_slider), "tooltip-text", _("radius for gaussian blur of blend mask"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->radius_slider), "value-changed",

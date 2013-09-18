@@ -133,7 +133,7 @@
 					</tgroup></informaltable>
 			</para>
 			<sect3 status="final"><title>Lighttable</title>
-				<para>The lighttable view is where images and filmrolls are managed. It's also where you rate images, add tags and  
+				<para>The lighttable view is where images and film rolls are managed. It's also where you rate images, add tags and  
                                       colorlabels, and export images among other actions (see <xref linkend="lighttable_chapter"/>).
 				</para>
 			</sect3>

@@ -1697,7 +1697,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->hvflip = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->hvflip, _("flip"));
+  dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));
   dt_bauhaus_combobox_add(g->hvflip, _("horizontal"));
   dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
@@ -1708,14 +1708,14 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->angle= dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 0.25, p->angle, 2);
-  dt_bauhaus_widget_set_label(g->angle, _("angle"));
+  dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
   g_signal_connect (G_OBJECT (g->angle), "value-changed", G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->angle), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->keystone_type, _("keystone"));
+  dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
   dt_bauhaus_combobox_add(g->keystone_type, _("none"));
   dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
   dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
@@ -1725,7 +1725,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->crop_auto, _("automatic cropping"));
+  dt_bauhaus_widget_set_label(g->crop_auto, NULL, _("automatic cropping"));
   dt_bauhaus_combobox_add(g->crop_auto, _("no"));
   dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
   g_object_set(G_OBJECT(g->crop_auto), "tooltip-text", _("automatically crop to avoid black edges"), (char *)NULL);
@@ -1734,7 +1734,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
-  dt_bauhaus_widget_set_label(g->aspect_presets, _("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, _("aspect"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("free"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("image"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("golden cut"));
@@ -1758,7 +1758,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, _("guides"));
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   dt_bauhaus_combobox_add(g->guide_lines, _("grid")); // TODO: make the number of lines configurable with a slider?
   dt_bauhaus_combobox_add(g->guide_lines, _("rules of thirds"));
@@ -1777,7 +1777,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->flip_guides = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->flip_guides, _("flip"));
+  dt_bauhaus_widget_set_label(g->flip_guides, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->flip_guides, _("none"));
   dt_bauhaus_combobox_add(g->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
@@ -1787,7 +1787,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
 
   g->golden_extras = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->golden_extras, _("extra"));
+  dt_bauhaus_widget_set_label(g->golden_extras, NULL, _("extra"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden sections"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden spiral"));

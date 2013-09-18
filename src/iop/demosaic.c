@@ -1314,17 +1314,17 @@ void gui_init     (struct dt_iop_module_t *self)
   g->demosaic_method = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_add(g->demosaic_method, _("PPG (fast)"));
   dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
-  dt_bauhaus_widget_set_label(g->demosaic_method, _("method"));
+  dt_bauhaus_widget_set_label(g->demosaic_method, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->scale1, _("edge threshold"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("edge threshold"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale1, TRUE, TRUE, 0);
 
   g->color_smoothing = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->color_smoothing, _("color smoothing"));
+  dt_bauhaus_widget_set_label(g->color_smoothing, NULL, _("color smoothing"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->color_smoothing, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
   dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
@@ -1336,7 +1336,7 @@ void gui_init     (struct dt_iop_module_t *self)
 
   g->greeneq = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->greeneq, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->greeneq, _("match greens"));
+  dt_bauhaus_widget_set_label(g->greeneq, NULL, _("match greens"));
   dt_bauhaus_combobox_add(g->greeneq, _("disabled"));
   dt_bauhaus_combobox_add(g->greeneq, _("local average"));
   dt_bauhaus_combobox_add(g->greeneq, _("full average"));

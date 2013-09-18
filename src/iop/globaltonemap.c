@@ -617,7 +617,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* operator */
   g->operator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->operator,_("operator"));
+  dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
 
   dt_bauhaus_combobox_add(g->operator, "reinhard");
   dt_bauhaus_combobox_add(g->operator, "filmic");
@@ -630,7 +630,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* drago bias */
   g->drago.bias = dt_bauhaus_slider_new_with_range(self,0.5, 1.0, 0.05, p->drago.bias, 2);
-  dt_bauhaus_widget_set_label(g->drago.bias,_("bias"));
+  dt_bauhaus_widget_set_label(g->drago.bias, NULL, _("bias"));
   g_object_set(G_OBJECT(g->drago.bias), "tooltip-text", _("the bias for tonemapper controls the linearity, the higher the more details in blacks"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->drago.bias), "value-changed",
                     G_CALLBACK (_drago_bias_callback), self);
@@ -639,7 +639,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* drago bias */
   g->drago.max_light = dt_bauhaus_slider_new_with_range(self,1, 500, 10, p->drago.max_light, 2);
-  dt_bauhaus_widget_set_label(g->drago.max_light,_("target"));
+  dt_bauhaus_widget_set_label(g->drago.max_light, NULL, _("target"));
   g_object_set(G_OBJECT(g->drago.max_light), "tooltip-text", _("the target light for tonemapper specified as cd/m2"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->drago.max_light), "value-changed",
                     G_CALLBACK (_drago_max_light_callback), self);
@@ -648,7 +648,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* detail */
   g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, 0.01, 0.0, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->detail, _("detail"));
+  dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
 
   g_signal_connect (G_OBJECT (g->detail), "value-changed", G_CALLBACK (detail_callback), self);
 }
