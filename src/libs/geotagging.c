@@ -359,7 +359,9 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
   gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
-  gdk_window_get_size(gtk_widget_get_window(center),&center_w,&center_h);
+
+  center_w = gdk_window_get_width(gtk_widget_get_window(center));
+  center_h = gdk_window_get_height(gtk_widget_get_window(center));
 
   d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_can_focus(d->floating_window, TRUE);
@@ -400,7 +402,9 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_show_all(d->floating_window);
   gtk_widget_grab_focus(d->floating_window_entry);
 
-  gdk_window_get_size(gtk_widget_get_window(d->floating_window), &window_w, &window_h);
+  window_w = gdk_window_get_width(gtk_widget_get_window(d->floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(d->floating_window));
+
   x = px + 0.5*(center_w-window_w);
   y = py + center_h - 20 - window_h;
   gtk_window_move(GTK_WINDOW(d->floating_window), x, y);
