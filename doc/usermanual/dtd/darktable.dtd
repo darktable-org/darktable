@@ -26,6 +26,9 @@
 <!ENTITY icon_group_correction "images/darkroom_group_correction.png">
 <!ENTITY icon_group_effect "images/darkroom_group_effect.png">
 <!ENTITY icon_lighttable_group "images/lighttable_icon_group.png">
+<!ENTITY icon_lighttable_and "images/lighttable_icon_and.png">
+<!ENTITY icon_lighttable_or "images/lighttable_icon_or.png">
+<!ENTITY icon_lighttable_except "images/lighttable_icon_except.png">
 <!ENTITY shape_brush "images/shape_brush.png">
 <!ENTITY shape_circle "images/shape_circle.png">
 <!ENTITY shape_ellipse "images/shape_ellipse.png">
