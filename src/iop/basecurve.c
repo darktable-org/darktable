@@ -758,13 +758,13 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 0, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
 
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
   dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
-  gtk_object_set(GTK_OBJECT(c->scale), "tooltip-text", _("scale to use in the graph. use logarithmic scale for more precise control near the blacks"), (char *)NULL);
+  g_object_set(c->scale, "tooltip-text", _("scale to use in the graph. use logarithmic scale for more precise control near the blacks"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale,  TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->scale), "value-changed",
                     G_CALLBACK (scale_callback), self);

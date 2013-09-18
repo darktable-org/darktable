@@ -266,7 +266,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_drawing_area_size(g->area, 258, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), 258, 258);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
                 "bright means highlights, dark means shadows. "
                 "use mouse wheel to change saturation."), (char *)NULL);

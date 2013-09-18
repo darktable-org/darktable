@@ -668,13 +668,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale5, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale6, TRUE, TRUE, 0);
 
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("correct shadows"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("correct highlights"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("spatial extent"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("filter to use for softening. bilateral avoids halos"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale6), "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
+  g_object_set(g->scale1, "tooltip-text", _("correct shadows"), (char *)NULL);
+  g_object_set(g->scale2, "tooltip-text", _("correct highlights"), (char *)NULL);
+  g_object_set(g->scale3, "tooltip-text", _("spatial extent"), (char *)NULL);
+  g_object_set(g->bilat,  "tooltip-text", _("filter to use for softening. bilateral avoids halos"), (char *)NULL);
+  g_object_set(g->scale4, "tooltip-text", _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
+  g_object_set(g->scale5, "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
+  g_object_set(g->scale6, "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (shadows_callback), self);

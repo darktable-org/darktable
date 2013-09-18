@@ -949,7 +949,7 @@ colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data
 }
 
 static void
-colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+colorzones_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -1050,7 +1050,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");

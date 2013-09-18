@@ -507,7 +507,7 @@ _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt_iop_gui_ble
 
 
 static void
-_blendop_blendif_tab_switch(GtkNotebook *notebook, GtkNotebookPage *notebook_page, guint page_num,dt_iop_gui_blend_data_t *data)
+_blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, dt_iop_gui_blend_data_t *data)
 {
   data->tab = page_num;
   dt_iop_gui_update_blendif(data->module);
@@ -1119,10 +1119,10 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
-    gtk_object_set(GTK_OBJECT(bd->lower_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(bd->upper_slider), "tooltip-text", _("double click to reset"), (char *)NULL);
-    gtk_object_set(GTK_OBJECT(output), "tooltip-text", ttoutput, (char *)NULL);
-    gtk_object_set(GTK_OBJECT(input), "tooltip-text", ttinput, (char *)NULL);
+    g_object_set(bd->lower_slider, "tooltip-text", _("double click to reset"), (char *)NULL);
+    g_object_set(bd->upper_slider, "tooltip-text", _("double click to reset"), (char *)NULL);
+    g_object_set(output, "tooltip-text", ttoutput, (char *)NULL);
+    g_object_set(input, "tooltip-text", ttinput, (char *)NULL);
 
     g_signal_connect (G_OBJECT (bd->lower_slider), "expose-event",
                       G_CALLBACK (_blendop_blendif_expose), module);
@@ -1560,7 +1560,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     }
 
     dt_bauhaus_combobox_set(bd->masks_modes_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->masks_modes_combo), "tooltip-text", _("activate blending: uniformly, with drawn mask, with parametric mask, or combination of both"), (char *)NULL);
+    g_object_set(bd->masks_modes_combo, "tooltip-text", _("activate blending: uniformly, with drawn mask, with parametric mask, or combination of both"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->masks_modes_combo), "value-changed",
                       G_CALLBACK (_blendop_masks_mode_callback), bd);
 
@@ -1568,7 +1568,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
-    gtk_object_set(GTK_OBJECT(bd->blend_modes_combo), "tooltip-text", _("choose blending mode"), (char *)NULL);
+    g_object_set(bd->blend_modes_combo, "tooltip-text", _("choose blending mode"), (char *)NULL);
 
     /** populate combobox depending on the color space this module acts in */
     switch(bd->csp)
@@ -1655,7 +1655,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     dt_bauhaus_widget_set_label(bd->opacity_slider, _("blend"), _("opacity"));
     dt_bauhaus_slider_set_format(bd->opacity_slider, "%.0f%%");
     module->fusion_slider = bd->opacity_slider;
-    gtk_object_set(GTK_OBJECT(bd->opacity_slider), "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
+    g_object_set(bd->opacity_slider, "tooltip-text", _("set the opacity of the blending"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->opacity_slider), "value-changed",
                       G_CALLBACK (_blendop_opacity_callback), bd);
 
@@ -1676,7 +1676,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_combine = g_list_append(bd->masks_combine, GUINT_TO_POINTER(DEVELOP_COMBINE_INV_INCL));
 
     dt_bauhaus_combobox_set(bd->masks_combine_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->masks_combine_combo), "tooltip-text", _("how to combine individual drawn mask and different channels of parametric mask"), (char *)NULL);
+    g_object_set(bd->masks_combine_combo, "tooltip-text", _("how to combine individual drawn mask and different channels of parametric mask"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->masks_combine_combo), "value-changed",
                       G_CALLBACK (_blendop_masks_combine_callback), bd);
 
@@ -1691,7 +1691,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->masks_invert = g_list_append(bd->masks_invert, GUINT_TO_POINTER(DEVELOP_COMBINE_INV));
 
     dt_bauhaus_combobox_set(bd->masks_invert_combo, 0);
-    gtk_object_set(GTK_OBJECT(bd->masks_invert_combo), "tooltip-text", _("apply mask in normal or inverted mode"), (char *)NULL);
+    g_object_set(bd->masks_invert_combo, "tooltip-text", _("apply mask in normal or inverted mode"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->masks_invert_combo), "value-changed",
                       G_CALLBACK (_blendop_masks_invert_callback), bd);
 
@@ -1700,7 +1700,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->radius_slider = dt_bauhaus_slider_new_with_range(module, 0.0, 100.0, 0.1, 0.0, 1);
     dt_bauhaus_widget_set_label(bd->radius_slider, _("blend"), _("mask blur"));
     dt_bauhaus_slider_set_format(bd->radius_slider, "%.1f");
-    gtk_object_set(GTK_OBJECT(bd->radius_slider), "tooltip-text", _("radius for gaussian blur of blend mask"), (char *)NULL);
+    g_object_set(bd->radius_slider, "tooltip-text", _("radius for gaussian blur of blend mask"), (char *)NULL);
     g_signal_connect (G_OBJECT (bd->radius_slider), "value-changed",
                       G_CALLBACK (_blendop_blendif_radius_callback), bd);
 

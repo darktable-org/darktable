@@ -328,7 +328,7 @@ void init(dt_view_t *self)
   lib->full_preview_id = -1;
   lib->last_mouse_over_id = -1;
 
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
+  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, G_TYPE_NONE);
 
   lib->star_color.red = (255/ 65535) * style->fg[GTK_STATE_NORMAL].red;
   lib->star_color.blue = (255/ 65535) * style->fg[GTK_STATE_NORMAL].blue;

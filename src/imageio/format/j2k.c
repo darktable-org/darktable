@@ -629,14 +629,14 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *label = gtk_label_new(_("DCP mode"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-  GtkWidget *combo = gtk_combo_box_new_text();
+  GtkComboBoxText *combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->preset = GTK_COMBO_BOX(combo);
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("off"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema2K, 24FPS"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema2K, 48FPS"));
-  gtk_combo_box_append_text(GTK_COMBO_BOX(combo), _("Cinema4K, 24FPS"));
+  gtk_combo_box_text_append_text(combo, _("off"));
+  gtk_combo_box_text_append_text(combo, _("Cinema2K, 24FPS"));
+  gtk_combo_box_text_append_text(combo, _("Cinema2K, 48FPS"));
+  gtk_combo_box_text_append_text(combo, _("Cinema4K, 24FPS"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(combo), preset_last);
-  gtk_box_pack_start(GTK_BOX(hbox), combo, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(combo), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(combo), "changed", G_CALLBACK(combobox_changed), NULL);
 
   // TODO: options for "off"

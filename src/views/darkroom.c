@@ -889,10 +889,10 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* show styles popup menu */
   GList *styles = dt_styles_get_list("");
-  GtkWidget *menu = NULL;
+  GtkMenuShell *menu = NULL;
   if(styles)
   {
-    menu= gtk_menu_new();
+    menu = GTK_MENU_SHELL(gtk_menu_new());
     do
     {
       dt_style_t *style=(dt_style_t *)styles->data;
@@ -912,9 +912,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       gtk_widget_set_tooltip_markup(mi, tooltip);
 
-      gtk_menu_append (GTK_MENU (menu), mi);
-      gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
-                                 GTK_SIGNAL_FUNC (_darkroom_ui_apply_style_activate_callback),
+      gtk_menu_shell_append (menu, mi);
+      g_signal_connect_swapped (GTK_OBJECT (mi), "activate",
+                                 G_CALLBACK (_darkroom_ui_apply_style_activate_callback),
                                  (gpointer) g_strdup (style->name));
       gtk_widget_show (mi);
 
@@ -949,7 +949,7 @@ static gboolean _overexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpo
   dt_develop_t *d = (dt_develop_t*)user_data;
   g_signal_handler_disconnect(widget, d->overexposed.destroy_signal_handler);
   d->overexposed.destroy_signal_handler = 0;
-  gtk_widget_hide_all(d->overexposed.floating_window);
+  gtk_widget_hide(d->overexposed.floating_window);
   return FALSE;
 }
 
@@ -1130,7 +1130,6 @@ void enter(dt_view_t *self)
 
     gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
-    gtk_window_set_has_frame(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
     gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
     gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);

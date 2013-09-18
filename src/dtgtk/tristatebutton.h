@@ -21,9 +21,9 @@
 #include <gtk/gtk.h>
 #include "paint.h"
 G_BEGIN_DECLS
-#define DTGTK_TRISTATEBUTTON(obj) GTK_CHECK_CAST(obj, dtgtk_tristatebutton_get_type (), GtkDarktableTriStateButton)
+#define DTGTK_TRISTATEBUTTON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_tristatebutton_get_type (), GtkDarktableTriStateButton)
 #define DTGTK_TRISTATEBUTTON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_tristatebutton_get_type(), GtkDarktableTriStateButtonClass)
-#define DTGTK_IS_TRISTATEBUTTON(obj) GTK_CHECK_TYPE(obj, dtgtk_tristatebutton_get_type())
+#define DTGTK_IS_TRISTATEBUTTON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_tristatebutton_get_type())
 #define DTGTK_IS_TRISTATEBUTTON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_tristatebutton_get_type())
 
 enum

@@ -188,7 +188,7 @@ static gboolean _label_expose(GtkWidget *widget, GdkEventExpose *event)
 GtkWidget* dtgtk_label_new(const gchar *text, _darktable_label_flags_t flags)
 {
   GtkDarktableLabel *label;
-  label = gtk_type_new(dtgtk_label_get_type());
+  label = g_object_new(dtgtk_label_get_type(), NULL);
   gtk_label_set_text(GTK_LABEL(label),text);
   label->flags=flags;
   return (GtkWidget *)label;
@@ -203,23 +203,24 @@ void dtgtk_label_set_text(GtkDarktableLabel *label,
   gtk_widget_queue_draw(GTK_WIDGET(label));
 }
 
-GtkType dtgtk_label_get_type()
+GType dtgtk_label_get_type()
 {
-  static GtkType dtgtk_label_type = 0;
+  static GType dtgtk_label_type = 0;
   if (!dtgtk_label_type)
   {
-    static const GtkTypeInfo dtgtk_label_info =
+    static const GTypeInfo dtgtk_label_info =
     {
-      "GtkDarktableLabel",
-      sizeof(GtkDarktableLabel),
       sizeof(GtkDarktableLabelClass),
-      (GtkClassInitFunc) _label_class_init,
-      (GtkObjectInitFunc) _label_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _label_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableLabel),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _label_init,
     };
-    dtgtk_label_type = gtk_type_unique(GTK_TYPE_LABEL, &dtgtk_label_info);
+    dtgtk_label_type = g_type_register_static(GTK_TYPE_LABEL, "GtkDarktableLabel", &dtgtk_label_info, 0);
   }
   return dtgtk_label_type;
 }

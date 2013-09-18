@@ -331,7 +331,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           else
           {
             gtk_widget_hide(GTK_WIDGET(plugin->expander));
-            // gtk_widget_hide_all(plugin->widget);
+            // gtk_widget_hide(plugin->widget);
           }
 
           dt_lib_gui_set_expanded(plugin, expanded);
@@ -343,7 +343,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           if(visible)
             gtk_widget_show_all(plugin->widget);
           else
-            gtk_widget_hide_all(plugin->widget);
+            gtk_widget_hide(plugin->widget);
         }
       }
 

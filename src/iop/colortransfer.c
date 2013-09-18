@@ -545,7 +545,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   gtk_spin_button_set_value(g->spinbutton, p->n);
-  //gtk_widget_set_size_request(g->area, 300, MIN(100, 300/p->n));
+  //gtk_widget_set_size_request(GTK_WIDGET(g->area), 300, MIN(100, 300/p->n));
   // redraw color cluster preview
   dt_control_queue_redraw_widget(self->widget);
 #endif
@@ -662,7 +662,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK(expose), self);
 
   g->area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->area, 300, 100);
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), 300, 100);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 

@@ -1320,7 +1320,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
     gtk_box_pack_start(GTK_BOX(g->detection_warning), GTK_WIDGET(label), FALSE, FALSE, 0);
 
-    gtk_widget_hide_all (g->lens_param_box);
+    gtk_widget_hide(g->lens_param_box);
     gtk_widget_show_all (g->detection_warning);
     return;
   }
@@ -1470,7 +1470,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
-  gtk_widget_hide_all (g->detection_warning);
+  gtk_widget_hide(g->detection_warning);
   gtk_widget_show_all (g->lens_param_box);
 }
 
