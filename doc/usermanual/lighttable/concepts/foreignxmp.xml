@@ -13,8 +13,7 @@
                 </para>
 
                 <para>
-                When importing input images with an existing, potentially foreign, sidecar file the following metadata are read during the
-                import phase:
+                At present darktable is able to deal with the following metadata of Lightroom generated sidecar files during the import phase:
                 <itemizedlist>
                    <listitem><para>tags and hierarchical tags</para></listitem>
                    <listitem><para>color labels</para></listitem>
@@ -35,7 +34,7 @@
                 <para>The migration is automatically done when entering the darkroom view provided that a corresponding XMP sidecar is found.
                 </para>
 
-                <para>At present darktable is able to deal with the following development steps of Lightroom-generated XMP files (corresponding 
+                <para>At present darktable is able to deal with the following development steps of Lightroom generated XMP files (corresponding 
                 darktable module in parenthesis):
                 <itemizedlist>
                    <listitem><para>crop and rotate <emphasis>(crop and rotate)</emphasis></para></listitem>

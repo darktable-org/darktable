@@ -56,7 +56,7 @@
 			<tbody>
 				<row>	
                                         <entry><para>An expanded group in the filemanager mode of lighttable view is indicated by an orange frame which appears as soon as your
-                                        mouse pointer hover over one of the images.</para>
+                                        mouse pointer hovers over one of the images.</para>
                                         </entry>
 					<entry>
 						<graphic fileref="lighttable/concepts/images/grouping_2.png" scalefit="1" width="80%" align="center" />

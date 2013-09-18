@@ -66,6 +66,8 @@
           the map. darktable will record the new geo location (longitude and latitude) as part of the image metadata.
           Exported images will include this data.</para>
 
+    <para>In order to remove geo coordinates from an image just drag it from the map and drop it onto the filmstrip.</para>
+
     <para>Left and right to the central map there are panels for additional control.</para>
 
   </sect2>
