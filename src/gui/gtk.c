@@ -463,13 +463,12 @@ static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
   dt_control_expose(NULL);
-  if(darktable.gui->pixmap)
-    gdk_draw_drawable(gtk_widget_get_window(da),
-                      gtk_widget_get_style(da)->fg_gc[gtk_widget_get_state(da)], darktable.gui->pixmap,
-                      // Only copy the area that was exposed.
-                      event->area.x, event->area.y,
-                      event->area.x, event->area.y,
-                      event->area.width, event->area.height);
+  if(darktable.gui->pixmap) {
+    cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(da));
+    gdk_cairo_set_source_pixmap (cr, darktable.gui->pixmap, event->area.x, event->area.y);
+    cairo_paint (cr);
+    cairo_destroy (cr);
+  }
 
   if(darktable.lib->proxy.colorpicker.module)
   {
@@ -628,7 +627,12 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
     int minw = oldw, minh = oldh;
     if(event->width  < minw) minw = event->width;
     if(event->height < minh) minh = event->height;
-    gdk_draw_drawable(tmppixmap, gtk_widget_get_style(da)->fg_gc[gtk_widget_get_state(da)], darktable.gui->pixmap, 0, 0, 0, 0, minw, minh);
+
+    cairo_t *cr = gdk_cairo_create (tmppixmap);
+    gdk_cairo_set_source_pixmap (cr, darktable.gui->pixmap, 0, 0);
+    cairo_paint (cr);
+    cairo_destroy (cr);
+
     //we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
     g_object_unref(darktable.gui->pixmap);
     darktable.gui->pixmap = tmppixmap;
