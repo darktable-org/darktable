@@ -161,35 +161,27 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
 endforeach(lib)
 
 if(USE_LUA)
-	find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
-	if(LUA52_FOUND)
-		message(STATUS "Lua support: Enabled")
-		add_definitions("-DUSE_LUA")
-		include_directories(${LUA52_INCLUDE_DIRS})
-		list(APPEND LIBS ${LUA52_LIBRARIES})
-		FILE(GLOB SOURCE_FILES_LUA
-			"lua/call.c"
-			"lua/configuration.c"
-			"lua/database.c"
-			"lua/events.c"
-			"lua/film.c"
-			"lua/glist.c"
-			"lua/gui.c"
-			"lua/image.c"
-			"lua/init.c"
-			"lua/lua.c"
-			"lua/modules.c"
-			"lua/preferences.c"
-			"lua/print.c"
-			"lua/storage.c"
-			"lua/styles.c"
-			"lua/tags.c"
-			"lua/types.c"
-			)
-		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
-	else()
-		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
-	endif(LUA52_FOUND)
+	add_definitions("-DUSE_LUA")
+	FILE(GLOB SOURCE_FILES_LUA
+		"lua/call.c"
+		"lua/configuration.c"
+		"lua/database.c"
+		"lua/events.c"
+		"lua/film.c"
+		"lua/glist.c"
+		"lua/gui.c"
+		"lua/image.c"
+		"lua/init.c"
+		"lua/lua.c"
+		"lua/modules.c"
+		"lua/preferences.c"
+		"lua/print.c"
+		"lua/storage.c"
+		"lua/styles.c"
+		"lua/tags.c"
+		"lua/types.c"
+		)
+	set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
 endif(USE_LUA)
 
 if(USE_NLS)
@@ -538,15 +530,27 @@ add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
 
 if(USE_LUA)
+	find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
 	if(LUA52_FOUND)
-		# liblautoc for lua automated interface generation
-		add_dependencies(lib_darktable lautoc)
-		add_library(lautoc_static STATIC IMPORTED)
-		set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-		target_link_libraries(lib_darktable ${LIBS} lautoc_static)
-		include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
-		add_subdirectory(external/LuaAutoC)
+		message(STATUS "Lua support: Enabled")
+		include_directories(${LUA52_INCLUDE_DIRS})
+		list(APPEND LIBS ${LUA52_LIBRARIES})
+	else()
+		message(STATUS "Lua support: Not found (using darktable's version)")
+		include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/lua/src)
+		add_subdirectory(external/lua)
+		add_dependencies(lib_darktable liblua)
+		list(APPEND LIBS lua)
 	endif(LUA52_FOUND)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
+else(USE_LUA)
+	message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
 ###### GTK+3 port ######
