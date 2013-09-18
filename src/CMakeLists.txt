@@ -130,10 +130,12 @@ include_directories(SYSTEM ${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GTK2 2.24 REQUIRED gtk)
-include_directories(SYSTEM ${GTK2_INCLUDE_DIRS})
-list(APPEND LIBS ${GTK2_LIBRARIES})
-add_definitions(${GTK2_DEFINITIONS})
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+include_directories(${GTK3_INCLUDE_DIRS})
+list(APPEND LIBS ${GTK3_LIBRARIES})
+add_definitions(${GTK3_DEFINITIONS})
+#add_definitions(${GTK3_CFLAGS_OTHER})
 
 # Check for libxml2 / broken cmake module can't be included in the foreach() below
 find_package(LibXml2 2.6 REQUIRED)
