@@ -715,7 +715,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_drawing_area_size(c->area, 258, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 258, 258);
 
   c->zones = gtk_drawing_area_new();
   gtk_widget_set_size_request(c->zones, -1, 25);
@@ -725,9 +725,9 @@ void gui_init(struct dt_iop_module_t *self)
   int row=0;
 
   GtkWidget *label1 = gtk_label_new(_("spline type"));
-  c->spline_type = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(c->spline_type, _("cubic spline"));
-  gtk_combo_box_append_text(c->spline_type, _("catmull rom"));
+  c->spline_type = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(c->spline_type, _("cubic spline"));
+  gtk_combo_box_text_append_text(c->spline_type, _("catmull rom"));
 
   gtk_misc_set_alignment(GTK_MISC(label1), 0.0, 0.5);
   gtk_table_attach(table, label1, 0, 1, row, row+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -736,9 +736,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   label1 = gtk_label_new(_("lut"));
-  c->calc_type = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(c->calc_type, _("values"));
-  gtk_combo_box_append_text(c->calc_type, _("coefficients"));
+  c->calc_type = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(c->calc_type, _("values"));
+  gtk_combo_box_text_append_text(c->calc_type, _("coefficients"));
 
   gtk_misc_set_alignment(GTK_MISC(label1), 0.0, 0.5);
   gtk_table_attach(table, label1, 0, 1, row, row+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);

@@ -462,7 +462,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* blue */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.005, p->blue[CHANNEL_RED] , 3);
-  g_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
+  g_object_set(g->scale3, "tooltip-text", _("amount of blue channel in the output channel"), (char *)NULL);
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("blue"));
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
                     G_CALLBACK (blue_callback), self);

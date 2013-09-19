@@ -718,7 +718,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   }
   else
   {
-    gtk_widget_hide_all(module->widget);
+    gtk_widget_hide(module->widget);
 
     if(darktable.lib->gui_module == module)
     {

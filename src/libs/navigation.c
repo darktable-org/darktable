@@ -428,26 +428,26 @@ static gboolean _lib_navigation_button_press_callback(GtkWidget *widget, GdkEven
   if (event->x >= w-2*DT_NAVIGATION_INSET-d->zoom_h-d->zoom_w && event->y <= w-2*DT_NAVIGATION_INSET && event->y >= h-2*DT_NAVIGATION_INSET-d->zoom_h && event->y <= h-2*DT_NAVIGATION_INSET)
   {
     //we show the zoom menu
-    GtkWidget *menu = gtk_menu_new();
+    GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
     GtkWidget *item;
 
     item = gtk_menu_item_new_with_label(_("small"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_mini), self);
-    gtk_menu_append(menu, item);
+    gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("fit to screen"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_fit), self);
-    gtk_menu_append(menu, item);
+    gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("100%"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_1), self);
-    gtk_menu_append(menu, item);
+    gtk_menu_shell_append(menu, item);
 
     item = gtk_menu_item_new_with_label(_("200%"));
     g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_zoom_preset_2), self);
-    gtk_menu_append(menu, item);
+    gtk_menu_shell_append(menu, item);
 
-    gtk_widget_show_all(menu);
+    gtk_widget_show_all(GTK_WIDGET(menu));
     gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 
     return TRUE;

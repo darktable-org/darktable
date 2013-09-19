@@ -21,9 +21,9 @@
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-#define DTGTK_SLIDER(obj) GTK_CHECK_CAST(obj, dtgtk_slider_get_type (), GtkDarktableSlider)
+#define DTGTK_SLIDER(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_slider_get_type (), GtkDarktableSlider)
 #define DTGTK_SLIDER_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_slider_get_type(), GtkDarktableSliderClass)
-#define DTGTK_IS_SLIDER(obj) GTK_CHECK_TYPE(obj, dtgtk_slider_get_type())
+#define DTGTK_IS_SLIDER(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_slider_get_type())
 #define DTGTK_IS_SLIDER_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_slider_get_type())
 
 typedef enum _darktable_slider_type

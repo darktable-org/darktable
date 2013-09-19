@@ -21,9 +21,9 @@
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
-#define DTGTK_LABEL(obj) GTK_CHECK_CAST(obj, dtgtk_label_get_type (), GtkDarktableLabel)
+#define DTGTK_LABEL(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_label_get_type (), GtkDarktableLabel)
 #define DTGTK_LABEL_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_label_get_type(), GtkDarktableLabelClass)
-#define DTGTK_IS_LABEL(obj) GTK_CHECK_TYPE(obj, dtgtk_label_get_type())
+#define DTGTK_IS_LABEL(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_label_get_type())
 #define DTGTK_IS_LABEL_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_label_get_type())
 
 typedef enum _darktable_label_flags

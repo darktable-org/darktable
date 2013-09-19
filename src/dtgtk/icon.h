@@ -21,9 +21,9 @@
 #include <gtk/gtk.h>
 #include "paint.h"
 G_BEGIN_DECLS
-#define DTGTK_ICON(obj) GTK_CHECK_CAST(obj, dtgtk_icon_get_type (), GtkDarktableIcon)
+#define DTGTK_ICON(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, dtgtk_icon_get_type (), GtkDarktableIcon)
 #define DTGTK_ICON_CLASS(klass) GTK_CHECK_CLASS_CAST(klass, dtgtk_icon_get_type(), GtkDarktableIconClass)
-#define DTGTK_IS_ICON(obj) GTK_CHECK_TYPE(obj, dtgtk_icon_get_type())
+#define DTGTK_IS_ICON(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, dtgtk_icon_get_type())
 #define DTGTK_IS_ICON_CLASS(klass) GTK_CHECK_CLASS_TYPE(obj, dtgtk_icon_get_type())
 
 typedef struct _GtkDarktableIcon

@@ -366,7 +366,6 @@ _lib_geotagging_show_offset_window(GtkWidget *widget, dt_lib_module_t *self)
   d->floating_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_can_focus(d->floating_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_window), FALSE);
-  gtk_window_set_has_frame(GTK_WINDOW(d->floating_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
   gtk_window_set_transient_for(GTK_WINDOW(d->floating_window), GTK_WINDOW(window));
   gtk_window_set_opacity(GTK_WINDOW(d->floating_window), 0.8);
@@ -454,8 +453,8 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   GtkWidget *extra_box = gtk_hbox_new(FALSE, 5);
   GtkWidget *label = gtk_label_new(_("camera time zone"));
   g_object_set(G_OBJECT(label), "tooltip-text", _("most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data can be correctly matched"), (char *)NULL);
-  GtkWidget *tz_selection = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(tz_selection), "UTC");
+  GtkWidget *tz_selection = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), "UTC");
   gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), 0);
 
   GList *iter = d->timezones;
@@ -466,7 +465,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
     do
     {
       i++;
-      gtk_combo_box_append_text(GTK_COMBO_BOX(tz_selection), (gchar*)iter->data);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(tz_selection), (gchar*)iter->data);
       if(!strcmp((gchar*)iter->data, old_tz))
         gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
     }
@@ -481,7 +480,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   if(gtk_dialog_run(GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dt_conf_set_string("ui_last/gpx_last_directory", gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER (filechooser)));
-    gchar *tz = gtk_combo_box_get_active_text(GTK_COMBO_BOX(tz_selection));
+    gchar *tz = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(tz_selection));
     dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (filechooser));
     dt_control_gpx_apply(filename, -1, tz);

@@ -800,7 +800,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0);
 

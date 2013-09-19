@@ -454,14 +454,14 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   label = gtk_label_new(_("exposure"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
   g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_append_text(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_append_text(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->exposure_min), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->exposure_max), FALSE, FALSE, 0);
 
@@ -469,14 +469,14 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   label = gtk_label_new(_("aperture"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
   g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_append_text(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_append_text(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->aperture_min), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->aperture_max), FALSE, FALSE, 0);
 

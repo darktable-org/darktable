@@ -92,7 +92,8 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
 {
   GtkWidgetClass *widget_class=(GtkWidgetClass *) klass;
   //GtkObjectClass *object_class=(GtkObjectClass *) klass;
-  _slider_parent_class = gtk_type_class (gtk_event_box_get_type ());
+  //FIXME: or it should be g_type_class_ref () ?
+  _slider_parent_class = g_type_class_peek (gtk_event_box_get_type ());
 
   widget_class->realize = _slider_realize;
   widget_class->size_request = _slider_size_request;
@@ -111,7 +112,7 @@ static void _slider_class_init (GtkDarktableSliderClass *klass)
                                      G_SIGNAL_RUN_LAST,
                                      0,NULL,NULL,
                                      g_cclosure_marshal_VOID__VOID,
-                                     GTK_TYPE_NONE,0);
+                                     G_TYPE_NONE,0);
 }
 
 
@@ -194,7 +195,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
 
       gtk_adjustment_set_value(slider->adjustment, value);
-      gtk_widget_draw(widget,NULL);
+      gtk_widget_queue_draw(widget);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     }
     else
@@ -214,7 +215,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
       /* left mouse second click of doubleclick event */
       slider->is_dragging=FALSE; // otherwise button_release will overwrite our changes
       gtk_adjustment_set_value(slider->adjustment, slider->default_value);
-      gtk_widget_draw(widget,NULL);
+      gtk_widget_queue_draw(widget);
       g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
     }
   }
@@ -248,7 +249,7 @@ static gboolean _slider_button_release(GtkWidget *widget, GdkEventButton *event)
           if(slider->snapsize) value = slider->snapsize * (((int)value)/slider->snapsize);
           gtk_adjustment_set_value(slider->adjustment, value);
         }
-        gtk_widget_draw(widget,NULL);
+        gtk_widget_queue_draw(widget);
         slider->prev_x_root = event->x_root;
       }
     }
@@ -267,7 +268,7 @@ static gboolean _slider_scroll_event(GtkWidget *widget, GdkEventScroll *event)
   float value = gtk_adjustment_get_value( DTGTK_SLIDER(widget)->adjustment ) + ((event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_RIGHT)?inc:-inc);
   if(DTGTK_SLIDER(widget)->snapsize) value = DTGTK_SLIDER(widget)->snapsize * (((int)value)/DTGTK_SLIDER(widget)->snapsize);
   gtk_adjustment_set_value(DTGTK_SLIDER(widget)->adjustment, value);
-  gtk_widget_draw( widget, NULL);
+  gtk_widget_queue_draw(widget);
   g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
   return TRUE;
 }
@@ -362,7 +363,7 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 
     g_signal_emit_by_name(G_OBJECT(widget),"value-changed");
 
-    gtk_widget_draw(widget,NULL);
+    gtk_widget_queue_draw(widget);
     slider->prev_x_root = event->x_root;
   }
   return FALSE;
@@ -371,7 +372,7 @@ static gboolean _slider_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 static gboolean _slider_enter_notify_event(GtkWidget *widget, GdkEventCrossing *event)
 {
   gtk_widget_set_state(widget,(event->type == GDK_ENTER_NOTIFY)?GTK_STATE_PRELIGHT:GTK_STATE_NORMAL);
-  gtk_widget_draw(widget,NULL);
+  gtk_widget_queue_draw(widget);
   DTGTK_SLIDER(widget)->prev_x_root=event->x_root;
   return FALSE;
 }
@@ -591,7 +592,7 @@ GtkWidget *dtgtk_slider_new(GtkAdjustment *adjustment)
 {
   GtkDarktableSlider *slider;
   g_return_val_if_fail(adjustment == NULL || GTK_IS_ADJUSTMENT (adjustment), NULL);
-  slider = gtk_type_new(dtgtk_slider_get_type());
+  slider = g_object_new(dtgtk_slider_get_type(), NULL);
   slider->adjustment = adjustment;
   slider->labelwidth = slider->labelheight = 0;
   return (GtkWidget *)slider;
@@ -663,26 +664,27 @@ void dtgtk_slider_set_value(GtkDarktableSlider *slider, gdouble value)
 void dtgtk_slider_set_type(GtkDarktableSlider *slider,darktable_slider_type_t type)
 {
   slider->type = type;
-  gtk_widget_draw( GTK_WIDGET(slider), NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(slider));
 }
 
-GtkType dtgtk_slider_get_type()
+GType dtgtk_slider_get_type()
 {
-  static GtkType dtgtk_slider_type = 0;
+  static GType dtgtk_slider_type = 0;
   if (!dtgtk_slider_type)
   {
-    static const GtkTypeInfo dtgtk_slider_info =
+    static const GTypeInfo dtgtk_slider_info =
     {
-      "GtkDarktableSlider",
-      sizeof(GtkDarktableSlider),
       sizeof(GtkDarktableSliderClass),
-      (GtkClassInitFunc) _slider_class_init,
-      (GtkObjectInitFunc) _slider_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _slider_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableSlider),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _slider_init,
     };
-    dtgtk_slider_type = gtk_type_unique(GTK_TYPE_EVENT_BOX, &dtgtk_slider_info);
+    dtgtk_slider_type = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableSlider", &dtgtk_slider_info, 0);
   }
   return dtgtk_slider_type;
 }
