@@ -2239,7 +2239,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="142" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
@@ -2252,12 +2252,51 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">RED</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="142" white="4095"/>
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>
+        <Camera make="Panasonic" model = "DMC-G6" mode="3:2">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">BLUE</Color>
+                        <Color x="1" y="0">GREEN</Color>
+                        <Color x="0" y="1">GREEN</Color>
+                        <Color x="1" y="1">RED</Color>
+                </CFA>
+                <Crop x="0" y="0" width="-192" height="0"/>
+                <Sensor black="142" white="4095"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
+        <Camera make="Panasonic" model = "DMC-G6" mode="16:9">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">BLUE</Color>
+                        <Color x="1" y="0">GREEN</Color>
+                        <Color x="0" y="1">GREEN</Color>
+                        <Color x="1" y="1">RED</Color>
+                </CFA>
+                <Crop x="0" y="0" width="-192" height="0"/>
+                <Sensor black="142" white="4095"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
+        <Camera make="Panasonic" model = "DMC-G6" mode="1:1">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">BLUE</Color>
+                        <Color x="1" y="0">GREEN</Color>
+                        <Color x="0" y="1">GREEN</Color>
+                        <Color x="1" y="1">RED</Color>
+                </CFA>
+                <Crop x="0" y="0" width="0" height="0"/>
+                <Sensor black="142" white="4095"/>
+                <Hints>
+                        <Hint name="zero_is_bad" value=""/>
+                </Hints>
+        </Camera>
 	<Camera make="Panasonic" model = "DMC-GF3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
