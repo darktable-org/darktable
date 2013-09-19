@@ -4179,6 +4179,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-G5", "5500K", 0,		{ 2.343396, 1, 1.618868, 0 } },
   { "Panasonic", "DMC-G5", "6500K", 0,		{ 2.501887, 1, 1.505660, 0 } },
 
+  /* Firmware version 1.1 */
+  { "Panasonic", "DMC-G6", Daylight, 0,		{ 2.265625, 1, 1.699219, 0 } },
+  { "Panasonic", "DMC-G6", Cloudy, 0,		{ 2.406250, 1, 1.593750, 0 } },
+  { "Panasonic", "DMC-G6", Shade, 0,		{ 2.617188, 1, 1.511719, 0 } },
+  { "Panasonic", "DMC-G6", Incandescent, 0,	{ 1.535156, 1, 2.375000, 0 } },
+  { "Panasonic", "DMC-G6", Flash, 0,		{ 2.332031, 1, 1.566406, 0 } },
+
   /* Firmware version 1.2 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
   { "Panasonic", "DMC-GF1", Daylight, -9,	{ 1.817490, 1, 1.760456, 0 } },

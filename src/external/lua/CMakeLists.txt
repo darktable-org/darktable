@@ -40,10 +40,10 @@ add_library(lua STATIC ${LUA_SOURCES})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -DLUA_COMPAT_ALL")
 if(APPLE)
 	add_definitions("-DLUA_USE_MACOSX")
-	target_link_libraries(lua readline)
+	target_link_libraries(lua)
 else(APPLE)
 	add_definitions("-DLUA_USE_LINUX")
-	target_link_libraries(lua readline dl)
+	target_link_libraries(lua dl)
 endif(APPLE)
 
 # 
