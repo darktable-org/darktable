@@ -29,6 +29,7 @@
 <!ENTITY icon_lighttable_and "images/lighttable_icon_and.png">
 <!ENTITY icon_lighttable_or "images/lighttable_icon_or.png">
 <!ENTITY icon_lighttable_except "images/lighttable_icon_except.png">
+<!ENTITY icon_lighttable_reject "images/lighttable_thumb_reject.png">
 <!ENTITY shape_brush "images/shape_brush.png">
 <!ENTITY shape_circle "images/shape_circle.png">
 <!ENTITY shape_ellipse "images/shape_ellipse.png">

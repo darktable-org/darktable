@@ -23,7 +23,7 @@
               </screenshot>
         </para>
 
-	<sect1 status="final"><title>Overview</title>
+	<sect1 status="final" id="lighttable_overview"><title>Overview</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
 				<colspec colwidth="4*"/>
