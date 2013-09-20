@@ -161,7 +161,9 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
 endforeach(lib)
 
 if(USE_LUA)
-  find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
+  if(NOT APPLE)
+    find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
+  endif(NOT APPLE)
   if(LUA52_FOUND)
     message(STATUS "Lua support: Enabled")
     include_directories(${LUA52_INCLUDE_DIRS})
