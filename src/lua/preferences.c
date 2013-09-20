@@ -37,6 +37,27 @@ typedef enum
 } pref_type;
 
 
+typedef struct string_data_t
+{
+	char *default_value;
+} string_data_t;
+typedef struct bool_data_t
+{
+	gboolean default_value;
+} bool_data_t;
+typedef struct int_data_t
+{
+	int min;
+	int max;
+	int default_value;
+} int_data_t;
+
+typedef union all_data_t
+{
+	string_data_t string_data;
+	bool_data_t bool_data;
+	int_data_t int_data;
+} all_data_t;
 typedef struct pref_element
 {
   char*script;
@@ -44,24 +65,8 @@ typedef struct pref_element
   char* label;
   char* tooltip;
   pref_type type;
-  union
-  {
-    struct
-    {
-      char *default_value;
-    } string_data;
-    struct
-    {
-      gboolean default_value;
-    } bool_data;
-    struct
-    {
-      int min;
-      int max;
-      int default_value;
-    } int_data;
-  } ;
   struct pref_element* next;
+  all_data_t type_data;
   // ugly hack, written every time the dialog is displayed and unused when not displayed
   // value is set when window is created, it is correct when window is destroyed, but is invalid out of that context
   GtkWidget * widget;
@@ -78,7 +83,7 @@ static void destroy_pref_element(pref_element*elt)
   switch(elt->type)
   {
     case pref_string:
-      free(elt->string_data.default_value);
+      free(elt->type_data.string_data.default_value);
       break;
     case pref_bool:
     case pref_int:
@@ -137,32 +142,32 @@ static int register_pref(lua_State*L)
   {
     case pref_string:
       if(!lua_isstring(L,cur_param)) goto error;
-      built_elt->string_data.default_value = strdup(lua_tostring(L,cur_param));
+      built_elt->type_data.string_data.default_value = strdup(lua_tostring(L,cur_param));
       cur_param++;
 
-      if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->string_data.default_value);
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_string(pref_name,built_elt->type_data.string_data.default_value);
       break;
     case pref_bool:
       if(!lua_isboolean(L,cur_param)) goto error;
-      built_elt->bool_data.default_value = lua_toboolean(L,cur_param);
+      built_elt->type_data.bool_data.default_value = lua_toboolean(L,cur_param);
       cur_param++;
 
-      if(!dt_conf_key_exists(pref_name)) dt_conf_set_bool(pref_name,built_elt->bool_data.default_value);
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_bool(pref_name,built_elt->type_data.bool_data.default_value);
       break;
     case pref_int:
       if(!lua_isnumber(L,cur_param)) goto error;
-      built_elt->int_data.default_value = lua_tointeger(L,cur_param);
+      built_elt->type_data.int_data.default_value = lua_tointeger(L,cur_param);
       cur_param++;
 
       if(!lua_isnumber(L,cur_param)) goto error;
-      built_elt->int_data.min = lua_tointeger(L,cur_param);
+      built_elt->type_data.int_data.min = lua_tointeger(L,cur_param);
       cur_param++;
 
       if(!lua_isnumber(L,cur_param)) goto error;
-      built_elt->int_data.max = lua_tointeger(L,cur_param);
+      built_elt->type_data.int_data.max = lua_tointeger(L,cur_param);
       cur_param++;
 
-      if(!dt_conf_key_exists(pref_name)) dt_conf_set_int(pref_name,built_elt->int_data.default_value);
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_int(pref_name,built_elt->type_data.int_data.default_value);
       break;
   }
 
@@ -289,7 +294,7 @@ static gboolean reset_widget_string (GtkWidget *label, GdkEventButton *event, pr
   {
     char pref_name[1024];
     get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
-    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->string_data.default_value);
+    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
     return TRUE;
   }
   return FALSE;
@@ -300,8 +305,8 @@ static gboolean reset_widget_bool (GtkWidget *label, GdkEventButton *event, pref
   {
     char pref_name[1024];
     get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
-    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->string_data.default_value);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), cur_elt->bool_data.default_value);
+    gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), cur_elt->type_data.bool_data.default_value);
     return TRUE;
   }
   return FALSE;
@@ -312,7 +317,7 @@ static gboolean reset_widget_int (GtkWidget *label, GdkEventButton *event, pref_
   {
     char pref_name[1024];
     get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->int_data.default_value);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.int_data.default_value);
     return TRUE;
   }
   return FALSE;
@@ -348,7 +353,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         cur_elt->widget = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->string_data.default_value);
+        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
         break;
@@ -356,16 +361,16 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         cur_elt->widget = gtk_check_button_new();
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "toggled", G_CALLBACK(callback_bool), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->bool_data.default_value?"true":"false");
+        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.bool_data.default_value?"true":"false");
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
         break;
       case pref_int:
-        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->int_data.min, cur_elt->int_data.max, 1);
+        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->type_data.int_data.min, cur_elt->type_data.int_data.max, 1);
         gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_int), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%d'"), cur_elt->int_data.default_value);
+        snprintf(tooltip, 1024, _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
         break;
