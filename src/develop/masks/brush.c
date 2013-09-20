@@ -362,19 +362,19 @@ static void _brush_init_ctrl_points (dt_masks_form_t *form)
 static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
 {
   //we want to find the start and end angles
-  double a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
-  double a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
+  float a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
+  float a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
 
-  if (a1==a2) return;
+  if (a1 == a2) return;
 
   //we have to be sure that we turn in the correct direction
   if (a2<a1 && clockwise)
   {
-    a2 += 2*M_PI;
+    a2 += 2.0f*M_PI;
   }
   if (a2>a1 && !clockwise)
   {
-    a1 += 2*M_PI;
+    a1 += 2.0f*M_PI;
   }
 
   //we determine start and end radius too
@@ -405,6 +405,43 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   }
 }
 
+/** fill small gap between 2 points with an arc of circle */
+/** in contrast to the previous function it will always run the shortest path (max. PI) and does not consider clock or anti-clockwise action */
+static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border)
+{
+  //we want to find the start and end angles
+  float a1 = fmodf(atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+  float a2 = fmodf(atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+
+  if (a1 == a2) return;
+
+  //we determine start and end radius too
+  float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
+  float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
+
+  //and the max length of the circle arc
+  int l = fmodf(fabsf(a2-a1), M_PI)*fmaxf(r1,r2);
+  if (l < 2) return;
+
+  //and now we add the points
+  float incra = (a2-a1)/l;
+  float incrr = (r2-r1)/l;
+  float rr = r1+incrr;
+  float aa = a1+incra;
+  for (int i=1; i<l; i++)
+  {
+    points[*pos_points] = cmax[0];
+    points[*pos_points+1] = cmax[1];
+    *pos_points += 2;
+    border[*pos_border] = cmax[0]+rr*cosf(aa);
+    border[*pos_border+1] = cmax[1]+rr*sinf(aa);
+    *pos_border += 2;
+    rr += incrr;
+    aa += incra;
+  }
+}
+
+
 /** draw a circle with given radius. can be used to terminate a stroke and to draw junctions where attributes (opacity) change */
 static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
 {
@@ -434,7 +471,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *po
 }
 
 /** recursive function to get all points of the brush AND all point of the border */
-/** the function take care to avoid big gaps between points */
+/** the function takes care to avoid big gaps between points */
 static void _brush_points_recurs(float *p1, float *p2,
                                  double tmin, double tmax, float *points_min, float *points_max, float *border_min, float *border_max,
                                  float *rpoints, float *rborder, float *rpayload, float *points, float *border, float *payload, 
@@ -452,7 +489,7 @@ static void _brush_points_recurs(float *p1, float *p2,
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.000001) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -471,6 +508,13 @@ static void _brush_points_recurs(float *p1, float *p2,
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
       }
+
+      //we check gaps in the border (sharp edges)
+      if (labs((int)border_max[0] - (int)border_min[0]) > 2 || labs((int)border_max[1] - border_min[1]) > 2)
+      {
+        _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
+      }
+
       rborder[0] = border[*pos_border] = border_max[0];
       rborder[1] = border[*pos_border+1] = border_max[1];
       *pos_border += 2;
