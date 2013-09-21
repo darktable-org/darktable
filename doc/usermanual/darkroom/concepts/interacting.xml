@@ -73,7 +73,8 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element.
+						<entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element
+                                                       combined with keyboard input.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
@@ -85,7 +86,8 @@
                              <para>A bent line extending from the
                                    triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
                                    coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
-                                   mouse to accept the current value and go back to normal control.
+                                   mouse to accept the new value and go back to normal control. Alternatively you can type in a new value on your
+                                   keyboard and commit by hitting the return key.
                              </para>
 			   </listitem>		
    			   <listitem>
