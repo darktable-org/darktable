@@ -1281,9 +1281,9 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
-  if(!darktable.gui->s) return NULL;
-  width  = cairo_image_surface_get_width(darktable.gui->s);
-  height = cairo_image_surface_get_height(darktable.gui->s);
+  if(!darktable.gui->surface) return NULL;
+  width  = cairo_image_surface_get_width(darktable.gui->surface);
+  height = cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
@@ -1400,7 +1400,7 @@ void *dt_control_expose(void *voidptr)
 
   cairo_destroy(cr);
 
-  cairo_t *cr_pixmap = cairo_create(darktable.gui->s);
+  cairo_t *cr_pixmap = cairo_create(darktable.gui->surface);
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);

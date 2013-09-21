@@ -463,9 +463,9 @@ static gboolean
 expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
 {
   dt_control_expose(NULL);
-  if(darktable.gui->s) {
+  if(darktable.gui->surface) {
     cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(da));
-    cairo_set_source_surface (cr, darktable.gui->s, event->area.x, event->area.y);
+    cairo_set_source_surface (cr, darktable.gui->surface, event->area.x, event->area.y);
     cairo_paint (cr);
     cairo_destroy (cr);
   }
@@ -621,21 +621,21 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
   if (oldw != event->width || oldh != event->height)
   {
     //create our new pixmap with the correct size.
-    cairo_surface_t *tmps = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
+    cairo_surface_t *tmpsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
     //copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
     //pixmaps from being painted upon resize
     int minw = oldw, minh = oldh;
     if(event->width  < minw) minw = event->width;
     if(event->height < minh) minh = event->height;
 
-    cairo_t *cr = cairo_create (tmps);
-    cairo_set_source_surface (cr, darktable.gui->s, 0, 0);
+    cairo_t *cr = cairo_create (tmpsurface);
+    cairo_set_source_surface (cr, darktable.gui->surface, 0, 0);
     cairo_paint (cr);
     cairo_destroy (cr);
 
     //we're done with our old pixmap, so we can get rid of it and replace it with our properly-sized one.
-    cairo_surface_destroy(darktable.gui->s);
-    darktable.gui->s = tmps;
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = tmpsurface;
     dt_ctl_set_display_profile(); // maybe we are on another screen now with > 50% of the area
   }
   oldw = event->width;
@@ -781,7 +781,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   GtkWidget *widget;
   gui->ui = dt_ui_initialize(argc,argv);
-  gui->s = NULL;
+  gui->surface = NULL;
   gui->center_tooltip = 0;
   gui->grouping = dt_conf_get_bool("ui_last/grouping");
   gui->expanded_group_id = -1;
@@ -1021,7 +1021,7 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  darktable.gui->s = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
+  darktable.gui->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, allocation.width, allocation.height);
   //need to pre-configure views to avoid crash caused by expose-event coming before configure-event
   darktable.control->tabborder = 8;
   int tb = darktable.control->tabborder;

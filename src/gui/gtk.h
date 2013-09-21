@@ -51,7 +51,7 @@ typedef struct dt_gui_gtk_t
 
   dt_gui_widgets_t widgets;
 
-  cairo_surface_t *s;
+  cairo_surface_t *surface;
   GtkMenu *presets_popup_menu;
   char *last_preset;
 
