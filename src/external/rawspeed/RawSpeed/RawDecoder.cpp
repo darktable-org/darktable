@@ -29,9 +29,15 @@ namespace RawSpeed {
   failOnUnknown = FALSE;
   interpolateBadPixels = TRUE;
   applyStage1DngOpcodes = TRUE;
+  applyCrop = TRUE;
+  uncorrectedRawValues = FALSE;
 }
 
 RawDecoder::~RawDecoder(void) {
+  for (vector<void*>::iterator i = ownedObjects.begin(); i != ownedObjects.end(); ++i) {
+    delete(*i);
+  }
+  ownedObjects.clear();
 }
 
 void RawDecoder::decodeUncompressed(TiffIFD *rawIFD, BitOrder order) {
@@ -234,35 +240,51 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
     return;
   }
 
-  iPoint2D new_size = cam->cropSize;
-
-  // If crop size is negative, use relative cropping
-  if (new_size.x <= 0)
-    new_size.x = mRaw->dim.x - cam->cropPos.x + new_size.x;
-
-  if (new_size.y <= 0)
-    new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
-
-  iRectangle2D(cam->cropPos, new_size);
-  mRaw->subFrame(iRectangle2D(cam->cropPos, new_size));
   mRaw->cfa = cam->cfa;
+  if (applyCrop) {
+    iPoint2D new_size = cam->cropSize;
 
-  // Shift CFA to match crop
-  if (cam->cropPos.x & 1)
-    mRaw->cfa.shiftLeft();
-  if (cam->cropPos.y & 1)
-    mRaw->cfa.shiftDown();
+    // If crop size is negative, use relative cropping
+    if (new_size.x <= 0)
+      new_size.x = mRaw->dim.x - cam->cropPos.x + new_size.x;
+
+    if (new_size.y <= 0)
+      new_size.y = mRaw->dim.y - cam->cropPos.y + new_size.y;
+
+    mRaw->subFrame(iRectangle2D(cam->cropPos, new_size));
+
+    // Shift CFA to match crop
+    if (cam->cropPos.x & 1)
+      mRaw->cfa.shiftLeft();
+    if (cam->cropPos.y & 1)
+      mRaw->cfa.shiftDown();
+  }
+
 
   const CameraSensorInfo *sensor = cam->getSensorInfo(iso_speed);
   mRaw->blackLevel = sensor->mBlackLevel;
   mRaw->whitePoint = sensor->mWhiteLevel;
   mRaw->blackAreas = cam->blackAreas;
+  if (mRaw->blackAreas.empty() && !sensor->mBlackLevelSeparate.empty()) {
+    if (mRaw->isCFA && mRaw->cfa.size.area() <= sensor->mBlackLevelSeparate.size()) {
+      for (uint32 i = 0; i < mRaw->cfa.size.area(); i++) {
+        mRaw->blackLevelSeparate[i] = sensor->mBlackLevelSeparate[i];
+      }
+    } else if (!mRaw->isCFA && mRaw->getCpp() <= sensor->mBlackLevelSeparate.size()) {
+      for (uint32 i = 0; i < mRaw->getCpp(); i++) {
+        mRaw->blackLevelSeparate[i] = sensor->mBlackLevelSeparate[i];
+      }
+    }
+  }
 }
 
 
 void *RawDecoderDecodeThread(void *_this) {
   RawDecoderThread* me = (RawDecoderThread*)_this;
   try {
+    if (me->taskNo >= 0)
+      me->parent->decodeThreaded(me);
+    else
       me->parent->decodeThreaded(me);
   } catch (RawDecoderException &ex) {
     me->parent->mRaw->setError(ex.what());
@@ -350,6 +372,38 @@ void RawDecoder::checkSupport(CameraMetaData *meta)
   } catch (IOException &e) {
     ThrowRDE("%s", e.what());
   }
+}
+
+void RawDecoder::startTasks( uint32 tasks )
+{
+  uint32 threads;
+  threads = min(tasks, getThreadCount()); 
+  int ctask = 0;
+  RawDecoderThread *t = new RawDecoderThread[threads];
+
+  pthread_attr_t attr;
+
+  /* Initialize and set thread detached attribute */
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+  /* TODO: Create a way to re-use threads */
+  void *status;
+  while ((uint32)ctask < tasks) {
+    for (uint32 i = 0; i < threads && (uint32)ctask < tasks; i++) {
+      t[i].taskNo = ctask++;
+      t[i].parent = this;
+      pthread_create(&t[i].threadid, &attr, RawDecoderDecodeThread, &t[i]);
+    }
+    for (uint32 i = 0; i < threads; i++) {
+      pthread_join(t[i].threadid, &status);
+    }
+  } 
+
+  if (mRaw->errors.size() >= tasks)
+    ThrowRDE("RawDecoder::startThreads: All threads reported errors. Cannot load image.");
+
+  delete[] t;
 }
 
 } // namespace RawSpeed

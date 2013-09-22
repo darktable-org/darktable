@@ -29,7 +29,7 @@ namespace RawSpeed {
 class CameraSensorInfo
 {
 public:
-  CameraSensorInfo(int black_level, int white_level, int min_iso, int max_iso);
+  CameraSensorInfo(int black_level, int white_level, int min_iso, int max_iso, vector<int> black_separate);
   virtual ~CameraSensorInfo(void);
   bool isIsoWithin(int iso);
   bool isDefault();
@@ -37,6 +37,7 @@ public:
   int mWhiteLevel;
   int mMinIso; 
   int mMaxIso;
+  vector<int> mBlackLevelSeparate;
 };
 
 } // namespace RawSpeed
