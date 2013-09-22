@@ -45,7 +45,7 @@ uint32 ByteStream::peekByte() {
 void ByteStream::skipBytes(uint32 nbytes) {
   off += nbytes;
   if (off > size)
-    throw IOException("Skipped out of buffer");
+    ThrowIOE("Skipped out of buffer");
 }
 
 uchar8 ByteStream::getByte() {
@@ -56,22 +56,31 @@ uchar8 ByteStream::getByte() {
 }
 
 ushort16 ByteStream::getShort() {
-  if (off + 1 >= size)
-    throw IOException("getShort: Out of buffer read");
+  if (off + 1 > size)
+    ThrowIOE("getShort: Out of buffer read");
   off +=2;
-  return *(ushort16*)&buffer[off-2];
+  return ((ushort16)buffer[off-1] << 8) | (ushort16)buffer[off-2];
+}
+
+uint32 ByteStream::getUInt() {
+  if (off + 4 > size)
+    ThrowIOE("getInt:Out of buffer read");
+  uint32 r = (uint32)buffer[off+3] << 24 | (uint32)buffer[off+2] << 16 | (uint32)buffer[off+1] << 8 | (uint32)buffer[off];
+  off+=4;
+  return r;
 }
 
 int ByteStream::getInt() {
-  if (off + 4 >= size)
-    throw IOException("getInt:Out of buffer read");
+  if (off + 4 > size)
+    ThrowIOE("getInt:Out of buffer read");
+  int r = (int)buffer[off+3] << 24 | (int)buffer[off+2] << 16 | (int)buffer[off+1] << 8 | (int)buffer[off];
   off+=4;
-  return *(int*)&buffer[off-4];
+  return r;
 }
 
 void ByteStream::setAbsoluteOffset(uint32 offset) {
   if (offset >= size)
-    throw IOException("setAbsoluteOffset:Offset set out of buffer");
+    ThrowIOE("setAbsoluteOffset:Offset set out of buffer");
   off = offset;
 }
 
@@ -81,9 +90,26 @@ void ByteStream::skipToMarker() {
     off++;
     c++;
     if (off >= size)
-      throw IOException("No marker found inside rest of buffer");
+      ThrowIOE("No marker found inside rest of buffer");
   }
 //  _RPT1(0,"Skipped %u bytes.\n", c);
 }
 
+float ByteStream::getFloat()
+{
+  uchar8 temp[4];
+  if (off + 4 > size)
+    ThrowIOE("getFloat: Out of buffer read");
+  for (int i = 0; i < 4; i++)
+    temp[i] = buffer[off+i];
+  return *(float*)temp;
+}
+
+void ByteStream::popOffset()
+{
+ if (offset_stack.empty())
+   ThrowIOE("Pop Offset: Stack empty");
+ off = offset_stack.top();
+ offset_stack.pop();
+}
 } // namespace RawSpeed
