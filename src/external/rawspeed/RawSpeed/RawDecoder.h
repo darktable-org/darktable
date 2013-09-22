@@ -41,12 +41,13 @@ class RawDecoder;
 class RawDecoderThread
 {
   public:
-    RawDecoderThread() {error = 0;};
+    RawDecoderThread() {error = 0; taskNo = -1;};
     uint32 start_y;
     uint32 end_y;
     const char* error;
     pthread_t threadid;
     RawDecoder* parent;
+    uint32 taskNo;
 };
 
 class RawDecoder 
@@ -105,6 +106,22 @@ public:
   /* This usually maps out bad pixels, etc */
   bool applyStage1DngOpcodes;
 
+  /* Apply crop - if false uncropped image is delivered */
+  bool applyCrop;
+
+  /* This will skip all corrections, and deliver the raw data */
+  /* This will skip any compression curves or other things that */
+  /* is needed to get the correct values */
+  /* Only enable if you are sure that is what you want */
+  bool uncorrectedRawValues;
+
+  /* Vector of objects that will be destroyed alongside the decoder */
+  vector<void*> ownedObjects;
+
+  /* Retrieve the main RAW chunk */
+  /* Returns NULL if unknown */
+  virtual FileMap* getCompressedData() {return NULL;}
+
 protected:
   /* Attempt to decode the image */
   /* A RawDecoderException will be thrown if the image cannot be decoded, */
@@ -119,6 +136,12 @@ protected:
   /* All errors are silently pushed into the "errors" array.*/
   /* If all threads report an error an exception will be thrown*/
   void startThreads();
+
+  /* Helper function for decoders -  */
+  /* The function returns when all tasks are done */
+  /* All errors are silently pushed into the "errors" array.*/
+  /* If all threads report an error an exception will be thrown*/
+  void startTasks(uint32 tasks);
 
   /* Check the camera and mode against the camera database. */
   /* A RawDecoderException will be thrown if the camera isn't supported */

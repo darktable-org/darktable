@@ -397,7 +397,7 @@ RawImage DngDecoder::decodeRawInternal() {
   }
 
   // Linearization
-  if (raw->hasEntry(LINEARIZATIONTABLE)) {
+  if (raw->hasEntry(LINEARIZATIONTABLE) && !uncorrectedRawValues) {
     const ushort16* intable = raw->getEntry(LINEARIZATIONTABLE)->getShortArray();
     uint32 len =  raw->getEntry(LINEARIZATIONTABLE)->count;
     ushort16 table[65536];
@@ -428,7 +428,7 @@ RawImage DngDecoder::decodeRawInternal() {
   setBlack(raw);
 
   // Apply opcodes to lossy DNG 
-  if (compression == 0x884c) {
+  if (compression == 0x884c && !uncorrectedRawValues) {
     if (raw->hasEntry(OPCODELIST2))
     {
       // We must apply black/white scaling

@@ -24,11 +24,15 @@
 
 namespace RawSpeed {
 
-ColorFilterArray::ColorFilterArray(void) {
+ColorFilterArray::ColorFilterArray(void) :
+size(2,2) 
+{
   setCFA(CFA_UNKNOWN, CFA_UNKNOWN, CFA_UNKNOWN, CFA_UNKNOWN);
 }
 
-ColorFilterArray::ColorFilterArray(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right) {
+ColorFilterArray::ColorFilterArray(CFAColor up_left, CFAColor up_right, CFAColor down_left, CFAColor down_right)  :
+size(2,2) 
+{
   cfa[0] = up_left;
   cfa[1] = up_right;
   cfa[2] = down_left;
