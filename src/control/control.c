@@ -306,32 +306,50 @@ void dt_ctl_set_display_profile()
   gchar *profile_source = NULL;
 
 #if defined GDK_WINDOWING_X11
+
+  gboolean use_xatom = TRUE, use_colord = TRUE;
+  gchar *display_profile_source = dt_conf_get_string("ui_last/display_profile_source");
+  if(display_profile_source)
+  {
+    if(!strcmp(display_profile_source, "xatom"))
+      use_colord = FALSE;
+    else if(!strcmp(display_profile_source, "colord"))
+      use_xatom = FALSE;
+    g_free(display_profile_source);
+  }
+
   /* let's have a look at the xatom, just in case ... */
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if ( screen==NULL )
-    screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
-  char *atom_name;
-  if (monitor > 0)
-    atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
-  else
-    atom_name = g_strdup("_ICC_PROFILE");
+  if(use_xatom)
+  {
+    GdkScreen *screen = gtk_widget_get_screen(widget);
+    if ( screen==NULL )
+      screen = gdk_screen_get_default();
+    int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
+    char *atom_name;
+    if (monitor > 0)
+      atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
+    else
+      atom_name = g_strdup("_ICC_PROFILE");
 
-  profile_source = g_strdup(atom_name);
+    profile_source = g_strdup(atom_name);
 
-  GdkAtom type = GDK_NONE;
-  gint format = 0;
-  gdk_property_get(gdk_screen_get_root_window(screen),
-                   gdk_atom_intern(atom_name, FALSE), GDK_NONE,
-                   0, 64 * 1024 * 1024, FALSE,
-                   &type, &format, &buffer_size, &buffer);
-  g_free(atom_name);
+    GdkAtom type = GDK_NONE;
+    gint format = 0;
+    gdk_property_get(gdk_screen_get_root_window(screen),
+                    gdk_atom_intern(atom_name, FALSE), GDK_NONE,
+                    0, 64 * 1024 * 1024, FALSE,
+                    &type, &format, &buffer_size, &buffer);
+    g_free(atom_name);
+  }
 
 #ifdef USE_COLORDGTK
   /* also try to get the profile from colord. this will set the value asynchronously! */
-  CdWindow *window = cd_window_new();
-  GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
-  cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+  if(use_colord)
+  {
+    CdWindow *window = cd_window_new();
+    GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
+    cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+  }
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
