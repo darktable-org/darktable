@@ -420,7 +420,7 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="74" y="40" width="0" height="0"/>
+		<Crop x="74" y="40" width="0" height="-2"/>
 		<Sensor black="2048" white="16383"/>
 		<BlackAreas>
 			<Vertical x="0" width="68"/>
