@@ -385,8 +385,8 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   for (int i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
-    pi[0] = points[i] + .5;
-    pi[1] = points[i+1] + .5;
+    pi[0] = points[i];
+    pi[1] = points[i+1];
 
     if (d->k_apply==1) keystone_transform(pi,k_space,ma,mb,md,me,mg,mh,kxa,kya);
 
@@ -428,8 +428,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   for (int i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
-    pi[0] = -d->enlarge_x + d->cix + points[i] + .5;
-    pi[1] = -d->enlarge_y + d->ciy + points[i+1] + .5;
+    pi[0] = -d->enlarge_x + d->cix + points[i];
+    pi[1] = -d->enlarge_y + d->ciy + points[i+1];
+
     // transform this point using matrix m
     if(d->flip)
     {
