@@ -68,6 +68,7 @@
                <emphasis>shift+scrolling</emphasis>, and <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at any time on your way.</para> 
                <para>If you have a graphic tablet with pen
                pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.</para>
+               <para>Nodes and segments of a brush stroke can be modified individually. See the the documentation on <emphasis>path</emphasis> below for more details.</para>
                <para>Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -152,10 +153,13 @@
                <para>Clicking the <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/> symbol adds a shape defined by a user defined 
                closed path.</para>
                <para>Left-click into the canvas to define path nodes; terminate the path by <emphasis>right-clicking</emphasis>
-               after the last point has been defined. Per default nodes are connected by smooth lines. If you want a node to define a sharp corner, you can do so
+               after having set the last point. Per default nodes are connected by smooth lines. If you want a node to define a sharp corner, you can do so
                by creating it with <emphasis>ctrl+click</emphasis>.</para>
-               <para>In edit mode you can convert existing nodes from smooth to sharp corners and vice versa by ctrl-clicking
-               on them. You can insert further nodes by left-clicking on one of the line segments. The size of the complete shape can be modified by scrolling - 
+               <para>In edit mode you can convert existing nodes from smooth to sharp corners and vice versa by <emphasis>ctrl-clicking</emphasis>
+               on them. You can insert additional nodes by <emphasis>ctrl-clicking</emphasis> on one of the line segments. Single nodes can be deleted by
+               <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer is over the desired node and the node is highlighted, else you might
+               accidentally remove the whole path.</para>
+               <para>The size of the complete shape can be modified by scrolling - 
                analogeous to the circle shape. The same holds true for the width of the border, i.e. the
                area with a gradual opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If a node is selected by clicking on it,
                a further control point appears - you can move it around to modify the curvature of the line. Dragging one of the control points on the border adjusts the border width just
