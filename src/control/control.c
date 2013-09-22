@@ -307,7 +307,10 @@ void dt_ctl_set_display_profile()
 
 #if defined GDK_WINDOWING_X11
 
-  gboolean use_xatom = TRUE, use_colord = TRUE;
+  // we will use the xatom no matter what configured when compiled without colord
+  gboolean use_xatom = TRUE;
+#if defined USE_COLORDGTK
+  gboolean use_colord = TRUE;
   gchar *display_profile_source = dt_conf_get_string("ui_last/display_profile_source");
   if(display_profile_source)
   {
@@ -317,6 +320,7 @@ void dt_ctl_set_display_profile()
       use_xatom = FALSE;
     g_free(display_profile_source);
   }
+#endif
 
   /* let's have a look at the xatom, just in case ... */
   if(use_xatom)
