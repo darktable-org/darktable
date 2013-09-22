@@ -28,7 +28,7 @@
 static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
   const int stepsize = 200000;
-  const int reserve = 20000;
+  const int reserve = 40000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
 
