@@ -527,9 +527,12 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withpayload)
     {
-      rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
-      rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
-      *pos_payload += 2;
+      while(*pos_payload < *pos_points)
+      {
+        rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
+        rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
+        *pos_payload += 2;
+      }
     }
 
     return;
