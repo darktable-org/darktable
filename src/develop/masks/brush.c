@@ -478,18 +478,18 @@ static void _brush_points_recurs(float *p1, float *p2,
                                  int *pos_points, int *pos_border, int *pos_payload, int withborder, int withpayload)
 {
   //we calculate points if needed
-  if (points_min[0] == -99999)
+  if ((int)points_min[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
                          points_min,points_min+1,border_min,border_min+1);
   }
-  if (points_max[0] == -99999)
+  if ((int)points_max[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmax, p1[4]+(p2[4]-p1[4])*tmax*tmax*(3.0-2.0*tmax),
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 1e-6f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -503,10 +503,15 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withborder)
     {
-      if (border_max[0] == -9999999.0f)
+      if ((int)border_max[0] == -9999999)
       {
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
+      }
+      else if ((int)border_min[0] == -9999999)
+      {
+        border_min[0] = border_max[0];
+        border_min[1] = border_max[1];
       }
 
       //we check gaps in the border (sharp edges)
@@ -794,9 +799,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (border)
     {
-      if (rb[0] == -9999999.0f)
+      if ((int)rb[0] == -9999999)
       {
-        if ((*border)[posb-2] == -9999999.0f)
+        if ((int)(*border)[posb-2] == -9999999)
         {
           (*border)[posb-2] = (*border)[posb-4];
           (*border)[posb-1] = (*border)[posb-3];
@@ -815,7 +820,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     {
       //we get the next point (start of the next segment)
       _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0, p3[4],cmin,cmin+1,bmax,bmax+1);
-      if (bmax[0] == -9999999.0f)
+      if ((int)bmax[0] == -9999999)
       {
         _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0.0001, p3[4],cmin,cmin+1,bmax,bmax+1);
       }
