@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-09-23 09:51+0200\n"
-"PO-Revision-Date: 2013-09-23 09:56+0100\n"
+"PO-Revision-Date: 2013-09-23 13:42+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1109,7 +1109,7 @@ msgstr[1] "%d formes utilisées"
 #: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
 #: ../src/develop/masks/masks.c:1358
 msgid "no mask used"
-msgstr "aucun masque utilisé"
+msgstr "aucun utilisé"
 
 #: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1536
 #: ../src/develop/blend_gui.c:1570 ../src/develop/blend_gui.c:1655
