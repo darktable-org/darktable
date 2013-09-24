@@ -419,12 +419,16 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
   float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
   float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
 
-  //and the max length of the circle arc
-  int l = fmodf(fabsf(a2-a1), M_PI)*fmaxf(r1,r2);
+  //we close the gap in the shortest direction
+  float delta = a2 - a1;
+  if (fabsf(delta) > M_PI) delta = delta - copysignf(2.0f*M_PI, delta);
+
+  //get the max length of the circle arc
+  int l = fabsf(delta)*fmaxf(r1,r2);
   if (l < 2) return;
 
   //and now we add the points
-  float incra = (a2-a1)/l;
+  float incra = delta/l;
   float incrr = (r2-r1)/l;
   float rr = r1+incrr;
   float aa = a1+incra;
@@ -515,7 +519,7 @@ static void _brush_points_recurs(float *p1, float *p2,
       }
 
       //we check gaps in the border (sharp edges)
-      if (abs((int)border_max[0] - (int)border_min[0]) > 2 || abs((int)border_max[1] - (int)border_min[1]) > 2)
+      if (abs((int)border_max[0] - (int)border_min[0]) >= 2 || abs((int)border_max[1] - (int)border_min[1]) >= 2)
       {
         _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
       }
