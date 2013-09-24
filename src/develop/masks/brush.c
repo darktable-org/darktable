@@ -515,7 +515,7 @@ static void _brush_points_recurs(float *p1, float *p2,
       }
 
       //we check gaps in the border (sharp edges)
-      if (labs((int)border_max[0] - (int)border_min[0]) > 2 || labs((int)border_max[1] - border_min[1]) > 2)
+      if (abs((int)border_max[0] - (int)border_min[0]) > 2 || abs((int)border_max[1] - (int)border_min[1]) > 2)
       {
         _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
       }
