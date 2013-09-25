@@ -620,9 +620,8 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
 
-  GtkBox *fbauthdialog_vbox = 0;
-  g_object_get(G_OBJECT(fb_auth_dialog), "vbox", &fbauthdialog_vbox, NULL);
-  gtk_box_pack_end(fbauthdialog_vbox, hbox, TRUE, TRUE, 0);
+  GtkWidget *fbauthdialog_vbox = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(fb_auth_dialog));
+  gtk_box_pack_end(GTK_BOX(fbauthdialog_vbox), hbox, TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(fb_auth_dialog));
 
