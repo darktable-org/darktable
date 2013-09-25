@@ -27,8 +27,8 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 200000;
-  const int reserve = 40000;
+  const int stepsize = 300000;
+  const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
 
@@ -493,7 +493,7 @@ static void _brush_points_recurs(float *p1, float *p2,
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 1e-6f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -519,7 +519,7 @@ static void _brush_points_recurs(float *p1, float *p2,
       }
 
       //we check gaps in the border (sharp edges)
-      if (abs((int)border_max[0] - (int)border_min[0]) >= 2 || abs((int)border_max[1] - (int)border_min[1]) >= 2)
+      if (abs((int)border_max[0] - (int)border_min[0]) > 2 || abs((int)border_max[1] - (int)border_min[1]) > 2)
       {
         _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
       }
