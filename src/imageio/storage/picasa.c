@@ -821,7 +821,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                   "loaded. you have to login into your picasa account there "
+                   "loaded. you have to login into your google+ account there "
                    "and authorize darktable to upload photos before continuing.");
   gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
                    "you are done.");
@@ -831,7 +831,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_QUESTION,
                                   GTK_BUTTONS_OK_CANCEL,
-                                  _("picasa authentication")));
+                                  _("google+ authentication")));
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (picasa_auth_dialog),
       "%s\n\n%s", text1, text2);
 
@@ -1418,7 +1418,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   gint fd=g_mkstemp(fname);
   if(fd==-1)
   {
-    dt_control_log("failed to create temporary image for picasa export");
+    dt_control_log("failed to create temporary image for google+ export");
     return 1;
   }
   close(fd);
