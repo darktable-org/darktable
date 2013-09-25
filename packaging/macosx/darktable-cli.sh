@@ -171,4 +171,11 @@ if /bin/expr "x$1" : '^x-psn_' > /dev/null; then
     shift 1
 fi
 
-$EXEC "$bundle_contents/MacOS/$name-bin" "$@" --core --datadir "$bundle_data/darktable" --moduledir "$bundle_lib/darktable" --localedir "$bundle_data/locale" $EXTRA_ARGS
+SPLIT_ARGS="--core"
+for arg in "$@" ; do
+    if test "x$arg" == "x--core"; then
+         SPLIT_ARGS=
+    fi
+done
+
+$EXEC "$bundle_contents/MacOS/$name-bin" "$@" $SPLIT_ARGS --datadir "$bundle_data/darktable" --moduledir "$bundle_lib/darktable" --localedir "$bundle_data/locale" $EXTRA_ARGS
