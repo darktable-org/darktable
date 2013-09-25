@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-16 09:19+0200\n"
-"PO-Revision-Date: 2013-09-16 09:43+0200\n"
+"POT-Creation-Date: 2013-09-26 00:34+0200\n"
+"PO-Revision-Date: 2013-09-26 00:36+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -46,7 +46,7 @@ msgstr "sidopanelernas bredd i pixlar"
 #: ../build/src/preferences_gen.h:1198 ../build/src/preferences_gen.h:1241
 #: ../build/src/preferences_gen.h:1265 ../build/src/preferences_gen.h:1380
 #: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1529
-#: ../build/src/preferences_gen.h:1554 ../src/lua/preferences.c:368
+#: ../build/src/preferences_gen.h:1554 ../src/lua/preferences.c:373
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dubbelklicka för att återställa till `%d'"
@@ -57,7 +57,9 @@ msgstr "(kräver omstart)"
 
 #: ../build/src/preferences_gen.h:954
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "använd inte inbäddad förhandsvisningsbild (JPEG), utan använd halverad storlek av råbild"
+msgstr ""
+"använd inte inbäddad förhandsvisningsbild (JPEG), utan använd halverad "
+"storlek av råbild"
 
 #: ../build/src/preferences_gen.h:963 ../build/src/preferences_gen.h:982
 #: ../build/src/preferences_gen.h:1001 ../build/src/preferences_gen.h:1020
@@ -71,8 +73,8 @@ msgstr "använd inte inbäddad förhandsvisningsbild (JPEG), utan använd halver
 #: ../build/src/preferences_gen.h:1573 ../build/src/preferences_gen.h:1592
 #: ../build/src/preferences_gen.h:1615 ../build/src/preferences_gen.h:1634
 #: ../build/src/preferences_gen.h:1666 ../build/src/preferences_gen.h:1701
-#: ../build/src/preferences_gen.h:1733 ../src/lua/preferences.c:351
-#: ../src/lua/preferences.c:359
+#: ../build/src/preferences_gen.h:1733 ../src/lua/preferences.c:356
+#: ../src/lua/preferences.c:364
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dubbelklicka för att återställa till `%s'"
@@ -81,7 +83,10 @@ msgstr "dubbelklicka för att återställa till `%s'"
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
-msgstr "aktivera detta om du inte vill använda den inbäddade miniatyrbild (JPEG) från råbildsfil och istället använda råbilden.  detta alternativ är långsammare men ger dig bilder på ljusbordet i enlighet med din färgrymd."
+msgstr ""
+"aktivera detta om du inte vill använda den inbäddade miniatyrbild (JPEG) "
+"från råbildsfil och istället använda råbilden.  detta alternativ är "
+"långsammare men ger dig bilder på ljusbordet i enlighet med din färgrymd."
 
 #: ../build/src/preferences_gen.h:973
 msgid "ask before removing images from database"
@@ -133,7 +138,9 @@ msgstr "ignorera JPEG-bilder vid import av filmrullar"
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
-msgstr "när man har raw+JPEG-bilder tillsammans i en katalog är det inte rimligt att importera båda. med denna option kan man ignorera funna jpeg-bilder"
+msgstr ""
+"när man har raw+JPEG-bilder tillsammans i en katalog är det inte rimligt att "
+"importera båda. med denna option kan man ignorera funna jpeg-bilder"
 
 #: ../build/src/preferences_gen.h:1092
 msgid "recursive directory traversal when importing filmrolls"
@@ -205,7 +212,10 @@ msgstr "komprimering av miniatyrbilder"
 msgid ""
 "off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high "
 "quality - DXT1, same memory as low quality variant but slower."
-msgstr "av - ingen komprimering i minnet, JPG på disk. låg kvalitet - DXT1 (snabb). hög kvalitet - DXT1, tar lika mycket minne som låg kvalitet men är långsammare."
+msgstr ""
+"av - ingen komprimering i minnet, JPG på disk. låg kvalitet - DXT1 (snabb). "
+"hög kvalitet - DXT1, tar lika mycket minne som låg kvalitet men är "
+"långsammare."
 
 #: ../build/src/preferences_gen.h:1307
 msgid "pen pressure control for brush masks"
@@ -216,7 +226,10 @@ msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
 "is taken directly as attribute value or multiplied with pre-defined setting."
-msgstr "av - ignorera tryck, hårdhet/ogenomskinlighet/penselstorlek - avläst tryck reglerar givet attribut, absolut/relativ - avläst tryck tas direkt som attributvärde eller multipliceras med i förväg angivet tal."
+msgstr ""
+"av - ignorera tryck, hårdhet/ogenomskinlighet/penselstorlek - avläst tryck "
+"reglerar givet attribut, absolut/relativ - avläst tryck tas direkt som "
+"attributvärde eller multipliceras med i förväg angivet tal."
 
 #: ../build/src/preferences_gen.h:1348
 msgid "ask before deleting a tag"
@@ -297,7 +310,11 @@ msgid ""
 "during image processing. lower values will force memory hungry modules to "
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
-msgstr "detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden under 500 kommer att hanteras som 500 (kräver omstart)."
+msgstr ""
+"detta värde kontrollerar hur mycket minne (i MB) en modul kan använda vid "
+"bearbetning av bild. lägre värden tvingar minneshungriga moduler bearbeta "
+"bilden med ökat antal 'tiles'. sätt till 0 för obegränsat minne. värden "
+"under 500 kommer att hanteras som 500 (kräver omstart)."
 
 #: ../build/src/preferences_gen.h:1539
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -308,7 +325,10 @@ msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
 "has precedence over heuristics based on host_memory_limit (needs a restart)."
-msgstr "ett positivt tal över noll anger den minsta mängden minne (i MB) som 'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på host_memory_limit (kräver en omstart)."
+msgstr ""
+"ett positivt tal över noll anger den minsta mängden minne (i MB) som "
+"'tiling' bör uppta för en bild-buffer.  detta går före heuristik baserad på "
+"host_memory_limit (kräver en omstart)."
 
 #: ../build/src/preferences_gen.h:1564
 msgid "write sidecar file for each image"
@@ -369,7 +389,11 @@ msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
 "below, full will use exactly the settings for full-size export."
-msgstr "interpolation som används när bilden inte visas 1:1 (in-zoomat) i darkroom: bilinear är snabbast men inte så skarp. en medelväg är att använda PPG + någon av interpolationsmetoderna nedan, 'full' kommer att använda exakt samma inställningar som export av bild i full storlek."
+msgstr ""
+"interpolation som används när bilden inte visas 1:1 (in-zoomat) i darkroom: "
+"bilinear är snabbast men inte så skarp. en medelväg är att använda PPG + "
+"någon av interpolationsmetoderna nedan, 'full' kommer att använda exakt "
+"samma inställningar som export av bild i full storlek."
 
 #: ../build/src/preferences_gen.h:1676
 msgid "pixel interpolator"
@@ -647,20 +671,20 @@ msgstr "stil fil med namn '%s' existerar redan"
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/common/variables.c:220 ../src/iop/clipping.c:1459
-#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1719
-#: ../src/iop/clipping.c:1762 ../src/iop/clipping.c:1781
+#: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
+#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
+#: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
 #: ../src/iop/lens.c:1741 ../src/libs/export.c:644 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
 msgstr "ingen"
 
-#: ../src/control/control.c:1388 ../src/control/control.c:1391
+#: ../src/control/control.c:1411 ../src/control/control.c:1414
 msgid "working.."
 msgstr "arbetar.."
 
-#: ../src/control/control.c:1474
+#: ../src/control/control.c:1497
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
@@ -1064,6 +1088,13 @@ msgstr[1] "%d former används"
 msgid "no mask used"
 msgstr "ingen markering används"
 
+#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1536
+#: ../src/develop/blend_gui.c:1570 ../src/develop/blend_gui.c:1655
+#: ../src/develop/blend_gui.c:1664 ../src/develop/blend_gui.c:1685
+#: ../src/develop/blend_gui.c:1701
+msgid "blend"
+msgstr "blanda"
+
 #: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1546
 msgid "drawn mask"
 msgstr "ritad markering"
@@ -1076,28 +1107,28 @@ msgstr "visa och redigera markeringens element"
 msgid "toggle polarity of drawn mask"
 msgstr "växla den ritade markeringens polaritet"
 
-#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:884
-#: ../src/libs/masks.c:920 ../src/libs/masks.c:1478
+#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:885
+#: ../src/libs/masks.c:921 ../src/libs/masks.c:1479
 msgid "add gradient"
 msgstr "lägg till gradient"
 
 #: ../src/develop/blend_gui.c:1263 ../src/iop/spots.c:558
-#: ../src/libs/masks.c:880 ../src/libs/masks.c:916 ../src/libs/masks.c:1485
+#: ../src/libs/masks.c:881 ../src/libs/masks.c:917 ../src/libs/masks.c:1486
 msgid "add path"
 msgstr "lägg till slinga"
 
 #: ../src/develop/blend_gui.c:1270 ../src/iop/spots.c:565
-#: ../src/libs/masks.c:876 ../src/libs/masks.c:912 ../src/libs/masks.c:1492
+#: ../src/libs/masks.c:877 ../src/libs/masks.c:913 ../src/libs/masks.c:1493
 msgid "add ellipse"
 msgstr "lägg till ellips"
 
 #: ../src/develop/blend_gui.c:1277 ../src/iop/spots.c:572
-#: ../src/libs/masks.c:872 ../src/libs/masks.c:908 ../src/libs/masks.c:1499
+#: ../src/libs/masks.c:873 ../src/libs/masks.c:909 ../src/libs/masks.c:1500
 msgid "add circle"
 msgstr "lägg till cirkel"
 
-#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:904
-#: ../src/libs/masks.c:1506
+#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:905
+#: ../src/libs/masks.c:1507
 msgid "add brush"
 msgstr "lägg till pensel"
 
@@ -1248,10 +1279,6 @@ msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "obunden (utgående)"
 
-#: ../src/develop/blend_gui.c:1536
-msgid "blend"
-msgstr "blanda"
-
 #: ../src/develop/blend_gui.c:1541
 msgid "uniformly"
 msgstr "jämnt"
@@ -1376,11 +1403,11 @@ msgstr "ny instans"
 msgid "duplicate instance"
 msgstr "duplicera instans"
 
-#: ../src/develop/imageop.c:1181 ../src/libs/masks.c:1039
+#: ../src/develop/imageop.c:1181 ../src/libs/masks.c:1040
 msgid "move up"
 msgstr "flytta upp"
 
-#: ../src/develop/imageop.c:1187 ../src/libs/masks.c:1042
+#: ../src/develop/imageop.c:1187 ../src/libs/masks.c:1043
 msgid "move down"
 msgstr "flytta ner"
 
@@ -1390,22 +1417,22 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2075
+#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2073
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2075
+#: ../src/develop/imageop.c:1215 ../src/develop/imageop.c:2073
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
 
-#: ../src/develop/imageop.c:1445 ../src/gui/accelerators.c:715
-#: ../src/gui/accelerators.c:795 ../src/gui/accelerators.c:939
-#: ../src/gui/accelerators.c:964 ../src/gui/presets.c:197
+#: ../src/develop/imageop.c:1445 ../src/gui/accelerators.c:758
+#: ../src/gui/accelerators.c:838 ../src/gui/accelerators.c:1005
+#: ../src/gui/accelerators.c:1030 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
 #: ../src/iop/temperature.c:746 ../src/libs/import.c:491 ../src/libs/lib.c:291
-#: ../src/libs/lib.c:320 ../src/libs/lib.c:978
+#: ../src/libs/lib.c:320 ../src/libs/lib.c:980
 msgid "preset"
 msgstr "förinställning"
 
@@ -1435,16 +1462,16 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:2045
+#: ../src/develop/imageop.c:2043
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:2054 ../src/libs/lib.c:837
+#: ../src/develop/imageop.c:2052 ../src/libs/lib.c:839
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:2063 ../src/gui/preferences.c:403
-#: ../src/libs/lib.c:850
+#: ../src/develop/imageop.c:2061 ../src/gui/preferences.c:403
+#: ../src/libs/lib.c:852
 msgid "presets"
 msgstr "fördefinierade"
 
@@ -1500,52 +1527,57 @@ msgstr ""
 msgid "double-click to reset"
 msgstr "dubbelklicka för återställning"
 
-#: ../src/gui/accelerators.c:34 ../src/gui/accelerators.c:78
+#: ../src/gui/accelerators.c:34 ../src/gui/accelerators.c:84
 msgctxt "accel"
 msgid "global"
 msgstr "global"
 
-#: ../src/gui/accelerators.c:41 ../src/gui/accelerators.c:85
+#: ../src/gui/accelerators.c:41 ../src/gui/accelerators.c:91
 msgctxt "accel"
 msgid "views"
 msgstr "vyer"
 
 #: ../src/gui/accelerators.c:48 ../src/gui/accelerators.c:62
 #: ../src/gui/accelerators.c:65 ../src/gui/accelerators.c:68
-#: ../src/gui/accelerators.c:71 ../src/gui/accelerators.c:94
-#: ../src/gui/accelerators.c:112 ../src/gui/accelerators.c:117
-#: ../src/gui/accelerators.c:122 ../src/gui/accelerators.c:127
+#: ../src/gui/accelerators.c:71 ../src/gui/accelerators.c:100
+#: ../src/gui/accelerators.c:118 ../src/gui/accelerators.c:123
+#: ../src/gui/accelerators.c:128 ../src/gui/accelerators.c:133
 msgctxt "accel"
 msgid "image operations"
 msgstr "bild information"
 
-#: ../src/gui/accelerators.c:55 ../src/gui/accelerators.c:103
+#: ../src/gui/accelerators.c:55 ../src/gui/accelerators.c:109
 msgctxt "accel"
 msgid "modules"
 msgstr "moduler"
 
-#: ../src/gui/accelerators.c:63 ../src/gui/accelerators.c:115
+#: ../src/gui/accelerators.c:63 ../src/gui/accelerators.c:121
 msgctxt "accel"
 msgid "increase"
 msgstr "öka"
 
-#: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:120
+#: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:126
 msgctxt "accel"
 msgid "decrease"
 msgstr "minska"
 
-#: ../src/gui/accelerators.c:69 ../src/gui/accelerators.c:125
+#: ../src/gui/accelerators.c:69 ../src/gui/accelerators.c:131
 msgctxt "accel"
 msgid "reset"
 msgstr "återställ"
 
-#: ../src/gui/accelerators.c:72 ../src/gui/accelerators.c:130
+#: ../src/gui/accelerators.c:72 ../src/gui/accelerators.c:136
 #: ../src/libs/styles.c:71
 msgctxt "accel"
 msgid "edit"
 msgstr "ändra"
 
-#: ../src/gui/accelerators.c:779 ../src/libs/lib.c:371
+#: ../src/gui/accelerators.c:78 ../src/gui/accelerators.c:143
+msgctxt "accel"
+msgid "lua"
+msgstr "lua"
+
+#: ../src/gui/accelerators.c:822 ../src/libs/lib.c:371
 msgid "deleting preset for obsolete module"
 msgstr "ta bort förinställning för föråldrade moduler"
 
@@ -1745,78 +1777,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:889
+#: ../src/gui/gtk.c:893
 msgctxt "accel"
 msgid "capture view"
 msgstr "tjudring"
 
-#: ../src/gui/gtk.c:890
+#: ../src/gui/gtk.c:894
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../src/gui/gtk.c:891
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrum"
 
-#: ../src/gui/gtk.c:892
+#: ../src/gui/gtk.c:896
 msgctxt "accel"
 msgid "map view"
 msgstr "karta"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:915
+#: ../src/gui/gtk.c:919
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:922
+#: ../src/gui/gtk.c:926
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "öka ljusstyrka"
 
-#: ../src/gui/gtk.c:924
+#: ../src/gui/gtk.c:928
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "minska ljusstyrka"
 
-#: ../src/gui/gtk.c:926
+#: ../src/gui/gtk.c:930
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "öka kontrast"
 
-#: ../src/gui/gtk.c:928
+#: ../src/gui/gtk.c:932
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "minska kontrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:949
+#: ../src/gui/gtk.c:953
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:950
+#: ../src/gui/gtk.c:954
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:962
+#: ../src/gui/gtk.c:966
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:965
+#: ../src/gui/gtk.c:969
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:969
+#: ../src/gui/gtk.c:973
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -2354,9 +2386,9 @@ msgid "could not write to directory `%s'!"
 msgstr "kunde inte skriva till katalog `%s'!"
 
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
-#: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:670
+#: ../src/imageio/storage/facebook.c:1193 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1460
+#: ../src/imageio/storage/picasa.c:1459
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
@@ -2386,10 +2418,7 @@ msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
 "upload photos before continuing."
-msgstr ""
-"steg 1: ett nytt fönster eller tabb i din internetbrowser ska ha visats. du "
-"måste logga in med ditt facebook-konto där och bekräfta att darktable får "
-"ladda upp bilder innan du kan fortsätta."
+msgstr "steg 1: ett nytt fönster eller flik i din internetbrowser ska ha visats. du måste logga in med ditt facebook-konto där och bekräfta att darktable får ladda upp bilder innan du kan fortsätta."
 
 #: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:826
 msgid ""
@@ -2406,97 +2435,97 @@ msgstr "facebook-autentisering"
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:643 ../src/imageio/storage/picasa.c:863
+#: ../src/imageio/storage/facebook.c:642 ../src/imageio/storage/picasa.c:862
 msgid "please enter the validation URL"
 msgstr "var god ange validerings-URL:en"
 
-#: ../src/imageio/storage/facebook.c:654 ../src/imageio/storage/picasa.c:875
+#: ../src/imageio/storage/facebook.c:653 ../src/imageio/storage/picasa.c:874
 msgid "the given URL is not valid, it should look like: "
 msgstr "den angivna URL:en är inte giltig, den borde se ut såhär: "
 
-#: ../src/imageio/storage/facebook.c:760 ../src/imageio/storage/picasa.c:1006
+#: ../src/imageio/storage/facebook.c:759 ../src/imageio/storage/picasa.c:1005
 msgid "new account"
 msgstr "nytt konto"
 
-#: ../src/imageio/storage/facebook.c:767 ../src/imageio/storage/picasa.c:1013
+#: ../src/imageio/storage/facebook.c:766 ../src/imageio/storage/picasa.c:1012
 msgid "other account"
 msgstr "annat konto"
 
-#: ../src/imageio/storage/facebook.c:798 ../src/imageio/storage/picasa.c:1043
+#: ../src/imageio/storage/facebook.c:797 ../src/imageio/storage/picasa.c:1042
 msgid "unable to retrieve the album list"
 msgstr "kunde inte hämta listan på album"
 
-#: ../src/imageio/storage/facebook.c:806 ../src/imageio/storage/flickr.c:388
-#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1051
+#: ../src/imageio/storage/facebook.c:805 ../src/imageio/storage/flickr.c:388
+#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1050
 msgid "create new album"
 msgstr "skapa nytt album"
 
-#: ../src/imageio/storage/facebook.c:928 ../src/imageio/storage/picasa.c:1099
-#: ../src/imageio/storage/picasa.c:1259
+#: ../src/imageio/storage/facebook.c:927 ../src/imageio/storage/picasa.c:1098
+#: ../src/imageio/storage/picasa.c:1258
 msgid "logout"
 msgstr "logga ut"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:932 ../src/imageio/storage/facebook.c:945
-#: ../src/imageio/storage/facebook.c:972
-#: ../src/imageio/storage/facebook.c:1075 ../src/imageio/storage/flickr.c:526
-#: ../src/imageio/storage/picasa.c:1105 ../src/imageio/storage/picasa.c:1263
-#: ../src/imageio/storage/picasa.c:1276 ../src/imageio/storage/picasa.c:1342
+#: ../src/imageio/storage/facebook.c:931 ../src/imageio/storage/facebook.c:944
+#: ../src/imageio/storage/facebook.c:971
+#: ../src/imageio/storage/facebook.c:1074 ../src/imageio/storage/flickr.c:526
+#: ../src/imageio/storage/picasa.c:1104 ../src/imageio/storage/picasa.c:1262
+#: ../src/imageio/storage/picasa.c:1275 ../src/imageio/storage/picasa.c:1341
 msgid "login"
 msgstr "logga in"
 
-#: ../src/imageio/storage/facebook.c:1009
+#: ../src/imageio/storage/facebook.c:1008
 msgid "facebook webalbum"
 msgstr "facebook-album"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:1022 ../src/imageio/storage/flickr.c:480
+#: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
-#: ../src/imageio/storage/picasa.c:1304 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1303 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:100
 msgid "title"
 msgstr "titel"
 
-#: ../src/imageio/storage/facebook.c:1023 ../src/imageio/storage/flickr.c:481
-#: ../src/imageio/storage/picasa.c:1305
+#: ../src/imageio/storage/facebook.c:1022 ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/picasa.c:1304
 msgid "summary"
 msgstr "sammanfattning"
 
-#: ../src/imageio/storage/facebook.c:1024
+#: ../src/imageio/storage/facebook.c:1023
 msgid "privacy"
 msgstr "sekretessnivå"
 
-#: ../src/imageio/storage/facebook.c:1064
+#: ../src/imageio/storage/facebook.c:1063
 msgid "only me"
 msgstr "bara jag"
 
-#: ../src/imageio/storage/facebook.c:1066 ../src/imageio/storage/flickr.c:539
+#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/flickr.c:539
 msgid "friends"
 msgstr "vänner"
 
-#: ../src/imageio/storage/facebook.c:1068
+#: ../src/imageio/storage/facebook.c:1067
 msgid "public"
 msgstr "publik"
 
-#: ../src/imageio/storage/facebook.c:1070
+#: ../src/imageio/storage/facebook.c:1069
 msgid "friends of friends"
 msgstr "vänners vänner"
 
-#: ../src/imageio/storage/facebook.c:1203 ../src/imageio/storage/picasa.c:1469
+#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1468
 msgid "unable to create album, no title provided"
 msgstr "kunde inte skapa album, ingen titel angiven"
 
-#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1476
+#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1475
 msgid "unable to create album"
 msgstr "kunde inte skapa album"
 
-#: ../src/imageio/storage/facebook.c:1220
+#: ../src/imageio/storage/facebook.c:1219
 msgid "unable to export photo to webalbum"
 msgstr "kunde inte exportera bild till webbalbum"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1237
+#: ../src/imageio/storage/facebook.c:1236
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exporterad till facebook-album"
@@ -2511,10 +2540,7 @@ msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your flickr account there and authorize darktable to "
 "upload photos before continuing."
-msgstr ""
-"steg 1: ett nytt fönster eller tabb i din internetbrowser ska ha visats, du "
-"måste logga in med ditt flickr-konto där och bekräfta att darktable får "
-"ladda upp bilder."
+msgstr "steg 1: ett nytt fönster eller flik i din internetbrowser ska ha visats, du måste logga in med ditt flickr-konto där och bekräfta att darktable får ladda upp bilder."
 
 #: ../src/imageio/storage/flickr.c:192
 msgid "step 2: click the OK button once you are done."
@@ -2621,27 +2647,24 @@ msgstr "ange en titel för boken"
 #: ../src/imageio/storage/picasa.c:823
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your picasa account there and authorize darktable to "
+"have to login into your google+ account there and authorize darktable to "
 "upload photos before continuing."
-msgstr ""
-"steg 1: ett nytt fönster eller tabb i din internetbrowser ska ha visats. du "
-"måste logga in med ditt picasa-konto där och tillåta att darktable laddar "
-"upp bilder innan du kan fortsätta."
+msgstr "steg 1: ett nytt fönster eller flik i din internetbrowser ska ha visats. du måste logga in med ditt google+-konto där och bekräfta att darktable får ladda upp bilder innan du kan fortsätta."
 
 #: ../src/imageio/storage/picasa.c:834
-msgid "picasa authentication"
-msgstr "picasa-autentisering"
+msgid "google+ authentication"
+msgstr "google+-autentisering"
 
-#: ../src/imageio/storage/picasa.c:1291
+#: ../src/imageio/storage/picasa.c:1290
 msgid "google+ photos"
 msgstr "google+-bilder"
 
-#: ../src/imageio/storage/picasa.c:1486
+#: ../src/imageio/storage/picasa.c:1485
 msgid "unable to export photo to google+ album"
 msgstr "kunde inte exportera bild till google+-album"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1503
+#: ../src/imageio/storage/picasa.c:1502
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exporterad till google+-album"
@@ -3017,7 +3040,7 @@ msgid "select frame line color"
 msgstr "välj ramlinjens färg"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1739
+#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1740
 #: ../src/libs/import.c:818
 msgid "image"
 msgstr "bild"
@@ -3034,15 +3057,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1748
+#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1749
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1740
+#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1741
 msgid "golden cut"
 msgstr "gyllene snitt"
 
-#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1742
+#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1743
 msgid "3:2"
 msgstr "3:2"
 
@@ -3050,15 +3073,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1747
+#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1748
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1744
+#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1745
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1746
+#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1747
 msgid "square"
 msgstr "kvadrat"
 
@@ -3094,7 +3117,7 @@ msgstr "kantens storlek"
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1737
+#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1738
 msgid "aspect"
 msgstr "aspekt"
 
@@ -3179,11 +3202,11 @@ msgstr "välj ramlinjens färg från bild"
 msgid "chromatic aberrations"
 msgstr "kromatisk avvikelse"
 
-#: ../src/iop/cacorrect.c:1285
+#: ../src/iop/cacorrect.c:1286
 msgid "automatic chromatic aberration correction"
 msgstr "automatisk korrigering av kromatisk avvikelse"
 
-#: ../src/iop/cacorrect.c:1287
+#: ../src/iop/cacorrect.c:1288
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -3289,187 +3312,187 @@ msgstr "sluttningen påverkar effektens styrka"
 msgid "crop and rotate"
 msgstr "beskär och rotera"
 
-#: ../src/iop/clipping.c:1360
+#: ../src/iop/clipping.c:1361
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "felaktig format för bildförhållande. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1460 ../src/iop/clipping.c:1703
-#: ../src/iop/clipping.c:1720
+#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1704
+#: ../src/iop/clipping.c:1721
 msgid "vertical"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1702
-#: ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1703
+#: ../src/iop/clipping.c:1722
 msgid "horizontal"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1722
+#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1723
 msgid "full"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1463
+#: ../src/iop/clipping.c:1464
 msgid "old system"
 msgstr "gammalt system"
 
-#: ../src/iop/clipping.c:1464
+#: ../src/iop/clipping.c:1465
 msgid "correction applied"
 msgstr "korrigering gjord"
 
-#: ../src/iop/clipping.c:1700 ../src/iop/clipping.c:1780
+#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1781
 #: ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "vänd"
 
-#: ../src/iop/clipping.c:1704 ../src/iop/clipping.c:1784
+#: ../src/iop/clipping.c:1705 ../src/iop/clipping.c:1785
 #: ../src/libs/live_view.c:339
 msgid "both"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1706
+#: ../src/iop/clipping.c:1707
 msgid "mirror image horizontally and/or vertically"
 msgstr "vänd bild horisontellt och/eller vertikalt"
 
-#: ../src/iop/clipping.c:1711
+#: ../src/iop/clipping.c:1712
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1714
+#: ../src/iop/clipping.c:1715
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "högerklicka och dra en linje på bilden för att dra en rak linje"
 
-#: ../src/iop/clipping.c:1718
+#: ../src/iop/clipping.c:1719
 msgid "keystone"
 msgstr "perspektivkorr"
 
-#: ../src/iop/clipping.c:1723
+#: ../src/iop/clipping.c:1724
 msgid "set perspective correction for your image"
 msgstr "korrigera perspektivet på din bild"
 
-#: ../src/iop/clipping.c:1728
+#: ../src/iop/clipping.c:1729
 msgid "automatic cropping"
 msgstr "automatiskt beskärning"
 
-#: ../src/iop/clipping.c:1729 ../src/libs/metadata_view.c:224
+#: ../src/iop/clipping.c:1730 ../src/libs/metadata_view.c:224
 msgid "no"
 msgstr "nej"
 
-#: ../src/iop/clipping.c:1730 ../src/libs/metadata_view.c:224
+#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:224
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1731
+#: ../src/iop/clipping.c:1732
 msgid "automatically crop to avoid black edges"
 msgstr "beskär automatiskt för att undvika svarta kanter"
 
-#: ../src/iop/clipping.c:1738
+#: ../src/iop/clipping.c:1739
 msgid "free"
 msgstr "fri"
 
-#: ../src/iop/clipping.c:1741
+#: ../src/iop/clipping.c:1742
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1743
+#: ../src/iop/clipping.c:1744
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1745
+#: ../src/iop/clipping.c:1746
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1749
+#: ../src/iop/clipping.c:1750
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1750
+#: ../src/iop/clipping.c:1751
 msgid "10:8 in print"
 msgstr "10:8 för utskrift"
 
-#: ../src/iop/clipping.c:1755
+#: ../src/iop/clipping.c:1756
 msgid "set the aspect ratio (w:h)"
 msgstr "ange bildförhållandet (b:h)"
 
-#: ../src/iop/clipping.c:1761 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1762 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "rutmönster"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "tredjedelsregeln"
 
-#: ../src/iop/clipping.c:1765
+#: ../src/iop/clipping.c:1766
 msgid "metering"
 msgstr "mätskala"
 
-#: ../src/iop/clipping.c:1766
+#: ../src/iop/clipping.c:1767
 msgid "perspective"
 msgstr "perspektiv"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1767 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1768 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonal metod"
 
-#: ../src/iop/clipping.c:1768 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "harmoniska trianglar"
 
-#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "gyllene snitt"
 
-#: ../src/iop/clipping.c:1775 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:1776 ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "visa guider för att hjälpa dig att komponera ditt fotografi"
 
-#: ../src/iop/clipping.c:1782 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1783 ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1783 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:1786 ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "vänd guider"
 
-#: ../src/iop/clipping.c:1790 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "extra"
 
-#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "gyllene sektioner"
 
-#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "gyllene spiralsektioner"
 
-#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1794 ../src/iop/lens.c:1747
+#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1747
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "alla"
 
-#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:1796 ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "visa extra guider"
 
-#: ../src/iop/clipping.c:2819
+#: ../src/iop/clipping.c:2820
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:2821
+#: ../src/iop/clipping.c:2822
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -3516,7 +3539,9 @@ msgid "color balance"
 msgstr "färgbalans"
 
 #. lift
-#: ../src/iop/colorbalance.c:626
+#: ../src/iop/colorbalance.c:626 ../src/iop/colorbalance.c:632
+#: ../src/iop/colorbalance.c:641 ../src/iop/colorbalance.c:650
+#: ../src/iop/colorbalance.c:659
 msgid "lift"
 msgstr "lyft"
 
@@ -3542,7 +3567,9 @@ msgid "factor of blue for lift"
 msgstr "lyftfaktor för blått"
 
 #. gamma
-#: ../src/iop/colorbalance.c:664 ../src/iop/profile_gamma.c:139
+#: ../src/iop/colorbalance.c:664 ../src/iop/colorbalance.c:670
+#: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:688
+#: ../src/iop/colorbalance.c:697 ../src/iop/profile_gamma.c:139
 msgid "gamma"
 msgstr "gamma"
 
@@ -3563,7 +3590,9 @@ msgid "factor of blue for gamma"
 msgstr "gammafaktor för blått"
 
 #. gain
-#: ../src/iop/colorbalance.c:702
+#: ../src/iop/colorbalance.c:702 ../src/iop/colorbalance.c:708
+#: ../src/iop/colorbalance.c:717 ../src/iop/colorbalance.c:726
+#: ../src/iop/colorbalance.c:735
 msgid "gain"
 msgstr "gain"
 
@@ -5720,7 +5749,7 @@ msgstr "kvällssol"
 msgid "underwater"
 msgstr "under vatten"
 
-#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1150
+#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1152
 msgid "black & white"
 msgstr "svart & vitt"
 
@@ -6098,7 +6127,7 @@ msgstr "öppna inställnings fil"
 msgid "XMP sidecar files"
 msgstr "XMP inställningsfil"
 
-#: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:446
+#: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:449
 #: ../src/libs/import.c:684 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "alla filer"
@@ -6312,7 +6341,7 @@ msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:877 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1683
+#: ../src/views/darkroom.c:1685
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -6343,7 +6372,7 @@ msgstr ""
 "rm <fil>\t\t\tta bort <fil>\n"
 "rmdir <dir>\t\t\tta bort tom katalog <dir>"
 
-#: ../src/libs/geotagging.c:381
+#: ../src/libs/geotagging.c:382
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
@@ -6351,19 +6380,19 @@ msgstr ""
 "mata in tiden visad på de valda bilderna\n"
 "format: tt:mm:ss"
 
-#: ../src/libs/geotagging.c:427
+#: ../src/libs/geotagging.c:430
 msgid "open GPX file"
 msgstr "öppna GPX-fil"
 
-#: ../src/libs/geotagging.c:441
+#: ../src/libs/geotagging.c:444
 msgid "GPS data exchange format"
 msgstr "GPS data exchange format"
 
-#: ../src/libs/geotagging.c:451
+#: ../src/libs/geotagging.c:454
 msgid "camera time zone"
 msgstr "kamerans tidszon"
 
-#: ../src/libs/geotagging.c:452
+#: ../src/libs/geotagging.c:455
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -6371,11 +6400,11 @@ msgstr ""
 "de flesta kameror lagrar inte tidszonen i EXIF. ange den korrekta tidszonen "
 "så att GPX-data kan matchas korrekt"
 
-#: ../src/libs/geotagging.c:573
+#: ../src/libs/geotagging.c:576
 msgid "time offset"
 msgstr "tidsförskjutning"
 
-#: ../src/libs/geotagging.c:583
+#: ../src/libs/geotagging.c:586
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -6383,20 +6412,20 @@ msgstr ""
 "tidsförskjutning\n"
 "format: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:593
+#: ../src/libs/geotagging.c:596
 msgid "calculate the time offset from an image"
 msgstr "räkna ut tidsförskjutningen från en bild"
 
-#: ../src/libs/geotagging.c:598
+#: ../src/libs/geotagging.c:601
 msgid "apply time offset to selected images"
 msgstr "applicera tidsförskjutning på alla valda bilder"
 
 #. gpx
-#: ../src/libs/geotagging.c:606
+#: ../src/libs/geotagging.c:609
 msgid "apply GPX track file"
 msgstr "applicera GPX-fil"
 
-#: ../src/libs/geotagging.c:607
+#: ../src/libs/geotagging.c:610
 msgid "parses a GPX file and updates location of selected images"
 msgstr "tolkar en GPX-fil och uppdaterar kartpositionen på de valda bilderna"
 
@@ -7745,7 +7774,7 @@ msgstr "ingen kamera ansluten som stödjer tjudrad fångst för användning..."
 
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1671
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1673
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
@@ -7767,15 +7796,15 @@ msgstr "applicerar stil `%s' på aktiv bild"
 msgid "no styles have been created yet"
 msgstr "det finns inga stilar skapade ännu"
 
-#: ../src/views/darkroom.c:1084
+#: ../src/views/darkroom.c:1087
 msgid "quick access to presets of your favorites"
 msgstr "snabbtillgång av förinställningar av dina favoriter"
 
-#: ../src/views/darkroom.c:1096
+#: ../src/views/darkroom.c:1099
 msgid "quick access for applying any of your styles"
 msgstr "snabbtillgång för applicering av dina stilar"
 
-#: ../src/views/darkroom.c:1104
+#: ../src/views/darkroom.c:1107
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -7783,67 +7812,67 @@ msgstr ""
 "växla visning av indikation på över-/underexponering\n"
 "höger-klicka för alternativ"
 
-#: ../src/views/darkroom.c:1149
+#: ../src/views/darkroom.c:1151
 msgid "color scheme"
 msgstr "färgschema"
 
-#: ../src/views/darkroom.c:1151
+#: ../src/views/darkroom.c:1153
 msgid "red & blue"
 msgstr "rött & blått"
 
-#: ../src/views/darkroom.c:1152
+#: ../src/views/darkroom.c:1154
 msgid "purple & green"
 msgstr "lila & grönt"
 
-#: ../src/views/darkroom.c:1154
+#: ../src/views/darkroom.c:1156
 msgid "select colors to indicate over/under exposure"
 msgstr "välj färger som ska ange över- och underexponering"
 
-#: ../src/views/darkroom.c:1164
+#: ../src/views/darkroom.c:1166
 msgid "lower threshold"
 msgstr "undre tröskel"
 
-#: ../src/views/darkroom.c:1165
+#: ../src/views/darkroom.c:1167
 msgid "threshold of what shall be considered underexposed"
 msgstr "tröskelvärde för underexponerade områden"
 
-#: ../src/views/darkroom.c:1174
+#: ../src/views/darkroom.c:1176
 msgid "upper threshold"
 msgstr "övre tröskel"
 
-#: ../src/views/darkroom.c:1175
+#: ../src/views/darkroom.c:1177
 msgid "threshold of what shall be considered overexposed"
 msgstr "tröskelvärde för överexponerade områden"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1675
+#: ../src/views/darkroom.c:1677
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:1677
+#: ../src/views/darkroom.c:1679
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:1679
+#: ../src/views/darkroom.c:1681
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1687
+#: ../src/views/darkroom.c:1689
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:1689
+#: ../src/views/darkroom.c:1691
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1693
+#: ../src/views/darkroom.c:1695
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
@@ -8023,7 +8052,7 @@ msgstr "pensel #%d"
 msgid "copy of %s"
 msgstr "kopia av %"
 
-#: ../src/develop/masks/masks.c:1228 ../src/libs/masks.c:924
+#: ../src/develop/masks/masks.c:1228 ../src/libs/masks.c:925
 msgid "add existing shape"
 msgstr "lägg till existerande form"
 
@@ -8040,53 +8069,62 @@ msgstr "markeringshanterare"
 msgid "group #%d"
 msgstr "grupp #%d"
 
-#: ../src/libs/masks.c:990
+#: ../src/libs/masks.c:991
 msgid "delete this shape"
 msgstr "ta bort denna form"
 
-#: ../src/libs/masks.c:995
+#: ../src/libs/masks.c:996
 msgid "duplicate this shape"
 msgstr "duplicera denna form"
 
-#: ../src/libs/masks.c:1002
+#: ../src/libs/masks.c:1003
 msgid "remove from group"
 msgstr "ta bort från grupp"
 
-#: ../src/libs/masks.c:1010
+#: ../src/libs/masks.c:1011
 msgid "group the forms"
 msgstr "gruppera formerna"
 
-#: ../src/libs/masks.c:1019
+#: ../src/libs/masks.c:1020
 msgid "use inversed shape"
 msgstr "använd omvänd form"
 
-#: ../src/libs/masks.c:1025
+#: ../src/libs/masks.c:1026
 msgid "mode : union"
 msgstr "läge : hopslagning"
 
-#: ../src/libs/masks.c:1028
+#: ../src/libs/masks.c:1029
 msgid "mode : intersection"
 msgstr "läge : skärning"
 
-#: ../src/libs/masks.c:1031
+#: ../src/libs/masks.c:1032
 msgid "mode : difference"
 msgstr "läge : skillnad"
 
-#: ../src/libs/masks.c:1034
+#: ../src/libs/masks.c:1035
 msgid "mode : exclusion"
 msgstr "läge : uteslutning"
 
-#: ../src/libs/masks.c:1048
+#: ../src/libs/masks.c:1049
 msgid "cleanup unused shapes"
 msgstr "städa bort oanvända former"
 
-#: ../src/libs/masks.c:1473
+#: ../src/libs/masks.c:1474
 msgid "created shapes"
 msgstr "skapa former"
 
-#: ../src/lua/preferences.c:333
+#: ../src/lua/preferences.c:338
 msgid "lua options"
 msgstr "lua-inställningar"
+
+#~ msgid ""
+#~ "step 1: a new window or tab of your browser should have been loaded. you "
+#~ "have to login into your picasa account there and authorize darktable to "
+#~ "upload photos before continuing."
+#~ msgstr "steg 1: ett nytt fönster eller flik i din internetbrowser ska ha visats. du måste logga in med ditt picasa-konto där och tillåta att darktable laddar upp bilder innan du kan fortsätta."
+
+#~ msgid "picasa authentication"
+#~ msgstr "picasa-autentisering"
 
 #~ msgid " (needs a restart)"
 #~ msgstr " (kräver omstart)"
