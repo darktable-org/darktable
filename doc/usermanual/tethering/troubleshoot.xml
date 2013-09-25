@@ -2,7 +2,7 @@
   <title>Troubleshoot</title>
   <sect2 status="final">
     <title>Verify that your camera is supported</title>
-	<para>This troubleshoting guide will give you steps to verify your camera can be used
+	<para>This troubleshooting guide will give you steps to verify your camera can be used
 	with tethering. This is done using the gphoto2 commandline tools. This is what 
 	darktable uses to interface with your camera.
 	</para>
@@ -10,7 +10,7 @@
 	<orderedlist>
 	  <listitem><para>Verify that camera is detected</para>
 	    <para>The following command will verify a camera that is connected to the computer and detected by gphoto2.
-	    Find your camera port name to use it in the following tests below. Usally port <quote>usb:</quote> 
+	    Find your camera port name to use it in the following tests below. Usually port <quote>usb:</quote> 
 	    will be enough and therefore used in these examples.
 	    <programlisting>
 	      env LANG=C gphoto2 --auto-detect
@@ -18,7 +18,7 @@
 	    </para>
 	  </listitem>
 
-	  <listitem><para>Verify camera driver abillities</para>
+	  <listitem><para>Verify camera driver abilities</para>
 	    <para>Execute the following command and verify that the <emphasis>capture choices</emphasis> ability supports <quote>Image</quote> and 
 	    <emphasis>configuration support</emphasis> is <quote>yes</quote>. darktable will check these two abilities and decide if <quote>tethered shoot</quote> button 
 	    should be shown or not.

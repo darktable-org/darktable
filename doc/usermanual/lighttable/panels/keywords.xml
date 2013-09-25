@@ -13,7 +13,7 @@
 			<tbody>
 				<row>						
 					<entry>
-                                        <para>This module shows a hierarchial tree of your tags. You can arrange tags within this tree
+                                        <para>This module shows a hierarchical tree of your tags. You can arrange tags within this tree
 					using drag-and-drop one tag onto another.</para>
                                         <para>Double-clicking on a tag adds a corresponding rule to the
                                         <emphasis>collect images</emphasis> panel (see <xref linkend="collect_images"/>) - the current collection

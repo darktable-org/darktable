@@ -56,7 +56,7 @@
 	     				If you delete an image or a folder from disk after having imported them, darktable cannot access them anymore.
 		      			Importing an image or folder in darktable is not a backup of your filesystem!
 		      			Moreover, darktable does not watch for changes in the filesystem. Thus, if you add an image to a folder,
-					after having imported that folder in darktable, the new image will not be shown until explicitely imported.
+					after having imported that folder in darktable, the new image will not be shown until explicitly imported.
 				</para>
 
 			</sect3>
