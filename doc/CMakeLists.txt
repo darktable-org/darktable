@@ -29,4 +29,28 @@ endif(NOT MAN_INSTALL_DIR)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 DESTINATION ${MAN_INSTALL_DIR})
 
+
+if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  add_custom_command(
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_doc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html
+    COMMAND ${Xsltproc_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_doc.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html
+  )
+else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    add_custom_command(
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_doc.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_darktablerc_doc.xsl > ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html
+    )
+  else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    message(WARNING "darktablerc.html not generated")
+  endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+add_custom_target(darktablerc.html ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc.html DESTINATION ${SHARE_INSTALL}/doc/darktable/)
+
+
 add_subdirectory(usermanual)
