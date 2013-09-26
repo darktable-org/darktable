@@ -311,7 +311,7 @@ dt_bauhaus_root_button_press(GtkWidget *wd, GdkEventButton *event, gpointer user
 static void
 combobox_popup_scroll(int up)
 {
-  gint wx, wy;
+  gint wx, wy, px, py;
   GtkWidget *w = GTK_WIDGET(darktable.bauhaus->current);
   GtkAllocation allocation_w;
   gtk_widget_get_allocation(w, &allocation_w);
@@ -319,15 +319,23 @@ combobox_popup_scroll(int up)
   const int skip = ht + get_line_space();
   gdk_window_get_origin (gtk_widget_get_window (w), &wx, &wy);
   dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
-  if(up)
-    dt_bauhaus_combobox_set(w, CLAMP(d->active-1, 0, d->num_labels-1));
-  else
-    dt_bauhaus_combobox_set(w, CLAMP(d->active+1, 0, d->num_labels-1));
-  gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
+  int new_value;
+  if(up) new_value = CLAMP(d->active-1, 0, d->num_labels-1);
+  else new_value = CLAMP(d->active+1, 0, d->num_labels-1);
+  
+  // we move the popup up or down
+  gdk_window_get_origin (gtk_widget_get_window (darktable.bauhaus->popup_window), &px, &py);
+  if (new_value == d->active) gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, wy - d->active * skip);
+  else if (new_value > d->active) gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, py - skip);
+  else gdk_window_move(gtk_widget_get_window(darktable.bauhaus->popup_window), wx, py + skip);
+
   // make sure highlighted entry is updated:
   darktable.bauhaus->mouse_x = 0;
-  darktable.bauhaus->mouse_y = d->active * skip + ht/2;
+  darktable.bauhaus->mouse_y = new_value * skip + ht/2;
   gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+  
+  // and we change the value
+  dt_bauhaus_combobox_set(w, new_value);
 }
 
 

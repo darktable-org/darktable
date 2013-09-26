@@ -1278,6 +1278,13 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
 
   int sel = dt_bauhaus_combobox_get(bd->masks_combo);
   if (sel==0) return;
+  if (sel ==1)
+  {
+    darktable.gui->reset = 1;
+    dt_bauhaus_combobox_set(bd->masks_combo,0);
+    darktable.gui->reset = 0;
+    return;
+  }
   if (sel > 0)
   {
     int val = bd->masks_combo_ids[sel];
@@ -1331,6 +1338,7 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
       //add an existing shape
       _menu_add_exist(module,val);
     }
+    else return;
   }
   //we update the combo line
   dt_masks_iop_update(module);
