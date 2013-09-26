@@ -72,9 +72,10 @@ void BitPumpMSB::fill()
   }
   b[3] = b[0];
 #if defined(LE_PLATFORM_HAS_BSWAP)
-  b[2] = PLATFORM_BSWAP32(*(int*)&buffer[off]);
-  b[1] = PLATFORM_BSWAP32(*(int*)&buffer[off+4]);
-  b[0] = PLATFORM_BSWAP32(*(int*)&buffer[off+8]);
+  int* buf = (int*)&buffer[off];
+  b[2] = PLATFORM_BSWAP32(buf[0]);
+  b[1] = PLATFORM_BSWAP32(buf[1]);
+  b[0] = PLATFORM_BSWAP32(buf[2]);
   off+=12;
 #else
   b[2] = (buffer[off] << 24) | (buffer[off+1] << 16)  | (buffer[off+2] << 8) | buffer[off+3];

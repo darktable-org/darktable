@@ -1977,7 +1977,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -1991,7 +1991,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -2005,7 +2005,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-194" height="0"/>
+		<Crop x="0" y="0" width="-192" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -2298,7 +2298,7 @@
 		<Hints>
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
-	</Camera> 
+	</Camera> 	
 	<Camera make="Panasonic" model = "DMC-GF3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -2650,6 +2650,71 @@
 			<Hint name="zero_is_bad" value=""/>
 		</Hints>
 	</Camera>  
+	<Camera make="Panasonic" model = "DMC-GX7">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GX7" mode = "4:3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GX7" mode = "3:2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GX7" mode = "16:9">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-208" height="0"/>
+		<Sensor black="150" white="3956"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
+	<Camera make="Panasonic" model = "DMC-GX7" mode = "1:1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">BLUE</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">RED</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-32" height="0"/>
+		<Sensor black="150" white="3956"/>
+		<Hints>
+			<Hint name="zero_is_bad" value=""/>
+		</Hints>
+	</Camera>
 	<Camera make="Panasonic" model = "DMC-LF1" mode="4:3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
