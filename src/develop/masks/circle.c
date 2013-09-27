@@ -192,8 +192,8 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
     {
       const float spots_size = MIN(0.5f,dt_conf_get_float("plugins/darkroom/spots/circle_size"));
       const float spots_border = MIN(0.5f,dt_conf_get_float("plugins/darkroom/spots/circle_border"));
-      circle->radius = MAX(0.01f, spots_size);
-      circle->border = MAX(0.005f, spots_border);
+      circle->radius = MAX(0.001f, spots_size);
+      circle->border = MAX(0.0005f, spots_border);
       form->source[0] = circle->center[0] + 0.02f;
       form->source[1] = circle->center[1] + 0.02f;
     }
