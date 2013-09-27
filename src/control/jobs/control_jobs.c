@@ -1008,6 +1008,7 @@ int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
+	if(fraction > 1.0) fraction = 1.0;
         dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
