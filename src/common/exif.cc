@@ -1567,13 +1567,18 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     double long_min = (longitude - (double)long_deg) * 60.0;
     double lat_min  = (latitude - (double)lat_deg) * 60.0;
 
-    gchar *long_str = g_strdup_printf("%d,%08f%c", long_deg, long_min, long_dir);
-    gchar *lat_str = g_strdup_printf("%d,%08f%c", lat_deg, lat_min, lat_dir);
+    char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+
+    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", long_min);
+    gchar *long_str = g_strdup_printf("%d,%s%c", long_deg, str, long_dir);
+    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", lat_min);
+    gchar *lat_str = g_strdup_printf("%d,%s%c", lat_deg, str, lat_dir);
 
     xmpData["Xmp.exif.GPSLongitude"] = long_str;
     xmpData["Xmp.exif.GPSLatitude"]  = lat_str;
     g_free(long_str);
     g_free(lat_str);
+    g_free(str);
   }
   sqlite3_finalize(stmt);
 
