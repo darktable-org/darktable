@@ -251,8 +251,11 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
         gtk_container_remove( GTK_CONTAINER(d->jobbox), j->widget );
 
 #ifdef HAVE_UNITY
-      unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
-      unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+      if( j->type == 0 )
+      {
+        unity_launcher_entry_set_progress( j->darktable_launcher, 1.0 );
+        unity_launcher_entry_set_progress_visible( j->darktable_launcher, FALSE );
+      }
 #endif
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
@@ -269,11 +272,13 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
     else
     {
       if( j->type == 0 )
+      {
         gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR(j->progressbar), progress );
 
 #ifdef HAVE_UNITY
-      unity_launcher_entry_set_progress( j->darktable_launcher, progress );
+        unity_launcher_entry_set_progress( j->darktable_launcher, progress );
 #endif
+      }
     }
   }
 
