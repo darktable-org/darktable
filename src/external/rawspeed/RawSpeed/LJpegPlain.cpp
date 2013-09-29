@@ -62,7 +62,11 @@ void LJpegPlain::decodeScan() {
     frame.h = w;
   }
 
-  if (slicesW.empty())
+  /* Correct wrong slice count (Canon G16) */
+  if (slicesW.size() == 1)
+    slicesW[0] = frame.w * frame.cps;
+
+ if (slicesW.empty())
     slicesW.push_back(frame.w*frame.cps);
 
   if ( 0 == frame.h || 0 == frame.w)
