@@ -7,7 +7,7 @@ add_definitions(${LCMS2_DEFINITIONS})
 target_link_libraries(darktable-cmstest ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GObject REQUIRED)
+find_package(Glib REQUIRED)
 include_directories(SYSTEM ${GObject_INCLUDE_DIRS})
 target_link_libraries(darktable-cmstest ${GObject_LIBRARIES})
 add_definitions(${GObject_DEFINITIONS})
