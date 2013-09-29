@@ -755,7 +755,21 @@
 			<Vertical x="0" width="100"/>
 			<Horizontal y="3062" height="60"/>
 		</BlackAreas>
-	</Camera>  
+	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G16" decoder_version="4">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="96" y="18" width="-24" height="0"/>
+		<Sensor black="0" white="4095"/>
+		<BlackAreas>
+			<Vertical x="0" width="80"/>
+			<Horizontal y="0" height="16"/>
+		</BlackAreas>
+	</Camera>	
 	<Camera make="Canon" model="Canon PowerShot SX1 IS">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
