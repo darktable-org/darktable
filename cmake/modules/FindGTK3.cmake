@@ -122,4 +122,8 @@ else()
   unset(GDK3_INCLUDE_DIR)
 
   set(GTK3_FOUND false)
+
+  if(GTK3_FIND_REQUIRED)
+    message(FATAL_ERROR "GTK3 or one of its dependencies not found")
+  endif(GTK3_FIND_REQUIRED)
 endif()
