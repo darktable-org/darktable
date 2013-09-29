@@ -1430,26 +1430,11 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   GList *title = NULL;
   GList *desc = NULL;
 
+  caption = g_path_get_basename( img->filename );
+  (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
+  
   title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  if(title != NULL)
-  {
-    caption = title->data;
-  }
-  if (caption == NULL)
-  {
-    caption = g_path_get_basename( img->filename );
-    (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
-  }
-
-  /* Google is showing the description field as the caption field */
-  /*
-  desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-  if (desc != NULL)
-  {
-    description = desc->data;
-  }
-  */
-  description = caption;
+  description = title != NULL ? title->data : "";
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
