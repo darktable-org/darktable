@@ -49,7 +49,7 @@
 							</entry>						
 							<entry>
 								<para>Here a monochrome portrait is produced by simply selecting the grey channel as output.
-                                                                      A smooth skin tone is achieved by reducing the blue channels input and also emphasising
+                                                                      A smooth skin tone is achieved by reducing the blue channels input and also emphasizing
                                                                       the red channels input relative to green. An RGB mix of 0.9, 0.3, -0.3 was used 
                                                                       together with an 0.1 EV exposure increase to lighten the image.</para>
 							</entry>
@@ -71,7 +71,7 @@
 
 		<sect5><title>Table of mixing values for some b/w films</title>
 			<para>Classic black and white films have different characteristic color responses. 
-                              Select gray as output mixing channel, and try out the values suggested below for your favourite film type.</para>
+                              Select gray as output mixing channel, and try out the values suggested below for your favorite film type.</para>
 				<informaltable frame="none" width="60%">
 					<tgroup cols="4" colsep="0" rowsep="0">
 						<colspec colwidth="2*"/>

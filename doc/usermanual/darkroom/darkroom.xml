@@ -18,7 +18,7 @@
 </para>
 
 <sect1 status="final"><title>Overview</title>
-	<para>Darkroom mode is for photograpic development of the image you selected from the lighttable. Lots of tools, named
+	<para>Darkroom mode is for photographic development of the image you selected from the lighttable. Lots of tools, named
         modules, are available for processing that image.
 	</para>
 	<para>On the left hand side you have navigation, snapshot, history and masks manager panels, described in <xref linkend="darkroom_panels"/>. 

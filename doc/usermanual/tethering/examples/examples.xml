@@ -26,11 +26,11 @@
 	  <para>A timelapse is a video clip composed of images taken in a time sequence. A typical example
 	  is to take a timelapse of cityscapes where you capture clouds and traffic etc.</para>
 
-	  <para>To setup a timelapse capture, create a new session as descibed previously. Now decide if you want to shoot in manual or auto mode. 
+	  <para>To setup a timelapse capture, create a new session as described previously. Now decide if you want to shoot in manual or auto mode. 
           Only use auto in situations were the ambient light will change significantly during the time of the shoot, eg. shooting a timelapse 
           over 24 hours might give you easier control of light in that kind of captured sequence.</para>
 
-	  <para>The camera settings panel is where you define delay and sequence. Sequence will give you the oppertunity to 
+	  <para>The camera settings panel is where you define delay and sequence. Sequence will give you the opportunity to 
           choose how many images you want to capture and delay will set the time in seconds between captures.</para>
 
 	  <para>To start the capture click the capture button in the same panel and watch the filmstrip fill up with 

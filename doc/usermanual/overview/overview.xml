@@ -154,7 +154,7 @@
                <sect2 status="final" id="screen_layout"><title>Screen layout</title>
                         <para>The general screen layout of all views is similar. There is a center area which contains most of the relevant information of that view. Then there are panels left,
                         right, top and bottom to the center area. The left panel typically has an informational purpose. The right panel offers functions to modify an image. The top 
-                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expaned by pressing a triangle like
+                        and bottom panel give access to several settings and shortcuts. Each of the panels can be collapsed or expanded by pressing a triangle like
                         <inlinegraphic fileref="&icon_general_collapse;" scalefit="1" width="2%"/>, located close to the panel.
                         </para>
                         <para>By pressing the <emphasis>TAB</emphasis> key all panels get collapsed, allowing the center area to occupy all available space. Pressing <emphasis>TAB</emphasis>

@@ -25,7 +25,7 @@
 	</sect4>
 
 	<sect4><title>Usage</title>
-		<para>Starting from the default settings change the strength value for a pleasent look, 
+		<para>Starting from the default settings change the strength value for a pleasant look, 
 				then change the size to control the spread of light.
 		</para>
 		<sect5><title>size</title>
@@ -56,7 +56,7 @@
 								<graphic fileref="darkroom/modules/images/bloom_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry>
-								<para>Here we have choosen to use a size of 10%, which is a rather small radius for the soft light spread. 
+								<para>Here we have chosen to use a size of 10%, which is a rather small radius for the soft light spread. 
 								      We boosted up the strength to 50% for a more exaggerated effect.
 								</para>
 							</entry>

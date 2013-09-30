@@ -29,7 +29,7 @@
 	<sect4><title>Usage</title>
 		<sect5><title>method</title>
 			<para>You can choose between two methods: clipping highlight or reconstructing in LCh.
-			      Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minium value found among the channels.
+			      Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minimum value found among the channels.
 			      Reconstruct in LCh analyses each pixel having at least one channel clipped and transforms the information in LCh color space to linearly mix the channels.</para>
 		</sect5>
 		<sect5><title>clipping threshold</title>

@@ -160,7 +160,7 @@
                <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer is over the desired node and the node is highlighted, else you might
                accidentally remove the whole path.</para>
                <para>The size of the complete shape can be modified by scrolling - 
-               analogeous to the circle shape. The same holds true for the width of the border, i.e. the
+               analogous to the circle shape. The same holds true for the width of the border, i.e. the
                area with a gradual opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If a node is selected by clicking on it,
                a further control point appears - you can move it around to modify the curvature of the line. Dragging one of the control points on the border adjusts the border width just
                in that part of the shape.</para>
@@ -212,7 +212,7 @@
            </sect4>
 
            <sect4><title>drawn mask</title>
-              <para>The number of shapes that are used in the current mask is diplayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
+              <para>The number of shapes that are used in the current mask is displayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
               have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add 
               it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</para>
 

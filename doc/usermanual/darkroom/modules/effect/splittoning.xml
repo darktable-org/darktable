@@ -49,8 +49,8 @@
 		</sect5>
 		<sect5><title>compression</title>
 			<para>Compression is a percentage of total lightness range that is not affected by color toning. Default value is
-				set to 33%; this is not the default behaviour of an original splittoning which would be 0% compression.
-				The choice of 33% as a default is to invite you exprimenting with these parameters and how it extends the original 
+				set to 33%; this is not the default behavior of an original splittoning which would be 0% compression.
+				The choice of 33% as a default is to invite you experimenting with these parameters and how it extends the original 
 				splittoning method.
 			</para>
 		</sect5>
