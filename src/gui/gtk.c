@@ -708,18 +708,13 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.gtkrc", configdir);
+  g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", configdir);
 
   if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.gtkrc", datadir);
+    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", datadir);
 
-  if(g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
-  {
-    char *default_files[2] = { gui->gtkrc, NULL };
-    gtk_rc_set_default_files(default_files);
-  }
-  else
-    fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
+  if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
+    g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.css", datadir);
 
 #if !GLIB_CHECK_VERSION(2, 32, 0)
   if(!g_thread_supported()) g_thread_init(NULL);
@@ -754,6 +749,20 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->show_overlays = dt_conf_get_bool("lighttable/ui/expose_statuses");
   gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
+
+  // load the style / theme
+  GError *error = NULL;
+  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
+  gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), themes_style_provider,
+                                            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION + 1);
+
+  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), gui->gtkrc, &error))
+  {
+    printf("%s: error parsing %s: %s\n", G_STRFUNC, gui->gtkrc, error->message);
+    g_clear_error(&error);
+  }
+
+  g_object_unref(themes_style_provider);
 
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();

@@ -1,0 +1,9 @@
+/*
+ this file only exists to check if style loading works. dark dt => ok, light dt => fail.
+ */
+
+* {
+  font: Sans 8;
+  color: #cacaca;
+  background-color: #212121;
+}

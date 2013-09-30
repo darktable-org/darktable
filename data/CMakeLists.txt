@@ -15,6 +15,12 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.gtkrc.in ${CMAKE_CURRENT_B
 
 
 #
+# GTK3 uses .css files instead of .gtkrc -- get rid of the above section and fill the file installed here instead
+#
+install(FILES darktable.css DESTINATION ${SHARE_INSTALL}/darktable)
+
+
+#
 # Add files that should go into shared
 #
 set(SHARE_FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.gtkrc)
