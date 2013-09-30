@@ -38,13 +38,13 @@
     </sect5>
     <sect5>
       <title>soften with</title>
-      <para>This combobox choses the underlying blurring filter, gaussian or bilateral. Try bilateral filter if you experience
+      <para>This combobox chooses the underlying blurring filter, gaussian or bilateral. Try bilateral filter if you experience
             halos with gaussian blur.</para>
     </sect5>
     <sect5>
       <title>radius</title>
       <para>This slider controls the radius of the involved blurring filter. Higher values give softer transitions between shadows and highlights
-            but might introduce halos. Lower values will reduce the size of halos but may lead to an artifical look. As said, bilateral
+            but might introduce halos. Lower values will reduce the size of halos but may lead to an artificial look. As said, bilateral
             filter is much less prone to halo artifacts.</para>
     </sect5>
     <sect5>
@@ -52,7 +52,7 @@
       <para>This slider controls how strong the effect extends to midtones; high values reduce the effect to the extreme shadows and highlights; 
             low values cause strong adjustments also to midtones. You normally only need to touch this parameter if you want to limit
             the effects to the extreme shadows and highlights; increase the value in this case. At 100% this module has no visible effect any
-            longer as only absolute black and abolute white are affected.</para>
+            longer as only absolute black and absolute white are affected.</para>
     </sect5>
     <sect5>
       <title>shadows color adjustment</title>

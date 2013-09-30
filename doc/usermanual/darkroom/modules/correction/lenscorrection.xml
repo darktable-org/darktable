@@ -31,12 +31,12 @@
                       combination and collects the needed correction parameters from a profile in lensfun's database. 
                 </para>
 		<sect5><title>camera</title>
-			<para>The camera make and model as determined by EXIF data. You can overrride this manually and select
+			<para>The camera make and model as determined by EXIF data. You can override this manually and select
                               your camera from a hierarchical menu.
                         </para>
 		</sect5>
 		<sect5><title>lens</title>
-			<para>The lens make and model as determined by EXIF data. You can overrride this manually and select
+			<para>The lens make and model as determined by EXIF data. You can override this manually and select
                               your lens from a hierarchical menu. This is mainly needed for pure mechanical lenses.
                         </para>
 		</sect5>	
@@ -52,7 +52,7 @@
                         <para>
                               If you system's lensfun library has no correction profile for the automatically identified camera/lens combination the controls for the three photometric 
                               parameters are not displayed, and you get a warning message instead. You may try to find
-                              the right profile yourself by searching for it in the menu. If there is no matching profile for your lens, pleasse
+                              the right profile yourself by searching for it in the menu. If there is no matching profile for your lens, please
                               visit <ulink url="http://www.darktable.org/2013/07/have-your-lens-calibrated/">this lens calibration service</ulink> offered by Torsten Bronger, one
                               of darktable's users. Alternatively you may go to <ulink url="http://lensfun.berlios.de">lensfun's home page</ulink> and learn how 
                               to generate your own set of correction parameters. Don't forget to share your profile with the lensfun team!
