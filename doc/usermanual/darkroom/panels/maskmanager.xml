@@ -60,7 +60,7 @@
          all shapes currently not in use.</para>
 
          <para>All shapes ever defined for the current image are kept in the list unless
-         you remove them explicitly. If you have worked a lot with shapes on one image, this list can get quite long.
+         you remove them explicitely. If you have worked a lot with shapes on one image, this list can get quite long.
          All settings - with all defined shapes - are part of the XMP tags of an image and are included in exported files. 
          If the list of shapes is very long the needed space to store all shapes might exceed the given limits of certain file
          formats, like JPEG. In that case storing the XMP tags might fail during export. This is normally not a problem -
@@ -190,7 +190,7 @@
 					<row>						
 						<entry>This set operator is depicted by the <inlinegraphic fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/> 
                                                        symbol. The resulting mask has all pixels selected 
-                                                       that are either selected in the existing mask and not in the added shape or vice versa. 
+                                                       that are either selected in the existing mask and not in the added shape or vice vera. 
                                                        This is equivalent to an <quote>exclusive or</quote>.
 						</entry>
 						<entry>

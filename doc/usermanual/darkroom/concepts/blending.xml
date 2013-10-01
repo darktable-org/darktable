@@ -22,7 +22,7 @@
             input image - the module remains without effect. An opacity value of 100% delivers the maximum effect of the module with the 
             blend mode chosen.</para>
 
-            <para>The opacity value can be the same for all image pixels. In this case blending acts uniformly on the image. Alternatively 
+            <para>The opacity value can be the same for all image pixels. In this case blending acts uniformily on the image. Alternatively 
             you can make opacity values to vary between different image locations or pixel values. This is called a mask and gives fine control
             over what parts of an image are affected by a module and to what extent. At your choice you may activate a drawn mask or a parametric mask
             or a combination of both.</para>
@@ -53,7 +53,7 @@
                     <para>module's output is passed to the next module in pixelpipe without additional reprocessing. No further controls are displayed.</para>
               </sect5>
 
-              <sect5><title>uniformly</title>
+              <sect5><title>uniformily</title>
                     <para>reprocessing takes place with the chosen blend mode and opacity value - the same for all pixels. Additional
                     controls to select blend mode and opacity value are displayed. The default blend mode is <quote>normal</quote> with an opacity of 100%.</para>
               </sect5>

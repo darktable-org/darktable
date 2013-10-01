@@ -51,7 +51,7 @@
 		<para>When darktable starts, it will first try to find and load libOpenCL.so and – on success – check if the available graphics card comes with OpenCL support. 
                       A sufficient amount of graphics memory (1GB+) needs to be available to take advantage of the GPU. If that is OK, darktable tries to setup its OpenCL 
                       environment: a processing context needs to be initialized, a calculation pipeline to be started, OpenCL source code files (extension is .cl) need to be 
-                      read and compiled and the included routines (called OpenCL kernels) need to be prepared for darktable’s modules. If all that is done, the preparation 
+                      read and compiled and the included routines (called OpenCL kernels) need to be prepared for darktablele’s modules. If all that is done, the preparation 
                       is finished.</para>
 
 		<para>Per default OpenCL support is activated in darktable if all the above steps were successful. If you want to de-activate it you can do so in <quote>core options</quote> 
@@ -163,7 +163,7 @@ darktable -d opencl
 darktable -d opencl -d perf
 		    </programlisting>
                  After each reprocessing of pixelpipe - caused by module parameter change, zooming, panning, etc. - you will get the total time and the time spent in each of our OpenCL 
-                 kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each individual module are unreliable when running the OpenCL 
+                 kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each indiviual module are unreliable when running the OpenCL 
                  pixelpipe asynchronously (see opencl_async_pixelpipe below).</para>
 
                 <para>To allow for a fast pixelpipe processing with OpenCL it is essential that we keep the GPU busy. Any interrupts or a stalled data flow will add to the total 
@@ -171,7 +171,7 @@ darktable -d opencl -d perf
                  even short-term stalls of the pixelpipe will easily become a bottleneck.</para>
 
                 <para>On the other hand darktable's performance during file exports is more or less only governed by the speed of our algorithms and the horse-power of your GPU. Short-term 
-                 stalls will not have a noticeable effect on the total time of an export.</para>
+                 stalls will not have a noticable effect on the total time of an export.</para>
 
 
                 <para>darktable comes with default settings that should deliver a decent GPU performance on most systems. However, if you want to fiddle around a bit by yourself and try to 
@@ -211,8 +211,8 @@ darktable -d opencl -d perf
                 </sect4>
 
                 <sect4><title>opencl_use_pinned_memory</title>
-                      <para>During tiling huge amounts of memory need to be transferred between host and device. On some devices (namely AMD) direct memory transfers to and from an
-                      arbitrary host memory region may give a huge performance penalty. This is especially noticeable when exporting large images. Setting this configuration parameter 
+                      <para>During tiling huge amounts of memory need to be transfered between host and device. On some devices (namely AMD) direct memory transfers to and from an
+                      arbitrary host memory region may give a huge performance penalty. This is especially noticable when exporting large images. Setting this configuration parameter 
                       to TRUE tells darktable to use a special kind of intermediate buffer for host-device data transfers. On some devices this can speed up exporting of large files 
                       by a factor of 2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer technique even for arbitrary memory regions. They may deliver better 
                       performance if opencl_use_pinned_memory is left at its default FALSE.</para>
@@ -251,8 +251,8 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                      either by number or by name (upper/lower case and whitespace do not matter). If you have more than one device - all with the same
                      name - you need to use the device numbers in order to differentiate them.</para>
 
-               <para>A device specifier can be preceded by an exclamation mark <quote>!</quote>, in which case the device is excluded from processing
-                     this pixelpipe. You can also give an asterisk <quote>*</quote> as a wildcard, representing all devices not mentioned explicitly before in that group.</para>
+               <para>A device specifier can be preceeded by an exclamation mark <quote>!</quote>, in which case the device is excluded from processing
+                     this pixelpipe. You can also give an asterisk <quote>*</quote> as a wildcard, representing all devices not mentioned explicitely before in that group.</para>
 
                <para>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan
                      the devices in that order, taking the first free device it finds.</para>
@@ -285,7 +285,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
 		    <programlisting>
 !GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
 		    </programlisting>
-                    The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
+                    The GTS450 is explicitely excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
                     Completely the opposite for our preview
                     pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be allowed to do the work.</para>
 
