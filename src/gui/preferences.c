@@ -225,9 +225,10 @@ void dt_gui_preferences_show()
                           GTK_RESPONSE_ACCEPT,
                           NULL);
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
-  gtk_window_resize(GTK_WINDOW(_preferences_dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
+  gtk_widget_set_size_request(notebook, -1, 500);
+  gtk_widget_set_name(notebook, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
   // Make sure remap mode is off initially
