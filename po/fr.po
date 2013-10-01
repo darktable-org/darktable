@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-23 09:51+0200\n"
-"PO-Revision-Date: 2013-09-23 13:42+0100\n"
+"POT-Creation-Date: 2013-10-01 08:19+0200\n"
+"PO-Revision-Date: 2013-10-01 08:20+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -690,11 +690,11 @@ msgstr "le style '%s' a été importé"
 msgid "none"
 msgstr "sans"
 
-#: ../src/control/control.c:1410 ../src/control/control.c:1413
+#: ../src/control/control.c:1411 ../src/control/control.c:1414
 msgid "working.."
 msgstr "en cours..."
 
-#: ../src/control/control.c:1496
+#: ../src/control/control.c:1497
 #, c-format
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
@@ -954,14 +954,14 @@ msgstr[1] "exportation de %d images vers %s"
 msgid "image `%s' is currently unavailable"
 msgstr "image '%s\" non disponible actuellement"
 
-#: ../src/control/jobs/control_jobs.c:1188
+#: ../src/control/jobs/control_jobs.c:1189
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
-#: ../src/control/jobs/control_jobs.c:1208
+#: ../src/control/jobs/control_jobs.c:1209
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "décalage horaire ajouté à %d image(s)"
@@ -1099,7 +1099,7 @@ msgstr "entrée"
 msgid "double click to reset"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1355
+#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1378
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
@@ -1107,7 +1107,7 @@ msgstr[0] "%d forme utilisée"
 msgstr[1] "%d formes utilisées"
 
 #: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
-#: ../src/develop/masks/masks.c:1358
+#: ../src/develop/masks/masks.c:1381
 msgid "no mask used"
 msgstr "aucun utilisé"
 
@@ -2419,9 +2419,9 @@ msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire %s !"
 
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
-#: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:670
+#: ../src/imageio/storage/facebook.c:1193 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1460
+#: ../src/imageio/storage/picasa.c:1459
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
@@ -2469,97 +2469,97 @@ msgstr "authentification facebook"
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:643 ../src/imageio/storage/picasa.c:863
+#: ../src/imageio/storage/facebook.c:642 ../src/imageio/storage/picasa.c:862
 msgid "please enter the validation URL"
 msgstr "entrer l'URL de validation"
 
-#: ../src/imageio/storage/facebook.c:654 ../src/imageio/storage/picasa.c:875
+#: ../src/imageio/storage/facebook.c:653 ../src/imageio/storage/picasa.c:874
 msgid "the given URL is not valid, it should look like: "
 msgstr "l'URL donnée n'est pas valide, elle devrait ressembler à :"
 
-#: ../src/imageio/storage/facebook.c:760 ../src/imageio/storage/picasa.c:1006
+#: ../src/imageio/storage/facebook.c:759 ../src/imageio/storage/picasa.c:1005
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:767 ../src/imageio/storage/picasa.c:1013
+#: ../src/imageio/storage/facebook.c:766 ../src/imageio/storage/picasa.c:1012
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:798 ../src/imageio/storage/picasa.c:1043
+#: ../src/imageio/storage/facebook.c:797 ../src/imageio/storage/picasa.c:1042
 msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
-#: ../src/imageio/storage/facebook.c:806 ../src/imageio/storage/flickr.c:388
-#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1051
+#: ../src/imageio/storage/facebook.c:805 ../src/imageio/storage/flickr.c:388
+#: ../src/imageio/storage/flickr.c:416 ../src/imageio/storage/picasa.c:1050
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:928 ../src/imageio/storage/picasa.c:1099
-#: ../src/imageio/storage/picasa.c:1259
+#: ../src/imageio/storage/facebook.c:927 ../src/imageio/storage/picasa.c:1098
+#: ../src/imageio/storage/picasa.c:1258
 msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:932 ../src/imageio/storage/facebook.c:945
-#: ../src/imageio/storage/facebook.c:972
-#: ../src/imageio/storage/facebook.c:1075 ../src/imageio/storage/flickr.c:526
-#: ../src/imageio/storage/picasa.c:1105 ../src/imageio/storage/picasa.c:1263
-#: ../src/imageio/storage/picasa.c:1276 ../src/imageio/storage/picasa.c:1342
+#: ../src/imageio/storage/facebook.c:931 ../src/imageio/storage/facebook.c:944
+#: ../src/imageio/storage/facebook.c:971
+#: ../src/imageio/storage/facebook.c:1074 ../src/imageio/storage/flickr.c:526
+#: ../src/imageio/storage/picasa.c:1104 ../src/imageio/storage/picasa.c:1262
+#: ../src/imageio/storage/picasa.c:1275 ../src/imageio/storage/picasa.c:1341
 msgid "login"
 msgstr "connexion"
 
-#: ../src/imageio/storage/facebook.c:1009
+#: ../src/imageio/storage/facebook.c:1008
 msgid "facebook webalbum"
 msgstr "album web facebook"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:1022 ../src/imageio/storage/flickr.c:480
+#: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
-#: ../src/imageio/storage/picasa.c:1304 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1303 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:100
 msgid "title"
 msgstr "titre"
 
-#: ../src/imageio/storage/facebook.c:1023 ../src/imageio/storage/flickr.c:481
-#: ../src/imageio/storage/picasa.c:1305
+#: ../src/imageio/storage/facebook.c:1022 ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/picasa.c:1304
 msgid "summary"
 msgstr "résumé"
 
-#: ../src/imageio/storage/facebook.c:1024
+#: ../src/imageio/storage/facebook.c:1023
 msgid "privacy"
 msgstr "vie privée"
 
-#: ../src/imageio/storage/facebook.c:1064
+#: ../src/imageio/storage/facebook.c:1063
 msgid "only me"
 msgstr "juste moi"
 
-#: ../src/imageio/storage/facebook.c:1066 ../src/imageio/storage/flickr.c:539
+#: ../src/imageio/storage/facebook.c:1065 ../src/imageio/storage/flickr.c:539
 msgid "friends"
 msgstr "amis"
 
-#: ../src/imageio/storage/facebook.c:1068
+#: ../src/imageio/storage/facebook.c:1067
 msgid "public"
 msgstr "public"
 
-#: ../src/imageio/storage/facebook.c:1070
+#: ../src/imageio/storage/facebook.c:1069
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1203 ../src/imageio/storage/picasa.c:1469
+#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1468
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1210 ../src/imageio/storage/picasa.c:1476
+#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1475
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:1220
+#: ../src/imageio/storage/facebook.c:1219
 msgid "unable to export photo to webalbum"
 msgstr "impossible d'exporter les photos vers l'album web"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1237
+#: ../src/imageio/storage/facebook.c:1236
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exportée(s) vers l'album web facebook"
@@ -2684,27 +2684,27 @@ msgstr "entrer le titre du livre"
 #: ../src/imageio/storage/picasa.c:823
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
-"have to login into your picasa account there and authorize darktable to "
+"have to login into your google+ account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
 "étape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans votre "
-"navigateur. Connectez-vous à votre compte picasa et autorisez darktable à "
+"navigateur. connectez-vous à votre compte google+ et autorisez darktable à "
 "charger des fichiers pour continuer."
 
 #: ../src/imageio/storage/picasa.c:834
-msgid "picasa authentication"
-msgstr "authentification picasa"
+msgid "google+ authentication"
+msgstr "authentification google+"
 
-#: ../src/imageio/storage/picasa.c:1291
+#: ../src/imageio/storage/picasa.c:1290
 msgid "google+ photos"
 msgstr "photos google+"
 
-#: ../src/imageio/storage/picasa.c:1486
+#: ../src/imageio/storage/picasa.c:1485
 msgid "unable to export photo to google+ album"
 msgstr "impossible d'exporter les photos vers l'album google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1503
+#: ../src/imageio/storage/picasa.c:1502
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exportée(s) vers l'album google+"
@@ -8195,11 +8195,11 @@ msgstr "pinceau #%d"
 msgid "copy of %s"
 msgstr "copie de %s"
 
-#: ../src/develop/masks/masks.c:1228 ../src/libs/masks.c:925
+#: ../src/develop/masks/masks.c:1243 ../src/libs/masks.c:925
 msgid "add existing shape"
 msgstr "ajouter un masque existant"
 
-#: ../src/develop/masks/masks.c:1255
+#: ../src/develop/masks/masks.c:1270
 msgid "use same shapes as"
 msgstr "utiliser les mêmes masques que"
 
@@ -8259,6 +8259,18 @@ msgstr "masques existants"
 #: ../src/lua/preferences.c:338
 msgid "lua options"
 msgstr "options lua"
+
+#~ msgid ""
+#~ "step 1: a new window or tab of your browser should have been loaded. you "
+#~ "have to login into your picasa account there and authorize darktable to "
+#~ "upload photos before continuing."
+#~ msgstr ""
+#~ "étape 1 : une nouvelle fenêtre ou un nouvel onglet s'est ouvert dans "
+#~ "votre navigateur. Connectez-vous à votre compte picasa et autorisez "
+#~ "darktable à charger des fichiers pour continuer."
+
+#~ msgid "picasa authentication"
+#~ msgstr "authentification picasa"
 
 #~ msgctxt "lowpass"
 #~ msgid "lightness"
