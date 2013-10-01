@@ -182,10 +182,7 @@ static void _lib_filter_combobox_changed (GtkComboBox *widget, gpointer user_dat
     dt_collection_set_filter_flags (darktable.collection, dt_collection_get_filter_flags (darktable.collection) | COLLECTION_FILTER_ATLEAST_RATING );
 
   /* set the star filter in collection */
-  if (i == 8)
-    dt_collection_set_rating(darktable.collection, 0);
-  else
-    dt_collection_set_rating(darktable.collection, i-1);
+  dt_collection_set_rating(darktable.collection, i);
 
   /* update the query and view */
   _lib_filter_update_query(user_data);

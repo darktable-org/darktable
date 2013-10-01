@@ -86,6 +86,8 @@ dt_collection_update (const dt_collection_t *collection)
   if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     int need_operator = 0;
+    dt_collection_filter_t rating = collection->params.rating;
+    if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
@@ -97,9 +99,9 @@ dt_collection_update (const dt_collection_t *collection)
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
@@ -160,7 +162,7 @@ dt_collection_reset(const dt_collection_t *collection)
   params->query_flags = COLLECTION_QUERY_FULL;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_RATING;
   params->film_id = 1;
-  params->rating = 1;
+  params->rating = DT_COLLECTION_FILTER_STAR_NO;
 
   /* apply stored query parameters from previous darktable session */
   params->film_id      = dt_conf_get_int("plugins/collection/film_id");
@@ -238,7 +240,6 @@ dt_collection_get_rating (const dt_collection_t *collection)
   uint32_t i;
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
   i = params->rating;
-  i++; /* The enum starts on 0 */
   return i;
 }
 
