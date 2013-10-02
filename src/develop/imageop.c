@@ -1054,9 +1054,18 @@ static void
 dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   //first we create the new module
-  dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,-1);
+  dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,0);
   if (!module) return;
-
+  
+  //we reflect the positions changes in the history stack too
+  GList *history = g_list_first(module->dev->history);
+  while(history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    if (hist->module->instance == base->instance) hist->multi_priority = hist->module->multi_priority;
+    history = g_list_next(history);
+  }
+  
   //what is the position of the module in the pipe ?
   GList *modules = g_list_first(module->dev->iop);
   int pos_module = 0;
@@ -1105,7 +1114,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     GValue gv = { 0, { { 0 } } };
     g_value_init(&gv,G_TYPE_INT);
     gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
-    gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
+    gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module+1);
     dt_iop_gui_set_expanded(module, TRUE);
     dt_iop_gui_update_blending(module);
 

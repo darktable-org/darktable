@@ -1270,26 +1270,29 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   module->instance = base->instance;
 
   //we set the multi-instance priority
-  if (priority < 0)
+  GList *modules = g_list_first(base->dev->iop);
+  int pmax = 0;
+  while(modules)
   {
-    GList *modules = g_list_first(base->dev->iop);
-    int pmax = 0;
-    while(modules)
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(mod->instance == base->instance)
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-      if(mod->instance == base->instance)
+      //if the module is after the new one, we have to increment his priority
+      if (mod->multi_priority >= priority)
       {
-        if (pmax < mod->multi_priority) pmax = mod->multi_priority;
+        mod->multi_priority += 1;
       }
-      modules = g_list_next(modules);
+      if (pmax < mod->multi_priority) pmax = mod->multi_priority;
     }
-    module->multi_priority = pmax + 1;
+    modules = g_list_next(modules);
   }
-  else module->multi_priority = priority;
+  pmax +=1 ;
+  if (priority < pmax) pmax = priority;
+  module->multi_priority = pmax;
 
   // since we do not rename the module we need to check that an old module does not have the same name. Indeed the multi_priority
   // are always rebased to start from 0, to it may be the case that the same multi_name be generated when duplicating a module.
-  int pname = module->multi_priority;
+  int pname = module->multi_priority+1;
   char mname[128];
 
   do
@@ -1297,22 +1300,19 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
     snprintf(mname,128,"%d",pname);
     gboolean dup=FALSE;
 
-    if (priority < 0)
+    GList *modules = g_list_first(base->dev->iop);
+    while(modules)
     {
-      GList *modules = g_list_first(base->dev->iop);
-      while(modules)
+      dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+      if(mod->instance == base->instance)
       {
-        dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-        if(mod->instance == base->instance)
+        if (strcmp(mname,mod->multi_name)==0)
         {
-          if (strcmp(mname,mod->multi_name)==0)
-          {
-            dup=TRUE;
-            break;
-          }
+          dup=TRUE;
+          break;
         }
-        modules = g_list_next(modules);
       }
+      modules = g_list_next(modules);
     }
 
     if (dup)
