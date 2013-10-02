@@ -32,7 +32,7 @@ typedef struct event_handler{
   gboolean in_use;
 } event_handler;
 
-static void queue_event(const char*event,int nargs);
+static void run_event(const char*event,int nargs);
 static int register_shortcut_event(lua_State* L);
 static int trigger_keyed_event(lua_State * L);
 static int register_multiinstance_event(lua_State* L);
@@ -162,7 +162,7 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     gpointer p)
 {
   lua_pushstring(darktable.lua_state,(char*)p);
-  queue_event("shortcut",1);
+  run_event("shortcut",1);
   return TRUE;
 }
 
@@ -333,7 +333,7 @@ static int lua_register_event(lua_State *L) {
 
 
 
-static void queue_event(const char*event,int nargs) {
+static void run_event(const char*event,int nargs) {
   lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
   if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
     lua_settop(darktable.lua_state,0);
@@ -344,13 +344,13 @@ static void queue_event(const char*event,int nargs) {
   lua_pop(darktable.lua_state,2);
   if(!handler->in_use) { 
     lua_pop(darktable.lua_state,nargs);
-    return;
+    return; 
   }
   lua_pushcfunction(darktable.lua_state,handler->on_event);
   lua_insert(darktable.lua_state,-nargs -1);
   lua_pushstring(darktable.lua_state,event);
   lua_pushnumber(darktable.lua_state,nargs);
-  dt_lua_delay_chunk(darktable.lua_state,nargs+2);
+  dt_lua_do_chunk(darktable.lua_state,nargs+2,0);
   
 }
 #if 0
@@ -424,17 +424,17 @@ static void on_export_image_tmpfile(gpointer instance,
      gpointer user_data){
   luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state,filename);
-  queue_event("intermediate-export-image",2);
+  run_event("intermediate-export-image",2);
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
   luaA_push(darktable.lua_state,dt_lua_image_t,&id);
-  queue_event("post-import-image",1);
+  run_event("post-import-image",1);
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
   luaA_push(darktable.lua_state,dt_lua_film_t,&id);
-  queue_event("post-import-film",1);
+  run_event("post-import-film",1);
 }
 
 int dt_lua_init_events(lua_State *L) {
