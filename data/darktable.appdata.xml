@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl> -->
 <application>
   <id type="desktop">darktable.desktop</id>
   <licence>CC0</licence>
