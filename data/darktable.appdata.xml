@@ -23,5 +23,5 @@
     <screenshot width="1317" height="741">http://darktable.org/images/darktable-appdata-map.png</screenshot>
   </screenshots>
   <url type="homepage">http://www.darktable.org/</url>
-  <updatecontact>darktable-users@lists.sourceforge.net</updatecontact>
+  <updatecontact>darktable-devel@lists.sourceforge.net</updatecontact>
 </application>
