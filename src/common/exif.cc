@@ -947,6 +947,14 @@ int dt_exif_read_blob(
            != exifData.end() )
         exifData.erase(pos);
 
+      //Sony thumbnail data
+      if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.SonyMinolta.ThumbnailOffset")))
+          !=exifData.end() )
+        exifData.erase(pos);
+      if( (pos=exifData.findKey(Exiv2::ExifKey("Exif.SonyMinolta.ThumbnailLength")))
+          !=exifData.end() )
+        exifData.erase(pos);
+
       // Olympus thumbnail data
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Olympus.Thumbnail")))
            != exifData.end() )
