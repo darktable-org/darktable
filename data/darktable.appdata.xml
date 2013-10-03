@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl> -->
+<!-- Copyright 2013 Pascal de Bruijn <pmjdebruijn@pcode.nl>
+               2013 Tobias Ellinghaus <me@houz.org>
+-->
 <application>
   <id type="desktop">darktable.desktop</id>
   <licence>CC0</licence>
@@ -15,8 +17,11 @@
     </p>
   </description>
   <screenshots>
-    <screenshot type="default" width="1366" height="768">http://darktable.org/images/darktable-appdata.jpg</screenshot>
+    <screenshot type="default" width="1317" height="741">http://darktable.org/images/darktable-appdata-lighttable.png</screenshot>
+    <screenshot width="1317" height="741">http://darktable.org/images/darktable-appdata-darkroom.png</screenshot>
+    <screenshot width="1317" height="741">http://darktable.org/images/darktable-appdata-tethering.png</screenshot>
+    <screenshot width="1317" height="741">http://darktable.org/images/darktable-appdata-map.png</screenshot>
   </screenshots>
   <url type="homepage">http://www.darktable.org/</url>
-  <updatecontact>darktable-users@lists.sourceforge.net</updatecontact>
+  <updatecontact>darktable-devel@lists.sourceforge.net</updatecontact>
 </application>

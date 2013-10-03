@@ -390,7 +390,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
   return count;
 }
 
-GList *dt_collection_get_selected (const dt_collection_t *collection)
+GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
 {
   GList *list=NULL;
   gchar *query = NULL;
@@ -409,10 +409,10 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
 
-  query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s", sq);
-
+  query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s limit ?1", sq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {

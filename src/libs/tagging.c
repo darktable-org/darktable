@@ -541,7 +541,7 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
       }
       else // all selected images
       {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection));
+        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
         if(selected_images)
         {
           GList *iter = selected_images;
