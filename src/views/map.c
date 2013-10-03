@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
-#include "common/selection.h"
 #include "views/view.h"
 #include "views/undo.h"
 #include "libs/lib.h"
@@ -528,7 +527,7 @@ void enter(dt_view_t *self)
                             self);
 
   /* scroll filmstrip to the first selected image */
-  GList *selected_images = dt_selection_get_selected(1);
+  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
   if(selected_images)
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
   g_list_free(selected_images);
