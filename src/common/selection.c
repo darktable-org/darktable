@@ -301,6 +301,24 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
 
   selection->last_single_id = -1;
 }
+
+GList * dt_selection_get_selected(uint32_t limit)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select imgid from selected_images limit ?1",-1,&stmt,NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
+
+  while(sqlite3_step(stmt)==SQLITE_ROW)
+    result = g_list_append(result, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
