@@ -31,7 +31,7 @@
 
 static int selection_cb(lua_State *L)
 {
-  GList *image = dt_collection_get_selected(darktable.collection);
+  GList *image = dt_collection_get_selected(darktable.collection, -1);
   if(lua_gettop(L) > 0)
   {
     dt_selection_clear(darktable.selection);
@@ -79,7 +79,7 @@ static int act_on_cb(lua_State *L)
     luaL_ref(L,-2);
     return 1;
   } else {
-    GList *image = dt_collection_get_selected(darktable.collection);
+    GList *image = dt_collection_get_selected(darktable.collection, -1);
     while(image)
     {
       luaA_push(L,dt_lua_image_t,&image->data);

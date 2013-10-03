@@ -111,9 +111,9 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   if (imgid != -1)
     list = g_list_append (list, (gpointer)imgid);
   else
-    list = dt_collection_get_selected(darktable.collection); 
+    list = dt_collection_get_selected(darktable.collection, -1);
 
-  dt_control_export(list,max_width, max_height, format_index, storage_index, high_quality,style);
+  dt_control_export(list, max_width, max_height, format_index, storage_index, high_quality,style);
 }
 
 static void

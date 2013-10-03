@@ -592,7 +592,7 @@ void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t
 
   if(imgid < 0) {
     /* get sorted list of selected images */
-    t->index = dt_collection_get_selected(darktable.collection);
+    t->index = dt_collection_get_selected(darktable.collection, -1);
   }
   else {
     /* Create a list with only one image */
