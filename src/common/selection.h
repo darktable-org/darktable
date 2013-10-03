@@ -42,9 +42,6 @@ void dt_selection_select_all(struct dt_selection_t *selection);
 void dt_selection_select_filmroll(struct dt_selection_t *selection);
 /** selects all unaltered images in the current collection */
 void dt_selection_select_unaltered(struct dt_selection_t *selection);
-/** returns a list of ids of all currently selected images. at most limit images are returned, a negative limit means unlimited */
-GList * dt_selection_get_selected(uint32_t limit);
-
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
