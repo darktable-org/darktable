@@ -465,7 +465,7 @@ expose (GtkWidget *da, GdkEventExpose *event, gpointer user_data)
   dt_control_expose(NULL);
   if(darktable.gui->surface) {
     cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(da));
-    cairo_set_source_surface (cr, darktable.gui->surface, event->area.x, event->area.y);
+    cairo_set_source_surface (cr, darktable.gui->surface, 0, 0);
     cairo_paint (cr);
     cairo_destroy (cr);
   }
