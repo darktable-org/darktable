@@ -205,6 +205,41 @@ show_pango_text(
 }
 
 // -------------------------------
+static gboolean _cursor_timeout_callback(gpointer user_data)
+{
+  if(darktable.bauhaus->cursor_blink_counter > 0)
+    darktable.bauhaus->cursor_blink_counter--;
+
+  darktable.bauhaus->cursor_visible = !darktable.bauhaus->cursor_visible;
+  gtk_widget_queue_draw(darktable.bauhaus->popup_area);
+
+  if(darktable.bauhaus->cursor_blink_counter != 0) // this can be >0 when we haven't reached the desired number or -1 when blinking forever
+    return TRUE;
+
+  darktable.bauhaus->cursor_timeout = 0; // otherwise the cursor won't come up when starting to type
+  return FALSE;
+}
+
+static void _start_cursor(int max_blinks)
+{
+  darktable.bauhaus->cursor_blink_counter = max_blinks;
+  darktable.bauhaus->cursor_visible = FALSE;
+  if(darktable.bauhaus->cursor_timeout == 0)
+    darktable.bauhaus->cursor_timeout = g_timeout_add(500, _cursor_timeout_callback, NULL);
+}
+
+static void _stop_cursor()
+{
+  if(darktable.bauhaus->cursor_timeout > 0)
+  {
+    g_source_remove(darktable.bauhaus->cursor_timeout);
+    darktable.bauhaus->cursor_timeout = 0;
+    darktable.bauhaus->cursor_visible = FALSE;
+  }
+}
+// -------------------------------
+
+
 static void
 dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos);
 
@@ -374,6 +409,9 @@ dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointe
   const float ey = event->y;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
+
+  if(darktable.bauhaus->keys_cnt == 0)
+    _stop_cursor();
 
   switch(w->type)
   {
@@ -1511,6 +1549,18 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_show_text(cr, darktable.bauhaus->keys); // FIXME: pango
     cairo_restore(cr);
   }
+  if(darktable.bauhaus->cursor_visible)
+  {
+    // show the blinking cursor
+    cairo_save(cr);
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    const int line_height = get_line_height();
+    cairo_set_font_size (cr, MIN(3*line_height, .2*height));
+    cairo_move_to (cr, wd-ht+3, height*0.5 + line_height);
+    cairo_line_to(cr, wd-ht+3, height*0.5 - 3*line_height);
+    cairo_stroke(cr);
+    cairo_restore(cr);
+  }
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -1602,6 +1652,7 @@ dt_bauhaus_hide_popup()
     darktable.bauhaus->current = NULL;
     // TODO: give focus to center view? do in accept() as well?
   }
+  _stop_cursor();
 }
 
 void
@@ -1614,6 +1665,7 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   memset(darktable.bauhaus->keys, 0, 64);
   darktable.bauhaus->change_active = 0;
   darktable.bauhaus->mouse_line_distance = 0.0f;
+  _stop_cursor();
 
   dt_iop_request_focus(w->module);
   int offset = 0;
@@ -1628,6 +1680,7 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       GtkAllocation tmp;
       gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
       gtk_widget_set_size_request(darktable.bauhaus->popup_area, tmp.width, tmp.width);
+      _start_cursor(6);
       break;
     }
     case DT_BAUHAUS_COMBOBOX:
@@ -1896,6 +1949,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         dt_bauhaus_hide_popup();
       }
       else return FALSE;
+      if(darktable.bauhaus->keys_cnt > 0) _start_cursor(-1);
       return TRUE;
     }
     case DT_BAUHAUS_COMBOBOX:
