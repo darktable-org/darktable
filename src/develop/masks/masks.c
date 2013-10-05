@@ -1386,8 +1386,8 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)
 {
-  int id = form->formid;
   if (!form) return;
+  int id = form->formid;
   if (grp && !(grp->type & DT_MASKS_GROUP)) return;
 
   if (!(form->type & DT_MASKS_CLONE) && grp)
