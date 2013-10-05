@@ -33,17 +33,20 @@ typedef struct {
 
 static const char* name_wrapper(const struct dt_imageio_module_storage_t *self)
 {
+  dt_lua_lock();
   lua_State *L =darktable.lua_state;
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
   lua_getfield(L,-1,self->plugin_name);
   lua_getfield(L,-1,"name");
   const char* result = lua_tostring(L,-1);
   lua_pop(L,3);
+  dt_lua_unlock();
   return result;
 }
 static  void empty_wrapper(struct dt_imageio_module_storage_t *self) {};
 static int default_supported_wrapper    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format)
 {
+  dt_lua_lock();
   lua_State *L =darktable.lua_state;
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
   lua_getfield(L,-1,self->plugin_name);
@@ -51,6 +54,7 @@ static int default_supported_wrapper    (struct dt_imageio_module_storage_t *sel
 
   if(lua_isnil(L,-1)) {
     lua_pop(L,3);
+    dt_lua_unlock();
     return true;
   }
   dt_imageio_module_data_t *sdata = self->get_params(self);
@@ -62,6 +66,7 @@ static int default_supported_wrapper    (struct dt_imageio_module_storage_t *sel
   dt_lua_do_chunk(L,2,1);
   int result = lua_toboolean(L,-1);
   lua_pop(L,2);
+  dt_lua_unlock();
   return result;
 };
 static int default_dimension_wrapper    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height)
@@ -97,6 +102,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
 
 
 
+  dt_lua_lock();
   lua_State *L =darktable.lua_state;
 
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
@@ -105,6 +111,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
 
   if(lua_isnil(L,-1)) {
     lua_pop(L,3);
+    dt_lua_unlock();
     return 1;
   }
 
@@ -120,11 +127,13 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   dt_lua_do_chunk(L,8,1);
   int result = lua_toboolean(L,-1);
   lua_pop(L,2);
+  dt_lua_unlock();
   return result;
 
 }
 extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
+  dt_lua_lock();
   lua_State *L =darktable.lua_state;
 
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
@@ -133,6 +142,7 @@ extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
 
   if(lua_isnil(L,-1)) {
     lua_pop(L,3);
+    dt_lua_unlock();
     return;
   }
 
@@ -155,6 +165,7 @@ extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt
 
   dt_lua_do_chunk(L,3,0);
   lua_pop(L,2);
+  dt_lua_unlock();
 }
 static size_t params_size_wrapper   (struct dt_imageio_module_storage_t *self)
 {
@@ -162,16 +173,19 @@ static size_t params_size_wrapper   (struct dt_imageio_module_storage_t *self)
 }
 static void* get_params_wrapper   (struct dt_imageio_module_storage_t *self)
 {
+  dt_lua_lock();
   lua_storage_t *d = malloc(sizeof(lua_storage_t));
   d->imgids = NULL;
   d->file_names = NULL;
   lua_pushlightuserdata(darktable.lua_state,d);
   lua_newtable(darktable.lua_state);
   lua_settable(darktable.lua_state,LUA_REGISTRYINDEX);
+  dt_lua_unlock();
   return d;
 }
 static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
+  dt_lua_lock();
   lua_pushlightuserdata(darktable.lua_state,data);
   lua_pushnil(darktable.lua_state);
   lua_settable(darktable.lua_state,LUA_REGISTRYINDEX);
@@ -179,6 +193,7 @@ static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_
   g_list_free(d->imgids);
   g_list_free_full(d->file_names,free);
   free(data);
+  dt_lua_unlock();
 }
 static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
