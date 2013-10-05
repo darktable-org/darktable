@@ -83,9 +83,9 @@ int dt_lua_dofile(lua_State *L,const char* filename)
 
 static gboolean poll_events(gpointer data)
 {
-  int my_id = GPOINTER_TO_INT(data);
   lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
-  lua_rawgeti(darktable.lua_state,-1,my_id);
+  lua_pushlightuserdata(darktable.lua_state,data);
+  lua_gettable(darktable.lua_state,-2);
   if(lua_isnoneornil(darktable.lua_state,-1)) {
     lua_pop(darktable.lua_state,2);
     luaL_error(darktable.lua_state,"Unknown thread was called for delay action");
@@ -93,8 +93,9 @@ static gboolean poll_events(gpointer data)
   }
   lua_State * L = lua_tothread(darktable.lua_state,-1);
   dt_lua_do_chunk(L,lua_gettop(L) -1,0);
-  /* L is finished, remove it from the stack */
-  luaL_unref(darktable.lua_state,-2,my_id);
+  lua_pushlightuserdata(darktable.lua_state,data);
+  lua_pushnil(darktable.lua_state);
+  lua_settable(darktable.lua_state,-4);
   lua_pop(darktable.lua_state,2);
   return FALSE;
 }
@@ -103,10 +104,12 @@ static gboolean poll_events(gpointer data)
 void dt_lua_delay_chunk(lua_State *L,int nargs) {
   lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
   lua_State * new_thread = lua_newthread(L);
-  int my_id = luaL_ref(L,-2);
+  lua_pushlightuserdata(L,new_thread);
+  lua_insert(L,-2);
+  lua_settable(L,-3);
   lua_pop(L,1);
   lua_xmove(L,new_thread,nargs+1);
-  gdk_threads_add_idle(poll_events,GINT_TO_POINTER(my_id));
+  gdk_threads_add_idle(poll_events,new_thread);
 }
 
 
