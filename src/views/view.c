@@ -249,8 +249,13 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       {
         dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-        if (!plugin->views)
+        if (!plugin->views) {
           fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
+
+          /* get next plugin */
+          plugins = g_list_previous(plugins);
+          continue;
+        }
 
         /* does this module belong to current view ?*/
         if (plugin->views() & v->view(v) )
@@ -421,8 +426,13 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-      if (!plugin->views)
+      if (!plugin->views) {
         fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
+
+        /* get next plugin */
+        plugins = g_list_previous(plugins);
+        continue;
+      }
 
       /* does this module belong to current view ?*/
       if (plugin->gui_post_expose && plugin->views() & v->view(v) )
