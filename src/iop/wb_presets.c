@@ -5525,6 +5525,7 @@ const wb_data wb_preset[] = {
   { "SONY", "NEX-5R", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
   { "SONY", "NEX-5R", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
 
+  // copied from NEX-5R
   { "SONY", "NEX-6", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
   { "SONY", "NEX-6", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
   { "SONY", "NEX-6", Cloudy, 0,		        { 2.7188, 1, 1.3828, 0 } },
