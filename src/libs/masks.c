@@ -734,7 +734,7 @@ static void _tree_cell_edited (GtkCellRendererText *cell, gchar *path_string, gc
 
   //first, we need to update the mask name
 
-  strncpy(form->name,new_text,128);
+  strncpy(form->name,new_text,sizeof(form->name)-1);
   dt_masks_write_form(form,darktable.develop);
 
   //and we update the cell text

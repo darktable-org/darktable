@@ -101,7 +101,7 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
   char* tmp = dt_conf_get_string("plugins/lighttable/export/style");
   if (tmp)
   {
-    strncpy (style, tmp, 128);
+    strncpy (style, tmp, sizeof(style)-1);
     g_free(tmp);
   }
   
@@ -745,7 +745,7 @@ get_params (dt_lib_module_t *self, int *size)
 
   if (fdata)
   {
-    strncpy(fdata->style, style, 128);
+    strncpy(fdata->style, style, sizeof(fdata->style)-1);
   }
 
   if(!iccprofile)

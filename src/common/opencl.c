@@ -1628,7 +1628,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     (*totallost)++;
     if (tag != NULL)
     {
-      strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
+      strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH-1);
     }
     else
     {

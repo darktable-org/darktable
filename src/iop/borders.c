@@ -658,7 +658,7 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
   }
   else if (which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    strncpy(p->aspect_text, text, 20);
+    strncpy(p->aspect_text, text, sizeof(p->aspect_text)-1);
     p->aspect = g->aspect_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -697,14 +697,14 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
       {
         p->pos_h = atof(text);
       }
-      strncpy(p->pos_h_text, text, 20);
+      strncpy(p->pos_h_text, text, sizeof(p->pos_h_text)-1);
       p->pos_h = MAX(p->pos_h, 0);
       p->pos_h = MIN(p->pos_h, 1);
     }
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    strncpy(p->pos_h_text, text, 20);
+    strncpy(p->pos_h_text, text, sizeof(p->pos_h_text)-1);
     p->pos_h = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -741,7 +741,7 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    strncpy(p->pos_v_text, text, 20);
+    strncpy(p->pos_v_text, text, sizeof(p->pos_v_text)-1);
     p->pos_v = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);

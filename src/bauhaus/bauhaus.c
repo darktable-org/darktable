@@ -764,8 +764,8 @@ void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  memset(w->label, 0, 256); // keep valgrind happy
-  strncpy(w->label, label, 256);
+  memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
+  strncpy(w->label, label, sizeof(w->label)-1);
 
   if(w->module)
   {
@@ -998,7 +998,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(!d->editable) return;
-  strncpy(d->text, text, sizeof(d->text));
+  strncpy(d->text, text, sizeof(d->text)-1);
 }
 
 void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
@@ -1812,7 +1812,7 @@ dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  strncpy(d->format, format, 24);
+  strncpy(d->format, format, sizeof(d->format)-1);
 }
 
 static void
