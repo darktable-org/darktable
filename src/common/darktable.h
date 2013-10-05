@@ -309,13 +309,13 @@ static inline void dt_print_mem_usage()
   while (getline(&line, &len, f) != -1)
   {
     if (!strncmp(line, "VmPeak:", 7))
-      strncpy(vmpeak, line + 8, 64);
+      strncpy(vmpeak, line + 8, sizeof(vmpeak)-1);
     else if (!strncmp(line, "VmSize:", 7))
-      strncpy(vmsize, line + 8, 64);
+      strncpy(vmsize, line + 8, sizeof(vmsize)-1);
     else if (!strncmp(line, "VmRSS:", 6))
-      strncpy(vmrss, line + 8, 64);
+      strncpy(vmrss, line + 8, sizeof(vmrss)-1);
     else if (!strncmp(line, "VmHWM:", 6))
-      strncpy(vmhwm, line + 8, 64);
+      strncpy(vmhwm, line + 8, sizeof(vmhwm)-1);
   }
   free(line);
   fclose(f);

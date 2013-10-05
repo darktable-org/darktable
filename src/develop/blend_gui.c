@@ -1450,7 +1450,7 @@ _collect_blend_modes(GList **list, const char *name, unsigned int mode)
 {
   dt_iop_blend_mode_t *bm;
   bm = g_malloc(sizeof(dt_iop_blend_mode_t));
-  strncpy(bm->name, name, 128);
+  strncpy(bm->name, name, sizeof(bm->name)-1);
   bm->mode = mode;
   *list = g_list_append(*list , bm);
 }
