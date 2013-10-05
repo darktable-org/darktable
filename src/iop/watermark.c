@@ -130,7 +130,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->sizeto = DT_SCALE_IMAGE;
-    strncpy(n->filename, o->filename, 64);
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     return 0;
   }
   return 1;

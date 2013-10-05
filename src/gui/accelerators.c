@@ -252,8 +252,8 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local,
     gtk_accel_map_add_entry(paths[i], 0, 0);
     accel = (dt_accel_t*)malloc(sizeof(dt_accel_t));
 
-    strcpy(accel->path, paths[i]);
-    strcpy(accel->translated_path, paths_trans[i]);
+    g_strlcpy(accel->path, paths[i], sizeof(accel->path));
+    g_strlcpy(accel->translated_path, paths_trans[i], sizeof(accel->translated_path));
     strcpy(accel->module, so->op);
     accel->local = local;
     accel->views = DT_VIEW_DARKROOM;
