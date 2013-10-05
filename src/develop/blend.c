@@ -1909,13 +1909,15 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   _blend_row_func *blend = NULL;
   dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
 
+  if (!d) return;
+
   const unsigned int blend_mode = d->blend_mode;
   const unsigned int mask_mode = d->mask_mode;
   const unsigned int xoffs = roi_out->x - roi_in->x;
   const unsigned int yoffs = roi_out->y - roi_in->y;
 
   /* check if blend is disabled */
-  if (!d || !(mask_mode & DEVELOP_MASK_ENABLED)) return;
+  if (!(mask_mode & DEVELOP_MASK_ENABLED)) return;
 
   /* we can only handle blending if roi_out and roi_in have the same scale and
      if roi_out fits into the area given by roi_in */
@@ -2200,13 +2202,15 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   cl_mem dev_mask = NULL;
   float *mask = NULL;
 
+  if (!d) return TRUE;
+
   const unsigned int blend_mode = d->blend_mode;
   const unsigned int mask_mode = d->mask_mode;
   const unsigned int xoffs = roi_out->x - roi_in->x;
   const unsigned int yoffs = roi_out->y - roi_in->y;
 
   /* check if blend is disabled: just return, output is already in dev_out */
-  if (!d || !(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
+  if (!(mask_mode & DEVELOP_MASK_ENABLED)) return TRUE;
 
   /* we can only handle blending if roi_out and roi_in have the same scale and
      if roi_out fits into the area given by roi_in */
