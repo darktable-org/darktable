@@ -1158,7 +1158,7 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   data->format_index = format_index;
   data->storage_index = storage_index;
   data->high_quality = high_quality;
-  strncpy(data->style,style,128);
+  g_strlcpy(data->style,style,sizeof(data->style));
   t->data = data;
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
   dt_control_add_job(darktable.control, &job);
