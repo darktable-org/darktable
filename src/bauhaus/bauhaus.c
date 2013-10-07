@@ -627,8 +627,8 @@ dt_bauhaus_init()
   darktable.bauhaus->marker_size = 0.3f;
   darktable.bauhaus->label_font_size = 0.6f;
   darktable.bauhaus->value_font_size = 0.6f;
-  strncpy(darktable.bauhaus->label_font, "sans", 256);
-  strncpy(darktable.bauhaus->value_font, "sans", 256);
+  g_strlcpy(darktable.bauhaus->label_font, "sans", sizeof(darktable.bauhaus->label_font));
+  g_strlcpy(darktable.bauhaus->value_font, "sans", sizeof(darktable.bauhaus->value_font));
   darktable.bauhaus->bg_normal = 0.145098f;
   darktable.bauhaus->bg_focus = 0.207843f;
   darktable.bauhaus->text = .792f;
@@ -803,8 +803,8 @@ void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
-  memset(w->label, 0, 256); // keep valgrind happy
-  strncpy(w->label, label, 256);
+  memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
+  g_strlcpy(w->label, label, sizeof(w->label));
 
   if(w->module)
   {
@@ -1037,7 +1037,7 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   if(!d->editable) return;
-  strncpy(d->text, text, sizeof(d->text));
+  g_strlcpy(d->text, text, sizeof(d->text));
 }
 
 void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
@@ -1352,7 +1352,7 @@ dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w)
         {
           // had no close match (k == 1 && !match) or no match at all (k == 0)
           memset(d->text, 0, sizeof(d->text));
-          strncpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
+          g_strlcpy(d->text, darktable.bauhaus->keys, MIN(darktable.bauhaus->keys_cnt, sizeof(d->text)));
           // select custom entry
           dt_bauhaus_combobox_set(widget, -1);
         }
@@ -1866,7 +1866,7 @@ dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  strncpy(d->format, format, 24);
+  g_strlcpy(d->format, format, sizeof(d->format));
 }
 
 static void

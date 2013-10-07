@@ -1732,7 +1732,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       {
         // TODO: handle '.'-separated things separately
         // this is a static list, and tab cycles through the list
-        strncpy(vimkey_input, darktable.control->vimkey + 5, 256);
+        g_strlcpy(vimkey_input, darktable.control->vimkey + 5, sizeof(vimkey_input));
         autocomplete = dt_bauhaus_vimkey_complete(darktable.control->vimkey + 5);
         autocomplete = g_list_append(autocomplete, vimkey_input); // remember input to cycle back
       }
