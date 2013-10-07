@@ -1235,8 +1235,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
 static int dt_path_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
-  if (gui->creation) return 1;
   if (!gui) return 0;
+  if (gui->creation) return 1;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return 0;
   if (gui->form_dragging)

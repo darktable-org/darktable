@@ -10,6 +10,7 @@ include(CheckCCompilerFlag)
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
   "common/cache.c"
+  "common/calculator.c"
   "common/collection.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
