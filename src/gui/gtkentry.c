@@ -233,13 +233,13 @@ dt_gtkentry_build_completion_tooltip_text (const gchar *header,
   gchar *tt = g_malloc0_n(tooltip_len, sizeof(gchar));
   dt_gtkentry_completion_spec const *p;
 
-  g_strlcat(tt, header, sizeof(tt));
-  g_strlcat(tt, "\n", sizeof(tt));
+  g_strlcat(tt, header, sizeof(tt)*tooltip_len);
+  g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
 
   for(p = compl_list; p->description != NULL; p++)
   {
-    g_strlcat(tt, p->description, sizeof(tt));
-    g_strlcat(tt, "\n", sizeof(tt));
+    g_strlcat(tt, p->description, sizeof(tt)*tooltip_len);
+    g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
   }
 
   return tt;
