@@ -11,6 +11,11 @@ add_library(ppm MODULE "ppm.c")
 add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
+if(WEBP_FOUND)
+        list(APPEND MODULES ${MODULES} "webp")
+        add_library(webp MODULE "webp.c")
+endif(WEBP_FOUND)
+
 if(OPENEXR_FOUND)
 	list(APPEND MODULES ${MODULES} "exr")
 	add_library(exr MODULE "exr.cc")
