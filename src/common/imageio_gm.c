@@ -52,7 +52,7 @@ dt_imageio_open_gm(
   GetExceptionInfo(&exception);
   image_info=CloneImageInfo((ImageInfo *) NULL);
 
-  strcpy(image_info->filename,filename);
+  g_strlcpy(image_info->filename,filename,sizeof(image_info->filename));
 
   image=ReadImage(image_info,&exception);
   if (exception.severity != UndefinedException)

@@ -1188,7 +1188,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
   {
     char tagbuf[1024];
     const char *tag2 = pos->toString(i).c_str();
-    strncpy(tagbuf, tag2, 1024);
+    g_strlcpy(tagbuf, tag2, sizeof(tagbuf));
     int tagid = -1;
     char *tag = tagbuf;
     while(tag)

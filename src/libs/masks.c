@@ -734,7 +734,7 @@ static void _tree_cell_edited (GtkCellRendererText *cell, gchar *path_string, gc
 
   //first, we need to update the mask name
 
-  strncpy(form->name,new_text,128);
+  g_strlcpy(form->name,new_text,sizeof(form->name));
   dt_masks_write_form(form,darktable.develop);
 
   //and we update the cell text
@@ -962,7 +962,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
                   }
                   if (nbuse==0) strcat(str," (");
                   strcat(str," ");
-                  strcat(str,m->name());
+                  g_strlcat(str,m->name(),sizeof(str));
                   nbuse++;
                 }
                 pts = g_list_next(pts);

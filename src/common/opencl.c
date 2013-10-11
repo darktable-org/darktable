@@ -1042,7 +1042,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
           if (!getcwd(cwd, 1024)) goto ret;
           if (chdir(cachedir)!=0) goto ret;
           char dup[1024];
-          strncpy(dup, binname, 1024);
+          g_strlcpy(dup, binname, sizeof(dup));
           char* bname = basename(dup);
           if (symlink(md5sum, bname)!=0) goto ret;
           if (chdir(cwd)!=0) goto ret;
@@ -1628,7 +1628,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
     (*totallost)++;
     if (tag != NULL)
     {
-      strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
+      g_strlcpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
     }
     else
     {
@@ -1671,7 +1671,7 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   memcpy((*eventlist)+*numevents-1, zeroevent, sizeof(cl_event));
   if (tag != NULL)
   {
-    strncpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
+    g_strlcpy((*eventtags)[*numevents-1].tag, tag, DT_OPENCL_EVENTNAMELENGTH);
   }
   else
   {

@@ -1410,7 +1410,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   if (has_tags)
   {
     if (imported[0]) strcat(imported, ", ");
-    strcat(imported, _("tags"));
+    g_strlcat(imported, _("tags"), sizeof(imported));
     n_import++;
   }
 
