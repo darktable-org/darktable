@@ -374,14 +374,6 @@ int32_t dt_image_duplicate(const int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update tagxtag set count = count + 1 where "
-                                "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
-                                "(id2 in (select tagid from tagged_images where imgid = ?1))",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
     if(darktable.gui && darktable.gui->grouping)
     {
       const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, newid);
@@ -414,14 +406,6 @@ void dt_image_remove(const int32_t imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "delete from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = count - 1 where "
-                              "(id2 in (select tagid from tagged_images where imgid = ?1)) or "
-                              "(id1 in (select tagid from tagged_images where imgid = ?1))",
-                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -961,14 +945,6 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
                                     "tagged_images where imgid = ?2", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "update tagxtag set count = count + 1 where "
-                                    "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
-                                    "(id2 in (select tagid from tagged_images where imgid = ?1))",
-                                    -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 

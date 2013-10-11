@@ -1162,7 +1162,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
   // tags in array
   const int cnt = pos->count();
 
-  sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
+  sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagged;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select id from tags where name = ?1",
                               -1, &stmt_sel_id, NULL);
@@ -1170,20 +1170,8 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
                               "insert into tags (id, name) values (null, ?1)",
                               -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into tagxtag select id, ?1, 0 from tags",
-                              -1, &stmt_ins_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1",
-                              -1, &stmt_upd_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into tagged_images (tagid, imgid) values (?1, ?2)",
                               -1, &stmt_ins_tagged, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = count + 1 where "
-                              "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2))"
-                              " or "
-                              "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))",
-                              -1, &stmt_upd_tagxtag2, NULL);
   for (int i=0; i<cnt; i++)
   {
     char tagbuf[1024];
@@ -1205,21 +1193,8 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
         sqlite3_clear_bindings(stmt_sel_id);
 
         if (tagid > 0)
-        {
-          if (k == 1)
-          {
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagxtag, 1, tagid);
-            sqlite3_step(stmt_ins_tagxtag);
-            sqlite3_reset(stmt_ins_tagxtag);
-            sqlite3_clear_bindings(stmt_ins_tagxtag);
-
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, tagid);
-            sqlite3_step(stmt_upd_tagxtag);
-            sqlite3_reset(stmt_upd_tagxtag);
-            sqlite3_clear_bindings(stmt_upd_tagxtag);
-          }
           break;
-        }
+
         fprintf(stderr,"[xmp_import] creating tag: %s\n", tag);
         // create this tag (increment id, leave icon empty), retry.
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, strlen(tag), SQLITE_TRANSIENT);
@@ -1233,21 +1208,13 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       sqlite3_step(stmt_ins_tagged);
       sqlite3_reset(stmt_ins_tagged);
       sqlite3_clear_bindings(stmt_ins_tagged);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 1, tagid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 2, img->id);
-      sqlite3_step(stmt_upd_tagxtag2);
-      sqlite3_reset(stmt_upd_tagxtag2);
-      sqlite3_clear_bindings(stmt_upd_tagxtag2);
 
       tag = next_tag;
     }
   }
   sqlite3_finalize(stmt_sel_id);
   sqlite3_finalize(stmt_ins_tags);
-  sqlite3_finalize(stmt_ins_tagxtag);
-  sqlite3_finalize(stmt_upd_tagxtag);
   sqlite3_finalize(stmt_ins_tagged);
-  sqlite3_finalize(stmt_upd_tagxtag2);
 }
 
 // need a write lock on *img (non-const) to write stars (and soon color labels).
@@ -1267,16 +1234,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // get rid of old meta data
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from meta_data where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    // consistency: strip all tags from image (tagged_image, tagxtag)
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update tagxtag set count = count - 1 where "
-                                "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-                                "(id1 in (select tagid from tagged_images where imgid = ?2))",
-                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);

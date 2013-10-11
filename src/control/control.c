@@ -483,6 +483,44 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table lock (id integer)",
                         NULL, NULL, NULL);
+
+  // create triggers (tagxtag)
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TRIGGER insert_tag AFTER INSERT ON tags"
+                        " BEGIN"
+                        "   INSERT INTO tagxtag SELECT id, new.id, 0 FROM TAGS;"
+                        "   UPDATE tagxtag SET count = 1000000 WHERE id1=new.id AND id2=new.id;"
+                        " END",
+                        NULL, NULL, NULL);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TRIGGER delete_tag BEFORE DELETE on tags"
+                        " BEGIN"
+                        "   DELETE FROM tagxtag WHERE id1=old.id OR id2=old.id;"
+                        "   DELETE FROM tagged_images WHERE tagid=old.id;"
+                        " END",
+                        NULL, NULL, NULL);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TRIGGER attach_tag AFTER INSERT ON tagged_images"
+                        " BEGIN"
+                        "   UPDATE tagxtag"
+                        "     SET count = count + 1"
+                        "     WHERE (id1=new.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid))"
+                        "  OR (id2=new.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid));"
+                        " END",
+                        NULL, NULL, NULL);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TRIGGER detach_tag BEFORE DELETE ON tagged_images"
+                        " BEGIN"
+                        "   UPDATE tagxtag"
+                        "     SET count = count - 1"
+                        "     WHERE (id1=old.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid))"
+                        "        OR (id2=old.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid));"
+                        " END",
+                        NULL, NULL, NULL);
+
   // still necessary, it creates temporary tables and such
   dt_control_sanitize_database();
 }
@@ -776,6 +814,42 @@ void dt_control_init(dt_control_t *s)
       // and the colorspace as specified in some image types
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column colorspace integer", NULL, NULL, NULL);
 
+      // create triggers (tagxtag)
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE TRIGGER insert_tag AFTER INSERT ON tags"
+                   " BEGIN"
+                   "   INSERT INTO tagxtag SELECT id, new.id, 0 FROM TAGS;"
+                   "   UPDATE tagxtag SET count = 1000000 WHERE id1=new.id AND id2=new.id;"
+                   " END",
+                   NULL, NULL, NULL);
+
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE TRIGGER delete_tag BEFORE DELETE on tags"
+                   " BEGIN"
+                   "   DELETE FROM tagxtag WHERE id1=old.id OR id2=old.id;"
+                   "   DELETE FROM tagged_images WHERE tagid=old.id;"
+                   " END",
+                   NULL, NULL, NULL);
+
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE TRIGGER attach_tag AFTER INSERT ON tagged_images"
+                   " BEGIN"
+                   "   UPDATE tagxtag"
+                   "     SET count = count + 1"
+                   "     WHERE (id1=new.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid))"
+                   "  OR (id2=new.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=new.imgid));"
+                   " END",
+                   NULL, NULL, NULL);
+
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE TRIGGER detach_tag BEFORE DELETE ON tagged_images"
+                   " BEGIN"
+                   "   UPDATE tagxtag"
+                   "     SET count = count - 1"
+                   "     WHERE (id1=old.tagid AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid))"
+                   "        OR (id2=old.tagid AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid=old.imgid));"
+                   " END",
+                   NULL, NULL, NULL);
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
     dt_control_sanitize_database();
