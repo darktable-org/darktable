@@ -29,7 +29,7 @@ namespace RawSpeed {
 #undef CHECKSIZE
 #endif
 
-#define CHECKSIZE(A) if (A >= size) ThrowTPE("Error reading TIFF structure (invalid size). File Corrupt")
+#define CHECKSIZE(A) if (A > size) ThrowTPE("Error reading TIFF structure (invalid size). File Corrupt")
 
 TiffIFD::TiffIFD() {
   nextIFD = 0;
