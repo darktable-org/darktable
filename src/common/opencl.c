@@ -52,7 +52,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 
   // work-around to fix a bug in some AMD OpenCL compilers, which would fail parsing certain numerical constants if locale is different from "C".
   // we save the current locale, set locale to "C", and restore the previous setting after OpenCL is initialized
-  char *locale = setlocale(LC_ALL, NULL);
+  char *locale = strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
   // user selectable parameter defines minimum requirement on GPU memory
@@ -347,7 +347,11 @@ finally:
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
   }
-  if(locale) setlocale(LC_ALL, locale);
+  if(locale)
+  {
+    setlocale(LC_ALL, locale);
+    free(locale);
+  }
   return;
 }
 
