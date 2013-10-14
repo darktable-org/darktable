@@ -233,11 +233,19 @@
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 70D" mode="sRaw1">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="65535"/>
+		<Sensor black="0" white="53000"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
 	</Camera>  
 	<Camera make="Canon" model="Canon EOS 70D" mode="sRaw2">
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="65535"/>
+		<Sensor black="0" white="53000"/>
+		<Hints>
+			<Hint name="sraw_new" value=""/>
+			<Hint name="invert_sraw_wb" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 700D">
 		<CFA width="2" height="2">
@@ -1397,7 +1405,7 @@
 			<Hint name="force_uncompressed" value=""/>
 			<Hint name="real_bpp" value="16"/>
 		</Hints>
-	</Camera>
+	</Camera>  
 	<Camera make="NIKON" model="E8800" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">BLUE</Color>
