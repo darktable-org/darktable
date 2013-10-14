@@ -190,8 +190,6 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   // work around 50D bug
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
-  bool is_50d = !strncmp(makermodel, "Canon EOS 50D", 13);
-  int raw_width_extra = (is_50d && r->subsampling.y == 2) ? 72 : 0;
 
   // actually we want to store full floats here:
   img->bpp = 4*sizeof(float);
@@ -215,7 +213,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
     for( int col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
         ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
-          ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
+          // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;
+          ((float)raw_img[row*(r->pitch/2) + col*3 + k] - black) * scale;
 #endif
 
   return DT_IMAGEIO_OK;
