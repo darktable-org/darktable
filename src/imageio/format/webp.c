@@ -307,3 +307,4 @@ int flags (dt_imageio_module_data_t *data)
   //TODO(jinxos): support embedded XMP/ICC
   return 0;
 }
+
