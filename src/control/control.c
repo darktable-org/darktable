@@ -1216,15 +1216,17 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_get_threadid()
 {
+  pthread_t pt = pthread_self();
   for(int k=0; k<darktable.control->num_threads; k++)
-    if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
+    if(pthread_equal(darktable.control->thread[k], pt)) return k;
   return darktable.control->num_threads;
 }
 
 int32_t dt_control_get_threadid_res()
 {
+  pthread_t pt = pthread_self();
   for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
-    if(pthread_equal(darktable.control->thread_res[k], pthread_self())) return k;
+    if(pthread_equal(darktable.control->thread_res[k], pt)) return k;
   return DT_CTL_WORKER_RESERVED;
 }
 
@@ -1603,30 +1605,25 @@ void dt_control_log_busy_leave()
   dt_control_queue_redraw_center();
 }
 
-static GList *_control_gdk_lock_threads = NULL;
+static __thread gboolean _control_gdk_lock_mine = FALSE;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
   if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
     return FALSE;
 
-  /* if we don't have any managed locks just lock and return */
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(!_control_gdk_lock_threads)
-    goto lock_and_return;
 
   /* lets check if current thread has a managed lock */
-  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
+  if(_control_gdk_lock_mine)
   {
     /* current thread has a lock just do nothing */
     dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
     return FALSE;
   }
 
-lock_and_return:
-  /* lets add current thread to managed locks */
-  _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
-                              (gpointer)pthread_self());
+  /* lets lock */
+  _control_gdk_lock_mine = TRUE;
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
@@ -1639,11 +1636,10 @@ void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
+  if(_control_gdk_lock_mine)
   {
     /* remove lock */
-    _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,
-                                (gpointer)pthread_self());
+    _control_gdk_lock_mine = FALSE;
 
     /* leave critical section */
     gdk_threads_leave();
