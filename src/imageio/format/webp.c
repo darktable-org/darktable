@@ -58,22 +58,22 @@ typedef struct dt_imageio_webp_gui_data_t
 dt_imageio_webp_gui_data_t;
 
 static const char* const EncoderError[] = {
-  "OK",
-  "OUT_OF_MEMORY: Out of memory allocating objects",
-  "BITSTREAM_OUT_OF_MEMORY: Out of memory re-allocating byte buffer",
-  "NULL_PARAMETER: NULL parameter passed to function",
-  "INVALID_CONFIGURATION: configuration is invalid",
-  "BAD_DIMENSION: Bad picture dimension. Maximum width and height "
+  "ok",
+  "out_of_memory: out of memory allocating objects",
+  "bitstream_out_of_memory: out of memory re-allocating byte buffer",
+  "null_parameter: null parameter passed to function",
+  "invalid_configuration: configuration is invalid",
+  "bad_dimension: bad picture dimension. maximum width and height "
   "allowed is 16383 pixels.",
-  "PARTITION0_OVERFLOW: Partition #0 is too big to fit 512k.\n"
-  "To reduce the size of this partition, try using less segments "
+  "partition0_overflow: partition #0 is too big to fit 512k.\n"
+  "to reduce the size of this partition, try using less segments "
   "with the -segments option, and eventually reduce the number of "
-  "header bits using -partition_limit. More details are available "
+  "header bits using -partition_limit. more details are available "
   "in the manual (`man cwebp`)",
-  "PARTITION_OVERFLOW: Partition is too big to fit 16M",
-  "BAD_WRITE: Picture writer returned an I/O error",
-  "FILE_TOO_BIG: File would be too big to fit in 4G",
-  "USER_ABORT: encoding abort requested by user"
+  "partition_overflow: partition is too big to fit 16M",
+  "bad_write: picture writer returned an i/o error",
+  "file_too_big: file would be too big to fit in 4G",
+  "user_abort: encoding abort requested by user"
 };
 
 void init(dt_imageio_module_format_t *self) {}
@@ -109,7 +109,7 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
   pic.width = webp_data->width;
   pic.height = webp_data->height;
   if (!out) {
-    fprintf(stderr, _("[WebP export] Error saving to %s\n"), filename);
+    fprintf(stderr, _("[webp export] error saving to %s\n"), filename);
     goto Error;
   } else {
     pic.writer = FileWriter;
@@ -124,12 +124,12 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
     WebPPictureYUVAToARGB(&pic);
   }
   if (!WebPValidateConfig(&config)) {
-    fprintf(stderr, "Error validating encoder config\n");
+    fprintf(stderr, "error validating encoder config\n");
     goto Error;
   }
   if (!WebPEncode(&config, &pic)) {
-    fprintf(stderr, _("[WebP export] Error during encoding!\n"));
-    fprintf(stderr, _("[WebP export] Error code: %d (%s)\n"),
+    fprintf(stderr, _("[webp export] error during encoding!\n"));
+    fprintf(stderr, _("[webp export] error code: %d (%s)\n"),
             pic.error_code, EncoderError[pic.error_code]);
     goto Error;
   }
@@ -249,7 +249,7 @@ void gui_init (dt_imageio_module_format_t *self)
   int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
   
   self->widget = gtk_vbox_new(TRUE, 5);
-  GtkWidget *comp_type_label = gtk_label_new(_("Compression type"));
+  GtkWidget *comp_type_label = gtk_label_new(_("compression type"));
   gtk_misc_set_alignment(GTK_MISC(comp_type_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(self->widget), comp_type_label, TRUE, TRUE, 0);
   GtkWidget *hbox = gtk_hbox_new(TRUE, 5);
@@ -278,18 +278,18 @@ void gui_init (dt_imageio_module_format_t *self)
   GtkWidget *hint_hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hint_hbox, TRUE, TRUE, 0);
   GtkWidget *hint_label = gtk_label_new(_("Image Hint"));
-  g_object_set(G_OBJECT(hint_label), "tooltip-text",_("Image characteristics hint for the underlying encoder.\n"
-                                                      "Picture: digital picture, like portrait, inner shot\n"
-                                                      "Photo: outdoor photograph, with natural lighting\n"
-                                                      "Graphic: Discrete tone image (graph, map-tile etc)"), (char *)NULL);
+  g_object_set(G_OBJECT(hint_label), "tooltip-text",_("image characteristics hint for the underlying encoder.\n"
+                                                      "picture : digital picture, like portrait, inner shot\n"
+                                                      "photo   : outdoor photograph, with natural lighting\n"
+                                                      "graphic : discrete tone image (graph, map-tile etc)"), (char *)NULL);
   gtk_misc_set_alignment(GTK_MISC(hint_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(hint_hbox), hint_label, TRUE, TRUE, 0);
   GtkComboBoxText *hint_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->hint_combo = GTK_COMBO_BOX(hint_combo);
-  gtk_combo_box_text_append_text(hint_combo, _("Default"));
-  gtk_combo_box_text_append_text(hint_combo, _("Picture"));
-  gtk_combo_box_text_append_text(hint_combo, _("Photo"));
-  gtk_combo_box_text_append_text(hint_combo, _("Graphic"));
+  gtk_combo_box_text_append_text(hint_combo, _("default"));
+  gtk_combo_box_text_append_text(hint_combo, _("picture"));
+  gtk_combo_box_text_append_text(hint_combo, _("photo"));
+  gtk_combo_box_text_append_text(hint_combo, _("graphic"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(hint_combo), hint);
   gtk_box_pack_start(GTK_BOX(hint_hbox), GTK_WIDGET(hint_combo), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(hint_combo), "changed", G_CALLBACK(hint_combobox_changed), NULL);
