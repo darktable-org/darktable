@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-02 22:12+0200\n"
-"PO-Revision-Date: 2013-10-02 22:16+0100\n"
+"POT-Creation-Date: 2013-10-14 22:35+0200\n"
+"PO-Revision-Date: 2013-10-14 22:40+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -272,6 +272,8 @@ msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
 msgstr ""
+"deze optie forceert een specifieke inzet om een weergave profiel te dwingen. "
+"Dit is handig wanneer een alternatief verkeerde resultaten geeft "
 
 #: ../build/src/preferences_gen.h:1539
 msgid "core options"
@@ -688,11 +690,11 @@ msgstr "stijl '%s' is geïmporteerd"
 msgid "none"
 msgstr "geen"
 
-#: ../src/control/control.c:1411 ../src/control/control.c:1414
+#: ../src/control/control.c:1413 ../src/control/control.c:1416
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:1497
+#: ../src/control/control.c:1499
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
@@ -1379,12 +1381,12 @@ msgstr ""
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1927 ../src/develop/blend.c:2219
+#: ../src/develop/blend.c:1929 ../src/develop/blend.c:2223
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "mengen in module '%s' overgeslagen: roi's komen niet overeen"
 
-#: ../src/develop/blend.c:2026 ../src/develop/blend.c:2264
+#: ../src/develop/blend.c:2028 ../src/develop/blend.c:2268
 msgid "could not allocate buffer for blending"
 msgstr "toewijzen buffer t.g.v. mengen mislukt"
 
@@ -8005,12 +8007,12 @@ msgstr "voorvertoning"
 msgid "map"
 msgstr "kaart"
 
-#: ../src/views/map.c:555
+#: ../src/views/map.c:561
 msgctxt "accel"
 msgid "undo"
 msgstr "herstel"
 
-#: ../src/views/map.c:556
+#: ../src/views/map.c:562
 msgctxt "accel"
 msgid "redo"
 msgstr "opnieuw"
