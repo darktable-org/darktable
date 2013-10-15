@@ -16,8 +16,8 @@
 				<tbody>
 					<row>						
 						<entry>The navigation panel displays a full preview of your image with a rectangle showing the
-                                                currently visible zoom area. Drag the rectangle around to pan the zoomed-in view. Right to the preview
-                                                image the current zoom scale is displayed. Click on that figure for a quick access to some common
+                                                currently visible zoom area. Drag the rectangle around to pan the zoomed-in view. The current zoom scale
+                                                is displayed to the right of the preview image. Click on that figure for a quick access to some common
                                                 zoom levels.
 						</entry>
 						<entry>

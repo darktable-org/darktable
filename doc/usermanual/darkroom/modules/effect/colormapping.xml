@@ -17,7 +17,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module transfers the look and feel from one image onto another. It statistically analysis
+						<entry>This module transfers the look and feel from one image onto another. It statistically analyses
                                                        the color characteristics of a source image and a target image. The colors of the source image
                                                        are then mapped to corresponding colors of the target image.
 						</entry>

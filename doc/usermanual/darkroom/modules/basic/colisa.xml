@@ -38,7 +38,7 @@
 
 	<sect4><title>Usage</title>
 		<para>The module has sliders for each of the three affected attributes. In their neutral position (zero) the image remains unchanged. Shifting
-                      a sliders left to negative values reduces contrast, brightness and saturation, respectively. Shifting it right to positive values leads to an increase.
+                      sliders left to negative values reduces contrast, brightness and saturation, respectively. Shifting right to positive values leads to an increase.
 		</para>
 
                 <para>Much more versatility for contrast and brightness adjustment is offered by the <emphasis>tone curve</emphasis>, <emphasis>levels</emphasis>, and

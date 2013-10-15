@@ -66,7 +66,7 @@
    			   <listitem>
 			     <para>Right-click</para>
                              <para>When your mouse is over a slider right-click gives you a multi-functional pop-up below the slider for fine control
-                                   with your mouse or numerical entry using the keyboard, there is no cursor, you just start typing.
+                                   with your mouse or numerical entry using the keyboard.
                              </para>
 	                     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>
@@ -86,8 +86,10 @@
                              <para>A bent line extending from the
                                    triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
                                    coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
-                                   mouse to accept the new value and go back to normal control. Alternatively you can type in a new value on your
-                                   keyboard and commit by hitting the return key.
+                                   mouse to accept the new value and go back to normal control.
+                             </para>
+                             <para>Alternatively you can type in a new value using your keyboard and commit by hitting the enter key. You may even
+                                   supply the new value in the form of an arithmetic expressions which darktable will calculate for you.
                              </para>
 			   </listitem>		
    			   <listitem>

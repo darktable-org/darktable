@@ -12,7 +12,7 @@
 	<sect3 status="final"><title>Overview</title>
 
             <para>By default a module takes its input from the preceding module, performs its calculations and handles its output over to the next 
-            module in pixelpipe.
+            module in the pixelpipe.
             On demand you can activate an additional step where a module's output is reprocessed with its input before giving the
             result to the next module. This additional processing step is called blending. Input and output can be processed with different 
             algorithms, called blending operators or blend modes.</para>
@@ -131,8 +131,8 @@
 							<row>						
 								<entry>When blending operators were introduced into darktable, a new module named <emphasis>highpass</emphasis>
                                                                        (see <xref linkend="highpass"/>) was added. It provides a highpass filter of the image to be implicitly 
-                                                                        used with blending. It allows to produce a gritty detailed image and
-										is a widely used workflow with other imaging softwares.				
+                                                                        used with blending. It is used to produce a gritty detailed image and
+										is a method widely used in the workflow of other imaging software.
 								</entry>
 								<entry>
 									<graphic fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />

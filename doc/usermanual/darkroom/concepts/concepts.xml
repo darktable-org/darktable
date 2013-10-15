@@ -9,7 +9,7 @@
 
 	<para>
         The basic element of an image operation in darktable is called a module. darktable comes with a rich set of over 50 modules for all
-        kind of image manipulations. In <xref linkend="modules"/> you find a description for each of the available modules.</para>
+        kind of image manipulations. In <xref linkend="modules"/> you will find a description for each of the available modules.</para>
 
         <para>Modules are applied in a fixed order. This differentiates darktable, as a non-destructive image editor, from classical image 
         manipulation programs like The Gimp.</para>
