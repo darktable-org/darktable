@@ -790,6 +790,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 60D", Fluorescent, 0,		{ 1.9248, 1, 2.1836, 0 } },
   { "Canon", "EOS 60D", Flash, 0,		{ 2.1514, 1, 1.5420, 0 } },
 
+  /* Canon EOS 70D Firmware Version 1.1.1 */
+  { "Canon", "EOS 70D", Daylight, 0,          { 2.068359375, 1, 1.6728515625, 0 } },
+  { "Canon", "EOS 70D", Shade, 0,             { 2.4033203125, 1, 1.4462890625, 0 } },
+  { "Canon", "EOS 70D", Cloudy, 0,            { 2.2265625, 1, 1.5517578125, 0 } },
+  { "Canon", "EOS 70D", Tungsten, 0,          { 1.4482421875, 1, 2.4091796875, 0 } },
+  { "Canon", "EOS 70D", Fluorescent, 0,       { 1.7900390625, 1, 2.2802734375, 0 } },
+  { "Canon", "EOS 70D", Flash, 0,             { 2.2861328125, 1, 1.548828125, 0 } },
+
   // Copied from Canon EOS 650D
   { "Canon", "EOS 100D", Daylight, -3,		{ 1.9502, 1, 1.7539, 0 } },
   { "Canon", "EOS 100D", Daylight, 0,		{ 2.0322, 1, 1.6572, 0 } },
@@ -1880,6 +1888,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS-1D Mark IV", Tungsten, 0,	{ 1.458333, 1, 2.305254, 0 } },
   { "Canon", "EOS-1D Mark IV", Fluorescent, 0,	{ 1.767892, 1, 2.205029, 0 } },
   { "Canon", "EOS-1D Mark IV", Flash, 0,	{ 2.230469, 1, 1.423828, 0 } },
+
+  /* Canon EOS-1D X Firmware Version 1.0.6 */
+  { "Canon", "EOS-1D X", Daylight, 0,         { 1.943359375, 1, 1.3740234375, 0 } },
+  { "Canon", "EOS-1D X", Shade, 0,            { 2.23046875, 1, 1.17578125, 0 } },
+  { "Canon", "EOS-1D X", Cloudy, 0,           { 2.0859375, 1, 1.2685546875, 0 } },
+  { "Canon", "EOS-1D X", Tungsten, 0,         { 1.3857421875, 1, 2.068359375, 0 } },
+  { "Canon", "EOS-1D X", Fluorescent, 0,      { 1.7265625, 1, 1.9501953125, 0 } },
+  { "Canon", "EOS-1D X", Flash, 0,            { 2.173828125, 1, 1.2392578125, 0 } },
 
   // Canon EOS M Firmware 1.0.6
   { "Canon", "EOS M", Cloudy, 0,		{ 2.156250, 1, 1.448242, 0 } },
