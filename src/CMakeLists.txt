@@ -30,7 +30,6 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c"
   "common/image_compression.c"
   "common/imageio.c"
-  "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"
   "common/imageio_module.c"
@@ -153,8 +152,16 @@ if(INOTIFY_FOUND)
   add_definitions(${INOTIFY_DEFINITIONS})
 endif(INOTIFY_FOUND)
 
+find_package(OpenEXR)
+if(OPENEXR_FOUND)
+  include_directories(${OpenEXR_INCLUDE_DIRS})
+  list(APPEND LIBS ${OpenEXR_LIBRARIES})
+  add_definitions(${OpenEXR_DEFINITIONS})
+  list(APPEND SOURCES "common/imageio_exr.cc")
+endif(OPENEXR_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2 WebP)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 WebP)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})

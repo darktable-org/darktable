@@ -26,7 +26,9 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#ifdef HAVE_OPENEXR
 #include "common/imageio_exr.h"
+#endif
 #ifdef HAVE_OPENJPEG
 #include "common/imageio_j2k.h"
 #endif
@@ -231,8 +233,10 @@ dt_imageio_open_hdr(
   // needed to alloc correct buffer size:
   img->bpp = 4*sizeof(float);
   dt_imageio_retval_t ret;
+#ifdef HAVE_OPENEXR
   ret = dt_imageio_open_exr(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
+#endif
   ret = dt_imageio_open_rgbe(img, filename, a);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL) goto return_label;
   ret = dt_imageio_open_pfm(img, filename, a);
@@ -427,7 +431,11 @@ int dt_imageio_is_hdr(const char *filename)
   const char *c = filename + strlen(filename);
   while(c > filename && *c != '.') c--;
   if(*c == '.')
-    if(!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr") || !strcasecmp(c, ".exr")) return 1;
+    if(!strcasecmp(c, ".pfm") || !strcasecmp(c, ".hdr")
+#ifdef HAVE_OPENEXR
+      || !strcasecmp(c, ".exr")
+#endif
+    ) return 1;
   return 0;
 }
 
