@@ -27,6 +27,10 @@ IF(NOT OPENJPEG_ROOT_DIR AND NOT $ENV{OPENJPEG_ROOT_DIR} STREQUAL "")
   SET(OPENJPEG_ROOT_DIR $ENV{OPENJPEG_ROOT_DIR})
 ENDIF()
 
+include(LibFindMacros)
+
+libfind_pkg_check_modules(PC_OPENJPEG libopenjpeg1)
+
 SET(_openjpeg_SEARCH_DIRS
   ${OPENJPEG_ROOT_DIR}
   /usr/local
@@ -39,6 +43,8 @@ FIND_PATH(OPENJPEG_INCLUDE_DIR
   NAMES
     openjpeg.h
   HINTS
+    ${PC_OPENJPEG_INCLUDEDIR}
+    ${PC_OPENJPEG_INCLUDE_DIRS}
     ${_openjpeg_SEARCH_DIRS}
   PATH_SUFFIXES
     include
@@ -48,6 +54,8 @@ FIND_LIBRARY(OPENJPEG_LIBRARY
   NAMES
     openjpeg
   HINTS
+    ${PC_OPENJPEG_LIBDIR}
+    ${PC_OPENJPEG_LIBRARY_DIRS}
     ${_openjpeg_SEARCH_DIRS}
   PATH_SUFFIXES
     lib64 lib
@@ -65,18 +73,25 @@ IF(OPENJPEG_FOUND)
 
   # 1.3 didn't have pkg-config support, so we can't use that to get the version.
   # 1.5 no longer has the #define OPENJPEG_VERSION ... in openjpeg.h so we can't use that either.
-  # Thus we have to compile a smalltest program to get the version string. Could someone please kill me?
-  try_run(run_var result_var
-          ${CMAKE_BINARY_DIR}/CMakeTmp
-          ${CMAKE_SOURCE_DIR}/cmake/modules/openjpeg_version.c
-          CMAKE_FLAGS "-DLINK_LIBRARIES:STRING=${OPENJPEG_LIBRARIES}"
-                      "-DINCLUDE_DIRECTORIES:STRING=${OPENJPEG_INCLUDE_DIRS}"
-          RUN_OUTPUT_VARIABLE rout_var
-  )
+  # Thus we might have to compile a smalltest program to get the version string. Could someone please kill me?
 
-  if(result_var)
-    set(OPENJPEG_VERSION ${rout_var})
-  endif(result_var)
+  # see if pkg-config found the library. this should succeed for cross compiles as they are harder to run test programs
+  if(NOT "${PC_OPENJPEG_VERSION}" STREQUAL "")
+    # use the version as found by pkg-config
+    set(OPENJPEG_VERSION ${PC_OPENJPEG_VERSION})
+  else(NOT "${PC_OPENJPEG_VERSION}" STREQUAL "")
+    # too bad, we have to run our test code
+    try_run(run_var result_var
+            ${CMAKE_BINARY_DIR}/CMakeTmp
+            ${CMAKE_SOURCE_DIR}/cmake/modules/openjpeg_version.c
+            CMAKE_FLAGS "-DLINK_LIBRARIES:STRING=${OPENJPEG_LIBRARIES}"
+                        "-DINCLUDE_DIRECTORIES:STRING=${OPENJPEG_INCLUDE_DIRS}"
+            RUN_OUTPUT_VARIABLE rout_var
+    )
+    if(result_var)
+      set(OPENJPEG_VERSION ${rout_var})
+    endif(result_var)
+  endif(NOT "${PC_OPENJPEG_VERSION}" STREQUAL "")
 
 ENDIF(OPENJPEG_FOUND)
 

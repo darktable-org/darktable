@@ -15,8 +15,10 @@
 SET(LENSFUN_FIND_REQUIRED ${LensFun_FIND_REQUIRED})
 
 find_path(LENSFUN_INCLUDE_DIR lensfun.h 
-	PATHS /usr/include/lensfun
-	HINTS ENV LENSFUN_INCLUDE_DIR)
+  HINTS 
+  /usr/include/lensfun
+  /include/lensfun
+  ENV LENSFUN_INCLUDE_DIR)
 mark_as_advanced(LENSFUN_INCLUDE_DIR)
 
 set(LENSFUN_NAMES ${LENSFUN_NAMES} lensfun liblensfun)

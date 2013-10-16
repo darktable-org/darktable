@@ -520,8 +520,6 @@ else(USE_GEO)
   message(STATUS "Map mode: disabled")
 endif(USE_GEO)
 
-target_link_libraries(lib_darktable ${LIBS})
-
 # libcolord-gtk:
 if(USE_COLORD)
   find_package(Colord)
@@ -546,7 +544,7 @@ if(USE_SQUISH)
 add_dependencies(lib_darktable squish)
 add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-target_link_libraries(lib_darktable ${LIBS} squish_static)
+target_link_libraries(lib_darktable squish_static)
 add_subdirectory(external/squish)
 add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
@@ -559,7 +557,7 @@ if(USE_LUA)
 	add_dependencies(lib_darktable lautoc)
 	add_library(lautoc_static STATIC IMPORTED)
 	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	target_link_libraries(lib_darktable lautoc_static)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
 	add_subdirectory(external/LuaAutoC)
 endif(USE_LUA)
@@ -590,6 +588,7 @@ add_definitions("-Werror=implicit-function-declaration")
 
 ###### GTK+3 port ######
 
+target_link_libraries(lib_darktable ${LIBS})
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first
