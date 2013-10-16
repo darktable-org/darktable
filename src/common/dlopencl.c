@@ -73,6 +73,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
 
     if (d == NULL)
     {
+      free(module);
       *ocl = NULL;
       return FALSE;
     }
@@ -82,6 +83,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     if (d->symbols == NULL)
     {
       free(d);
+      free(module);
       *ocl = NULL;
       return FALSE;
     }
@@ -143,6 +145,8 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
     d->have_opencl = success;
     *ocl = success ? d : NULL;
   }
+
+  free(module);
 
   if (success == FALSE)
   {

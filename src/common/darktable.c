@@ -655,7 +655,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   memset(darktable.opencl, 0, sizeof(dt_opencl_t));
+#ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, argc, argv);
+#endif
 
   darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
   memset(darktable.blendop, 0, sizeof(dt_blendop_t));

@@ -38,8 +38,6 @@
 #include <libgen.h>
 #include <ctype.h>
 
-#define max(a,b) ((a) > (b) ? (a) : (b))
-
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
 
@@ -76,7 +74,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   // user selectable parameter defines minimum requirement on GPU memory
   // default is 768MB
   // values below 200 will be (re)set to 200
-  const int opencl_memory_requirement = max(200, dt_conf_get_int("opencl_memory_requirement"));
+  const int opencl_memory_requirement = MAX(200, dt_conf_get_int("opencl_memory_requirement"));
   dt_conf_set_int("opencl_memory_requirement", opencl_memory_requirement);
 
 
@@ -307,7 +305,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     for (int i=0; i < len; i++) if (isalnum(infostr[i])) devname[j++]=infostr[i];
     devname[j] = 0;
     snprintf(cachedir, DT_MAX_PATH_LEN, "%s/cached_kernels_for_%s", dtcache, devname);
-    if (mkdir(cachedir, 0700) && (errno != EEXIST))
+    if (g_mkdir_with_parents(cachedir, 0700) == -1)
     {
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
       goto finally;
@@ -351,9 +349,13 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           }
         if(confentry[0] == '\0') continue;
 
-        const char *delim = " \t";
-        char *programname = strtok(confentry, delim);
-        char *programnumber = strtok(NULL, delim);
+        const char *delim = " \t", *programname = NULL, *programnumber = NULL;
+        gchar **tokens = g_strsplit(confentry, delim, 3);
+        if(tokens)
+        {
+          programname = tokens[0];
+          if(tokens[0]) programnumber = tokens[1]; // if the 0st wasn't NULL then we have at least the terminating NULL in [1]
+        }
 
         prog = programnumber ? strtol(programnumber, NULL, 10) : -1;
 
@@ -475,6 +477,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   if(cl->dlocl)
   {
     free(cl->dlocl->symbols);
+    g_free(cl->dlocl->library);
     free(cl->dlocl);
   }
 
@@ -636,7 +639,6 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
   int devs = cl->num_devs;
   int count = 0;
   int full[devs+1];
-  char *saveptr = NULL;
 
   // NULL or empty configstring?
   if(configstr == NULL || *configstr == '\0')
@@ -650,10 +652,12 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
     full[i] = i;
   full[devs] = -1;
 
-  char *str = strtok_r(configstr, ",", &saveptr);
+  gchar **tokens = g_strsplit(configstr, ",", 0);
+  gchar **tokens_ptr = tokens;
 
-  while(str != NULL && count < devs+1 && full[0] != -1)
+  while(tokens != NULL && *tokens_ptr != NULL && count < devs+1 && full[0] != -1)
   {
+    gchar *str = *tokens_ptr;
     int not = 0;
     int all = 0;
 
@@ -701,8 +705,10 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
       }
     }
 
-    str = strtok_r(NULL, ",", &saveptr);
+    tokens_ptr++;
   }
+
+  g_strfreev(tokens);
 
   // terminate priority list with -1
   while(count < devs+1) priority_list[count++] = -1;
