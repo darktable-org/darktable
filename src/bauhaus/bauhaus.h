@@ -26,7 +26,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-#include <sys/select.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>

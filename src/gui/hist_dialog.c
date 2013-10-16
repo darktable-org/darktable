@@ -52,7 +52,7 @@ _gui_hist_get_active_items (dt_gui_hist_dialog_t *d)
       guint num=0;
       gtk_tree_model_get (model, &iter, DT_HIST_ITEMS_COL_ENABLED, &active, DT_HIST_ITEMS_COL_NUM, &num, -1);
       if (active)
-        result = g_list_append (result, (gpointer)(long unsigned int) num);
+        result = g_list_append (result, GUINT_TO_POINTER(num));
 
     }
     while (gtk_tree_model_iter_next (model,&iter));
@@ -120,7 +120,7 @@ _gui_hist_item_toggled (GtkCellRendererToggle *cell,
 }
 
 static gboolean
-_gui_is_set (GList *selops, long unsigned int num)
+_gui_is_set (GList *selops, unsigned int num)
 {
   GList *l = selops;
 
@@ -131,7 +131,7 @@ _gui_is_set (GList *selops, long unsigned int num)
   {
     if (l->data)
     {
-      long unsigned int lnum = (long unsigned int)(gpointer)l->data;
+      unsigned int lnum = GPOINTER_TO_UINT(l->data);
       if (lnum == num)
         return TRUE;
     }

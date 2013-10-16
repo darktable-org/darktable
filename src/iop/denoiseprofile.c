@@ -792,7 +792,7 @@ void process_nlmeans(
           const float *inm  = in + 4*i + 4* roi_in->width *(j-P);
           const float *inms = in + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
-          for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
+          for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
             for(int k=0; k<3; k++)

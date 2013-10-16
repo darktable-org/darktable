@@ -770,7 +770,7 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
   float zoom_x, zoom_y;
-  switch ((long int)data)
+  switch (GPOINTER_TO_INT(data))
   {
     case 1:
       DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -1706,13 +1706,13 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "toggle film strip", closure);
 
   // Zoom shortcuts
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);
   dt_accel_connect_view(self, "zoom close-up", closure);
 
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(2), NULL);
   dt_accel_connect_view(self, "zoom fill", closure);
 
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "zoom fit", closure);
 
   // enable shortcut to export with current export settings:

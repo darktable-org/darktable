@@ -207,37 +207,37 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "rate 0",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_DESERT,NULL));
+      GINT_TO_POINTER(DT_VIEW_DESERT), NULL));
   dt_accel_connect_lib(
     self, "rate 1",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_1,NULL));
+      GINT_TO_POINTER(DT_VIEW_STAR_1), NULL));
   dt_accel_connect_lib(
     self, "rate 2",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_2,NULL));
+      GINT_TO_POINTER(DT_VIEW_STAR_2), NULL));
   dt_accel_connect_lib(
     self, "rate 3",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_3,NULL));
+      GINT_TO_POINTER(DT_VIEW_STAR_3), NULL));
   dt_accel_connect_lib(
     self, "rate 4",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_4,NULL));
+      GINT_TO_POINTER(DT_VIEW_STAR_4), NULL));
   dt_accel_connect_lib(
     self, "rate 5",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_STAR_5,NULL));
+      GINT_TO_POINTER(DT_VIEW_STAR_5), NULL));
   dt_accel_connect_lib(
     self, "rate reject",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_ratings_key_accel_callback),
-      (gpointer)DT_VIEW_REJECT,NULL));
+      GINT_TO_POINTER(DT_VIEW_REJECT), NULL));
 
   // History key accels
   dt_accel_connect_lib(
@@ -277,54 +277,54 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "color red",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
-      (gpointer)0,NULL));
+      GINT_TO_POINTER(0), NULL));
   dt_accel_connect_lib(
     self, "color yellow",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
-      (gpointer)1,NULL));
+      GINT_TO_POINTER(1), NULL));
   dt_accel_connect_lib(
     self, "color green",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
-      (gpointer)2,NULL));
+      GINT_TO_POINTER(2), NULL));
   dt_accel_connect_lib(
     self, "color blue",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
-      (gpointer)3,NULL));
+      GINT_TO_POINTER(3), NULL));
   dt_accel_connect_lib(
     self, "color purple",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_colorlabels_key_accel_callback),
-      (gpointer)4,NULL));
+      GINT_TO_POINTER(4), NULL));
 
   // Selection accels
   dt_accel_connect_lib(
     self, "select all",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-      (gpointer)0, NULL));
+      GINT_TO_POINTER(0), NULL));
   dt_accel_connect_lib(
     self, "select none",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-      (gpointer)1, NULL));
+      GINT_TO_POINTER(1), NULL));
   dt_accel_connect_lib(
     self, "invert selection",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-      (gpointer)2, NULL));
+      GINT_TO_POINTER(2), NULL));
   dt_accel_connect_lib(
     self, "select film roll",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-      (gpointer)3, NULL));
+      GINT_TO_POINTER(3), NULL));
   dt_accel_connect_lib(
     self, "select untouched",
     g_cclosure_new(
       G_CALLBACK(_lib_filmstrip_select_key_accel_callback),
-      (gpointer)4, NULL));
+      GINT_TO_POINTER(4), NULL));
 
 }
 
@@ -980,7 +980,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
     GObject *aceeleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
-  long int num = (long int)data;
+  int num = GPOINTER_TO_INT(data);
   switch (num)
   {
     case DT_VIEW_DESERT:
@@ -1050,7 +1050,7 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
 static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     guint keyval, GdkModifierType modifier, gpointer data)
 {
-  switch((long int)data)
+  switch(GPOINTER_TO_INT(data))
   {
     case 0:  // all
       dt_selection_select_all(darktable.selection);

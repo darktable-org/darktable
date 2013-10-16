@@ -581,7 +581,7 @@ static void combobox_changed(GtkComboBox *widget, gpointer user_data)
 
 static void radiobutton_changed(GtkRadioButton *radiobutton, gpointer user_data)
 {
-  long int format = (long int)user_data;
+  int format = GPOINTER_TO_INT(user_data);
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/j2k/format", format);
 }
@@ -608,12 +608,12 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("jp2"));
   gui->jp2 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)JP2_CFMT);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(JP2_CFMT));
   if(format_last == JP2_CFMT) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
   radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("J2K"));
   gui->j2k = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)J2K_CFMT);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(J2K_CFMT));
   if(format_last == J2K_CFMT) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
   gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1, 100, 1, 97, 0));
@@ -622,7 +622,7 @@ void gui_init(dt_imageio_module_format_t *self)
   if(quality_last > 0 && quality_last <= 100)
     dtgtk_slider_set_value(gui->quality, quality_last);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (gui->quality), "value-changed", G_CALLBACK (quality_changed), (gpointer)0);
+  g_signal_connect (G_OBJECT (gui->quality), "value-changed", G_CALLBACK (quality_changed), NULL);
 
   hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);

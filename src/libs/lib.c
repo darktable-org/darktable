@@ -588,15 +588,18 @@ dt_lib_load_modules ()
   g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
+  const int name_offset = strlen(SHARED_LIBRARY_PREFIX),
+            name_end    = strlen(SHARED_LIBRARY_PREFIX) + strlen(SHARED_LIBRARY_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    // get lib*.(so|dll)
+    if(!g_str_has_prefix(d_name, SHARED_LIBRARY_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_LIBRARY_SUFFIX)) continue;
+    strncpy(plugin_name, d_name+name_offset, strlen(d_name)-name_end);
+    plugin_name[strlen(d_name)-name_end] = '\0';
     module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
+
     if(dt_lib_load_module(module, libname, plugin_name))
     {
       free(module);

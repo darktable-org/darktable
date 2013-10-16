@@ -133,22 +133,22 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
       query[0] = '\0';
 
       // included and update set, we then need to update the corresponding style item
-      if ((glong)upd->data!=-1 && (glong)list->data!=-1)
+      if (GPOINTER_TO_INT(upd->data) != -1 && GPOINTER_TO_INT(list->data) != -1)
       {
         strcpy(query, "update style_items set ");
 
         for (int k=0; fields[k]; k++)
         {
           if (k!=0) strcat(query, ",");
-          sprintf(tmp, "%s=(select %s from history where imgid=%d and num=%ld)", fields[k], fields[k], imgid, (glong)upd->data);
+          sprintf(tmp, "%s=(select %s from history where imgid=%d and num=%d)", fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
           strcat(query, tmp);
         }
-        sprintf(tmp, " where styleid=%d and style_items.num=%ld", id, (glong)list->data);
+        sprintf(tmp, " where styleid=%d and style_items.num=%d", id, GPOINTER_TO_INT(list->data));
         strcat(query, tmp);
       }
       // update only, so we want to insert the new style item
-      else if ((glong)upd->data!=-1)
-        sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%ld",id,id,imgid,(glong)upd->data);
+      else if (GPOINTER_TO_INT(upd->data) != -1)
+        sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%d",id,id,imgid,GPOINTER_TO_INT(upd->data));
 
       if (*query)
         DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
@@ -192,7 +192,7 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     {
       if(list!=g_list_first(list))
         g_strlcat(include, ",", 2048);
-      sprintf(tmp, "%ld", (glong)list->data);
+      sprintf(tmp, "%d", GPOINTER_TO_INT(list->data));
       g_strlcat(include, tmp, 2048);
     }
     while ((list=g_list_next(list)));
@@ -264,7 +264,7 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", 2048);
-        sprintf(tmp,"%ld",(glong)list->data);
+        sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
         g_strlcat(include,tmp, 2048);
       }
       while ((list=g_list_next(list)));
@@ -330,7 +330,7 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", 2048);
-        sprintf(tmp,"%ld",(glong)list->data);
+        sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
         g_strlcat(include,tmp, 2048);
       }
       while ((list=g_list_next(list)));

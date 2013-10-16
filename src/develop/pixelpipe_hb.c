@@ -38,8 +38,6 @@
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
-#define max(a,b) ((a) > (b) ? (a) : (b))
-
 static char *_pipe_type_to_str(int pipe_type)
 {
   char *r;
@@ -808,7 +806,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       (void) dt_dev_pixelpipe_cache_get(&(pipe->cache), hash, bufsize, output);
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-    // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %lX\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, (long int)*output);
+    // if(module) printf("reserving new buf in cache for module %s %s: %ld buf %p\n", module->op, pipe == dev->preview_pipe ? "[preview]" : "", hash, *output);
 
 #if 0
     // tonecurve/levels histogram (collect luminance only):
@@ -910,10 +908,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         // fprintf(stderr, "[opencl_pixelpipe 0] factor %f, overhead %d, width %d, height %d, bpp %d\n", (double)tiling.factor, tiling.overhead, roi_in.width, roi_in.height, bpp);
 
-        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        // fprintf(stderr, "[opencl_pixelpipe 1] for module `%s', have bufs %p and %p \n", module->op, cl_mem_input, *cl_mem_output);
         // fprintf(stderr, "[opencl_pixelpipe 1] module '%s'\n", module->op);
 
-        if(dt_opencl_image_fits_device(pipe->devid, max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height), max(in_bpp, bpp), tiling.factor, tiling.overhead))
+        if(dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
         {
           /* image is small enough -> try to directly process entire image with opencl */
 
@@ -959,7 +957,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             }
           }
 
-          // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+          // fprintf(stderr, "[opencl_pixelpipe 2] for module `%s', have bufs %p and %p \n", module->op, cl_mem_input, *cl_mem_output);
 
           // indirectly give gpu some air to breathe (and to do display related stuff)
           dt_iop_nap(darktable.opencl->micro_nap);
@@ -1242,8 +1240,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
           /* process module on cpu. use tiling if needed and possible. */
           if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
-              !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
-                                                max(in_bpp, bpp), tiling.factor, tiling.overhead))
+              !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
+                                                MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
             module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
           else
             module->process(module, piece, input, *output, &roi_in, roi_out);
@@ -1311,7 +1309,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       {
         /* we are not allowed to use opencl for this module */
 
-        // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %lX and %lX \n", module->op, (long int)cl_mem_input, (long int)*cl_mem_output);
+        // fprintf(stderr, "[opencl_pixelpipe 3] for module `%s', have bufs %p and %p \n", module->op, cl_mem_input, *cl_mem_output);
 
         *cl_mem_output = NULL;
 
@@ -1346,8 +1344,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         /* process module on cpu. use tiling if needed and possible. */
         if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
-            !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
-                                              max(in_bpp, bpp), tiling.factor, tiling.overhead))
+            !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
+                                              MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
           module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
         else
           module->process(module, piece, input, *output, &roi_in, roi_out);
@@ -1418,8 +1416,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
       /* process module on cpu. use tiling if needed and possible. */
       if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
-          !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
-                                            max(in_bpp, bpp), tiling.factor, tiling.overhead))
+          !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
+                                            MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
         module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
       else
         module->process(module, piece, input, *output, &roi_in, roi_out);
@@ -1476,8 +1474,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 #else
     /* process module on cpu. use tiling if needed and possible. */
     if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
-        !dt_tiling_piece_fits_host_memory(max(roi_in.width, roi_out->width), max(roi_in.height, roi_out->height),
-                                          max(in_bpp, bpp), tiling.factor, tiling.overhead))
+        !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
+                                          MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
     else
       module->process(module, piece, input, *output, &roi_in, roi_out);

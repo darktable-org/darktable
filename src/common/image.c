@@ -831,7 +831,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       // would return wrong version!
       while (dup_list)
       {
-        long int id = GPOINTER_TO_INT(dup_list->data);
+        int id = GPOINTER_TO_INT(dup_list->data);
         const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, id);
         dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
         img->film_id = filmid;

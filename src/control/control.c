@@ -1441,7 +1441,7 @@ gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, g
   const int height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  dt_draw_endmarker(cr, width, height, (long int)user_data);
+  dt_draw_endmarker(cr, width, height, GPOINTER_TO_INT(user_data));
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);

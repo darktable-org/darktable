@@ -186,27 +186,27 @@ void connect_key_accels(dt_lib_module_t *self)
     self, "select all",
     g_cclosure_new(
       G_CALLBACK(_lib_lighttable_key_accel_select_callback),
-      (gpointer)0, NULL));
+      GINT_TO_POINTER(0), NULL));
   dt_accel_connect_lib(
     self, "select none",
     g_cclosure_new(
       G_CALLBACK(_lib_lighttable_key_accel_select_callback),
-      (gpointer)1, NULL));
+      GINT_TO_POINTER(1), NULL));
   dt_accel_connect_lib(
     self, "invert selection",
     g_cclosure_new(
       G_CALLBACK(_lib_lighttable_key_accel_select_callback),
-      (gpointer)2, NULL));
+      GINT_TO_POINTER(2), NULL));
   dt_accel_connect_lib(
     self, "select film roll",
     g_cclosure_new(
       G_CALLBACK(_lib_lighttable_key_accel_select_callback),
-      (gpointer)3, NULL));
+      GINT_TO_POINTER(3), NULL));
   dt_accel_connect_lib(
     self, "select untouched",
     g_cclosure_new(
       G_CALLBACK(_lib_lighttable_key_accel_select_callback),
-      (gpointer)4, NULL));
+      GINT_TO_POINTER(4), NULL));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -353,7 +353,7 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
 static gboolean _lib_lighttable_key_accel_select_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     guint keyval, GdkModifierType modifier, gpointer data)
 {
-  switch((long int)data)
+  switch(GPOINTER_TO_INT(data))
   {
     case 0:  // all
       dt_selection_select_all(darktable.selection);

@@ -1469,13 +1469,15 @@ void dt_iop_load_modules_so()
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
+  const int name_offset = strlen(SHARED_LIBRARY_PREFIX),
+            name_end    = strlen(SHARED_LIBRARY_PREFIX) + strlen(SHARED_LIBRARY_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(op, d_name+3, strlen(d_name)-6);
-    op[strlen(d_name)-6] = '\0';
+      // get lib*.so
+    if(!g_str_has_prefix(d_name, SHARED_LIBRARY_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_LIBRARY_SUFFIX)) continue;
+    strncpy(op, d_name+name_offset, strlen(d_name)-name_end);
+    op[strlen(d_name)-name_end] = '\0';
     module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
     memset(module,0,sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);

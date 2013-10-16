@@ -302,7 +302,7 @@ void gui_init(dt_lib_module_t *self)
   char localtmpdir[4096]= {0};
   dt_loc_get_tmp_dir (localtmpdir,4096);
 
-  for (long k=0; k<d->size; k++)
+  for (int k=0; k<d->size; k++)
   {
     /* create snapshot button */
     d->snapshot[k].button = dtgtk_togglebutton_new_with_label (wdname,NULL,CPF_STYLE_FLAT);
@@ -311,10 +311,10 @@ void gui_init(dt_lib_module_t *self)
                      self);
 
     /* assign snapshot number to widget */
-    g_object_set_data(G_OBJECT(d->snapshot[k].button),"snapshot",(gpointer)(k+1));
+    g_object_set_data(G_OBJECT(d->snapshot[k].button),"snapshot",GINT_TO_POINTER(k+1));
 
     /* setup filename for snapshot */
-    snprintf(d->snapshot[k].filename, 512, "%s/dt_snapshot_%ld.png",localtmpdir,k);
+    snprintf(d->snapshot[k].filename, 512, "%s/dt_snapshot_%d.png",localtmpdir,k);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box),d->snapshot[k].button,TRUE,TRUE,0);
@@ -400,7 +400,7 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
   dt_lib_module_t *self = (dt_lib_module_t*)user_data;
   dt_lib_snapshots_t *d = (dt_lib_snapshots_t *)self->data;
   /* get current snapshot index */
-  long which = (long)g_object_get_data(G_OBJECT(widget),"snapshot");
+  int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"snapshot"));
 
   /* free current snapshot image if exists */
   if (d->snapshot_image)

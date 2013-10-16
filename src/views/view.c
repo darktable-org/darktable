@@ -376,7 +376,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                      G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+                      G_CALLBACK (dt_control_expose_endmarker), GINT_TO_POINTER(1));
     gtk_widget_set_size_request(endmarker, -1, 50);
     gtk_widget_show(endmarker);
   }
