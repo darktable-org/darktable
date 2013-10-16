@@ -62,8 +62,9 @@
                                         </indexterm>
 					<para>Opens a dialog box to select an XMP file, thus loading a history stack that you can paste on images.
 					</para>
-                                        <para>Files that were exported by darktable contain the full history stack if the file format supports embedded metadata 
-                                              (see <xref linkend="export_selected"/>). You can load an exported image as a sidecar file in the same way as you do with an XMP file.
+                                        <para>Files that were exported by darktable typically contain the full history stack if the file format supports embedded metadata 
+                                              (see <xref linkend="export_selected"/> about this feature and its limitations). You can load an exported image as a 
+                                              sidecar file in the same way as you do with an XMP file.
                                               This feature allows you to recover all parameter settings in case you have accidentally lost or overwritten the XMP file. 
                                               All you need is the source image, typically a RAW, and the exported file.
                                         </para>

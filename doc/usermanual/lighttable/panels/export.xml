@@ -128,9 +128,14 @@
 					<para>darktable can export to various file formats. For some of them you need to define the desired bit depth of the exported image. If you export to a JPEG
                                               file you can define an output quality. Higher values will lead to larger file sizes.
 					</para>
-                                        <para>If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable will store the history stack
+                                        <para>If the file format supports embedded metadata, like JPEG, JPEG2000 and TIFF, darktable will try to store the history stack
                                               as XMP tags within the output file. This information can later be used to reconstruct your parameters and settings that have produced the exported 
-                                              image (see <xref linkend="history_stack"/>). 
+                                              image (see <xref linkend="history_stack"/>).
+                                        </para>
+                                        <para><emphasis>Caution: for various reasons embedding XMP tags into output files may fail without notice. Users are therefore advised to not rely their backup
+                                              strategy on this feature.</emphasis>
+                                        </para>
+                                        <para>
                                               If you don't want to distribute history stack data with your images, there are various tools to delete embedded XMP tags. As an example 
                                               you can use the program <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink> with:
 		    <programlisting>
@@ -143,8 +148,8 @@ exiftool -XMP:all=   image.jpg
 					<para>Set the maximum width and height of the output images in pixels. Set both to a value of "0" to export with full resolution. darktable currently 
                                               can only do down-scaling; the maximum output resolution is defined by the parent image.
 					</para>
-                                        <para>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10, in these fields, causing darktable to produce miniature output files. 
-                                              You might think darktable's output is broken, but in fact it only generated what you asked for.
+                                        <para><emphasis>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10, in these fields, causing darktable to produce miniature output files. 
+                                              You might think darktable's output is broken, but in fact it only generated what you asked for.</emphasis>
                                         </para>
 				</sect4>
 
