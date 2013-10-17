@@ -69,7 +69,7 @@
                <emphasis>shift+scrolling</emphasis>, and <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at any time on your way.</para> 
                <para>If you have a graphic tablet with pen
                pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.</para>
-               <para>Nodes and segments of a brush stroke can be modified individually. See the the documentation on <emphasis>path</emphasis> below for more details.</para>
+               <para>Nodes and segments of a brush stroke can be modified individually. See the documentation on <emphasis>path</emphasis> below for more details.</para>
                <para>Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth="6*"/>

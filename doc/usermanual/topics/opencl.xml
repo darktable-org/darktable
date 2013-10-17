@@ -118,8 +118,9 @@ darktable -d opencl
 	</sect2>
 
         <sect2 status="final"><title>Setting up OpenCL for AMD/ATI devices</title>
-                <para>While NVIDIA devices will most often run out of the box, there is more to do for AMD/ATI graphics cards. This starts with the fact that AMD/ATI will 
-                      only report to darktable half of the total GPU memory. For a 1GB device this amounts to 512MB, a value which darktable in its standard configuration will refuse 
+                <para>While NVIDIA devices and most modern AMD/ATI devices will most often run out of the box, there is more to do for older AMD/ATI graphics cards, namely those prior to the
+                      HD7xxx series. This starts with the fact that those devices will 
+                      only report to darktable part of their total GPU memory. For a 1GB device this typically amounts to 512MB, a value which darktable in its standard configuration will refuse 
                       as not being sufficient for its tasks. Consequence: the device will not be used.</para>
 
                 <para>On the web you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE to a value of 100 in this case. Indeed this will cause the AMD/ATI driver to report the full 
@@ -150,6 +151,9 @@ darktable -d opencl
                       <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, <link linkend="local_contrast"><emphasis>local contrast</emphasis></link>,
                       or <link linkend="global_tonemap"><emphasis>global tonemap</emphasis></link> or if you even get intermittent system freezes.</para>
                 </sect4>
+
+                <para>These recommendations do not apply to the more recent Radeon HD7xxx series with GCN architecture. Besides being very fast in terms of GPU computing they normally
+                      run out of the box. You only might consider to try some of the performance optimization options which are described in the following section.</para>
         </sect2>
 
 
