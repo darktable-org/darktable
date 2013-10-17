@@ -105,11 +105,11 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
     g_free(tmp);
   }
   
-  long int imgid = dt_view_get_image_to_act_on();
+  int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
 
   if (imgid != -1)
-    list = g_list_append (list, (gpointer)imgid);
+    list = g_list_append (list, GINT_TO_POINTER(imgid));
   else
     list = dt_collection_get_selected(darktable.collection, -1);
 
@@ -300,12 +300,12 @@ set_storage_by_name (dt_lib_export_t *d, const char *name)
   h = dt_conf_get_int("plugins/lighttable/export/height");
   module->recommended_dimension( module, &w, &h );
   // Set the recommended dimension, prevent signal changed...
-  g_signal_handlers_block_by_func( d->width, width_changed, (gpointer)0 );
-  g_signal_handlers_block_by_func( d->height, height_changed, (gpointer)0 );
+  g_signal_handlers_block_by_func( d->width, width_changed, NULL );
+  g_signal_handlers_block_by_func( d->height, height_changed, NULL );
   gtk_spin_button_set_value( d->width, w );
   gtk_spin_button_set_value( d->height, h );
-  g_signal_handlers_unblock_by_func( d->width, width_changed, (gpointer)0 );
-  g_signal_handlers_unblock_by_func( d->height, height_changed, (gpointer)0 );
+  g_signal_handlers_unblock_by_func( d->width, width_changed, NULL );
+  g_signal_handlers_unblock_by_func( d->height, height_changed, NULL );
 
   // Let's update formats combobox with supported formats of selected storage module...
   _update_formats_combobox( d );
@@ -677,10 +677,10 @@ gui_init (dt_lib_module_t *self)
                     (gpointer)self);
   g_signal_connect (G_OBJECT (d->width), "value-changed",
                     G_CALLBACK (width_changed),
-                    (gpointer)0);
+                    NULL);
   g_signal_connect (G_OBJECT (d->height), "value-changed",
                     G_CALLBACK (height_changed),
-                    (gpointer)0);
+                    NULL);
 
   self->gui_reset(self);
 }

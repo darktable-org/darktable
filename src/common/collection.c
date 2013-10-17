@@ -416,8 +416,8 @@ GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
-    long int imgid = sqlite3_column_int(stmt, 0);
-    list = g_list_append (list, (gpointer)imgid);
+    int imgid = sqlite3_column_int(stmt, 0);
+    list = g_list_append (list, GINT_TO_POINTER(imgid));
   }
 
 

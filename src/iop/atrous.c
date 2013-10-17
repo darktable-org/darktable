@@ -51,7 +51,6 @@ DT_MODULE(1)
 													cairo_move_to (cr, .5*(width-ext.width), .98*height);\
 													cairo_show_text(cr, text);
 
-#define min(a,b)	((a) < (b) ? (a) : (b))
 
 typedef enum atrous_channel_t
 {

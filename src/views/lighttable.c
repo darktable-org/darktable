@@ -1213,7 +1213,7 @@ static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
-  long int num = (long int)data;
+  int num = GPOINTER_TO_INT(data);
   int32_t mouse_over_id;
 
   mouse_over_id = dt_view_get_image_to_act_on();
@@ -1669,31 +1669,31 @@ void connect_key_accels(dt_view_t *self)
   // Rating keys
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_DESERT, NULL);
+              GINT_TO_POINTER(DT_VIEW_DESERT), NULL);
   dt_accel_connect_view(self, "rate 0", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_1, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_1), NULL);
   dt_accel_connect_view(self, "rate 1", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_2, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_2), NULL);
   dt_accel_connect_view(self, "rate 2", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_3, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_3), NULL);
   dt_accel_connect_view(self, "rate 3", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_4, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_4), NULL);
   dt_accel_connect_view(self, "rate 4", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_5, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_5), NULL);
   dt_accel_connect_view(self, "rate 5", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_REJECT, NULL);
+              GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
   // expose image status
@@ -1725,19 +1725,19 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
   // Color keys
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)0, NULL);
+                           GINT_TO_POINTER(0), NULL);
   dt_accel_connect_view(self, "color red", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)1, NULL);
+                           GINT_TO_POINTER(1), NULL);
   dt_accel_connect_view(self, "color yellow", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)2, NULL);
+                           GINT_TO_POINTER(2), NULL);
   dt_accel_connect_view(self, "color green", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)3, NULL);
+                           GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "color blue", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)4, NULL);
+                           GINT_TO_POINTER(4), NULL);
   dt_accel_connect_view(self, "color purple", closure);
 
 }

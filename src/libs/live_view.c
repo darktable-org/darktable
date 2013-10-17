@@ -226,7 +226,7 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
 static const gchar *focus_array[] = {"Near 3", "Near 2", "Near 1", "Far 1", "Far 2", "Far 3"};
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  long int focus = (long int) user_data;
+  int focus = GPOINTER_TO_INT(user_data);
   if(focus >= 0 && focus <= 5)
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
 }
@@ -313,10 +313,10 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT( lib->focus_out_big), "tooltip-text", _("move focus point out (big steps)"), (char *)NULL);
 
   // 1 and 4 would be medium steps, not in ui right now ...
-  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)0);
-  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)2);
-  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)3);
-  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)5);
+  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(0));
+  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(2));
+  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(3));
+  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(5));
 
   // Guides
   lib->guide_selector = dt_bauhaus_combobox_new(NULL);

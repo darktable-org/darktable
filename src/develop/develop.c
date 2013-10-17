@@ -1039,7 +1039,7 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom, int closeup, float *boxww, float *boxhh)
 {
-  int procw, proch;
+  int procw = 0, proch = 0;
   dt_dev_get_processed_size(dev, &procw, &proch);
   float boxw = 1, boxh = 1; // viewport in normalised space
 //   if(zoom == DT_ZOOM_1)
@@ -1108,7 +1108,7 @@ void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x, float *zoom_y)
 {
   dt_dev_zoom_t zoom;
-  int closeup, procw, proch;
+  int closeup, procw = 0, proch = 0;
   float zoom2_x, zoom2_y;
   DT_CTL_GET_GLOBAL(zoom, dev_zoom);
   DT_CTL_GET_GLOBAL(closeup, dev_closeup);

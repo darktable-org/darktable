@@ -30,7 +30,6 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c"
   "common/image_compression.c"
   "common/imageio.c"
-  "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"
   "common/imageio_module.c"
@@ -153,8 +152,16 @@ if(INOTIFY_FOUND)
   add_definitions(${INOTIFY_DEFINITIONS})
 endif(INOTIFY_FOUND)
 
+find_package(OpenEXR)
+if(OPENEXR_FOUND)
+  include_directories(${OpenEXR_INCLUDE_DIRS})
+  list(APPEND LIBS ${OpenEXR_LIBRARIES})
+  add_definitions(${OpenEXR_DEFINITIONS})
+  list(APPEND SOURCES "common/imageio_exr.cc")
+endif(OPENEXR_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2 WebP)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 WebP)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -520,8 +527,6 @@ else(USE_GEO)
   message(STATUS "Map mode: disabled")
 endif(USE_GEO)
 
-target_link_libraries(lib_darktable ${LIBS})
-
 # libcolord-gtk:
 if(USE_COLORD)
   find_package(Colord)
@@ -546,7 +551,7 @@ if(USE_SQUISH)
 add_dependencies(lib_darktable squish)
 add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-target_link_libraries(lib_darktable ${LIBS} squish_static)
+target_link_libraries(lib_darktable squish_static)
 add_subdirectory(external/squish)
 add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
@@ -559,7 +564,7 @@ if(USE_LUA)
 	add_dependencies(lib_darktable lautoc)
 	add_library(lautoc_static STATIC IMPORTED)
 	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-	target_link_libraries(lib_darktable ${LIBS} lautoc_static)
+	target_link_libraries(lib_darktable lautoc_static)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
 	add_subdirectory(external/LuaAutoC)
 endif(USE_LUA)
@@ -590,6 +595,7 @@ add_definitions("-Werror=implicit-function-declaration")
 
 ###### GTK+3 port ######
 
+target_link_libraries(lib_darktable ${LIBS})
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first

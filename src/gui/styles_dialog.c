@@ -78,7 +78,7 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd, GList **enabled, GList
   /* run thru all items and add active ones to result */
   GtkTreeIter iter;
   GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (sd->items));
-  glong num=0, update_num=0;
+  int num=0, update_num=0;
   gboolean active, uactive;
 
   if (gtk_tree_model_get_iter_first(model,&iter))
@@ -88,13 +88,13 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd, GList **enabled, GList
       gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &active, DT_STYLE_ITEMS_COL_UPDATE, &uactive, DT_STYLE_ITEMS_COL_NUM, &num, DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num, -1);
       if (active || uactive)
       {
-        *enabled = g_list_append (*enabled, (gpointer)(glong) num);
+        *enabled = g_list_append (*enabled, GINT_TO_POINTER(num));
         if (update != NULL)
         {
           if (uactive || num==-1)
-            *update = g_list_append (*update, (gpointer)(glong) update_num);
+            *update = g_list_append (*update, GINT_TO_POINTER(update_num));
           else
-            *update = g_list_append (*update, (gpointer)(glong) -1);
+            *update = g_list_append (*update, GINT_TO_POINTER(-1));
         }
       }
     }
@@ -112,13 +112,13 @@ _gui_styles_get_active_items (dt_gui_styles_dialog_t *sd, GList **enabled, GList
       {
         if (update_num==-1) // item from style
         {
-          *enabled = g_list_append (*enabled, (gpointer)(glong) num);
-          *update = g_list_append (*update, (gpointer)(glong) -1);
+          *enabled = g_list_append (*enabled, GINT_TO_POINTER(num));
+          *update = g_list_append (*update, GINT_TO_POINTER(-1));
         }
         else // item from image
         {
-          *update = g_list_append (*update, (gpointer)(glong) update_num);
-          *enabled = g_list_append (*enabled, (gpointer)(glong) -1);
+          *update = g_list_append (*update, GINT_TO_POINTER(update_num));
+          *enabled = g_list_append (*enabled, GINT_TO_POINTER(-1));
         }
       }
     }
@@ -200,7 +200,7 @@ _gui_styles_item_toggled (GtkCellRendererToggle *cell,
   GtkTreePath *path = gtk_tree_path_new_from_string (path_str);
   GtkTreeIter iter;
   gboolean toggle_item;
-  glong num, update_num;
+  int num, update_num;
 
   gtk_tree_model_get_iter (model, &iter, path);
   gtk_tree_model_get (model, &iter, DT_STYLE_ITEMS_COL_ENABLED, &toggle_item, DT_STYLE_ITEMS_COL_NUM, &num, DT_STYLE_ITEMS_COL_UPDATE_NUM, &update_num, -1);
@@ -344,10 +344,10 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW (gtk_tree_view_new ());
-  GtkListStore *liststore = gtk_list_store_new (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_LONG, G_TYPE_LONG);
+  GtkListStore *liststore = gtk_list_store_new (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 
   sd->items_new = GTK_TREE_VIEW (gtk_tree_view_new ());
-  GtkListStore *liststore_new = gtk_list_store_new (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_LONG, G_TYPE_LONG);
+  GtkListStore *liststore_new = gtk_list_store_new (DT_STYLE_ITEMS_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 
   /* enabled */
   GtkCellRenderer *renderer = gtk_cell_renderer_toggle_new ();
@@ -438,8 +438,8 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
                               DT_STYLE_ITEMS_COL_ENABLED, TRUE,
                               DT_STYLE_ITEMS_COL_UPDATE, FALSE,
                               DT_STYLE_ITEMS_COL_NAME, item->name,
-                              DT_STYLE_ITEMS_COL_NUM, (glong)item->num,
-                              DT_STYLE_ITEMS_COL_UPDATE_NUM, (glong)item->selimg_num,
+                              DT_STYLE_ITEMS_COL_NUM, item->num,
+                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                               -1);
           has_item = TRUE;
         }
@@ -447,10 +447,10 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         {
           gtk_list_store_append (GTK_LIST_STORE(liststore_new), &iter);
           gtk_list_store_set (GTK_LIST_STORE(liststore_new), &iter,
-                              DT_STYLE_ITEMS_COL_ENABLED, (glong)item->num!=-1?TRUE:FALSE,
+                              DT_STYLE_ITEMS_COL_ENABLED, item->num!=-1?TRUE:FALSE,
                               DT_STYLE_ITEMS_COL_NAME, item->name,
-                              DT_STYLE_ITEMS_COL_NUM, (glong)item->num,
-                              DT_STYLE_ITEMS_COL_UPDATE_NUM, (glong)item->selimg_num,
+                              DT_STYLE_ITEMS_COL_NUM, item->num,
+                              DT_STYLE_ITEMS_COL_UPDATE_NUM, item->selimg_num,
                               -1);
           has_new_item = TRUE;
         }
@@ -491,7 +491,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
         gtk_list_store_set (GTK_LIST_STORE(liststore), &iter,
                             DT_STYLE_ITEMS_COL_ENABLED, enabled,
                             DT_STYLE_ITEMS_COL_NAME, name,
-                            DT_STYLE_ITEMS_COL_NUM, (glong)item->num,
+                            DT_STYLE_ITEMS_COL_NUM, item->num,
                             -1);
 
         has_item = TRUE;

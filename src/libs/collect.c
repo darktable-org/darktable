@@ -43,7 +43,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_collect_rule_t
 {
-  long int num;
+  int num;
   GtkWidget *hbox;
   GtkComboBox *combo;
   GtkWidget *text;
@@ -783,9 +783,6 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
     visible = TRUE;
     gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
 
-    //g_free(str);
-    //str = NULL;
-
     return FALSE;
   }
 
@@ -808,8 +805,6 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
     visible = TRUE;
 
   gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
-
-  //g_free(str);
 
   return FALSE;
 }
@@ -1037,9 +1032,9 @@ set_properties (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char confname[200];
-  snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
+  snprintf(confname, 200, "plugins/lighttable/collect/string%1d", dr->num);
   dt_conf_set_string (confname, text);
-  snprintf(confname, 200, "plugins/lighttable/collect/item%1ld", dr->num);
+  snprintf(confname, 200, "plugins/lighttable/collect/item%1d", dr->num);
   dt_conf_set_int (confname, property);
 }
 

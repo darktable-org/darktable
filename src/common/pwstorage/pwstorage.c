@@ -35,7 +35,7 @@
 const dt_pwstorage_t* dt_pwstorage_new()
 {
   dt_pwstorage_t *pwstorage = g_malloc(sizeof(dt_pwstorage_t));
-  dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] Creating new context %lx\n",(unsigned long int)pwstorage);
+  dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] Creating new context %p\n", pwstorage);
 
   if(pwstorage == NULL)
     return NULL;
@@ -115,7 +115,7 @@ const dt_pwstorage_t* dt_pwstorage_new()
 /** Cleanup and destroy pwstorage context. \remarks After this point pointer at pwstorage is invalid. */
 void dt_pwstorage_destroy(const dt_pwstorage_t *pwstorage)
 {
-  dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] Destroying context %lx\n",(unsigned long int)pwstorage);
+  dt_print(DT_DEBUG_PWSTORAGE,"[pwstorage_new] Destroying context %p\n", pwstorage);
   switch(darktable.pwstorage->pw_storage_backend)
   {
     case PW_STORAGE_BACKEND_NONE:
