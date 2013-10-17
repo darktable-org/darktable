@@ -13,7 +13,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Raw denoise allows you to perfom denoising on pre-demosaic data. It is ported from 
+						<entry>Raw denoise allows you to perform denoising on pre-demosaic data. It is ported from 
                                                        <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.		
 						</entry>
 						<entry>

@@ -32,7 +32,7 @@
 
   <para>With filtering you limit the number of displayed images of your current collection (see also <xref linkend="collect_images"/>).
         Filtering is mainly based on the star ratings of your images. At your choice you can make darktable display <quote>all</quote> images,
-        only the <quote>unstarred</quote> onces, images which have at least a certain minimum number of stars (from one to five), only the
+        only the <quote>unstarred</quote> ones, images which have at least a certain minimum number of stars (from one to five), only the
         <quote>rejected</quote> images, and all but the rejected ones.</para>
 
   <para>Images in the lighttable view can be displayed in different sort orders, depending on <quote>filename</quote>, <quote>time</quote> 

@@ -27,7 +27,7 @@
                 <para>Michael Orton achieved his results on slide film by using two exposures of the same scene: one well exposed and one overexposed; he then 
                       used a darkroom technique to blend those into a final image where the overexposed image was blurred.
                 </para>
-		<para>This module is almost a copy of Orton's analogue process into the digital domain. You can control brightnesss and blur with the provided parameters; 
+		<para>This module is almost a copy of Orton's analogue process into the digital domain. You can control brightness and blur with the provided parameters; 
 			we also add a control for saturation of the overexposured image for more play.
 		</para>
 		<sect5><title>size</title>

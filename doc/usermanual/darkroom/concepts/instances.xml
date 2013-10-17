@@ -31,7 +31,7 @@
                                  each of the module instances are applied.</para>
 
                            <para>Please be aware that of course each instance also adds to the workload of your pixelpipe. Generating too many instances - especially of the more demanding
-                                 modules - will certainly cause some noticable slow-down.</para>
+                                 modules - will certainly cause some noticeable slow-down.</para>
                     </sect3>
 
 		    <sect3 status="final"><title>Managing instances</title>

@@ -215,7 +215,7 @@
            </sect4>
 
            <sect4><title>drawn mask</title>
-              <para>The number of shapes that are used in the current mask is diplayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
+              <para>The number of shapes that are used in the current mask is displayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
               have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add 
               it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</para>
 

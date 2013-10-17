@@ -55,7 +55,7 @@
                               <emphasis>scale chroma</emphasis> combobox is set to <quote>manual</quote>.
                               The horizontal line represents the color channel value of the input image pixels. The vertical line
                               represents the color channel value of the output image pixels. Positive a-values correspond to more magenta colors;
-                              negative a-values correspond to more greenish colors. Positve b-values correspond to more yellowish colors; negative
+                              negative a-values correspond to more greenish colors. Positive b-values correspond to more yellowish colors; negative
                               b-values correspond to more blueish colors. 
                         </para>
                         <para>A straight line does not change anything.

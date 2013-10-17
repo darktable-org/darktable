@@ -44,7 +44,7 @@ Loads the given image in darkroom mode, or imports the given folder.
 
 =item B<-d control>
 
-Enable job queue debugging. If you redirect darktables output to B<control.log> and
+Enable job queue debugging. If you redirect darktable's output to B<control.log> and
 call B<./tools/create_control_svg.sh control.log>, you will get a nice B<control.svg>
 with a visualization of the threads' work.
 

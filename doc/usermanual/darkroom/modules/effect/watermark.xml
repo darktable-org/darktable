@@ -94,7 +94,7 @@
 			<para>Use these controls to align the watermark to any edge or center of the image.</para>
 		</sect5>
 		<sect5><title>x offset</title>
-			<para>Pixel-independent offset realtive to the choice of alignment on x-axis.</para>
+			<para>Pixel-independent offset relative to the choice of alignment on x-axis.</para>
 		</sect5>
 		<sect5><title>y offset</title>
 			<para>Pixel-independent offset relative to the choice of alignment on y-axis.</para>

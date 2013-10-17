@@ -33,7 +33,7 @@
 			<para>The only control element of this module is a color selector which allows to adjust for different colors of your film material.
                               Clicking on the colored field will open a color selector dialog which allows to define a color in HSL or RGB color space.
                               You can also activate a color picker by pressing <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
-                              and take a color probe from your image - preferrably from the unexposed border of your negative.
+                              and take a color probe from your image - preferably from the unexposed border of your negative.
                         </para>
 		</sect5>
 	</sect4>

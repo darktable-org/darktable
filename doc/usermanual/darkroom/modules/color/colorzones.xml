@@ -32,7 +32,7 @@
 	<sect4><title>Usage</title>
 		<para>The horizontal axis represent the different values you can modify. The vertical axis shows the changes you can achieve.
                 </para>
-		<para>For both horizontal and vertical axises you can work on lightness, saturation or hue. A color picker is activated by pressing 
+		<para>For both horizontal and vertical axes you can work on lightness, saturation or hue. A color picker is activated by pressing 
                       <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> and will show the picked values in
                       the diagram.
                 </para>
