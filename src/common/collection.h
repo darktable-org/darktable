@@ -107,6 +107,7 @@ typedef struct dt_collection_t
   int clone;
   gchar *query;
   gchar *where_ext;
+  unsigned int count;
   dt_collection_params_t params;
   dt_collection_params_t store;
 }

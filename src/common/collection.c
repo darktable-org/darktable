@@ -37,6 +37,8 @@
 
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
+/* Counts the number of images in the current collection */
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection);
 
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
@@ -52,6 +54,7 @@ dt_collection_new (const dt_collection_t *clone)
     collection->where_ext = g_strdup(clone->where_ext);
     collection->query = g_strdup(clone->query);
     collection->clone = 1;
+    collection->count = clone->count;
   }
   else  /* else we just initialize using the reset */
     dt_collection_reset (collection);
@@ -148,6 +151,8 @@ dt_collection_update (const dt_collection_t *collection)
   g_free(selq);
   g_free (query);
 
+  /* update the cached count. collection isn't a real const anyway, we are writing to it in _dt_collection_store, too. */
+  ((dt_collection_t*)collection)->count = _dt_collection_compute_count(collection);
   dt_collection_hint_message(collection);
 
   return result;
@@ -351,7 +356,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   return 1;
 }
 
-uint32_t dt_collection_get_count(const dt_collection_t *collection)
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count=1;
@@ -377,6 +382,11 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   sqlite3_finalize(stmt);
   g_free(count_query);
   return count;
+}
+
+uint32_t dt_collection_get_count(const dt_collection_t *collection)
+{
+  return collection->count;
 }
 
 uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
