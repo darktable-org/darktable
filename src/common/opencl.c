@@ -349,8 +349,8 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           }
         if(confentry[0] == '\0') continue;
 
-        const char *delim = " \t", *programname = NULL, *programnumber = NULL;
-        gchar **tokens = g_strsplit(confentry, delim, 3);
+        const char *programname = NULL, *programnumber = NULL;
+        gchar **tokens = g_strsplit_set(confentry, " \t", 3);
         if(tokens)
         {
           programname = tokens[0];
