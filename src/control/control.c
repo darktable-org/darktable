@@ -479,6 +479,8 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
   // quick hack to detect if the db is already used by another process
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table lock (id integer)",
@@ -643,6 +645,8 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table meta_data (id integer, key integer,value varchar)",
                    NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
       // quick hack to detect if the db is already used by another process
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table lock (id integer)",
