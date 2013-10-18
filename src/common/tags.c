@@ -333,7 +333,7 @@ uint32_t dt_tag_get_attached(gint imgid,GList **result)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "SELECT DISTINCT T.id, T.name "
                                 "FROM tagged_images,tags as T "
-                                "WHERE tagged_images.imgid in (select * from selected_images)"
+                                "WHERE tagged_images.imgid in (select imgid from selected_images)"
                                 "  AND T.id = tagged_images.tagid", -1, &stmt, NULL);
   }
 
