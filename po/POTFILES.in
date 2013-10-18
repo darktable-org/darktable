@@ -162,3 +162,4 @@ src/develop/blend.c
 src/develop/masks/masks.c
 src/libs/masks.c
 src/lua/preferences.c
+src/imageio/format/webp.c
