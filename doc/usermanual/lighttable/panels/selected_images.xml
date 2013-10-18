@@ -29,6 +29,10 @@
                                       parameters on disk, you can later fully reconstruct your work by just re-importing the images. When
                                       backing up your RAWs make sure to also save the XMP files!
 			</para>
+                        <para><emphasis>Caution: if you are removing an image with duplicates, darktable only keeps an XMP file of the first instance -
+                        all other instance's XMP files will be deleted. If you intend to keep them make sure to backup the corresponding XMP files before removing
+                        an image.</emphasis>
+                        </para>
 		</sect4>
 		<sect4><title>delete</title>
                         <indexterm>
