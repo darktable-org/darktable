@@ -7,7 +7,7 @@ SOURCES=$(
     ) | fgrep -v -f po/POTFILES.skip | sort
 )
 
-fgrep -l '_(' $SOURCES > po/POTFILES.in.2
+egrep -l '[^a-z_]_\(' $SOURCES > po/POTFILES.in.2
 if diff po/POTFILES.in po/POTFILES.in.2 >/dev/null 2>&1 ; then
     rm -f po/POTFILES.in.2
 else
