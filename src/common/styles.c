@@ -95,7 +95,7 @@ _dt_style_cleanup_multi_instance(int id)
      SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a style has
      never a huge number of items that's not a real issue. */
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update style_items set multi_priority=(select COUNT(0)-1 from style_items sty2 where sty2.num<=style_items.num and sty2.operation=style_items.operation and sty2.styleid=?1), multi_name=multi_priority where styleid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE style_items SET multi_priority=(SELECT COUNT(0)-1 FROM style_items sty2 WHERE sty2.num>=style_items.num AND sty2.operation=style_items.operation AND sty2.styleid=?1), multi_name=multi_priority WHERE styleid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
