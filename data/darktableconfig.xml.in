@@ -127,6 +127,19 @@
     <shortdescription>write sidecar file for each image</shortdescription>
     <longdescription>these redundant files can later be re-imported into a different database, preserving your changes to the image.</longdescription>
   </dtconfig>
+  <dtconfig prefs="core">
+    <name>compress_xmp_tags</name>
+    <type>
+      <enum>
+        <option>never</option>
+        <option>always</option>
+        <option>only large entries</option>
+      </enum>
+    </type>
+    <default>only large entries</default>
+    <shortdescription>store xmp tags in compressed format</shortdescription>
+    <longdescription>entries in xmp tags can get rather large and may exceed the available space to store the history stack in output files. this option allows xmp tags to be compressed and save space.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" capability="opencl">
     <name>opencl</name>
     <type>bool</type>

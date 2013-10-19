@@ -1130,11 +1130,23 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
 #define COMPRESS_THRESHOLD 100
 
   char *output = NULL;
+  gboolean do_compress;
 
   // if input data field exceeds a certain size we compress it and convert to base64;
   // main reason for compression: make more xmp data fit into 64k segment within
   // JPEG output files.
-  if(len > COMPRESS_THRESHOLD)
+  char *config = dt_conf_get_string("compress_xmp_tags");
+  if(config)
+  {
+    if(!strcmp(config, "always"))
+      do_compress = TRUE;
+    else if((len > COMPRESS_THRESHOLD) && !strcmp(config, "only large entries"))
+      do_compress = TRUE;
+    else
+      do_compress = FALSE;
+  }
+
+  if(do_compress)
   {
     int result;
     uLongf destLen = compressBound(len);
