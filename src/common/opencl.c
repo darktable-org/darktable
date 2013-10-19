@@ -350,7 +350,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         if(confentry[0] == '\0') continue;
 
         const char *programname = NULL, *programnumber = NULL;
-        gchar **tokens = g_strsplit_set(confentry, " \t", 3);
+        gchar **tokens = g_strsplit_set(confentry, " \t", 2);
         if(tokens)
         {
           programname = tokens[0];
@@ -377,6 +377,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
           goto finally;
         }
 
+        g_strfreev(tokens);
       }
 
       fclose(f);
