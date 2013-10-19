@@ -175,6 +175,9 @@ static void dt_control_sanitize_database()
                         "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)",
+                        NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)",
