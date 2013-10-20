@@ -874,6 +874,12 @@ dt_bauhaus_slider_new(dt_iop_module_t *self)
 GtkWidget*
 dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits)
 {
+  return dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, step, defval, digits, 1);
+}
+
+GtkWidget*
+dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max, float step, float defval, int digits, int feedback)
+{
   dt_bauhaus_widget_t* w = DT_BAUHAUS_WIDGET(g_object_new(DT_BAUHAUS_WIDGET_TYPE, NULL));
   dt_bauhaus_widget_init(w, self);
   w->type = DT_BAUHAUS_SLIDER;
@@ -891,6 +897,8 @@ dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, fl
   snprintf(d->format, 24, "%%.0%df", digits);
 
   d->grad_cnt = 0;
+
+  d->fill_feedback = feedback;
 
   d->is_dragging = 0;
   d->is_changed = 0;
@@ -1253,7 +1261,7 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
                                         d->grad_col[k][0],
                                         d->grad_col[k][1],
                                         d->grad_col[k][2],
-                                        .2f);
+                                        .25f);
     cairo_set_source(cr, gradient);
   }
   else
@@ -1266,9 +1274,17 @@ dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   cairo_fill(cr);
 
   // have a `fill ratio feel'
-  set_indicator_color(cr, 0);
-  cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
-  cairo_fill(cr);
+  // - but only if set (default, but might not be good for 'balance' sliders)
+  if(d->fill_feedback)
+  {
+    // only change luminosity, useful for colored sliders to not get too faint:
+    cairo_set_operator(cr, CAIRO_OPERATOR_HSL_LUMINOSITY);
+    set_indicator_color(cr, 0);
+    cairo_rectangle(cr, 2, htm, d->pos*(wd-4-ht-2), htM);
+    cairo_fill(cr);
+    // change back to default cairo operator:
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+  }
 
   cairo_rectangle(cr, 2, htm, wd-4-ht-2, htM);
   cairo_set_line_width(cr, 1.);
