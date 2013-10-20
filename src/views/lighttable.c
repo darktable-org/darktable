@@ -1115,6 +1115,30 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     int error = dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, &lib->full_res_thumb_wd, &lib->full_res_thumb_ht, &lib->full_res_thumb_orientation);
     if(!error)
       lib->full_res_thumb_id = lib->full_preview_id;
+    if(!error && 1)
+    {
+      // mark in-focus pixels:
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(shared)
+#endif
+      for(int j=1;j<lib->full_res_thumb_ht-1;j++)
+      {
+        const int wd = lib->full_res_thumb_wd;
+        int index = 4*j*wd+4;
+        for(int i=1;i<wd-1;i++)
+        {
+          const int32_t thrs = 20;
+          int32_t diff = 4*lib->full_res_thumb[index+1]
+                         - lib->full_res_thumb[index-4+1]
+                         - lib->full_res_thumb[index+4+1]
+                         - lib->full_res_thumb[index-4*wd+1]
+                         - lib->full_res_thumb[index+4*wd+1];
+          if(abs(diff) > thrs)
+            lib->full_res_thumb[index+2] = 255;
+          index += 4;
+        }
+      }
+    }
   }
   if(lib->full_res_thumb_id == lib->full_preview_id)
   {
