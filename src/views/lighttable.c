@@ -1227,14 +1227,16 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_surface_destroy (surface);
 
     // draw clustered focus regions
-    cairo_set_line_width(cr, 2.0f);
     for(int k=0;k<49;k++)
     {
+      const float intens = (lib->full_res_focus[k].thrs - 20.0f)/20.f;
       if(lib->full_res_focus[k].n > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
+      // if(intens > 0.5f)
       {
         const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
         const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
-        cairo_set_source_rgb(cr, lib->full_res_focus[k].thrs/20.0, 0.0, 0.0);
+        cairo_set_source_rgb(cr, intens, 0.0, 0.0);
+        cairo_set_line_width(cr, 5.0f*intens);
         cairo_rectangle(cr, lib->full_res_focus[k].x - stddevx, lib->full_res_focus[k].y - stddevy, 2*stddevx, 2*stddevy);
         cairo_stroke(cr);
       }
