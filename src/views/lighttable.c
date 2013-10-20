@@ -69,6 +69,8 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data);
 
+static void _update_collected_images(dt_view_t *self);
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -256,6 +258,11 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+  _update_collected_images (self);
+}
+
+static void _update_collected_images(dt_view_t *self)
+{
   dt_library_t *lib = (dt_library_t *)self->data;
 
   /* check if we can get a query from collection */
