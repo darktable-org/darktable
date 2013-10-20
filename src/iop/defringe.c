@@ -451,13 +451,13 @@ void gui_init (dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(g->thresh_scale), "value-changed",
                    G_CALLBACK(thresh_slider_callback), module);
   /* color bias/shift/whatever sliders */
-  g->a_bias_scale = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, p->a_bias, 2);
+  g->a_bias_scale = dt_bauhaus_slider_new_with_range_and_feedback(module, -1.0, 1.0, 0.01, p->a_bias, 2, 0);
   dt_bauhaus_widget_set_label(g->a_bias_scale, NULL, _("green / magenta balance"));
   dt_bauhaus_slider_set_stop(g->a_bias_scale, 0.0f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->a_bias_scale, 1.0f, 1.0f, 0.0f, 1.0f);
   g_object_set(G_OBJECT(g->a_bias_scale), "tooltip-text", _("move between stronger green or magenta sensitivity"), (char *)NULL);
 
-  g->b_bias_scale = dt_bauhaus_slider_new_with_range(module, -1.0, 1.0, 0.01, p->b_bias, 2);
+  g->b_bias_scale = dt_bauhaus_slider_new_with_range_and_feedback(module, -1.0, 1.0, 0.01, p->b_bias, 2, 0);
   dt_bauhaus_widget_set_label(g->b_bias_scale, NULL, _("blue / yellow balance"));
   dt_bauhaus_slider_set_stop(g->b_bias_scale, 0.0f, 0.0f, 0.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->b_bias_scale, 1.0f, 1.0f, 1.0f, 0.0f);
