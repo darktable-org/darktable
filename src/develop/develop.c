@@ -656,6 +656,22 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
         dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
       }
     }
+    else if(!dt_iop_is_hidden(module) && module->expander)
+    {
+      //we have to ensure that the name of the widget is correct
+      GtkWidget *wlabel;
+      GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->expander)),0)));
+    
+      /* get arrow icon widget */
+      wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
+      char label[128];
+      if(module->multi_name && strcmp(module->multi_name,"0") == 0)
+        g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+      else
+        g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+      gtk_label_set_markup(GTK_LABEL(wlabel),label);
+  
+    }
     modules = g_list_next(modules);
   }
 
