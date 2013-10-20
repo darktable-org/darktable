@@ -281,6 +281,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -379,6 +380,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -455,6 +457,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -789,6 +792,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   dt_collection_deserialize(collect);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -1005,6 +1009,7 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
 
   dt_control_backgroundjobs_destroy(control, jid);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   return 0;
 }
 

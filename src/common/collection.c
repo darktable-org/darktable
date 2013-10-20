@@ -39,6 +39,11 @@
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 /* Counts the number of images in the current collection */
 static uint32_t _dt_collection_compute_count(const dt_collection_t *collection);
+/* signal handlers to update the cached count when something interesting might have happened.
+ * we need 2 different since there are different kinds of signals we need to listen to. */
+static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data);
+static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data);
+
 
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
@@ -59,12 +64,23 @@ dt_collection_new (const dt_collection_t *clone)
   else  /* else we just initialize using the reset */
     dt_collection_reset (collection);
 
+  /* connect to all the signals that might indicate that the count of images matching the collection changed */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(_dt_collection_recount_callback_1), collection);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(_dt_collection_recount_callback_1), collection);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_REMOVED, G_CALLBACK(_dt_collection_recount_callback_1), collection);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, G_CALLBACK(_dt_collection_recount_callback_2), collection);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(_dt_collection_recount_callback_2), collection);
+
   return collection;
 }
 
 void
 dt_collection_free (const dt_collection_t *collection)
 {
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_1), (gpointer)collection);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_dt_collection_recount_callback_2), (gpointer)collection);
+
   if (collection->query)
     g_free (collection->query);
   if (collection->where_ext)
@@ -703,6 +719,22 @@ int dt_collection_image_offset(int imgid)
     sqlite3_finalize(stmt);
   }
   return offset;
+}
+
+static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
+{
+  dt_collection_t *collection = (dt_collection_t*)user_data;
+  collection->count = _dt_collection_compute_count(collection);
+  if(!collection->clone)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+}
+
+static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data)
+{
+  dt_collection_t *collection = (dt_collection_t*)user_data;
+  collection->count = _dt_collection_compute_count(collection);
+  if(!collection->clone)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

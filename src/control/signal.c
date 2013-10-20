@@ -53,17 +53,17 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   /* Global signals */
   {"dt-global-mouse-over-image-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},       // DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE
 
-  {"dt-control-redraw-all",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                     // DT_SIGNAL_CONTROL_REDRAW_ALL
-  {"dt-control-redraw-center",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                  // DT_SIGNAL_CONTROL_REDRAW_CENTER
+  {"dt-control-redraw-all",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_CONTROL_REDRAW_ALL
+  {"dt-control-redraw-center",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                // DT_SIGNAL_CONTROL_REDRAW_CENTER
 
   {"dt-viewmanager-view-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},             // DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED
   {"dt-viewmanager-filmstrip-activate",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},       // DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE
 
   {"dt-collection-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_COLLECTION_CHANGED
-  {"dt-tag-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                   // DT_SIGNAL_TAG_CHANGED
-  {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_FILMROLLS_CHANGED
-  {"dt-filmrolls-imported",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},                    //DT_SIGNAL_FILMROLLS_IMPORTED
-  {"dt-filmrolls-removed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    //DT_SIGNAL_FILMROLLS_REMOVED
+  {"dt-tag-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                          // DT_SIGNAL_TAG_CHANGED
+  {"dt-filmrolls-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    // DT_SIGNAL_FILMROLLS_CHANGED
+  {"dt-filmrolls-imported",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},               // DT_SIGNAL_FILMROLLS_IMPORTED
+  {"dt-filmrolls-removed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                    // DT_SIGNAL_FILMROLLS_REMOVED
 
 
   /* Develop related signals */
@@ -72,11 +72,11 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-develop-preview-pipe-finished",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED
   {"dt-develop-ui-pipe-finished",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},             // DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED
   {"dt-develop-history-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_HISTORY_CHANGE
-  {"dt-develop-image-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
-  {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
-  {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},               // DT_SIGNAL_CONTROL_PROFILE_CHANGED
-  {"dt-image-export-multiple",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__POINTER,1,pointer_arg},               // DT_SIGNAL_IMAGE_EXPORT_MULTIPLE
-  {"dt-image-export-tmpfile",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,2,image_export_arg},               // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
+  {"dt-develop-image-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                // DT_SIGNAL_DEVELOP_IMAGE_CHANGE
+  {"dt-control-profile-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},              // DT_SIGNAL_CONTROL_PROFILE_CHANGED
+  {"dt-image-import",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__UINT,1,uint_arg},                     // DT_SIGNAL_IMAGE_IMPORT
+  {"dt-image-export-multiple",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__POINTER,1,pointer_arg},      // DT_SIGNAL_IMAGE_EXPORT_MULTIPLE
+  {"dt-image-export-tmpfile",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_generic,2,image_export_arg},        // DT_SIGNAL_IMAGE_EXPORT_TMPFILE
   {"dt-imageio-storage-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
 };
 
