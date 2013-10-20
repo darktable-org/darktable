@@ -69,6 +69,14 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                              guint keyval, GdkModifierType modifier,
                              gpointer data);
 
+typedef struct dt_focus_cluster_t
+{
+  uint64_t n;
+  float x, y, x2, y2;
+  float thrs;
+}
+dt_focus_cluster_t;
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -93,6 +101,7 @@ typedef struct dt_library_t
 
   uint8_t *full_res_thumb;
   int32_t full_res_thumb_id, full_res_thumb_wd, full_res_thumb_ht, full_res_thumb_orientation;
+  dt_focus_cluster_t full_res_focus[49];
 
   int32_t last_mouse_over_id;
 
@@ -1118,12 +1127,14 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if(!error && 1)
     {
       // mark in-focus pixels:
+      const int ht = lib->full_res_thumb_ht;
+      const int wd = lib->full_res_thumb_wd;
+      memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-      for(int j=1;j<lib->full_res_thumb_ht-1;j++)
+      for(int j=1;j<ht-1;j++)
       {
-        const int wd = lib->full_res_thumb_wd;
         int index = 4*j*wd+4;
         for(int i=1;i<wd-1;i++)
         {
@@ -1134,9 +1145,46 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
                          - lib->full_res_thumb[index-4*wd+1]
                          - lib->full_res_thumb[index+4*wd+1];
           if(abs(diff) > thrs)
+          {
             lib->full_res_thumb[index+2] = 255;
+            int fx = i/(float)wd * 7;
+            int fy = j/(float)ht * 7;
+            int fi = 7*fy + fx;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].x += i;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].y += j;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].x2 += (float)i*i;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].y2 += (float)j*j;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].n ++;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+            lib->full_res_focus[fi].thrs += abs(diff);
+          }
           index += 4;
         }
+      }
+      for(int k=0;k<49;k++)
+      {
+        lib->full_res_focus[k].thrs /= (float)lib->full_res_focus[k].n;
+        lib->full_res_focus[k].x  /= (float)lib->full_res_focus[k].n;
+        lib->full_res_focus[k].x2 /= (float)lib->full_res_focus[k].n;
+        lib->full_res_focus[k].y  /= (float)lib->full_res_focus[k].n;
+        lib->full_res_focus[k].y2 /= (float)lib->full_res_focus[k].n;
       }
     }
   }
@@ -1177,6 +1225,20 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_rectangle(cr, 0, 0, lib->full_res_thumb_wd, lib->full_res_thumb_ht);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
+
+    // draw clustered focus regions
+    cairo_set_line_width(cr, 2.0f);
+    for(int k=0;k<49;k++)
+    {
+      if(lib->full_res_focus[k].n > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
+      {
+        const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
+        const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
+        cairo_set_source_rgb(cr, lib->full_res_focus[k].thrs/20.0, 0.0, 0.0);
+        cairo_rectangle(cr, lib->full_res_focus[k].x - stddevx, lib->full_res_focus[k].y - stddevy, 2*stddevx, 2*stddevy);
+        cairo_stroke(cr);
+      }
+    }
     cairo_restore(cr);
   }
   else
