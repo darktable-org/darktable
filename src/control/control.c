@@ -463,7 +463,7 @@ void dt_control_create_database_schema()
                         "create table tagged_images (imgid integer, tagid integer, "
                         "primary key(imgid, tagid))", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table styles (name varchar,description varchar)", NULL, NULL, NULL);
+                        "CREATE TABLE styles (id INTEGER, name VARCHAR, description VARCHAR)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table style_items (styleid integer, num integer, module integer, "
                         "operation varchar(256), op_params blob, enabled integer, "
@@ -782,6 +782,10 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
       // and the colorspace as specified in some image types
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column colorspace integer", NULL, NULL, NULL);
+
+      // add column for styles'id
+      sqlite3_exec(dt_database_get(darktable.db), "ALTER TABLE styles ADD COLUMN id INTEGER", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "UPDATE styles SET id=rowid WHERE id IS NULL", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
