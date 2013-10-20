@@ -1122,12 +1122,32 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd);
     cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
     cairo_save(cr);
+    int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
+    if(lib->full_res_thumb_orientation & 4)
+      wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
     if(pointerx >= 0 && pointery >= 0)
     { // avoid jumps in case mouse leaves drawing area
       pointerx_c = pointerx;
       pointery_c = pointery;
     }
-    cairo_translate(cr, -(lib->full_res_thumb_wd - width) * CLAMP(pointerx_c/(float)width, 0.0f, 1.0f), -(lib->full_res_thumb_ht - height) * CLAMP(pointery_c/(float)height, 0.0f, 1.0f));
+    const float tx = -(wd - width ) * CLAMP(pointerx_c/(float)width,  0.0f, 1.0f),
+                ty = -(ht - height) * CLAMP(pointery_c/(float)height, 0.0f, 1.0f);
+    cairo_translate(cr, tx, ty);
+    if(lib->full_res_thumb_orientation & 4)
+    {
+      cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
+      cairo_transform(cr, &m);
+    }
+    if(lib->full_res_thumb_orientation & 2)
+    {
+      cairo_scale(cr, 1, -1);
+      cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
+    }
+    if(lib->full_res_thumb_orientation & 1)
+    {
+      cairo_scale(cr, -1, 1);
+      cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
+    }
     cairo_set_source_surface (cr, surface, 0, 0);
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, lib->full_res_thumb_wd, lib->full_res_thumb_ht);
