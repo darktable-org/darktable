@@ -1243,6 +1243,7 @@ static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   int num = GPOINTER_TO_INT(data);
   int32_t mouse_over_id;
 
@@ -1252,6 +1253,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     dt_ratings_apply_to_selection(num);
   else
     dt_ratings_apply_to_image(mouse_over_id, num);
+  _update_collected_images(self);
   return TRUE;
 }
 
@@ -1463,6 +1465,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
         }
         dt_image_cache_read_release(darktable.image_cache, image);
+        _update_collected_images(self);
         break;
       }
       case DT_VIEW_GROUP:
