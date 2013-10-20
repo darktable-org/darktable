@@ -69,6 +69,8 @@ typedef struct dt_bauhaus_slider_data_t
   int   grad_cnt;        // how many stops
   float grad_pos[10];    // and position of these.
 
+  int fill_feedback;   // fill the slider with brighter part up to the handle?
+
   char format[24];// numeric value is printed with this string
 
   int   is_dragging;     // indicates is mouse is dragging slider
@@ -225,6 +227,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
 // slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
 GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits);
+GtkWidget* dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max, float step, float defval, int digits, int feedback);
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
