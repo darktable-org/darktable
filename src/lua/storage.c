@@ -290,7 +290,7 @@ static int register_storage(lua_State *L)
   const char * plugin_name = luaL_checkstring(L,1);
   lua_pushvalue(L,1);
   lua_setfield(L,-2,"plugin_name");
-  strncpy(storage->plugin_name,plugin_name,127);
+  g_strlcpy(storage->plugin_name,plugin_name,sizeof(storage->plugin_name));
 
   luaL_checkstring(L,2);
   lua_pushvalue(L,2);

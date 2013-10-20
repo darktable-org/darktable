@@ -266,12 +266,34 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   if(!query)
     return;
 
+  // we have a new query for the collection of images to display. For speed reason we collect all images into
+  // a temporary (in-memory) table (collected_images).
+  //
+  // 1. drop previous data
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL, NULL);
+
+  // 2. insert collected images into the temporary table
+
+  sqlite3_stmt *stmt;
+  char col_query[2048];
+
+  snprintf(col_query, 2048, "INSERT INTO memory.collected_images (imgid) %s", query);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
   /* if we have a statment lets clean it */
   if(lib->statements.main_query)
     sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &lib->statements.main_query, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db),
+     "SELECT imgid FROM memory.collected_images ORDER by rowid LIMIT ?1, ?2", -1, &lib->statements.main_query, NULL);
 
   dt_control_queue_redraw_center();
 }
@@ -333,7 +355,7 @@ void init(dt_view_t *self)
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
 
-  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, GTK_TYPE_NONE);
+  GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, G_TYPE_NONE);
 
   lib->star_color.red = (255/ 65535) * style->fg[GTK_STATE_NORMAL].red;
   lib->star_color.blue = (255/ 65535) * style->fg[GTK_STATE_NORMAL].blue;
@@ -721,6 +743,7 @@ after_drawing:
     int32_t imgids_num = 0;
     const int prefetchrows = .5*max_rows+1;
     int32_t imgids[prefetchrows*iir];
+
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
     DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
@@ -1027,7 +1050,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     /* Build outer select criteria */
     gchar *filter_criteria = g_strdup_printf(
-                               "inner join images on s1.id=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
+                               "inner join images on s1.imgid=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
                                img->filename,
                                (offset > 0) ? ">" : "<",
                                lib->full_preview_id,
@@ -1043,7 +1066,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if (sel_img_count > 1)
     {
       stmt_string = g_strdup_printf(
-                      "select images.id as id from (select imgid as id from selected_images) as s1 %s",
+                      "select images.id as id from (select imgid from selected_images) as s1 %s",
                       filter_criteria);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
@@ -1250,7 +1273,7 @@ static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
-  long int num = (long int)data;
+  int num = GPOINTER_TO_INT(data);
   int32_t mouse_over_id;
 
   mouse_over_id = dt_view_get_image_to_act_on();
@@ -1706,31 +1729,31 @@ void connect_key_accels(dt_view_t *self)
   // Rating keys
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_DESERT, NULL);
+              GINT_TO_POINTER(DT_VIEW_DESERT), NULL);
   dt_accel_connect_view(self, "rate 0", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_1, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_1), NULL);
   dt_accel_connect_view(self, "rate 1", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_2, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_2), NULL);
   dt_accel_connect_view(self, "rate 2", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_3, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_3), NULL);
   dt_accel_connect_view(self, "rate 3", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_4, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_4), NULL);
   dt_accel_connect_view(self, "rate 4", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_STAR_5, NULL);
+              GINT_TO_POINTER(DT_VIEW_STAR_5), NULL);
   dt_accel_connect_view(self, "rate 5", closure);
   closure = g_cclosure_new(
               G_CALLBACK(star_key_accel_callback),
-              (gpointer)DT_VIEW_REJECT, NULL);
+              GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
   dt_accel_connect_view(self, "rate reject", closure);
 
   // expose image status
@@ -1762,19 +1785,19 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "realign images to grid", closure);
   // Color keys
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)0, NULL);
+                           GINT_TO_POINTER(0), NULL);
   dt_accel_connect_view(self, "color red", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)1, NULL);
+                           GINT_TO_POINTER(1), NULL);
   dt_accel_connect_view(self, "color yellow", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)2, NULL);
+                           GINT_TO_POINTER(2), NULL);
   dt_accel_connect_view(self, "color green", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)3, NULL);
+                           GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "color blue", closure);
   closure = g_cclosure_new(G_CALLBACK(dt_colorlabels_key_accel_callback),
-                           (gpointer)4, NULL);
+                           GINT_TO_POINTER(4), NULL);
   dt_accel_connect_view(self, "color purple", closure);
 
 }

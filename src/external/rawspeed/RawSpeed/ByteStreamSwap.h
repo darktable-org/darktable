@@ -16,6 +16,7 @@ public:
   virtual ushort16 getShort();
   virtual int getInt();
   virtual ~ByteStreamSwap(void);
+  virtual uint32 getUInt();
 };
 
 } // namespace RawSpeed

@@ -17,6 +17,8 @@
 #define DARKTABLE_LIBDIR "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL@/darktable"
 #define DARKTABLE_DATADIR "@CMAKE_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable"
 
+#define SHARED_MODULE_PREFIX "@CMAKE_SHARED_MODULE_PREFIX@"
+#define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

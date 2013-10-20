@@ -32,11 +32,11 @@
                       Due to the color sensitivity of the human vision, there are two times more green cells than red or blue.
                       Filters are arranged in a certain mosaic, called Bayer pattern. Therefore each pixel of your image originally 
                       only has information about one color channel. Demosaic reconstructs the missing color channels 
-                      by interpolation with data of the neighboring pixels. For further reading see the wikipedia article on the
+                      by interpolation with data of the neighboring pixels. For further reading see the Wikipedia article on the
                       <ulink url="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.</para>
 
 		<para>As interpolation is prone to produce artifacts, various different demosaic algorithms have
-                      been developed in the past. Artifacts would typically be visible as Moiree-like patterns when you strongly zoom into
+                      been developed in the past. Artifacts would typically be visible as moiré-like patterns when you strongly zoom into
                       your image. Currently darktable supports PPG and AMAZE. Both algorithms produce high quality output with a low
                       tendency to artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
                       slower, darktable uses PPG as a default.</para>
@@ -60,7 +60,7 @@
 		</sect5>
 		<sect5><title>match greens</title>
 			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
-                              aditional equilization step to suppress artifacts. Available options
+                              additional equalization step to suppress artifacts. Available options
                               are <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and <quote>full and local average</quote>.</para>
 		</sect5>
 

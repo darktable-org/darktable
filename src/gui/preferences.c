@@ -190,14 +190,14 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
   labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), label);
-  widget = gtk_combo_box_new_text();
-  gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("english"));
+  widget = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), _("english"));
 
   if((iter = g_list_first(languages)) != NULL)
   {
     do
     {
-      gtk_combo_box_append_text(GTK_COMBO_BOX(widget), iter->data);
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), iter->data);
       g_free(iter->data);
     }
     while((iter=g_list_next(iter)) != NULL);
@@ -206,9 +206,9 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected + 1);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(language_callback), 0);
-  gtk_object_set(GTK_OBJECT(labelev),  "tooltip-text", _("double click to reset to the system language"), (char *)NULL);
+  g_object_set(labelev,  "tooltip-text", _("double click to reset to the system language"), (char *)NULL);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(labelev), FALSE);
-  gtk_object_set(GTK_OBJECT(widget), "tooltip-text", _("set the language of the user interface (needs a restart)"), (char *)NULL);
+  g_object_set(widget, "tooltip-text", _("set the language of the user interface (needs a restart)"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
@@ -225,9 +225,10 @@ void dt_gui_preferences_show()
                           GTK_RESPONSE_ACCEPT,
                           NULL);
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ALWAYS);
-  gtk_window_resize(GTK_WINDOW(_preferences_dialog), 600, 300);
   GtkWidget *content = gtk_dialog_get_content_area (GTK_DIALOG (_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
+  gtk_widget_set_size_request(notebook, -1, 500);
+  gtk_widget_set_name(notebook, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
   // Make sure remap mode is off initially
@@ -978,7 +979,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
     {
       // If it succeeded delete any conflicting accelerators
       // First locate the accel list entry
-      strcpy(query.path, darktable.control->accel_remap_str);
+      g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
       remapped = g_slist_find_custom(darktable.control->accelerator_list,
                                      (gpointer)&query, _accelcmp);
 
@@ -1389,14 +1390,14 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   label = gtk_label_new(_("exposure"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
   g_object_set(G_OBJECT(g->exposure_max), "tooltip-text", _("maximum exposure time"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_append_text(g->exposure_min, dt_gui_presets_exposure_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
-    gtk_combo_box_append_text(g->exposure_max, dt_gui_presets_exposure_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->exposure_min), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->exposure_max), FALSE, FALSE, 0);
 
@@ -1404,14 +1405,14 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   label = gtk_label_new(_("aperture"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
   g_object_set(G_OBJECT(g->aperture_max), "tooltip-text", _("maximum aperture value"), (char *)NULL);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_append_text(g->aperture_min, dt_gui_presets_aperture_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
-    gtk_combo_box_append_text(g->aperture_max, dt_gui_presets_aperture_value_str[k]);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
   gtk_box_pack_start(vbox3, GTK_WIDGET(g->aperture_min), FALSE, FALSE, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->aperture_max), FALSE, FALSE, 0);
 

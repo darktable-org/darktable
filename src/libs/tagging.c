@@ -541,7 +541,7 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
       }
       else // all selected images
       {
-        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection));
+        GList *selected_images = g_list_first(dt_collection_get_selected(darktable.collection, -1));
         if(selected_images)
         {
           GList *iter = selected_images;
@@ -590,7 +590,10 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *center = dt_ui_center(darktable.gui->ui);
   gdk_window_get_origin(gtk_widget_get_window(center), &px, &py);
-  gdk_window_get_size(gtk_widget_get_window(center),&w,&h);
+
+  w = gdk_window_get_width(gtk_widget_get_window(center));
+  h = gdk_window_get_height(gtk_widget_get_window(center));
+
   x = px + 0.5*(w-FLOATING_ENTRY_WIDTH);
   y = py + h - 50;
 
@@ -604,7 +607,6 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
   /* stackoverflow.com/questions/1925568/how-to-give-keyboard-focus-to-a-pop-up-gtk-window */
   gtk_widget_set_can_focus(d->floating_tag_window, TRUE);
   gtk_window_set_decorated(GTK_WINDOW(d->floating_tag_window), FALSE);
-  gtk_window_set_has_frame(GTK_WINDOW(d->floating_tag_window), FALSE);
   gtk_window_set_type_hint(GTK_WINDOW(d->floating_tag_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
   gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
   gtk_window_set_opacity(GTK_WINDOW(d->floating_tag_window), 0.8);

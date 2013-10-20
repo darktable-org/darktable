@@ -19,6 +19,13 @@
 #ifndef DT_COMMON_BILATERAL_H
 #define DT_COMMON_BILATERAL_H
 
+// these clamp away insane memory requirements.
+// they should reasonably faithfully represent the
+// full precision though, so tiling will help reducing memory footprint
+// and export will look the same as darkroom mode (only 1mpix there).
+#define DT_COMMON_BILATERAL_MAX_RES_S 6000
+#define DT_COMMON_BILATERAL_MAX_RES_R 50
+
 #ifdef HAVE_OPENCL
 // function definition on opencl path takes precedence
 #include "common/bilateralcl.h"
@@ -33,9 +40,9 @@ dt_bilateral_memory_use(
   float _x = roundf(width/sigma_s);
   float _y = roundf(height/sigma_s);
   float _z = roundf(100.0f/sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
+  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
 
   return size_x*size_y*size_z*sizeof(float);
 }
@@ -51,9 +58,9 @@ dt_bilateral_singlebuffer_size(
   float _x = roundf(width/sigma_s);
   float _y = roundf(height/sigma_s);
   float _z = roundf(100.0f/sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
+  size_t size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  size_t size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
 
   return size_x*size_y*size_z*sizeof(float);
 }
@@ -99,9 +106,9 @@ dt_bilateral_init(
   float _x = roundf(width/sigma_s);
   float _y = roundf(height/sigma_s);
   float _z = roundf(100.0f/sigma_r);
-  b->size_x = CLAMPS((int)_x, 4, 900) + 1;
-  b->size_y = CLAMPS((int)_y, 4, 900) + 1;
-  b->size_z = CLAMPS((int)_z, 4, 50) + 1;
+  b->size_x = CLAMPS((int)_x, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  b->size_y = CLAMPS((int)_y, 4, DT_COMMON_BILATERAL_MAX_RES_S) + 1;
+  b->size_z = CLAMPS((int)_z, 4, DT_COMMON_BILATERAL_MAX_RES_R) + 1;
   b->width = width;
   b->height = height;
   b->sigma_s = MAX(height/(b->size_y-1.0f), width/(b->size_x-1.0f));
@@ -379,5 +386,7 @@ dt_bilateral_free(
   free(b);
 }
 
+#undef DT_COMMON_BILATERAL_MAX_RES_S
+#undef DT_COMMON_BILATERAL_MAX_RES_R
 
 #endif

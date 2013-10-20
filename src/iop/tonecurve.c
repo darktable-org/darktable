@@ -409,7 +409,7 @@ autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
 }
 
 static void
-tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -530,7 +530,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   // gtk_box_pack_start(GTK_BOX(vbox), asp, TRUE, TRUE, 0);
   // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_drawing_area_size(c->area, 0, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -552,7 +552,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (scrolled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->autoscale_ab, _("scale chroma"));
+  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("auto"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);

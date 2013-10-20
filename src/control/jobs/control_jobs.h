@@ -70,8 +70,8 @@ void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz
 void dt_control_gpx_apply_job_init(dt_job_t *job, const gchar *filename, int32_t filmid, const gchar *tz);
 int32_t dt_control_gpx_apply_job_run(dt_job_t *job);
 
-void dt_control_time_offset(const long int offset, long int imgid);
-void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid);
+void dt_control_time_offset(const long int offset, int imgid);
+void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, int imgid);
 int32_t dt_control_time_offset_job_run(dt_job_t *job);
 #endif
 
@@ -88,7 +88,7 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
 void dt_control_merge_hdr();
 
 void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
-void dt_control_time_offset(const long int offset, long int imgid);
+void dt_control_time_offset(const long int offset, int imgid);
 
 void dt_control_seed_denoise();
 void dt_control_denoise();

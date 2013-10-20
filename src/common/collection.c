@@ -37,6 +37,8 @@
 
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
+/* Counts the number of images in the current collection */
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection);
 
 const dt_collection_t *
 dt_collection_new (const dt_collection_t *clone)
@@ -52,6 +54,7 @@ dt_collection_new (const dt_collection_t *clone)
     collection->where_ext = g_strdup(clone->where_ext);
     collection->query = g_strdup(clone->query);
     collection->clone = 1;
+    collection->count = clone->count;
   }
   else  /* else we just initialize using the reset */
     dt_collection_reset (collection);
@@ -86,6 +89,8 @@ dt_collection_update (const dt_collection_t *collection)
   if (!(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
     int need_operator = 0;
+    dt_collection_filter_t rating = collection->params.rating;
+    if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if (collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
@@ -97,9 +102,9 @@ dt_collection_update (const dt_collection_t *collection)
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), collection->params.rating);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
 
     if (collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
       wq = dt_util_dstrcat(wq, " %s id in (select imgid from history where imgid=id)", (need_operator)?"and":((need_operator=1)?"":"") );
@@ -146,6 +151,8 @@ dt_collection_update (const dt_collection_t *collection)
   g_free(selq);
   g_free (query);
 
+  /* update the cached count. collection isn't a real const anyway, we are writing to it in _dt_collection_store, too. */
+  ((dt_collection_t*)collection)->count = _dt_collection_compute_count(collection);
   dt_collection_hint_message(collection);
 
   return result;
@@ -160,7 +167,7 @@ dt_collection_reset(const dt_collection_t *collection)
   params->query_flags = COLLECTION_QUERY_FULL;
   params->filter_flags = COLLECTION_FILTER_FILM_ID | COLLECTION_FILTER_ATLEAST_RATING;
   params->film_id = 1;
-  params->rating = 1;
+  params->rating = DT_COLLECTION_FILTER_STAR_NO;
 
   /* apply stored query parameters from previous darktable session */
   params->film_id      = dt_conf_get_int("plugins/collection/film_id");
@@ -238,7 +245,6 @@ dt_collection_get_rating (const dt_collection_t *collection)
   uint32_t i;
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
   i = params->rating;
-  i++; /* The enum starts on 0 */
   return i;
 }
 
@@ -350,7 +356,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
   return 1;
 }
 
-uint32_t dt_collection_get_count(const dt_collection_t *collection)
+static uint32_t _dt_collection_compute_count(const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
   uint32_t count=1;
@@ -378,6 +384,11 @@ uint32_t dt_collection_get_count(const dt_collection_t *collection)
   return count;
 }
 
+uint32_t dt_collection_get_count(const dt_collection_t *collection)
+{
+  return collection->count;
+}
+
 uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
 {
   sqlite3_stmt *stmt = NULL;
@@ -389,7 +400,7 @@ uint32_t dt_collection_get_selected_count (const dt_collection_t *collection)
   return count;
 }
 
-GList *dt_collection_get_selected (const dt_collection_t *collection)
+GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
 {
   GList *list=NULL;
   gchar *query = NULL;
@@ -408,15 +419,15 @@ GList *dt_collection_get_selected (const dt_collection_t *collection)
   if (collection->params.sort == DT_COLLECTION_SORT_COLOR && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
     query = dt_util_dstrcat(query, "as a left outer join color_labels as b on a.id = b.imgid ");
 
-  query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s", sq);
-
+  query = dt_util_dstrcat(query, "where id in (select imgid from selected_images) %s limit ?1", sq);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
 
   while (sqlite3_step (stmt) == SQLITE_ROW)
   {
-    long int imgid = sqlite3_column_int(stmt, 0);
-    list = g_list_append (list, (gpointer)imgid);
+    int imgid = sqlite3_column_int(stmt, 0);
+    list = g_list_append (list, GINT_TO_POINTER(imgid));
   }
 
 

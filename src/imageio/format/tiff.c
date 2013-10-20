@@ -245,7 +245,7 @@ name ()
 static void
 radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
 {
-  long int bpp = (long int)user_data;
+  int bpp = GPOINTER_TO_INT(user_data);
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
     dt_conf_set_int("plugins/imageio/format/tiff/bpp", bpp);
 }
@@ -268,12 +268,12 @@ void gui_init (dt_imageio_module_format_t *self)
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
   gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)8);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(8));
   if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
   radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
   gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)16);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(16));
   if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 }
 

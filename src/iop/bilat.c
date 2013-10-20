@@ -264,16 +264,16 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   g->spatial = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
-  dt_bauhaus_widget_set_label(g->spatial, _("coarseness"));
+  dt_bauhaus_widget_set_label(g->spatial, NULL, _("coarseness"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->spatial, TRUE, TRUE, 0);
 
   g->range = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 20, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->range, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->range, _("contrast"));
+  dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
 
   g->detail = dt_bauhaus_slider_new_with_range(self, -1.0, 2.0, 0.01, 0.2, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->detail, _("detail"));
+  dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
 
   g_signal_connect (G_OBJECT (g->spatial), "value-changed", G_CALLBACK (spatial_callback), self);
   g_signal_connect (G_OBJECT (g->range),   "value-changed", G_CALLBACK (range_callback), self);

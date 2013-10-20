@@ -241,7 +241,10 @@ void ArwDecoder::decodeThreaded(RawDecoderThread * t) {
           if (p > 0x7ff)
             p = 0x7ff;
         }
-        dest[x+i*2] = curve[p << 1];
+        if (uncorrectedRawValues)
+          dest[x+i*2] = p;
+        else
+          dest[x+i*2] = curve[p << 1];
       }
       x += x & 1 ? 31 : 1;  // Skip to next 32 pixels
     }

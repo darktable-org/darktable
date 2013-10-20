@@ -434,6 +434,7 @@ void dt_film_import1(dt_film_t *film)
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_TAG_CHANGED);
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_collection_update_query(darktable.collection);
   dt_control_signal_raise(darktable.signals , DT_SIGNAL_FILMROLLS_IMPORTED,film->id);
 
 #if GLIB_CHECK_VERSION (2, 26, 0)

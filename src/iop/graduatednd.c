@@ -994,7 +994,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   if(self->dt->gui->reset)
     return;
-  gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(g->gslider2));
 
   p->hue = hue;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1022,7 +1022,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
   dt_bauhaus_slider_set_format(g->scale1,"%.2fev");
-  dt_bauhaus_widget_set_label(g->scale1,_("density"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("density"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);
@@ -1030,7 +1030,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* compression */
   g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->compression, 0);
   dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("compression"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compression"));
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
@@ -1038,7 +1038,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* rotation */
   g->scale3 = dt_bauhaus_slider_new_with_range(self,-180, 180,0.5, p->rotation, 2);
-  dt_bauhaus_widget_set_label(g->scale3,_("rotation"));
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("rotation"));
   dt_bauhaus_slider_set_format(g->scale3,"%.2f°");
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
@@ -1053,7 +1053,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->gslider1 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.0f, 1.0f, 0.0f, 0.0f);
   // dt_bauhaus_slider_set_format(g->gslider1, "");
-  dt_bauhaus_widget_set_label(g->gslider1, _("hue"));
+  dt_bauhaus_widget_set_label(g->gslider1, NULL, _("hue"));
   dt_bauhaus_slider_set_stop(g->gslider1, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.498f, 0.0f, 1.0f, 1.0f);
@@ -1068,7 +1068,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(g->gslider2, _("saturation"));
+  dt_bauhaus_widget_set_label(g->gslider2, NULL, _("saturation"));
   dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 1.0f, 1.0f, 1.0f);
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
   g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation of filter"), (char *)NULL);

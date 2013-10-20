@@ -180,7 +180,7 @@ static GList * style_item_table_to_id_list(lua_State*L, int index)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     dt_style_item_t * item =luaL_checkudata(L,-1,"dt_style_item_t");
-    result =g_list_prepend(result,(gpointer)(long unsigned int)item->num);
+    result =g_list_prepend(result, GINT_TO_POINTER(item->num));
     lua_pop(L,1);
   }
   result = g_list_reverse(result);

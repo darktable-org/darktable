@@ -1091,22 +1091,22 @@ gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
 
   g->clusters = dt_bauhaus_slider_new_with_range(self, 1.0f, 5.0f, 1., p->n, 0);
-  dt_bauhaus_widget_set_label(g->clusters, _("number of clusters"));
+  dt_bauhaus_widget_set_label(g->clusters, NULL, _("number of clusters"));
   dt_bauhaus_slider_set_format(g->clusters, "%.0f");
   g_object_set(G_OBJECT(g->clusters), "tooltip-text", _("number of clusters to find in image. value change resets all clusters"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->clusters), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->clusters), "value-changed", G_CALLBACK(clusters_changed), (gpointer)self);
 
   g->dominance = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->dominance, 2);
-  dt_bauhaus_widget_set_label(g->dominance,_("color dominance"));
-  gtk_object_set(GTK_OBJECT(g->dominance), "tooltip-text", _("how clusters are mapped. low values: based on color proximity, high values: based on color dominance"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->dominance, NULL, _("color dominance"));
+  g_object_set(g->dominance, "tooltip-text", _("how clusters are mapped. low values: based on color proximity, high values: based on color dominance"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->dominance,"%.02f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dominance), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->dominance), "value-changed", G_CALLBACK (dominance_changed), self);
 
   g->equalization = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->equalization, 2);
-  dt_bauhaus_widget_set_label(g->equalization,_("histogram equalization"));
-  gtk_object_set(GTK_OBJECT(g->equalization), "tooltip-text", _("level of histogram equalization"), (char *)NULL);
+  dt_bauhaus_widget_set_label(g->equalization, NULL, _("histogram equalization"));
+  g_object_set(g->equalization, "tooltip-text", _("level of histogram equalization"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->equalization,"%.02f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->equalization), TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->equalization), "value-changed", G_CALLBACK (equalization_changed), self);

@@ -305,14 +305,14 @@ extern "C"
     g->contrast = dt_bauhaus_slider_new_with_range(self,1.0, 5.0000, 0.1, p->contrast, 3);
 
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
-    dt_bauhaus_widget_set_label(g->contrast,_("contrast compression"));
+    dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast compression"));
     g_signal_connect (G_OBJECT (g->contrast), "value-changed",
                       G_CALLBACK (contrast_callback), self);
 
     /* spatial extent */
     g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize, 1);
     dt_bauhaus_slider_set_format(g->Fsize,"%.0f%%");
-    dt_bauhaus_widget_set_label(g->Fsize,_("spatial extent"));
+    dt_bauhaus_widget_set_label(g->Fsize, NULL, _("spatial extent"));
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
     g_signal_connect (G_OBJECT (g->Fsize), "value-changed",G_CALLBACK (Fsize_callback), self);
   }

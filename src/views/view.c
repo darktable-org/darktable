@@ -249,8 +249,13 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       {
         dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-        if (!plugin->views)
+        if (!plugin->views) {
           fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
+
+          /* get next plugin */
+          plugins = g_list_previous(plugins);
+          continue;
+        }
 
         /* does this module belong to current view ?*/
         if (plugin->views() & v->view(v) )
@@ -331,7 +336,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           else
           {
             gtk_widget_hide(GTK_WIDGET(plugin->expander));
-            // gtk_widget_hide_all(plugin->widget);
+            // gtk_widget_hide(plugin->widget);
           }
 
           dt_lib_gui_set_expanded(plugin, expanded);
@@ -343,7 +348,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
           if(visible)
             gtk_widget_show_all(plugin->widget);
           else
-            gtk_widget_hide_all(plugin->widget);
+            gtk_widget_hide(plugin->widget);
         }
       }
 
@@ -371,7 +376,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     endmarker = gtk_drawing_area_new();
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
     g_signal_connect (G_OBJECT (endmarker), "expose-event",
-                      G_CALLBACK (dt_control_expose_endmarker), (gpointer)1);
+                      G_CALLBACK (dt_control_expose_endmarker), GINT_TO_POINTER(1));
     gtk_widget_set_size_request(endmarker, -1, 50);
     gtk_widget_show(endmarker);
   }
@@ -421,8 +426,13 @@ void dt_view_manager_expose (dt_view_manager_t *vm, cairo_t *cr, int32_t width, 
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
-      if (!plugin->views)
+      if (!plugin->views) {
         fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
+
+        /* get next plugin */
+        plugins = g_list_previous(plugins);
+        continue;
+      }
 
       /* does this module belong to current view ?*/
       if (plugin->gui_post_expose && plugin->views() & v->view(v) )

@@ -1320,7 +1320,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
     gtk_box_pack_start(GTK_BOX(g->detection_warning), GTK_WIDGET(label), FALSE, FALSE, 0);
 
-    gtk_widget_hide_all (g->lens_param_box);
+    gtk_widget_hide(g->lens_param_box);
     gtk_widget_show_all (g->detection_warning);
     return;
   }
@@ -1407,7 +1407,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
 
   // focal length
   w = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(w, _("mm"));
+  dt_bauhaus_widget_set_label(w, NULL, _("mm"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("focal length (mm)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->focal, 10.0), p->focal);
   dt_bauhaus_combobox_add(w, txt);
@@ -1435,7 +1435,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   }
 
   w = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(w, _("f/"));
+  dt_bauhaus_widget_set_label(w, NULL, _("f/"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
   dt_bauhaus_combobox_add(w, txt);
@@ -1451,7 +1451,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   g->cbe[1] = w;
 
   w = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(w, _("d"));
+  dt_bauhaus_widget_set_label(w, NULL, _("d"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("distance to subject"), (char *)NULL);
   snprintf(txt, sizeof (txt), "%.*f", precision(p->distance, 10.0), p->distance);
   dt_bauhaus_combobox_add(w, txt);
@@ -1470,7 +1470,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   dt_bauhaus_combobox_set_editable(w, 1);
   g->cbe[2] = w;
 
-  gtk_widget_hide_all (g->detection_warning);
+  gtk_widget_hide(g->detection_warning);
   gtk_widget_show_all (g->lens_param_box);
 }
 
@@ -1853,7 +1853,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // selector for correction type (modflags): one or more out of distortion, TCA, vignetting
   g->modflags = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->modflags, _("corrections"));
+  dt_bauhaus_widget_set_label(g->modflags, NULL, _("corrections"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->modflags, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->modflags), "tooltip-text", _("which corrections to apply"), (char *)NULL);
   GList *l = g->modifiers;
@@ -1870,7 +1870,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // target geometry
   g->target_geom = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->target_geom, _("geometry"));
+  dt_bauhaus_widget_set_label(g->target_geom, NULL, _("geometry"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_geom, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->target_geom), "tooltip-text", _("target geometry"), (char *)NULL);
   dt_bauhaus_combobox_add(g->target_geom, _("rectilinear"));
@@ -1890,7 +1890,7 @@ void gui_init(struct dt_iop_module_t *self)
   // scale
   g->scale = dt_bauhaus_slider_new_with_range(self, 0.1, 2.0, 0.005, p->scale, 3);
   g_object_set (GTK_OBJECT(g->scale), "tooltip-text", _("auto scale"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->scale, _("scale"));
+  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
   g_signal_connect (G_OBJECT (g->scale), "value-changed",
                     G_CALLBACK (scale_changed), self);
   g_signal_connect (G_OBJECT (g->scale), "quad-pressed", G_CALLBACK (autoscale_pressed), self);
@@ -1899,7 +1899,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // reverse direction
   g->reverse = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->reverse, _("mode"));
+  dt_bauhaus_widget_set_label(g->reverse, NULL, _("mode"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->reverse, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->reverse), "tooltip-text", _("correct distortions or apply them"), (char *)NULL);
   dt_bauhaus_combobox_add(g->reverse, _("correct"));
@@ -1911,13 +1911,13 @@ void gui_init(struct dt_iop_module_t *self)
   // override linear tca (if not 1.0):
   g->tca_r = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_r, 5);
   g_object_set (GTK_OBJECT(g->tca_r), "tooltip-text", _("Transversal Chromatic Aberration red"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_r, _("TCA red"));
+  dt_bauhaus_widget_set_label(g->tca_r, NULL, _("TCA red"));
   g_signal_connect (G_OBJECT (g->tca_r), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_r, TRUE, TRUE, 0);
 
   g->tca_b = dt_bauhaus_slider_new_with_range(self, 0.99, 1.01, 0.0001, p->tca_b, 5);
   g_object_set (GTK_OBJECT(g->tca_b), "tooltip-text", _("Transversal Chromatic Aberration blue"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->tca_b, _("TCA blue"));
+  dt_bauhaus_widget_set_label(g->tca_b, NULL, _("TCA blue"));
   g_signal_connect (G_OBJECT (g->tca_b), "value-changed", G_CALLBACK (tca_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->tca_b, TRUE, TRUE, 0);
 

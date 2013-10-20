@@ -770,7 +770,7 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   dt_develop_t *dev = darktable.develop;
   int zoom, closeup;
   float zoom_x, zoom_y;
-  switch ((long int)data)
+  switch (GPOINTER_TO_INT(data))
   {
     case 1:
       DT_CTL_GET_GLOBAL(zoom, dev_zoom);
@@ -833,7 +833,7 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
-  dt_control_export(dt_collection_get_selected(darktable.collection),max_width, max_height, format_index, storage_index, high_quality,style);
+  dt_control_export(dt_collection_get_selected(darktable.collection, -1), max_width, max_height, format_index, storage_index, high_quality,style);
   return TRUE;
 }
 
@@ -889,10 +889,10 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 {
   /* show styles popup menu */
   GList *styles = dt_styles_get_list("");
-  GtkWidget *menu = NULL;
+  GtkMenuShell *menu = NULL;
   if(styles)
   {
-    menu= gtk_menu_new();
+    menu = GTK_MENU_SHELL(gtk_menu_new());
     do
     {
       dt_style_t *style=(dt_style_t *)styles->data;
@@ -912,9 +912,9 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       gtk_widget_set_tooltip_markup(mi, tooltip);
 
-      gtk_menu_append (GTK_MENU (menu), mi);
-      gtk_signal_connect_object (GTK_OBJECT (mi), "activate",
-                                 GTK_SIGNAL_FUNC (_darkroom_ui_apply_style_activate_callback),
+      gtk_menu_shell_append (menu, mi);
+      g_signal_connect_swapped (GTK_OBJECT (mi), "activate",
+                                 G_CALLBACK (_darkroom_ui_apply_style_activate_callback),
                                  (gpointer) g_strdup (style->name));
       gtk_widget_show (mi);
 
@@ -949,7 +949,7 @@ static gboolean _overexposed_close_popup(GtkWidget *widget, GdkEvent *event, gpo
   dt_develop_t *d = (dt_develop_t*)user_data;
   g_signal_handler_disconnect(widget, d->overexposed.destroy_signal_handler);
   d->overexposed.destroy_signal_handler = 0;
-  gtk_widget_hide_all(d->overexposed.floating_window);
+  gtk_widget_hide(d->overexposed.floating_window);
   return FALSE;
 }
 
@@ -962,7 +962,10 @@ static gboolean _overexposed_show_popup(gpointer user_data)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   gtk_widget_show_all(d->overexposed.floating_window);
   gdk_window_get_origin(gtk_widget_get_window(d->overexposed.button), &px, &py);
-  gdk_window_get_size(gtk_widget_get_window(d->overexposed.floating_window), &window_w, &window_h);
+
+  window_w = gdk_window_get_width(gtk_widget_get_window(d->overexposed.floating_window));
+  window_h = gdk_window_get_height(gtk_widget_get_window(d->overexposed.floating_window));
+
   gtk_widget_translate_coordinates(d->overexposed.button, window, 0, 0, &wx, &wy);
   x = px + wx - window_w + 5;
   y = py + wy - window_h - 5;
@@ -1127,7 +1130,6 @@ void enter(dt_view_t *self)
 
     gtk_widget_set_can_focus(dev->overexposed.floating_window, TRUE);
     gtk_window_set_decorated(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
-    gtk_window_set_has_frame(GTK_WINDOW(dev->overexposed.floating_window), FALSE);
     gtk_window_set_type_hint(GTK_WINDOW(dev->overexposed.floating_window), GDK_WINDOW_TYPE_HINT_POPUP_MENU);
     gtk_window_set_transient_for(GTK_WINDOW(dev->overexposed.floating_window), GTK_WINDOW(window));
     gtk_window_set_opacity(GTK_WINDOW(dev->overexposed.floating_window), 0.9);
@@ -1146,7 +1148,7 @@ void enter(dt_view_t *self)
     /** let's fill the encapsulating widgets */
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, _("color scheme"));
+    dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, _("black & white"));
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
@@ -1161,7 +1163,7 @@ void enter(dt_view_t *self)
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL,0.0, 100.0, 0.1, 2.0, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower,"%.0f%%");
-    dt_bauhaus_widget_set_label(lower,_("lower threshold"));
+    dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
     g_object_set(G_OBJECT(lower), "tooltip-text", _("threshold of what shall be considered underexposed"), (char *)NULL);
     g_signal_connect (G_OBJECT (lower), "value-changed",
                       G_CALLBACK (lower_callback), dev);
@@ -1171,7 +1173,7 @@ void enter(dt_view_t *self)
     GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 98.0, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper,"%.0f%%");
-    dt_bauhaus_widget_set_label(upper,_("upper threshold"));
+    dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
     g_object_set(G_OBJECT(upper), "tooltip-text", _("threshold of what shall be considered overexposed"), (char *)NULL);
     g_signal_connect (G_OBJECT (upper), "value-changed",
                       G_CALLBACK (upper_callback), dev);
@@ -1704,13 +1706,13 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "toggle film strip", closure);
 
   // Zoom shortcuts
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)1, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(1), NULL);
   dt_accel_connect_view(self, "zoom close-up", closure);
 
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)2, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(2), NULL);
   dt_accel_connect_view(self, "zoom fill", closure);
 
-  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), (gpointer)3, NULL);
+  closure = g_cclosure_new(G_CALLBACK(zoom_key_accel), GINT_TO_POINTER(3), NULL);
   dt_accel_connect_view(self, "zoom fit", closure);
 
   // enable shortcut to export with current export settings:

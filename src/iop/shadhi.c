@@ -640,19 +640,19 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-100.0, 100.0, 2., p->shadows, 2);
   g->scale2 = dt_bauhaus_slider_new_with_range(self,-100.0, 100.0, 2., p->highlights, 2);
   g->bilat  = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->bilat, _("soften with"));
+  dt_bauhaus_widget_set_label(g->bilat, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
   dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
   g->scale3 = dt_bauhaus_slider_new_with_range(self,0.1, 200.0, 2., p->radius, 2);
   g->scale4 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->compress, 2);
   g->scale5 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->shadows_ccorrect, 2);
   g->scale6 = dt_bauhaus_slider_new_with_range(self,0, 100.0, 2., p->highlights_ccorrect, 2);
-  dt_bauhaus_widget_set_label(g->scale1,_("shadows"));
-  dt_bauhaus_widget_set_label(g->scale2,_("highlights"));
-  dt_bauhaus_widget_set_label(g->scale3,_("radius"));
-  dt_bauhaus_widget_set_label(g->scale4,_("compress"));
-  dt_bauhaus_widget_set_label(g->scale5,_("shadows color adjustment"));
-  dt_bauhaus_widget_set_label(g->scale6,_("highlights color adjustment"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("shadows"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("highlights"));
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->scale4, NULL, _("compress"));
+  dt_bauhaus_widget_set_label(g->scale5, NULL, _("shadows color adjustment"));
+  dt_bauhaus_widget_set_label(g->scale6, NULL, _("highlights color adjustment"));
   dt_bauhaus_slider_set_format(g->scale1,"%.02f");
   dt_bauhaus_slider_set_format(g->scale2,"%.02f");
   dt_bauhaus_slider_set_format(g->scale3,"%.02f");
@@ -668,13 +668,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale5, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale6, TRUE, TRUE, 0);
 
-  gtk_object_set(GTK_OBJECT(g->scale1), "tooltip-text", _("correct shadows"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale2), "tooltip-text", _("correct highlights"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale3), "tooltip-text", _("spatial extent"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("filter to use for softening. bilateral avoids halos"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale4), "tooltip-text", _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale5), "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->scale6), "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
+  g_object_set(g->scale1, "tooltip-text", _("correct shadows"), (char *)NULL);
+  g_object_set(g->scale2, "tooltip-text", _("correct highlights"), (char *)NULL);
+  g_object_set(g->scale3, "tooltip-text", _("spatial extent"), (char *)NULL);
+  g_object_set(g->bilat,  "tooltip-text", _("filter to use for softening. bilateral avoids halos"), (char *)NULL);
+  g_object_set(g->scale4, "tooltip-text", _("compress the effect on shadows/highlights and\npreserve midtones"), (char *)NULL);
+  g_object_set(g->scale5, "tooltip-text", _("adjust saturation of shadows"), (char *)NULL);
+  g_object_set(g->scale6, "tooltip-text", _("adjust saturation of highlights"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (shadows_callback), self);

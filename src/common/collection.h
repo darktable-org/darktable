@@ -38,14 +38,15 @@
 
 typedef enum dt_collection_filter_t
 {
-  DT_COLLECTION_FILTER_ALL = 0,
-  DT_COLLECTION_FILTER_STAR_NO = 1,
-  DT_COLLECTION_FILTER_STAR_1 = 2,
-  DT_COLLECTION_FILTER_STAR_2 = 3,
-  DT_COLLECTION_FILTER_STAR_3 = 4,
-  DT_COLLECTION_FILTER_STAR_4 = 5,
-  DT_COLLECTION_FILTER_STAR_5 = 6,
-  DT_COLLECTION_FILTER_REJECT = 7
+  DT_COLLECTION_FILTER_ALL        = 0,
+  DT_COLLECTION_FILTER_STAR_NO    = 1,
+  DT_COLLECTION_FILTER_STAR_1     = 2,
+  DT_COLLECTION_FILTER_STAR_2     = 3,
+  DT_COLLECTION_FILTER_STAR_3     = 4,
+  DT_COLLECTION_FILTER_STAR_4     = 5,
+  DT_COLLECTION_FILTER_STAR_5     = 6,
+  DT_COLLECTION_FILTER_REJECT     = 7,
+  DT_COLLECTION_FILTER_NOT_REJECT = 8
 }
 dt_collection_filter_t;
 
@@ -106,6 +107,7 @@ typedef struct dt_collection_t
   int clone;
   gchar *query;
   gchar *where_ext;
+  unsigned int count;
   dt_collection_params_t params;
   dt_collection_params_t store;
 }
@@ -156,8 +158,8 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection);
 /** get the count of query */
 uint32_t dt_collection_get_count (const dt_collection_t *collection);
 
-/** get selected image ids order as current selection. */
-GList *dt_collection_get_selected (const dt_collection_t *collection);
+/** get selected image ids order as current selection. no more than limit many images are returned, <0 == unlimited */
+GList *dt_collection_get_selected (const dt_collection_t *collection, int limit);
 /** get the count of selected images */
 uint32_t dt_collection_get_selected_count (const dt_collection_t *collection);
 

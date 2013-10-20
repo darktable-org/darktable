@@ -73,8 +73,8 @@ typedef struct dt_iop_densitycurve_gui_data_t
   GtkHBox *hbox;
   GtkDrawingArea *area;
   GtkLabel *label;
-  GtkComboBox *spline_type;
-  GtkComboBox *calc_type;
+  GtkComboBoxText *spline_type;
+  GtkComboBoxText *calc_type;
   GtkWidget   *zones;
   Gcurve Curve;
   GtkCheckButton *scale_sat;

@@ -821,7 +821,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
-                   "loaded. you have to login into your picasa account there "
+                   "loaded. you have to login into your google+ account there "
                    "and authorize darktable to upload photos before continuing.");
   gchar *text2 = _("step 2: paste your browser URL and click the OK button once "
                    "you are done.");
@@ -831,7 +831,7 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_QUESTION,
                                   GTK_BUTTONS_OK_CANCEL,
-                                  _("picasa authentication")));
+                                  _("google+ authentication")));
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (picasa_auth_dialog),
       "%s\n\n%s", text1, text2);
 
@@ -840,9 +840,8 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(gtk_label_new(_("URL:"))), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(entry), TRUE, TRUE, 0);
 
-  GtkBox *picasaauthdialog_vbox = 0;
-  g_object_get(G_OBJECT(picasa_auth_dialog), "vbox", &picasaauthdialog_vbox, NULL);
-  gtk_box_pack_end(picasaauthdialog_vbox, hbox, TRUE, TRUE, 0);
+  GtkWidget *picasaauthdialog_vbox = gtk_message_dialog_get_message_area(GTK_MESSAGE_DIALOG(picasa_auth_dialog));
+  gtk_box_pack_end(GTK_BOX(picasaauthdialog_vbox), hbox, TRUE, TRUE, 0);
 
   gtk_widget_show_all(GTK_WIDGET(picasa_auth_dialog));
 
@@ -1073,7 +1072,7 @@ static void ui_reset_albums_creation(struct dt_storage_picasa_gui_data_t *ui)
 {
   gtk_entry_set_text(ui->entry_album_summary, "");
   gtk_entry_set_text(ui->entry_album_title, "");
-  gtk_widget_hide_all(GTK_WIDGET(ui->hbox_album));
+  gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
 }
 
 static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_picasa_gui_data_t *ui)
@@ -1419,7 +1418,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   gint fd=g_mkstemp(fname);
   if(fd==-1)
   {
-    dt_control_log("failed to create temporary image for picasa export");
+    dt_control_log("failed to create temporary image for google+ export");
     return 1;
   }
   close(fd);

@@ -98,6 +98,12 @@ RawImage Rw2Decoder::decodeRawInternal() {
     input_start = new ByteStream(mFile->getData(off), mFile->getSize() - off);
     DecodeRw2();
   }
+  // Read blacklevels
+  if (raw->hasEntry((TiffTag)0x1c) && raw->hasEntry((TiffTag)0x1d) && raw->hasEntry((TiffTag)0x1e)) {
+    mRaw->blackLevelSeparate[0] = raw->getEntry((TiffTag)0x1c)->getInt() + 15;
+    mRaw->blackLevelSeparate[1] = mRaw->blackLevelSeparate[2] = raw->getEntry((TiffTag)0x1d)->getInt() + 15;
+    mRaw->blackLevelSeparate[3] = raw->getEntry((TiffTag)0x1e)->getInt() + 15;
+  }
   return mRaw;
 }
 

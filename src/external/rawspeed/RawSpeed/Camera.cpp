@@ -100,21 +100,19 @@ Camera::~Camera(void) {
 }
 
 void Camera::parseCameraChild(xmlDocPtr doc, xmlNodePtr cur) {
-  if (!xmlStrcmp(cur->name, (const xmlChar *) "CFA")) {
-    if (2 != getAttributeAsInt(cur, cur->name, "width"))
-      ThrowCME("Unsupported CFA size in camera %s %s", make.c_str(), model.c_str());
-    if (2 != getAttributeAsInt(cur, cur->name, "height"))
-      ThrowCME("Unsupported CFA size in camera %s %s", make.c_str(), model.c_str());
 
-    cur = cur->xmlChildrenNode;
-    while (cur != NULL) {
-      parseCFA(doc, cur);
-      cur = cur->next;
+  if (!xmlStrcmp(cur->name, (const xmlChar *) "CFA")) {    
+    if (2 != getAttributeAsInt(cur, cur->name, "width") || 2 != getAttributeAsInt(cur, cur->name, "height")) {
+      supported = FALSE;
+    } else {
+      cur = cur->xmlChildrenNode;
+      while (cur != NULL) {
+        parseCFA(doc, cur);
+        cur = cur->next;
+      }
     }
-
     return;
   }
-
   if (!xmlStrcmp(cur->name, (const xmlChar *) "Crop")) {
     cropPos.x = getAttributeAsInt(cur, cur->name, "x");
     cropPos.y = getAttributeAsInt(cur, cur->name, "y");
@@ -324,19 +322,24 @@ void Camera::parseSensorInfo( xmlDocPtr doc, xmlNodePtr cur )
     max_iso = StringToInt(key, cur->name, "iso_max");
     xmlFree(key);
   }
+  key = xmlGetProp(cur, (const xmlChar *)"black_colors");
+  vector<int> black_colors;
+  if (key) {
+    black_colors = MultipleStringToInt(key, cur->name, "black_colors");
+    xmlFree(key);
+  }
   key = xmlGetProp(cur, (const xmlChar *)"iso_list");
   if (key) {
     vector<int> values = MultipleStringToInt(key, cur->name, "iso_list");
     xmlFree(key);
     if (!values.empty()) {
       for (uint32 i = 0; i < values.size(); i++) {
-        sensorInfo.push_back(CameraSensorInfo(black, white, values[i], values[i]));
+        sensorInfo.push_back(CameraSensorInfo(black, white, values[i], values[i], black_colors));
       }      
     }
   } else {
-    sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso));
+    sensorInfo.push_back(CameraSensorInfo(black, white, min_iso, max_iso, black_colors));
   }
-
 }
 
 const CameraSensorInfo* Camera::getSensorInfo( int iso )

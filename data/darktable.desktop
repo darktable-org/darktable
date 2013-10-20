@@ -9,6 +9,7 @@ GenericName[fi]=Virtuaalinen valopöytä ja pimiö
 GenericName[fr]=Table lumineuse et chambre noire virtuelles
 GenericName[cs]=Virtuální prosvětlovací pult a fotokomora
 GenericName[pl]=Wirtualny stół podświetlany i ciemnia
+GenericName[it]=Tavolo luminoso e camera oscura virtuali
 
 Comment=Organize and develop images from digital cameras
 Comment[ru]=Организация, сортировка и проявка цифровых негативов
@@ -19,6 +20,7 @@ Comment[fi]=Järjestele ja kehitä kuvia digitaalikameroista
 Comment[fr]=Organiser et développer les images d'un boîtier numérique
 Comment[cs]=Správa a vyvolávání snímků z digitálních fotoaparátů
 Comment[pl]=Organizuj i wywołuj zdjęcia z aparatów cyfrowych
+Comment[it]=Organizza e sviluppa le immagini delle fotocamere digitali
 
 X-GNOME-FullName=Darktable Photo Workflow Software
 

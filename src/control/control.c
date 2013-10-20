@@ -116,8 +116,8 @@ void dt_ctl_settings_default(dt_control_t *c)
   dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
   dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);
 
-  // set export style to "none" by default
-  dt_conf_set_string ("plugins/lighttable/export/style", _("none"));
+  // set export style to _("none") by default
+  dt_conf_set_string ("plugins/lighttable/export/style", "");
 }
 
 void dt_ctl_settings_init(dt_control_t *s)
@@ -173,6 +173,9 @@ static void dt_control_sanitize_database()
   // temporary stuff for some ops, need this for some reason with newer sqlite3:
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",
+                        NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)",
                         NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
@@ -306,32 +309,54 @@ void dt_ctl_set_display_profile()
   gchar *profile_source = NULL;
 
 #if defined GDK_WINDOWING_X11
+
+  // we will use the xatom no matter what configured when compiled without colord
+  gboolean use_xatom = TRUE;
+#if defined USE_COLORDGTK
+  gboolean use_colord = TRUE;
+  gchar *display_profile_source = dt_conf_get_string("ui_last/display_profile_source");
+  if(display_profile_source)
+  {
+    if(!strcmp(display_profile_source, "xatom"))
+      use_colord = FALSE;
+    else if(!strcmp(display_profile_source, "colord"))
+      use_xatom = FALSE;
+    g_free(display_profile_source);
+  }
+#endif
+
   /* let's have a look at the xatom, just in case ... */
-  GdkScreen *screen = gtk_widget_get_screen(widget);
-  if ( screen==NULL )
-    screen = gdk_screen_get_default();
-  int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
-  char *atom_name;
-  if (monitor > 0)
-    atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
-  else
-    atom_name = g_strdup("_ICC_PROFILE");
+  if(use_xatom)
+  {
+    GdkScreen *screen = gtk_widget_get_screen(widget);
+    if ( screen==NULL )
+      screen = gdk_screen_get_default();
+    int monitor = gdk_screen_get_monitor_at_window (screen, gtk_widget_get_window(widget));
+    char *atom_name;
+    if (monitor > 0)
+      atom_name = g_strdup_printf("_ICC_PROFILE_%d", monitor);
+    else
+      atom_name = g_strdup("_ICC_PROFILE");
 
-  profile_source = g_strdup(atom_name);
+    profile_source = g_strdup(atom_name);
 
-  GdkAtom type = GDK_NONE;
-  gint format = 0;
-  gdk_property_get(gdk_screen_get_root_window(screen),
-                   gdk_atom_intern(atom_name, FALSE), GDK_NONE,
-                   0, 64 * 1024 * 1024, FALSE,
-                   &type, &format, &buffer_size, &buffer);
-  g_free(atom_name);
+    GdkAtom type = GDK_NONE;
+    gint format = 0;
+    gdk_property_get(gdk_screen_get_root_window(screen),
+                    gdk_atom_intern(atom_name, FALSE), GDK_NONE,
+                    0, 64 * 1024 * 1024, FALSE,
+                    &type, &format, &buffer_size, &buffer);
+    g_free(atom_name);
+  }
 
 #ifdef USE_COLORDGTK
   /* also try to get the profile from colord. this will set the value asynchronously! */
-  CdWindow *window = cd_window_new();
-  GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
-  cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+  if(use_colord)
+  {
+    CdWindow *window = cd_window_new();
+    GtkWidget *center_widget = dt_ui_center(darktable.gui->ui);
+    cd_window_get_profile(window, center_widget, NULL, dt_ctl_get_display_profile_colord_callback, NULL);
+  }
 #endif
 
 #elif defined GDK_WINDOWING_QUARTZ
@@ -449,8 +474,16 @@ void dt_control_create_database_schema()
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table meta_data (id integer,key integer,value varchar)",
                         NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
   // quick hack to detect if the db is already used by another process
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create table lock (id integer)",
@@ -593,6 +626,12 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
                    "drop table mipmaps", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db),
                    "drop table mipmap_timestamps", NULL, NULL, NULL);
@@ -609,6 +648,8 @@ void dt_control_init(dt_control_t *s)
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table meta_data (id integer, key integer,value varchar)",
                    NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db),
+                   "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
       // quick hack to detect if the db is already used by another process
       sqlite3_exec(dt_database_get(darktable.db),
                    "create table lock (id integer)",
@@ -788,7 +829,7 @@ void dt_control_change_cursor(dt_cursor_t curs)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor* cursor = gdk_cursor_new(curs);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  gdk_cursor_destroy(cursor);
+  gdk_cursor_unref(cursor);
 }
 
 int dt_control_running()
@@ -1182,15 +1223,17 @@ int32_t dt_control_revive_job(dt_control_t *s, dt_job_t *job)
 
 int32_t dt_control_get_threadid()
 {
+  pthread_t pt = pthread_self();
   for(int k=0; k<darktable.control->num_threads; k++)
-    if(pthread_equal(darktable.control->thread[k], pthread_self())) return k;
+    if(pthread_equal(darktable.control->thread[k], pt)) return k;
   return darktable.control->num_threads;
 }
 
 int32_t dt_control_get_threadid_res()
 {
+  pthread_t pt = pthread_self();
   for(int k=0; k<DT_CTL_WORKER_RESERVED; k++)
-    if(pthread_equal(darktable.control->thread_res[k], pthread_self())) return k;
+    if(pthread_equal(darktable.control->thread_res[k], pt)) return k;
   return DT_CTL_WORKER_RESERVED;
 }
 
@@ -1269,8 +1312,9 @@ gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer 
 void *dt_control_expose(void *voidptr)
 {
   int width, height, pointerx, pointery;
-  if(!darktable.gui->pixmap) return NULL;
-  gdk_drawable_get_size(darktable.gui->pixmap, &width, &height);
+  if(!darktable.gui->surface) return NULL;
+  width  = cairo_image_surface_get_width(darktable.gui->surface);
+  height = cairo_image_surface_get_height(darktable.gui->surface);
   GtkWidget *widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_get_pointer(widget, &pointerx, &pointery);
 
@@ -1387,7 +1431,7 @@ void *dt_control_expose(void *voidptr)
 
   cairo_destroy(cr);
 
-  cairo_t *cr_pixmap = gdk_cairo_create(darktable.gui->pixmap);
+  cairo_t *cr_pixmap = cairo_create(darktable.gui->surface);
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
   cairo_paint(cr_pixmap);
   cairo_destroy(cr_pixmap);
@@ -1404,7 +1448,7 @@ gboolean dt_control_expose_endmarker(GtkWidget *widget, GdkEventExpose *event, g
   const int height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  dt_draw_endmarker(cr, width, height, (long int)user_data);
+  dt_draw_endmarker(cr, width, height, GPOINTER_TO_INT(user_data));
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));
   cairo_set_source_surface (cr_pixmap, cst, 0, 0);
@@ -1568,30 +1612,25 @@ void dt_control_log_busy_leave()
   dt_control_queue_redraw_center();
 }
 
-static GList *_control_gdk_lock_threads = NULL;
+static __thread gboolean _control_gdk_lock_mine = FALSE;
 gboolean dt_control_gdk_lock()
 {
   /* if current thread equals gui thread do nothing */
   if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
     return FALSE;
 
-  /* if we don't have any managed locks just lock and return */
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(!_control_gdk_lock_threads)
-    goto lock_and_return;
 
   /* lets check if current thread has a managed lock */
-  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
+  if(_control_gdk_lock_mine)
   {
     /* current thread has a lock just do nothing */
     dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
     return FALSE;
   }
 
-lock_and_return:
-  /* lets add current thread to managed locks */
-  _control_gdk_lock_threads = g_list_append(_control_gdk_lock_threads,
-                              (gpointer)pthread_self());
+  /* lets lock */
+  _control_gdk_lock_mine = TRUE;
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 
   /* enter gdk critical section */
@@ -1604,11 +1643,10 @@ void dt_control_gdk_unlock()
 {
   /* check if current thread has a lock and remove if exists */
   dt_pthread_mutex_lock(&_control_gdk_lock_threads_mutex);
-  if(g_list_find(_control_gdk_lock_threads, (gpointer)pthread_self()))
+  if(_control_gdk_lock_mine)
   {
     /* remove lock */
-    _control_gdk_lock_threads = g_list_remove(_control_gdk_lock_threads,
-                                (gpointer)pthread_self());
+    _control_gdk_lock_mine = FALSE;
 
     /* leave critical section */
     gdk_threads_leave();
@@ -1697,7 +1735,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       {
         // TODO: handle '.'-separated things separately
         // this is a static list, and tab cycles through the list
-        strncpy(vimkey_input, darktable.control->vimkey + 5, 256);
+        g_strlcpy(vimkey_input, darktable.control->vimkey + 5, sizeof(vimkey_input));
         autocomplete = dt_bauhaus_vimkey_complete(darktable.control->vimkey + 5);
         autocomplete = g_list_append(autocomplete, vimkey_input); // remember input to cycle back
       }

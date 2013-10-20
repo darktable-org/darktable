@@ -131,13 +131,15 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   g_strlcat(plugindir, "/plugins/imageio/format", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
+  const int name_offset = strlen(SHARED_MODULE_PREFIX),
+            name_end    = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
     // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
+    strncpy(plugin_name, d_name+name_offset, strlen(d_name)-name_end);
+    plugin_name[strlen(d_name)-name_end] = '\0';
     module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
@@ -147,7 +149,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
     }
     module->gui_data = NULL;
     module->gui_init(module);
-    if(module->widget) gtk_widget_ref(module->widget);
+    if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
   }
@@ -233,13 +235,15 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
   g_strlcat(plugindir, "/plugins/imageio/storage", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
+  const int name_offset = strlen(SHARED_MODULE_PREFIX),
+            name_end    = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
     // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
+    strncpy(plugin_name, d_name+name_offset, strlen(d_name)-name_end);
+    plugin_name[strlen(d_name)-name_end] = '\0';
     module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
@@ -249,7 +253,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
     }
     module->gui_data = NULL;
     module->gui_init(module);
-    if(module->widget) gtk_widget_ref(module->widget);
+    if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     dt_imageio_insert_storage(module);
   }
@@ -274,7 +278,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)(iio->plugins_format->data);
     module->cleanup(module);
-    if(module->widget) gtk_widget_unref(module->widget);
+    if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
@@ -282,7 +286,7 @@ dt_imageio_cleanup (dt_imageio_t *iio)
   while(iio->plugins_storage)
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)(iio->plugins_storage->data);
-    if(module->widget) gtk_widget_unref(module->widget);
+    if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
     free(module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);

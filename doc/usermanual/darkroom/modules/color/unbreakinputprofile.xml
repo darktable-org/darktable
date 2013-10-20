@@ -33,7 +33,7 @@
                       the camera manufacturer, 
                       a correction curve very frequently needs to be pre-applied to image data - or else the final output looks much too dark. This extra processing is not
                       required if you use darktable's
-                      standard or enhanded color matrices. The correction curve is defined with a
+                      standard or enhanced color matrices. The correction curve is defined with a
                       linear part extending from the shadows to some upper limit and a gamma curve covering mid-tones and highlights. For further reading please
                       also have a look at darktable's neighbouring project <ulink url="http://ufraw.sourceforge.net">UFRaw</ulink>.</para>
 		<sect5><title>linear</title>

@@ -525,6 +525,12 @@ void enter(dt_view_t *self)
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback),
                             self);
+
+  /* scroll filmstrip to the first selected image */
+  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
+  if(selected_images)
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
+  g_list_free(selected_images);
 }
 
 void leave(dt_view_t *self)

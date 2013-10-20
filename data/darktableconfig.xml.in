@@ -2155,4 +2155,17 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>ui_last/display_profile_source</name>
+    <type>
+      <enum>
+        <option>all</option>
+        <option>xatom</option>
+        <option>colord</option>
+      </enum>
+    </type>
+    <default>all</default>
+    <shortdescription>method to use for getting the display profile</shortdescription>
+    <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
+  </dtconfig>
 </dtconfiglist>

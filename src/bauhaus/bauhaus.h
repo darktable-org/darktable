@@ -26,7 +26,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-#include <sys/select.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -186,6 +185,11 @@ typedef struct dt_bauhaus_t
   char value_font[256]; // font to draw the value with
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
 
+  // the slider popup has a blinking cursor
+  guint cursor_timeout;
+  gboolean cursor_visible;
+  int cursor_blink_counter;
+
   // colors:
   float bg_normal;      // background without focus
   float bg_focus;       // background with focus
@@ -209,7 +213,7 @@ void dt_bauhaus_cleanup();
 
 // common functions:
 // set the label text:
-void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
+void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags);
 // make this quad a toggle button:

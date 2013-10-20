@@ -691,7 +691,30 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   lm->gui_reset = 0;
   _lib_masks_recreate_list(self);
 }
+static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
+{
+  dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
 
+  //we get the selected node
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
+  GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection,NULL));
+  if (!items) return;
+  GtkTreePath *item = (GtkTreePath *)items->data;
+  GtkTreeIter iter;
+  if (gtk_tree_model_get_iter (model,&iter,item))
+  {
+    GValue gv3 = {0,};
+    gtk_tree_model_get_value (model,&iter,TREE_FORMID,&gv3);
+    int id = g_value_get_int(&gv3);
+
+    int nid = dt_masks_form_duplicate(darktable.develop,id);
+    if (nid <= 0) return;
+    dt_dev_masks_list_change(darktable.develop);
+    dt_dev_masks_selection_change(darktable.develop,nid,TRUE);
+    //_lib_masks_recreate_list(self);
+  }  
+}
 static void _tree_cell_editing_started (GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path, gpointer data)
 {
   dt_control_key_accelerators_off (darktable.control);
@@ -711,7 +734,7 @@ static void _tree_cell_edited (GtkCellRendererText *cell, gchar *path_string, gc
 
   //first, we need to update the mask name
 
-  strncpy(form->name,new_text,128);
+  g_strlcpy(form->name,new_text,sizeof(form->name));
   dt_masks_write_form(form,darktable.develop);
 
   //and we update the cell text
@@ -782,6 +805,7 @@ static void _tree_selection_change (GtkTreeSelection *selection,dt_lib_masks_t *
   free(grp);
   dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = grp2;
+  darktable.develop->form_gui->edit_mode = DT_MASKS_EDIT_FULL;
   dt_control_queue_redraw_center();
 }
 
@@ -827,8 +851,9 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
     }
 
     //and we display the context-menu
-    GtkWidget *menu, *item;
-    menu = gtk_menu_new();
+    GtkMenuShell *menu;
+    GtkWidget *item;
+    menu = GTK_MENU_SHELL(gtk_menu_new());
 
     //we get all infos from selection
     int nb = gtk_tree_selection_count_selected_rows(selection);
@@ -847,21 +872,21 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
     {
       item = gtk_menu_item_new_with_label(_("add circle"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
 
       item = gtk_menu_item_new_with_label(_("add ellipse"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_ellipse, module);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
 
       item = gtk_menu_item_new_with_label(_("add path"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
 
       item = gtk_menu_item_new_with_label(_("add gradient"));
       g_signal_connect(item, "activate",(GCallback) _tree_add_gradient, module);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
 
-      gtk_menu_append(menu, gtk_separator_menu_item_new());
+      gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
     }
 
     if (nb==1)
@@ -879,27 +904,27 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
       {
         item = gtk_menu_item_new_with_label(_("add brush"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_brush, module);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add circle"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_circle, module);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add ellipse"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_ellipse, module);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add path"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_path, module);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add gradient"));
         g_signal_connect(item, "activate",(GCallback) _tree_add_gradient, module);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
 
         item = gtk_menu_item_new_with_label(_("add existing shape"));
-        gtk_menu_append(menu, item);
-        gtk_menu_append(menu, gtk_separator_menu_item_new());
+        gtk_menu_shell_append(menu, item);
+        gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
         //existing forms
         GtkWidget *menu0 = gtk_menu_new();
         gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), menu0);
@@ -937,7 +962,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
                   }
                   if (nbuse==0) strcat(str," (");
                   strcat(str," ");
-                  strcat(str,m->name());
+                  g_strlcat(str,m->name(),sizeof(str));
                   nbuse++;
                 }
                 pts = g_list_next(pts);
@@ -953,7 +978,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
             item = gtk_menu_item_new_with_label(str);
             g_object_set_data(G_OBJECT(item), "formid", GUINT_TO_POINTER(form->formid));
             g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (_tree_add_exist), grp);
-            gtk_menu_append(menu0, item);
+            gtk_menu_shell_append(menu, item);
           }
 
           forms = g_list_next(forms);
@@ -965,61 +990,67 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
     {
       item = gtk_menu_item_new_with_label(_("delete this shape"));
       g_signal_connect(item, "activate",(GCallback) _tree_delete_shape, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
+      if (nb == 1)
+      {
+        item = gtk_menu_item_new_with_label(_("duplicate this shape"));
+        g_signal_connect(item, "activate",(GCallback) _tree_duplicate_shape, self);
+        gtk_menu_shell_append(menu, item);
+      }
     }
     else if (nb>0 && depth < 3)
     {
       item = gtk_menu_item_new_with_label(_("remove from group"));
       g_signal_connect(item, "activate",(GCallback) _tree_delete_shape, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
     }
 
     if (nb>1 && !from_group)
     {
-      gtk_menu_append(menu, gtk_separator_menu_item_new());
+      gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("group the forms"));
       g_signal_connect(item, "activate",(GCallback) _tree_group, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
     }
 
 
     if (from_group && depth < 3)
     {
-      gtk_menu_append(menu, gtk_separator_menu_item_new());
+      gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("use inversed shape"));
       g_signal_connect(item, "activate",(GCallback) _tree_inverse, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
       if (nb==1)
       {
-        gtk_menu_append(menu, gtk_separator_menu_item_new());
+        gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
         item = gtk_menu_item_new_with_label(_("mode : union"));
         g_signal_connect(item, "activate",(GCallback) _tree_union, self);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
         item = gtk_menu_item_new_with_label(_("mode : intersection"));
         g_signal_connect(item, "activate",(GCallback) _tree_intersection, self);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
         item = gtk_menu_item_new_with_label(_("mode : difference"));
         g_signal_connect(item, "activate",(GCallback) _tree_difference, self);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
         item = gtk_menu_item_new_with_label(_("mode : exclusion"));
         g_signal_connect(item, "activate",(GCallback) _tree_exclusion, self);
-        gtk_menu_append(menu, item);
+        gtk_menu_shell_append(menu, item);
       }
-      gtk_menu_append(menu, gtk_separator_menu_item_new());
+      gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
       item = gtk_menu_item_new_with_label(_("move up"));
       g_signal_connect(item, "activate",(GCallback) _tree_moveup, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
       item = gtk_menu_item_new_with_label(_("move down"));
       g_signal_connect(item, "activate",(GCallback) _tree_movedown, self);
-      gtk_menu_append(menu, item);
+      gtk_menu_shell_append(menu, item);
     }
     
-    gtk_menu_append(menu, gtk_separator_menu_item_new());
+    gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
     item = gtk_menu_item_new_with_label(_("cleanup unused shapes"));
     g_signal_connect(item, "activate",(GCallback) _tree_cleanup, self);
-    gtk_menu_append(menu, item);
+    gtk_menu_shell_append(menu, item);
       
-    gtk_widget_show_all(menu);
+    gtk_widget_show_all(GTK_WIDGET(menu));
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,0, gdk_event_get_time((GdkEvent*)event));
 
     return 1;

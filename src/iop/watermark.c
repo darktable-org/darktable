@@ -89,7 +89,7 @@ dt_iop_watermark_data_t;
 
 typedef struct dt_iop_watermark_gui_data_t
 {
-  GtkComboBox *combobox1;		                                             // watermark
+  GtkComboBoxText *combobox1;		                                             // watermark
   GtkDarktableButton *dtbutton1;	                                         // refresh watermarks...
   GtkDarktableToggleButton *dtba[9];	                                   // Alignment buttons
   GtkWidget *scale1,*scale2,*scale3,*scale4;      	     // opacity, scale, xoffs, yoffs
@@ -130,7 +130,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->yoffset = o->yoffset;
     n->alignment = o->alignment;
     n->sizeto = DT_SCALE_IMAGE;
-    strncpy(n->filename, o->filename, 64);
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     return 0;
   }
   return 1;
@@ -788,7 +788,7 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
   memset(p->filename,0,64);
-  snprintf(p->filename,64,"%s",gtk_combo_box_get_active_text(g->combobox1));
+  snprintf(p->filename,64,"%s",gtk_combo_box_text_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -801,7 +801,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   g_signal_handlers_block_by_func (g->combobox1,watermark_callback,self);
 
   // Clear combobox...
-  GtkTreeModel *model=gtk_combo_box_get_model(g->combobox1);
+  GtkTreeModel *model=gtk_combo_box_get_model(GTK_COMBO_BOX(g->combobox1));
   gtk_list_store_clear (GTK_LIST_STORE(model));
 
   // check watermarkdir and update combo with entries...
@@ -822,7 +822,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
-      gtk_combo_box_append_text( g->combobox1, d_name );
+      gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
     g_dir_close(dir) ;
@@ -835,13 +835,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
     while((d_name = g_dir_read_name(dir)))
     {
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
-      gtk_combo_box_append_text( g->combobox1, d_name );
+      gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
     g_dir_close(dir) ;
   }
 
-  _combo_box_set_active_text( g->combobox1, p->filename );
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
 
   g_signal_handlers_unblock_by_func (g->combobox1,watermark_callback,self);
 
@@ -992,7 +992,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale3, p->xoffset);
   dt_bauhaus_slider_set(g->scale4, p->yoffset);
   gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(g->dtba[ p->alignment ]), TRUE);
-  _combo_box_set_active_text( g->combobox1, p->filename );
+  _combo_box_set_active_text(GTK_COMBO_BOX(g->combobox1), p->filename);
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
 }
 
@@ -1034,7 +1034,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Add the marker combobox
   GtkWidget *hbox= gtk_hbox_new(FALSE,0);
-  g->combobox1 = GTK_COMBO_BOX(gtk_combo_box_new_text());
+  g->combobox1 = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   g->dtbutton1  = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(label1),TRUE,TRUE,0);
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(g->combobox1),TRUE,TRUE,0);
@@ -1044,10 +1044,10 @@ void gui_init(struct dt_iop_module_t *self)
   // Add opacity/scale sliders to table
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->opacity, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale1,_("opacity"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("opacity"));
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("scale"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("scale"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
@@ -1056,7 +1056,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->sizeto, _("larger border"));
   dt_bauhaus_combobox_add(g->sizeto, _("smaller border"));
   dt_bauhaus_combobox_set(g->sizeto, p->sizeto);
-  dt_bauhaus_widget_set_label(g->sizeto,_("scale on"));
+  dt_bauhaus_widget_set_label(g->sizeto, NULL, _("scale on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->sizeto, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->sizeto), "tooltip-text", _("size is relative to"), (char *)NULL);
 
@@ -1077,10 +1077,10 @@ void gui_init(struct dt_iop_module_t *self)
   // x/y offset
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->xoffset, 3);
   dt_bauhaus_slider_set_format(g->scale3, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale3,_("x offset"));
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("x offset"));
   g->scale4 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->yoffset, 3);
   dt_bauhaus_slider_set_format(g->scale4, "%.3f");
-  dt_bauhaus_widget_set_label(g->scale4,_("y offset"));
+  dt_bauhaus_widget_set_label(g->scale4, NULL, _("y offset"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale4), TRUE, TRUE, 0);
 

@@ -13,7 +13,7 @@
 				<tbody>
 					<row>						
 						<entry>This module eliminates some of the typical banding artifacts which can occur, when darktable's
-                                                       internal 32-bit floating point data are transfered into a discrete 8-bit or 16-bit integer output format for
+                                                       internal 32-bit floating point data are transferred into a discrete 8-bit or 16-bit integer output format for
                                                        display or file export.
 						</entry>
 						<entry>

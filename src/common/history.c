@@ -177,11 +177,11 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
 
     while (l)
     {
-      long unsigned int value = (long unsigned int)l->data;
+      unsigned int value = GPOINTER_TO_UINT(l->data);
       char v[30];
 
       if (!first) strcat (req, ",");
-      snprintf (v, 30, "%lu", value);
+      snprintf (v, 30, "%u", value);
       strcat (req, v);
       first=0;
       l = g_list_next(l);

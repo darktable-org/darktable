@@ -587,11 +587,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
   GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
   gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
-  g->order = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(g->order, _("0th order"));
-  gtk_combo_box_append_text(g->order, _("1st order"));
-  gtk_combo_box_append_text(g->order, _("2nd order"));
-  gtk_object_set(GTK_OBJECT(g->order), "tooltip-text", _("filter order of gaussian blur"), (char *)NULL);
+  g->order = GTK_COMBO_BOX(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(g->order, _("0th order"));
+  gtk_combo_box_text_append_text(g->order, _("1st order"));
+  gtk_combo_box_text_append_text(g->order, _("2nd order"));
+  g_object_set(g->order, "tooltip-text", _("filter order of gaussian blur"), (char *)NULL);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
 #endif
 
@@ -600,13 +600,13 @@ void gui_init(struct dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->brightness, 2);
   g->saturation = dt_bauhaus_slider_new_with_range(self,-3.0, 3.0, 0.01, p->saturation, 2);
 
-  dt_bauhaus_widget_set_label(g->radius,_("radius"));
-  dt_bauhaus_widget_set_label(g->contrast,_("contrast"));
-  dt_bauhaus_widget_set_label(g->brightness,C_("lowpass", "brightness"));
-  dt_bauhaus_widget_set_label(g->saturation,_("saturation"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
+  dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
+  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
 
   g->bilat  = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->bilat, _("soften with"));
+  dt_bauhaus_widget_set_label(g->bilat, NULL, _("soften with"));
   dt_bauhaus_combobox_add(g->bilat, _("gaussian"));
   dt_bauhaus_combobox_add(g->bilat, _("bilateral filter"));
 
@@ -615,11 +615,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
-  gtk_object_set(GTK_OBJECT(g->radius), "tooltip-text", _("radius of gaussian/bilateral blur"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->contrast), "tooltip-text", _("contrast of lowpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->brightness), "tooltip-text", _("brightness adjustment of lowpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->saturation), "tooltip-text", _("color saturation of lowpass filter"), (char *)NULL);
-  gtk_object_set(GTK_OBJECT(g->bilat),  "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
+  g_object_set(g->radius, "tooltip-text", _("radius of gaussian/bilateral blur"), (char *)NULL);
+  g_object_set(g->contrast, "tooltip-text", _("contrast of lowpass filter"), (char *)NULL);
+  g_object_set(g->brightness, "tooltip-text", _("brightness adjustment of lowpass filter"), (char *)NULL);
+  g_object_set(g->saturation, "tooltip-text", _("color saturation of lowpass filter"), (char *)NULL);
+  g_object_set(g->bilat,  "tooltip-text", _("which filter to use for blurring"), (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->radius), "value-changed",
                     G_CALLBACK (radius_callback), self);

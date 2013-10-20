@@ -246,6 +246,26 @@ const wb_data wb_preset[] =
   { "Canon", "PowerShot SX1 IS", FluorescentHigh, 0, { 1.687500, 1, 2.025670, 0 } },
   { "Canon", "PowerShot SX1 IS", Flash, 0,	{ 1.909699, 1, 1.795987, 0 } },
 
+  /* -9/+9 fine tuning is B9/A9 in blue-amber and zero in magenta-green */
+  { "Canon", "PowerShot SX50 HS", Daylight, -9,	{ 1.260171, 1, 2.286938, 0 } },
+  { "Canon", "PowerShot SX50 HS", Daylight, 0,	{ 1.502585, 1, 1.871768, 0 } },
+  { "Canon", "PowerShot SX50 HS", Daylight, 9,	{ 1.868853, 1, 1.460041, 0 } },
+  { "Canon", "PowerShot SX50 HS", Cloudy, -9,	{ 1.413865, 1, 1.962185, 0 } },
+  { "Canon", "PowerShot SX50 HS", Cloudy, 0,	{ 1.767708, 1, 1.563542, 0 } },
+  { "Canon", "PowerShot SX50 HS", Cloudy, 9,	{ 2.782759, 1, 1.100000, 0 } },
+  { "Canon", "PowerShot SX50 HS", Tungsten, -9,	{ 1, 1.092348, 3.565963, 0 } },
+  { "Canon", "PowerShot SX50 HS", Tungsten, 0,	{ 1.056582, 1, 2.853349, 0 } },
+  { "Canon", "PowerShot SX50 HS", Tungsten, 9,	{ 1.251378, 1, 2.389195, 0 } },
+  { "Canon", "PowerShot SX50 HS", Fluorescent, -9, { 1.197637, 1, 2.493018, 0 } },
+  { "Canon", "PowerShot SX50 HS", Fluorescent, 0, { 1.383910, 1, 2.011202, 0 } },
+  { "Canon", "PowerShot SX50 HS", Fluorescent, 9, { 1.677323, 1, 1.619381, 0 } },
+  { "Canon", "PowerShot SX50 HS", FluorescentHigh, -9, { 1.468421, 1, 1.918947, 0 } },
+  { "Canon", "PowerShot SX50 HS", FluorescentHigh, 0, { 1.805208, 1, 1.527083, 0 } },
+  { "Canon", "PowerShot SX50 HS", FluorescentHigh, 9, { 3.464467, 1, 1.029188, 0 } },
+  { "Canon", "PowerShot SX50 HS", Flash, -9,	{ 1.488683, 1, 1.777778, 0 } },
+  { "Canon", "PowerShot SX50 HS", Flash, 0,	{ 1.876289, 1, 1.398969, 0 } },
+  { "Canon", "PowerShot SX50 HS", Flash, 9,	{ 4.536036, 1.073574, 1, 0 } },
+
   { "Canon", "EOS D60", Daylight, 0,		{ 2.472594, 1, 1.225335, 0 } },
   { "Canon", "EOS D60", Cloudy, 0,		{ 2.723926, 1, 1.137423, 0 } },
   { "Canon", "EOS D60", Tungsten, 0,		{ 1.543054, 1, 1.907003, 0 } },
@@ -769,6 +789,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS 60D", Tungsten, 0,		{ 1.5215, 1, 2.3486, 0 } },
   { "Canon", "EOS 60D", Fluorescent, 0,		{ 1.9248, 1, 2.1836, 0 } },
   { "Canon", "EOS 60D", Flash, 0,		{ 2.1514, 1, 1.5420, 0 } },
+
+  /* Canon EOS 70D Firmware Version 1.1.1 */
+  { "Canon", "EOS 70D", Daylight, 0,          { 2.068359375, 1, 1.6728515625, 0 } },
+  { "Canon", "EOS 70D", Shade, 0,             { 2.4033203125, 1, 1.4462890625, 0 } },
+  { "Canon", "EOS 70D", Cloudy, 0,            { 2.2265625, 1, 1.5517578125, 0 } },
+  { "Canon", "EOS 70D", Tungsten, 0,          { 1.4482421875, 1, 2.4091796875, 0 } },
+  { "Canon", "EOS 70D", Fluorescent, 0,       { 1.7900390625, 1, 2.2802734375, 0 } },
+  { "Canon", "EOS 70D", Flash, 0,             { 2.2861328125, 1, 1.548828125, 0 } },
 
   // Copied from Canon EOS 650D
   { "Canon", "EOS 100D", Daylight, -3,		{ 1.9502, 1, 1.7539, 0 } },
@@ -1860,6 +1888,14 @@ const wb_data wb_preset[] =
   { "Canon", "EOS-1D Mark IV", Tungsten, 0,	{ 1.458333, 1, 2.305254, 0 } },
   { "Canon", "EOS-1D Mark IV", Fluorescent, 0,	{ 1.767892, 1, 2.205029, 0 } },
   { "Canon", "EOS-1D Mark IV", Flash, 0,	{ 2.230469, 1, 1.423828, 0 } },
+
+  /* Canon EOS-1D X Firmware Version 1.0.6 */
+  { "Canon", "EOS-1D X", Daylight, 0,         { 1.943359375, 1, 1.3740234375, 0 } },
+  { "Canon", "EOS-1D X", Shade, 0,            { 2.23046875, 1, 1.17578125, 0 } },
+  { "Canon", "EOS-1D X", Cloudy, 0,           { 2.0859375, 1, 1.2685546875, 0 } },
+  { "Canon", "EOS-1D X", Tungsten, 0,         { 1.3857421875, 1, 2.068359375, 0 } },
+  { "Canon", "EOS-1D X", Fluorescent, 0,      { 1.7265625, 1, 1.9501953125, 0 } },
+  { "Canon", "EOS-1D X", Flash, 0,            { 2.173828125, 1, 1.2392578125, 0 } },
 
   // Canon EOS M Firmware 1.0.6
   { "Canon", "EOS M", Cloudy, 0,		{ 2.156250, 1, 1.448242, 0 } },
@@ -3220,12 +3256,18 @@ const wb_data wb_preset[] =
   { "NIKON", "D7000", HighTempMercuryVaporFluorescent, 0, { 2.484375, 1, 1.367188, 0 } },
   { "NIKON", "D7000", HighTempMercuryVaporFluorescent, 6, { 2.351563, 1, 1.539063, 0 } },
 
+  { "NIKON", "D7100", Incandescent, 0,		{ 1.445313, 1, 2.667969, 0 } },
+  { "NIKON", "D7100", SodiumVaporFluorescent, 0, { 1.332031, 1, 2.894531, 0 } },
+  { "NIKON", "D7100", WarmWhiteFluorescent, 0,	{ 1.480469, 1, 2.425781, 0 } },
+  { "NIKON", "D7100", WhiteFluorescent, 0,	{ 1.746094, 1, 2.777344, 0 } },
+  { "NIKON", "D7100", CoolWhiteFluorescent, 0,	{ 2.222656, 1, 2.417969, 0 } },
+  { "NIKON", "D7100", DayWhiteFluorescent, 0,	{ 2.242188, 1, 1.65625, 0 } },
+  { "NIKON", "D7100", DaylightFluorescent, 0,	{ 2.628906, 1, 1.308594, 0 } },
+  { "NIKON", "D7100", HighTempMercuryVaporFluorescent, 0, { 3.1875, 1, 1.585938, 0 } },
   { "NIKON", "D7100", DirectSunlight, 0,	{ 2.386719, 1, 1.597656, 0 } },
   { "NIKON", "D7100", Flash, 0,			{ 2.753906, 1, 1.371094, 0 } },
-  { "NIKON", "D7100", Cloudy, 0,		{ 2.656250, 1, 1.453125, 0 } },
+  { "NIKON", "D7100", Cloudy, 0,		{ 2.65625, 1, 1.453125, 0 } },
   { "NIKON", "D7100", Shade, 0,			{ 3.183594, 1, 1.292969, 0 } },
-  { "NIKON", "D7100", Incandescent, 0,		{ 1.445313, 1, 2.667969, 0 } },
-  { "NIKON", "D7100", Fluorescent, 0,		{ 2.222656, 1, 2.417969, 0 } },
   { "NIKON", "D7100", "5000K", 0,		{ 2.332031, 1, 1.652344, 0 } },
 
   { "NIKON", "E5400", Daylight, -3,		{ 2.046875, 1, 1.449219, 0 } },
@@ -4179,6 +4221,13 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-G5", "5500K", 0,		{ 2.343396, 1, 1.618868, 0 } },
   { "Panasonic", "DMC-G5", "6500K", 0,		{ 2.501887, 1, 1.505660, 0 } },
 
+  /* Firmware version 1.1 */
+  { "Panasonic", "DMC-G6", Daylight, 0,		{ 2.265625, 1, 1.699219, 0 } },
+  { "Panasonic", "DMC-G6", Cloudy, 0,		{ 2.406250, 1, 1.593750, 0 } },
+  { "Panasonic", "DMC-G6", Shade, 0,		{ 2.617188, 1, 1.511719, 0 } },
+  { "Panasonic", "DMC-G6", Incandescent, 0,	{ 1.535156, 1, 2.375000, 0 } },
+  { "Panasonic", "DMC-G6", Flash, 0,		{ 2.332031, 1, 1.566406, 0 } },
+
   /* Firmware version 1.2 */
   /* -9/+9 fine tuning is -9/+9 in blue-amber and zero in magenta-green */
   { "Panasonic", "DMC-GF1", Daylight, -9,	{ 1.817490, 1, 1.760456, 0 } },
@@ -4374,6 +4423,28 @@ const wb_data wb_preset[] =
   { "PENTAX", "K200D", Tungsten, 0,		{ 1.000000, 1, 2.835937, 0 } },
   { "PENTAX", "K200D", Flash, 0,		{ 1.917969, 1, 1.214844, 0 } },
 
+  /* PENTAX 645D Firmware Version 645D Ver 1.00 */
+  { "PENTAX", "645D", Daylight, 0,            { 1.8056640625, 1, 1.327392578125, 0 } },
+  { "PENTAX", "645D", Shade, 0,               { 2.0926513671875, 1, 0.9832763671875, 0 } },
+  { "PENTAX", "645D", Cloudy, 0,              { 1.916015625, 1, 1.1060791015625, 0 } },
+  { "PENTAX", "645D", Tungsten, 0,            { 1.1302490234375, 1, 2.09765625, 0 } },
+  { "PENTAX", "645D", DaylightFluorescent, 0,        { 2.2073974609375, 1, 1.2945556640625, 0 } },
+  { "PENTAX", "645D", WhiteFluorescent, 0,        { 1.8895263671875, 1, 1.45849609375, 0 } },
+  { "PENTAX", "645D", CoolWhiteFluorescent, 0,        { 1.748291015625, 1, 1.737060546875, 0 } },
+  { "PENTAX", "645D", Flash, 0,               { 1.9866943359375, 1, 1.08154296875, 0 } },
+  { "PENTAX", "645D", WarmWhiteFluorescent, 0,        { 1.4921875, 1, 2.146728515625, 0 } },
+
+  /* PENTAX K-01 Firmware Version 1.00 */
+  { "PENTAX", "K-01", Daylight, 0,            { 2.197021484375, 1, 1.6136474609375, 0 } },
+  { "PENTAX", "K-01", Shade, 0,               { 2.6251220703125, 1, 1.204345703125, 0 } },
+  { "PENTAX", "K-01", Cloudy, 0,              { 2.3671875, 1, 1.3797607421875, 0 } },
+  { "PENTAX", "K-01", Tungsten, 0,            { 1.3203125, 1, 2.9935302734375, 0 } },
+  { "PENTAX", "K-01", DaylightFluorescent, 0,        { 2.7127685546875, 1, 1.55517578125, 0 } },
+  { "PENTAX", "K-01", WhiteFluorescent, 0,        { 2.325927734375, 1, 1.7305908203125, 0 } },
+  { "PENTAX", "K-01", CoolWhiteFluorescent, 0,        { 2.114501953125, 1, 2.139892578125, 0 } },
+  { "PENTAX", "K-01", Flash, 0,               { 2.490966796875, 1, 1.4849853515625, 0 } },
+  { "PENTAX", "K-01", WarmWhiteFluorescent, 0,        { 1.7689208984375, 1, 2.677734375, 0 } },
+
   { "PENTAX", "K-5", Daylight, 0,		{ 2.1211, 1, 1.5781, 0 } },
   { "PENTAX", "K-5", Shade, 0,			{ 2.5312, 1, 1.1758, 0 } },
   { "PENTAX", "K-5", Cloudy, 0,			{ 2.2852, 1, 1.3477, 0 } },
@@ -4385,6 +4456,39 @@ const wb_data wb_preset[] =
   { "PENTAX", "K-5", Flash, 0,			{ 2.4023, 1, 1.4492, 0 } },
   { "PENTAX", "K-5", "3000K", 0,		{ 1.3867, 1, 2.2578, 0 } },
   { "PENTAX", "K-5", "5000K", 0,		{ 2.0508, 1, 1.4883, 0 } },
+
+  /* PENTAX K-50 Firmware Version 1.00 */
+  { "PENTAX", "K-50", Daylight, 0,            { 2.244384765625, 1, 1.560302734375, 0 } },
+  { "PENTAX", "K-50", Shade, 0,               { 2.681640625, 1, 1.16455078125, 0 } },
+  { "PENTAX", "K-50", Cloudy, 0,              { 2.418212890625, 1, 1.334228515625, 0 } },
+  { "PENTAX", "K-50", Tungsten, 0,            { 1.3487548828125, 1, 2.8946533203125, 0 } },
+  { "PENTAX", "K-50", DaylightFluorescent, 0,        { 2.771240234375, 1, 1.5037841796875, 0 } },
+  { "PENTAX", "K-50", WhiteFluorescent, 0,        { 2.3760986328125, 1, 1.6734619140625, 0 } },
+  { "PENTAX", "K-50", CoolWhiteFluorescent, 0,        { 2.1600341796875, 1, 2.0692138671875, 0 } },
+  { "PENTAX", "K-50", Flash, 0,               { 2.544677734375, 1, 1.4359130859375, 0 } },
+  { "PENTAX", "K-50", WarmWhiteFluorescent, 0,        { 1.8070068359375, 1, 2.58935546875, 0 } },
+
+    /* PENTAX K-500 Firmware Version 1.00 */
+  { "PENTAX", "K-500", Daylight, 0,           { 2.2076416015625, 1, 1.6060791015625, 0 } },
+  { "PENTAX", "K-500", Shade, 0,              { 2.6376953125, 1, 1.19873046875, 0 } },
+  { "PENTAX", "K-500", Cloudy, 0,             { 2.3785400390625, 1, 1.3734130859375, 0 } },
+  { "PENTAX", "K-500", Tungsten, 0,           { 1.32666015625, 1, 2.9796142578125, 0 } },
+  { "PENTAX", "K-500", DaylightFluorescent, 0,       { 2.725830078125, 1, 1.5479736328125, 0 } },
+  { "PENTAX", "K-500", WhiteFluorescent, 0,       { 2.337158203125, 1, 1.7225341796875, 0 } },
+  { "PENTAX", "K-500", CoolWhiteFluorescent, 0,       { 2.1246337890625, 1, 2.1298828125, 0 } },
+  { "PENTAX", "K-500", Flash, 0,              { 2.5029296875, 1, 1.4781494140625, 0 } },
+  { "PENTAX", "K-500", WarmWhiteFluorescent, 0,       { 1.7774658203125, 1, 2.665283203125, 0 } },
+
+  // Pentax K-30 (FW v1.05)
+  { "PENTAX", "K-30", Daylight, 0,		{ 2.21301269531, 1, 1.62915039063, 0 } },
+  { "PENTAX", "K-30", Shade, 0,			{ 2.64428710938, 1, 1.21594238281, 0 } },
+  { "PENTAX", "K-30", Cloudy, 0,		{ 2.38452148438, 1, 1.39294433594, 0 } },
+  { "PENTAX", "K-30", DaylightFluorescent, 0,	{ 2.73254394531, 1, 1.57006835938, 0 } },
+  { "PENTAX", "K-30", WhiteFluorescent, 0,	{ 2.34289550781, 1, 1.74719238281, 0 } },
+  { "PENTAX", "K-30", CoolWhiteFluorescent, 0,	{ 2.13000488281, 1, 2.16040039063, 0 } },
+  { "PENTAX", "K-30", WarmWhiteFluorescent, 0,	{ 1.78186035156, 1, 2.70336914063, 0 } },
+  { "PENTAX", "K-30", Tungsten, 0,		{ 1.32995605469, 1, 3.02221679688, 0 } },
+  { "PENTAX", "K-30", Flash, 0,			{ 2.50915527344, 1, 1.49926757813, 0 } },
 
   // copied from K-5 II s
   { "PENTAX", "K-5 II", Daylight, 0,		{ 2.136719, 1, 1.628906, 0 } },
@@ -4447,6 +4551,39 @@ const wb_data wb_preset[] =
   { "PENTAX", "K-x", WarmWhiteFluorescent, 0,	{ 1.5019, 1, 2.2973, 0 } },
   { "PENTAX", "K-x", Tungsten, 0,		{ 1.0463, 1, 3.4015, 0 } },
   { "PENTAX", "K-x", Flash, 0,			{ 2.1120, 1, 1.2741, 0 } },
+
+  /* PENTAX Q Firmware Version PENTAX Q Ver 1.00 */
+  { "PENTAX", "Q", Daylight, 0,               { 1.51513671875, 1, 1.85888970408413, 0 } },
+  { "PENTAX", "Q", Shade, 0,                  { 1.8182373046875, 1, 1.4179505991685, 0 } },
+  { "PENTAX", "Q", Cloudy, 0,                 { 1.70458984375, 1, 1.60858400586941, 0 } },
+  { "PENTAX", "Q", Tungsten, 0,               { 0.9697265625, 1, 3.05050134507214, 0 } },
+  { "PENTAX", "Q", DaylightFluorescent, 0,           { 1.9697265625, 1, 1.78735632183908, 0 } },
+  { "PENTAX", "Q", WhiteFluorescent, 0,           { 1.742431640625, 1, 2.02567865003668, 0 } },
+  { "PENTAX", "Q", CoolWhiteFluorescent, 0,           { 1.57958984375, 1, 2.50232330643189, 0 } },
+  { "PENTAX", "Q", Flash, 0,                  { 1.82958984375, 1, 1.5133284421619, 0 } },
+  { "PENTAX", "Q", WarmWhiteFluorescent, 0,           { 1.32568359375, 1, 2.90743458058205, 0 } },
+  
+  /* PENTAX Q7 Firmware Version PENTAX Q7     Ver 1.00 */
+  { "PENTAX", "Q7", Daylight, 0,              { 1.6688232421875, 1, 1.79434353285383, 0 } },
+  { "PENTAX", "Q7", Shade, 0,                 { 2.05029296875, 1, 1.40107277825186, 0 } },
+  { "PENTAX", "Q7", Cloudy, 0,                { 1.923095703125, 1, 1.59770815555285, 0 } },
+  { "PENTAX", "Q7", Tungsten, 0,              { 1.0172119140625, 1, 3.14640985005486, 0 } },
+  { "PENTAX", "Q7", DaylightFluorescent, 0,          { 2.2210693359375, 1, 1.76984030232842, 0 } },
+  { "PENTAX", "Q7", WhiteFluorescent, 0,          { 1.9072265625, 1, 2.0032914787273, 0 } },
+  { "PENTAX", "Q7", CoolWhiteFluorescent, 0,          { 1.780029296875, 1, 2.48262830671705, 0 } },
+  { "PENTAX", "Q7", Flash, 0,                 { 1.9866943359375, 1, 1.49945142021212, 0 } },
+  { "PENTAX", "Q7", WarmWhiteFluorescent, 0,          { 1.4940185546875, 1, 2.8882116298915, 0 } },
+
+  /* PENTAX Q10 Firmware Version 1.00 */
+  { "PENTAX", "Q10", Daylight, 0,             { 1.5614013671875, 1, 1.65324357405141, 0 } },
+  { "PENTAX", "Q10", Shade, 0,                { 1.965087890625, 1, 1.32717258261934, 0 } },
+  { "PENTAX", "Q10", Cloudy, 0,               { 1.84326171875, 1, 1.51346389228886, 0 } },
+  { "PENTAX", "Q10", Tungsten, 0,             { 0.9749755859375, 1, 2.98053855569155, 0 } },
+  { "PENTAX", "Q10", DaylightFluorescent, 0,         { 2.12890625, 1, 1.6764993880049, 0 } },
+  { "PENTAX", "Q10", WhiteFluorescent, 0,         { 1.8280029296875, 1, 1.89767441860465, 0 } },
+  { "PENTAX", "Q10", CoolWhiteFluorescent, 0,         { 1.7061767578125, 1, 2.35177478580171, 0 } },
+  { "PENTAX", "Q10", Flash, 0,                { 1.9041748046875, 1, 1.4203182374541, 0 } },
+  { "PENTAX", "Q10", WarmWhiteFluorescent, 0,         { 1.431884765625, 1, 2.7359853121175, 0 } },
 
   { "RICOH", "Caplio GX100", Daylight, 0,	{ 1.910001, 1, 1.820002, 0 } },
   { "RICOH", "Caplio GX100", Cloudy, 0,		{ 2.240003, 1, 1.530002, 0 } },
@@ -5481,6 +5618,17 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-5R", DayWhiteFluorescent, 0,	{ 2.4844, 1, 1.5703, 0 } },
   { "SONY", "NEX-5R", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
   { "SONY", "NEX-5R", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
+
+  // copied from NEX-5R
+  { "SONY", "NEX-6", Daylight, 0,		{ 2.5000, 1, 1.5117, 0 } },
+  { "SONY", "NEX-6", Shade, 0,			{ 3.0156, 1, 1.2422, 0 } },
+  { "SONY", "NEX-6", Cloudy, 0,		        { 2.7188, 1, 1.3828, 0 } },
+  { "SONY", "NEX-6", Tungsten, 0,		{ 1.5039, 1, 2.7695, 0 } },
+  { "SONY", "NEX-6", WarmWhiteFluorescent, 0,	{ 1.8164, 1, 2.7305, 0 } },
+  { "SONY", "NEX-6", CoolWhiteFluorescent, 0,	{ 2.3086, 1, 2.1758, 0 } },
+  { "SONY", "NEX-6", DayWhiteFluorescent, 0,	{ 2.4844, 1, 1.5703, 0 } },
+  { "SONY", "NEX-6", DaylightFluorescent, 0,	{ 2.8555, 1, 1.4648, 0 } },
+  { "SONY", "NEX-6", Flash, 0,			{ 2.8828, 1, 1.3906, 0 } },
 
   { "SONY", "NEX-7", Daylight, 0,		{ 2.5820, 1, 1.5273, 0 } },
   { "SONY", "NEX-7", Shade, 0,			{ 3.0781, 1, 1.2734, 0 } },

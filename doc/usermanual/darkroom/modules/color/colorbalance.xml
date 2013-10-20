@@ -31,7 +31,7 @@
                 <para>Additional <quote>factor</quote> sliders act on all colors at once. Their effect is similar to the controls of the
                       <emphasis>levels</emphasis> module (see <xref linkend="levels"/>).</para>
 
-                <para>You best envision the module's way of working if you consider <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote>
+                <para>The way to best envision the module's way of working is if you consider <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote>
                       as parameters influencing the properties of a tone curve which - in its original state - is a straight line going diagonally from 
                       bottom left to top right.</para>
 

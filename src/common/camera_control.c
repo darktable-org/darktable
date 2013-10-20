@@ -389,7 +389,7 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
     break;
 
     default:
-      dt_print(DT_DEBUG_CAMCTL,"[camera_control] process of unknown job type %lx\n",(unsigned long int)j->type);
+      dt_print(DT_DEBUG_CAMCTL,"[camera_control] process of unknown job type %p\n", j->type);
       break;
   }
 
@@ -480,7 +480,7 @@ void _camctl_lock(const dt_camctl_t *c,const dt_camera_t *cam)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   dt_pthread_mutex_lock(&camctl->lock);
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] camera control locked for camera %lx\n",(unsigned long int)cam);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] camera control locked for camera %p\n", cam);
   camctl->active_camera=cam;
   _dispatch_control_status(c,CAMERA_CONTROL_BUSY);
 }
@@ -491,7 +491,7 @@ void _camctl_unlock(const dt_camctl_t *c)
   const dt_camera_t *cam=camctl->active_camera;
   camctl->active_camera=NULL;
   dt_pthread_mutex_unlock(&camctl->lock);
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] camera control un-locked for camera %lx\n",(unsigned long int)cam);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] camera control un-locked for camera %p\n", cam);
   _dispatch_control_status(c,CAMERA_CONTROL_AVAILABLE);
 }
 
@@ -500,7 +500,7 @@ dt_camctl_t *dt_camctl_new()
 {
   dt_camctl_t *camctl=g_malloc(sizeof(dt_camctl_t));
   memset(camctl,0,sizeof(dt_camctl_t));
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] creating new context %lx\n",(unsigned long int)camctl);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] creating new context %p\n", camctl);
 
   // Initialize gphoto2 context and setup dispatch callbacks
   camctl->gpcontext = gp_context_new();
@@ -573,10 +573,10 @@ void dt_camctl_register_listener( const dt_camctl_t *c, dt_camctl_listener_t *li
   if( g_list_find(camctl->listeners,listener) == NULL )
   {
     camctl->listeners=g_list_append(camctl->listeners,listener);
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] registering listener %lx\n",(unsigned long int)listener);
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] registering listener %p\n", listener);
   }
   else
-    dt_print(DT_DEBUG_CAMCTL,"[camera_control] registering already registered listener %lx\n",(unsigned long int)listener);
+    dt_print(DT_DEBUG_CAMCTL,"[camera_control] registering already registered listener %p\n", listener);
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
 
@@ -585,7 +585,7 @@ void dt_camctl_unregister_listener( const dt_camctl_t *c, dt_camctl_listener_t *
   dt_camctl_t *camctl=(dt_camctl_t *)c;
   // Just locking mutex and prevent signalling CAMERA_CONTROL_BUSY
   dt_pthread_mutex_lock(&camctl->listeners_lock);
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] unregistering listener %lx\n",(unsigned long int)listener);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] unregistering listener %p\n", listener);
   camctl->listeners = g_list_remove( camctl->listeners, listener );
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
 }
@@ -703,7 +703,7 @@ static void *_camera_event_thread(void *data)
 
   const dt_camera_t *camera=camctl->active_camera;
 
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] starting camera event thread %lx of context %lx\n",(unsigned long int)camctl->camera_event_thread,(unsigned long int)data);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] starting camera event thread %p of context %p\n", camctl->camera_event_thread, data);
 
   while( camera->is_tethering == TRUE )
   {
@@ -721,7 +721,7 @@ static void *_camera_event_thread(void *data)
 
   }
 
-  dt_print(DT_DEBUG_CAMCTL,"[camera_control] exiting camera thread %lx.\n",(unsigned long int)camctl->camera_event_thread);
+  dt_print(DT_DEBUG_CAMCTL,"[camera_control] exiting camera thread %p.\n", camctl->camera_event_thread);
 
   return NULL;
 }

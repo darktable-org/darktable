@@ -50,7 +50,7 @@ if (JAVA_RUNTIME)
   # Find Saxon 6.5.x
   #
   find_file (SAXON
-    NAMES saxon.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar
+    NAMES saxon.jar saxon6.jar saxon-6.5.5.jar saxon-6.5.4.jar saxon-6.5.3.jar
     PATH_SUFFIXES share/java
                   share/saxon-6.5/lib 
     DOC "location of saxon 6.5.x JAR file"

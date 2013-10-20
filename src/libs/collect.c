@@ -43,7 +43,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_collect_rule_t
 {
-  long int num;
+  int num;
   GtkWidget *hbox;
   GtkComboBox *combo;
   GtkWidget *text;
@@ -783,9 +783,6 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
     visible = TRUE;
     gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
 
-    //g_free(str);
-    //str = NULL;
-
     return FALSE;
   }
 
@@ -808,8 +805,6 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
     visible = TRUE;
 
   gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
-
-  //g_free(str);
 
   return FALSE;
 }
@@ -1037,9 +1032,9 @@ set_properties (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char confname[200];
-  snprintf(confname, 200, "plugins/lighttable/collect/string%1ld", dr->num);
+  snprintf(confname, 200, "plugins/lighttable/collect/string%1d", dr->num);
   dt_conf_set_string (confname, text);
-  snprintf(confname, 200, "plugins/lighttable/collect/item%1ld", dr->num);
+  snprintf(confname, 200, "plugins/lighttable/collect/item%1d", dr->num);
   dt_conf_set_int (confname, property);
 }
 
@@ -1870,10 +1865,10 @@ gui_init (dt_lib_module_t *self)
     box = GTK_BOX(gtk_hbox_new(FALSE, 5));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-    w = gtk_combo_box_new_text();
+    w = gtk_combo_box_text_new();
     d->rule[i].combo = GTK_COMBO_BOX(w);
     for(int k=0; k<dt_lib_collect_string_cnt; k++)
-      gtk_combo_box_append_text(GTK_COMBO_BOX(w), _(dt_lib_collect_string[k]));
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(w), _(dt_lib_collect_string[k]));
     g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
     w = gtk_entry_new();

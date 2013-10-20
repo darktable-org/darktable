@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+
+	<sect2 status="sidecar_files" id="xyz"><title>Sidecar files</title>
+                <indexterm>
+                   <primary>sidecar files</primary>
+                </indexterm>
+                <indexterm>
+                   <primary>XMP files</primary>
+                </indexterm>
+		<para>darktable is a non-destructive image editor. This implies that darktable opens input images read-only. Any newly added metadata, tags and
+                parameters of image operations are stored in a separate file, a so called sidecar or XMP file.
+                Each input image has its own sidecar file residing in the same
+                folder as the input file with a filename constructed in the form <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>. 
+                Sidecar files get synchronized automatically by darktable without the need to press a <quote>save</quote> button.
+                When backing up your data, make sure you also save the XMP file, as this is needed to fully reconstruct your work in case of a disaster.
+                </para>
+                <para>In addition to the sidecar files darktable keeps all image related data in its database for fast access.
+		</para>
+	</sect2>
+
+

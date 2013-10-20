@@ -17,7 +17,10 @@
 */
 
 /* getpwnam_r availibility check */
-#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || \
+    defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || \
+    defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -99,7 +99,7 @@
                                                    <para>
                                                        In order to correct perspective distortions, you need to find suitable horizontal and/or vertical 
                                                        features in your image and align the adjustment lines with them. When done, press the <quote>OK</quote> button, which is
-                                                       located close to the center of your image. The image will be corrected immeditely. You can at any time come 
+                                                       located close to the center of your image. The image will be corrected immediately. You can at any time come 
                                                        back and refine your corrections by selecting <quote>correction applied</quote> in combobox keystone.
                                                    </para>
 						</entry>

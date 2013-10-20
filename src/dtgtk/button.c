@@ -151,7 +151,7 @@ GtkWidget*
 dtgtk_button_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableButton *button;
-  button = gtk_type_new (dtgtk_button_get_type());
+  button = g_object_new(dtgtk_button_get_type(), NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
   return (GtkWidget *)button;
@@ -168,23 +168,24 @@ dtgtk_button_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, 
   return button;
 }
 
-GtkType dtgtk_button_get_type()
+GType dtgtk_button_get_type()
 {
-  static GtkType dtgtk_button_type = 0;
+  static GType dtgtk_button_type = 0;
   if (!dtgtk_button_type)
   {
-    static const GtkTypeInfo dtgtk_button_info =
+    static const GTypeInfo dtgtk_button_info =
     {
-      "GtkDarktableButton",
-      sizeof(GtkDarktableButton),
       sizeof(GtkDarktableButtonClass),
-      (GtkClassInitFunc) _button_class_init,
-      (GtkObjectInitFunc) _button_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _button_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableButton),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _button_init,
     };
-    dtgtk_button_type = gtk_type_unique (GTK_TYPE_BUTTON, &dtgtk_button_info);
+    dtgtk_button_type = g_type_register_static(GTK_TYPE_BUTTON, "GtkDarktableButton", &dtgtk_button_info, 0);
   }
   return dtgtk_button_type;
 }

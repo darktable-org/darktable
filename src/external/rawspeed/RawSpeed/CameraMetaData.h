@@ -40,9 +40,10 @@ public:
   map<string,Camera*> cameras;
   Camera* getCamera(string make, string model, string mode);
   bool hasCamera(string make, string model, string mode);
+  void disableMake(string make);
+  void disableCamera(string make, string model);
 protected:
   void addCamera(Camera* cam);
-
 };
 
 } // namespace RawSpeed

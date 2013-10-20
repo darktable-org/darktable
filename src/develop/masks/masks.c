@@ -38,27 +38,27 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
 
   if(formtype&DT_MASKS_PATH)
   {
-    if (gui->creation) strcat(msg,_("ctrl+click to add a sharp node"));
-    else if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to switch between smooth/sharp node"));
-    else if (gui->feather_selected >= 0) strcat(msg,_("right-click to reset feather value"));
-    else if (gui->seg_selected >= 0) strcat(msg,_("ctrl+click to add a node"));
-    else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+    if (gui->creation) g_strlcat(msg,_("ctrl+click to add a sharp node"),sizeof(msg));
+    else if (gui->point_selected >= 0) g_strlcat(msg,_("ctrl+click to switch between smooth/sharp node"),sizeof(msg));
+    else if (gui->feather_selected >= 0) g_strlcat(msg,_("right-click to reset feather value"),sizeof(msg));
+    else if (gui->seg_selected >= 0) g_strlcat(msg,_("ctrl+click to add a node"),sizeof(msg));
+    else if (gui->form_selected) g_strlcat(msg,_("ctrl+scroll to set shape opacity"),sizeof(msg));
   }
   else if (formtype&DT_MASKS_GRADIENT)
   {
-    if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
-    else if (gui->pivot_selected) strcat(msg,_("move to rotate shape"));
+    if (gui->form_selected) g_strlcat(msg,_("ctrl+scroll to set shape opacity"),sizeof(msg));
+    else if (gui->pivot_selected) g_strlcat(msg,_("move to rotate shape"),sizeof(msg));
   }
   else if (formtype&DT_MASKS_ELLIPSE)
   {
-    if (gui->point_selected >= 0) strcat(msg,_("ctrl+click to rotate"));
-    else if (gui->form_selected) strcat(msg,_("ctrl+scroll to set shape opacity"));
+    if (gui->point_selected >= 0) g_strlcat(msg,_("ctrl+click to rotate"),sizeof(msg));
+    else if (gui->form_selected) g_strlcat(msg,_("ctrl+scroll to set shape opacity"),sizeof(msg));
   }
   else if (formtype&DT_MASKS_BRUSH)
   {
-    if (gui->creation) strcat(msg,_("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"));
-    else if (gui->border_selected) strcat(msg,_("scroll to set brush size"));
-    else if (gui->form_selected) strcat(msg,_("scroll to set hardness, ctrl+scroll to set shape opacity"));
+    if (gui->creation) g_strlcat(msg,_("scroll to set brush size, shift+scroll to set hardness, ctrl+scroll to set opacity"),sizeof(msg));
+    else if (gui->border_selected) g_strlcat(msg,_("scroll to set brush size"),sizeof(msg));
+    else if (gui->form_selected) g_strlcat(msg,_("scroll to set hardness, ctrl+scroll to set shape opacity"),sizeof(msg));
   }
 
   dt_control_hinter_message(darktable.control,msg);
@@ -193,6 +193,107 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
   //show the form if needed
   if (gui) darktable.develop->form_gui->formid = form->formid;
   if (gui) dt_dev_masks_list_change(darktable.develop);
+}
+
+int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
+{
+  //we create a new empty form
+  dt_masks_form_t *fbase = dt_masks_get_from_id (dev,formid);
+  if (!fbase) return -1;
+  dt_masks_form_t *fdest = dt_masks_create(fbase->type);
+  _check_id(fdest);
+  
+  //we copy the base values
+  fdest->source[0] = fbase->source[0];
+  fdest->source[1] = fbase->source[1];
+  fdest->version = fbase->version;
+  snprintf(fdest->name,128,_("copy of %s"),fbase->name);
+  
+  darktable.develop->forms = g_list_append(dev->forms,fdest);
+  
+  //we copy all the points
+  if (fbase->type & DT_MASKS_GROUP)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+      dt_masks_point_group_t *npt = (dt_masks_point_group_t *) malloc(sizeof(dt_masks_point_group_t));
+      
+      npt->formid = dt_masks_form_duplicate(dev,pt->formid);
+      npt->parentid = fdest->formid;
+      npt->state = pt->state;
+      npt->opacity = pt->opacity;
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }
+  }
+  else if (fbase->type & DT_MASKS_CIRCLE)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
+      dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *) malloc(sizeof(dt_masks_point_circle_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_circle_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }
+  }
+  else if (fbase->type & DT_MASKS_PATH)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
+      dt_masks_point_path_t *npt = (dt_masks_point_path_t *) malloc(sizeof(dt_masks_point_path_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_path_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_GRADIENT)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_gradient_t *pt = (dt_masks_point_gradient_t *)pts->data;
+      dt_masks_point_gradient_t *npt = (dt_masks_point_gradient_t *) malloc(sizeof(dt_masks_point_gradient_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_gradient_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_ELLIPSE)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
+      dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *) malloc(sizeof(dt_masks_point_ellipse_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_ellipse_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  else if (fbase->type & DT_MASKS_BRUSH)
+  {
+    GList *pts = g_list_first(fbase->points);
+    while(pts)
+    {
+      dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)pts->data;
+      dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *) malloc(sizeof(dt_masks_point_brush_t));
+      memcpy(npt,pt,sizeof(dt_masks_point_brush_t));
+      fdest->points = g_list_append(fdest->points,npt);
+      pts = g_list_next(pts);
+    }    
+  }
+  
+  //we save the form
+  dt_masks_write_form(fdest,dev);
+  
+  //and we return it's id
+  return fdest->formid;
 }
 
 int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points, int *points_count, float **border, int *border_count, int source)
@@ -700,7 +801,22 @@ int dt_masks_events_mouse_moved (struct dt_iop_module_t *module, double x, doubl
   else if (form->type & DT_MASKS_ELLIPSE) rep = dt_ellipse_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
   else if (form->type & DT_MASKS_BRUSH) rep = dt_brush_events_mouse_moved(module,pzx,pzy,pressure,which,form,0,gui,0);
 
-  if (gui) _set_hinter_message(gui, form->type);
+  if (gui)
+  {
+    int ftype = form->type;
+    if (ftype & DT_MASKS_GROUP)
+    {
+      if (gui->group_edited >=0)
+      {
+        //we get the slected form
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points,gui->group_edited);
+        dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop,fpt->formid);
+        if (!sel) return 0;
+        ftype = sel->type;
+      }
+    }
+    _set_hinter_message(gui, ftype);
+  }
 
   return rep;
 }
@@ -1124,7 +1240,7 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       if (nb==0)
       {
         char str2[256] = "<";
-        strcat(str2,_("add existing shape"));
+        g_strlcat(str2,_("add existing shape"),sizeof(str2));
         dt_bauhaus_combobox_add(combo,str2);
         cids[pos++] = 0;  //nothing to do
       }
@@ -1151,12 +1267,12 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
         if (nb==0)
         {
           char str2[256] = "<";
-          strcat(str2,_("use same shapes as"));
+          g_strlcat(str2,_("use same shapes as"),sizeof(str2));
           dt_bauhaus_combobox_add(combo,str2);
           cids[pos++] = 0;  //nothing to do
         }
         char str[256] = "";
-        strcat(str,m->name());
+        g_strlcat(str,m->name(),sizeof(str));
         strcat(str," ");
         strcat(str,m->multi_name);
         strcat(str,"   ");
@@ -1177,6 +1293,13 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
 
   int sel = dt_bauhaus_combobox_get(bd->masks_combo);
   if (sel==0) return;
+  if (sel ==1)
+  {
+    darktable.gui->reset = 1;
+    dt_bauhaus_combobox_set(bd->masks_combo,0);
+    darktable.gui->reset = 0;
+    return;
+  }
   if (sel > 0)
   {
     int val = bd->masks_combo_ids[sel];
@@ -1230,6 +1353,7 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
       //add an existing shape
       _menu_add_exist(module,val);
     }
+    else return;
   }
   //we update the combo line
   dt_masks_iop_update(module);
@@ -1262,8 +1386,8 @@ void dt_masks_iop_update(struct dt_iop_module_t *module)
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)
 {
-  int id = form->formid;
   if (!form) return;
+  int id = form->formid;
   if (grp && !(grp->type & DT_MASKS_GROUP)) return;
 
   if (!(form->type & DT_MASKS_CLONE) && grp)

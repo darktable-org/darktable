@@ -461,7 +461,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     if (darktable.gui->last_preset && found)
     {
       char label[60];
-      strcpy (label, _("update preset"));
+      g_strlcpy(label, _("update preset"), sizeof(label));
       strcat (label, " <span weight=\"bold\">%s</span>");
       char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
@@ -588,15 +588,18 @@ dt_lib_load_modules ()
   g_strlcat(plugindir, "/plugins/lighttable", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
+  const int name_offset = strlen(SHARED_MODULE_PREFIX),
+            name_end    = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(plugin_name, d_name+3, strlen(d_name)-6);
-    plugin_name[strlen(d_name)-6] = '\0';
+    // get lib*.(so|dll)
+    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
+    strncpy(plugin_name, d_name+name_offset, strlen(d_name)-name_end);
+    plugin_name[strlen(d_name)-name_end] = '\0';
     module = (dt_lib_module_t *)malloc(sizeof(dt_lib_module_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
+
     if(dt_lib_load_module(module, libname, plugin_name))
     {
       free(module);
@@ -635,11 +638,13 @@ dt_lib_gui_reset_callback (GtkButton *button, gpointer user_data)
 static void
 _preset_popup_posistion(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
-  gint w,h;
-  gint ww,wh;
+  gint w;
+  gint ww;
   GtkRequisition requisition;
-  gdk_window_get_size(gtk_widget_get_window(GTK_WIDGET(data)),&w,&h);
-  gdk_window_get_size(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)),&ww,&wh);
+
+  w = gdk_window_get_width(gtk_widget_get_window(GTK_WIDGET(data)));
+  ww = gdk_window_get_width(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)));
+
   gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
 
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
@@ -716,7 +721,7 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   }
   else
   {
-    gtk_widget_hide_all(module->widget);
+    gtk_widget_hide(module->widget);
 
     if(darktable.lib->gui_module == module)
     {

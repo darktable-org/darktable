@@ -48,10 +48,10 @@
     </tgroup>
     </informaltable>
 
-    <para>When entering tethering view, a filmroll will be created using the same structure as defined when you import from the camera. Job code will be predefined as <quote>capture</quote>.</para>
+    <para>When entering tethering view, a film roll will be created using the same structure as defined when you import from the camera. Job code will be predefined as <quote>capture</quote>.</para>
 
-    <para>If you want to group your captures into different filmrolls, you should use the session panel in right side. When entering a new name and pressing enter, a new filmroll 
-          will be created and captured images will go into this new filmroll.</para>
+    <para>If you want to group your captures into different film rolls, you should use the session panel in right side. When entering a new name and pressing enter, a new film roll 
+          will be created and captured images will go into this new film roll.</para>
 
     <para>darktable provides some nifty tools to setup a capture in the user interface. You can setup timelapse captures and brackets for HDR creations. The configuration 
           is so dynamic that you can create sequential capture of brackets - go figure... For more information read the documentation about the capture panel and the examples
@@ -66,7 +66,7 @@
 <!-- Examples -->
 <xi:include href="examples/examples.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<!-- Toubleshooting -->
+<!-- Troubleshooting -->
 <xi:include href="troubleshoot.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <indexterm class="endofrange" startref="ix.tethering_chapter"/>

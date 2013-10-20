@@ -185,7 +185,7 @@ dt_image_flipped_filter(const dt_image_t *img)
   // 0x61616161 <-> 0x94949494
 
   const int orient = dt_image_orientation(img);
-  int filters = img->filters;
+  uint32_t filters = img->filters;
   if((orient & 1) && (img->height & 1))
   {
     switch(filters)

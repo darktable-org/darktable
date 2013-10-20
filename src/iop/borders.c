@@ -652,13 +652,13 @@ aspect_changed (GtkWidget *combo, dt_iop_module_t *self)
         // *c = '\0'; // not needed, atof will stop there.
         c++;
         p->aspect = atof(text) / atof(c);
-        strncpy(p->aspect_text, text, 20);
+        g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
       }
     }
   }
   else if (which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    strncpy(p->aspect_text, text, 20);
+    g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
     p->aspect = g->aspect_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -697,14 +697,14 @@ position_h_changed (GtkWidget *combo, dt_iop_module_t *self)
       {
         p->pos_h = atof(text);
       }
-      strncpy(p->pos_h_text, text, 20);
+      g_strlcpy(p->pos_h_text, text, sizeof(p->pos_h_text));
       p->pos_h = MAX(p->pos_h, 0);
       p->pos_h = MIN(p->pos_h, 1);
     }
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    strncpy(p->pos_h_text, text, 20);
+    g_strlcpy(p->pos_h_text, text, sizeof(p->pos_h_text));
     p->pos_h = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -734,14 +734,14 @@ position_v_changed (GtkWidget *combo, dt_iop_module_t *self)
       {
         p->pos_v = atof(text);
       }
-      strncpy(p->pos_v_text, text, 20);
+      g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
       p->pos_v = MAX(p->pos_v, 0);
       p->pos_v = MIN(p->pos_v, 1);
     }
   }
   else if (which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    strncpy(p->pos_v_text, text, 20);
+    g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
     p->pos_v = g->pos_h_ratios[which];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1058,7 +1058,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size*100.0, 2);
-  dt_bauhaus_widget_set_label(g->size, _("border size"));
+  dt_bauhaus_widget_set_label(g->size, NULL, _("border size"));
   dt_bauhaus_slider_set_format(g->size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);
   g_object_set(G_OBJECT(g->size), "tooltip-text", _("size of the border in percent of the full image"), (char *)NULL);
@@ -1066,14 +1066,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect, 1);
-  dt_bauhaus_widget_set_label(g->aspect, _("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect, NULL, _("aspect"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
   gui_init_aspect(self);
   g_signal_connect (G_OBJECT (g->aspect), "value-changed", G_CALLBACK (aspect_changed), self);
   g_object_set(G_OBJECT(g->aspect), "tooltip-text", _("select the aspect ratio or right click and type your own (w:h)"), (char *)NULL);
 
   g->aspect_orient = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->aspect_orient, _("orientation"));
+  dt_bauhaus_widget_set_label(g->aspect_orient, NULL, _("orientation"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
@@ -1083,27 +1083,27 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->pos_h = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
-  dt_bauhaus_widget_set_label(g->pos_h, _("horizontal position"));
+  dt_bauhaus_widget_set_label(g->pos_h, NULL, _("horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->pos_h), "value-changed", G_CALLBACK (position_h_changed), self);
   g_object_set(G_OBJECT(g->pos_h), "tooltip-text", _("select the horizontal position ratio relative to top or right click and type your own (y:h)"), (char *)NULL);
   g->pos_v = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_v, 1);
-  dt_bauhaus_widget_set_label(g->pos_v, _("vertical position"));
+  dt_bauhaus_widget_set_label(g->pos_v, NULL, _("vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->pos_v), "value-changed", G_CALLBACK (position_v_changed), self);
   g_object_set(G_OBJECT(g->pos_v), "tooltip-text", _("select the vertical position ratio relative to left or right click and type your own (x:w)"), (char *)NULL);
   gui_init_positions(self);
 
   g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size*100.0, 2);
-  dt_bauhaus_widget_set_label(g->frame_size, _("frame line size"));
+  dt_bauhaus_widget_set_label(g->frame_size, NULL, _("frame line size"));
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_size), "value-changed", G_CALLBACK (frame_size_callback), self);
   g_object_set(G_OBJECT(g->frame_size), "tooltip-text", _("size of the frame line in percent of min border width"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_size, TRUE, TRUE, 0);
 
   g->frame_offset = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_offset*100.0, 2);
-  dt_bauhaus_widget_set_label(g->frame_offset, _("frame line offset"));
+  dt_bauhaus_widget_set_label(g->frame_offset, NULL, _("frame line offset"));
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_offset), "value-changed", G_CALLBACK (frame_offset_callback), self);
   g_object_set(G_OBJECT(g->frame_offset), "tooltip-text", _("offset of the frame line beginning on picture side"), (char *)NULL);

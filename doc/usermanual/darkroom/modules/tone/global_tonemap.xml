@@ -52,7 +52,7 @@
 		</sect5>	
 
 		<sect5><title>detail</title>
-			<para>Offered as an addition to all operators. This parameter controls how much detail is preserved and transfered back into
+			<para>Offered as an addition to all operators. This parameter controls how much detail is preserved and transferred back into
                         the output image after tonemapping.</para>
 		</sect5>	
 	</sect4>

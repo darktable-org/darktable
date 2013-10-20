@@ -729,11 +729,11 @@ void gui_init (struct dt_iop_module_t *self)
   g->scale_g     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[1],3);
   g->scale_b     = dt_bauhaus_slider_new_with_range(self,0.0, 8.0, .001,p->coeffs[2],3);
   dt_bauhaus_slider_set_format(g->scale_k,"%.0fK");
-  dt_bauhaus_widget_set_label(g->scale_tint,_("tint"));
-  dt_bauhaus_widget_set_label(g->scale_k,_("temperature"));
-  dt_bauhaus_widget_set_label(g->scale_r,_("red"));
-  dt_bauhaus_widget_set_label(g->scale_g,_("green"));
-  dt_bauhaus_widget_set_label(g->scale_b,_("blue"));
+  dt_bauhaus_widget_set_label(g->scale_tint, NULL, _("tint"));
+  dt_bauhaus_widget_set_label(g->scale_k, NULL, _("temperature"));
+  dt_bauhaus_widget_set_label(g->scale_r, NULL, _("red"));
+  dt_bauhaus_widget_set_label(g->scale_g, NULL, _("green"));
+  dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_tint, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_k, TRUE, TRUE, 0);
@@ -743,12 +743,12 @@ void gui_init (struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
 
   g->presets = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->presets,_("preset"));
+  dt_bauhaus_widget_set_label(g->presets, NULL, _("preset"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->presets, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->presets), "tooltip-text", _("choose white balance preset from camera"), (char *)NULL);
 
   g->finetune = dt_bauhaus_slider_new_with_range(self,-9.0, 9.0, 1.0, 0.0, 0);
-  dt_bauhaus_widget_set_label(g->finetune, _("finetune"));
+  dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
   dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
   // initially doesn't have fine tuning stuff (camera wb)
   gtk_widget_set_sensitive(g->finetune, FALSE);

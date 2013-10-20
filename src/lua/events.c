@@ -174,10 +174,9 @@ static int register_shortcut_event(lua_State* L) {
   // 2 is the action to perform (checked)
   // 3 is the key itself
   int result = register_keyed_event(L); // will raise an error in case of duplicate key
-  char tmp[1024];
-  snprintf(tmp,1024,"lua/%s",luaL_checkstring(L,3));
-  dt_accel_register_global(tmp,0,0);
-  dt_accel_connect_global(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,3)),closure_destroy));
+  const char* tmp = luaL_checkstring(L,3);
+  dt_accel_register_lua(tmp,0,0);
+  dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,3)),closure_destroy));
   return result;
 }
 

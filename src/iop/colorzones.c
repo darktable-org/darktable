@@ -949,7 +949,7 @@ colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data
 }
 
 static void
-colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+colorzones_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -1050,18 +1050,18 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");
-  dt_bauhaus_widget_set_label(c->strength,_("mix"));
+  dt_bauhaus_widget_set_label(c->strength, NULL, _("mix"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   g_signal_connect (G_OBJECT (c->strength), "value-changed", G_CALLBACK (strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->select_by, _("select by"));
+  dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
   g_object_set(G_OBJECT(c->select_by), "tooltip-text", _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));

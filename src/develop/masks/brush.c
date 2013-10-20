@@ -27,8 +27,8 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 200000;
-  const int reserve = 20000;
+  const int stepsize = 300000;
+  const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
 
@@ -362,19 +362,19 @@ static void _brush_init_ctrl_points (dt_masks_form_t *form)
 static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
 {
   //we want to find the start and end angles
-  double a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
-  double a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
+  float a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
+  float a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
 
-  if (a1==a2) return;
+  if (a1 == a2) return;
 
   //we have to be sure that we turn in the correct direction
   if (a2<a1 && clockwise)
   {
-    a2 += 2*M_PI;
+    a2 += 2.0f*M_PI;
   }
   if (a2>a1 && !clockwise)
   {
-    a1 += 2*M_PI;
+    a1 += 2.0f*M_PI;
   }
 
   //we determine start and end radius too
@@ -405,6 +405,47 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   }
 }
 
+/** fill small gap between 2 points with an arc of circle */
+/** in contrast to the previous function it will always run the shortest path (max. PI) and does not consider clock or anti-clockwise action */
+static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border)
+{
+  //we want to find the start and end angles
+  float a1 = fmodf(atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+  float a2 = fmodf(atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+
+  if (a1 == a2) return;
+
+  //we determine start and end radius too
+  float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
+  float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
+
+  //we close the gap in the shortest direction
+  float delta = a2 - a1;
+  if (fabsf(delta) > M_PI) delta = delta - copysignf(2.0f*M_PI, delta);
+
+  //get the max length of the circle arc
+  int l = fabsf(delta)*fmaxf(r1,r2);
+  if (l < 2) return;
+
+  //and now we add the points
+  float incra = delta/l;
+  float incrr = (r2-r1)/l;
+  float rr = r1+incrr;
+  float aa = a1+incra;
+  for (int i=1; i<l; i++)
+  {
+    points[*pos_points] = cmax[0];
+    points[*pos_points+1] = cmax[1];
+    *pos_points += 2;
+    border[*pos_border] = cmax[0]+rr*cosf(aa);
+    border[*pos_border+1] = cmax[1]+rr*sinf(aa);
+    *pos_border += 2;
+    rr += incrr;
+    aa += incra;
+  }
+}
+
+
 /** draw a circle with given radius. can be used to terminate a stroke and to draw junctions where attributes (opacity) change */
 static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
 {
@@ -434,25 +475,25 @@ static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *po
 }
 
 /** recursive function to get all points of the brush AND all point of the border */
-/** the function take care to avoid big gaps between points */
+/** the function takes care to avoid big gaps between points */
 static void _brush_points_recurs(float *p1, float *p2,
                                  double tmin, double tmax, float *points_min, float *points_max, float *border_min, float *border_max,
                                  float *rpoints, float *rborder, float *rpayload, float *points, float *border, float *payload, 
                                  int *pos_points, int *pos_border, int *pos_payload, int withborder, int withpayload)
 {
   //we calculate points if needed
-  if (points_min[0] == -99999)
+  if ((int)points_min[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
                          points_min,points_min+1,border_min,border_min+1);
   }
-  if (points_max[0] == -99999)
+  if ((int)points_max[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmax, p1[4]+(p2[4]-p1[4])*tmax*tmax*(3.0-2.0*tmax),
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.000001) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -466,11 +507,23 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withborder)
     {
-      if (border_max[0] == -9999999.0f)
+      if ((int)border_max[0] == -9999999)
       {
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
       }
+      else if ((int)border_min[0] == -9999999)
+      {
+        border_min[0] = border_max[0];
+        border_min[1] = border_max[1];
+      }
+
+      //we check gaps in the border (sharp edges)
+      if (abs((int)border_max[0] - (int)border_min[0]) > 2 || abs((int)border_max[1] - (int)border_min[1]) > 2)
+      {
+        _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
+      }
+
       rborder[0] = border[*pos_border] = border_max[0];
       rborder[1] = border[*pos_border+1] = border_max[1];
       *pos_border += 2;
@@ -478,9 +531,12 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withpayload)
     {
-      rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
-      rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
-      *pos_payload += 2;
+      while(*pos_payload < *pos_points)
+      {
+        rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
+        rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
+        *pos_payload += 2;
+      }
     }
 
     return;
@@ -750,9 +806,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (border)
     {
-      if (rb[0] == -9999999.0f)
+      if ((int)rb[0] == -9999999)
       {
-        if ((*border)[posb-2] == -9999999.0f)
+        if ((int)(*border)[posb-2] == -9999999)
         {
           (*border)[posb-2] = (*border)[posb-4];
           (*border)[posb-1] = (*border)[posb-3];
@@ -771,7 +827,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     {
       //we get the next point (start of the next segment)
       _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0, p3[4],cmin,cmin+1,bmax,bmax+1);
-      if (bmax[0] == -9999999.0f)
+      if ((int)bmax[0] == -9999999)
       {
         _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0.0001, p3[4],cmin,cmin+1,bmax,bmax+1);
       }
@@ -1325,6 +1381,71 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
     gui->point_edited = -1;
   }
+    else if (gui->point_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    //we remove the point (and the entire form if there is too few points)
+    if (g_list_length(form->points) < 2)
+    {
+      //if the form doesn't below to a group, we don't delete it
+      if (parentid<=0) return 1;
+      
+      dt_masks_clear_form_gui(darktable.develop);
+      //we hide the form
+      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
+      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
+      else
+      {
+        GList *forms = g_list_first(darktable.develop->form_visible->points);
+        while (forms)
+        {
+          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
+          if (gpt->formid == form->formid)
+          {
+            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
+            break;
+          }
+          forms = g_list_next(forms);
+        }
+      }
+
+      //we delete or remove the shape
+      dt_masks_form_remove(module,NULL,form);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
+    gui->point_selected = -1;
+    _brush_init_ctrl_points(form);
+
+    dt_masks_write_form(form,darktable.develop);
+
+    //we recreate the form points
+    dt_masks_gui_form_remove(form,gui,index);
+    dt_masks_gui_form_create(form,gui,index);
+    //we save the move
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if (gui->feather_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
+    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
+    {
+      point->state = DT_MASKS_POINT_STATE_NORMAL;
+      _brush_init_ctrl_points(form);
+
+      dt_masks_write_form(form,darktable.develop);
+
+      //we recreate the form points
+      dt_masks_gui_form_remove(form,gui,index);
+      dt_masks_gui_form_create(form,gui,index);
+      //we save the move
+      dt_masks_update_image(darktable.develop);
+    }
+    return 1;
+  }
   else if (which==3 && parentid>0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_clear_form_gui(darktable.develop);
@@ -1594,68 +1715,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     dt_masks_write_form(form,darktable.develop);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
-    return 1;
-  }
-  else if (gui->point_selected>=0 && which == 3)
-  {
-    //we remove the point (and the entire form if there is too few points)
-    if (g_list_length(form->points) < 2)
-    {
-      dt_masks_clear_form_gui(darktable.develop);
-      //we hide the form
-      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
-      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
-      else
-      {
-        GList *forms = g_list_first(darktable.develop->form_visible->points);
-        while (forms)
-        {
-          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-          if (gpt->formid == form->formid)
-          {
-            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
-            break;
-          }
-          forms = g_list_next(forms);
-        }
-      }
-
-      //we delete or remove the shape
-      dt_masks_form_remove(module,NULL,form);
-      dt_dev_masks_list_change(darktable.develop);
-      dt_control_queue_redraw_center();
-      return 1;
-    }
-    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
-    gui->point_selected = -1;
-    _brush_init_ctrl_points(form);
-
-    dt_masks_write_form(form,darktable.develop);
-
-    //we recreate the form points
-    dt_masks_gui_form_remove(form,gui,index);
-    dt_masks_gui_form_create(form,gui,index);
-    //we save the move
-    dt_masks_update_image(darktable.develop);
-
-    return 1;
-  }
-  else if (gui->feather_selected>=0 && which == 3)
-  {
-    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
-    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
-    {
-      point->state = DT_MASKS_POINT_STATE_NORMAL;
-      _brush_init_ctrl_points(form);
-
-      dt_masks_write_form(form,darktable.develop);
-
-      //we recreate the form points
-      dt_masks_gui_form_remove(form,gui,index);
-      dt_masks_gui_form_create(form,gui,index);
-      //we save the move
-      dt_masks_update_image(darktable.develop);
-    }
     return 1;
   }
 

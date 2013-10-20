@@ -10,6 +10,7 @@ include(CheckCCompilerFlag)
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
   "common/cache.c"
+  "common/calculator.c"
   "common/collection.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
@@ -29,7 +30,6 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c"
   "common/image_compression.c"
   "common/imageio.c"
-  "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"
   "common/imageio_module.c"
@@ -122,7 +122,7 @@ include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GTK2 2.22 REQUIRED gtk)
+find_package(GTK2 2.24 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
@@ -152,8 +152,16 @@ if(INOTIFY_FOUND)
   add_definitions(${INOTIFY_DEFINITIONS})
 endif(INOTIFY_FOUND)
 
+find_package(OpenEXR)
+if(OPENEXR_FOUND)
+  include_directories(${OpenEXR_INCLUDE_DIRS})
+  list(APPEND LIBS ${OpenEXR_LIBRARIES})
+  add_definitions(${OpenEXR_DEFINITIONS})
+  list(APPEND SOURCES "common/imageio_exr.cc")
+endif(OPENEXR_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 WebP)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -161,35 +169,48 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
 endforeach(lib)
 
 if(USE_LUA)
-	find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
-	if(LUA52_FOUND)
-		message(STATUS "Lua support: Enabled")
-		add_definitions("-DUSE_LUA")
-		include_directories(${LUA52_INCLUDE_DIRS})
-		list(APPEND LIBS ${LUA52_LIBRARIES})
-		FILE(GLOB SOURCE_FILES_LUA
-			"lua/call.c"
-			"lua/configuration.c"
-			"lua/database.c"
-			"lua/events.c"
-			"lua/film.c"
-			"lua/glist.c"
-			"lua/gui.c"
-			"lua/image.c"
-			"lua/init.c"
-			"lua/lua.c"
-			"lua/modules.c"
-			"lua/preferences.c"
-			"lua/print.c"
-			"lua/storage.c"
-			"lua/styles.c"
-			"lua/tags.c"
-			"lua/types.c"
-			)
-		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
-	else()
-		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
-	endif(LUA52_FOUND)
+  find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
+  if(LUA52_FOUND)
+    message(STATUS "Lua support: Enabled")
+    include_directories(${LUA52_INCLUDE_DIRS})
+    list(APPEND LIBS ${LUA52_LIBRARIES})
+  else()
+    if(DONT_USE_INTERNAL_LUA)
+	    message(STATUS "Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      set(USE_LUA OFF)
+    else(DONT_USE_INTERNAL_LUA)
+	    message(STATUS "Lua support: System library not found (using darktable's version)")
+      include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/lua/src)
+      add_subdirectory(external/lua)
+      list(APPEND LIBS lua)
+    endif(DONT_USE_INTERNAL_LUA)
+  endif(LUA52_FOUND)
+
+  if(USE_LUA)
+    add_definitions("-DUSE_LUA")
+    FILE(GLOB SOURCE_FILES_LUA
+      "lua/call.c"
+      "lua/configuration.c"
+      "lua/database.c"
+      "lua/events.c"
+      "lua/film.c"
+      "lua/glist.c"
+      "lua/gui.c"
+      "lua/image.c"
+      "lua/init.c"
+      "lua/lua.c"
+      "lua/modules.c"
+      "lua/preferences.c"
+      "lua/print.c"
+      "lua/storage.c"
+      "lua/styles.c"
+      "lua/tags.c"
+      "lua/types.c"
+      )
+    set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
+  endif(USE_LUA)
+else(USE_LUA)
+  message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
 if(USE_NLS)
@@ -506,8 +527,6 @@ else(USE_GEO)
   message(STATUS "Map mode: disabled")
 endif(USE_GEO)
 
-target_link_libraries(lib_darktable ${LIBS})
-
 # libcolord-gtk:
 if(USE_COLORD)
   find_package(Colord)
@@ -532,21 +551,22 @@ if(USE_SQUISH)
 add_dependencies(lib_darktable squish)
 add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-target_link_libraries(lib_darktable ${LIBS} squish_static)
+target_link_libraries(lib_darktable squish_static)
 add_subdirectory(external/squish)
 add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
 
 if(USE_LUA)
-	if(LUA52_FOUND)
-		# liblautoc for lua automated interface generation
-		add_dependencies(lib_darktable lautoc)
-		add_library(lautoc_static STATIC IMPORTED)
-		set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-		target_link_libraries(lib_darktable ${LIBS} lautoc_static)
-		include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
-		add_subdirectory(external/LuaAutoC)
-	endif(LUA52_FOUND)
+  if(NOT LUA52_FOUND)
+    add_dependencies(lib_darktable liblua) # 2nd half of the uglyness :/
+  endif(NOT LUA52_FOUND)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
 endif(USE_LUA)
 
 ###### GTK+3 port ######
@@ -566,8 +586,16 @@ add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
 #
 add_definitions("-DGSEAL_ENABLE")
 
+#
+#  Do not use deprecated symbols
+#
+add_definitions("-DGDK_DISABLE_DEPRECATED")
+add_definitions("-DGTK_DISABLE_DEPRECATED")
+add_definitions("-Werror=implicit-function-declaration")
+
 ###### GTK+3 port ######
 
+target_link_libraries(lib_darktable ${LIBS})
 
 install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
 # make sure static libs is first

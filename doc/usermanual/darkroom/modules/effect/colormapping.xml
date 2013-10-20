@@ -17,7 +17,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>This module transfers the look and feel from one image onto another. It statistically analysis
+						<entry>This module transfers the look and feel from one image onto another. It statistically analyses
                                                        the color characteristics of a source image and a target image. The colors of the source image
                                                        are then mapped to corresponding colors of the target image.
 						</entry>
@@ -86,7 +86,7 @@
 								<graphic fileref="darkroom/modules/images/colormapping_ex2.png" scalefit="1" width="90%" align="center" />
 							</entry>						
 							<entry><para>The target image taken in the afternoon with a partly clouded sky. Our goal is to transfer the evening
-                                                                     atmoshpere of the source image.</para></entry>
+                                                                     atmosphere of the source image.</para></entry>
 						</row>
 						<row>
 							<entry>

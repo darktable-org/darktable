@@ -274,6 +274,7 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str);
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form);
 void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
+int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

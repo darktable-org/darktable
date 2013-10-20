@@ -24,11 +24,12 @@ http://www.klauspost.com
 
 namespace RawSpeed {
 
-CameraSensorInfo::CameraSensorInfo(int black_level, int white_level, int min_iso, int max_iso) :
+CameraSensorInfo::CameraSensorInfo(int black_level, int white_level, int min_iso, int max_iso, vector<int> black_separate) :
 mBlackLevel(black_level),
 mWhiteLevel(white_level),
 mMinIso(min_iso), 
-mMaxIso(max_iso)
+mMaxIso(max_iso),
+mBlackLevelSeparate(black_separate)
 {
 }
 
