@@ -437,9 +437,9 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    (void)g_unlink(filename);
 
     dt_image_remove(imgid);
+    (void)g_unlink(filename);
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;

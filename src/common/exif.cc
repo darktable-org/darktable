@@ -1526,6 +1526,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
     // std::cerr << "[exiv2] " << s << std::endl;
+    return 1;
   }
   return 0;
 }

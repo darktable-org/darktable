@@ -439,7 +439,7 @@ void dt_control_create_database_schema()
                         "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
                         "caption varchar, description varchar, license varchar, sha1sum char(40), "
                         "orientation integer ,histogram blob, lightmap blob, longitude double, "
-                        "latitude double, color_matrix blob, colorspace integer)", NULL, NULL, NULL);
+                        "latitude double, color_matrix blob, colorspace integer, version integer, max_version integer)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
@@ -783,9 +783,16 @@ void dt_control_init(dt_control_t *s)
       // and the colorspace as specified in some image types
       sqlite3_exec(dt_database_get(darktable.db), "alter table images add column colorspace integer", NULL, NULL, NULL);
 
+
       // add column for styles'id
       sqlite3_exec(dt_database_get(darktable.db), "ALTER TABLE styles ADD COLUMN id INTEGER", NULL, NULL, NULL);
       sqlite3_exec(dt_database_get(darktable.db), "UPDATE styles SET id=rowid WHERE id IS NULL", NULL, NULL, NULL);
+
+      // add the version and max_version columns
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column version integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column max_version integer", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update images set max_version=(select count(*)-1 from images i where i.filename=images.filename and i.film_id=images.film_id) where max_version is NULL", NULL, NULL, NULL);
+      sqlite3_exec(dt_database_get(darktable.db), "update images set version=(select count(*) from images i where i.filename=images.filename and i.film_id=images.film_id and i.id<images.id) where version is NULL", NULL, NULL, NULL);
 
       dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
     }
