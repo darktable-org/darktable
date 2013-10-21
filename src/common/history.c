@@ -286,15 +286,24 @@ dt_history_get_items_as_string(int32_t imgid)
   const char *onoff[2] = {_("off"), _("on")};
   unsigned int count = 0;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled from history where imgid=?1 order by num desc", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select operation, enabled, multi_name from history where imgid=?1 order by num desc", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   // collect all the entries in the history from the db
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char name[512]= {0};
-    g_snprintf(name,512,"%s (%s)", dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 0)), (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1]);
-    items = g_list_append(items, g_strdup(name));
+    char *name = NULL, *multi_name = NULL;
+    const char *mn = (char*)sqlite3_column_text(stmt, 2);
+    if(mn && *mn && g_strcmp0(mn, " ") != 0)
+      multi_name = g_strconcat(" ", sqlite3_column_text(stmt, 2), NULL);
+    name = g_strconcat(dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 0)),
+                       multi_name?multi_name:"",
+                       " (",
+                       (sqlite3_column_int(stmt, 1)==0)?onoff[0]:onoff[1],
+                       ")",
+                       NULL);
+    items = g_list_append(items, name);
+    g_free(multi_name);
     count++;
   }
   return dt_util_glist_to_str("\n", items, count);
