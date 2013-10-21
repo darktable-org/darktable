@@ -1130,7 +1130,7 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
 #define COMPRESS_THRESHOLD 100
 
   char *output = NULL;
-  gboolean do_compress;
+  gboolean do_compress = FALSE;
 
   // if input data field exceeds a certain size we compress it and convert to base64;
   // main reason for compression: make more xmp data fit into 64k segment within
