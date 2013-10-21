@@ -626,8 +626,7 @@ static char *
 dt_style_encode(sqlite3_stmt *stmt, int row)
 {
   const int32_t len = sqlite3_column_bytes(stmt, row);
-  char *vparams = (char *)malloc(2*len + 1);
-  dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), vparams, len);
+  char *vparams = dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, row), len, NULL);
   return vparams;
 }
 
@@ -858,17 +857,16 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
   //
   const char *param_c = plugin->op_params->str;
   const int param_c_len = strlen(param_c);
-  const int params_len = param_c_len/2;
-  unsigned char *params = (unsigned char *)g_malloc(params_len);
-  dt_exif_xmp_decode(param_c, params, param_c_len);
+  int params_len = 0;
+  unsigned char *params = dt_exif_xmp_decode(param_c, param_c_len, &params_len);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 5, params, params_len, SQLITE_TRANSIENT);
   //
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 6, plugin->enabled);
 
   /* decode and store blendop params */
-  unsigned char *blendop_params = (unsigned char *)g_malloc(strlen(plugin->blendop_params->str));
-  dt_exif_xmp_decode(plugin->blendop_params->str, blendop_params, strlen(plugin->blendop_params->str));
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, strlen(plugin->blendop_params->str)/2, SQLITE_TRANSIENT);
+  int blendop_params_len = 0;
+  unsigned char *blendop_params = dt_exif_xmp_decode(plugin->blendop_params->str, strlen(plugin->blendop_params->str), &blendop_params_len);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 7, blendop_params, blendop_params_len, SQLITE_TRANSIENT);
 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, plugin->blendop_version);
 
@@ -877,7 +875,7 @@ dt_style_plugin_save(StylePluginData *plugin,gpointer styleId)
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  g_free(params);
+  free(params);
 }
 
 static void
