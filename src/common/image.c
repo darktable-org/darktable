@@ -26,6 +26,7 @@
 #include "common/grouping.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
+#include "common/history.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -988,6 +989,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   sqlite3_stmt *stmt;
   gchar srcpath[DT_MAX_PATH_LEN] = {0};
   gchar *newdir = NULL;
+  gchar *filename = NULL;
   gboolean from_cache = FALSE;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1032,21 +1034,24 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
                                   "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
                                   "raw_auto_bright_threshold, raw_black, raw_maximum, "
                                   "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-                                  "longitude, latitude, color_matrix, colorspace, 0, 0 "
+                                  "longitude, latitude, color_matrix, colorspace, -1, -1 "
                                   "from images where id = ?2", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select a.id from images as a join images as b where "
+                                  "select a.id, a.filename from images as a join images as b where "
                                   "a.film_id = ?1 and a.filename = b.filename and "
                                   "b.id = ?2 order by a.id desc", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
       if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
         newid = sqlite3_column_int(stmt, 0);
+        filename = g_strdup((gchar *) sqlite3_column_text(stmt, 1));
+      }
       sqlite3_finalize(stmt);
 
       if(newid != -1)
@@ -1081,9 +1086,47 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
+        // get max_version of image duplicates in destination filmroll
+        int32_t max_version = -1;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "select max(a.max_version) from images as a join images as b where "
+                                    "a.film_id = b.film_id and a.filename = b.filename and "
+                                    "b.id = ?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
+
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+          max_version = sqlite3_column_int(stmt, 0);
+        sqlite3_finalize(stmt);
+
+        // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
+        max_version = (max_version >= 0) ? max_version + 1 : 0;
+        int32_t version = max_version;
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "update images set version=?1 where id = ?2",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, version);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, newid);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "update images set max_version=?1 where film_id = ?2 and filename = ?3",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, max_version);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, filmid);
+        DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, filename, strlen(filename),
+                                 SQLITE_TRANSIENT);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        dt_history_copy_and_paste_on_image(imgid, newid, FALSE, NULL);
+
         // write xmp file
         dt_image_write_sidecar_file(newid);
       }
+
+      g_free(filename);
     }
     else
     {
