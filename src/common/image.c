@@ -584,6 +584,10 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
   img->group_id = group_id;
 
+  // write through to db, but not to xmp.
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+  dt_image_cache_read_release(darktable.image_cache, img);
+
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
   char dtfilename[DT_MAX_PATH_LEN];
@@ -592,10 +596,6 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   char *c = dtfilename + strlen(dtfilename);
   sprintf(c, ".xmp");
   (void)dt_exif_xmp_read(img, dtfilename, 0);
-
-  // write through to db, but not to xmp.
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-  dt_image_cache_read_release(darktable.image_cache, img);
 
   // add a tag with the file extension
   guint tagid = 0;
