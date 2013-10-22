@@ -294,7 +294,7 @@ dt_history_get_items_as_string(int32_t imgid)
   {
     char *name = NULL, *multi_name = NULL;
     const char *mn = (char*)sqlite3_column_text(stmt, 2);
-    if(mn && *mn && g_strcmp0(mn, " ") != 0)
+    if(mn && *mn && g_strcmp0(mn, " ") != 0 && g_strcmp0(mn, "0") != 0)
       multi_name = g_strconcat(" ", sqlite3_column_text(stmt, 2), NULL);
     name = g_strconcat(dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 0)),
                        multi_name?multi_name:"",
