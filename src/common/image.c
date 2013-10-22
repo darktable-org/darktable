@@ -1030,6 +1030,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
   gboolean from_cache = TRUE;
   dt_image_full_path(imgid, destpath, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_path_append_version(imgid, destpath, DT_MAX_PATH_LEN);
   g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
 
   if (from_cache && g_file_test(destpath, G_FILE_TEST_EXISTS))
