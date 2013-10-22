@@ -1274,6 +1274,9 @@ unsigned char *dt_exif_xmp_decode (const char *input, const int len, int *output
     // 97-102 a-f
 #define TO_BINARY(a) (a > 57 ? a - 97 + 10 : a - 48)
 
+    // make sure that we don't find any unexpected characters indicating corrupted data
+    if(strspn(input, "0123456789abcdef") != strlen(input)) return NULL;
+
     output = (unsigned char *)malloc(len/2);
     if(!output) return NULL;
 
