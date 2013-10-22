@@ -38,6 +38,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <glob.h>
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
@@ -432,14 +433,61 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     sqlite3_clear_bindings(stmt);
 
     // remove from disk:
-    if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
+    if(duplicates == 1)
+    {
+      // there are no further duplicates so we can remove the source data file
       (void)g_unlink(filename);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
+      dt_image_remove(imgid);
 
-    dt_image_remove(imgid);
-    (void)g_unlink(filename);
+      // all sidecar files - including left-overs - can be deleted;
+      // left-overs can result when previously duplicates have been REMOVED;
+      // no need to keep them as the source data file is gone.
+      glob_t *globbuf = g_malloc(sizeof(glob_t));
+      memset((void *)globbuf, 0, sizeof(glob_t));
+
+      const int len = DT_MAX_PATH_LEN + 30;
+      gchar pattern[len];
+
+      // NULL terminated list of glob patterns; should include "" and can be extended if needed
+      gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+
+      int round = 0;
+      gchar **glob_pattern = glob_patterns;
+      while(*glob_pattern)
+      {
+        g_snprintf(pattern, len, "%s", filename);
+        gchar *c1 = pattern + strlen(pattern);
+        while(*c1 != '.' && c1 > pattern) c1--;
+        snprintf(c1, pattern + len - c1, *glob_pattern);
+        const gchar *c2 = filename + strlen(filename);
+        while(*c2 != '.' && c2 > filename) c2--;
+        snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+
+        glob(pattern, (round > 0) ? GLOB_APPEND : 0, NULL, globbuf);
+
+        round++;
+        glob_pattern++;
+      }
+
+      for (size_t i=0; i < globbuf->gl_pathc; i++)
+        (void)g_unlink(globbuf->gl_pathv[i]);
+
+      globfree(globbuf);
+
+      g_free(globbuf);
+    }
+    else
+    {
+      // don't remove the actual source data if there are further duplicates using it;
+      // just delete the xmp file of the duplicate selected.
+
+      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
+      char *c = filename + strlen(filename);
+      sprintf(c, ".xmp");
+
+      dt_image_remove(imgid);
+      (void)g_unlink(filename);
+    }
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
