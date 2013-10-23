@@ -559,10 +559,10 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   gchar **glob_pattern = glob_patterns;
   while(*glob_pattern)
   {
-    g_snprintf(pattern, len, "%s", filename);
+    snprintf(pattern, len, "%s", filename);
     gchar *c1 = pattern + strlen(pattern);
     while(*c1 != '.' && c1 > pattern) c1--;
-    snprintf(c1, pattern + len - c1, *glob_pattern);
+    snprintf(c1, pattern + len - c1, "%s", *glob_pattern);
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
