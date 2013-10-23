@@ -192,6 +192,10 @@ static void dt_control_sanitize_database()
                         "operation varchar(256) UNIQUE ON CONFLICT REPLACE, op_params blob, enabled integer, "
                         "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))",
                         NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
+                        "CREATE TABLE MEMORY.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
+                        "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
+                        "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))", NULL, NULL, NULL);
 
   // create a table legacy_presets with all the presets from pre-auto-apply-cleanup darktable.
   dt_legacy_presets_create();
