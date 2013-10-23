@@ -345,6 +345,10 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
       break;
     }
   }
+
+  /* Within the given sort order we additionally sort by duplicate version */
+  sq = dt_util_dstrcat(sq, ", %s", "version");
+
   return sq;
 }
 

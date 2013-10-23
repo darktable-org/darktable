@@ -842,6 +842,7 @@ void dt_image_init(dt_image_t *img)
   img->group_id = -1;
   img->flags = 0;
   img->id = -1;
+  img->version = -1;
   img->exif_inited = 0;
   memset(img->exif_maker, 0, sizeof(img->exif_maker));
   memset(img->exif_model, 0, sizeof(img->exif_model));

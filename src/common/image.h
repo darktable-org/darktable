@@ -98,7 +98,7 @@ typedef struct dt_image_t
   // common stuff
   int32_t width, height;
   // used by library
-  int32_t num, flags, film_id, id, group_id;
+  int32_t num, flags, film_id, id, group_id, version;
 
   uint32_t filters;          // demosaic pattern
   int32_t bpp;               // bytes per pixel
