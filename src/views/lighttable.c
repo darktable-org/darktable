@@ -1028,6 +1028,92 @@ failure:
     dt_mipmap_cache_print(darktable.mipmap_cache);
 }
 
+#define USE_CDF22
+#ifdef USE_CDF22
+#define gbuf(BUF, A, B) ((BUF)[4*(width*((B)) + ((A))) + ch])
+static void _lighttable_cdf22_wtf(uint8_t *buf, const int l, const int width, const int height)
+{
+  // const int wd = (int)(1 + (width>>(l-1))), ht = (int)(1 + (height>>(l-1)));
+  const int ch = 1;
+
+  const int step = 1<<l;
+  const int st = step/2;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    // rows
+    // predict, get detail
+    int i = st;
+    for(; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) = CLAMP((float)gbuf(buf, i, j) - .5f*(gbuf(buf, i-st, j) + gbuf(buf, i+st, j))+127.0, 0, 255);
+    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = CLAMP(127.0 + gbuf(buf, i, j) - gbuf(buf, i-st, j), 0, 255);
+    // update coarse
+    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) += gbuf(buf, st, j)*0.5f - 127.0;
+    for(i=step; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) += .25f*(-254.0 + gbuf(buf, i-st, j) + gbuf(buf, i+st, j));
+    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i-st, j)*.5f - 127.0;
+  }
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#endif
+  for(int i=0; i<width; i++)
+  {
+    // cols
+    int j = st;
+    // predict, get detail
+    for(; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) = CLAMP((float)gbuf(buf, i, j) - .5f*(gbuf(buf, i, j-st) + gbuf(buf, i, j+st)) + 127.0, 0, 255);
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = CLAMP(gbuf(buf, i, j) - gbuf(buf, i, j-st)+127.0, 0, 255);
+    // update
+    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) += gbuf(buf, i, st)*0.5-127;
+    for(j=step; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) += .25f*(-254.0 + gbuf(buf, i, j-st) + gbuf(buf, i, j+st));
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i, j-st)*.5f-127;
+  }
+}
+#undef gbuf
+#endif
+
+#define FOCUS_THRS 20
+static void _lighttable_update_focus(dt_focus_cluster_t *f, int i, int j, int wd, int ht, int diff)
+{
+  const int32_t thrs = FOCUS_THRS;
+  if(diff > thrs)
+  {
+    // lib->full_res_thumb[index+2] = 255;
+    int fx = i/(float)wd * 7;
+    int fy = j/(float)ht * 7;
+    int fi = 7*fy + fx;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].x += i;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].y += j;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].x2 += (float)i*i;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].y2 += (float)j*j;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].n ++;
+#ifdef _OPENMP
+#pragma omp atomic
+#endif
+    f[fi].thrs += diff;
+  }
+}
+
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
  */
@@ -1129,6 +1215,40 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       // mark in-focus pixels:
       const int ht = lib->full_res_thumb_ht;
       const int wd = lib->full_res_thumb_wd;
+#ifdef USE_CDF22 // two-stage haar wavelet transform, use HH1 and HH2 to detect very sharp and sharp spots:
+      _lighttable_cdf22_wtf(lib->full_res_thumb, 1, wd, ht);
+      // go through HH1 and detect sharp clusters:
+      memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(shared)
+#endif
+      for(int j=1;j<ht-1;j+=2)
+        for(int i=1;i<wd-1;i+=2)
+          _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(lib->full_res_thumb[4*(j*wd + i) + 1] - 127));
+
+#if 1 // second pass, HH2
+      int num_clusters = 0;
+      for(int k=0;k<49;k++)
+        if(lib->full_res_focus[k].n > wd*ht/49.0f * 0.01f) num_clusters ++;
+      fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
+      if(num_clusters < 1)
+      {
+        memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
+        _lighttable_cdf22_wtf(lib->full_res_thumb, 2, wd, ht);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(shared)
+#endif
+        for(int j=2;j<ht-1;j+=4)
+          for(int i=2;i<wd-1;i+=4)
+            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(lib->full_res_thumb[4*(j*wd + i) + 1]-127));
+        num_clusters = 0;
+        for(int k=0;k<49;k++)
+          if(lib->full_res_focus[k].n > wd*ht/49.0f * 0.01f) num_clusters ++;
+        fprintf(stderr, "found %d HH2 clusters\n", num_clusters);
+      }
+#endif
+
+#else // simple high pass filter, doesn't work on slighty unsharp/high iso images
       memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
@@ -1138,46 +1258,17 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         int index = 4*j*wd+4;
         for(int i=1;i<wd-1;i++)
         {
-          const int32_t thrs = 20;
           int32_t diff = 4*lib->full_res_thumb[index+1]
                          - lib->full_res_thumb[index-4+1]
                          - lib->full_res_thumb[index+4+1]
                          - lib->full_res_thumb[index-4*wd+1]
                          - lib->full_res_thumb[index+4*wd+1];
-          if(abs(diff) > thrs)
-          {
-            lib->full_res_thumb[index+2] = 255;
-            int fx = i/(float)wd * 7;
-            int fy = j/(float)ht * 7;
-            int fi = 7*fy + fx;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].x += i;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].y += j;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].x2 += (float)i*i;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].y2 += (float)j*j;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].n ++;
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-            lib->full_res_focus[fi].thrs += abs(diff);
-          }
+          _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(diff));
           index += 4;
         }
       }
+#endif
+      // normalize data in clusters:
       for(int k=0;k<49;k++)
       {
         lib->full_res_focus[k].thrs /= (float)lib->full_res_focus[k].n;
@@ -1229,7 +1320,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     // draw clustered focus regions
     for(int k=0;k<49;k++)
     {
-      const float intens = (lib->full_res_focus[k].thrs - 20.0f)/20.f;
+      const float intens = (lib->full_res_focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
       if(lib->full_res_focus[k].n > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
       // if(intens > 0.5f)
       {
