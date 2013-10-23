@@ -95,7 +95,7 @@ _dt_style_cleanup_multi_instance(int id)
      SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a style has
      never a huge number of items that's not a real issue. */
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE style_items SET multi_priority=(SELECT COUNT(0)-1 FROM style_items sty2 WHERE sty2.num>=style_items.num AND sty2.operation=style_items.operation AND sty2.styleid=?1), multi_name=multi_priority WHERE styleid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE style_items SET multi_priority=(SELECT COUNT(0)-1 FROM style_items sty2 WHERE sty2.multi_priority<=style_items.multi_priority AND sty2.operation=style_items.operation AND sty2.styleid=?1) WHERE styleid=?1 ORDER BY multi_priority ASC LIMIT (SELECT COUNT(*) FROM style_items WHERE styleid=?1)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -435,11 +435,23 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     if (sqlite3_step (stmt) == SQLITE_ROW) offs = sqlite3_column_int (stmt, 0);
     sqlite3_finalize (stmt);
 
-    /* copy history items from styles onto image */
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into history (imgid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num+?2,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?3", -1, &stmt, NULL);
+    /* delete all items from the temp styles_items, this table is used only to get a ROWNUM of the results */
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.style_items",NULL,NULL,NULL);
+
+    /* copy history items from styles onto temp table */
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO MEMORY.style_items SELECT * FROM style_items WHERE styleid=?1 ORDER BY multi_priority DESC;", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+
+    /* copy the style items into the history */
+    DT_DEBUG_SQLITE3_PREPARE_V2
+      (dt_database_get(darktable.db),
+       "INSERT INTO history (imgid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) SELECT ?1,?2+rowid,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name FROM MEMORY.style_items", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newimgid);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, offs);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, id);
     sqlite3_step (stmt);
     sqlite3_finalize (stmt);
 
