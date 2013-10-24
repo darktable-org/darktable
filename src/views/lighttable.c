@@ -1031,10 +1031,20 @@ failure:
 #define USE_CDF22
 #ifdef USE_CDF22
 #define gbuf(BUF, A, B) ((BUF)[4*(width*((B)) + ((A))) + ch])
-static void _lighttable_cdf22_wtf(uint8_t *buf, const int l, const int width, const int height)
+static inline uint8_t _to_uint8(int i)
+{
+  // fprintf(stderr, "detail = %d\n", i);
+  return (uint8_t)CLAMP(i + 127, 0, 255);
+}
+static inline int _from_uint8(uint8_t i)
+{
+  return i - 127;
+}
+#define CHANNEL 1
+static inline void _lighttable_cdf22_wtf(uint8_t *buf, const int l, const int width, const int height)
 {
   // const int wd = (int)(1 + (width>>(l-1))), ht = (int)(1 + (height>>(l-1)));
-  const int ch = 1;
+  const int ch = CHANNEL;
 
   const int step = 1<<l;
   const int st = step/2;
@@ -1048,13 +1058,13 @@ static void _lighttable_cdf22_wtf(uint8_t *buf, const int l, const int width, co
     // predict, get detail
     int i = st;
     for(; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) = CLAMP((float)gbuf(buf, i, j) - .5f*(gbuf(buf, i-st, j) + gbuf(buf, i+st, j))+127.0, 0, 255);
-    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = CLAMP(127.0 + gbuf(buf, i, j) - gbuf(buf, i-st, j), 0, 255);
+        gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i-st, j) + (int)gbuf(buf, i+st, j))/2);
+    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = _to_uint8(gbuf(buf, i, j) - gbuf(buf, i-st, j));
     // update coarse
-    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) += gbuf(buf, st, j)*0.5f - 127.0;
+    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) += _from_uint8(gbuf(buf, st, j))/2;
     for(i=step; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += .25f*(-254.0 + gbuf(buf, i-st, j) + gbuf(buf, i+st, j));
-    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i-st, j)*.5f - 127.0;
+        gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i-st, j)) + _from_uint8(gbuf(buf, i+st, j)))/4;
+    if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += _from_uint8(gbuf(buf, i-st, j))/2;
   }
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(buf) schedule(static)
@@ -1065,19 +1075,62 @@ static void _lighttable_cdf22_wtf(uint8_t *buf, const int l, const int width, co
     int j = st;
     // predict, get detail
     for(; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) = CLAMP((float)gbuf(buf, i, j) - .5f*(gbuf(buf, i, j-st) + gbuf(buf, i, j+st)) + 127.0, 0, 255);
-    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = CLAMP(gbuf(buf, i, j) - gbuf(buf, i, j-st)+127.0, 0, 255);
+        gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i, j-st) + (int)gbuf(buf, i, j+st))/2);
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - (int)gbuf(buf, i, j-st));
     // update
-    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) += gbuf(buf, i, st)*0.5-127;
+    /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) += _from_uint8(gbuf(buf, i, st))/2;
     for(j=step; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += .25f*(-254.0 + gbuf(buf, i, j-st) + gbuf(buf, i, j+st));
-    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i, j-st)*.5f-127;
+        gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i, j-st)) + _from_uint8(gbuf(buf, i, j+st)))/4;
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += _from_uint8(gbuf(buf, i, j-st))/2;
   }
 }
+// inverse wavelet transform, for debugging
+static inline void _lighttable_iwtf(uint8_t *buf, const int l, const int width, const int height)
+{
+  const int step = 1<<l;
+  const int st = step/2;
+
+  const int ch = CHANNEL;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#endif
+  for(int i=0; i<width; i++)
+  {
+    //cols
+    int j;
+    // update coarse
+    /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) -= gbuf(buf, i, st)*0.5f;
+    for(j=step; j<height-st; j+=step) /*for(int ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) -= (gbuf(buf, i, j-st) + gbuf(buf, i, j+st))/4;
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) -= gbuf(buf, i, j-st)/2;
+    // predict
+    for(j=st; j<height-st; j+=step) /*for(int ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) += (gbuf(buf, i, j-st) + gbuf(buf, i, j+st))/2;
+    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i, j-st);
+  }
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    // rows
+    int i;
+    // update
+    /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) -= gbuf(buf, st, j)/2;
+    for(i=step; i<width-st; i+=step) /*for(int ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) -= (gbuf(buf, i-st, j) + gbuf(buf, i+st, j))/4;
+    if(i < width) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) -= gbuf(buf, i-st, j)/2;
+    // predict
+    for(i=st; i<width-st; i+=step) /*for(int ch=0; ch<3; ch++)*/
+        gbuf(buf, i, j) += (gbuf(buf, i-st, j) + gbuf(buf, i+st, j))/2;
+    if(i < width) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i-st, j);
+  }
+}
+
 #undef gbuf
 #endif
 
-#define FOCUS_THRS 20
+#define FOCUS_THRS 10
 static void _lighttable_update_focus(dt_focus_cluster_t *f, int i, int j, int wd, int ht, int diff)
 {
   const int32_t thrs = FOCUS_THRS;
@@ -1216,15 +1269,20 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       const int ht = lib->full_res_thumb_ht;
       const int wd = lib->full_res_thumb_wd;
 #ifdef USE_CDF22 // two-stage haar wavelet transform, use HH1 and HH2 to detect very sharp and sharp spots:
-      _lighttable_cdf22_wtf(lib->full_res_thumb, 1, wd, ht);
+      // pretend we already did the first step (coarse will stay in place, maybe even where the pre-demosaic sample was at)
+      // _lighttable_cdf22_wtf(lib->full_res_thumb, 1, wd, ht);
+      _lighttable_cdf22_wtf(lib->full_res_thumb, 2, wd, ht);
       // go through HH1 and detect sharp clusters:
       memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-      for(int j=1;j<ht-1;j+=2)
-        for(int i=1;i<wd-1;i+=2)
-          _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(lib->full_res_thumb[4*(j*wd + i) + 1] - 127));
+      for(int j=0;j<ht-1;j+=4)
+        for(int i=0;i<wd-1;i+=4)
+        {
+          _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(_from_uint8(lib->full_res_thumb[4*((j+2)*wd + i) + CHANNEL])));
+          _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(_from_uint8(lib->full_res_thumb[4*(j*wd + i+2) + CHANNEL])));
+        }
 
 #if 1 // second pass, HH2
       int num_clusters = 0;
@@ -1234,19 +1292,23 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       if(num_clusters < 1)
       {
         memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
-        _lighttable_cdf22_wtf(lib->full_res_thumb, 2, wd, ht);
+        _lighttable_cdf22_wtf(lib->full_res_thumb, 3, wd, ht);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-        for(int j=2;j<ht-1;j+=4)
-          for(int i=2;i<wd-1;i+=4)
-            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, abs(lib->full_res_thumb[4*(j*wd + i) + 1]-127));
+        for(int j=0;j<ht-1;j+=8)
+          for(int i=0;i<wd-1;i+=8)
+          {
+            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 4*abs(_from_uint8(lib->full_res_thumb[4*((j+4)*wd + i) + CHANNEL])));
+            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 4*abs(_from_uint8(lib->full_res_thumb[4*(j*wd + i+4) + CHANNEL])));
+          }
         num_clusters = 0;
         for(int k=0;k<49;k++)
-          if(lib->full_res_focus[k].n > wd*ht/49.0f * 0.01f) num_clusters ++;
-        fprintf(stderr, "found %d HH2 clusters\n", num_clusters);
+          if(lib->full_res_focus[k].n*4 > wd*ht/49.0f * 0.01f) num_clusters ++;
+        fprintf(stderr, "found %d HL2/LH2 clusters\n", num_clusters);
       }
 #endif
+#undef CHANNEL
 
 #else // simple high pass filter, doesn't work on slighty unsharp/high iso images
       memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
