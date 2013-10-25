@@ -38,6 +38,12 @@
 		</para>
         </sect4>
 
+        <sect4><title>store xmp tags in compressed format</title>
+                <para>Entries in XMP tags can get rather large and may exceed the available space to store the history stack in output files. This option allows binary XMP tags to be compressed in
+                      order to save space. Available options are <quote>never</quote>, <quote>always</quote>, and <quote>only large entries</quote> (default).
+                </para>
+        </sect4>
+
 	<sect4><title>activate opencl support</title>
 		<para>darktable can use your GPU to speed up processing significantly. Interface OpenCL requires suitable hardware and matching OpenCL drivers on your system. If one of those is not found
                       the option is greyed out. Can be switched on and off at any time and takes immediate effect (default on).
@@ -56,18 +62,20 @@
         </sect4>
 
 	<sect4><title>demosaicing for zoomed out darkroom mode</title>
-		<para>Interpolation when not viewing 1:1 in darkroom mode: "always bilinear (fast)" is fastest, but not as sharp. "at most ppg (reasonable)" is using ppg + interpolation modes specified below, 
-                      "full (possibly slow)" will use exactly the settings for full-size export (default "at most ppg (reasonable)").
+		<para>Interpolation when not viewing 1:1 in darkroom mode: <quote>always bilinear (fast)</quote> is fastest, but not as sharp. <quote>at most ppg (reasonable)</quote>
+                      is using ppg + interpolation modes specified below, 
+                      <quote>full (possibly slow)</quote> will use exactly the settings for full-size export (default <quote>at most ppg (reasonable)</quote>).
 		</para>
         </sect4>
 
 	<sect4><title>pixel interpolator</title>
-		<para>Pixel interpolator used in rotation, lens correction, up- and downscaling; options are "bilinear", "bicubic", "lanczos2", "lanczos3" (default "lanczos3").
+		<para>Pixel interpolator used in rotation, lens correction, up- and downscaling; options are <quote>bilinear</quote>, <quote>bicubic</quote>, <quote>lanczos2</quote>,
+                      <quote>lanczos3</quote> (default).
 		</para>
         </sect4>
 
 	<sect4><title>password storage backend to use</title>
-		<para>The storage backend for password storage. Options: "none", "kwallet", "gnome keyring" (default none).
+		<para>The storage backend for password storage. Options: <quote>none</quote>, <quote>kwallet</quote>, <quote>gnome keyring</quote> (default none).
 		</para>
         </sect4>
 

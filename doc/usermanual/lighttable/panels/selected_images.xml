@@ -26,35 +26,37 @@
                         </indexterm>
 			<para>Remove the selected images from the darktable database. Those images will not be shown
 			in lighttable anymore, but remain on the filesystem. As darktable stores XMP files with your development
-                                      parameters on disk, you can later fully reconstruct your work by just re-importing the images. When
-                                      backing up your RAWs make sure to also save the XMP files!
-			</para>
-                        <para><emphasis>Caution: if you are removing an image with duplicates, darktable only keeps an XMP file of the first instance -
-                        all other instance's XMP files will be deleted. If you intend to keep them make sure to backup the corresponding XMP files before removing
-                        an image.</emphasis>
+                        parameters on disk, you can later fully reconstruct your work by just re-importing the images.
                         </para>
+                        <para>When backing up your RAWs make sure to also save the XMP files!
+			</para>
 		</sect4>
 		<sect4><title>delete</title>
                         <indexterm>
                            <primary>delete images</primary>
                         </indexterm>
 			<para>Physically delete selected images from filesystem. See also preference option <quote>ask before erasing images from disk</quote>
-                              (<xref linkend="gui_options"/>). If this option is not active, darktable will delete the file(s) without further question! This is 
+                              (<xref linkend="gui_options"/>). If this configuration option is not active, darktable will delete the file(s) without further question! This is 
                                irreversible, and will also erase your development work of these images.
 			</para>
+                        <para>When deleting an image with duplicates, darktable keeps the original input file on disk until the last of the duplicates gets deleted.
+                        </para>
 		</sect4>
 		<sect4><title>move</title>
                         <indexterm>
                            <primary>move images</primary>
                         </indexterm>
-			<para>Physically move selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+			<para>Physically move selected images (parent file plus all accompanying XMP sidecar files) to another filesystem folder. darktable does not
+                        overwrite images in the target folder. If an input image with the given filename already exists in the target folder the source image is not moved
+                        but kept where it is.
 			</para>
 		</sect4>
 		<sect4><title>copy</title>
                         <indexterm>
                            <primary>copy images</primary>
                         </indexterm>
-			<para>Physically copy selected images (parent file plus accompanying .xmp sidecar file) to another filesystem folder.
+			<para>Physically copy selected images (parent file plus accompanying XMP sidecar file) to another filesystem folder. If an image with the given name
+                        already exists in the target folder it does not get overwritten - instead a new duplicate with the given history stack is generated.
 			</para>
 		</sect4>
 		<sect4><title>create hdr</title>
@@ -71,9 +73,8 @@
                         <indexterm>
                            <primary>create images</primary>
                         </indexterm>
-			<para>Create a virtual copy of selected images within darktable, but not physically on
-			your filesystem. It allows testing different developments for the same image, for example. Duplicate images
-                                      share the same parent input file, but each have their own .xmp sidecar file.
+			<para>Create a virtual copy of selected images within darktable. It allows testing different developments for the same image, for example. 
+                              Duplicate images share the same parent input file, but each have their own XMP sidecar file.
 			</para>
 		</sect4>
 		<sect4><title>rotation</title>

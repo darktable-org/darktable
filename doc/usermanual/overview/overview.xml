@@ -272,7 +272,7 @@
            			<para>The best starting point for noise reduction is <link linkend="denoise_profiled"><emphasis>profiled denoise</emphasis></link>. This module offers 
                                       an almost <quote>single-click</quote> solution to fight noise. From a user perspective the effect only depends on camera type and ISO value, both 
                                       derived from EXIF data. All other settings are taken from
-                                      a database of noise profiles that the darktable team has collected - now covering already over 70 popular camera models.
+                                      a database of noise profiles that the darktable team has collected - now covering already over 100 popular camera models.
                                       In addition you have several other options in darktable to reduce noise. There is <link linkend="raw_denoise"><emphasis>raw denoise</emphasis></link>, 
                                       <link linkend="denoise_bilateral"><emphasis>denoising based on bilateral filter</emphasis></link>, <link linkend="denoise_non_local_means">
                                       <emphasis>denoising based on non-local means</emphasis></link>, and <link linkend="equalizer"><emphasis>equalizer</emphasis></link>, which is based on wavelets. 

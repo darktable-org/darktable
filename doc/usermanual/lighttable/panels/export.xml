@@ -132,8 +132,9 @@
                                               as XMP tags within the output file. This information can later be used to reconstruct your parameters and settings that have produced the exported 
                                               image (see <xref linkend="history_stack"/>).
                                         </para>
-                                        <para><emphasis>Caution: for various reasons embedding XMP tags into output files may fail without notice. Users are therefore advised to not rely their backup
-                                              strategy on this feature.</emphasis>
+                                        <para><emphasis>Caution: for various reasons embedding XMP tags into output files may fail without notice, eg. if certain size limits are exceeded. 
+                                              Users are therefore advised to not rely their backup strategy on this feature. To backup your data make sure to save your input (RAW) file as well
+                                              as all of darktable's XMP sidecar files.</emphasis>
                                         </para>
                                         <para>
                                               If you don't want to distribute history stack data with your images, there are various tools to delete embedded XMP tags. As an example 
