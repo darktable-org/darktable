@@ -179,7 +179,7 @@
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
 		<Crop x="64" y="52" width="4752" height="3158"/>
-		<Sensor black="1020" white="16383"/>
+		<Sensor black="1020" white="13653"/>
 		<BlackAreas>
 			<Vertical x="0" width="60"/>
 			<Horizontal y="2" height="46"/>
@@ -187,11 +187,11 @@
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 50D" mode="sRaw1">
 		<Crop x="0" y="0" width="3272" height="2178"/>
-		<Sensor black="0" white="65535"/>
+		<Sensor black="0" white="53000"/>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 50D" mode="sRaw2">
 		<Crop x="0" y="0" width="2376" height="1584"/>
-		<Sensor black="0" white="65535"/>
+		<Sensor black="0" white="53000"/>
 	</Camera>
 	<Camera make="Canon" model="Canon EOS 60D" decoder_version="1">
 		<CFA width="2" height="2">
@@ -2013,7 +2013,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-192" height="0"/>
+		<Crop x="0" y="0" width="-194" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -2027,7 +2027,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-192" height="0"/>
+		<Crop x="0" y="0" width="-194" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -2041,7 +2041,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-192" height="0"/>
+		<Crop x="0" y="0" width="-194" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
@@ -2070,7 +2070,7 @@
 			<Color x="0" y="1">RED</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="0" y="0" width="-192" height="0"/>
+		<Crop x="0" y="0" width="-194" height="0"/>
 		<Sensor black="155" white="3956"/>
 		<Sensor black="165" white="3941" iso_min="6400"/>
 		<Hints>
