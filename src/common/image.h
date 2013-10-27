@@ -98,7 +98,7 @@ typedef struct dt_image_t
   // common stuff
   int32_t width, height;
   // used by library
-  int32_t num, flags, film_id, id, group_id;
+  int32_t num, flags, film_id, id, group_id, version;
 
   uint32_t filters;          // demosaic pattern
   int32_t bpp;               // bytes per pixel
@@ -137,10 +137,16 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, int len);
 void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */
 void dt_image_print_exif(const dt_image_t *img, char *line, int len);
+/** look for duplicate's xmp files and read them. */
+void dt_image_read_duplicates(const uint32_t id, const char *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
 uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
+/** duplicates the given image in the database with the duplicate getting the supplied version number. if that version
+    already exists just return the imgid without producing new duplicate. called with newversion -1 a new duplicate
+    is produced with the next free version number. */
+int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion);
 /** duplicates the given image in the database. */
 int32_t dt_image_duplicate(const int32_t imgid);
 /** flips the image, clock wise, if given flag. */

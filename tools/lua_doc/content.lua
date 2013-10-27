@@ -270,6 +270,8 @@ darktable.modules.format.png:set_alias(darktable.modules.format.copy)
 darktable.modules.format.png:set_alias(darktable.modules.format.pfm)
 darktable.modules.format.png:set_alias(darktable.modules.format.jpeg)
 darktable.modules.format.png:set_alias(darktable.modules.format.ppm)
+darktable.modules.format.png:set_alias(darktable.modules.format.webp)
+darktable.modules.format.png:set_alias(darktable.modules.format.j2k)
 
 darktable.modules.storage:set_text([[functions to get parameter objects for the different export storages.
 

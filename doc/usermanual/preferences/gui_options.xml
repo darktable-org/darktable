@@ -92,7 +92,8 @@
         </sect4>
 
 	<sect4><title>compression of thumbnail images</title>
-		<para>Controls the compression of thumbnail images in memory and on disk. Options: "off", "low quality (fast)", "high quality (slow)"; (default off).
+		<para>Controls the compression of thumbnail images in memory and on disk. Options: <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+                (default off).
 		</para>
         </sect4>
 

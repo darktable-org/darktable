@@ -42,6 +42,10 @@ int dt_lua_push_darktable_lib(lua_State* L);
 void dt_lua_goto_subtable(lua_State *L,const char* sub_name);
 
 
+void dt_lua_init_lock();
+void dt_lua_lock();
+void dt_lua_unlock();
+
 #define dt_lua_debug_stack(L) dt_lua_debug_stack_internal(L,__FUNCTION__,__LINE__)
 void dt_lua_debug_stack_internal(lua_State *L, const char* function, int line);
 #define dt_lua_debug_table(L,index) dt_lua_debug_table_internal(L,index,__FUNCTION__,__LINE__)

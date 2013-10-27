@@ -38,7 +38,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
   // load stuff from db and store in cache:
   char *str;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters, longitude, latitude, color_matrix, colorspace from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id, group_id, film_id, width, height, filename, maker, model, lens, exposure, aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, raw_parameters, longitude, latitude, color_matrix, colorspace, version from images where id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -87,6 +87,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     img->profile = NULL;
     img->profile_size = 0;
     img->colorspace = sqlite3_column_int(stmt, 22);
+    img->version = sqlite3_column_int(stmt, 23);
 
     // buffer size?
     if(img->flags & DT_IMAGE_LDR)

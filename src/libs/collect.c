@@ -31,8 +31,6 @@
 #include "libs/collect.h"
 #include "views/view.h"
 
-#include <regex.h>
-
 DT_MODULE(1)
 
 #define MAX_RULES 10
@@ -773,7 +771,6 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
 {
   dt_lib_collect_rule_t *dr = (dt_lib_collect_rule_t *) data;
   gchar *str = NULL;
-  const gchar *string;
   gboolean cur_state, visible;
 
   gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_PATH, &str, DT_LIB_COLLECT_COL_VISIBLE, &cur_state, -1);
@@ -781,31 +778,16 @@ match_string (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointe
   if (dr->typing == FALSE && !cur_state)
   {
     visible = TRUE;
-    gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
-
-    return FALSE;
+  }
+  else
+  {
+    gchar *haystack = g_utf8_strdown(str, -1), *needle = g_utf8_strdown(gtk_entry_get_text(GTK_ENTRY(dr->text)), -1);
+    visible = (g_strrstr(haystack, needle) != NULL);
+    g_free(haystack);
+    g_free(needle);
   }
 
-  regex_t re;
-  gchar *pattern = NULL;
-  int status;
-
-  string = gtk_entry_get_text(GTK_ENTRY(dr->text));
-  pattern = dt_util_dstrcat (pattern, "%s%s%s", ".*", string, ".*");
-
-  regcomp(&re, pattern, REG_NOSUB);
-
-  status = regexec (&re, str, (size_t) 0, NULL, 0);
-  regfree (&re);
-  //printf("Model: %s -- Entry: %s -- Status: %s\n", str, string, status == REG_NOMATCH?"No Match":"MATCH!");
-
-  if (status == REG_NOMATCH)
-    visible = FALSE;
-  else
-    visible = TRUE;
-
   gtk_tree_store_set (GTK_TREE_STORE(model), iter, DT_LIB_COLLECT_COL_VISIBLE, visible, -1);
-
   return FALSE;
 }
 

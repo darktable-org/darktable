@@ -50,6 +50,9 @@
                    <primary>memory setup</primary>
                    <secondary>32-bit systems</secondary>
                 </indexterm>
+                <indexterm>
+                   <primary>tiling</primary>
+                </indexterm>
 		<para>As we’ve seen 32-bit systems are difficult environments for darktable. Still many users are successfully running darktable on them, if the basic requirements in terms of 
                       total system memory and the topics mentioned in the paragraphs above are addressed properly.</para>
 
@@ -105,6 +108,10 @@
 		<para>All relevant Linux distributions give you the choice to install a 32-bit or a 64-bit version with no added costs. You can even run old 32-bit binaries on a 64-bit
                       Linux. The only thing you need to do: invest some time into the migration. In the end we strongly recommend moving to a 64-bit version of Linux.
                       There really is no reason not to upgrade to 64-bit.</para>
+
+                <para>On a 64-bit system you can safely leave the tiling related configuration parameters at their defaults: <quote>host memory limit (in MB) for tiling</quote> should
+                      have a value of 1500 and <quote>minimum amount of memory (in MB) for a single buffer in tiling</quote> should be set to 16. In case you are migrating from a 32-bit 
+                      to a 64-bit system you should check these settings and manually change them if needed.</para>
 	</sect2>
         <indexterm class="endofrange" startref="ix.memory"/>
 </sect1>

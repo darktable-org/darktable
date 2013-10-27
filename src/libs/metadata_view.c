@@ -42,6 +42,7 @@ enum
   md_internal_filmroll=0,
   md_internal_imgid,
   md_internal_filename,
+  md_internal_version,
   md_internal_fullpath,
   md_internal_local_copy,
 
@@ -80,6 +81,7 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_internal_filmroll] = _("filmroll");
   _md_labels[md_internal_imgid] = _("image id");
   _md_labels[md_internal_filename] = _("filename");
+  _md_labels[md_internal_version] = _("version");
   _md_labels[md_internal_fullpath] = _("full path");
   _md_labels[md_internal_local_copy] = _("local copy");
 
@@ -223,6 +225,9 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
+
+    snprintf(value,vl,"%d", img->version);
+    _metadata_update_value(d->metadata[md_internal_version], value);
 
     gboolean from_cache = FALSE;
     dt_image_full_path(img->id, pathname, DT_MAX_PATH_LEN, &from_cache);

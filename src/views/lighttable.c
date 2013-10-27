@@ -77,6 +77,8 @@ typedef struct dt_focus_cluster_t
 }
 dt_focus_cluster_t;
 
+static void _update_collected_images(dt_view_t *self);
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -268,6 +270,11 @@ void zoom_around_image(dt_library_t *lib, double pointerx, double pointery, int 
 static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+  _update_collected_images (self);
+}
+
+static void _update_collected_images(dt_view_t *self)
+{
   dt_library_t *lib = (dt_library_t *)self->data;
 
   /* check if we can get a query from collection */
@@ -1539,6 +1546,7 @@ static gboolean
 star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                         guint keyval, GdkModifierType modifier, gpointer data)
 {
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   int num = GPOINTER_TO_INT(data);
   int32_t mouse_over_id;
 
@@ -1548,6 +1556,7 @@ star_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
     dt_ratings_apply_to_selection(num);
   else
     dt_ratings_apply_to_image(mouse_over_id, num);
+  _update_collected_images(self);
   return TRUE;
 }
 
@@ -1759,6 +1768,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
           dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
         }
         dt_image_cache_read_release(darktable.image_cache, image);
+        _update_collected_images(self);
         break;
       }
       case DT_VIEW_GROUP:

@@ -49,6 +49,7 @@ extern "C"
 #include <sstream>
 #include <cassert>
 #include <glib.h>
+#include <zlib.h>
 #include <string>
 #include <time.h>
 #include <sys/types.h>
@@ -1124,37 +1125,173 @@ int dt_exif_read_blob(
 }
 
 // encode binary blob into text:
-void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len)
+char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output_len)
 {
-  const char hex[16] =
+#define COMPRESS_THRESHOLD 100
+
+  char *output = NULL;
+  gboolean do_compress = FALSE;
+
+  // if input data field exceeds a certain size we compress it and convert to base64;
+  // main reason for compression: make more xmp data fit into 64k segment within
+  // JPEG output files.
+  char *config = dt_conf_get_string("compress_xmp_tags");
+  if(config)
   {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8',
-    '9', 'a', 'b', 'c', 'd', 'e', 'f'
-  };
-  for(int i=0; i<len; i++)
-  {
-    const int hi = input[i] >> 4;
-    const int lo = input[i] & 15;
-    output[2*i]   = hex[hi];
-    output[2*i+1] = hex[lo];
+    if(!strcmp(config, "always"))
+      do_compress = TRUE;
+    else if((len > COMPRESS_THRESHOLD) && !strcmp(config, "only large entries"))
+      do_compress = TRUE;
+    else
+      do_compress = FALSE;
   }
-  output[2*len] = '\0';
+
+  if(do_compress)
+  {
+    int result;
+    uLongf destLen = compressBound(len);
+    unsigned char *buffer1 = (unsigned char *)malloc(destLen);
+
+    result = compress(buffer1, &destLen, input, len);
+
+    if(result != Z_OK)
+    {
+      free(buffer1);
+      return NULL;
+    }
+
+    // we store the compression factor
+    const int factor = MIN(len / destLen + 1, 99);
+
+    char *buffer2 = (char *)g_base64_encode(buffer1, destLen);
+    free(buffer1);
+    if(!buffer2) return NULL;
+
+    int outlen = strlen(buffer2) + 5;  // leading "gz" + compression factor + base64 string + trailing '\0'
+    output = (char *)malloc(outlen);
+    if(!output)
+    {
+      g_free(buffer2);
+      return NULL;
+    }
+
+    output[0] = 'g';
+    output[1] = 'z';
+    output[2] = factor / 10 + '0';
+    output[3] = factor % 10 + '0';
+    strcpy(output+4, buffer2);
+    g_free(buffer2);
+
+    if(output_len) *output_len = outlen;
+  }
+  else
+  {
+    const char hex[16] =
+    {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8',
+      '9', 'a', 'b', 'c', 'd', 'e', 'f'
+    };
+
+    output = (char *)malloc(2*len + 1);
+    if(!output) return NULL;
+
+    if(output_len) *output_len = 2*len + 1;
+
+    for(int i=0; i<len; i++)
+    {
+      const int hi = input[i] >> 4;
+      const int lo = input[i] & 15;
+      output[2*i]   = hex[hi];
+      output[2*i+1] = hex[lo];
+    }
+    output[2*len] = '\0';
+  }
+
+  return output;
+
+#undef COMPRESS_THRESHOLD
 }
 
 // and back to binary
-void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len)
+unsigned char *dt_exif_xmp_decode (const char *input, const int len, int *output_len)
 {
-  // ascii table:
-  // 48- 57 0-9
-  // 97-102 a-f
-#define TO_BINARY(a) (a > 57 ? a - 97 + 10 : a - 48)
-  for(int i=0; i<len/2; i++)
+  unsigned char *output = NULL;
+
+  // check if data is in compressed format
+  if(!strncmp(input, "gz", 2))
   {
-    const int hi = TO_BINARY( input[2*i  ] );
-    const int lo = TO_BINARY( input[2*i+1] );
-    output[i] = (hi << 4) | lo;
+    // we have compressed data in base64 representation with leading "gz"
+
+    // get stored compression factor so we know the needed buffer size for uncompress
+    const float factor = 10*(input[2] - '0') + (input[3] - '0');
+
+    // get a rw copy of input buffer omitting leading "gz" and compression factor
+    unsigned char *buffer = (unsigned char *)strdup(input + 4);
+    if(!buffer) return NULL;
+
+    // decode from base64 to compressed binary
+    gsize compressed_size;
+    g_base64_decode_inplace((char *)buffer, &compressed_size);
+
+    // do the actual uncompress step
+    int result = Z_BUF_ERROR;
+    uLongf bufLen = factor*compressed_size;
+    uLongf destLen;
+
+    // we know the actual compression factor but if that fails we re-try with
+    // increasing buffer sizes, eg. we don't know (unlikely) factors > 99
+    do
+    {
+       if(output) free(output);
+       output = (unsigned char *)malloc(bufLen);
+       if(!output) break;
+
+       destLen = bufLen;
+ 
+       result = uncompress(output, &destLen, buffer, compressed_size);
+
+       bufLen *= 2;
+
+    } while(result == Z_BUF_ERROR);
+
+    free(buffer);
+
+    if(result != Z_OK)
+    {
+      if(output) free(output);
+      return NULL;
+    }
+
+    if(output_len) *output_len = destLen;
+
   }
+  else
+  {
+    // we have uncompressed data in hexadecimal ascii representation
+
+    // ascii table:
+    // 48- 57 0-9
+    // 97-102 a-f
+#define TO_BINARY(a) (a > 57 ? a - 97 + 10 : a - 48)
+
+    // make sure that we don't find any unexpected characters indicating corrupted data
+    if(strspn(input, "0123456789abcdef") != strlen(input)) return NULL;
+
+    output = (unsigned char *)malloc(len/2);
+    if(!output) return NULL;
+
+    if(output_len) *output_len = len/2;
+
+    for(int i=0; i<len/2; i++)
+    {
+      const int hi = TO_BINARY( input[2*i  ] );
+      const int lo = TO_BINARY( input[2*i+1] );
+      output[i] = (hi << 4) | lo;
+    }
 #undef TO_BINARY
+  }
+
+  return output;
 }
 
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
@@ -1384,17 +1521,15 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, mask_version->toLong());
           const char *mask_c = mask->toString(i).c_str();
           const int mask_c_len = strlen(mask_c);
-          const int mask_len = mask_c_len/2;
-          unsigned char *mask_d = (unsigned char *)malloc(mask_len);
-          dt_exif_xmp_decode(mask_c, mask_d, mask_c_len);
+          int mask_len = 0;
+          const unsigned char *mask_d = dt_exif_xmp_decode(mask_c, mask_c_len, &mask_len);
           DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, mask_d, mask_len, SQLITE_TRANSIENT);
           DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, mask_nb->toLong(i));
 
           const char *mask_src_c = mask_src->toString(i).c_str();
           const int mask_src_c_len = strlen(mask_src_c);
-          const int mask_src_len = mask_src_c_len/2;
-          unsigned char *mask_src = (unsigned char *)malloc(mask_src_len);
-          dt_exif_xmp_decode(mask_src_c, mask_src, mask_src_c_len);
+          int mask_src_len = 0;
+          unsigned char *mask_src = dt_exif_xmp_decode(mask_src_c, mask_src_c_len, &mask_src_len);
           DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 8, mask_src, mask_src_len, SQLITE_TRANSIENT);
 
           sqlite3_step(stmt);
@@ -1445,9 +1580,8 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           const char *operation = op->toString(i).c_str();
           const char *param_c = param->toString(i).c_str();
           const int param_c_len = strlen(param_c);
-          const int params_len = param_c_len/2;
-          unsigned char *params = (unsigned char *)malloc(params_len);
-          dt_exif_xmp_decode(param_c, params, param_c_len);
+          int params_len = 0;
+          unsigned char *params = dt_exif_xmp_decode(param_c, param_c_len, &params_len);
           // TODO: why this update set?
           DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 1, img->id);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_sel_num, 2, i);
@@ -1469,12 +1603,10 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
-          unsigned int blendop_size = 0;
+          int blendop_size = 0;
           if(blendop != xmpData.end() && blendop->size() > 0 && blendop->count () > i && blendop->toString(i).c_str() != NULL)
           {
-            blendop_size = strlen(blendop->toString(i).c_str())/2;
-            blendop_params = (unsigned char *)malloc(blendop_size);
-            dt_exif_xmp_decode(blendop->toString(i).c_str(),blendop_params,strlen(blendop->toString(i).c_str()));
+            blendop_params = dt_exif_xmp_decode(blendop->toString(i).c_str(), strlen(blendop->toString(i).c_str()), &blendop_size);
             DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, blendop_size, SQLITE_TRANSIENT);
           }
           else
@@ -1526,6 +1658,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // actually nobody's interested in that if the file doesn't exist:
     // std::string s(e.what());
     // std::cerr << "[exiv2] " << s << std::endl;
+    return 1;
   }
   return 0;
 }
@@ -1721,8 +1854,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData.add(Exiv2::XmpKey(key), &tvm);
 
     int32_t len = sqlite3_column_bytes(stmt, 5);
-    char *mask_d = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 5), mask_d, len);
+    char *mask_d = dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 5), len, NULL);
     tvm.read(mask_d);
     snprintf(key, 1024, "Xmp.darktable.mask[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
@@ -1735,8 +1867,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     xmpData.add(Exiv2::XmpKey(key), &tvm);
 
     len = sqlite3_column_bytes(stmt, 7);
-    char *mask_src = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 7), mask_src, len);
+    char *mask_src = dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 7), len, NULL);
     tvm.read(mask_src);
     snprintf(key, 1024, "Xmp.darktable.mask_src[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
@@ -1792,8 +1923,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
     /* read and add history params */
     int32_t len = sqlite3_column_bytes(stmt, 4);
-    char *vparams = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), vparams, len);
+    char *vparams = dt_exif_xmp_encode ((const unsigned char *)sqlite3_column_blob(stmt, 4), len, NULL);
     tv.read(vparams);
     snprintf(key, 1024, "Xmp.darktable.history_params[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);
@@ -1803,8 +1933,7 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     const void *blob = sqlite3_column_blob(stmt, 6);
     if(!blob) continue; // no params, no history item.
     len = sqlite3_column_bytes(stmt, 6);
-    vparams = (char *)malloc(2*len + 1);
-    dt_exif_xmp_encode ((const unsigned char *)blob, vparams, len);
+    vparams = dt_exif_xmp_encode ((const unsigned char *)blob, len, NULL);
     tv.read(vparams);
     snprintf(key, 1024, "Xmp.darktable.blendop_params[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tv);

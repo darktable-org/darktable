@@ -89,7 +89,8 @@
                                    mouse to accept the new value and go back to normal control.
                              </para>
                              <para>Alternatively you can type in a new value using your keyboard and commit by hitting the enter key. You may even
-                                   supply the new value in the form of an arithmetic expressions which darktable will calculate for you.
+                                   supply the new value in the form of an arithmetic expressions which darktable will calculate for you - the old value
+                                   is referenced as <quote>x</quote>.
                              </para>
 			   </listitem>		
    			   <listitem>

@@ -8,6 +8,9 @@
                    <primary>masks</primary>
                    <secondary>parametric masks</secondary>
                 </indexterm>
+                <indexterm>
+                   <primary>conditional blending</primary>
+                </indexterm>
 
 		<para>The parametric mask feature, formerly called <quote>conditional blending</quote>, offers fine-grained selective control over how individual pixels are blended.
         	      It does so by automatically generating an intermediate blend mask from user defined parameters. These parameters are color 
