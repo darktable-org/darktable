@@ -47,7 +47,7 @@ void* _aligned_malloc(size_t bytes, size_t alignment) {
   return malloc(bytes); // Mac OS X malloc is usually aligned to 16 bytes
 }
 
-#elif defined(__unix__) || defined(__MINGW32__) 
+#elif defined(__unix__)
 
 void* _aligned_malloc(size_t bytes, size_t alignment) {
   void* ret= NULL;
