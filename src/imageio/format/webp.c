@@ -32,10 +32,21 @@
 
 #include <webp/encode.h>
 
-#define WEBP_LOSSY 0
-#define WEBP_LOSSLESS 1
-
 DT_MODULE(1)
+
+typedef enum {
+	webp_lossy = 0,
+	webp_lossless = 1
+} comp_type_t;
+
+
+typedef enum {
+	hint_default,
+	hint_picture,
+	hint_photo,
+	hint_graphic
+} hint_t;
+
 
 typedef struct dt_imageio_webp_t
 {
@@ -76,7 +87,21 @@ static const char* const EncoderError[] = {
   "user_abort: encoding abort requested by user"
 };
 
-void init(dt_imageio_module_format_t *self) {}
+void init(dt_imageio_module_format_t *self) {
+#ifdef USE_LUA
+  luaA_enum(darktable.lua_state,comp_type_t);
+  luaA_enum_value(darktable.lua_state,comp_type_t,webp_lossy,false);
+  luaA_enum_value(darktable.lua_state,comp_type_t,webp_lossless,false);
+  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_webp_t,comp_type,comp_type_t);
+  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_webp_t,quality,int);
+  luaA_enum(darktable.lua_state,hint_t);
+  luaA_enum_value(darktable.lua_state,hint_t,hint_default,false);
+  luaA_enum_value(darktable.lua_state,hint_t,hint_picture,false);
+  luaA_enum_value(darktable.lua_state,hint_t,hint_photo,false);
+  luaA_enum_value(darktable.lua_state,hint_t,hint_graphic,false);
+  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_webp_t,hint,hint_t);
+#endif
+}
 void cleanup(dt_imageio_module_format_t *self) {}
 
 static int
@@ -157,7 +182,7 @@ get_params(dt_imageio_module_format_t *self)
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
   memset(d, 0, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
-  if(d->comp_type == WEBP_LOSSY) d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
+  if(d->comp_type == webp_lossy) d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   else                           d->quality = 100;
   d->hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
   return d;
@@ -169,7 +194,7 @@ set_params(dt_imageio_module_format_t *self, const void *params, const int size)
   if(size != self->params_size(self)) return 1;
   dt_imageio_webp_t *d = (dt_imageio_webp_t *)params;
   dt_imageio_webp_gui_data_t *g = (dt_imageio_webp_gui_data_t *)self->gui_data;
-  if(d->comp_type == WEBP_LOSSY) gtk_toggle_button_set_active(g->lossy, TRUE);
+  if(d->comp_type == webp_lossy) gtk_toggle_button_set_active(g->lossy, TRUE);
   else                           gtk_toggle_button_set_active(g->lossless, TRUE);
   dtgtk_slider_set_value(g->quality, d->quality);
   gtk_combo_box_set_active(g->hint_combo, d->hint);
@@ -257,13 +282,13 @@ void gui_init (dt_imageio_module_format_t *self)
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("lossy"));
   gui->lossy = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)WEBP_LOSSY);
-  if(comp_type == WEBP_LOSSY) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossy);
+  if(comp_type == webp_lossy) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
   radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("lossless"));
   gui->lossless = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(hbox), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)WEBP_LOSSLESS);
-  if(comp_type == WEBP_LOSSLESS) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossless);
+  if(comp_type == webp_lossless) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
   gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1, 100, 1, 97, 0));
   dtgtk_slider_set_label(gui->quality,_("quality"));
