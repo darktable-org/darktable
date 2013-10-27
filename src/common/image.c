@@ -37,7 +37,9 @@
 #include <strings.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <glob.h>
+#ifndef __WIN32__
+  #include <glob.h>
+#endif
 #include <glib/gstdio.h>
 
 static void _image_local_copy_full_path(const int imgid, char *pathname, int len);
@@ -544,19 +546,16 @@ int dt_image_altered(const uint32_t imgid)
 void dt_image_read_duplicates(const uint32_t id, const char *filename)
 {
   // Search for duplicate's sidecar files and import them if found and not in DB yet
-  glob_t *globbuf = g_malloc(sizeof(glob_t));
-  memset((void *)globbuf, 0, sizeof(glob_t));
-
   gchar *imgfname = g_path_get_basename(filename);
   gchar *imgpath = g_path_get_dirname(filename);
   const int len = DT_MAX_PATH_LEN + 30;
   gchar pattern[len];
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
-  gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+  static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
 
-  int round = 0;
-  gchar **glob_pattern = glob_patterns;
+  const gchar **glob_pattern = glob_patterns;
+  GList *files = NULL;
   while(*glob_pattern)
   {
     snprintf(pattern, len, "%s", filename);
@@ -567,18 +566,35 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     while(*c2 != '.' && c2 > filename) c2--;
     snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
-    glob(pattern, (round > 0) ? GLOB_APPEND : 0, NULL, globbuf);
+#ifdef __WIN32__
+    WIN32_FIND_DATA data;
+    HANDLE handle = FindFirstFile(pattern, &data);
+    if(handle != INVALID_HANDLE_VALUE)
+    {
+      do
+        files = g_list_append(files, g_strdup(data.cFileName));
+      while(FindNextFile(handle, &data));
+    }
+#else
+    glob_t globbuf;
+    if(!glob(pattern, 0, NULL, &globbuf))
+    {
+      for(size_t i=0; i < globbuf.gl_pathc; i++)
+        files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
+      globfree(&globbuf);
+    }
+#endif
 
-    round++;
     glob_pattern++;
   }
 
   // we store the xmp filename without version part in pattern to speed up string comparison later
   g_snprintf(pattern, len, "%s.xmp", filename);
 
-  for (size_t i=0; i < globbuf->gl_pathc; i++)
+  GList *file_iter = g_list_first(files);
+  while(file_iter != NULL)
   {
-    gchar *xmpfilename = globbuf->gl_pathv[i];
+    gchar *xmpfilename = file_iter->data;
     int version = -1;
 
     // we need to get the version number of the sidecar filename
@@ -590,7 +606,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     else
     {
       // we need to derive the version number from the  filename
-   
+
       gchar *c3 = xmpfilename + strlen(xmpfilename) - 5;  // skip over .xmp extension; position c3 at character before the '.'
       while(*c3 != '.' && c3 > xmpfilename) c3--;         // skip over filename extension; position c3 is at character '.'
       gchar *c4 = c3;
@@ -598,7 +614,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       c4++;
 
       gchar *idfield = g_strndup(c4, c3 - c4);
-      
+
       version = atoi(idfield);
       g_free(idfield);
     }
@@ -609,11 +625,11 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
     dt_image_cache_read_release(darktable.image_cache, img);
+
+    file_iter = g_list_next(file_iter);
   }
 
-  globfree(globbuf);
-
-  g_free(globbuf);
+  g_list_free_full(files, g_free);
   g_free(imgfname);
   g_free(imgpath);
 }

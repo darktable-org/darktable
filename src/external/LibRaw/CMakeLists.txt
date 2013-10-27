@@ -5,7 +5,9 @@ set(LIBRAW_SOURCES internal/dcraw_common.cpp src/libraw_cxx.cpp internal/dcraw_f
 #
 # build liblibraw_r
 #
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif(NOT WIN32)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(libraw_r STATIC ${LIBRAW_SOURCES})
 target_link_libraries(libraw_r)

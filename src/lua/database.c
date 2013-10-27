@@ -21,6 +21,7 @@
 #include "lua/types.h"
 #include "common/debug.h"
 #include "common/darktable.h"
+#include "common/grealpath.h"
 #include "common/image.h"
 #include "common/film.h"
 
@@ -39,19 +40,19 @@ int dt_lua_duplicate_image(lua_State *L)
 
 static int import_images(lua_State *L)
 {
-  char* full_name= realpath(luaL_checkstring(L,-1), NULL);
+  char* full_name= g_realpath(luaL_checkstring(L,-1));
   int result;
 
   if (!g_file_test(full_name, G_FILE_TEST_EXISTS))
   {
-      free(full_name);
+      g_free(full_name);
       return luaL_error(L,"no such file or directory");
   } else if (g_file_test(full_name, G_FILE_TEST_IS_DIR))
   {
     result =dt_film_import(full_name);
     if(result == 0)
     {
-      free(full_name);
+      g_free(full_name);
       return luaL_error(L,"error while importing");
     }
     luaA_push(L,dt_lua_film_t,&result);
@@ -64,7 +65,7 @@ static int import_images(lua_State *L)
     result = dt_film_new(&new_film,dirname);
     if(result == 0)
     {
-      free(full_name);
+      g_free(full_name);
       dt_film_cleanup(&new_film);
       free(dirname);
       return luaL_error(L,"error while importing");
@@ -75,12 +76,12 @@ static int import_images(lua_State *L)
     dt_film_cleanup(&new_film);
     if(result == 0)
     {
-      free(full_name);
+      g_free(full_name);
       return luaL_error(L,"error while importing");
     }
     luaA_push(L,dt_lua_image_t,&result);
   }
-  free(full_name);
+  g_free(full_name);
   return 1;
 }
 

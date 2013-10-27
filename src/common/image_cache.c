@@ -163,7 +163,7 @@ void
 dt_image_cache_cleanup(dt_image_cache_t *cache)
 {
   dt_cache_cleanup(&cache->cache);
-  free(cache->images);
+  dt_free_align(cache->images);
 }
 
 void dt_image_cache_print(dt_image_cache_t *cache)

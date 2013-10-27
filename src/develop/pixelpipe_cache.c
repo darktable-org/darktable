@@ -58,7 +58,7 @@ alloc_memory_fail:
   for(int k=0; k<entries; k++)
   {
     if(cache->data[k])
-      free(cache->data[k]);
+      dt_free_align(cache->data[k]);
   }
 
   free(cache->data);
@@ -72,7 +72,7 @@ alloc_memory_fail:
 
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
-  for(int k=0; k<cache->entries; k++) free(cache->data[k]);
+  for(int k=0; k<cache->entries; k++) dt_free_align(cache->data[k]);
   free(cache->data);
   free(cache->hash);
   free(cache->used);
@@ -160,7 +160,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     // printf("[pixelpipe_cache_get] hash not found, returning slot %d/%d age %d\n", max, cache->entries, weight);
     if(cache->size[max] < size)
     {
-      free(cache->data[max]);
+      dt_free_align(cache->data[max]);
       cache->data[max] = (void *)dt_alloc_align(16, size);
       cache->size[max] = size;
     }

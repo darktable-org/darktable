@@ -56,7 +56,7 @@ void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, flo
 
 void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
 {
-  free(pipe->backbuf);
+  dt_free_align(pipe->backbuf);
   pipe->backbuf = NULL;
   pipe->backbuf_size = 0;
   pthread_mutex_destroy(&(pipe->backbuf_mutex));
@@ -197,7 +197,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
   {
     pthread_mutex_lock(&pipe->backbuf_mutex);
     pipe->backbuf_size = width*height*4*sizeof(uint8_t);
-    free(pipe->backbuf);
+    dt_free_align(pipe->backbuf);
     pipe->backbuf = (uint8_t *)dt_alloc_align(16, pipe->backbuf_size);
     pthread_mutex_unlock(&pipe->backbuf_mutex);
   }

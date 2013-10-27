@@ -23,10 +23,11 @@
     defined __NetBSD__ || defined __OpenBSD__
 #include <pwd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include "darktable.h"
 #endif
+
+#include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -245,10 +246,15 @@ size_t dt_utf8_strlcpy(char *dest, const char *src,size_t n)
 
 off_t dt_util_get_file_size(const char *filename)
 {
+#ifdef __WIN32__
+  struct _stati64 st;
+  if(_stati64(filename, &st) == 0)
+    return st.st_size;
+#else
   struct stat st;
-
   if(stat(filename, &st) == 0)
     return st.st_size;
+#endif
 
   return -1;
 }

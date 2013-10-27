@@ -24,7 +24,7 @@
 
 #if !defined _XOPEN_SOURCE && \
     !defined(__DragonFly__) && !defined(__FreeBSD__) && \
-    !defined(__NetBSD__) && !defined(__OpenBSD__)
+    !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__WIN32__)
 #define _XOPEN_SOURCE
 #endif
 
@@ -1119,7 +1119,7 @@ static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads
 
 static inline void dt_points_cleanup(dt_points_t *p)
 {
-  free(p->s[0]);
+  dt_free_align(p->s[0]);
   free(p->s);
 }
 

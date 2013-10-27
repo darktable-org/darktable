@@ -379,7 +379,7 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
   cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4*sizeof(float));
   if(err != CL_SUCCESS)
   {
-    free(pixel);
+    dt_free_align(pixel);
     return;
   }
 
@@ -445,7 +445,7 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
       break;
   }
 
-  free(pixel);
+  dt_free_align(pixel);
 }
 #endif
 
@@ -641,7 +641,7 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
     }
   }
 
-  free(buffer);
+  dt_free_align(buffer);
 }
 #endif
 

@@ -47,7 +47,6 @@
 #include <gmodule.h>
 #include <xmmintrin.h>
 #include <time.h>
-#include <sys/select.h>
 
 typedef struct dt_iop_gui_simple_callback_t
 {
@@ -2147,10 +2146,7 @@ void dt_iop_nap(int32_t usec)
   sched_yield();
 
   // additionally wait the given amount of time
-  struct timeval s;
-  s.tv_sec = 0;
-  s.tv_usec = usec;
-  select(0, NULL, NULL, NULL, &s);
+  g_usleep(usec);
 }
 
 void

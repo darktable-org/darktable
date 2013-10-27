@@ -777,7 +777,7 @@ int dt_imageio_export_with_flags(
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-  free(moutbuf);
+  dt_free_align(moutbuf);
 
   if(!thumbnail_export)
   {

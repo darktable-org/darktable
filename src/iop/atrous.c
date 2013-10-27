@@ -498,8 +498,8 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
   }
   /* due to symmetric processing, output will be left in (float *)o */
 
-  for(int k=0; k<max_scale; k++) free(detail[k]);
-  free(tmp);
+  for(int k=0; k<max_scale; k++) dt_free_align(detail[k]);
+  dt_free_align(tmp);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(i, o, width, height);
@@ -507,8 +507,8 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
   return;
 
 error:
-  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) free(detail[k]);
-  if(tmp != NULL) free(tmp);
+  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) dt_free_align(detail[k]);
+  if(tmp != NULL) dt_free_align(tmp);
   return;
 }
 

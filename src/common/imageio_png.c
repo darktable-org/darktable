@@ -200,7 +200,7 @@ dt_imageio_open_png(
 
   if(read_image (&image, (void *)buf) != 0)
   {
-    free(buf);
+    dt_free_align(buf);
     fprintf(stderr, "[png_open] could not read image `%s'\n", img->filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
@@ -213,7 +213,7 @@ dt_imageio_open_png(
         for(int k=0; k<3; k++) mipbuf[4*(j * width + i) + k] = (256.0f*buf[2*(3*(j * width + i) + k)] + buf[2*(3*(j * width + i) + k) + 1])*(1.0f/65535.0f);
   }
 
-  free(buf);
+  dt_free_align(buf);
   return DT_IMAGEIO_OK;
 }
 

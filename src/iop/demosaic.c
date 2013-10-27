@@ -607,7 +607,7 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
   }
   // _mm_sfence();
   if (median)
-    free((float*)in);
+    dt_free_align((float*)in);
 }
 
 
@@ -700,7 +700,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
-      free(in);
+      dt_free_align(in);
     }
     else
     {
@@ -747,7 +747,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
         demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
-      free(in);
+      dt_free_align(in);
     }
     else
     {
@@ -760,7 +760,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roi.x = roi.y = 0;
     roi.scale = roi_out->scale;
     dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
-    free(tmp);
+    dt_free_align(tmp);
   }
   else
   {
@@ -771,7 +771,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       float *tmp = (float *)dt_alloc_align(16, sizeof(float)*roi_in->width*roi_in->height);
       pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters, clip);
-      free(tmp);
+      dt_free_align(tmp);
     }
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters, clip);

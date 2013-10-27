@@ -2095,7 +2095,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     const int iwidth = roi_in->width;
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
     #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr,ch)
 #else
     #pragma omp parallel for shared(i,roi_out,o,mask,blend,d,ch)
@@ -2139,7 +2139,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     if(self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
     {
 #ifdef _OPENMP
-#if !defined(__SUNOS__)
+#if !defined(__SUNOS__) && !defined(__WIN32__)
       #pragma omp parallel for default(none) shared(roi_out,mask,stderr)
 #else
       #pragma omp parallel for shared(roi_out,mask)
@@ -2153,7 +2153,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__)
+#if !defined(__SUNOS__) && !defined(__WIN32__)
     #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
 #else
     #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
@@ -2188,7 +2188,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
   }
 
-  free(mask);
+  dt_free_align(mask);
 }
 
 
@@ -2402,13 +2402,13 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     piece->pipe->mask_display = 1;
   }
 
-  if (mask != NULL) free(mask);
+  if (mask != NULL) dt_free_align(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   return TRUE;
 
 error:
-  if (mask != NULL) free(mask);
+  if (mask != NULL) dt_free_align(mask);
   if (dev_mask != NULL) dt_opencl_release_mem_object(dev_mask);
   if (dev_m != NULL) dt_opencl_release_mem_object(dev_m);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);

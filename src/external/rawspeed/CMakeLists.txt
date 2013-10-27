@@ -54,8 +54,12 @@ set(RAWSPEED_SOURCES
 #
 # build librawspeed
 #
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+if(WIN32)
+  set(RAWSPEED_LIBS "msvcrt")
+else(WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif(WIN32)
 
 add_library(rawspeed STATIC ${RAWSPEED_SOURCES})
-target_link_libraries(rawspeed)
+target_link_libraries(rawspeed ${RAWSPEED_LIBS})
 

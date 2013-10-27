@@ -28,8 +28,6 @@
 #include <assert.h>
 #include <sched.h>
 
-#include <sys/select.h>
-
 // this implements a concurrent LRU cache using
 // a concurrent doubly linked list
 // and a hopscotch hashmap, source following the paper and
@@ -96,10 +94,7 @@ nearest_power_of_two(const uint32_t value)
 static void
 dt_cache_sleep_ms(uint32_t ms)
 {
-  struct timeval s;
-  s.tv_sec = ms / 1000;
-  s.tv_usec = (ms % 1000) * 1000U;
-  select(0, NULL, NULL, NULL, &s);
+  g_usleep(ms * 1000u);
 }
 
 #if 0
@@ -410,8 +405,8 @@ void
 dt_cache_cleanup(dt_cache_t *cache)
 {
   // TODO: make sure data* cleanup stuff is called!
-  free(cache->table);
-  free(cache->segments);
+  dt_free_align(cache->table);
+  dt_free_align(cache->segments);
 }
 
 void
