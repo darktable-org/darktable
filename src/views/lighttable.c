@@ -71,7 +71,7 @@ go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
 
 typedef struct dt_focus_cluster_t
 {
-  uint64_t n;
+  int64_t n;
   float x, y, x2, y2;
   float thrs;
 }
@@ -1294,7 +1294,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 #if 1 // second pass, HH2
       int num_clusters = 0;
       for(int k=0;k<49;k++)
-        if(lib->full_res_focus[k].n > wd*ht/49.0f * 0.01f) num_clusters ++;
+        if(lib->full_res_focus[k].n*4 > wd*ht/49.0f * 0.01f) num_clusters ++;
       fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
       if(num_clusters < 1)
       {
@@ -1306,12 +1306,16 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         for(int j=0;j<ht-1;j+=8)
           for(int i=0;i<wd-1;i+=8)
           {
-            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 4*abs(_from_uint8(lib->full_res_thumb[4*((j+4)*wd + i) + CHANNEL])));
-            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 4*abs(_from_uint8(lib->full_res_thumb[4*(j*wd + i+4) + CHANNEL])));
+            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 2*abs(_from_uint8(lib->full_res_thumb[4*((j+4)*wd + i) + CHANNEL])));
+            _lighttable_update_focus(lib->full_res_focus, i, j, wd, ht, 2*abs(_from_uint8(lib->full_res_thumb[4*(j*wd + i+4) + CHANNEL])));
           }
         num_clusters = 0;
         for(int k=0;k<49;k++)
-          if(lib->full_res_focus[k].n*4 > wd*ht/49.0f * 0.01f) num_clusters ++;
+          if(lib->full_res_focus[k].n*8.0f > wd*ht/49.0f * 0.01f)
+          {
+            lib->full_res_focus[k].n *= -1;
+            num_clusters ++;
+          }
         fprintf(stderr, "found %d HL2/LH2 clusters\n", num_clusters);
       }
 #endif
@@ -1340,14 +1344,15 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       // normalize data in clusters:
       for(int k=0;k<49;k++)
       {
-        lib->full_res_focus[k].thrs /= (float)lib->full_res_focus[k].n;
-        lib->full_res_focus[k].x  /= (float)lib->full_res_focus[k].n;
-        lib->full_res_focus[k].x2 /= (float)lib->full_res_focus[k].n;
-        lib->full_res_focus[k].y  /= (float)lib->full_res_focus[k].n;
-        lib->full_res_focus[k].y2 /= (float)lib->full_res_focus[k].n;
+        lib->full_res_focus[k].thrs /= fabsf((float)lib->full_res_focus[k].n);
+        lib->full_res_focus[k].x  /= fabsf((float)lib->full_res_focus[k].n);
+        lib->full_res_focus[k].x2 /= fabsf((float)lib->full_res_focus[k].n);
+        lib->full_res_focus[k].y  /= fabsf((float)lib->full_res_focus[k].n);
+        lib->full_res_focus[k].y2 /= fabsf((float)lib->full_res_focus[k].n);
       }
     }
   }
+#if 0 // expose full res thumbnail:
   if(lib->full_res_thumb_id == lib->full_preview_id)
   {
     static float pointerx_c = 0, pointery_c = 0;
@@ -1405,7 +1410,66 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   }
   else
 #endif
+#endif
   dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
+#if 1 // only draw focus region overlays:
+  if(lib->full_res_thumb_id == lib->full_preview_id)
+  {
+    cairo_save(cr);
+    cairo_translate(cr, width/2.0, height/2.0f);
+    int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
+    if(lib->full_res_thumb_orientation & 4)
+      wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
+    const float scale = 0.97f*fminf(fminf(darktable.thumbnail_width, width)/(float)wd,
+                                    fminf(darktable.thumbnail_height, height)/(float)ht);
+    cairo_scale(cr, scale, scale);
+
+    cairo_translate(cr, -wd/2.0f, -ht/2.0f);
+
+    if(lib->full_res_thumb_orientation & 4)
+    {
+      cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
+      cairo_transform(cr, &m);
+    }
+    if(lib->full_res_thumb_orientation & 2)
+    {
+      cairo_scale(cr, 1, -1);
+      cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
+    }
+    if(lib->full_res_thumb_orientation & 1)
+    {
+      cairo_scale(cr, -1, 1);
+      cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
+    }
+
+    // draw clustered focus regions
+    for(int k=0;k<49;k++)
+    {
+      const float intens = (lib->full_res_focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
+      int draw = 0;
+      if(lib->full_res_focus[k].n*4.0f > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
+      {
+        cairo_set_source_rgb(cr, intens, 0.0, 0.0);
+        cairo_set_line_width(cr, 5.0f*intens);
+        draw = 1;
+      }
+      else if(-lib->full_res_focus[k].n*8.0f > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
+      {
+        cairo_set_source_rgb(cr, 0.0, 0.0, intens);
+        cairo_set_line_width(cr, 5.0f*intens);
+        draw = 1;
+      }
+      if(draw)// // if(intens > 0.5f)
+      {
+        const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
+        const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
+        cairo_rectangle(cr, lib->full_res_focus[k].x - stddevx, lib->full_res_focus[k].y - stddevy, 2*stddevx, 2*stddevy);
+        cairo_stroke(cr);
+      }
+    }
+    cairo_restore(cr);
+  }
+#endif
 }
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
