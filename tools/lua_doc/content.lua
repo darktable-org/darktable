@@ -388,6 +388,15 @@ types.dt_imageio_module_format_data_pfm:set_text([[type object describing parame
 types.dt_imageio_module_format_data_jpeg:set_text([[type object describing parameters to export to jpeg]])
 types.dt_imageio_module_format_data_jpeg.quality:set_text([[the quality to use at export time]])
 types.dt_imageio_module_format_data_ppm:set_text([[type object describing parameters to export to ppm]])
+types.dt_imageio_module_format_data_webp:set_text([[type object describing parameters to export to webp]])
+types.dt_imageio_module_format_data_webp.quality:set_text([[the quality to use at export time]])
+types.dt_imageio_module_format_data_webp.comp_type:set_text([[the overall quality to use, can be one of "webp_lossy" or "webp_lossless"]]);
+types.dt_imageio_module_format_data_webp.hint:set_text([[a hint on the overall content of the image, can be one of "hint_default","hint_picture","hint_photo","hint_graphic"]])
+types.dt_imageio_module_format_data_j2k:set_text([[type object describing parameters to export to jpeg 2000]])
+types.dt_imageio_module_format_data_j2k.quality:set_text([[the quality to use at export time]])
+types.dt_imageio_module_format_data_j2k.bpp:set_text([[the bpp parameter to use when exporting]])
+types.dt_imageio_module_format_data_j2k.format:set_text([[the format to use can be one of "j2k" or "jp2"]])
+types.dt_imageio_module_format_data_j2k.preset:set_text([[the preset to use can be one of "cinema2k_24","cinema2k_48","cinema4k_24"]])
 
 
 types.dt_imageio_module_storage:set_text([[A virtual type representing all storage types]])
