@@ -190,6 +190,7 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
   // synch to file:
   // TODO: move color labels to image_t cache and sync via write_get!
   dt_image_synch_xmp(selected);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return TRUE;
 }
