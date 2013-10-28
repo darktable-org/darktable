@@ -60,7 +60,7 @@ local function is_type(node)
 end
 
 local function document_unknown(node,parent,prev_name)
-	result = create_empty_node(node,"undocumented",parent,prev_name)
+	local result = create_empty_node(node,"undocumented",parent,prev_name)
 	set_attribute(result,"reported_type","undocumented")
 	return result
 end
@@ -217,7 +217,7 @@ local function is_nil(node)
 	return node == nil
 end
 local function document_nil(node,parent,prev_name)
-	result = create_empty_node(node,"documentation node",parent,prev_name)
+	local result = create_empty_node(node,"documentation node",parent,prev_name)
 	set_attribute(result,"reported_type","documentation node")
 	return result
 end
