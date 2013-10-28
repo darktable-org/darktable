@@ -292,62 +292,56 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
 {
   gchar *sq = NULL;
 
-  switch(collection->params.sort)
-  {
-    case DT_COLLECTION_SORT_DATETIME:
-      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken");
-      break;
-
-    case DT_COLLECTION_SORT_RATING:
-      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc");
-      break;
-
-    case DT_COLLECTION_SORT_FILENAME:
-      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename");
-      break;
-
-    case DT_COLLECTION_SORT_ID:
-      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
-      break;
-
-    case DT_COLLECTION_SORT_COLOR:
-      sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename");
-      break;
-  }
-
   if (collection->params.descending)
   {
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-      case DT_COLLECTION_SORT_FILENAME:
-      case DT_COLLECTION_SORT_ID:
-      {
-        sq = dt_util_dstrcat(sq, " %s", "desc");
-      }
-      break;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken desc, filename, version");
+        break;
 
-      /* These two are special as they are descending in the default view */
       case DT_COLLECTION_SORT_RATING:
-      {
-        g_free(sq);
-        sq = NULL;
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7");
-      }
-      break;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_FILENAME:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename desc, version");
+        break;
+
+      case DT_COLLECTION_SORT_ID:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id desc");
+        break;
 
       case DT_COLLECTION_SORT_COLOR:
-      {
-        g_free(sq);
-        sq = NULL;
-        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename");
-      }
-      break;
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename, version");
+        break;
     }
   }
+  else
+  {
+    switch(collection->params.sort)
+    {
+      case DT_COLLECTION_SORT_DATETIME:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "datetime_taken, filename, version");
+        break;
 
-  /* Within the given sort order we additionally sort by duplicate version */
-  sq = dt_util_dstrcat(sq, ", %s", "version");
+      case DT_COLLECTION_SORT_RATING:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "flags & 7 desc, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_FILENAME:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_ID:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "id");
+        break;
+
+      case DT_COLLECTION_SORT_COLOR:
+        sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename, version");
+        break;
+    }
+  }
 
   return sq;
 }
