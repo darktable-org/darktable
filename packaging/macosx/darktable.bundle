@@ -10,6 +10,7 @@
   </meta>
   <plist>${project}/Info.plist</plist>
   <main-binary>${prefix:dt}/bin/darktable</main-binary>
+  <binary dest="${bundle}/Contents/MacOS/darktable-cli-bin">${prefix:dt}/bin/darktable-cli</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
   <binary>${prefix}/lib/${gtkdir}/modules/*.so</binary>
   <binary>${prefix}/lib/pango/${pkg:pango:pango_module_version}/modules/*.so</binary>
@@ -29,4 +30,5 @@
   <data dest="${bundle}/Contents/Resources">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
+  <data dest="${bundle}/Contents/MacOS/darktable-cli">${project}/darktable-cli.sh</data>
 </app-bundle>

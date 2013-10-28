@@ -107,12 +107,12 @@ void gui_init(dt_lib_module_t *self)
   d->compress_button = hbutton;
   g_object_set (G_OBJECT (hbutton), "tooltip-text", _("create a minimal history stack which produces the same image"), (char *)NULL);
 
-  g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (_lib_history_compress_clicked_callback),(gpointer)0);
+  g_signal_connect (G_OBJECT (hbutton), "clicked", G_CALLBACK (_lib_history_compress_clicked_callback),NULL);
 
   /* add toolbar button for creating style */
   GtkWidget *hbutton2 = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
   //gtk_widget_set_size_request (hbutton,24,-1);
-  g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),(gpointer)0);
+  g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),NULL);
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
   d->create_button = hbutton2;
 
@@ -140,24 +140,24 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,long int num, const char *label,gboolean enabled)
+static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,int num, const char *label,gboolean enabled)
 {
   /* create label */
   GtkWidget *widget = NULL;
   gchar numlabel[256];
   if(num==-1)
-    g_snprintf(numlabel, 256, "%ld - %s", num+1, label);
+    g_snprintf(numlabel, 256, "%d - %s", num+1, label);
   else
   {
     if(enabled)
-      g_snprintf(numlabel, 256, "%ld - %s", num+1, label);
+      g_snprintf(numlabel, 256, "%d - %s", num+1, label);
     else
-      g_snprintf(numlabel, 256, "%ld - %s (%s)", num+1, label, _("off"));
+      g_snprintf(numlabel, 256, "%d - %s (%s)", num+1, label, _("off"));
   }
 
   /* create toggle button */
   widget =  dtgtk_togglebutton_new_with_label (numlabel,NULL,CPF_STYLE_FLAT);
-  g_object_set_data (G_OBJECT (widget),"history_number",(gpointer)num+1);
+  g_object_set_data (G_OBJECT (widget),"history_number",GINT_TO_POINTER(num+1));
   g_object_set_data (G_OBJECT (widget),"label",(gpointer) g_strdup(label));
 
   /* set callback when clicked */
@@ -166,7 +166,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self,long int num,
                     self);
 
   /* associate the history number */
-  g_object_set_data(G_OBJECT(widget),"history-number",(gpointer)num+1);
+  g_object_set_data(G_OBJECT(widget),"history-number",GINT_TO_POINTER(num+1));
 
   return widget;
 }
@@ -180,7 +180,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   gtk_container_foreach(GTK_CONTAINER(d->history_box),(GtkCallback)gtk_widget_destroy,0);
 
   /* add default which always should be */
-  long int num = -1;
+  int num = -1;
   gtk_box_pack_start(GTK_BOX(d->history_box),_lib_history_create_button(self,num, _("original"),FALSE),TRUE,TRUE,0);
   num++;
 
@@ -254,7 +254,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   if(darktable.gui->reset) return;
 
   /* revert to given history item. */
-  long int num = (long int)g_object_get_data(G_OBJECT(widget),"history-number");
+  int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"history-number"));
   dt_dev_pop_history_items (darktable.develop, num);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 

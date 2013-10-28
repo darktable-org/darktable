@@ -100,12 +100,12 @@ static void _tristatebutton_size_allocate(GtkWidget *widget, GtkAllocation *allo
 
   widget->allocation = *allocation;
 
-  if (GTK_WIDGET_REALIZED(widget))
+  if (gtk_widget_get_realized(widget))
   {
     gdk_window_move_resize(
-      widget->window,
-      allocation->x, allocation->y,
-      allocation->width, allocation->height
+      gtk_widget_get_window(widget),
+      allocation.x, allocation.y,
+      allocation.width, allocation.height
     );
   }
 }
@@ -151,12 +151,14 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 
   /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
+  cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   /* draw standard button background if not transparent nor flat styled */
   if( (flags & CPF_STYLE_FLAT ))
@@ -218,8 +220,8 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
       /* Draw the pixbuf */
       gint pbw = gdk_pixbuf_get_width (pixbuf);
       gint pbh = gdk_pixbuf_get_height (pixbuf);
-      gdk_cairo_set_source_pixbuf (cr, pixbuf, widget->allocation.x+((widget->allocation.width/2)-(pbw/2)),
-                                   widget->allocation.y+((widget->allocation.height/2)-(pbh/2)));
+      gdk_cairo_set_source_pixbuf (cr, pixbuf, allocation.x+((allocation.width/2)-(pbw/2)),
+                                   allocation.y+((allocation.height/2)-(pbh/2)));
       cairo_paint (cr);
     }
   }
@@ -274,7 +276,7 @@ GtkWidget*
 dtgtk_tristatebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableTriStateButton *button;
-  button = gtk_type_new(dtgtk_tristatebutton_get_type());
+  button = g_object_new(dtgtk_tristatebutton_get_type(), NULL);
   button->icon=paint;
   button->icon_flags=paintflags;
   g_signal_connect(G_OBJECT(button), "button-press-event",
@@ -303,23 +305,24 @@ gint dtgtk_tristatebutton_get_state(const GtkDarktableTriStateButton *ts)
   return ts->state;
 }
 
-GtkType dtgtk_tristatebutton_get_type()
+GType dtgtk_tristatebutton_get_type()
 {
-  static GtkType dtgtk_tristatebutton_type = 0;
+  static GType dtgtk_tristatebutton_type = 0;
   if (!dtgtk_tristatebutton_type)
   {
-    static const GtkTypeInfo dtgtk_tristatebutton_info =
+    static const GTypeInfo dtgtk_tristatebutton_info =
     {
-      "GtkDarktableTriStateButton",
-      sizeof(GtkDarktableTriStateButton),
       sizeof(GtkDarktableTriStateButtonClass),
-      (GtkClassInitFunc) _tristatebutton_class_init,
-      (GtkObjectInitFunc) _tristatebutton_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _tristatebutton_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableTriStateButton),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _tristatebutton_init,
     };
-    dtgtk_tristatebutton_type = gtk_type_unique(GTK_TYPE_BUTTON, &dtgtk_tristatebutton_info);
+    dtgtk_tristatebutton_type = g_type_register_static(GTK_TYPE_BUTTON, "GtkDarktableTriStateButton", &dtgtk_tristatebutton_info, 0);
   }
   return dtgtk_tristatebutton_type;
 }

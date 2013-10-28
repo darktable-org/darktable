@@ -316,6 +316,25 @@ update_saturation_slider_end_color(
   dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
 }
 
+static inline void
+update_balance_slider_colors(
+  GtkWidget* slider,
+  float hue1,
+  float hue2)
+{
+  float rgb[3];
+  if (hue1 != -1)
+  {
+    hsl2rgb(rgb, hue1, 1.0, 0.5);
+    dt_bauhaus_slider_set_stop(slider, 0.0, rgb[0], rgb[1], rgb[2]);
+  }
+  if (hue2 != -1)
+  {
+    hsl2rgb(rgb, hue2, 1.0, 0.5);
+    dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+  }
+}
+
 static void
 hue_callback(GtkWidget *slider, gpointer user_data)
 {
@@ -334,6 +353,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
     saturation = p->shadow_saturation;
     colorpicker = GTK_WIDGET(g->colorpick1);
     sat_slider = g->gslider2;
+    update_balance_slider_colors(g->scale1, -1, hue);
   }
   else
   {
@@ -341,6 +361,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
     saturation=p->highlight_saturation;
     colorpicker=GTK_WIDGET(g->colorpick2);
     sat_slider=g->gslider4;
+    update_balance_slider_colors(g->scale1, hue, -1);
   }
 
   update_colorpicker_fg(colorpicker, hue, saturation);
@@ -348,7 +369,7 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   if(self->dt->gui->reset) return;
 
-  gtk_widget_draw(GTK_WIDGET(sat_slider),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(sat_slider));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -388,7 +409,10 @@ static void
 colorpick_button_callback(GtkButton *button,gpointer user_data)
 {
   GtkColorSelectionDialog  *csd=(GtkColorSelectionDialog  *)user_data;
-  gtk_dialog_response(GTK_DIALOG(csd),(GTK_WIDGET(button)==csd->ok_button)?GTK_RESPONSE_ACCEPT:0);
+  GtkWidget *okButton = 0;
+  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
+
+  gtk_dialog_response(GTK_DIALOG(csd), (GTK_WIDGET(button)==okButton)?GTK_RESPONSE_ACCEPT:0);
 }
 
 static void
@@ -401,11 +425,16 @@ colorpick_callback (GtkDarktableButton *button, gpointer user_data)
 
   GtkColorSelectionDialog  *csd = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new(_("select tone color")));
   gtk_window_set_transient_for(GTK_WINDOW(csd), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  g_signal_connect (G_OBJECT (csd->ok_button), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
-  g_signal_connect (G_OBJECT (csd->cancel_button), "clicked",
-                    G_CALLBACK (colorpick_button_callback), csd);
 
+  GtkWidget *okButton, *cancelButton = 0;
+  g_object_get(G_OBJECT(csd), "ok-button", &okButton, NULL);
+  g_object_get(G_OBJECT(csd), "cancel-button", &cancelButton, NULL);
+
+  g_signal_connect (G_OBJECT (okButton), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+  g_signal_connect (G_OBJECT (cancelButton), "clicked",
+                    G_CALLBACK (colorpick_button_callback), csd);
+  
   GtkColorSelection *cs = GTK_COLOR_SELECTION(gtk_color_selection_dialog_get_color_selection(csd));
   GdkColor c;
   float color[3],h,s,l;
@@ -494,6 +523,8 @@ void gui_update(struct dt_iop_module_t *self)
   update_colorpicker_fg(GTK_WIDGET(g->colorpick2), p->highlight_hue, p->highlight_saturation);
   update_saturation_slider_end_color(g->gslider2, p->shadow_hue);
   update_saturation_slider_end_color(g->gslider4, p->highlight_hue);
+
+  update_balance_slider_colors(g->scale1, p->highlight_hue, p->shadow_hue);
 }
 
 void init(dt_iop_module_t *module)
@@ -537,9 +568,9 @@ gui_init_tab(
 
   // hue slider
   GtkWidget* hue;
-  *pphue = hue =( dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2));
+  *pphue = hue =( dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0));
   dt_bauhaus_slider_set_stop(hue, 0.0f, 1.0f, 0.0f, 0.0f);
-  dt_bauhaus_widget_set_label(hue, _("hue"));
+  dt_bauhaus_widget_set_label(hue, NULL, _("hue"));
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.498f, 0.0f, 1.0f, 1.0f);
@@ -551,8 +582,8 @@ gui_init_tab(
   // saturation slider
   GtkWidget* saturation;
   *ppsaturation = saturation = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(saturation, _("saturation"));
-  dt_bauhaus_slider_set_stop(saturation, 0.0f, 1.0f, 1.0f, 1.0f);
+  dt_bauhaus_widget_set_label(saturation, NULL, _("saturation"));
+  dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   g_object_set(G_OBJECT(saturation), "tooltip-text", _("select the saturation tone"), (char *)NULL);
 
@@ -588,14 +619,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->balance*100.0, 2);
+  g->scale1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 100.0, 0.1, p->balance*100.0, 2, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f");
-  dt_bauhaus_widget_set_label(g->scale1, _("balance"));
+  dt_bauhaus_slider_set_stop(g->scale1, 0.0f, 0.5f, 0.5f, 0.5f);
+  dt_bauhaus_slider_set_stop(g->scale1, 1.0f, 0.5f, 0.5f, 0.5f);
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("balance"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
 
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compress, 2);
   dt_bauhaus_slider_set_format(g->scale2, "%.2f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("compress"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compress"));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
 
 

@@ -84,12 +84,14 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
 
   /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
+  cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   /* draw standard button background if not transparent */
   if( (flags & CPF_STYLE_FLAT ))
@@ -108,8 +110,8 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   else if( !(flags & CPF_BG_TRANSPARENT) )
   {
     /* draw default boxed button */
-    gtk_paint_box (widget->style, widget->window,
-                   GTK_WIDGET_STATE (widget),
+    gtk_paint_box (gtk_widget_get_style(widget), gtk_widget_get_window(widget),
+                   gtk_widget_get_state(widget),
                    GTK_SHADOW_OUT, NULL, widget, "button",
                    x, y, width, height);
   }
@@ -138,7 +140,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
     if (DTGTK_BUTTON (widget)->icon) lx += width;
     GdkRectangle t= {x,y,x+width,y+height};
-    gtk_paint_layout(style,widget->window, GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
+    gtk_paint_layout(style,gtk_widget_get_window(widget), GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
   }
 
   return FALSE;
@@ -149,7 +151,7 @@ GtkWidget*
 dtgtk_button_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableButton *button;
-  button = gtk_type_new (dtgtk_button_get_type());
+  button = g_object_new(dtgtk_button_get_type(), NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
   return (GtkWidget *)button;
@@ -166,23 +168,24 @@ dtgtk_button_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc paint, 
   return button;
 }
 
-GtkType dtgtk_button_get_type()
+GType dtgtk_button_get_type()
 {
-  static GtkType dtgtk_button_type = 0;
+  static GType dtgtk_button_type = 0;
   if (!dtgtk_button_type)
   {
-    static const GtkTypeInfo dtgtk_button_info =
+    static const GTypeInfo dtgtk_button_info =
     {
-      "GtkDarktableButton",
-      sizeof(GtkDarktableButton),
       sizeof(GtkDarktableButtonClass),
-      (GtkClassInitFunc) _button_class_init,
-      (GtkObjectInitFunc) _button_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _button_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableButton),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _button_init,
     };
-    dtgtk_button_type = gtk_type_unique (GTK_TYPE_BUTTON, &dtgtk_button_info);
+    dtgtk_button_type = g_type_register_static(GTK_TYPE_BUTTON, "GtkDarktableButton", &dtgtk_button_info, 0);
   }
   return dtgtk_button_type;
 }

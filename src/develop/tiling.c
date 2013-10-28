@@ -796,8 +796,8 @@ _default_process_tiling_ptp (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
-  if(input != NULL) free(input);
-  if(output != NULL) free(output);
+  if(input != NULL) dt_free_align(input);
+  if(output != NULL) dt_free_align(output);
   piece->pipe->tiling = 0;
   return;
 
@@ -806,8 +806,8 @@ error:
   // fall through
 
 fallback:
-  if(input != NULL) free(input);
-  if(output != NULL) free(output);
+  if(input != NULL) dt_free_align(input);
+  if(output != NULL) dt_free_align(output);
   piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] fall back to standard processing for module '%s'\n", self->op);
   self->process(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -1083,8 +1083,8 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
       for(int j=0; j<oroi_good.height; j++)
         memcpy((char *)ovoid+ooffs+j*opitch, (char *)output+((j+origin_y)*oroi_full.width+origin_x)*out_bpp, oroi_good.width*out_bpp);
 
-      free(input);
-      free(output);
+      dt_free_align(input);
+      dt_free_align(output);
       input = output = NULL;
     }
 
@@ -1092,8 +1092,8 @@ _default_process_tiling_roi (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   for(int k=0; k<3; k++)
     piece->pipe->processed_maximum[k] = processed_maximum_new[k];
 
-  if(input != NULL) free(input);
-  if(output != NULL) free(output);
+  if(input != NULL) dt_free_align(input);
+  if(output != NULL) dt_free_align(output);
   piece->pipe->tiling = 0;
   return;
 
@@ -1102,8 +1102,8 @@ error:
   // fall through
 
 fallback:
-  if(input != NULL) free(input);
-  if(output != NULL) free(output);
+  if(input != NULL) dt_free_align(input);
+  if(output != NULL) dt_free_align(output);
   piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] fall back to standard processing for module '%s'\n", self->op);
   self->process(self, piece, ivoid, ovoid, roi_in, roi_out);

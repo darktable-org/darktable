@@ -64,12 +64,14 @@ _icon_expose (GtkWidget *widget, GdkEventExpose *event)
 
   /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
+  cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   /*
       cairo_rectangle (cr,x,y,width,height);
@@ -100,30 +102,31 @@ GtkWidget*
 dtgtk_icon_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableIcon *icon;
-  icon = gtk_type_new (dtgtk_icon_get_type());
+  icon = g_object_new(dtgtk_icon_get_type(), NULL);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(icon),FALSE);
   icon->icon = paint;
   icon->icon_flags = paintflags;
   return (GtkWidget *)icon;
 }
 
-GtkType dtgtk_icon_get_type()
+GType dtgtk_icon_get_type()
 {
-  static GtkType dtgtk_icon_type = 0;
+  static GType dtgtk_icon_type = 0;
   if (!dtgtk_icon_type)
   {
-    static const GtkTypeInfo dtgtk_icon_info =
+    static const GTypeInfo dtgtk_icon_info =
     {
-      "GtkDarktableIcon",
-      sizeof(GtkDarktableIcon),
       sizeof(GtkDarktableIconClass),
-      (GtkClassInitFunc) _icon_class_init,
-      (GtkObjectInitFunc) _icon_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _icon_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableIcon),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _icon_init,
     };
-    dtgtk_icon_type = gtk_type_unique (GTK_TYPE_EVENT_BOX, &dtgtk_icon_info);
+    dtgtk_icon_type = g_type_register_static(GTK_TYPE_EVENT_BOX, "GtkDarktableIcon", &dtgtk_icon_info, 0);
   }
   return dtgtk_icon_type;
 }

@@ -38,6 +38,9 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#ifndef __WIN32__
+  #include <glob.h>
+#endif
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
@@ -69,13 +72,13 @@ void dt_control_write_sidecar_files_job_init(dt_job_t *job)
 
 int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   while(t)
   {
     gboolean from_cache = FALSE;
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
     char dtfilename[DT_MAX_PATH_LEN+4];
     dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
@@ -112,7 +115,7 @@ envelope(const float xx)
 
 int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -130,7 +133,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   total ++;
   while(t)
   {
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
     // just take a copy. also do it after blocking read, so filters and bpp will make sense.
@@ -262,8 +265,8 @@ error:
 
 int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
-  long int newimgid = -1;
+  int imgid = -1;
+  int newimgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -273,7 +276,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     newimgid = dt_image_duplicate(imgid);
     if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE,NULL);
     t = g_list_delete_link(t, t);
@@ -281,13 +284,14 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     dt_control_backgroundjobs_progress(darktable.control, jid, fraction);
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
 
 int32_t dt_control_flip_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   const int cw = t1->flag;
   GList *t = t1->index;
@@ -298,7 +302,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     dt_image_flip(imgid, cw);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
@@ -311,7 +315,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
 
 int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -363,7 +367,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
   while(t)
   {
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     dt_image_remove(imgid);
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
@@ -379,6 +383,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   }
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -386,7 +391,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
 
 int32_t dt_control_delete_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   int total = g_list_length(t);
@@ -417,7 +422,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
   {
-    imgid = (long int)t->data;
+    imgid = GPOINTER_TO_INT(t->data);
     char filename[DT_MAX_PATH_LEN];
     gboolean from_cache = FALSE;
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
@@ -430,14 +435,76 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
     sqlite3_clear_bindings(stmt);
 
     // remove from disk:
-    if(duplicates == 1) // don't remove the actual data if there are (other) duplicates using it
+    if(duplicates == 1)
+    {
+      // there are no further duplicates so we can remove the source data file
       (void)g_unlink(filename);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
-    (void)g_unlink(filename);
+      dt_image_remove(imgid);
 
-    dt_image_remove(imgid);
+      // all sidecar files - including left-overs - can be deleted;
+      // left-overs can result when previously duplicates have been REMOVED;
+      // no need to keep them as the source data file is gone.
+      const int len = DT_MAX_PATH_LEN + 30;
+      gchar pattern[len];
+
+      // NULL terminated list of glob patterns; should include "" and can be extended if needed
+      static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+
+      const gchar **glob_pattern = glob_patterns;
+      GList *files = NULL;
+      while(*glob_pattern)
+      {
+        snprintf(pattern, len, "%s", filename);
+        gchar *c1 = pattern + strlen(pattern);
+        while(*c1 != '.' && c1 > pattern) c1--;
+        snprintf(c1, pattern + len - c1, "%s", *glob_pattern);
+        const gchar *c2 = filename + strlen(filename);
+        while(*c2 != '.' && c2 > filename) c2--;
+        snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+
+#ifdef __WIN32__
+        WIN32_FIND_DATA data;
+        HANDLE handle = FindFirstFile(pattern, &data);
+        if(handle != INVALID_HANDLE_VALUE)
+        {
+          do
+            files = g_list_append(files, g_strdup(data.cFileName));
+          while(FindNextFile(handle, &data));
+        }
+#else
+        glob_t globbuf;
+        if(!glob(pattern, 0, NULL, &globbuf))
+        {
+          for(size_t i=0; i < globbuf.gl_pathc; i++)
+            files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
+          globfree(&globbuf);
+        }
+#endif
+
+        glob_pattern++;
+      }
+
+      GList *file_iter = g_list_first(files);
+      while(file_iter != NULL)
+      {
+        (void)g_unlink(file_iter->data);
+        file_iter = g_list_next(file_iter);
+      }
+
+      g_list_free_full(files, g_free);
+    }
+    else
+    {
+      // don't remove the actual source data if there are further duplicates using it;
+      // just delete the xmp file of the duplicate selected.
+
+      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
+      char *c = filename + strlen(filename);
+      sprintf(c, ".xmp");
+
+      dt_image_remove(imgid);
+      (void)g_unlink(filename);
+    }
 
     t = g_list_delete_link(t, t);
     fraction=1.0/total;
@@ -455,6 +522,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   g_list_free(list);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -493,7 +561,7 @@ int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     GTimeVal timestamp;
     GDateTime *exif_time, *utc_time;
     gdouble lon,lat;
-    uint32_t imgid = (long int)t->data;
+    int imgid = GPOINTER_TO_INT(t->data);
 
     /* get image */
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
@@ -578,8 +646,8 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
-    long int imgid = sqlite3_column_int(stmt, 0);
-    t->index = g_list_append(t->index, (gpointer)imgid);
+    int imgid = sqlite3_column_int(stmt, 0);
+    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
   }
   sqlite3_finalize(stmt);
 }
@@ -588,15 +656,15 @@ void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t,
 void dt_control_image_enumerator_job_selected_init(dt_control_image_enumerator_t *t)
 {
   GList *list = NULL;
-  long int imgid = dt_view_get_image_to_act_on();
+  int imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0) {
     /* get sorted list of selected images */
-    t->index = dt_collection_get_selected(darktable.collection);
+    t->index = dt_collection_get_selected(darktable.collection, -1);
   }
   else {
     /* Create a list with only one image */
-    list = g_list_append (list, (gpointer)imgid);
+    list = g_list_append (list, GINT_TO_POINTER(imgid));
     t->index = list;
   }
 }
@@ -789,6 +857,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   dt_collection_deserialize(collect);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
 }
@@ -962,13 +1031,13 @@ int32_t dt_control_copy_images_job_run(dt_job_t *job)
 
 int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
   guint tagid = 0;
   const int total = g_list_length(t);
   double fraction=0;
-  gboolean is_copy = (long int)job->user_data == 1;
+  gboolean is_copy = GPOINTER_TO_INT(job->user_data) == 1;
   char message[512]= {0};
 
   if (is_copy)
@@ -987,8 +1056,8 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    imgid = (long int)t->data;
-    if ((long int)job->user_data == 1)
+    imgid = GPOINTER_TO_INT(t->data);
+    if (GPOINTER_TO_INT(job->user_data) == 1)
     {
       dt_image_local_copy_set(imgid);
       dt_tag_attach(tagid, imgid);
@@ -1005,12 +1074,13 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   }
 
   dt_control_backgroundjobs_destroy(control, jid);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   return 0;
 }
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
-  long int imgid = -1;
+  int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   dt_control_export_t *settings = (dt_control_export_t*)t1->data;
   GList *t = t1->index;
@@ -1057,7 +1127,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
   #pragma omp parallel default(none) private(imgid) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #else
   #pragma omp parallel private(imgid) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
@@ -1088,7 +1158,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
           imgid = 0;
         else
         {
-          imgid = (long int)t->data;
+          imgid = GPOINTER_TO_INT(t->data);
           t = g_list_delete_link(t, t);
           num = total - g_list_length(t);
         }
@@ -1122,6 +1192,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
+	if(fraction > 1.0) fraction = 1.0;
         dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
@@ -1157,7 +1228,7 @@ void dt_control_export(GList *imgid_list,int max_width, int max_height, int form
   data->format_index = format_index;
   data->storage_index = storage_index;
   data->high_quality = high_quality;
-  strncpy(data->style,style,128);
+  g_strlcpy(data->style,style,sizeof(data->style));
   t->data = data;
   dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_MULTIPLE,t);
   dt_control_add_job(darktable.control, &job);
@@ -1192,7 +1263,7 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
   /* go thru each selected image and update datetime_taken */
   do
   {
-    uint32_t imgid = (long int)t->data;
+    int imgid = GPOINTER_TO_INT(t->data);
 
     dt_image_add_time_offset(imgid, offset);
     cntr++;
@@ -1214,13 +1285,13 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long int imgid)
+void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, int imgid)
 {
   dt_control_job_init(job, "time offset");
   job->execute = &dt_control_time_offset_job_run;
   dt_control_image_enumerator_t *t = (dt_control_image_enumerator_t *)job->param;
   if (imgid != -1)
-    t->index = g_list_append(t->index, (gpointer)imgid);
+    t->index = g_list_append(t->index, GINT_TO_POINTER(imgid));
   else
     dt_control_image_enumerator_job_selected_init(t);
 
@@ -1229,7 +1300,7 @@ void dt_control_time_offset_job_init(dt_job_t *job, const long int offset, long 
   t->data = data;
 }
 
-void dt_control_time_offset(const long int offset, long int imgid)
+void dt_control_time_offset(const long int offset, int imgid)
 {
   dt_job_t j;
   dt_control_time_offset_job_init(&j, offset, imgid);

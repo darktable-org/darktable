@@ -231,15 +231,16 @@ dt_gtkentry_build_completion_tooltip_text (const gchar *header,
 {
   const unsigned int tooltip_len = 1024;
   gchar *tt = g_malloc0_n(tooltip_len, sizeof(gchar));
+  gsize tt_size = sizeof(gchar)*tooltip_len;
   dt_gtkentry_completion_spec const *p;
 
-  g_strlcat(tt, header, sizeof(tt)*tooltip_len);
-  g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
+  g_strlcat(tt, header, tt_size);
+  g_strlcat(tt, "\n", tt_size);
 
   for(p = compl_list; p->description != NULL; p++)
   {
-    g_strlcat(tt, p->description, sizeof(tt)*tooltip_len);
-    g_strlcat(tt, "\n", sizeof(tt)*tooltip_len);
+    g_strlcat(tt, p->description, tt_size);
+    g_strlcat(tt, "\n", tt_size);
   }
 
   return tt;

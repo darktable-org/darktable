@@ -10,3 +10,5 @@ Stuff that belongs in here:
 The release team should empty this file after each release.
 ==========================================================================================
 
+- better UX for bauhaus sliders: the popup now has a blinking cursor to make possible text entry more discoverable.
+- text entry for bauhaus sliders and vimkeys' :set command can now evaluate mathematical expressions.

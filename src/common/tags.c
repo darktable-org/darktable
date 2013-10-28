@@ -148,10 +148,10 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   if (!strcmp(source,dest)) return;
 
   char query[1024];
-  gchar *tag;
+  gchar *tag = g_strrstr(source,"|");
 
-  if (g_strrstr(source,"|")) tag = g_strrstr (source,"|");
-  else tag = g_strconcat("|", source, NULL);
+  if (!tag)
+    tag = g_strconcat("|", source, NULL);
 
   if (!strcmp(dest," "))
   {
@@ -244,7 +244,7 @@ void dt_tag_attach_list(GList *tags,gint imgid)
   if( (child=g_list_first(tags))!=NULL )
     do
     {
-      dt_tag_attach((guint)(long int)child->data,imgid);
+      dt_tag_attach(GPOINTER_TO_INT(child->data), imgid);
     }
     while( (child=g_list_next(child)) !=NULL);
 }
@@ -349,9 +349,10 @@ uint32_t dt_tag_get_attached(gint imgid,GList **result)
   else
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT DISTINCT T.id, T.name FROM selected_images JOIN "
-                                "tagged_images ON selected_images.imgid = tagged_images.imgid "
-                                "JOIN tags T ON T.id = tagged_images.tagid", -1, &stmt, NULL);
+                                "SELECT DISTINCT T.id, T.name "
+                                "FROM tagged_images,tags as T "
+                                "WHERE tagged_images.imgid in (select imgid from selected_images)"
+                                "  AND T.id = tagged_images.tagid", -1, &stmt, NULL);
   }
 
   // Create result
@@ -505,8 +506,8 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT INTO memory.taglist (id, count) "
                         "SELECT DISTINCT(TXT.id2), TXT.count FROM tagxtag TXT "
-                        "WHERE TXT.id1 IN "
-                        "(SELECT id from memory.tagq) AND TXT.count > 0 "
+                        "WHERE TXT.count > 0 "
+                        " AND TXT.id1 IN (SELECT id FROM memory.tagq) "
                         "ORDER BY TXT.count DESC",
                         NULL, NULL, NULL);
 
@@ -517,17 +518,18 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
                         "INSERT OR REPLACE INTO memory.taglist (id, count) "
                         "SELECT DISTINCT(TXT.id1), TXT.count FROM tagxtag TXT "
-                        "WHERE TXT.id2 IN "
-                        "(SELECT id from memory.tagq) AND TXT.count > 0 "
+                        "WHERE TXT.count > 0 "
+                        " AND TXT.id2 IN (SELECT id FROM memory.tagq) "
                         "ORDER BY TXT.count DESC",
                         NULL, NULL, NULL);
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count FROM tags T JOIN memory.taglist MT ON "
-                              "MT.id = T.id WHERE T.id in "
-                              "(SELECT DISTINCT(MT.id) FROM memory.taglist MT) "
-                              "AND T.name NOT LIKE 'darktable|%%' ORDER BY T.id ASC",
+                              "SELECT T.name, T.id FROM tags T "
+                              "JOIN memory.taglist MT ON MT.id = T.id "
+                              "WHERE T.id IN (SELECT DISTINCT(MT.id) FROM memory.taglist MT) "
+                              "  AND T.name NOT LIKE 'darktable|%%' "
+                              "ORDER BY MT.count DESC",
                               -1, &stmt, NULL);
 
   /* ... and create the result list to send upwards */

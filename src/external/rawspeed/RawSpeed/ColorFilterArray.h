@@ -61,6 +61,7 @@ public:
   uint32 getDcrawFilter();
   void shiftLeft();
   void shiftDown();
+  iPoint2D size;
   std::string asString();
   static std::string colorToString(CFAColor c);
 private:

@@ -148,7 +148,7 @@ gboolean dt_colorlabels_key_accel_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable, guint keyval,
     GdkModifierType modifier, gpointer data)
 {
-  const long int mode = (long int)data;
+  const int mode = GPOINTER_TO_INT(data);
   int32_t selected;
 
   selected = dt_view_get_image_to_act_on();

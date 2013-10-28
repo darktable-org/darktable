@@ -266,7 +266,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_drawing_area_size(c->area, 258, 150);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 258, 150);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, grey, and white points.  operates on L channel."), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -355,7 +355,9 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -592,7 +594,9 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging)
   {
     c->mouse_x = CLAMP(event->x - inset, 0, width);

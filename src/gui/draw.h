@@ -76,6 +76,29 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, cons
   }
 }
 
+static inline void dt_draw_loglog_grid(
+    cairo_t *cr,
+    const int num,
+    const int left,
+    const int top,
+    const int right,
+    const int bottom,
+    const int base)
+{
+  float width = right - left;
+  float height = bottom - top;
+
+  for(int k=1; k<num; k++)
+  {
+    const float x = logf(k/(float)num * (base-1.0f) + 1)/logf(base);
+    dt_draw_line(cr, left + x*width, top, left +  x*width, bottom);
+    cairo_stroke(cr);
+    dt_draw_line(cr, left, top + x*height, right, top + x*height);
+    cairo_stroke(cr);
+  }
+}
+
+
 static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int top, const int right, const int bottom)
 {
 //   float width = right - left;

@@ -21,6 +21,12 @@ set(EXIV2_NAMES ${EXIV2_NAMES} exiv2 libexiv2)
 find_library(EXIV2_LIBRARY NAMES ${EXIV2_NAMES} )
 mark_as_advanced(EXIV2_LIBRARY)
 
+if(WIN32)
+  find_library(EXPAT_LIBRARY NAMES expat )
+  find_library(ICONV_LIBRARY NAMES iconv )
+  list(APPEND EXIV2_LIBRARY ${EXPAT_LIBRARY} ${ICONV_LIBRARY})
+endif(WIN32)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EXIV2 DEFAULT_MSG EXIV2_LIBRARY EXIV2_INCLUDE_DIR)
 

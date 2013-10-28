@@ -27,8 +27,8 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 200000;
-  const int reserve = 20000;
+  const int stepsize = 300000;
+  const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
 
@@ -362,19 +362,19 @@ static void _brush_init_ctrl_points (dt_masks_form_t *form)
 static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
 {
   //we want to find the start and end angles
-  double a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
-  double a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
+  float a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
+  float a2 = atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]);
 
-  if (a1==a2) return;
+  if (a1 == a2) return;
 
   //we have to be sure that we turn in the correct direction
   if (a2<a1 && clockwise)
   {
-    a2 += 2*M_PI;
+    a2 += 2.0f*M_PI;
   }
   if (a2>a1 && !clockwise)
   {
-    a1 += 2*M_PI;
+    a1 += 2.0f*M_PI;
   }
 
   //we determine start and end radius too
@@ -405,26 +405,95 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   }
 }
 
+/** fill small gap between 2 points with an arc of circle */
+/** in contrast to the previous function it will always run the shortest path (max. PI) and does not consider clock or anti-clockwise action */
+static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, float *bmin2, float *bmax, float *points, int *pos_points, float *border, int *pos_border)
+{
+  //we want to find the start and end angles
+  float a1 = fmodf(atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+  float a2 = fmodf(atan2(bmax[1]-cmax[1],bmax[0]-cmax[0]) + 2.0f*M_PI, 2.0f*M_PI);
+
+  if (a1 == a2) return;
+
+  //we determine start and end radius too
+  float r1 = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
+  float r2 = sqrtf((bmax[1]-cmax[1])*(bmax[1]-cmax[1])+(bmax[0]-cmax[0])*(bmax[0]-cmax[0]));
+
+  //we close the gap in the shortest direction
+  float delta = a2 - a1;
+  if (fabsf(delta) > M_PI) delta = delta - copysignf(2.0f*M_PI, delta);
+
+  //get the max length of the circle arc
+  int l = fabsf(delta)*fmaxf(r1,r2);
+  if (l < 2) return;
+
+  //and now we add the points
+  float incra = delta/l;
+  float incrr = (r2-r1)/l;
+  float rr = r1+incrr;
+  float aa = a1+incra;
+  for (int i=1; i<l; i++)
+  {
+    points[*pos_points] = cmax[0];
+    points[*pos_points+1] = cmax[1];
+    *pos_points += 2;
+    border[*pos_border] = cmax[0]+rr*cosf(aa);
+    border[*pos_border+1] = cmax[1]+rr*sinf(aa);
+    *pos_border += 2;
+    rr += incrr;
+    aa += incra;
+  }
+}
+
+
+/** draw a circle with given radius. can be used to terminate a stroke and to draw junctions where attributes (opacity) change */
+static void _brush_points_stamp(float *cmax, float *bmin, float *points, int *pos_points, float *border, int *pos_border, gboolean clockwise)
+{
+  //we want to find the start angle
+  float a1 = atan2(bmin[1]-cmax[1],bmin[0]-cmax[0]);
+
+  //we determine the radius too
+  float rad = sqrtf((bmin[1]-cmax[1])*(bmin[1]-cmax[1])+(bmin[0]-cmax[0])*(bmin[0]-cmax[0]));
+
+  //determine the max length of the circle arc
+  int l = 2.0f*M_PI*rad;
+  if (l<2) return;
+
+  //and now we add the points
+  float incra = 2.0f*M_PI/l;
+  float aa = a1+incra;
+  for (int i=0; i<l; i++)
+  {
+    points[*pos_points] = cmax[0];
+    points[*pos_points+1] = cmax[1];
+    *pos_points += 2;
+    border[*pos_border] = cmax[0]+rad*cosf(aa);
+    border[*pos_border+1] = cmax[1]+rad*sinf(aa);
+    *pos_border += 2;
+    aa += incra;
+  }
+}
+
 /** recursive function to get all points of the brush AND all point of the border */
-/** the function take care to avoid big gaps between points */
+/** the function takes care to avoid big gaps between points */
 static void _brush_points_recurs(float *p1, float *p2,
                                  double tmin, double tmax, float *points_min, float *points_max, float *border_min, float *border_max,
                                  float *rpoints, float *rborder, float *rpayload, float *points, float *border, float *payload, 
                                  int *pos_points, int *pos_border, int *pos_payload, int withborder, int withpayload)
 {
   //we calculate points if needed
-  if (points_min[0] == -99999)
+  if ((int)points_min[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmin, p1[4]+(p2[4]-p1[4])*tmin*tmin*(3.0-2.0*tmin),
                          points_min,points_min+1,border_min,border_min+1);
   }
-  if (points_max[0] == -99999)
+  if ((int)points_max[0] == -99999)
   {
     _brush_border_get_XY(p1[0],p1[1],p1[2],p1[3],p2[2],p2[3],p2[0],p2[1],tmax, p1[4]+(p2[4]-p1[4])*tmax*tmax*(3.0-2.0*tmax),
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.000001) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
+  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
                                (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
                                (!withborder || (
                                   (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
@@ -438,11 +507,23 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withborder)
     {
-      if (border_max[0] == -9999999.0f)
+      if ((int)border_max[0] == -9999999)
       {
         border_max[0] = border_min[0];
         border_max[1] = border_min[1];
       }
+      else if ((int)border_min[0] == -9999999)
+      {
+        border_min[0] = border_max[0];
+        border_min[1] = border_max[1];
+      }
+
+      //we check gaps in the border (sharp edges)
+      if (abs((int)border_max[0] - (int)border_min[0]) > 2 || abs((int)border_max[1] - (int)border_min[1]) > 2)
+      {
+        _brush_points_recurs_border_small_gaps(points_max, border_min, NULL, border_max, points, pos_points, border, pos_border);
+      }
+
       rborder[0] = border[*pos_border] = border_max[0];
       rborder[1] = border[*pos_border+1] = border_max[1];
       *pos_border += 2;
@@ -450,9 +531,12 @@ static void _brush_points_recurs(float *p1, float *p2,
 
     if (withpayload)
     {
-      rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
-      rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
-      *pos_payload += 2;
+      while(*pos_payload < *pos_points)
+      {
+        rpayload[0] = payload[*pos_payload] = p1[5] + tmax * (p2[5] - p1[5]);
+        rpayload[1] = payload[*pos_payload+1] = p1[6] + tmax * (p2[6] - p1[6]);
+        *pos_payload += 2;
+      }
     }
 
     return;
@@ -567,6 +651,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   posp = 6*nb;
 
   int cw = 1;
+  int start_stamp = 0;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
@@ -579,7 +664,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     int k1 = _brush_cyclic_cursor(n+1, nb);
     int k2 = _brush_cyclic_cursor(n+2, nb);
 
-    if(k == k1) cw *= -1;
     dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k1);
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k2);
@@ -606,35 +690,40 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
       memcpy(p4, pd, 7*sizeof(float));
     }
 
-    //special case render endpoints
-    if (k == k1)
+    // 1st. special case: render abrupt transitions between different opacity and/or hardness values 
+    if ((fabs(p1[5] - p2[5]) > 0.05f || fabs(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2*nb-1))
     {
-      if (border)
+      if(n == 0)
       {
-        float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
-        float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
-        float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
-        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, TRUE);
-
-        if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
-        if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+        start_stamp = 1;    // remember to deal with the first node as a final step
       }
-
-      if (payload)
+      else
       {
-        for (int k = posp/2; k < pos/2; k++)
+        if (border)
         {
-          (*payload)[posp] = p1[5];
-          (*payload)[posp+1] = p1[6];
-          posp += 2;
+          float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
+          float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
+          _brush_points_stamp(cmax, bmin, *points, &pos, *border, &posb, TRUE);
 
-          if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+          if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+          if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+        }
+
+        if (payload)
+        {
+          for (int k = posp/2; k < pos/2; k++)
+          {
+            (*payload)[posp] = p1[5];
+            (*payload)[posp+1] = p1[6];
+            posp += 2;
+
+            if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+          }
         }
       }
-      continue;
     }
 
-    //special case: render transition point between different brush sizes
+    // 2nd. special case: render transition point between different brush sizes
     if (fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
       if (border)
@@ -659,6 +748,36 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
           if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
         }
       }
+    }
+
+    // 3rd. special case: render endpoints
+    if (k == k1)
+    {
+      if (border)
+      {
+        float bmin[2] = { (*border)[posb-2], (*border)[posb-1] };
+        float cmax[2] = { (*points)[pos-2], (*points)[pos-1] };
+        float bmax[2] = { 2*cmax[0] - bmin[0], 2*cmax[1] - bmin[1] };
+        _brush_points_recurs_border_gaps(cmax, bmin, NULL, bmax, *points, &pos, *border, &posb, TRUE);
+
+        if (!_brush_buffer_grow(points, &pos, &points_max)) return 0;
+        if (!_brush_buffer_grow(border, &posb, &border_max)) return 0;
+      }
+
+      if (payload)
+      {
+        for (int k = posp/2; k < pos/2; k++)
+        {
+          (*payload)[posp] = p1[5];
+          (*payload)[posp+1] = p1[6];
+          posp += 2;
+
+          if (!_brush_buffer_grow(payload, &posp, &payload_max)) return 0;
+        }
+      }
+
+      cw *= -1;
+      continue;
     }
 
     //and we determine all points by recursion (to be sure the distance between 2 points is <=1)
@@ -687,9 +806,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
 
     if (border)
     {
-      if (rb[0] == -9999999.0f)
+      if ((int)rb[0] == -9999999)
       {
-        if ((*border)[posb-2] == -9999999.0f)
+        if ((int)(*border)[posb-2] == -9999999)
         {
           (*border)[posb-2] = (*border)[posb-4];
           (*border)[posb-1] = (*border)[posb-3];
@@ -708,7 +827,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
     {
       //we get the next point (start of the next segment)
       _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0, p3[4],cmin,cmin+1,bmax,bmax+1);
-      if (bmax[0] == -9999999.0f)
+      if ((int)bmax[0] == -9999999)
       {
         _brush_border_get_XY(p3[0],p3[1],p3[2],p3[3],p4[2],p4[3],p4[0],p4[1],0.0001, p3[4],cmin,cmin+1,bmax,bmax+1);
       }
@@ -973,7 +1092,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       if (gui->guipoints_count > 0)
       {
-        gui->guipoints_payload[4*(gui->guipoints_count-1)+1] = masks_density;
+        gui->guipoints_payload[4*(gui->guipoints_count-1)+2] = masks_density;
       }
     }
 
@@ -1262,6 +1381,71 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
     gui->point_edited = -1;
   }
+    else if (gui->point_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    //we remove the point (and the entire form if there is too few points)
+    if (g_list_length(form->points) < 2)
+    {
+      //if the form doesn't below to a group, we don't delete it
+      if (parentid<=0) return 1;
+      
+      dt_masks_clear_form_gui(darktable.develop);
+      //we hide the form
+      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
+      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
+      else
+      {
+        GList *forms = g_list_first(darktable.develop->form_visible->points);
+        while (forms)
+        {
+          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
+          if (gpt->formid == form->formid)
+          {
+            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
+            break;
+          }
+          forms = g_list_next(forms);
+        }
+      }
+
+      //we delete or remove the shape
+      dt_masks_form_remove(module,NULL,form);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
+    gui->point_selected = -1;
+    _brush_init_ctrl_points(form);
+
+    dt_masks_write_form(form,darktable.develop);
+
+    //we recreate the form points
+    dt_masks_gui_form_remove(form,gui,index);
+    dt_masks_gui_form_create(form,gui,index);
+    //we save the move
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if (gui->feather_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
+    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
+    {
+      point->state = DT_MASKS_POINT_STATE_NORMAL;
+      _brush_init_ctrl_points(form);
+
+      dt_masks_write_form(form,darktable.develop);
+
+      //we recreate the form points
+      dt_masks_gui_form_remove(form,gui,index);
+      dt_masks_gui_form_create(form,gui,index);
+      //we save the move
+      dt_masks_update_image(darktable.develop);
+    }
+    return 1;
+  }
   else if (which==3 && parentid>0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_clear_form_gui(darktable.develop);
@@ -1533,68 +1717,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if (gui->point_selected>=0 && which == 3)
-  {
-    //we remove the point (and the entire form if there is too few points)
-    if (g_list_length(form->points) < 2)
-    {
-      dt_masks_clear_form_gui(darktable.develop);
-      //we hide the form
-      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
-      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
-      else
-      {
-        GList *forms = g_list_first(darktable.develop->form_visible->points);
-        while (forms)
-        {
-          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-          if (gpt->formid == form->formid)
-          {
-            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
-            break;
-          }
-          forms = g_list_next(forms);
-        }
-      }
-
-      //we delete or remove the shape
-      dt_masks_form_remove(module,NULL,form);
-      dt_dev_masks_list_change(darktable.develop);
-      dt_control_queue_redraw_center();
-      return 1;
-    }
-    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
-    gui->point_selected = -1;
-    _brush_init_ctrl_points(form);
-
-    dt_masks_write_form(form,darktable.develop);
-
-    //we recreate the form points
-    dt_masks_gui_form_remove(form,gui,index);
-    dt_masks_gui_form_create(form,gui,index);
-    //we save the move
-    dt_masks_update_image(darktable.develop);
-
-    return 1;
-  }
-  else if (gui->feather_selected>=0 && which == 3)
-  {
-    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
-    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
-    {
-      point->state = DT_MASKS_POINT_STATE_NORMAL;
-      _brush_init_ctrl_points(form);
-
-      dt_masks_write_form(form,darktable.develop);
-
-      //we recreate the form points
-      dt_masks_gui_form_remove(form,gui,index);
-      dt_masks_gui_form_create(form,gui,index);
-      //we save the move
-      dt_masks_update_image(darktable.develop);
-    }
-    return 1;
-  }
 
   return 0;
 }
@@ -1860,8 +1982,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   //in creation mode
   if(gui->creation)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    float wd = darktable.develop->preview_pipe->iwidth;
+    float ht = darktable.develop->preview_pipe->iheight;
 
     if(gui->guipoints_count == 0)
     {
@@ -2377,31 +2499,43 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   return 1;
 }
 
-
-
 /** we write a falloff segment respecting limits of buffer */
-static void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
+static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
 {
-  //segment length
-  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
-  const int solid = (int)l*hardness;
-  const int soft = l - solid;
+  //segment length (increase by 1 to avoid division-by-zero special case handling)
+  const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1])) + 1;
+  const int solid = hardness*l;
 
-  const float lx = p1[0]-p0[0];
-  const float ly = p1[1]-p0[1];
+  const float lx = (float)(p1[0]-p0[0])/(float)l;
+  const float ly = (float)(p1[1]-p0[1])/(float)l;
 
-  const int dx = lx < 0 ? -1 : 1;
-  const int dy = ly < 0 ? -1 : 1;
+  const int dx = lx <= 0 ? -1 : 1;
+  const int dy = ly <= 0 ? -1 : 1;
+  const int dpx = dx;
+  const int dpy = dy*bw;
+  
+  float fx = p0[0];
+  float fy = p0[1];
+
+  float op = density;
+  float dop = density/(float)(l - solid);
 
   for (int i=0 ; i<l; i++)
   {
-    //position
-    const int x = (int)((float)i*lx/(float)l) + p0[0];
-    const int y = (int)((float)i*ly/(float)l) + p0[1];
-    const float op = density*((i <= solid) ? 1.0f : 1.0-(float)(i - solid)/(float)soft);
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+    const int x = fx;
+    const int y = fy;
+
+    fx += lx;
+    fy += ly;
+    if (i > solid) op -= dop;
+
+    if (x < 0 || x >= bw || y < 0 || y >= bh) continue;
+
+    float *buf = *buffer + y*bw + x;
+
+    *buf = fmaxf(*buf, op);
+    if (x+dx >= 0 && x+dx < bw) buf[dpx] = fmaxf(buf[dpx], op);   //this one is to avoid gaps due to int rounding
+    if (y+dy >= 0 && y+dy < bh) buf[dpy] = fmaxf(buf[dpy], op);   //this one is to avoid gaps due to int rounding
   }
 }
 

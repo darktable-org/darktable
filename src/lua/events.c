@@ -32,7 +32,7 @@ typedef struct event_handler{
   gboolean in_use;
 } event_handler;
 
-static void queue_event(const char*event,int nargs);
+static void run_event(const char*event,int nargs);
 static int register_shortcut_event(lua_State* L);
 static int trigger_keyed_event(lua_State * L);
 static int register_multiinstance_event(lua_State* L);
@@ -161,8 +161,10 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     GdkModifierType modifier,
     gpointer p)
 {
+  dt_lua_lock();
   lua_pushstring(darktable.lua_state,(char*)p);
-  queue_event("shortcut",1);
+  run_event("shortcut",1);
+  dt_lua_unlock();
   return TRUE;
 }
 
@@ -174,10 +176,9 @@ static int register_shortcut_event(lua_State* L) {
   // 2 is the action to perform (checked)
   // 3 is the key itself
   int result = register_keyed_event(L); // will raise an error in case of duplicate key
-  char tmp[1024];
-  snprintf(tmp,1024,"lua/%s",luaL_checkstring(L,3));
-  dt_accel_register_global(tmp,0,0);
-  dt_accel_connect_global(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,3)),closure_destroy));
+  const char* tmp = luaL_checkstring(L,3);
+  dt_accel_register_lua(tmp,0,0);
+  dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback),strdup(luaL_checkstring(L,3)),closure_destroy));
   return result;
 }
 
@@ -334,7 +335,7 @@ static int lua_register_event(lua_State *L) {
 
 
 
-static void queue_event(const char*event,int nargs) {
+static void run_event(const char*event,int nargs) {
   lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
   if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
     lua_settop(darktable.lua_state,0);
@@ -345,18 +346,19 @@ static void queue_event(const char*event,int nargs) {
   lua_pop(darktable.lua_state,2);
   if(!handler->in_use) { 
     lua_pop(darktable.lua_state,nargs);
-    return;
+    return; 
   }
   lua_pushcfunction(darktable.lua_state,handler->on_event);
   lua_insert(darktable.lua_state,-nargs -1);
   lua_pushstring(darktable.lua_state,event);
   lua_pushnumber(darktable.lua_state,nargs);
-  dt_lua_delay_chunk(darktable.lua_state,nargs+2);
+  dt_lua_do_chunk(darktable.lua_state,nargs+2,0);
   
 }
 #if 0
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
+  warning to self : add locking
   lua_State* L = darktable.lua_state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
@@ -423,19 +425,25 @@ static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
      gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state,filename);
-  queue_event("intermediate-export-image",2);
+  run_event("intermediate-export-image",2);
+  dt_lua_unlock();
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_image_t,&id);
-  queue_event("post-import-image",1);
+  run_event("post-import-image",1);
+  dt_lua_unlock();
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
+  dt_lua_lock();
   luaA_push(darktable.lua_state,dt_lua_film_t,&id);
-  queue_event("post-import-film",1);
+  run_event("post-import-film",1);
+  dt_lua_unlock();
 }
 
 int dt_lua_init_events(lua_State *L) {

@@ -266,7 +266,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
-  gtk_drawing_area_size(g->area, 258, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(g->area), 258, 258);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
                 "bright means highlights, dark means shadows. "
                 "use mouse wheel to change saturation."), (char *)NULL);
@@ -286,7 +286,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->slider = dt_bauhaus_slider_new_with_range(self, -3.0f, 3.0f, 0.01f, 1.0f, 2);
   gtk_box_pack_start(GTK_BOX(self->widget), g->slider, TRUE, TRUE, 0);
   g_object_set (GTK_OBJECT(g->slider), "tooltip-text", _("set the global saturation"), (char *)NULL);
-  dt_bauhaus_widget_set_label(g->slider,_("saturation"));
+  dt_bauhaus_widget_set_label(g->slider, NULL, _("saturation"));
 
   g_signal_connect (G_OBJECT (g->slider), "value-changed",
                     G_CALLBACK (sat_callback), self);
@@ -324,7 +324,9 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
   dt_iop_colorcorrection_params_t *p  = (dt_iop_colorcorrection_params_t *)self->params;
 
   const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -395,7 +397,9 @@ dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   const int inset = DT_COLORCORRECTION_INSET;
-  int width = widget->allocation.width - 2*inset, height = widget->allocation.height - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
   const float mouse_x = CLAMP(event->x - inset, 0, width);
   const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
   const float ma = (2.0*mouse_x - width) *DT_COLORCORRECTION_MAX/(float)width;

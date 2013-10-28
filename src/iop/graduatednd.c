@@ -219,11 +219,12 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
   float pts[4] = {xa*self->dev->preview_pipe->backbuf_width, ya*self->dev->preview_pipe->backbuf_height,
                   xb*self->dev->preview_pipe->backbuf_width, yb*self->dev->preview_pipe->backbuf_height
                  };
-  dt_dev_distort_backtransform(self->dev,pts,2);
-  pts[0] /= self->dev->preview_pipe->iwidth;
-  pts[2] /= self->dev->preview_pipe->iwidth;
-  pts[1] /= self->dev->preview_pipe->iheight;
-  pts[3] /= self->dev->preview_pipe->iheight;
+  dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,2);
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+  pts[0] /= (float)piece->buf_out.width;
+  pts[2] /= (float)piece->buf_out.width;
+  pts[1] /= (float)piece->buf_out.height;
+  pts[3] /= (float)piece->buf_out.height;
 
   //we first need to find the rotation angle
   //weird dichotomic solution : we may use something more cool ...
@@ -291,47 +292,52 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
   const float v=(-rotation/180)*M_PI;
   const float sinv=sin(v);
   float pts[4];
+  
+  dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+  if (!piece) return 0;
+  float wp = piece->buf_out.width, hp = piece->buf_out.height;
+  
   //if sinv=0 then this is just the offset
   if (sinv==0)
   {
     if (v==0)
     {
-      pts[0] = self->dev->preview_pipe->iwidth*0.1;
-      pts[2] = self->dev->preview_pipe->iwidth*0.9;
-      pts[1] = pts[3] = self->dev->preview_pipe->iheight*offset/100.0;
+      pts[0] = wp*0.1;
+      pts[2] = wp*0.9;
+      pts[1] = pts[3] = hp*offset/100.0;
     }
     else
     {
-      pts[2] = self->dev->preview_pipe->iwidth*0.1;
-      pts[0] = self->dev->preview_pipe->iwidth*0.9;
-      pts[1] = pts[3] = self->dev->preview_pipe->iheight*(1.0-offset/100.0);
+      pts[2] = wp*0.1;
+      pts[0] = wp*0.9;
+      pts[1] = pts[3] = hp*(1.0-offset/100.0);
     }
   }
   else
   {
     //otherwise we determine the extremities
     const float cosv=cos(v);
-    float xx1 = (sinv - cosv + 1.0 - offset/50.0)*self->dev->preview_pipe->iwidth*0.5/sinv;
-    float xx2 = (sinv + cosv + 1.0 - offset/50.0)*self->dev->preview_pipe->iwidth*0.5/sinv;
+    float xx1 = (sinv - cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
+    float xx2 = (sinv + cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
     float yy1 = 0;
-    float yy2 = self->dev->preview_pipe->iheight;
-    float a = self->dev->preview_pipe->iheight/(xx2-xx1);
+    float yy2 = hp;
+    float a = hp/(xx2-xx1);
     float b = -xx1*a;
     //now ensure that the line isn't outside image borders
-    if (xx2>self->dev->preview_pipe->iwidth)
+    if (xx2>wp)
     {
-      yy2 = a*self->dev->preview_pipe->iwidth+b;
-      xx2=self->dev->preview_pipe->iwidth;
+      yy2 = a*wp+b;
+      xx2=wp;
     }
     if (xx2<0)
     {
       yy2 = b;
       xx2=0;
     }
-    if (xx1>self->dev->preview_pipe->iwidth)
+    if (xx1>wp)
     {
-      yy1 = a*self->dev->preview_pipe->iwidth+b;
-      xx1=self->dev->preview_pipe->iwidth;
+      yy1 = a*wp+b;
+      xx1=wp;
     }
     if (xx1<0)
     {
@@ -388,7 +394,8 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
     }
   }
   //now we want that points to take care of distort modules
-  if (!dt_dev_distort_transform(self->dev,pts,2)) return 0;
+  
+  if (!dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts, 2)) return 0;
   *xa = pts[0]/self->dev->preview_pipe->backbuf_width;
   *ya = pts[1]/self->dev->preview_pipe->backbuf_height;
   *xb = pts[2]/self->dev->preview_pipe->backbuf_width;
@@ -929,6 +936,16 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #endif
 }
 
+static inline void
+update_saturation_slider_end_color(
+  GtkWidget* slider,
+  float hue)
+{
+  float rgb[3];
+  hsl2rgb(rgb, hue, 1.0, 0.5);
+  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -944,6 +961,7 @@ void gui_update(struct dt_iop_module_t *self)
   //float ht = self->dev->preview_pipe->backbuf_height;
   g->define = 0;
   //set_points_from_grad(self,&g->xa,&g->ya,&g->xb,&g->yb,p->rotation,p->offset);
+  update_saturation_slider_end_color(g->gslider2, p->hue);
 }
 
 void init(dt_iop_module_t *module)
@@ -979,15 +997,12 @@ hue_callback(GtkWidget *slider, gpointer user_data)
 
   const float hue = dt_bauhaus_slider_get(g->gslider1);
   //fprintf(stderr," hue: %f, saturation: %f\n",hue,dtgtk_gradient_slider_get_value(g->gslider2));
-  float saturation = 1.0f;
-  float color[3];
-  hsl2rgb(color, hue, saturation, 0.5f);
 
-  dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, color[0], color[1], color[2]);  // Update saturation end color
+  update_saturation_slider_end_color(g->gslider2, hue);
 
   if(self->dt->gui->reset)
     return;
-  gtk_widget_draw(GTK_WIDGET(g->gslider2),NULL);
+  gtk_widget_queue_draw(GTK_WIDGET(g->gslider2));
 
   p->hue = hue;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -1015,7 +1030,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* density */
   g->scale1 = dt_bauhaus_slider_new_with_range(self,-8.0, 8.0, 0.1, p->density, 2);
   dt_bauhaus_slider_set_format(g->scale1,"%.2fev");
-  dt_bauhaus_widget_set_label(g->scale1,_("density"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("density"));
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the density in EV for the filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale1), "value-changed",
                     G_CALLBACK (density_callback), self);
@@ -1023,7 +1038,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* compression */
   g->scale2 = dt_bauhaus_slider_new_with_range(self,0.0, 100.0, 1.0, p->compression, 0);
   dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2,_("compression"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compression"));
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("compression of graduation:\n0% = soft, 100% = hard"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale2), "value-changed",
@@ -1031,7 +1046,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* rotation */
   g->scale3 = dt_bauhaus_slider_new_with_range(self,-180, 180,0.5, p->rotation, 2);
-  dt_bauhaus_widget_set_label(g->scale3,_("rotation"));
+  dt_bauhaus_widget_set_label(g->scale3, NULL, _("rotation"));
   dt_bauhaus_slider_set_format(g->scale3,"%.2f°");
   g_object_set(G_OBJECT(g->scale3), "tooltip-text", _("rotation of filter -180 to 180 degrees"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->scale3), "value-changed",
@@ -1043,10 +1058,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
 
   /* hue slider */
-  g->gslider1 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
+  g->gslider1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 1.0f, 0.01f, 0.0f, 2, 0);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.0f, 1.0f, 0.0f, 0.0f);
   // dt_bauhaus_slider_set_format(g->gslider1, "");
-  dt_bauhaus_widget_set_label(g->gslider1, _("hue"));
+  dt_bauhaus_widget_set_label(g->gslider1, NULL, _("hue"));
   dt_bauhaus_slider_set_stop(g->gslider1, 0.166f, 1.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.322f, 0.0f, 1.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->gslider1, 0.498f, 0.0f, 1.0f, 1.0f);
@@ -1061,8 +1076,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(g->gslider2, _("saturation"));
-  dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 1.0f, 1.0f, 1.0f);
+  dt_bauhaus_widget_set_label(g->gslider2, NULL, _("saturation"));
+  dt_bauhaus_slider_set_stop(g->gslider2, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(g->gslider2, 1.0f, 1.0f, 1.0f, 1.0f);
   g_object_set(G_OBJECT(g->gslider2), "tooltip-text", _("select the saturation of filter"), (char *)NULL);
   g_signal_connect (G_OBJECT (g->gslider2), "value-changed",

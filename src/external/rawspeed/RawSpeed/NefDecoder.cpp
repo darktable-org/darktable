@@ -113,7 +113,7 @@ RawImage NefDecoder::decodeRawInternal() {
 
   try {
     NikonDecompressor decompressor(mFile, mRaw);
-
+    decompressor.uncorrectedRawValues = uncorrectedRawValues;
     ByteStream* metastream;
     if (getHostEndianness() == data[0]->endian)
       metastream = new ByteStream(meta->getData(), meta->count);

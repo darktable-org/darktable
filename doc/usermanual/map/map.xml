@@ -20,7 +20,7 @@
 
 <sect1 status="final">
   <title>Overview</title>
-  <para>Map view will show you a world map with the currently open image, or filmroll of images, pinned
+  <para>Map view will show you a world map with the currently open image, or film roll of images, pinned
   to their geotagged location. This requires that the image was geotagged by a camera with that feature.
   Some newer cameras, including smartphones, are already equipped with GPS receivers. Other cameras may 
   need additional GPS hardware to do this.
@@ -65,6 +65,8 @@
           You can simply assign a geo location to an image by dragging the image icon from the film-strip and position it onto
           the map. darktable will record the new geo location (longitude and latitude) as part of the image metadata.
           Exported images will include this data.</para>
+
+    <para>In order to remove geo coordinates from an image just drag it from the map and drop it onto the filmstrip.</para>
 
     <para>Left and right to the central map there are panels for additional control.</para>
 

@@ -393,10 +393,12 @@ RawImageData& RawImage::operator*() {
 RawImage& RawImage::operator=(const RawImage & p) {
   if (this == &p)      // Same object?
     return *this;      // Yes, so skip assignment, and just return *this.
+  pthread_mutex_lock(&p_->mymutex);
   RawImageData* const old = p_;
   p_ = p.p_;
   ++p_->dataRefCount;
   if (--old->dataRefCount == 0) delete old;
+  pthread_mutex_unlock(&p_->mymutex);
   return *this;
 }
 

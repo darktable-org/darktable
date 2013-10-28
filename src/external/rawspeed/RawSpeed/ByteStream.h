@@ -23,6 +23,7 @@
 #define BYTE_STREAM_H
 
 #include "IOException.h"
+#include <stack>
 
 namespace RawSpeed {
 
@@ -42,11 +43,15 @@ public:
   const uchar8* getData() {return &buffer[off];}
   virtual ushort16 getShort();
   virtual int getInt();
+  virtual uint32 getUInt();
+  virtual float getFloat();
+  void pushOffset() { offset_stack.push(off);}
+  void popOffset();
 protected:
   const uchar8* buffer;
   const uint32 size;            // This if the end of buffer.
   uint32 off;                  // Offset in bytes (this is next byte to deliver)
-
+  stack<uint32> offset_stack;
 };
 
 } // namespace RawSpeed

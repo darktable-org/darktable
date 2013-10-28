@@ -49,6 +49,8 @@
 #define DEVELOP_BLEND_BOUNDED                           0x19
 #define DEVELOP_BLEND_LAB_LIGHTNESS                     0x1A
 #define DEVELOP_BLEND_LAB_COLOR                         0x1B
+#define DEVELOP_BLEND_HSV_LIGHTNESS                     0x1C
+#define DEVELOP_BLEND_HSV_COLOR                         0x1D
 
 
 #define DEVELOP_MASK_DISABLED       0x00
@@ -594,6 +596,11 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
 
+    case DEVELOP_BLEND_HSV_LIGHTNESS:
+    case DEVELOP_BLEND_HSV_COLOR:
+      o = a;                            // Noop for Lab (without clamping)
+      break;
+
     /* fallback to normal blend */
     case DEVELOP_BLEND_UNBOUNDED:
     case DEVELOP_BLEND_NORMAL2:
@@ -739,6 +746,11 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
 
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
+      o = a;                            // Noop for Raw (without clamping)
+      break;
+
+    case DEVELOP_BLEND_HSV_LIGHTNESS:
+    case DEVELOP_BLEND_HSV_COLOR:
       o = a;                            // Noop for Raw (without clamping)
       break;
 
@@ -907,6 +919,27 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
     case DEVELOP_BLEND_LAB_LIGHTNESS:
     case DEVELOP_BLEND_LAB_COLOR:
       o = a;                            // Noop for RGB (without clamping)
+      break;
+
+    case DEVELOP_BLEND_HSV_LIGHTNESS:
+      ta = RGB_2_HSV(a);
+      tb = RGB_2_HSV(b);
+      to.x = ta.x;
+      to.y = ta.y;
+      to.z = (ta.z * (1.0f - opacity)) + (tb.z * opacity);
+      o = HSV_2_RGB(to);
+      break;
+
+    case DEVELOP_BLEND_HSV_COLOR:
+      ta = RGB_2_HSV(a);
+      tb = RGB_2_HSV(b);
+      // blend color vectors of input and output
+      d = ta.y*cos(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*cos(2.0f*M_PI_F*tb.x) * opacity;
+      s = ta.y*sin(2.0f*M_PI_F*ta.x) * (1.0f - opacity) + tb.y*sin(2.0f*M_PI_F*tb.x) * opacity;
+      to.x = fmod(atan2(s, d)/(2.0f*M_PI_F)+1.0f, 1.0f);
+      to.y = sqrt(s*s + d*d);
+      to.z = ta.z;
+      o = HSV_2_RGB(to);
       break;
 
     /* fallback to normal blend */

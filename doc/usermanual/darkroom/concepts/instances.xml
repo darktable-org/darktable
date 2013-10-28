@@ -26,12 +26,12 @@
 
                            <para>In an even more elaborate case you could have a module act on different parts of your image. As an example you might want to apply a certain gradation
                                  curve with module <emphasis>tone curve</emphasis> (<xref linkend="tone_curve"/>) to your complete image and have a second curve being applied specifically to skin tones. 
-                                 All the controls offered by <emphasis>drawn masks</emphasis> (<xref linkend="drawn_mask"/>) and
-                                 <emphasis>parametric masks</emphasis> (<xref linkend="parametric_mask"/>) are at your hand to select those parts of an image where
-                                 each of the module instances is applied.</para>
+                                 All of the controls offered by <emphasis>drawn masks</emphasis> (<xref linkend="drawn_mask"/>) and
+                                 <emphasis>parametric masks</emphasis> (<xref linkend="parametric_mask"/>) may be used to select those parts of an image where
+                                 each of the module instances are applied.</para>
 
                            <para>Please be aware that of course each instance also adds to the workload of your pixelpipe. Generating too many instances - especially of the more demanding
-                                 modules - will certainly cause some noticable slow-down.</para>
+                                 modules - will certainly cause some noticeable slow-down.</para>
                     </sect3>
 
 		    <sect3 status="final"><title>Managing instances</title>

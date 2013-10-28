@@ -47,7 +47,6 @@
 #include <gmodule.h>
 #include <xmmintrin.h>
 #include <time.h>
-#include <sys/select.h>
 
 typedef struct dt_iop_gui_simple_callback_t
 {
@@ -325,7 +324,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         g[i] = dt_bauhaus_slider_new_with_range(self, it->slider.min, it->slider.max, it->slider.step, it->slider.defval, it->slider.digits);
         if(it->slider.format)
           dt_bauhaus_slider_set_format(g[i], it->slider.format);
-        dt_bauhaus_widget_set_label(g[i], _(it->slider.label));
+        dt_bauhaus_widget_set_label(g[i], NULL, _(it->slider.label));
         if(it->slider.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->slider.value_changed), it->slider.parameter?it->slider.parameter:self);
         else
@@ -340,7 +339,7 @@ gui_init_simple_wrapper(dt_iop_module_t *self)
         g[i] = dt_bauhaus_combobox_new(self);
         for(char** combo_iter = it->combobox.entries; *combo_iter != NULL; combo_iter++)
           dt_bauhaus_combobox_add(g[i], *combo_iter);
-        dt_bauhaus_widget_set_label(g[i], _(it->combobox.label));
+        dt_bauhaus_widget_set_label(g[i], NULL, _(it->combobox.label));
         dt_bauhaus_combobox_set(g[i], it->combobox.defval);
         if(it->combobox.value_changed)
           g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->combobox.value_changed), it->combobox.parameter?it->combobox.parameter:self);
@@ -1054,9 +1053,18 @@ static void
 dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   //first we create the new module
-  dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,-1);
+  dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,0);
   if (!module) return;
-
+  
+  //we reflect the positions changes in the history stack too
+  GList *history = g_list_first(module->dev->history);
+  while(history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    if (hist->module->instance == base->instance) hist->multi_priority = hist->module->multi_priority;
+    history = g_list_next(history);
+  }
+  
   //what is the position of the module in the pipe ?
   GList *modules = g_list_first(module->dev->iop);
   int pos_module = 0;
@@ -1105,7 +1113,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     GValue gv = { 0, { { 0 } } };
     g_value_init(&gv,G_TYPE_INT);
     gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
-    gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
+    gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module+1);
     dt_iop_gui_set_expanded(module, TRUE);
     dt_iop_gui_update_blending(module);
 
@@ -1165,38 +1173,38 @@ dt_iop_gui_multimenu_callback(GtkButton *button, gpointer user_data)
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE) return;
 
-  GtkWidget *menu = gtk_menu_new();
+  GtkMenuShell *menu = GTK_MENU_SHELL(gtk_menu_new());
   GtkWidget *item;
 
   item = gtk_menu_item_new_with_label(_("new instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a new instance of this module to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_copy_callback), module);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("duplicate instance"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("add a copy of this instance to the pipe"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_duplicate_callback), module);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move up"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance up"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_moveup_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_up);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("move down"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("move this instance down"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_movedown_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_down);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
   item = gtk_menu_item_new_with_label(_("delete"));
   //g_object_set(G_OBJECT(item), "tooltip-text", _("delete this instance"), (char *)NULL);
   g_signal_connect (G_OBJECT (item), "activate", G_CALLBACK (dt_iop_gui_delete_callback), module);
   gtk_widget_set_sensitive(item, module->multi_show_close);
-  gtk_menu_append(menu, item);
+  gtk_menu_shell_append(menu, item);
 
-  gtk_widget_show_all(menu);
+  gtk_widget_show_all(GTK_WIDGET(menu));
   //popup
   gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time());
 }
@@ -1460,13 +1468,15 @@ void dt_iop_load_modules_so()
   g_strlcat(plugindir, "/plugins", 1024);
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
+  const int name_offset = strlen(SHARED_MODULE_PREFIX),
+            name_end    = strlen(SHARED_MODULE_PREFIX) + strlen(SHARED_MODULE_SUFFIX);
   while((d_name = g_dir_read_name(dir)))
   {
-    // get lib*.so
-    if(strncmp(d_name, "lib", 3)) continue;
-    if(strncmp(d_name + strlen(d_name) - 3, ".so", 3)) continue;
-    strncpy(op, d_name+3, strlen(d_name)-6);
-    op[strlen(d_name)-6] = '\0';
+      // get lib*.so
+    if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
+    if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
+    strncpy(op, d_name+name_offset, strlen(d_name)-name_end);
+    op[strlen(d_name)-name_end] = '\0';
     module = (dt_iop_module_so_t *)malloc(sizeof(dt_iop_module_so_t));
     memset(module,0,sizeof(dt_iop_module_so_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)op);
@@ -1719,13 +1729,13 @@ dt_iop_gui_reset_callback(GtkButton *button, dt_iop_module_t *module)
 static void
 _preset_popup_position(GtkMenu *menu, gint *x,gint *y,gboolean *push_in, gpointer data)
 {
-  gint w,h;
   GtkRequisition requisition;
-  gdk_window_get_size(GTK_WIDGET(data)->window,&w,&h);
-  gdk_window_get_origin (GTK_WIDGET(data)->window, x, y);
+  gdk_window_get_origin (gtk_widget_get_window(GTK_WIDGET(data)), x, y);
   gtk_widget_size_request (GTK_WIDGET (menu), &requisition);
 
-  (*y)+=GTK_WIDGET(data)->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(GTK_WIDGET(data), &allocation);
+  (*y)+=allocation.height;
 }
 
 static void
@@ -2098,7 +2108,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_container_add(GTK_CONTAINER(pluginui), al);
   gtk_container_add(GTK_CONTAINER(al), iopw);
 
-  gtk_widget_hide_all(pluginui);
+  gtk_widget_hide(pluginui);
 
   module->expander = expander;
 
@@ -2136,10 +2146,7 @@ void dt_iop_nap(int32_t usec)
   sched_yield();
 
   // additionally wait the given amount of time
-  struct timeval s;
-  s.tv_sec = 0;
-  s.tv_usec = usec;
-  select(0, NULL, NULL, NULL, &s);
+  g_usleep(usec);
 }
 
 void

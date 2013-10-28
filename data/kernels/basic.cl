@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2009--2013 johannes hanika.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,19 +76,13 @@ highlights_4f (read_only image2d_t in, write_only image2d_t out, const int width
 
   if(x >= width || y >= height) return;
 
+  // 4f/pixel means that this has been debayered already.
+  // it's thus hopeless to recover highlights here (this code path is just used for preview and non-raw images)
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  switch(mode)
-  {
-    case 1: // DT_IOP_HIGHLIGHTS_LCH
-      if(pixel.x > clip || pixel.y > clip || pixel.z > clip)
-        pixel.x = pixel.y = pixel.z = 0.299f * pixel.x + 0.587f * pixel.y + 0.144f*pixel.z;
-      break;
-    default: // 0, DT_IOP_HIGHLIGHTS_CLIP
-      pixel.x = fmin(clip, pixel.x);
-      pixel.y = fmin(clip, pixel.y);
-      pixel.z = fmin(clip, pixel.z);
-      break;
-  }
+  // default: // 0, DT_IOP_HIGHLIGHTS_CLIP
+  pixel.x = fmin(clip, pixel.x);
+  pixel.y = fmin(clip, pixel.y);
+  pixel.z = fmin(clip, pixel.z);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -103,25 +97,29 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
 
   // just carry over other 3 channels:
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  const float near_clip = 0.9f*clip;
-  float maxp = 0.0f;
+  const float near_clip = 0.96f*clip;
+  const float post_clip = 1.10f*clip;
+  float mean = 0.0f;
   float blend = 0.0f;
   switch(mode)
   {
     case 1: // DT_IOP_HIGHLIGHTS_LCH
-      // go through all 9 neighbours
-      for(int jj=-1;jj<=1;jj++)
+    {
+      // go through a bayer block of 2x2
+      for(int jj=0;jj<=1;jj++)
       {
-        for(int ii=-1;ii<=1;ii++)
+        for(int ii=0;ii<=1;ii++)
         {
           float px = read_imagef(in, sampleri, (int2)(x+ii, y+jj)).x;
-          blend = fmax(blend, (fmin(clip, px) - near_clip)/(clip-near_clip));
-          maxp = fmax(maxp, px);
+          mean += px*.25f;
+          blend += (fmin(post_clip, px) - near_clip)/(post_clip-near_clip);
         }
       }
+      blend = clamp(blend, 0.0f, 1.0f);
       if(blend > 0.0f)
-        pixel.x = blend*maxp + (1.0f-blend)*pixel.x;
+        pixel.x = blend*mean + (1.0f-blend)*pixel.x;
       break;
+    }
     default: // 0, DT_IOP_HIGHLIGHTS_CLIP
       pixel.x = fmin(clip, pixel.x);
       break;
@@ -130,7 +128,7 @@ highlights_1f (read_only image2d_t in, write_only image2d_t out, const int width
 }
 
 float
-lookup_unbounded(read_only image2d_t lut, const float x, global float *a)
+lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -1256,4 +1254,26 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+
+/* kernel for the contrast lightness saturation module */
+kernel void 
+colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation, 
+        read_only image2d_t ctable, global const float *ca, read_only image2d_t ltable, global const float *la)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 o;
+
+  o.x = lookup_unbounded(ctable, i.x/100.0f, ca);
+  o.x = lookup_unbounded(ltable, o.x/100.0f, la);
+  o.y = i.y*saturation;
+  o.z = i.z*saturation;
+  o.w = i.w;
+
+  write_imagef(out, (int2)(x, y), o);
+}
 

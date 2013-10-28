@@ -715,7 +715,7 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_drawing_area_size(c->area, 258, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 258, 258);
 
   c->zones = gtk_drawing_area_new();
   gtk_widget_set_size_request(c->zones, -1, 25);
@@ -725,9 +725,9 @@ void gui_init(struct dt_iop_module_t *self)
   int row=0;
 
   GtkWidget *label1 = gtk_label_new(_("spline type"));
-  c->spline_type = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(c->spline_type, _("cubic spline"));
-  gtk_combo_box_append_text(c->spline_type, _("catmull rom"));
+  c->spline_type = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(c->spline_type, _("cubic spline"));
+  gtk_combo_box_text_append_text(c->spline_type, _("catmull rom"));
 
   gtk_misc_set_alignment(GTK_MISC(label1), 0.0, 0.5);
   gtk_table_attach(table, label1, 0, 1, row, row+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -736,9 +736,9 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   label1 = gtk_label_new(_("lut"));
-  c->calc_type = GTK_COMBO_BOX(gtk_combo_box_new_text());
-  gtk_combo_box_append_text(c->calc_type, _("values"));
-  gtk_combo_box_append_text(c->calc_type, _("coefficients"));
+  c->calc_type = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gtk_combo_box_text_append_text(c->calc_type, _("values"));
+  gtk_combo_box_text_append_text(c->calc_type, _("coefficients"));
 
   gtk_misc_set_alignment(GTK_MISC(label1), 0.0, 0.5);
   gtk_table_attach(table, label1, 0, 1, row, row+1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
@@ -879,7 +879,7 @@ static gboolean dt_iop_densitycurve_button_press(GtkWidget *widget, GdkEventButt
     dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
 
     const int inset = DT_GUI_CURVE_EDITOR_INSET;
-    int width = widget->allocation.width, height = widget->allocation.height;
+    int width = allocation.width, height = allocation.height;
     width -= 2*inset;
     height -= 2*inset;
     const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
@@ -945,7 +945,7 @@ static gboolean dt_iop_densitycurve_expose(GtkWidget *widget, GdkEventExpose *ev
   dt_iop_densitycurve_sort(user_data);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
@@ -1067,7 +1067,7 @@ static gboolean dt_iop_densitycurve_motion_notify(GtkWidget *widget, GdkEventMot
   dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
 //  dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width); // variate only y coordinate
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
@@ -1128,7 +1128,7 @@ static gboolean dt_iop_densitycurve_keypress_notify(GtkWidget *widget, GdkEventK
   dt_iop_densitycurve_gui_data_t *c = (dt_iop_densitycurve_gui_data_t *)self->gui_data;
   dt_iop_densitycurve_params_t *p = (dt_iop_densitycurve_params_t *)self->params;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   width -= 2*inset;
   height -= 2*inset;
 
@@ -1327,7 +1327,7 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, dt_iop_zonesystem_params_t *p)
   //dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
 
   const int inset = DT_ZONESYSTEM_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 

@@ -20,6 +20,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
+#include <malloc.h>
+#endif
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#endif
+
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/selection.h"
@@ -30,6 +38,7 @@
 #include "common/camera_control.h"
 #endif
 #include "common/film.h"
+#include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
@@ -57,19 +66,16 @@
 #include <string.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <sys/types.h>
+#ifndef __WIN32__
+  #include <sys/wait.h>
+#endif
 #include <locale.h>
 #include <xmmintrin.h>
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
 #include "dbus.h"
-
-#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
-#include <malloc.h>
-#endif
-#ifdef __APPLE__
-#include <sys/malloc.h>
-#endif
 
 #if defined(__SUNOS__)
 #include <sys/varargs.h>
@@ -106,7 +112,7 @@ static int usage(const char *argv0)
   return 1;
 }
 
-#ifndef __APPLE__
+#if !defined __APPLE__ && !defined __WIN32__
 typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
@@ -126,12 +132,11 @@ static int dprintf(int fd,const char *fmt, ...)
 }
 #endif
 
-#ifndef __APPLE__
+#if !defined __APPLE__ && ! defined __WIN32__
 static
 void _dt_sigsegv_handler(int param)
 {
-  FILE *fd;
-  gchar buf[PIPE_BUF];
+  pid_t pid;
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
@@ -141,23 +146,25 @@ void _dt_sigsegv_handler(int param)
     fout = STDOUT_FILENO; // just print everything to stdout
 
   dprintf(fout, "this is %s reporting a segfault:\n\n", PACKAGE_STRING);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  gchar *command = g_strdup_printf("gdb %s %d -batch -x %s/gdb_commands", darktable.progname, (int)getpid(), datadir);
 
-  if((fd = popen(command, "r")) != NULL)
+  if(fout != STDOUT_FILENO)
+    close(fout);
+
+  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
+  gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
+  gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
+
+  if((pid = fork()) != -1)
   {
-    gboolean read_something = FALSE;
-    while((fgets(buf, PIPE_BUF, fd)) != NULL)
+    if(pid)
     {
-      read_something = TRUE;
-      dprintf(fout, "%s", buf);
+      waitpid(pid, NULL, 0);
+      g_printerr("backtrace written to %s\n", name_used);
     }
-    pclose(fd);
-    if(fout != STDOUT_FILENO)
+    else
     {
-      if(read_something)
-        g_printerr("backtrace written to %s\n", name_used);
-      else
+      if(execlp("gdb", "gdb", darktable.progname, pid_arg, "-batch", "-ex", log_arg, "-x", comm_arg, NULL))
       {
         delete_file = TRUE;
         g_printerr("an error occurred while trying to execute gdb. please check if gdb is installed on your system.\n");
@@ -170,11 +177,11 @@ void _dt_sigsegv_handler(int param)
     g_printerr("an error occurred while trying to execute gdb.\n");
   }
 
-  if(fout != STDOUT_FILENO)
-    close(fout);
   if(delete_file)
     g_unlink(name_used);
-  g_free(command);
+  g_free(pid_arg);
+  g_free(comm_arg);
+  g_free(log_arg);
   g_free(name_used);
 
   /* pass it further to the old handler*/
@@ -260,8 +267,8 @@ static gchar * dt_make_path_absolute(const gchar * input)
     char* current_dir = g_get_current_dir();
     char* tmp_filename = g_build_filename(current_dir, filename, NULL);
     g_free(filename);
-    filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
-    if(realpath(tmp_filename, filename) == NULL)
+    filename = g_realpath(tmp_filename);
+    if(filename == NULL)
     {
       g_free(current_dir);
       g_free(tmp_filename);
@@ -348,7 +355,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 {
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-#ifndef __APPLE__
+#if !defined __APPLE__ && !defined __WIN32__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
@@ -652,7 +659,9 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   darktable.opencl = (dt_opencl_t *)malloc(sizeof(dt_opencl_t));
   memset(darktable.opencl, 0, sizeof(dt_opencl_t));
+#ifdef HAVE_OPENCL
   dt_opencl_init(darktable.opencl, argc, argv);
+#endif
 
   darktable.blendop = (dt_blendop_t *)malloc(sizeof(dt_blendop_t));
   memset(darktable.blendop, 0, sizeof(dt_blendop_t));
@@ -866,12 +875,21 @@ void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
   return malloc(size);
+#elif defined(__WIN32__)
+  return _aligned_malloc(size, alignment);
 #else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
 #endif
 }
+
+#ifdef __WIN32__
+void dt_free_align(void *mem)
+{
+  _aligned_free(mem);
+}
+#endif
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {

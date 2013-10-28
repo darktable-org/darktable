@@ -114,4 +114,26 @@ void CameraMetaData::addCamera( Camera* cam )
     cameras[id] = cam;
 }
 
+void CameraMetaData::disableMake( string make )
+{
+  map<string, Camera*>::iterator i = cameras.begin();
+  for (; i != cameras.end(); ++i) {
+    Camera* cam = (*i).second;
+    if (0 == cam->make.compare(make)) {
+      cam->supported = FALSE;
+    }
+  }
+}
+
+void CameraMetaData::disableCamera( string make, string model )
+{
+  map<string, Camera*>::iterator i = cameras.begin();
+  for (; i != cameras.end(); ++i) {
+    Camera* cam = (*i).second;
+    if (0 == cam->make.compare(make) && 0 == cam->model.compare(model)) {
+      cam->supported = FALSE;
+    }
+  }
+}
+
 } // namespace RawSpeed

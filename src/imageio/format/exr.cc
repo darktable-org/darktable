@@ -65,7 +65,7 @@ extern "C"
     const float * in = (const float *) in_tmp;
     Imf::Blob exif_blob(exif_len, (uint8_t*)exif);
     Imf::Header header(exr->width,exr->height,1,Imath::V2f (0, 0),1,Imf::INCREASING_Y,Imf::PIZ_COMPRESSION);
-    header.insert("comment",Imf::StringAttribute("Developed using Darktable "PACKAGE_VERSION));
+    header.insert("comment",Imf::StringAttribute("Developed using Darktable " PACKAGE_VERSION));
     header.insert("exif", Imf::BlobAttribute(exif_blob));
     header.channels().insert("R",Imf::Channel(Imf::FLOAT));
     header.channels().insert("B",Imf::Channel(Imf::FLOAT));

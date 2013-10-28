@@ -51,7 +51,6 @@ DT_MODULE(1)
 													cairo_move_to (cr, .5*(width-ext.width), .98*height);\
 													cairo_show_text(cr, text);
 
-#define min(a,b)	((a) < (b) ? (a) : (b))
 
 typedef enum atrous_channel_t
 {
@@ -499,8 +498,8 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
   }
   /* due to symmetric processing, output will be left in (float *)o */
 
-  for(int k=0; k<max_scale; k++) free(detail[k]);
-  free(tmp);
+  for(int k=0; k<max_scale; k++) dt_free_align(detail[k]);
+  dt_free_align(tmp);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(i, o, width, height);
@@ -508,8 +507,8 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
   return;
 
 error:
-  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) free(detail[k]);
-  if(tmp != NULL) free(tmp);
+  for(int k=0; k<max_scale; k++) if(detail[k] != NULL) dt_free_align(detail[k]);
+  if(tmp != NULL) dt_free_align(tmp);
   return;
 }
 
@@ -1003,7 +1002,9 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   int ch2 = (int)c->channel2;
   for(int k=0; k<BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
   const int inset = INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
@@ -1251,7 +1252,9 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
   const int inset = INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   int ch2 = c->channel;
@@ -1341,7 +1344,9 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
     reset_mix(self);
     const int inset = INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;
@@ -1376,7 +1381,7 @@ area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 }
 
 static void
-tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
@@ -1445,7 +1450,7 @@ void gui_init (struct dt_iop_module_t *self)
   // graph
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -1465,7 +1470,7 @@ void gui_init (struct dt_iop_module_t *self)
 
   // mix slider
   c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  dt_bauhaus_widget_set_label(c->mix, _("mix"));
+  dt_bauhaus_widget_set_label(c->mix, NULL, _("mix"));
   g_object_set(G_OBJECT(c->mix), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (c->mix), "value-changed", G_CALLBACK (mix_callback), self);

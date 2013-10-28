@@ -1083,7 +1083,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   //  Integrates into the history all the imported iop
 
-  if (dev != NULL)
+  if (dev != NULL && dt_image_is_raw(&dev->image_storage))
   {
     // set colorin to cmatrix which is the default from Adobe (so closer to what Lightroom does)
     dt_iop_colorin_params_t pci = (dt_iop_colorin_params_t)
@@ -1410,7 +1410,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   if (has_tags)
   {
     if (imported[0]) strcat(imported, ", ");
-    strcat(imported, _("tags"));
+    g_strlcat(imported, _("tags"), sizeof(imported));
     n_import++;
   }
 

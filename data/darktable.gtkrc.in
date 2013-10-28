@@ -307,3 +307,5 @@ class "GtkNotebook" style "clearlooks-notebook"
 #widget_class "*.GtkComboBox.GtkButton" style "clearlooks-combo"
 #widget_class "*.GtkCombo.GtkButton" style "clearlooks-combo"
 #class "MetaFrames" style "metacity-frame"
+
+widget "*.preferences_notebook.*.GtkViewport" style "clearlooks-notebook"

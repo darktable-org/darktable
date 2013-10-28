@@ -226,7 +226,7 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
 static const gchar *focus_array[] = {"Near 3", "Near 2", "Near 1", "Far 1", "Far 2", "Far 3"};
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  long int focus = (long int) user_data;
+  int focus = GPOINTER_TO_INT(user_data);
   if(focus >= 0 && focus <= 5)
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "manualfocusdrive", g_dgettext("libgphoto2-2", focus_array[focus]));
 }
@@ -313,14 +313,14 @@ gui_init (dt_lib_module_t *self)
   g_object_set(G_OBJECT( lib->focus_out_big), "tooltip-text", _("move focus point out (big steps)"), (char *)NULL);
 
   // 1 and 4 would be medium steps, not in ui right now ...
-  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)0);
-  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)2);
-  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)3);
-  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), (gpointer)5);
+  g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(0));
+  g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(2));
+  g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(3));
+  g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked", G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(5));
 
   // Guides
   lib->guide_selector = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->guide_selector, _("guides"));
+  dt_bauhaus_widget_set_label(lib->guide_selector, NULL, _("guides"));
   dt_bauhaus_combobox_add(lib->guide_selector, _("none"));
   dt_bauhaus_combobox_add(lib->guide_selector, _("grid"));
   dt_bauhaus_combobox_add(lib->guide_selector, _("rules of thirds"));
@@ -332,7 +332,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lib->guide_selector, TRUE, TRUE, 0);
 
   lib->flip_guides = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->flip_guides, _("flip"));
+  dt_bauhaus_widget_set_label(lib->flip_guides, NULL, _("flip"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
@@ -341,7 +341,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
   lib->golden_extras = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->golden_extras, _("extra"));
+  dt_bauhaus_widget_set_label(lib->golden_extras, NULL, _("extra"));
   dt_bauhaus_combobox_add(lib->golden_extras, _("golden sections"));
   dt_bauhaus_combobox_add(lib->golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(lib->golden_extras, _("golden spiral"));
@@ -350,7 +350,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lib->golden_extras, TRUE, TRUE, 0);
 
   lib->overlay = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay, _("overlay"));
+  dt_bauhaus_widget_set_label(lib->overlay, NULL, _("overlay"));
   dt_bauhaus_combobox_add(lib->overlay, _("none"));
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
   dt_bauhaus_combobox_add(lib->overlay, _("id"));
@@ -373,7 +373,7 @@ gui_init (dt_lib_module_t *self)
   gtk_widget_show(label);
 
   lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay_mode, _("overlay mode"));
+  dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, _("overlay mode"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "add"));
@@ -401,7 +401,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
   lib->overlay_splitline = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay_splitline, _("split line"));
+  dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, _("split line"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
   g_object_set(G_OBJECT(lib->overlay_splitline), "tooltip-text", _("only draw part of the overlay"), (char *)NULL);

@@ -493,7 +493,9 @@ lowlight_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   dt_draw_curve_set_point(c->transition_curve, DT_IOP_LOWLIGHT_BANDS+1, p.transition_x[1]+1.0, p.transition_y[DT_IOP_LOWLIGHT_BANDS-1]);
 
   const int inset = DT_IOP_LOWLIGHT_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
@@ -652,7 +654,9 @@ lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
   const int inset = DT_IOP_LOWLIGHT_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   if(c->dragging)
@@ -722,7 +726,9 @@ lowlight_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_da
     dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
     c->drag_params = *(dt_iop_lowlight_params_t *)self->params;
     const int inset = DT_IOP_LOWLIGHT_INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->transition_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;
@@ -794,7 +800,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0);
 
@@ -813,7 +819,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (lowlight_scrolled), self);
 
   c->scale_blueness = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->blueness, 2);
-  dt_bauhaus_widget_set_label(c->scale_blueness, _("blue shift"));
+  dt_bauhaus_widget_set_label(c->scale_blueness, NULL, _("blue shift"));
   dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
   g_object_set(G_OBJECT(c->scale_blueness), "tooltip-text", _("blueness in shadows"), (char *)NULL);
 

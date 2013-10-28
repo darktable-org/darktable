@@ -15,6 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#ifdef HAVE_OPENCL
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,16 +27,6 @@
 #endif
 
 #include "common/dynload.h"
-
-
-static char *_strdup(const char *str)
-{
-  const int len = strlen(str)+1;
-  char *ptr = malloc(len);
-  if(ptr == NULL) return NULL;
-  strncpy(ptr, str, len);
-  return ptr;
-}
 
 
 /* check if gmodules is supported on this platform */
@@ -67,7 +60,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
   {
     module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
-    module->library = _strdup(name);
+    module->library = g_strdup(name);
   }
 
   return module;
@@ -84,7 +77,7 @@ int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (** pointer)(
 
 
 
-
+#endif
 
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

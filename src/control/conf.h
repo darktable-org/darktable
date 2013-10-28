@@ -101,7 +101,7 @@ static inline void dt_conf_set_int(const char *name, int val)
 static inline void dt_conf_set_int64(const char *name, int64_t val)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
-  char *str = g_strdup_printf("%"PRId64, val);
+  char *str = g_strdup_printf("%" PRId64, val);
   if(!dt_conf_is_still_overridden(name, str))
     g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
   else
@@ -149,7 +149,7 @@ static inline int dt_conf_get_int(const char *name)
   return val;
 }
 
-static inline int dt_conf_get_int64(const char *name)
+static inline int64_t dt_conf_get_int64(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);

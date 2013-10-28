@@ -23,7 +23,7 @@ The next thing that will happen is that you will be asked to define various sett
 
 Then you will be asked to save the newly created PO file. Give it a name like fr.po for French translation , de.po for German translation and so on. If you are not sure about two-letter code for you language, use the one that local websites in your native language use.
 
-4. In the PO editor you will see a) a list of all translatable messages, a filed that contains original message in English and a field to input your translation. The best practive is to copy original message into translation will and then translate all the translatable bits. That way you won't forget about some markup we use. In poEdit copying original message can be done with Alt+C shortcut. It's also recommended in poEdit to go to "Edit > Preferences" and in the "Editor" tab enable the "Always change focus to text input field" checkbox.
+4. In the PO editor you will see a) a list of all translatable messages, a filed that contains original message in English and a field to input your translation. The best practice is to copy original message into translation will and then translate all the translatable bits. That way you won't forget about some markup we use. In poEdit copying original message can be done with Alt+C shortcut. It's also recommended in poEdit to go to "Edit > Preferences" and in the "Editor" tab enable the "Always change focus to text input field" checkbox.
 
 5. The best practice is to frequently test your changes. To do it first open LINGUAS file and add the two-letter code for you language there. Save, quit. Now you only have to run 'make' and 'sudo make install' again and restart darktable to see your changes.
 

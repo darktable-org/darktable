@@ -471,7 +471,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
           const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
-          for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
+          for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
             for(int k=0; k<3; k++)
@@ -558,7 +558,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
   }
   // free shared tmp memory:
-  free(Sa);
+  dt_free_align(Sa);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -709,13 +709,13 @@ void gui_init     (dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->luma, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->chroma, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->radius, _("patch size"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->strength, _("strength"));
+  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->luma, _("luma"));
+  dt_bauhaus_widget_set_label(g->luma, NULL, _("luma"));
   dt_bauhaus_slider_set_format(g->luma, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->chroma, _("chroma"));
+  dt_bauhaus_widget_set_label(g->chroma, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->chroma, "%.0f%%");
   g_object_set (GTK_OBJECT(g->radius),   "tooltip-text", _("radius of the patches to match"), (char *)NULL);
   g_object_set (GTK_OBJECT(g->strength), "tooltip-text", _("strength of the effect"), (char *)NULL);

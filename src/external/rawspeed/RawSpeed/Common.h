@@ -38,8 +38,6 @@ typedef unsigned __int64 uint64;
 #define _RPT4(a,b,c,d,e,f) 
 #define __inline inline
 #define _strdup(a) strdup(a)
-void* _aligned_malloc(size_t bytes, size_t alignment);
-#define _aligned_free(a) do { free(a); } while (0)
 #ifndef MIN
 #define MIN(a, b)  lmin(a,b)
 #endif
@@ -48,6 +46,8 @@ void* _aligned_malloc(size_t bytes, size_t alignment);
 #endif
 typedef unsigned long long uint64;
 #ifndef __MINGW32__
+void* _aligned_malloc(size_t bytes, size_t alignment);
+#define _aligned_free(a) do { free(a); } while (0)
 typedef char* LPCWSTR;
 #endif
 #endif // __unix__

@@ -1431,8 +1431,8 @@ exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
-  free(hlength);
-  free(vlength);
+  dt_free_align(hlength);
+  dt_free_align(vlength);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

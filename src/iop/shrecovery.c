@@ -454,10 +454,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale3 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR,0.05, 0.6, 0.01, p->sigma, 2));
   g->scale4 = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 2.0, 64.0, 1, p->size_limit, 0));
   dtgtk_slider_set_snap(g->scale4, 1);
-  dtgtk_slider_set_label(g->scale1,_("strength"));
-  dtgtk_slider_set_label(g->scale2,_("mean"));
-  dtgtk_slider_set_label(g->scale3,_("deviation"));
-  dtgtk_slider_set_label(g->scale4,_("minimal pyramid limit"));
+  dtgtk_slider_set_label(g->scale1, NULL, _("strength"));
+  dtgtk_slider_set_label(g->scale2, NULL, _("mean"));
+  dtgtk_slider_set_label(g->scale3, NULL, _("deviation"));
+  dtgtk_slider_set_label(g->scale4, NULL, _("minimal pyramid limit"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);

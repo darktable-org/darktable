@@ -10,6 +10,7 @@ include(CheckCCompilerFlag)
 FILE(GLOB SOURCE_FILES
   "bauhaus/bauhaus.c"
   "common/cache.c"
+  "common/calculator.c"
   "common/collection.c"
   "common/colorlabels.c"
   "common/colorspaces.c"
@@ -29,7 +30,6 @@ FILE(GLOB SOURCE_FILES
   "common/image_cache.c"
   "common/image_compression.c"
   "common/imageio.c"
-  "common/imageio_exr.cc"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"
   "common/imageio_module.c"
@@ -88,7 +88,7 @@ FILE(GLOB SOURCE_FILES
   "views/view.c"
   "views/undo.c"
   )
-FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h", "views/*.h")
+FILE(GLOB HEADER_FILES "*.h" "common/*.h" "external/CL/*.h" "control/*.h" "iop/*.h" "libs/*.h" "views/*.h")
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -106,6 +106,9 @@ find_package(OpenMP)
 if(OPENMP_FOUND AND USE_OPENMP)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  if(WIN32)
+    list(APPEND LIBS gomp)
+  endif(WIN32)
   add_definitions("-DHAVE_OPENMP")
 endif(OPENMP_FOUND AND USE_OPENMP)
 
@@ -122,7 +125,7 @@ include_directories(${Glib_INCLUDE_DIRS})
 list(APPEND LIBS ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-find_package(GTK2 2.6 REQUIRED gtk)
+find_package(GTK2 2.24 REQUIRED gtk)
 include_directories(${GTK2_INCLUDE_DIRS})
 list(APPEND LIBS ${GTK2_LIBRARIES})
 add_definitions(${GTK2_DEFINITIONS})
@@ -152,8 +155,16 @@ if(INOTIFY_FOUND)
   add_definitions(${INOTIFY_DEFINITIONS})
 endif(INOTIFY_FOUND)
 
+find_package(OpenEXR)
+if(OPENEXR_FOUND)
+  include_directories(${OpenEXR_INCLUDE_DIRS})
+  list(APPEND LIBS ${OpenEXR_LIBRARIES})
+  add_definitions(${OpenEXR_DEFINITIONS})
+  list(APPEND SOURCES "common/imageio_exr.cc")
+endif(OPENEXR_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2  CURL PNG JPEG TIFF OpenEXR LCMS2)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 WebP)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -161,35 +172,48 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
 endforeach(lib)
 
 if(USE_LUA)
-	find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
-	if(LUA52_FOUND)
-		message(STATUS "Lua support: Enabled")
-		add_definitions("-DUSE_LUA")
-		include_directories(${LUA52_INCLUDE_DIRS})
-		list(APPEND LIBS ${LUA52_LIBRARIES})
-		FILE(GLOB SOURCE_FILES_LUA
-			"lua/call.c"
-			"lua/configuration.c"
-			"lua/database.c"
-			"lua/events.c"
-			"lua/film.c"
-			"lua/glist.c"
-			"lua/gui.c"
-			"lua/image.c"
-			"lua/init.c"
-			"lua/lua.c"
-			"lua/modules.c"
-			"lua/preferences.c"
-			"lua/print.c"
-			"lua/storage.c"
-			"lua/styles.c"
-			"lua/tags.c"
-			"lua/types.c"
-			)
-		set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
-	else()
-		message(STATUS "Lua support: Disabled (lua 5.2 not found)")
-	endif(LUA52_FOUND)
+  find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
+  if(LUA52_FOUND)
+    message(STATUS "Lua support: Enabled")
+    include_directories(${LUA52_INCLUDE_DIRS})
+    list(APPEND LIBS ${LUA52_LIBRARIES})
+  else()
+    if(DONT_USE_INTERNAL_LUA)
+	    message(STATUS "Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
+      set(USE_LUA OFF)
+    else(DONT_USE_INTERNAL_LUA)
+	    message(STATUS "Lua support: System library not found (using darktable's version)")
+      include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/lua/src)
+      add_subdirectory(external/lua)
+      list(APPEND LIBS lua)
+    endif(DONT_USE_INTERNAL_LUA)
+  endif(LUA52_FOUND)
+
+  if(USE_LUA)
+    add_definitions("-DUSE_LUA")
+    FILE(GLOB SOURCE_FILES_LUA
+      "lua/call.c"
+      "lua/configuration.c"
+      "lua/database.c"
+      "lua/events.c"
+      "lua/film.c"
+      "lua/glist.c"
+      "lua/gui.c"
+      "lua/image.c"
+      "lua/init.c"
+      "lua/lua.c"
+      "lua/modules.c"
+      "lua/preferences.c"
+      "lua/print.c"
+      "lua/storage.c"
+      "lua/styles.c"
+      "lua/tags.c"
+      "lua/types.c"
+      )
+    set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
+  endif(USE_LUA)
+else(USE_LUA)
+  message(STATUS "Lua support: Disabled")
 endif(USE_LUA)
 
 if(USE_NLS)
@@ -345,6 +369,27 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
+
+if(WIN32)
+  # get rid of the console window. do we need both?
+#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
+
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+
+  add_definitions("-DLIBRAW_NODLL")
+  list(APPEND LIBS ws2_32)
+  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
+  list(APPEND SOURCES "win/getrusage.c")
+endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
 
@@ -506,8 +551,6 @@ else(USE_GEO)
   message(STATUS "Map mode: disabled")
 endif(USE_GEO)
 
-target_link_libraries(lib_darktable ${LIBS})
-
 # libcolord-gtk:
 if(USE_COLORD)
   find_package(Colord)
@@ -532,21 +575,22 @@ if(USE_SQUISH)
 add_dependencies(lib_darktable squish)
 add_library(squish_static STATIC IMPORTED)
 set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-target_link_libraries(lib_darktable ${LIBS} squish_static)
+target_link_libraries(lib_darktable squish_static)
 add_subdirectory(external/squish)
 add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
 
 if(USE_LUA)
-	if(LUA52_FOUND)
-		# liblautoc for lua automated interface generation
-		add_dependencies(lib_darktable lautoc)
-		add_library(lautoc_static STATIC IMPORTED)
-		set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-		target_link_libraries(lib_darktable ${LIBS} lautoc_static)
-		include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
-		add_subdirectory(external/LuaAutoC)
-	endif(LUA52_FOUND)
+  if(NOT LUA52_FOUND)
+    add_dependencies(lib_darktable liblua) # 2nd half of the uglyness :/
+  endif(NOT LUA52_FOUND)
+	# liblautoc for lua automated interface generation
+	add_dependencies(lib_darktable lautoc)
+	add_library(lautoc_static STATIC IMPORTED)
+	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+	target_link_libraries(lib_darktable lautoc_static)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+	add_subdirectory(external/LuaAutoC)
 endif(USE_LUA)
 
 ###### GTK+3 port ######
@@ -561,10 +605,29 @@ add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
 #
 add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
 
+#
+# Use accessor functions instead of direct access
+#
+add_definitions("-DGSEAL_ENABLE")
+
+#
+#  Do not use deprecated symbols
+#
+add_definitions("-DGDK_DISABLE_DEPRECATED")
+add_definitions("-DGTK_DISABLE_DEPRECATED")
+add_definitions("-Werror=implicit-function-declaration")
+
 ###### GTK+3 port ######
 
+target_link_libraries(lib_darktable ${LIBS})
 
-install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+if(WIN32)
+  # Windows needs its DLLs in the same directory as the executable to find them.
+  install(TARGETS lib_darktable DESTINATION bin)
+else(WIN32)
+  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+endif(WIN32)
+
 # make sure static libs is first
 list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
@@ -596,9 +659,12 @@ add_subdirectory(cli)
 # build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
-set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+if(NOT WIN32)
+  # Windows doesn't know the concept of RPATHs :(
+  set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+  set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")

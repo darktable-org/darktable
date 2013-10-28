@@ -45,12 +45,13 @@ if(USE_LUA)
 # lua system scripts
 #
 install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable/)
-install(FILES rc.lua DESTINATION ${SHARE_INSTALL}/darktable/)
+install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable/)
 endif(USE_LUA)
 #
 # Install other system shares
 #
 install(FILES darktable.desktop DESTINATION ./share/applications)
+install(FILES darktable.appdata.xml DESTINATION ./share/appdata)
 
 #
 # Install watermarks

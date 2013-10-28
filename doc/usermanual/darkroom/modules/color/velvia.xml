@@ -29,8 +29,8 @@
 			<para>This slider controls the strength of the effect.</para>
 		</sect5>
 		<sect5><title>mid-tones bias</title>
-			<para>Velvia selectively reduces its effect for mid-tones to avoid unnatural skin tones. This slider controls that
-                              selectivity, reducing its value reduces mid-tone protection and makes the overall velvia effect stronger.
+			<para>Velvia can reduce its effect for mid-tones to avoid unnatural skin tones. The mid-tones bias slider controls this
+                              selectivity; reducing its value reduces mid-tone protection and makes the overall velvia effect stronger.
 			</para>
 		</sect5>
 	</sect4>

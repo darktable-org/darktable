@@ -17,11 +17,17 @@
 */
 
 /* getpwnam_r availibility check */
-#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || defined _POSIX_SOURCE
+#if defined __APPLE__ || defined _POSIX_C_SOURCE >= 1 || \
+    defined _XOPEN_SOURCE || defined _BSD_SOURCE || defined _SVID_SOURCE || \
+    defined _POSIX_SOURCE || defined __DragonFly__ || defined __FreeBSD__ || \
+    defined __NetBSD__ || defined __OpenBSD__
 #include <pwd.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include "darktable.h"
 #endif
+
+#include <sys/stat.h>
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -236,6 +242,21 @@ size_t dt_utf8_strlcpy(char *dest, const char *src,size_t n)
     dest[s - src] = '\0';
   }
   return s - src;
+}
+
+off_t dt_util_get_file_size(const char *filename)
+{
+#ifdef __WIN32__
+  struct _stati64 st;
+  if(_stati64(filename, &st) == 0)
+    return st.st_size;
+#else
+  struct stat st;
+  if(stat(filename, &st) == 0)
+    return st.st_size;
+#endif
+
+  return -1;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

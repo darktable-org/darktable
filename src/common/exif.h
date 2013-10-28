@@ -57,8 +57,8 @@ extern "C"
   void dt_exif_cleanup();
 
   /** encode / decode op params */
-  void dt_exif_xmp_encode (const unsigned char *input, char *output, const int len);
-  void dt_exif_xmp_decode (const char *input, unsigned char *output, const int len);
+  char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output_len);
+  unsigned char *dt_exif_xmp_decode (const char *input, const int len, int *output_len);
 
 #ifdef __cplusplus
 }

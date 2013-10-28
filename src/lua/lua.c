@@ -43,6 +43,7 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
   }
 }
 
+static dt_pthread_mutex_t lua_mutex;
 
 int dt_lua_push_darktable_lib(lua_State* L)
 {
@@ -72,6 +73,23 @@ void dt_lua_goto_subtable(lua_State *L,const char* sub_name)
   lua_remove(L,-2);
 }
 
+void dt_lua_init_lock()
+{
+    pthread_mutexattr_t a;
+    pthread_mutexattr_init(&a);
+    pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
+    dt_pthread_mutex_init(&lua_mutex,&a);
+    pthread_mutexattr_destroy(&a);
+}
+
+void dt_lua_lock()
+{
+  dt_pthread_mutex_lock(&lua_mutex);
+}
+void dt_lua_unlock()
+{
+  dt_pthread_mutex_unlock(&lua_mutex);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -576,8 +576,11 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     dt_draw_curve_set_point(c->minmax_curve, DT_IOP_COLORZONES_BANDS+1, p.equalizer_x[ch][1]+1.0, p.equalizer_y[ch][1]);
   else
     dt_draw_curve_set_point(c->minmax_curve, DT_IOP_COLORZONES_BANDS+1, p.equalizer_x[ch][1]+1.0, p.equalizer_y[ch][DT_IOP_COLORZONES_BANDS-1]);
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg, match color of the notebook tabs:
@@ -816,8 +819,11 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   const int inset = DT_IOP_COLORZONES_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   if(c->dragging)
@@ -884,8 +890,11 @@ colorzones_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_
   else if(event->button == 1)
   {
     c->drag_params = *(dt_iop_colorzones_params_t *)self->params;
+
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
     const int inset = DT_IOP_COLORZONES_INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;
@@ -940,7 +949,7 @@ colorzones_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data
 }
 
 static void
-colorzones_tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+colorzones_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
@@ -1041,18 +1050,18 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");
-  dt_bauhaus_widget_set_label(c->strength,_("mix"));
+  dt_bauhaus_widget_set_label(c->strength, NULL, _("mix"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->strength, TRUE, TRUE, 0);
   g_object_set(G_OBJECT(c->strength), "tooltip-text", _("make effect stronger or weaker"), (char *)NULL);
   g_signal_connect (G_OBJECT (c->strength), "value-changed", G_CALLBACK (strength_changed), (gpointer)self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->select_by, _("select by"));
+  dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
   g_object_set(G_OBJECT(c->select_by), "tooltip-text", _("choose selection criterion, will be the abscissa in the graph"), (char *)NULL);
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));

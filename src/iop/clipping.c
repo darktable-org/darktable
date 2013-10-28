@@ -385,8 +385,8 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   for (int i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
-    pi[0] = points[i] + .5;
-    pi[1] = points[i+1] + .5;
+    pi[0] = points[i];
+    pi[1] = points[i+1];
 
     if (d->k_apply==1) keystone_transform(pi,k_space,ma,mb,md,me,mg,mh,kxa,kya);
 
@@ -428,8 +428,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   for (int i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
-    pi[0] = -d->enlarge_x + d->cix + points[i] + .5;
-    pi[1] = -d->enlarge_y + d->ciy + points[i+1] + .5;
+    pi[0] = -d->enlarge_x + d->cix + points[i];
+    pi[1] = -d->enlarge_y + d->ciy + points[i+1];
+
     // transform this point using matrix m
     if(d->flip)
     {
@@ -1697,7 +1698,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->hvflip = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->hvflip, _("flip"));
+  dt_bauhaus_widget_set_label(g->hvflip, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->hvflip, _("none"));
   dt_bauhaus_combobox_add(g->hvflip, _("horizontal"));
   dt_bauhaus_combobox_add(g->hvflip, _("vertical"));
@@ -1708,14 +1709,14 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->angle= dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 0.25, p->angle, 2);
-  dt_bauhaus_widget_set_label(g->angle, _("angle"));
+  dt_bauhaus_widget_set_label(g->angle, NULL, _("angle"));
   dt_bauhaus_slider_set_format(g->angle, "%.02f°");
   g_signal_connect (G_OBJECT (g->angle), "value-changed", G_CALLBACK (angle_callback), self);
   g_object_set(G_OBJECT(g->angle), "tooltip-text", _("right-click and drag a line on the image to drag a straight line"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->keystone_type, _("keystone"));
+  dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
   dt_bauhaus_combobox_add(g->keystone_type, _("none"));
   dt_bauhaus_combobox_add(g->keystone_type, _("vertical"));
   dt_bauhaus_combobox_add(g->keystone_type, _("horizontal"));
@@ -1725,7 +1726,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->keystone_type, TRUE, TRUE, 0);
 
   g->crop_auto = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->crop_auto, _("automatic cropping"));
+  dt_bauhaus_widget_set_label(g->crop_auto, NULL, _("automatic cropping"));
   dt_bauhaus_combobox_add(g->crop_auto, _("no"));
   dt_bauhaus_combobox_add(g->crop_auto, _("yes"));
   g_object_set(G_OBJECT(g->crop_auto), "tooltip-text", _("automatically crop to avoid black edges"), (char *)NULL);
@@ -1734,7 +1735,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect_presets = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect_presets, 1);
-  dt_bauhaus_widget_set_label(g->aspect_presets, _("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect_presets, NULL, _("aspect"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("free"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("image"));
   dt_bauhaus_combobox_add(g->aspect_presets, _("golden cut"));
@@ -1758,7 +1759,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_presets, TRUE, TRUE, 0);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, _("guides"));
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("none"));
   dt_bauhaus_combobox_add(g->guide_lines, _("grid")); // TODO: make the number of lines configurable with a slider?
   dt_bauhaus_combobox_add(g->guide_lines, _("rules of thirds"));
@@ -1777,7 +1778,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);
 
   g->flip_guides = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->flip_guides, _("flip"));
+  dt_bauhaus_widget_set_label(g->flip_guides, NULL, _("flip"));
   dt_bauhaus_combobox_add(g->flip_guides, _("none"));
   dt_bauhaus_combobox_add(g->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(g->flip_guides, _("vertically"));
@@ -1787,7 +1788,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->flip_guides, TRUE, TRUE, 0);
 
   g->golden_extras = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->golden_extras, _("extra"));
+  dt_bauhaus_widget_set_label(g->golden_extras, NULL, _("extra"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden sections"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(g->golden_extras, _("golden spiral"));
@@ -2108,10 +2109,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if (g->k_show == 1 && p->k_type > 0)
   {
     //points in screen space
-    float iwd = dev->preview_pipe->iwidth;
-    float iht = dev->preview_pipe->iheight;
-    float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
-    if (dt_dev_distort_transform(self->dev,pts,4))
+    dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+    if (!piece) return;
+
+    float wp = piece->buf_out.width, hp = piece->buf_out.height;
+    float pts[8] = {p->kxa*wp, p->kya*hp, p->kxb*wp, p->kyb*hp, p->kxc*wp, p->kyc*hp, p->kxd*wp, p->kyd*hp};
+    if (dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts,4))
     {
       if (p->k_type == 3)
       {
@@ -2364,8 +2367,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if (g->k_drag == TRUE && g->k_selected >= 0)
     {
       float pts[2] = {pzx*wd,pzy*ht};
-      dt_dev_distort_backtransform(self->dev,pts,1);
-      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
+      dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,1);
+      dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+      float xx=pts[0]/(float)piece->buf_out.width, yy=pts[1]/(float)piece->buf_out.height;
       if (g->k_selected == 0)
       {
         if (p->k_sym == 1 || p->k_sym == 3) p->kxa = fminf(xx,(p->kxc+p->kxd-0.01f)/2.0f), p->kxb = p->kxc-p->kxa+p->kxd;
@@ -2569,8 +2573,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     if (g->k_show == 1 && g->k_drag == FALSE)
     {
       float pts[2] = {pzx*wd,pzy*ht};
-      dt_dev_distort_backtransform(self->dev,pts,1);
-      float xx=pts[0]/self->dev->preview_pipe->iwidth, yy=pts[1]/self->dev->preview_pipe->iheight;
+      dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,1);
+      dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+      float xx=pts[0]/(float)piece->buf_out.width, yy=pts[1]/(float)piece->buf_out.height;
       //are we near a keystone point ?
       g->k_selected = -1;
       g->k_selected_segment = -1;
@@ -2704,11 +2709,12 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
         dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
         pzx += 0.5f;
         pzy += 0.5f;
-
-        float iwd = self->dev->preview_pipe->iwidth;
-        float iht = self->dev->preview_pipe->iheight;
-        float pts[8] = {p->kxa*iwd, p->kya*iht, p->kxb*iwd, p->kyb*iht, p->kxc*iwd, p->kyc*iht, p->kxd*iwd, p->kyd*iht};
-        dt_dev_distort_transform(self->dev,pts,4);
+        
+        dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
+        float wp = piece->buf_out.width, hp = piece->buf_out.height;
+        float pts[8] = {p->kxa*wp, p->kya*hp, p->kxb*wp, p->kyb*hp, p->kxc*wp, p->kyc*hp, p->kxd*wp, p->kyd*hp};
+        dt_dev_distort_transform_plus(self->dev, self->dev->preview_pipe, self->priority+1, 999999, pts,4);
+    
         float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
         float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
         float ext = 10.0/(zoom_scale);

@@ -35,11 +35,11 @@ DT_MODULE(1)
 typedef struct dt_lib_metadata_t
 {
   int imgsel;
-  GtkComboBoxEntry * title;
-  GtkComboBoxEntry * description;
-  GtkComboBoxEntry * creator;
-  GtkComboBoxEntry * publisher;
-  GtkComboBoxEntry * rights;
+  GtkComboBox * title;
+  GtkComboBox * description;
+  GtkComboBox * creator;
+  GtkComboBox * publisher;
+  GtkComboBox * rights;
   gboolean           multi_title;
   gboolean           multi_description;
   gboolean           multi_creator;
@@ -66,7 +66,7 @@ uint32_t container()
   return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
-static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList **items, gboolean *multi)
+static void fill_combo_box_entry(GtkComboBox **box, uint32_t count, GList **items, gboolean *multi)
 {
   GList *iter;
 
@@ -77,9 +77,9 @@ static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList *
   // FIXME: how to make a nice empty combo box without the append/remove?
   if(count == 0)
   {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(*box), "");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box), "");
     gtk_combo_box_set_active(GTK_COMBO_BOX(*box), 0);
-    gtk_combo_box_remove_text(GTK_COMBO_BOX(*box), 0);
+    gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(*box), 0);
 
     *multi = FALSE;
     return;
@@ -87,7 +87,7 @@ static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList *
 
   if(count>1)
   {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(*box), _("<leave unchanged>")); // FIXME: should be italic!
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box), _("<leave unchanged>")); // FIXME: should be italic!
     gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(*box), GTK_SENSITIVITY_AUTO);
     *multi = TRUE;
   }
@@ -100,7 +100,7 @@ static void fill_combo_box_entry(GtkComboBoxEntry **box, uint32_t count, GList *
   {
     do
     {
-      gtk_combo_box_append_text(GTK_COMBO_BOX(*box), iter->data); // FIXME: dt segfaults when there are illegal characters in the string.
+      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(*box), iter->data); // FIXME: dt segfaults when there are illegal characters in the string.
     }
     while((iter=g_list_next(iter)) != NULL);
   }
@@ -214,11 +214,11 @@ static void write_metadata(dt_lib_module_t *self)
 
   mouse_over_id = d->imgsel;
 
-  gchar *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
-  gchar *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
-  gchar *rights      = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->rights));
-  gchar *creator     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
-  gchar *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
+  gchar *title       = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->title));
+  gchar *description = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->description));
+  gchar *rights      = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->rights));
+  gchar *creator     = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
+  gchar *publisher   = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
 
   if(title != NULL && (d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) != 0))
     dt_metadata_set(mouse_over_id, "Xmp.dc.title", title);
@@ -321,7 +321,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *label;
   GtkEntryCompletion *completion;
 
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)malloc(sizeof(dt_lib_metadata_t));
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   d->imgsel = -1;
@@ -334,7 +334,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("title"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 0, 1, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->title = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  d->title = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->title)));
@@ -347,7 +347,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("description"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 1, 2, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->description = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  d->description = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->description)));
@@ -360,7 +360,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("creator"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 2, 3, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->creator = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  d->creator = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->creator)));
@@ -373,7 +373,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("publisher"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 3, 4, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->publisher = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  d->publisher = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->publisher))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->publisher)));
@@ -386,7 +386,7 @@ void gui_init(dt_lib_module_t *self)
   label = gtk_label_new(_("rights"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
   gtk_table_attach(GTK_TABLE(self->widget), label, 0, 1, 4, 5, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-  d->rights = GTK_COMBO_BOX_ENTRY(gtk_combo_box_entry_new_text());
+  d->rights = GTK_COMBO_BOX(gtk_combo_box_text_new_with_entry());
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->rights))));
   completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_combo_box_get_model(GTK_COMBO_BOX(d->rights)));
@@ -464,11 +464,11 @@ void* get_params(dt_lib_module_t *self, int *size)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  char *title       = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->title));
-  char *description = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->description));
-  char *rights     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->rights));
-  char *creator     = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->creator));
-  char *publisher   = gtk_combo_box_get_active_text(GTK_COMBO_BOX(d->publisher));
+  char *title       = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->title));
+  char *description = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->description));
+  char *rights      = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->rights));
+  char *creator     = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
+  char *publisher   = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
 
   int32_t title_len       = strlen(title);
   int32_t description_len = strlen(description);

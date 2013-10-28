@@ -5,7 +5,7 @@
 #define DARKTABLE_CONFIG_H
 
 #define GETTEXT_PACKAGE "darktable"
-#define DARKTABLE_LOCALEDIR "@LOCALE_DIR@"
+#define DARKTABLE_LOCALEDIR "@RUNTIME_LOCALE_DIR@"
 #define DARKTABLE_TMPDIR "@TMP_DIR@"
 #define DARKTABLE_CACHEDIR "@CACHE_DIR@"
 
@@ -14,9 +14,11 @@
 #define PACKAGE_STRING PACKAGE_NAME " " PACKAGE_VERSION
 #define PACKAGE_BUGREPORT "darktable-devel@lists.sf.net"
 
-#define DARKTABLE_LIBDIR "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL@/darktable"
-#define DARKTABLE_DATADIR "@CMAKE_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable"
+#define DARKTABLE_LIBDIR "@RUNTIME_INSTALL_PREFIX@/@LIB_INSTALL@/darktable"
+#define DARKTABLE_DATADIR "@RUNTIME_INSTALL_PREFIX@/@SHARE_INSTALL@/darktable"
 
+#define SHARED_MODULE_PREFIX "@CMAKE_SHARED_MODULE_PREFIX@"
+#define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -118,8 +118,9 @@ darktable -d opencl
 	</sect2>
 
         <sect2 status="final"><title>Setting up OpenCL for AMD/ATI devices</title>
-                <para>While NVIDIA devices will most often run out of the box, there is more to do for AMD/ATI graphics cards. This starts with the fact that AMD/ATI will 
-                      only report to darktable half of the total GPU memory. For a 1GB device this amounts to 512MB, a value which darktable in its standard configuration will refuse 
+                <para>While NVIDIA devices and most modern AMD/ATI devices will most often run out of the box, there is more to do for older AMD/ATI graphics cards, namely those prior to the
+                      HD7xxx series. This starts with the fact that those devices will 
+                      only report to darktable part of their total GPU memory. For a 1GB device this typically amounts to 512MB, a value which darktable in its standard configuration will refuse 
                       as not being sufficient for its tasks. Consequence: the device will not be used.</para>
 
                 <para>On the web you might find as a tip to set environment variable GPU_MAX_HEAP_SIZE to a value of 100 in this case. Indeed this will cause the AMD/ATI driver to report the full 
@@ -150,6 +151,9 @@ darktable -d opencl
                       <link linkend="monochrome"><emphasis>monochrome</emphasis></link>, <link linkend="local_contrast"><emphasis>local contrast</emphasis></link>,
                       or <link linkend="global_tonemap"><emphasis>global tonemap</emphasis></link> or if you even get intermittent system freezes.</para>
                 </sect4>
+
+                <para>These recommendations do not apply to the more recent Radeon HD7xxx series with GCN architecture. Besides being very fast in terms of GPU computing they normally
+                      run out of the box. You only might consider to try some of the performance optimization options which are described in the following section.</para>
         </sect2>
 
 
@@ -163,7 +167,7 @@ darktable -d opencl
 darktable -d opencl -d perf
 		    </programlisting>
                  After each reprocessing of pixelpipe - caused by module parameter change, zooming, panning, etc. - you will get the total time and the time spent in each of our OpenCL 
-                 kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each indiviual module are unreliable when running the OpenCL 
+                 kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each individual module are unreliable when running the OpenCL 
                  pixelpipe asynchronously (see opencl_async_pixelpipe below).</para>
 
                 <para>To allow for a fast pixelpipe processing with OpenCL it is essential that we keep the GPU busy. Any interrupts or a stalled data flow will add to the total 
@@ -171,7 +175,7 @@ darktable -d opencl -d perf
                  even short-term stalls of the pixelpipe will easily become a bottleneck.</para>
 
                 <para>On the other hand darktable's performance during file exports is more or less only governed by the speed of our algorithms and the horse-power of your GPU. Short-term 
-                 stalls will not have a noticable effect on the total time of an export.</para>
+                 stalls will not have a noticeable effect on the total time of an export.</para>
 
 
                 <para>darktable comes with default settings that should deliver a decent GPU performance on most systems. However, if you want to fiddle around a bit by yourself and try to 
@@ -211,8 +215,8 @@ darktable -d opencl -d perf
                 </sect4>
 
                 <sect4><title>opencl_use_pinned_memory</title>
-                      <para>During tiling huge amounts of memory need to be transfered between host and device. On some devices (namely AMD) direct memory transfers to and from an
-                      arbitrary host memory region may give a huge performance penalty. This is especially noticable when exporting large images. Setting this configuration parameter 
+                      <para>During tiling huge amounts of memory need to be transferred between host and device. On some devices (namely AMD) direct memory transfers to and from an
+                      arbitrary host memory region may give a huge performance penalty. This is especially noticeable when exporting large images. Setting this configuration parameter 
                       to TRUE tells darktable to use a special kind of intermediate buffer for host-device data transfers. On some devices this can speed up exporting of large files 
                       by a factor of 2 to 3. NVIDIA devices and drivers seem to have a more efficient memory transfer technique even for arbitrary memory regions. They may deliver better 
                       performance if opencl_use_pinned_memory is left at its default FALSE.</para>
@@ -251,8 +255,8 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                      either by number or by name (upper/lower case and whitespace do not matter). If you have more than one device - all with the same
                      name - you need to use the device numbers in order to differentiate them.</para>
 
-               <para>A device specifier can be preceeded by an exclamation mark <quote>!</quote>, in which case the device is excluded from processing
-                     this pixelpipe. You can also give an asterisk <quote>*</quote> as a wildcard, representing all devices not mentioned explicitely before in that group.</para>
+               <para>A device specifier can be preceded by an exclamation mark <quote>!</quote>, in which case the device is excluded from processing
+                     this pixelpipe. You can also give an asterisk <quote>*</quote> as a wildcard, representing all devices not mentioned explicitly before in that group.</para>
 
                <para>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan
                      the devices in that order, taking the first free device it finds.</para>
@@ -285,7 +289,7 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
 		    <programlisting>
 !GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
 		    </programlisting>
-                    The GTS450 is explicitely excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
+                    The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
                     Completely the opposite for our preview
                     pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be allowed to do the work.</para>
 

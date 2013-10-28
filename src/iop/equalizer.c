@@ -320,7 +320,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 0));
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_drawing_area_size(c->area, 195, 195);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   g_signal_connect (G_OBJECT (c->area), "expose-event",
@@ -391,7 +391,7 @@ static gboolean dt_iop_equalizer_expose(GtkWidget *widget, GdkEventExpose *event
   int ch = (int)c->channel;
   for(int k=0; k<DT_IOP_EQUALIZER_BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.equalizer_x[ch][k], p.equalizer_y[ch][k]);
   const int inset = DT_GUI_EQUALIZER_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -548,7 +548,7 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
   dt_iop_equalizer_params_t *p = (dt_iop_equalizer_params_t *)self->params;
   const int inset = DT_GUI_EQUALIZER_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
   if(c->dragging)
@@ -603,7 +603,7 @@ static gboolean dt_iop_equalizer_button_press(GtkWidget *widget, GdkEventButton 
     dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;
     c->drag_params = *(dt_iop_equalizer_params_t *)self->params;
     const int inset = DT_GUI_EQUALIZER_INSET;
-    int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
     c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
     c->dragging = 1;

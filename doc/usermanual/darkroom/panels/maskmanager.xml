@@ -41,12 +41,12 @@
          <quote>grp levels</quote> indicating the module in which they are used. The list of masks is followed
          by a list of all individual shapes which have been generated in the context of the given image. If a
          shape is in use by any of the masks it is marked by the <inlinegraphic fileref="&masks_used;" scalefit="1" width="2%" align="center"/> 
-         symbol right to the shape name.</para>
+         symbol to the right of the shape name.</para>
     </sect3>
 
     <sect3><title>Shapes</title>
          <para>By default shapes receive an automatically generated name, consisting of the shape type (<quote>brush</quote>, 
-         <quote>circle</quote>, <quote>ellipse</quote>, <quote>path</quote>, <quote>brush</quote>) and a number that is 
+         <quote>circle</quote>, <quote>ellipse</quote>, <quote>path</quote>, <quote>gradient</quote>) and a number that is 
          incremented automatically. You can replace these automatically generated names by more
          meaningful ones. Double-clicking on the existing shape name prompts you for a new one. Giving a meaningful name is a
          good habit, especially if you are going to use the same selection in different masks. A name like
@@ -60,7 +60,7 @@
          all shapes currently not in use.</para>
 
          <para>All shapes ever defined for the current image are kept in the list unless
-         you remove them explicitely. If you have worked a lot with shapes on one image, this list can get quite long.
+         you remove them explicitly. If you have worked a lot with shapes on one image, this list can get quite long.
          All settings - with all defined shapes - are part of the XMP tags of an image and are included in exported files. 
          If the list of shapes is very long the needed space to store all shapes might exceed the given limits of certain file
          formats, like JPEG. In that case storing the XMP tags might fail during export. This is normally not a problem -
@@ -76,7 +76,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>						
-						<entry>Right-clicking on the shape name opens a drop-down menu. Here you define the way how the individual shapes interact
+						<entry>Right-clicking on the shape name opens a drop-down menu. Here you define the way that the individual shapes interact
                                                        to form the mask. You can also remove shapes from that mask.
 						</entry>
 						<entry>
@@ -87,7 +87,7 @@
 			</tgroup>
          </informaltable>
 
-         <para>Masks are constructed by adding the  shapes in the order as they are listed from top to bottom. Each shape adds to the mask
+         <para>Masks are constructed by adding the  shapes in the order that they are listed from top to bottom. Each shape adds to the mask
          by using at your choice one out of four logical set operators.</para>
 
          <para>As order matters when combining shapes you may move each shape up or down if needed.</para>
@@ -190,7 +190,7 @@
 					<row>						
 						<entry>This set operator is depicted by the <inlinegraphic fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/> 
                                                        symbol. The resulting mask has all pixels selected 
-                                                       that are either selected in the existing mask and not in the added shape or vice vera. 
+                                                       that are either selected in the existing mask and not in the added shape or vice versa. 
                                                        This is equivalent to an <quote>exclusive or</quote>.
 						</entry>
 						<entry>

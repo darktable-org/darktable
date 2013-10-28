@@ -52,7 +52,7 @@ dt_imageio_open_gm(
   GetExceptionInfo(&exception);
   image_info=CloneImageInfo((ImageInfo *) NULL);
 
-  strcpy(image_info->filename,filename);
+  g_strlcpy(image_info->filename,filename,sizeof(image_info->filename));
 
   image=ReadImage(image_info,&exception);
   if (exception.severity != UndefinedException)
@@ -111,7 +111,7 @@ dt_imageio_open_gm(
       for(int k=0; k<4; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf[4*i + k];
   }
 
-  if(buf) free(buf);
+  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);
@@ -124,7 +124,7 @@ dt_imageio_open_gm(
   return DT_IMAGEIO_OK;
 
 error:
-  if(buf) free(buf);
+  if(buf) dt_free_align(buf);
   if(image) DestroyImage(image);
   if(image_info) DestroyImageInfo(image_info);
   DestroyExceptionInfo(&exception);

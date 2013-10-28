@@ -660,8 +660,8 @@ void process_wavelets(
   backtransform((float *)ovoid, width, height, aa, bb);
 
   for(int k=0; k<max_scale; k++)
-    free(buf[k]);
-  free(tmp);
+    dt_free_align(buf[k]);
+  dt_free_align(tmp);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, width, height);
@@ -792,7 +792,7 @@ void process_nlmeans(
           const float *inm  = in + 4*i + 4* roi_in->width *(j-P);
           const float *inms = in + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
-          for(; ((unsigned long)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
+          for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
             float stmp = s[0];
             for(int k=0; k<3; k++)
@@ -874,8 +874,8 @@ void process_nlmeans(
     }
   }
   // free shared tmp memory:
-  free(Sa);
-  free(in);
+  dt_free_align(Sa);
+  dt_free_align(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
   if(piece->pipe->mask_display)
@@ -1459,7 +1459,7 @@ void reload_defaults(dt_iop_module_t *module)
     char name[512];
     g->profile_cnt = dt_noiseprofile_get_matching(&module->dev->image_storage, g->profiles, MAX_PROFILES);
     g->interpolated = dt_noiseprofiles[0]; // default to generic poissonian
-    strncpy(name, _(g->interpolated.name), 512);
+    g_strlcpy(name, _(g->interpolated.name), sizeof(name));
 
     const int iso = module->dev->image_storage.exif_iso;
     for(int i=1; i<g->profile_cnt; i++)
@@ -1720,11 +1720,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->profile , _("profile"));
-  dt_bauhaus_widget_set_label(g->mode, _("mode"));
-  dt_bauhaus_widget_set_label(g->radius, _("patch size"));
+  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
-  dt_bauhaus_widget_set_label(g->strength, _("strength"));
+  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   g_object_set (GTK_OBJECT(g->profile),  "tooltip-text", _("profile used for variance stabilization"), (char *)NULL);

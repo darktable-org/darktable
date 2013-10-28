@@ -409,7 +409,7 @@ autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
 }
 
 static void
-tab_switch(GtkNotebook *notebook, GtkNotebookPage *page, guint page_num, gpointer user_data)
+tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
@@ -422,8 +422,10 @@ static gboolean
 area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GtkRequisition r;
-  r.width  = widget->allocation.width;
-  r.height = widget->allocation.width;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  r.width  = allocation.width;
+  r.height = allocation.width;
   gtk_widget_size_request(widget, &r);
   return TRUE;
 }
@@ -528,7 +530,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   // gtk_box_pack_start(GTK_BOX(vbox), asp, TRUE, TRUE, 0);
   // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
-  gtk_drawing_area_size(c->area, 0, 258);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("double click to reset curve"), (char *)NULL);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
@@ -550,7 +552,7 @@ void gui_init(struct dt_iop_module_t *self)
                     G_CALLBACK (scrolled), self);
 
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->autoscale_ab, _("scale chroma"));
+  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("scale chroma"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("auto"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("manual"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
@@ -653,7 +655,9 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   dt_iop_estimate_exp(x, y, 4, unbounded_coeffs);
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   // clear bg
@@ -856,7 +860,9 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   if (autoscale_ab && ch != ch_L) goto finally;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
-  int height = widget->allocation.height - 2*inset, width = widget->allocation.width - 2*inset;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 

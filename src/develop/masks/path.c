@@ -1135,6 +1135,73 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     }
     gui->point_edited = -1;
   }
+  else if (which==3 && gui->point_selected>=0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    //we remove the point (and the entire form if there is too few points)
+    if (g_list_length(form->points) < 4)
+    {
+      //if the form doesn't below to a group, we don't delete it
+      if (parentid<=0) return 1;
+      
+      dt_masks_clear_form_gui(darktable.develop);
+      //we hide the form
+      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
+      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
+      else
+      {
+        GList *forms = g_list_first(darktable.develop->form_visible->points);
+        while (forms)
+        {
+          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
+          if (gpt->formid == form->formid)
+          {
+            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
+            break;
+          }
+          forms = g_list_next(forms);
+        }
+      }
+
+      //we delete or remove the shape
+      dt_masks_form_remove(module,NULL,form);
+      dt_dev_masks_list_change(darktable.develop);
+      dt_control_queue_redraw_center();
+      return 1;
+    }
+    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
+    gui->point_selected = -1;
+    _path_init_ctrl_points(form);
+
+    dt_masks_write_form(form,darktable.develop);
+
+    //we recreate the form points
+    dt_masks_gui_form_remove(form,gui,index);
+    dt_masks_gui_form_create(form,gui,index);
+    gpt->clockwise = _path_is_clockwise(form);
+    //we save the move
+    dt_masks_update_image(darktable.develop);
+
+    return 1;
+  }
+  else if (which==3 && gui->feather_selected>=0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  {
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_selected);
+    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
+    {
+      point->state = DT_MASKS_POINT_STATE_NORMAL;
+      _path_init_ctrl_points(form);
+
+      dt_masks_write_form(form,darktable.develop);
+
+      //we recreate the form points
+      dt_masks_gui_form_remove(form,gui,index);
+      dt_masks_gui_form_create(form,gui,index);
+      gpt->clockwise = _path_is_clockwise(form);
+      //we save the move
+      dt_masks_update_image(darktable.develop);
+    }
+    return 1;
+  }
   else if (which==3 && parentid>0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     dt_masks_clear_form_gui(darktable.develop);
@@ -1168,8 +1235,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
 static int dt_path_events_button_released(struct dt_iop_module_t *module,float pzx, float pzy, int which, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
-  if (gui->creation) return 1;
   if (!gui) return 0;
+  if (gui->creation) return 1;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
   if (!gpt) return 0;
   if (gui->form_dragging)
@@ -1319,70 +1386,6 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module,float p
     dt_masks_write_form(form,darktable.develop);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
-    return 1;
-  }
-  else if (gui->point_selected>=0 && which == 3)
-  {
-    //we remove the point (and the entire form if there is too few points)
-    if (g_list_length(form->points) < 4)
-    {
-      dt_masks_clear_form_gui(darktable.develop);
-      //we hide the form
-      if (!(darktable.develop->form_visible->type & DT_MASKS_GROUP)) darktable.develop->form_visible = NULL;
-      else if (g_list_length(darktable.develop->form_visible->points) < 2) darktable.develop->form_visible = NULL;
-      else
-      {
-        GList *forms = g_list_first(darktable.develop->form_visible->points);
-        while (forms)
-        {
-          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-          if (gpt->formid == form->formid)
-          {
-            darktable.develop->form_visible->points = g_list_remove(darktable.develop->form_visible->points,gpt);
-            break;
-          }
-          forms = g_list_next(forms);
-        }
-      }
-
-      //we delete or remove the shape
-      dt_masks_form_remove(module,NULL,form);
-      dt_dev_masks_list_change(darktable.develop);
-      dt_control_queue_redraw_center();
-      return 1;
-    }
-    form->points = g_list_delete_link(form->points,g_list_nth(form->points,gui->point_selected));
-    gui->point_selected = -1;
-    _path_init_ctrl_points(form);
-
-    dt_masks_write_form(form,darktable.develop);
-
-    //we recreate the form points
-    dt_masks_gui_form_remove(form,gui,index);
-    dt_masks_gui_form_create(form,gui,index);
-    gpt->clockwise = _path_is_clockwise(form);
-    //we save the move
-    dt_masks_update_image(darktable.develop);
-
-    return 1;
-  }
-  else if (gui->feather_selected>=0 && which == 3)
-  {
-    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_selected);
-    if (point->state != DT_MASKS_POINT_STATE_NORMAL)
-    {
-      point->state = DT_MASKS_POINT_STATE_NORMAL;
-      _path_init_ctrl_points(form);
-
-      dt_masks_write_form(form,darktable.develop);
-
-      //we recreate the form points
-      dt_masks_gui_form_remove(form,gui,index);
-      dt_masks_gui_form_create(form,gui,index);
-      gpt->clockwise = _path_is_clockwise(form);
-      //we save the move
-      dt_masks_update_image(darktable.develop);
-    }
     return 1;
   }
 
@@ -2155,7 +2158,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 
   //printf("crop to xmin %f, xmax %f, ymin %f, ymax %f - start %d (%f, %f)\n", xmin, xmax, ymin, ymax, point_start, path[2*point_start], path[2*point_start+1]);
 
-  if(point_start < 0) return 0;   // no point within roi found. should normally not happen but we can't continue from here
+  if(point_start < 0) return 0;   // no point means roi lies completely within path
 
   // find the crossing points with xmin and replace segment by nodes on border
   for(int k=0; k<point_count; k++)
@@ -2307,10 +2310,20 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int height = roi->height;
   const float scale = roi->scale;
 
+  // we need to take care of four different cases:
+  // 1) path and feather are outside of roi
+  // 2) path is outside of roi, feather reaches into roi
+  // 3) roi lies completely within path
+  // 4) all other situations :)
+  int path_in_roi = 0;
+  int feather_in_roi = 0;
+  int path_encircles_roi = 0;
+
   //we get buffers for all points
   float *points, *border, *cpoints = NULL;
-  int points_count,border_count;
+  int points_count, border_count;
   if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (points_count <= 2) return 0;
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2341,7 +2354,6 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     border[2*i] = xx * scale - px;
     border[2*i+1] = yy * scale - py;
   }
-
   for (int i=nb_corner*3; i < points_count; i++)
   {
     float xx = points[2*i];
@@ -2350,14 +2362,84 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     points[2*i+1] = yy * scale - py;
   }
 
-  //now we want to find the area, so we search min/max points
+  //now check if path is at least partially within roi
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    int xx = points[i*2];
+    int yy = points[i*2+1];
+    if(xx > 1 && yy > 1 && xx < width-2 && yy < height-2)
+    {
+      path_in_roi = 1;
+      break;
+    }
+  }
+
+  //if not this still might mean that path fully encircles roi -> we need to check that
+  if (!path_in_roi)
+  {
+    int nb = 0;
+    int last = -9999;
+    int x = width/2;
+    int y = height/2;
+
+    for (int i=nb_corner*3; i< points_count; i++)
+    {
+      int yy = (int) points[2*i+1];
+      if (yy != last && yy == y)
+      {
+        if (points[2*i] > x) nb++;
+      }
+      last = yy;
+    }
+    //if there is an uneven number of intersection points roi lies within path
+    if (nb & 1)
+    {
+      path_in_roi = 1;
+      path_encircles_roi = 1;
+    }
+  }
+
+  //if path and feather completely lie outside of roi -> we're done/mask remains empty
+  if(!path_in_roi && !feather_in_roi)
+  {
+    free(points);
+    free(border);
+    return 1;
+  }
+
+  //now check if feather is at least partially within roi
+  for (int i=nb_corner*3; i < border_count; i++)
+  {
+    int xx = border[i*2];
+    int yy = border[i*2+1];
+    if (xx == -999999)
+    {
+      if (yy == -999999) break; //that means we have to skip the end of the border path
+      i = yy-1;
+      continue;
+    }
+    if(xx > 1 && yy > 1 && xx < width-2 && yy < height-2)
+    {
+      feather_in_roi = 1;
+      break;
+    }
+  }
+
+  // now get min/max values
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-
+  for (int i=nb_corner*3; i < points_count; i++)
+  {
+    float xx = points[i*2];
+    float yy = points[i*2+1];
+    xmin = fminf(xx,xmin);
+    xmax = fmaxf(xx,xmax);
+    ymin = fminf(yy,ymin);
+    ymax = fmaxf(yy,ymax);
+  }
   for (int i=nb_corner*3; i < border_count; i++)
   {
-    //we look at the borders
     float xx = border[i*2];
     float yy = border[i*2+1];
     if (xx == -999999)
@@ -2371,153 +2453,148 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     ymin = fminf(yy,ymin);
     ymax = fmaxf(yy,ymax);
   }
-  for (int i=nb_corner*3; i < points_count; i++)
-  {
-    //we look at the path too
-    float xx = points[i*2];
-    float yy = points[i*2+1];
-    xmin = fminf(xx,xmin);
-    xmax = fmaxf(xx,xmax);
-    ymin = fminf(yy,ymin);
-    ymax = fmaxf(yy,ymax);
-  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
-  //check if the path completely lies outside of roi -> we're done/mask remains empty
-  if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
+  //deal with path if it does not lie outside of roi
+  if(path_in_roi)
   {
-    free(points);
-    free(border);
-    return 1;
-  }
+    //second copy of path which we can modify when cropping to roi
+    cpoints = malloc(2*points_count*sizeof(float));
+    if (cpoints == NULL)
+    {
+      free(points);
+      free(border);
+      return 0;
+    }
+    memcpy(cpoints, points, 2*points_count*sizeof(float));
 
-  //second copy of path which can be altered when cropping to roi
-  cpoints = malloc(2*points_count*sizeof(float));
-  if (cpoints == NULL)
-  {
-    free(points);
-    free(border);
-    return 0;
-  }
-  memcpy(cpoints, points, 2*points_count*sizeof(float));
+    //now we clip cpoints to roi -> catch special case when roi lies completely within path
+    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1);
+    path_encircles_roi = path_encircles_roi || !crop_success;
 
-  //now we clip cpoints to roi
-  const int no_points = !(_path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1));
-
-
-  //only if non-feathered part of shape lies within roi
-  if(!no_points && points_count > 2)
-  {
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
 
-    //edge-flag polygon fill: we write all the point around the path into the buffer
-    float xlast = cpoints[(points_count-1)*2];
-    float ylast = cpoints[(points_count-1)*2+1];
-
-    for (int i=nb_corner*3; i<points_count; i++)
+    if(path_encircles_roi)
     {
-      float xstart = xlast;
-      float ystart = ylast;
-
-      float xend = xlast = cpoints[i*2];
-      float yend = ylast = cpoints[i*2+1];
-
-      if(ystart > yend)
-      {
-        float tmp;
-        tmp = ystart, ystart = yend, yend = tmp;
-        tmp = xstart, xstart = xend, xend = tmp;
-      }
-
-      const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
-
-      for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
-      {
-        const float xcross = xstart + m * (yy - ystart);
-          
-        int xx = floorf(xcross);
-        if ((float)xx + 0.5f <= xcross) xx++;
-
-        if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
-
-        (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
-      }
-    }
-
-    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
-    start2 = dt_get_wtime();
-
-    //we fill the inside plain
-    //we don't need to deal with parts of shape outside of roi
-    xmin = fmaxf(xmin, 0);
-    xmax = fminf(xmax, width-1);
-    ymin = fmaxf(ymin, 0);
-    ymax = fminf(ymax, height-1);
-
-    for (int yy=ymin; yy<=ymax; yy++)
-    {
-      int state = 0;
-      for (int xx=xmin ; xx<=xmax; xx++)
-      {
-        float v = (*buffer)[yy*width+xx];
-        if (v > 0.5f) state = !state;
-        if (state) (*buffer)[yy*width+xx] = 1.0f;
-      }
-    }
-
-    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
-    start2 = dt_get_wtime();
-  }
-
-  //now we fill the falloff
-  int p0[2], p1[2];
-  int last0[2] = {-100,-100};
-  int last1[2] = {-100,-100};
-  int next = 0;
-  for (int i=nb_corner*3; i<border_count; i++)
-  {
-    p0[0] = floorf(points[i*2] + 0.5f);
-    p0[1] = ceilf(points[i*2+1]);
-    if (next > 0)
-    {
-      p1[0] = border[next*2];
-      p1[1] = border[next*2+1];
+      // roi lies completely within path
+      for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
     }
     else
     {
-      p1[0] = border[i*2];
-      p1[1] = border[i*2+1];
-    }
+      // all other cases
 
-    //now we check p1 value to know if we have to skip a part
-    if (next == i) next = 0;
-    while (p1[0] == -999999)
-    {
-      if (p1[1] == -999999) next = i-1;
-      else next = p1[1];
-      p1[0] = border[next*2];
-      p1[1] = border[next*2+1];
-    }
+      //edge-flag polygon fill: we write all the point around the path into the buffer
+      float xlast = cpoints[(points_count-1)*2];
+      float ylast = cpoints[(points_count-1)*2+1];
 
-    //and we draw the falloff
-    if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
-    {
-      _path_falloff_roi(buffer, p0, p1, width, height);
-      last0[0] = p0[0];
-      last0[1] = p0[1];
-      last1[0] = p1[0];
-      last1[1] = p1[1];
+      for (int i=nb_corner*3; i<points_count; i++)
+      {
+        float xstart = xlast;
+        float ystart = ylast;
+
+        float xend = xlast = cpoints[i*2];
+        float yend = ylast = cpoints[i*2+1];
+
+        if(ystart > yend)
+        {
+          float tmp;
+          tmp = ystart, ystart = yend, yend = tmp;
+          tmp = xstart, xstart = xend, xend = tmp;
+        }
+
+        const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
+
+        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
+        {
+          const float xcross = xstart + m * (yy - ystart);
+          
+          int xx = floorf(xcross);
+          if ((float)xx + 0.5f <= xcross) xx++;
+
+          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
+
+          (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+        }
+      }
+
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      start2 = dt_get_wtime();
+
+      //we fill the inside plain
+      //we don't need to deal with parts of shape outside of roi
+      xmin = fmaxf(xmin, 0);
+      xmax = fminf(xmax, width-1);
+      ymin = fmaxf(ymin, 0);
+      ymax = fminf(ymax, height-1);
+
+      for (int yy=ymin; yy<=ymax; yy++)
+      {
+        int state = 0;
+        for (int xx=xmin ; xx<=xmax; xx++)
+        {
+          float v = (*buffer)[yy*width+xx];
+          if (v > 0.5f) state = !state;
+          if (state) (*buffer)[yy*width+xx] = 1.0f;
+        }
+      }
+
+      if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+      start2 = dt_get_wtime();
     }
+    free(cpoints);
   }
 
-  if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  //deal with feather if it does not lie outside of roi
+  if(feather_in_roi)
+  {
+    int p0[2], p1[2];
+    int last0[2] = {-100,-100};
+    int last1[2] = {-100,-100};
+    int next = 0;
+    for (int i=nb_corner*3; i<border_count; i++)
+    {
+      p0[0] = floorf(points[i*2] + 0.5f);
+      p0[1] = ceilf(points[i*2+1]);
+      if (next > 0)
+      {
+        p1[0] = border[next*2];
+        p1[1] = border[next*2+1];
+      }
+      else
+      {
+        p1[0] = border[i*2];
+        p1[1] = border[i*2+1];
+      }
+
+      //now we check p1 value to know if we have to skip a part
+      if (next == i) next = 0;
+      while (p1[0] == -999999)
+      {
+        if (p1[1] == -999999) next = i-1;
+        else next = p1[1];
+        p1[0] = border[next*2];
+        p1[1] = border[next*2+1];
+      }
+
+      //and we draw the falloff
+      if (last0[0] != p0[0] || last0[1] != p0[1] || last1[0] != p1[0] || last1[1] != p1[1])
+      {
+        _path_falloff_roi(buffer, p0, p1, width, height);
+        last0[0] = p0[0];
+        last0[1] = p0[1];
+        last1[0] = p1[0];
+        last1[1] = p1[1];
+      }
+    }
+
+    if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name, dt_get_wtime()-start2);
+  }
 
   free(points);
   free(border);
-  free(cpoints);
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name, dt_get_wtime()-start);
 

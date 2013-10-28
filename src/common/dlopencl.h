@@ -25,8 +25,6 @@
 #include "config.h"
 #endif
 
-#include "common/dynload.h"
-
 #include <CL/cl.h>
 
 #if defined(WIN32)
@@ -195,7 +193,7 @@ typedef struct dt_dlopencl_t
 {
   int have_opencl;
   dt_dlopencl_symbols_t *symbols;
-  const char *library;
+  char *library;
 }
 dt_dlopencl_t;
 

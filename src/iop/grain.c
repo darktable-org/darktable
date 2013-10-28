@@ -510,7 +510,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* courseness */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 3200.0, 20.0, p->scale*53.3, 0);
-  dt_bauhaus_widget_set_label(g->scale1, _("coarseness"));
+  dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
   dt_bauhaus_slider_set_format(g->scale1,"%.0fISO");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("the grain size (~ISO of the film)"), (char *)NULL);
@@ -519,7 +519,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* strength */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 2);
-  dt_bauhaus_widget_set_label(g->scale2, _("strength"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, _("strength"));
   dt_bauhaus_slider_set_format(g->scale2,"%.0f%%");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
   g_object_set(G_OBJECT(g->scale2), "tooltip-text", _("the strength of applied grain"), (char *)NULL);

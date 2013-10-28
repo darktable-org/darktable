@@ -88,8 +88,8 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 //   dt_develop_t *dev = darktable.develop;
 //   dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
 //
-//   int width = widget->allocation.width;
-//   int height = widget->allocation.height;
+//   int width = allocation.width;
+//   int height = allocation.height;
 //   width -= 2 * 4 * DT_HIST_INSET;
 //   height -= 2 * DT_HIST_INSET;
 //
@@ -250,7 +250,9 @@ static gboolean _lib_histogram_expose_callback(GtkWidget *widget, GdkEventExpose
   float *hist = dev->histogram;
   float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?dev->histogram_max:logf(1.0 + dev->histogram_max);
   const int inset = DT_HIST_INSET;
-  int width = widget->allocation.width, height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
   GtkStyle *style=gtk_rc_get_style_by_paths(gtk_settings_get_default(), NULL,"GtkWidget", GTK_TYPE_WIDGET);
@@ -438,16 +440,18 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   if(!hooks_available)
     return TRUE;
 
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
   if (d->dragging && d->highlight == 2)
   {
     float white = d->white - (event->x - d->button_down_x)*
-                  1.0f/(float)widget->allocation.width;
+                  1.0f/(float)allocation.width;
     dt_dev_exposure_set_white(darktable.develop, white);
   }
   else if(d->dragging && d->highlight == 1)
   {
     float black = d->black - (event->x - d->button_down_x)*
-                  .1f/(float)widget->allocation.width;
+                  .1f/(float)allocation.width;
     dt_dev_exposure_set_black(darktable.develop, black);
   }
   else
@@ -455,7 +459,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     const float offs = 4*DT_HIST_INSET;
     const float x = event->x - offs;
     const float y = event->y - DT_HIST_INSET;
-    const float pos = x / (float)(widget->allocation.width - 2*offs);
+    const float pos = x / (float)(allocation.width - 2*offs);
 
 
     if(pos < 0 || pos > 1.0);

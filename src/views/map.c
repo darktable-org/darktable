@@ -525,6 +525,12 @@ void enter(dt_view_t *self)
                             DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
                             G_CALLBACK(_view_map_filmstrip_activate_callback),
                             self);
+
+  /* scroll filmstrip to the first selected image */
+  GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
+  if(selected_images)
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, GPOINTER_TO_INT(selected_images->data), FALSE);
+  g_list_free(selected_images);
 }
 
 void leave(dt_view_t *self)
@@ -712,9 +718,9 @@ drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint 
 
   gboolean success = FALSE;
 
-  if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
+  if((selection_data != NULL) && (gtk_selection_data_get_length(selection_data) >= 0) && target_type == DND_TARGET_IMGID)
   {
-    int *imgid = (int*)selection_data->data;
+    int *imgid = (int*)gtk_selection_data_get_data(selection_data);
     if(*imgid > 0)
     {
       _view_map_add_image_to_map(self, *imgid, x, y);
@@ -748,7 +754,7 @@ _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelect
   switch (target_type)
   {
     case DND_TARGET_IMGID:
-      gtk_selection_data_set(selection_data, selection_data-> target, _DWORD, (guchar*) &imgid, sizeof(imgid));
+      gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _DWORD, (guchar*) &imgid, sizeof(imgid));
       break;
     default: // return the location of the file as a last resort
     case DND_TARGET_URI:
@@ -757,7 +763,7 @@ _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkSelect
       gboolean from_cache = TRUE;
       dt_image_full_path(imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
       gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
-      gtk_selection_data_set(selection_data, selection_data-> target, _BYTE, (guchar*) uri, strlen(uri));
+      gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar*) uri, strlen(uri));
       g_free(uri);
       break;
     }
@@ -772,9 +778,9 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
 
   gboolean success = FALSE;
 
-  if((selection_data != NULL) && (selection_data->length >= 0) && target_type == DND_TARGET_IMGID)
+  if((selection_data != NULL) && (gtk_selection_data_get_length(selection_data) >= 0) && target_type == DND_TARGET_IMGID)
   {
-    int *imgid = (int*)selection_data->data;
+    int *imgid = (int*)gtk_selection_data_get_data(selection_data);
     if(*imgid > 0)
     {
       //  the image was dropped into the filmstrip, let's remove it in this case

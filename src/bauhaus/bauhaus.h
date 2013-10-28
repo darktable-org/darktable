@@ -26,7 +26,6 @@
 #include "gui/gtk.h"
 #include "gui/draw.h"
 
-#include <sys/select.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -69,6 +68,8 @@ typedef struct dt_bauhaus_slider_data_t
   float grad_col[10][3]; // colors for gradient slider
   int   grad_cnt;        // how many stops
   float grad_pos[10];    // and position of these.
+
+  int fill_feedback;   // fill the slider with brighter part up to the handle?
 
   char format[24];// numeric value is printed with this string
 
@@ -186,6 +187,11 @@ typedef struct dt_bauhaus_t
   char value_font[256]; // font to draw the value with
   PangoFontDescription *pango_font_desc; // no need to recreate this for every string we want to print
 
+  // the slider popup has a blinking cursor
+  guint cursor_timeout;
+  gboolean cursor_visible;
+  int cursor_blink_counter;
+
   // colors:
   float bg_normal;      // background without focus
   float bg_focus;       // background with focus
@@ -209,7 +215,7 @@ void dt_bauhaus_cleanup();
 
 // common functions:
 // set the label text:
-void dt_bauhaus_widget_set_label(GtkWidget *w, const char *text);
+void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
 // attach a custom painted quad to the space at the right side (overwriting the default icon if any):
 void dt_bauhaus_widget_set_quad_paint(GtkWidget *w, dt_bauhaus_quad_paint_f f, int paint_flags);
 // make this quad a toggle button:
@@ -221,6 +227,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w);
 // slider:
 GtkWidget* dt_bauhaus_slider_new(dt_iop_module_t *self);
 GtkWidget* dt_bauhaus_slider_new_with_range(dt_iop_module_t *self, float min, float max, float step, float defval, int digits);
+GtkWidget* dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, float max, float step, float defval, int digits, int feedback);
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);

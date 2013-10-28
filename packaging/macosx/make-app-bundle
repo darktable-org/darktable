@@ -11,7 +11,7 @@ sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
 rm package/darktable.app/Contents/Resources/etc/pango/pangorc
 touch package/darktable.app/Contents/Resources/etc/pango/pangorc
-find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
+find package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable-cli-bin package/darktable.app/Contents/Resources/lib/darktable -type f -exec \
   install_name_tool -change @executable_path/../lib/darktable/libdarktable.dylib @executable_path/../Resources/lib/darktable/libdarktable.dylib \{} \;
 ln -s /Applications package/
 
@@ -19,6 +19,7 @@ if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
 	dsymutil package/darktable.app/Contents/MacOS/darktable-bin
+	dsymutil package/darktable.app/Contents/MacOS/darktable-cli-bin
 fi
 
 PROGN=darktable

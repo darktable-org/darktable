@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/exif.h"
+#include "common/grealpath.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -229,12 +230,9 @@ dt_mipmap_cache_get_filename(
     goto exit;
   }
 
-  abspath = malloc(PATH_MAX);
-  if (!abspath)
-    goto exit;
-
-  if (!realpath(dbfilename, abspath))
-    snprintf(abspath, PATH_MAX, "%s", dbfilename);
+  abspath = g_realpath(dbfilename);
+  if(!abspath)
+    abspath = g_strdup(dbfilename);
 
   GChecksum* chk = g_checksum_new(G_CHECKSUM_SHA1);
   g_checksum_update(chk, (guchar*)abspath, strlen(abspath));
@@ -249,7 +247,7 @@ dt_mipmap_cache_get_filename(
   r = 0;
 
 exit:
-  free(abspath);
+  g_free(abspath);
 
   return r;
 }
@@ -488,7 +486,7 @@ dt_mipmap_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **b
   dsc->size = c->buffer_size;
   dsc->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
-  // fprintf(stderr, "[mipmap cache alloc] slot %d/%d for imgid %d size %d buffer size %d (%lX)\n", slot, c->cache.bucket_mask+1, get_imgid(key), get_size(key), c->buffer_size, (uint64_t)*buf);
+  // fprintf(stderr, "[mipmap cache alloc] slot %d/%d for imgid %d size %d buffer size %d (%p)\n", slot, c->cache.bucket_mask+1, get_imgid(key), get_size(key), c->buffer_size, *buf);
   return 1;
 }
 
@@ -523,9 +521,9 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   if(!(*dsc) || ((*dsc)->size < buffer_size) || ((void *)*dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
     if((void *)*dsc != (void *)dt_mipmap_cache_static_dead_image)
-      free(*dsc);
+      dt_free_align(*dsc);
     *dsc = dt_alloc_align(64, buffer_size);
-    // fprintf(stderr, "[mipmap cache] alloc for key %u %lX\n", get_key(img->id, size), (uint64_t)*buf);
+    // fprintf(stderr, "[mipmap cache] alloc for key %u %p\n", get_key(img->id, size), *buf);
     if(!(*dsc))
     {
       // return fallback: at least alloc size for a dead image:
@@ -540,7 +538,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   (*dsc)->height = ht;
   (*dsc)->flags = DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE;
 
-  // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%lX)\n", img->id, img->width, img->height, buffer_size, (uint64_t)*buf);
+  // fprintf(stderr, "full buffer allocating img %u %d x %d = %u bytes (%p)\n", img->id, img->width, img->height, buffer_size, *buf);
 
   // trick the user into using a pointer without the header:
   return (*dsc)+1;
@@ -565,7 +563,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
     {
       *buf = dt_alloc_align(16, sizeof(*dsc)+sizeof(float)*4*64);
     }
-    // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %lX\n", key, (uint64_t)*buf);
+    // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(*buf))
     {
       fprintf(stderr, "[mipmap cache] memory allocation failed!\n");
@@ -591,7 +589,7 @@ dt_mipmap_cache_allocate_dynamic(void *data, const uint32_t key, int32_t *cost, 
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
   *cost = 1;
-  // fprintf(stderr, "dummy allocing %lX\n", (uint64_t)*buf);
+  // fprintf(stderr, "dummy allocing %p\n", *buf);
   return 1; // request write lock
 }
 
@@ -636,8 +634,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
            (cache->compression_type == 1 ? "low quality compression" : "slow high quality compression"));
 
   // adjust numbers to be large enough to hold what mem limit suggests.
-  // we want at least 100MB, and consider 2G just still reasonable.
-  uint32_t max_mem = CLAMPS(dt_conf_get_int("cache_memory"), 100u<<20, 2u<<30);
+  // we want at least 100MB, and consider 8G just still reasonable.
+  size_t max_mem = CLAMPS(dt_conf_get_int64("cache_memory"), 100u<<20, ((uint64_t)8)<<30);
   const uint32_t parallel = CLAMP(dt_conf_get_int ("worker_threads")*dt_conf_get_int("parallel_export"), 1, 8);
   const int32_t max_size = 2048, min_size = 32;
   int32_t wd = darktable.thumbnail_width;
@@ -697,9 +695,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // XXX this needs adjustment for video mode (more full-res thumbs for replay)
     // TODO: collect hit/miss stats and auto-adjust to user browsing behaviour
     // TODO: can #prefetches be collected this way, too?
-    const uint32_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
-    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((float)max_mem2/cache->mip[k].buffer_size)));
-    while(thumbnails > parallel && thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
+    const size_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
+    uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((double)max_mem2/cache->mip[k].buffer_size)));
+    while(thumbnails > parallel && (size_t)thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
 
     // try to utilize that memory well (use 90% quota), the hopscotch paper claims good scalability up to
     // even more than that.
@@ -760,7 +758,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
     // now mem is actually freed, not during cache cleanup
-    free(cache->mip[k].buf);
+    dt_free_align(cache->mip[k].buf);
   }
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_FULL].cache);
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_F].cache);
@@ -769,7 +767,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
   if(cache->compression_type)
   {
     dt_cache_cleanup(&cache->scratchmem.cache);
-    free(cache->scratchmem.buf);
+    dt_free_align(cache->scratchmem.buf);
   }
 }
 
@@ -786,8 +784,9 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
   }
   for(int k=(int)DT_MIPMAP_F; k<=(int)DT_MIPMAP_FULL; k++)
   {
-    printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", k, cache->mip[k].cache.cost,
-           cache->mip[k].cache.cost_quota,
+    printf("[mipmap_cache] level [f%d] fill %d/%d slots (%.2f%% in %u/%u buffers)\n", k,
+           (uint32_t)cache->mip[k].cache.cost,
+           (uint32_t)cache->mip[k].cache.cost_quota,
            100.0f*(float)cache->mip[k].cache.cost/(float)cache->mip[k].cache.cost_quota,
            dt_cache_size(&cache->mip[k].cache),
            dt_cache_capacity(&cache->mip[k].cache));
@@ -909,7 +908,7 @@ dt_mipmap_cache_read_get(
           dt_imageio_retval_t ret = dt_imageio_open(&buffered_image, filename, a);
           if(dsc != prvdsc)
           {
-            // fprintf(stderr, "[mipmap cache] realloc %lX\n", (uint64_t)data);
+            // fprintf(stderr, "[mipmap cache] realloc %p\n", data);
             // write back to cache, too.
             // in case something went wrong, still keep the buffer and return it to the hashtable
             // so we don't produce mem leaks or unnecessary mem fragmentation.
@@ -930,7 +929,7 @@ dt_mipmap_cache_read_get(
             cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
             dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
             *img = buffered_image;
-            // fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%lX)\n", imgid, data[0], data[1], img->width, img->height, (uint64_t)data);
+            // fprintf(stderr, "[mipmap read get] initializing full buffer img %u with %u %u -> %d %d (%p)\n", imgid, data[0], data[1], img->width, img->height, data);
             // don't write xmp for this (we only changed db stuff):
             dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
             dt_image_cache_read_release(darktable.image_cache, img);

@@ -19,6 +19,8 @@
 #ifndef DT_DYNLOAD_H
 #define DT_DYNLOAD_H
 
+#ifdef HAVE_OPENCL
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -29,7 +31,7 @@
 typedef struct dt_gmodule_t
 {
   GModule *gmodule;
-  const char *library;
+  char *library;
 }
 dt_gmodule_t;
 
@@ -44,6 +46,7 @@ dt_gmodule_t *dt_gmodule_open(const char *);
 int dt_gmodule_symbol(dt_gmodule_t *, const char *, void (**)(void));
 
 
+#endif
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -85,12 +85,12 @@ static void _togglebutton_size_allocate(GtkWidget *widget, GtkAllocation *alloca
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(widget));
   g_return_if_fail(allocation != NULL);
 
-  widget->allocation = *allocation;
+  gtk_widget_get_allocation(widget, allocation);
 
-  if (GTK_WIDGET_REALIZED(widget))
+  if (gtk_widget_get_realized(widget))
   {
     gdk_window_move_resize(
-      widget->window,
+      gtk_widget_get_window(widget),
       allocation->x, allocation->y,
       allocation->width, allocation->height
     );
@@ -102,7 +102,9 @@ static void _togglebutton_destroy(GtkObject *object)
   GtkDarktableToggleButtonClass *klass;
   g_return_if_fail(object != NULL);
   g_return_if_fail(DTGTK_IS_TOGGLEBUTTON(object));
-  klass = gtk_type_class(gtk_widget_get_type());
+
+  //FIXME: or it should be g_type_class_ref () ?
+  klass = g_type_class_peek(gtk_widget_get_type());
   if (GTK_OBJECT_CLASS(klass)->destroy)
   {
     (* GTK_OBJECT_CLASS(klass)->destroy) (object);
@@ -142,12 +144,14 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
 
   /* begin cairo drawing */
   cairo_t *cr;
-  cr = gdk_cairo_create (widget->window);
+  cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
-  int x = widget->allocation.x;
-  int y = widget->allocation.y;
-  int width = widget->allocation.width;
-  int height = widget->allocation.height;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  int x = allocation.x;
+  int y = allocation.y;
+  int width = allocation.width;
+  int height = allocation.height;
 
   /* draw standard button background if not transparent nor flat styled */
   if( (flags & CPF_STYLE_FLAT ))
@@ -166,8 +170,8 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   else if( !(flags & CPF_BG_TRANSPARENT) )
   {
     /* draw default boxed button */
-    gtk_paint_box (widget->style, widget->window,
-                   GTK_WIDGET_STATE (widget),
+    gtk_paint_box (gtk_widget_get_style(widget), gtk_widget_get_window(widget),
+                   gtk_widget_get_state(widget),
                    GTK_SHADOW_OUT, NULL, widget, "button",
                    x, y, width, height);
   }
@@ -210,7 +214,7 @@ static gboolean _togglebutton_expose(GtkWidget *widget, GdkEventExpose *event)
     int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
     //if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
     //GdkRectangle t={x,y,x+width,y+height};
-    //gtk_paint_layout(style,widget->window, state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
+    //gtk_paint_layout(style,gtk_widget_get_window(widget), state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
     cairo_translate(cr, lx, ly);
     pango_cairo_show_layout (cr,layout);
   }
@@ -225,7 +229,7 @@ GtkWidget*
 dtgtk_togglebutton_new (DTGTKCairoPaintIconFunc paint, gint paintflags)
 {
   GtkDarktableToggleButton *button;
-  button = gtk_type_new(dtgtk_togglebutton_get_type());
+  button = g_object_new(dtgtk_togglebutton_get_type(), NULL);
   button->icon=paint;
   button->icon_flags=paintflags;
   return (GtkWidget *)button;
@@ -240,23 +244,24 @@ dtgtk_togglebutton_new_with_label (const gchar *label, DTGTKCairoPaintIconFunc p
   return button;
 }
 
-GtkType dtgtk_togglebutton_get_type()
+GType dtgtk_togglebutton_get_type()
 {
-  static GtkType dtgtk_togglebutton_type = 0;
+  static GType dtgtk_togglebutton_type = 0;
   if (!dtgtk_togglebutton_type)
   {
-    static const GtkTypeInfo dtgtk_togglebutton_info =
+    static const GTypeInfo dtgtk_togglebutton_info =
     {
-      "GtkDarktableToggleButton",
-      sizeof(GtkDarktableToggleButton),
       sizeof(GtkDarktableToggleButtonClass),
-      (GtkClassInitFunc) _togglebutton_class_init,
-      (GtkObjectInitFunc) _togglebutton_init,
-      NULL,
-      NULL,
-      (GtkClassInitFunc) NULL
+      (GBaseInitFunc) NULL,
+      (GBaseFinalizeFunc) NULL,
+      (GClassInitFunc) _togglebutton_class_init,
+      NULL,           /* class_finalize */
+      NULL,           /* class_data */
+      sizeof(GtkDarktableToggleButton),
+      0,              /* n_preallocs */
+      (GInstanceInitFunc) _togglebutton_init,
     };
-    dtgtk_togglebutton_type = gtk_type_unique(GTK_TYPE_TOGGLE_BUTTON, &dtgtk_togglebutton_info);
+    dtgtk_togglebutton_type = g_type_register_static(GTK_TYPE_TOGGLE_BUTTON, "GtkDarktableToggleButton", &dtgtk_togglebutton_info, 0);
   }
   return dtgtk_togglebutton_type;
 }

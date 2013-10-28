@@ -19,7 +19,7 @@
 				<tbody>
 					<row>						
 						<entry>This module is a classic digital photography tool. Unlike other image manipulation software, however, darktable's tone curve
-                                                acts in Lab color space. Thus, is offers three independent curves for L, a, and b channels.
+                                                acts in Lab color space. Thus, it offers three independent curves for L, a, and b channels.
 						</entry>
 						<entry>
 							<graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" />
@@ -55,7 +55,7 @@
                               <emphasis>scale chroma</emphasis> combobox is set to <quote>manual</quote>.
                               The horizontal line represents the color channel value of the input image pixels. The vertical line
                               represents the color channel value of the output image pixels. Positive a-values correspond to more magenta colors;
-                              negative a-values correspond to more greenish colors. Positve b-values correspond to more yellowish colors; negative
+                              negative a-values correspond to more greenish colors. Positive b-values correspond to more yellowish colors; negative
                               b-values correspond to more blueish colors. 
                         </para>
                         <para>A straight line does not change anything.
