@@ -84,9 +84,16 @@ dt_imageio_open_rawspeed(
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
+#ifdef __WIN32__
+  const size_t len = strlen(filename) + 1;
+  wchar_t filen[len];
+  mbstowcs(filen, filename, len);
+  FileReader f(filen);
+#else
   char filen[1024];
   snprintf(filen, 1024, "%s", filename);
   FileReader f(filen);
+#endif
 
   std::auto_ptr<RawDecoder> d;
   std::auto_ptr<FileMap> m;

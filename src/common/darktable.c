@@ -20,6 +20,14 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
+#include <malloc.h>
+#endif
+#ifdef __APPLE__
+#include <sys/malloc.h>
+#endif
+
 #include "common/darktable.h"
 #include "common/collection.h"
 #include "common/selection.h"
@@ -30,6 +38,7 @@
 #include "common/camera_control.h"
 #endif
 #include "common/film.h"
+#include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
@@ -58,20 +67,15 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
+#ifndef __WIN32__
+  #include <sys/wait.h>
+#endif
 #include <locale.h>
 #include <xmmintrin.h>
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
 #endif
 #include "dbus.h"
-
-#if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
-#include <malloc.h>
-#endif
-#ifdef __APPLE__
-#include <sys/malloc.h>
-#endif
 
 #if defined(__SUNOS__)
 #include <sys/varargs.h>
@@ -108,7 +112,7 @@ static int usage(const char *argv0)
   return 1;
 }
 
-#ifndef __APPLE__
+#if !defined __APPLE__ && !defined __WIN32__
 typedef void (dt_signal_handler_t)(int) ;
 // static dt_signal_handler_t *_dt_sigill_old_handler = NULL;
 static dt_signal_handler_t *_dt_sigsegv_old_handler = NULL;
@@ -128,7 +132,7 @@ static int dprintf(int fd,const char *fmt, ...)
 }
 #endif
 
-#ifndef __APPLE__
+#if !defined __APPLE__ && ! defined __WIN32__
 static
 void _dt_sigsegv_handler(int param)
 {
@@ -263,8 +267,8 @@ static gchar * dt_make_path_absolute(const gchar * input)
     char* current_dir = g_get_current_dir();
     char* tmp_filename = g_build_filename(current_dir, filename, NULL);
     g_free(filename);
-    filename = (char*)g_malloc(sizeof(char)*MAXPATHLEN);
-    if(realpath(tmp_filename, filename) == NULL)
+    filename = g_realpath(tmp_filename);
+    if(filename == NULL)
     {
       g_free(current_dir);
       g_free(tmp_filename);
@@ -351,7 +355,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
 {
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-#ifndef __APPLE__
+#if !defined __APPLE__ && !defined __WIN32__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
@@ -871,12 +875,21 @@ void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__MACH__) || defined(__APPLE__) || (defined(__FreeBSD_version) && __FreeBSD_version < 700013)
   return malloc(size);
+#elif defined(__WIN32__)
+  return _aligned_malloc(size, alignment);
 #else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, size)) return NULL;
   return ptr;
 #endif
 }
+
+#ifdef __WIN32__
+void dt_free_align(void *mem)
+{
+  _aligned_free(mem);
+}
+#endif
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {

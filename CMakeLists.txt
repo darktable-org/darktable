@@ -35,6 +35,12 @@ else(APPLE)
 	set(USE_MAC_INTEGRATION OFF)
 endif(APPLE)
 
+# When cross compiling, CMAKE_INSTALL_PREFIX will point to something like "/opt/darktable", but that's not useful when using the path to load
+# modules on runtime. Then we need something like "C:\Program Files\darktable". Doesn't need to be set when doing regular compiles.
+if(NOT DEFINED RUNTIME_INSTALL_PREFIX)
+  set(RUNTIME_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+endif(NOT DEFINED RUNTIME_INSTALL_PREFIX)
+
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CMAKE_ARCH_TRIPLET)
@@ -75,7 +81,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 if(WIN32)
- message("-- Win32 build detected, setting default features")
+  message("-- Win32 build detected, setting default features")
   set(USE_CAMERA_SUPPORT OFF)
 endif(WIN32)
 
@@ -119,23 +125,15 @@ if(CMAKE_BUILD_TYPE MATCHES "^[Dd][Ee][Bb][Uu][Gg]$")
   message(FATAL_ERROR "ERROR: Debug build type most likely isn't what you want, use RelWithDebInfo instead. If you're absolutely sure that this is what you want then just comment out this line.")
 endif()
 
-if(WIN32)
-	set(SHARE_INSTALL "." CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-else(WIN32)
-	if(NOT SHARE_INSTALL)
-		set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-	endif(NOT SHARE_INSTALL)
-endif(WIN32)
+if(NOT SHARE_INSTALL)
+  set(SHARE_INSTALL "share" CACHE STRING "Data file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+endif(NOT SHARE_INSTALL)
 
 mark_as_advanced(SHARE_INSTALL)
 
-if(WIN32)
-	set(LIB_INSTALL "." CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-else(WIN32)
-	if(NOT LIB_INSTALL)
-		set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
-	endif(NOT LIB_INSTALL)
-endif(WIN32)
+if(NOT LIB_INSTALL)
+  set( LIB_INSTALL lib${LIB_SUFFIX} CACHE STRING "Library file install path. Must be a relative path (from CMAKE_INSTALL_PREFIX), with no trailing slash.")
+endif(NOT LIB_INSTALL)
 
 mark_as_advanced(LIB_INSTALL)
 
@@ -144,11 +142,7 @@ if(USE_NLS)
 find_package(Gettext)
 if(Gettext_FOUND)
 	if(NOT LOCALE_DIR)
-		if(WIN32)
-			SET(LOCALE_DIR "bin/locale")
-		else()#other os
-			SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
-		endif(WIN32)
+    SET(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale")
 	endif(NOT LOCALE_DIR)
 
 	if(NOT LOCALE_DIR)
@@ -164,6 +158,10 @@ if(Gettext_FOUND)
 	endif(NOT LOCALE_DIR)
 endif(Gettext_FOUND)
 endif(USE_NLS)
+
+if(NOT DEFINED RUNTIME_LOCALE_DIR)
+  set(RUNTIME_LOCALE_DIR ${LOCALE_DIR})
+endif(NOT DEFINED RUNTIME_LOCALE_DIR)
 
 #find a temporary directory
 if(NOT TMP_DIR)
@@ -226,12 +224,14 @@ set(THEME hicolor)
 set(THEME_DIRECTORY ${CMAKE_INSTALL_PREFIX}/share/icons/${THEME})
 
 # we need some specific functions:
-IF(CMAKE_SYSTEM MATCHES "SunOS.*")
-add_definitions("-D_XOPEN_SOURCE=600")
-elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
-else(CMAKE_SYSTEM MATCHES "SunOS.*")
-add_definitions("-D_XOPEN_SOURCE=700")
-endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+if(NOT WIN32)
+  IF(CMAKE_SYSTEM MATCHES "SunOS.*")
+  add_definitions("-D_XOPEN_SOURCE=600")
+  elseif(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
+  else(CMAKE_SYSTEM MATCHES "SunOS.*")
+  add_definitions("-D_XOPEN_SOURCE=700")
+  endif(CMAKE_SYSTEM MATCHES "SunOS.*")
+endif(NOT WIN32)
 
 # we need an xslt interpreter to generate preferences_gen.h and darktablerc
 find_program(Xsltproc_BIN xsltproc)

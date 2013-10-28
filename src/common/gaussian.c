@@ -144,7 +144,7 @@ dt_gaussian_init(
   return g;
 
 error:
-  free(g->buf);
+  dt_free_align(g->buf);
   free(g->max);
   free(g->min);
   free(g);
@@ -480,7 +480,7 @@ dt_gaussian_free(
   dt_gaussian_t *g)
 {
   if(!g) return;
-  free(g->buf);
+  dt_free_align(g->buf);
   free(g->min);
   free(g->max);
   free(g);

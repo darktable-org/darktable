@@ -24,9 +24,14 @@
     defined __NetBSD__ || defined __OpenBSD__
 #define _WITH_DPRINTF
 #define _WITH_GETLINE
-#elif !defined _XOPEN_SOURCE
+#elif !defined _XOPEN_SOURCE && !defined __WIN32__
 #define _XOPEN_SOURCE 700 // for localtime_r and dprintf
 #endif
+
+#if defined __WIN32__
+  #include "win/win.h"
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -34,7 +39,11 @@
 #include "common/database.h"
 #include "common/utility.h"
 #include <time.h>
-#include <sys/resource.h>
+#ifdef __WIN32__
+  #include "win/getrusage.h"
+#else
+  #include <sys/resource.h>
+#endif
 #include <sys/time.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -220,6 +229,11 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...);
 void dt_gettime_t(char *datetime, time_t t);
 void dt_gettime(char *datetime);
 void *dt_alloc_align(size_t alignment, size_t size);
+#ifdef __WIN32__
+  void dt_free_align(void *mem);
+#else
+  #define dt_free_align(A) free(A)
+#endif
 int dt_capabilities_check(char *capability);
 void dt_capabilities_add(char *capability);
 void dt_capabilities_remove(char *capability);

@@ -37,14 +37,19 @@ set(LUA_SOURCES
 	"src/lzio.c"
     )
 add_library(lua STATIC ${LUA_SOURCES})
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O2 -Wall -DLUA_COMPAT_ALL")
-if(APPLE)
-	add_definitions("-DLUA_USE_MACOSX")
-	target_link_libraries(lua)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wall -DLUA_COMPAT_ALL")
+if(NOT WIN32)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+endif(NOT WIN32)
+if(WIN32)
+  target_link_libraries(lua)
+elseif(APPLE)
+  add_definitions("-DLUA_USE_MACOSX")
+  target_link_libraries(lua)
 else(APPLE)
-	add_definitions("-DLUA_USE_LINUX")
-	target_link_libraries(lua dl)
-endif(APPLE)
+  add_definitions("-DLUA_USE_LINUX")
+  target_link_libraries(lua dl)
+endif(WIN32)
 
 # 
 # SYSLIBS="-Wl,-E -ldl -lreadline"

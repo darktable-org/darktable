@@ -38,7 +38,9 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <glob.h>
+#ifndef __WIN32__
+  #include <glob.h>
+#endif
 
 #if GLIB_CHECK_VERSION (2, 26, 0)
 typedef struct dt_control_time_offset_t
@@ -442,17 +444,14 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
       // no need to keep them as the source data file is gone.
-      glob_t *globbuf = g_malloc(sizeof(glob_t));
-      memset((void *)globbuf, 0, sizeof(glob_t));
-
       const int len = DT_MAX_PATH_LEN + 30;
       gchar pattern[len];
 
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
-      gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
+      static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
 
-      int round = 0;
-      gchar **glob_pattern = glob_patterns;
+      const gchar **glob_pattern = glob_patterns;
+      GList *files = NULL;
       while(*glob_pattern)
       {
         snprintf(pattern, len, "%s", filename);
@@ -463,18 +462,36 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
         while(*c2 != '.' && c2 > filename) c2--;
         snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
-        glob(pattern, (round > 0) ? GLOB_APPEND : 0, NULL, globbuf);
+#ifdef __WIN32__
+        WIN32_FIND_DATA data;
+        HANDLE handle = FindFirstFile(pattern, &data);
+        if(handle != INVALID_HANDLE_VALUE)
+        {
+          do
+            files = g_list_append(files, g_strdup(data.cFileName));
+          while(FindNextFile(handle, &data));
+        }
+#else
+        glob_t globbuf;
+        if(!glob(pattern, 0, NULL, &globbuf))
+        {
+          for(size_t i=0; i < globbuf.gl_pathc; i++)
+            files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
+          globfree(&globbuf);
+        }
+#endif
 
-        round++;
         glob_pattern++;
       }
 
-      for (size_t i=0; i < globbuf->gl_pathc; i++)
-        (void)g_unlink(globbuf->gl_pathv[i]);
+      GList *file_iter = g_list_first(files);
+      while(file_iter != NULL)
+      {
+        (void)g_unlink(file_iter->data);
+        file_iter = g_list_next(file_iter);
+      }
 
-      globfree(globbuf);
-
-      g_free(globbuf);
+      g_list_free_full(files, g_free);
     }
     else
     {
@@ -1110,7 +1127,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   // GCC won't accept that this variable is used in a macro, considers
   // it set but not used, which makes for instance Fedora break.
   const __attribute__((__unused__)) int num_threads = MAX(1, MIN(full_entries, 8));
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
   #pragma omp parallel default(none) private(imgid) shared(control, fraction, w, h, stderr, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)
 #else
   #pragma omp parallel private(imgid) shared(control, fraction, w, h, mformat, mstorage, t, sdata, job, jid, darktable, settings) num_threads(num_threads) if(num_threads > 1)

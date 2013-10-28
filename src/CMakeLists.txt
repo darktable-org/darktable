@@ -106,6 +106,9 @@ find_package(OpenMP)
 if(OPENMP_FOUND AND USE_OPENMP)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  if(WIN32)
+    list(APPEND LIBS gomp)
+  endif(WIN32)
   add_definitions("-DHAVE_OPENMP")
 endif(OPENMP_FOUND AND USE_OPENMP)
 
@@ -367,6 +370,27 @@ if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 endif(NOT WIN32)
 
+if(WIN32)
+  # get rid of the console window. do we need both?
+#   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -Wl,-subsystem,windows")
+#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwindows -Wl,-subsystem,windows")
+
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc")
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+
+  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
+
+  add_definitions("-DLIBRAW_NODLL")
+  list(APPEND LIBS ws2_32)
+  list(APPEND LIBS msvcrt) # Needed for _aligned_alloc()
+  list(APPEND SOURCES "win/getrusage.c")
+endif(WIN32)
+
 if(NOT CUSTOM_CFLAGS)
 
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
@@ -597,7 +621,13 @@ add_definitions("-Werror=implicit-function-declaration")
 
 target_link_libraries(lib_darktable ${LIBS})
 
-install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+if(WIN32)
+  # Windows needs its DLLs in the same directory as the executable to find them.
+  install(TARGETS lib_darktable DESTINATION bin)
+else(WIN32)
+  install(TARGETS lib_darktable DESTINATION ${LIB_INSTALL}/darktable)
+endif(WIN32)
+
 # make sure static libs is first
 list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
 
@@ -629,9 +659,12 @@ add_subdirectory(cli)
 # build darktable executable
 #
 add_executable(darktable ${SUBSYSTEM_MACOSX} ${SUBSYSTEM_WIN32} main.c ${RESOURCE_OBJECT})
-set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+if(NOT WIN32)
+  # Windows doesn't know the concept of RPATHs :(
+  set_target_properties(darktable PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set_target_properties(darktable PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+  set_target_properties(darktable PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+endif(NOT WIN32)
 set_target_properties(darktable PROPERTIES LINKER_LANGUAGE C)
 if(APPLE)
   set_target_properties(lib_darktable PROPERTIES LINK_FLAGS "-framework Carbon")

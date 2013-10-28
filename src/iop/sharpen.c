@@ -393,7 +393,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=roi_out->height-rad; j<roi_out->height; j++)
     memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
 
-  free(tmp);
+  dt_free_align(tmp);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in) schedule(static)

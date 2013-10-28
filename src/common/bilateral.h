@@ -382,7 +382,7 @@ dt_bilateral_free(
   dt_bilateral_t *b)
 {
   if(!b) return;
-  free(b->buf);
+  dt_free_align(b->buf);
   free(b);
 }
 

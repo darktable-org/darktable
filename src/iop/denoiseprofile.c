@@ -660,8 +660,8 @@ void process_wavelets(
   backtransform((float *)ovoid, width, height, aa, bb);
 
   for(int k=0; k<max_scale; k++)
-    free(buf[k]);
-  free(tmp);
+    dt_free_align(buf[k]);
+  dt_free_align(tmp);
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, width, height);
@@ -874,8 +874,8 @@ void process_nlmeans(
     }
   }
   // free shared tmp memory:
-  free(Sa);
-  free(in);
+  dt_free_align(Sa);
+  dt_free_align(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
   if(piece->pipe->mask_display)

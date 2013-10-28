@@ -61,7 +61,7 @@ uint32_t container()
 }
 
 /** merges all the selected images into a single group.
- * if there is an expanded group, than they will be joined there, otherwise a new one will be created. */
+ * if there is an expanded group, then they will be joined there, otherwise a new one will be created. */
 static void
 _group_helper_function(void)
 {

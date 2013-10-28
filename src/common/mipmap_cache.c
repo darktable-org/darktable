@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/exif.h"
+#include "common/grealpath.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -229,12 +230,9 @@ dt_mipmap_cache_get_filename(
     goto exit;
   }
 
-  abspath = malloc(PATH_MAX);
-  if (!abspath)
-    goto exit;
-
-  if (!realpath(dbfilename, abspath))
-    snprintf(abspath, PATH_MAX, "%s", dbfilename);
+  abspath = g_realpath(dbfilename);
+  if(!abspath)
+    abspath = g_strdup(dbfilename);
 
   GChecksum* chk = g_checksum_new(G_CHECKSUM_SHA1);
   g_checksum_update(chk, (guchar*)abspath, strlen(abspath));
@@ -249,7 +247,7 @@ dt_mipmap_cache_get_filename(
   r = 0;
 
 exit:
-  free(abspath);
+  g_free(abspath);
 
   return r;
 }
@@ -523,7 +521,7 @@ dt_mipmap_cache_alloc(dt_image_t *img, dt_mipmap_size_t size, dt_mipmap_cache_al
   if(!(*dsc) || ((*dsc)->size < buffer_size) || ((void *)*dsc == (void *)dt_mipmap_cache_static_dead_image))
   {
     if((void *)*dsc != (void *)dt_mipmap_cache_static_dead_image)
-      free(*dsc);
+      dt_free_align(*dsc);
     *dsc = dt_alloc_align(64, buffer_size);
     // fprintf(stderr, "[mipmap cache] alloc for key %u %p\n", get_key(img->id, size), *buf);
     if(!(*dsc))
@@ -760,7 +758,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
   {
     dt_cache_cleanup(&cache->mip[k].cache);
     // now mem is actually freed, not during cache cleanup
-    free(cache->mip[k].buf);
+    dt_free_align(cache->mip[k].buf);
   }
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_FULL].cache);
   dt_cache_cleanup(&cache->mip[DT_MIPMAP_F].cache);
@@ -769,7 +767,7 @@ void dt_mipmap_cache_cleanup(dt_mipmap_cache_t *cache)
   if(cache->compression_type)
   {
     dt_cache_cleanup(&cache->scratchmem.cache);
-    free(cache->scratchmem.buf);
+    dt_free_align(cache->scratchmem.buf);
   }
 }
 

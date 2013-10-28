@@ -179,7 +179,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
         d->tmpbuf2_len = req2*dt_get_num_threads();
-        free(d->tmpbuf2);
+        dt_free_align(d->tmpbuf2);
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
@@ -246,7 +246,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if(req > 0 && d->tmpbuf_len < req)
     {
       d->tmpbuf_len = req;
-      free(d->tmpbuf);
+      dt_free_align(d->tmpbuf);
       d->tmpbuf = (float *)dt_alloc_align(16, d->tmpbuf_len);
     }
     memcpy(d->tmpbuf, in, req);
@@ -274,7 +274,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
         d->tmpbuf2_len = req2*dt_get_num_threads();
-        free(d->tmpbuf2);
+        dt_free_align(d->tmpbuf2);
         d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
       }
 
@@ -574,14 +574,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   dt_opencl_release_mem_object(dev_tmpbuf);
   dt_opencl_release_mem_object(dev_tmp);
-  if (tmpbuf != NULL) free(tmpbuf);
+  if (tmpbuf != NULL) dt_free_align(tmpbuf);
   if (modifier != NULL) lf_modifier_destroy(modifier);
   return TRUE;
 
 error:
   if (dev_tmp != NULL) dt_opencl_release_mem_object(dev_tmp);
   if (dev_tmpbuf != NULL) dt_opencl_release_mem_object(dev_tmpbuf);
-  if (tmpbuf != NULL) free(tmpbuf);
+  if (tmpbuf != NULL) dt_free_align(tmpbuf);
   if (modifier != NULL) lf_modifier_destroy(modifier);
   dt_print(DT_DEBUG_OPENCL, "[opencl_lens] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -691,7 +691,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     if(req2 > 0 && d->tmpbuf2_len < req2)
     {
       d->tmpbuf2_len = req2;
-      free(d->tmpbuf2);
+      dt_free_align(d->tmpbuf2);
       d->tmpbuf2 = (float *)dt_alloc_align(16, d->tmpbuf2_len);
     }
     for (int y = 0; y < roi_out->height; y++)
@@ -813,8 +813,8 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 #else
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   lf_lens_destroy(d->lens);
-  free(d->tmpbuf);
-  free(d->tmpbuf2);
+  dt_free_align(d->tmpbuf);
+  dt_free_align(d->tmpbuf2);
   free(piece->data);
 #endif
 }
