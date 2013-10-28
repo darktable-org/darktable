@@ -1417,30 +1417,70 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     cairo_save(cr);
     cairo_translate(cr, width/2.0, height/2.0f);
+
     int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
     if(lib->full_res_thumb_orientation & 4)
       wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
+
+    // array with cluster positions
+    float pos[49*4], *off = pos + 49*2;
+    for(int k=0;k<49;k++)
+    {
+      const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
+      const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
+      float x = lib->full_res_focus[k].x, y = lib->full_res_focus[k].y;
+      if(lib->full_res_thumb_orientation & 1)
+      {
+        x = lib->full_res_thumb_wd - 1 - x;
+      }
+      if(lib->full_res_thumb_orientation & 2)
+      {
+        y = lib->full_res_thumb_ht - 1 - y;
+      }
+      if(lib->full_res_thumb_orientation & 4)
+      {
+        pos[2*k + 0] = y;
+        pos[2*k + 1] = x;
+        off[2*k + 0] = y + stddevy;
+        off[2*k + 1] = x + stddevx;
+      }
+      else
+      {
+        pos[2*k + 0] = x;
+        pos[2*k + 1] = y;
+        off[2*k + 0] = x + stddevx;
+        off[2*k + 1] = y + stddevy;
+      }
+    }
+#if 1
+    if(dt_image_altered(lib->full_preview_id))
+    {
+      dt_develop_t dev;
+      dt_dev_init(&dev, 0);
+      dt_dev_load_image(&dev, lib->full_preview_id);
+      dt_dev_pixelpipe_t pipe;
+      int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+      if(res)
+      {
+        // set mem pointer to some rubbish, won't be used.
+        dt_dev_pixelpipe_set_input(&pipe, &dev, (float *)lib->full_res_thumb, wd, ht, 1.0f);
+        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+        dt_dev_pixelpipe_synch_all(&pipe, &dev);
+        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+        res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, 49*2);
+        dt_dev_pixelpipe_cleanup(&pipe);
+        wd = pipe.processed_width;
+        ht = pipe.processed_height;
+      }
+      dt_dev_cleanup(&dev);
+    }
+#endif
+
     const float scale = 0.97f*fminf(fminf(darktable.thumbnail_width, width)/(float)wd,
                                     fminf(darktable.thumbnail_height, height)/(float)ht);
     cairo_scale(cr, scale, scale);
 
     cairo_translate(cr, -wd/2.0f, -ht/2.0f);
-
-    if(lib->full_res_thumb_orientation & 4)
-    {
-      cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
-      cairo_transform(cr, &m);
-    }
-    if(lib->full_res_thumb_orientation & 2)
-    {
-      cairo_scale(cr, 1, -1);
-      cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
-    }
-    if(lib->full_res_thumb_orientation & 1)
-    {
-      cairo_scale(cr, -1, 1);
-      cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
-    }
 
     // draw clustered focus regions
     for(int k=0;k<49;k++)
@@ -1461,9 +1501,9 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       }
       if(draw)// // if(intens > 0.5f)
       {
-        const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
-        const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
-        cairo_rectangle(cr, lib->full_res_focus[k].x - stddevx, lib->full_res_focus[k].y - stddevy, 2*stddevx, 2*stddevy);
+        const float offx = off[2*k+0] - pos[2*k+0];
+        const float offy = off[2*k+1] - pos[2*k+1];
+        cairo_rectangle(cr, pos[2*k+0]-offx, pos[2*k+1]-offy, 2*offx, 2*offy);
         cairo_stroke(cr);
       }
     }
