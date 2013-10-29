@@ -1486,39 +1486,61 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     cairo_translate(cr, -wd/2.0f, -ht/2.0f);
 
+    double shortdashes[] = {10}, longdashes[] = {20};
+    double *dashes = shortdashes;
+    int    ndash  = sizeof (shortdashes)/sizeof(dashes[0]);
+    double offset = 0.0f;
+    cairo_set_dash (cr, dashes, ndash, offset);
+
     // draw clustered focus regions
     for(int k=0;k<49;k++)
     {
       const float intens = (lib->full_res_focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
       int draw = 0;
+      float col = .4f;
       if(lib->full_res_focus[k].n*4.0f > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
       {
-        cairo_set_source_rgb(cr, intens, 0.0, 0.0);
-        cairo_set_line_width(cr, 5.0f*intens);
+        col = .4f;
+        dashes = shortdashes;
+        cairo_set_line_width(cr, fminf(8.0f, 4.0f*intens + 4.0f));
         draw = 1;
       }
       else if(-lib->full_res_focus[k].n*8.0f > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
       {
-        cairo_set_source_rgb(cr, 0.0, 0.0, intens);
-        cairo_set_line_width(cr, 5.0f*intens);
+        col = .2f;
+        dashes = longdashes;
+        cairo_set_line_width(cr, fminf(4.0f, 4.0f*intens));
         draw = 1;
       }
-      if(draw)// // if(intens > 0.5f)
+      if(draw)
       {
-        cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
-        cairo_curve_to(cr, -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
-                           -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
-                           offy[2*k+0], offy[2*k+1]);
-        cairo_curve_to(cr, pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
-                           pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
-                           2*pos[2*k+0] - offx[2*k+0], 2*pos[2*k+1] - offx[2*k+1]);
-        cairo_curve_to(cr, 3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
-                           3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
-                           2*pos[2*k+0] - offy[2*k+0], 2*pos[2*k+1] - offy[2*k+1]);
-        cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
-                           pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
-                           offx[2*k+0], offx[2*k+1]);
-        cairo_stroke(cr);
+        for(int i=0;i<2;i++)
+        {
+          if(i)
+          {
+            cairo_set_source_rgb(cr, .5f+col, .5f+col, .5f+col);
+            cairo_set_dash (cr, dashes, ndash, dashes[0]);
+          }
+          else
+          {
+            cairo_set_source_rgb(cr, .5f-col, .5f-col, .5f-col);
+            cairo_set_dash (cr, dashes, ndash, 0);
+          }
+          cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
+          cairo_curve_to(cr, -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+                             -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+                             offy[2*k+0], offy[2*k+1]);
+          cairo_curve_to(cr, pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+                             pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+                             2*pos[2*k+0] - offx[2*k+0], 2*pos[2*k+1] - offx[2*k+1]);
+          cairo_curve_to(cr, 3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+                             3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+                             2*pos[2*k+0] - offy[2*k+0], 2*pos[2*k+1] - offy[2*k+1]);
+          cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+                             pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+                             offx[2*k+0], offx[2*k+1]);
+          cairo_stroke(cr);
+        }
       }
     }
     cairo_restore(cr);
