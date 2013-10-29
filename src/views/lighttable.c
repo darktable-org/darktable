@@ -1423,7 +1423,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
 
     // array with cluster positions
-    float pos[49*4], *off = pos + 49*2;
+    float pos[49*6], *offx = pos + 49*2, *offy = pos + 49*4;
     for(int k=0;k<49;k++)
     {
       const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
@@ -1441,15 +1441,19 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       {
         pos[2*k + 0] = y;
         pos[2*k + 1] = x;
-        off[2*k + 0] = y + stddevy;
-        off[2*k + 1] = x + stddevx;
+        offx[2*k + 0] = y + stddevy;
+        offx[2*k + 1] = x;
+        offy[2*k + 0] = y;
+        offy[2*k + 1] = x + stddevx;
       }
       else
       {
         pos[2*k + 0] = x;
         pos[2*k + 1] = y;
-        off[2*k + 0] = x + stddevx;
-        off[2*k + 1] = y + stddevy;
+        offx[2*k + 0] = x + stddevx;
+        offx[2*k + 1] = y;
+        offy[2*k + 0] = x;
+        offy[2*k + 1] = y + stddevy;
       }
     }
 #if 1
@@ -1467,7 +1471,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
         dt_dev_pixelpipe_create_nodes(&pipe, &dev);
         dt_dev_pixelpipe_synch_all(&pipe, &dev);
         dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-        res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, 49*2);
+        res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, 49*3);
         dt_dev_pixelpipe_cleanup(&pipe);
         wd = pipe.processed_width;
         ht = pipe.processed_height;
@@ -1501,9 +1505,19 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       }
       if(draw)// // if(intens > 0.5f)
       {
-        const float offx = off[2*k+0] - pos[2*k+0];
-        const float offy = off[2*k+1] - pos[2*k+1];
-        cairo_rectangle(cr, pos[2*k+0]-offx, pos[2*k+1]-offy, 2*offx, 2*offy);
+        cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
+        cairo_curve_to(cr, -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+                           -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+                           offy[2*k+0], offy[2*k+1]);
+        cairo_curve_to(cr, pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+                           pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+                           2*pos[2*k+0] - offx[2*k+0], 2*pos[2*k+1] - offx[2*k+1]);
+        cairo_curve_to(cr, 3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+                           3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+                           2*pos[2*k+0] - offy[2*k+0], 2*pos[2*k+1] - offy[2*k+1]);
+        cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+                           pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+                           offx[2*k+0], offx[2*k+1]);
         cairo_stroke(cr);
       }
     }
