@@ -69,8 +69,11 @@
 #define COMP_24_CS 1041666      /*Maximum size per color component for 2K & 4K @ 24fps*/
 #define COMP_48_CS 520833       /*Maximum size per color component for 2K @ 48fps*/
 
-#define J2K_CFMT 0
-#define JP2_CFMT 1
+typedef enum
+{
+  J2K_CFMT,
+  JP2_CFMT
+} dt_imageio_j2k_format_t;
 
 // borrowed from blender
 #define DOWNSAMPLE_FLOAT_TO_8BIT(_val)  (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 255 : (int)(255.0f * (_val)))
@@ -93,7 +96,7 @@ typedef struct dt_imageio_j2k_t
   int width, height;
   char style[128];
   int bpp;
-  int format;
+  dt_imageio_j2k_format_t format;
   dt_imageio_j2k_preset_t preset;
   int quality;
 }
@@ -111,7 +114,10 @@ void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
   dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,bpp,int);
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,format,int);
+  luaA_enum(darktable.lua_state,dt_imageio_j2k_format_t);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k",false);
+  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_format_t,J2K_CFMT,"jp2",false);
+  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,format,dt_imageio_j2k_format_t);
   dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,quality,int);
   luaA_enum(darktable.lua_state,dt_imageio_j2k_preset_t);
   luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off",false);

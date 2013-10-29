@@ -46,11 +46,15 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
       }
     }
   } else {
-	  lua_remove(L,result); // remove the error handler
+    lua_remove(L,result); // remove the error handler
   }
   result= lua_gettop(L) -result;
 
-  if(darktable.gui!=NULL) dt_control_queue_redraw();
+  if(darktable.gui!=NULL)
+  {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
+    dt_control_queue_redraw();
+  }
   return result;
 }
 

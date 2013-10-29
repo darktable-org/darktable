@@ -236,6 +236,8 @@ void dt_tag_attach(guint tagid,gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_attach_list(GList *tags,gint imgid)
@@ -320,6 +322,8 @@ void dt_tag_detach(guint tagid,gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_detach_by_string(const char *name, gint imgid)

@@ -321,6 +321,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   int32_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
   uint8_t *blob = NULL;
+  FILE *f = NULL;
   int file_width[mip+1], file_height[mip+1];
 
   gchar dbfilename[DT_MAX_PATH_LEN];
@@ -335,7 +336,14 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
     return 0;
   }
 
-  FILE *f = fopen(dbfilename, "rb");
+  // drop any old cache if the database is new. in that case newly imported images will probably mapped to old thumbnails
+  if(dt_database_is_new(darktable.db) && g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR))
+  {
+    fprintf(stderr, "[mipmap_cache] database is new, dropping old cache `%s'\n", dbfilename);
+    goto read_finalize;
+  }
+
+  f = fopen(dbfilename, "rb");
   if(!f)
   {
     if (errno == ENOENT)
