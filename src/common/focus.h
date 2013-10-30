@@ -82,48 +82,6 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
     if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += _from_uint8(gbuf(buf, i, j-st))/2;
   }
 }
-// inverse wavelet transform, for debugging
-static inline void _dt_focus_iwtf(uint8_t *buf, const int l, const int width, const int height)
-{
-  const int step = 1<<l;
-  const int st = step/2;
-
-  const int ch = CHANNEL;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf) schedule(static)
-#endif
-  for(int i=0; i<width; i++)
-  {
-    //cols
-    int j;
-    // update coarse
-    /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) -= gbuf(buf, i, st)*0.5f;
-    for(j=step; j<height-st; j+=step) /*for(int ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) -= (gbuf(buf, i, j-st) + gbuf(buf, i, j+st))/4;
-    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) -= gbuf(buf, i, j-st)/2;
-    // predict
-    for(j=st; j<height-st; j+=step) /*for(int ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += (gbuf(buf, i, j-st) + gbuf(buf, i, j+st))/2;
-    if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i, j-st);
-  }
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf) schedule(static)
-#endif
-  for(int j=0; j<height; j++)
-  {
-    // rows
-    int i;
-    // update
-    /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) -= gbuf(buf, st, j)/2;
-    for(i=step; i<width-st; i+=step) /*for(int ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) -= (gbuf(buf, i-st, j) + gbuf(buf, i+st, j))/4;
-    if(i < width) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) -= gbuf(buf, i-st, j)/2;
-    // predict
-    for(i=st; i<width-st; i+=step) /*for(int ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += (gbuf(buf, i-st, j) + gbuf(buf, i+st, j))/2;
-    if(i < width) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += gbuf(buf, i-st, j);
-  }
-}
 
 #undef gbuf
 #endif
