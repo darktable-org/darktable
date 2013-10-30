@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-24 14:48+0200\n"
-"PO-Revision-Date: 2013-10-24 15:07+0100\n"
+"POT-Creation-Date: 2013-10-30 20:20+0100\n"
+"PO-Revision-Date: 2013-10-30 20:36+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -355,6 +355,9 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
+"ingangen in xmp labels kunnen nogal groot worden en de beschikbare opslag "
+"ruimte voor bewerkingsgeschiedenis overschrijden, deze optie maakt het "
+"mogelijk om xmp labels te comprimeren en ruimte te besparen"
 
 #: ../build/src/preferences_gen.h:1716
 msgid "activate OpenCL support"
@@ -478,50 +481,50 @@ msgstr ""
 "ophalen instellingen van het formaat module mislukt, exporteren is "
 "afgebroken ..."
 
-#: ../src/common/collection.c:485 ../src/develop/lightroom.c:974
+#: ../src/common/collection.c:479 ../src/develop/lightroom.c:974
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1116
-#: ../src/libs/collect.c:1118
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1238
+#: ../src/libs/collect.c:1240
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:486 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1122 ../src/libs/collect.c:1124
+#: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
+#: ../src/libs/collect.c:1244 ../src/libs/collect.c:1246
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:487 ../src/develop/lightroom.c:978
+#: ../src/common/collection.c:481 ../src/develop/lightroom.c:978
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1128
-#: ../src/libs/collect.c:1130
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1250
+#: ../src/libs/collect.c:1252
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:488 ../src/develop/lightroom.c:980
+#: ../src/common/collection.c:482 ../src/develop/lightroom.c:980
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1134
-#: ../src/libs/collect.c:1136
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1256
+#: ../src/libs/collect.c:1258
 msgid "blue"
 msgstr "blauw"
 
-#: ../src/common/collection.c:489 ../src/libs/collect.c:1140
-#: ../src/libs/collect.c:1142
+#: ../src/common/collection.c:483 ../src/libs/collect.c:1262
+#: ../src/libs/collect.c:1264
 msgid "purple"
 msgstr "paars"
 
 #. history
-#: ../src/common/collection.c:496 ../src/libs/collect.c:1100
-#: ../src/libs/collect.c:1102
+#: ../src/common/collection.c:490 ../src/libs/collect.c:1222
+#: ../src/libs/collect.c:1224
 msgid "altered"
 msgstr "aangepast"
 
-#: ../src/common/collection.c:691
+#: ../src/common/collection.c:685
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -529,27 +532,27 @@ msgstr[0] "%d afbeelding van de %d uit de huidige collectie is geselecteerd"
 msgstr[1] ""
 "%d afbeeldingen van de %d uit de huidige collectie zijn geselecteerd"
 
-#: ../src/common/darktable.c:291
+#: ../src/common/darktable.c:295
 #, c-format
 msgid "found strange path `%s'"
 msgstr "onlogisch pad `%s'  gevonden "
 
-#: ../src/common/darktable.c:309
+#: ../src/common/darktable.c:313
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "fout bij het inladen van map `%s'"
 
-#: ../src/common/darktable.c:329
+#: ../src/common/darktable.c:333
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "bestand `%s' heeft een onbekend formaat!"
 
-#: ../src/common/darktable.c:343 ../src/libs/import.c:715
+#: ../src/common/darktable.c:347 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
 msgstr "fout bij het inladen van bestand `%s'"
 
-#: ../src/common/darktable.c:501
+#: ../src/common/darktable.c:505
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERRO: ongeldige tijdelijk map: %s\n"
@@ -578,33 +581,33 @@ msgstr ""
 "kopieer eerst de afbeeldingsgeschiedens voordat je het op een andere toepast"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:563
-#: ../src/common/styles.c:565 ../src/develop/blend_gui.c:1690
+#: ../src/common/history.c:286 ../src/common/styles.c:579
+#: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1690
 #: ../src/develop/develop.c:1145 ../src/libs/live_view.c:406
 msgid "on"
 msgstr "aan"
 
 #: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:563
-#: ../src/common/styles.c:565 ../src/develop/blend_gui.c:1538
+#: ../src/common/history.c:286 ../src/common/styles.c:579
+#: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
-#: ../src/imageio/format/j2k.c:634 ../src/iop/demosaic.c:1329
+#: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "uit"
 
-#: ../src/common/image.c:128
+#: ../src/common/image.c:130
 msgid "orphaned image"
 msgstr "verweesde afbeelding"
 
-#: ../src/common/image.c:1191 ../src/control/jobs/control_jobs.c:345
+#: ../src/common/image.c:1207 ../src/control/jobs/control_jobs.c:347
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
 "toegankelijk is"
 
-#: ../src/common/image.c:1336
+#: ../src/common/image.c:1352
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -619,7 +622,7 @@ msgstr ""
 "geheugen toewijzing voor exporteren is mislukt. Advies: verlaag het aantal "
 "exporteer onderwerpen"
 
-#: ../src/common/imageio.c:566 ../src/common/mipmap_cache.c:1147
+#: ../src/common/imageio.c:566 ../src/common/mipmap_cache.c:1153
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "afbeelding `%s' is niet beschikbaar"
@@ -660,8 +663,8 @@ msgstr "naam stijl '%s' bestaat al"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:228 ../src/common/styles.c:232
 #: ../src/common/styles.c:302 ../src/common/styles.c:363
-#: ../src/common/styles.c:491 ../src/common/styles.c:1002
-#: ../src/common/styles.c:1026
+#: ../src/common/styles.c:507 ../src/common/styles.c:1018
+#: ../src/common/styles.c:1042
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -678,17 +681,17 @@ msgstr "aanmaak profielstijl '%s' is gelukt"
 msgid "no image selected!"
 msgstr "er is geen afbeelding geselecteerd"
 
-#: ../src/common/styles.c:649
+#: ../src/common/styles.c:665
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "overschrijven stijl bestand voor %s mislukt"
 
-#: ../src/common/styles.c:655
+#: ../src/common/styles.c:671
 #, c-format
 msgid "style file for %s exists"
 msgstr "stijl bestand '%s' bestaat al"
 
-#: ../src/common/styles.c:893
+#: ../src/common/styles.c:909
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
@@ -702,11 +705,11 @@ msgstr "stijl '%s' is geïmporteerd"
 msgid "none"
 msgstr "geen"
 
-#: ../src/control/control.c:1431 ../src/control/control.c:1434
+#: ../src/control/control.c:1436 ../src/control/control.c:1439
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:1517
+#: ../src/control/control.c:1522
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
@@ -760,69 +763,69 @@ msgstr[1] "importeren %d afbeeldingen vanaf de camera"
 msgid "failed to create filmroll for camera import, import aborted."
 msgstr "aanmaak map van camera invoer mislukt, importeren afgebroken"
 
-#: ../src/control/jobs/control_jobs.c:122
+#: ../src/control/jobs/control_jobs.c:124
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "samenvoegen %d afbeelding"
 msgstr[1] "samenvoegen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:143
+#: ../src/control/jobs/control_jobs.c:145
 msgid "exposure bracketing only works on raw images"
 msgstr "bracketing werkt alleen bij raw afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:152
+#: ../src/control/jobs/control_jobs.c:154
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "invoer raw buffer van afbeelding `%s' is mislukt"
 
-#: ../src/control/jobs/control_jobs.c:171
+#: ../src/control/jobs/control_jobs.c:173
 msgid "images have to be of same size!"
 msgstr "afbeelding moeten van dezelfde afmeting zijn!"
 
-#: ../src/control/jobs/control_jobs.c:247
+#: ../src/control/jobs/control_jobs.c:249
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "HDR `%s' is opgeslagen"
 
-#: ../src/control/jobs/control_jobs.c:273
+#: ../src/control/jobs/control_jobs.c:275
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "kloon %d afbeelding"
 msgstr[1] "klonen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:299
+#: ../src/control/jobs/control_jobs.c:301
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "spiegel %d afbeelding"
 msgstr[1] "spiegel %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:322
+#: ../src/control/jobs/control_jobs.c:324
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "verplaats %d afbeelding"
 msgstr[1] "verplaatsen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:398
+#: ../src/control/jobs/control_jobs.c:400
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "verwijder %d afbeelding"
 msgstr[1] "verwijderen %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:532
+#: ../src/control/jobs/control_jobs.c:549
 msgid "failed to parse GPX file"
 msgstr "parsen GPX bestand mislukt"
 
-#: ../src/control/jobs/control_jobs.c:599
+#: ../src/control/jobs/control_jobs.c:616
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "overeenkomstige GPX locatie toegepast op %d afbeelding(en)"
 
-#: ../src/control/jobs/control_jobs.c:760
+#: ../src/control/jobs/control_jobs.c:777
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -830,11 +833,11 @@ msgid_plural ""
 msgstr[0] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 msgstr[1] "Weet u zeker dat u %d geselecteerde afbeeldingen wilt uitschrijven?"
 
-#: ../src/control/jobs/control_jobs.c:763
+#: ../src/control/jobs/control_jobs.c:780
 msgid "remove images?"
 msgstr "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:789
+#: ../src/control/jobs/control_jobs.c:806
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -844,23 +847,23 @@ msgstr[0] ""
 msgstr[1] ""
 "wilt u echt  %d geselecteerde afbeeldingen fysiek van de schijf verwijderen?"
 
-#: ../src/control/jobs/control_jobs.c:792
+#: ../src/control/jobs/control_jobs.c:809
 msgid "delete images?"
 msgstr "afbeelding(en) verwijderen"
 
-#: ../src/control/jobs/control_jobs.c:825
+#: ../src/control/jobs/control_jobs.c:842
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "aanmaak map voor uitvoer mislukt, verplaatsing afgebroken"
 
-#: ../src/control/jobs/control_jobs.c:858
-#: ../src/control/jobs/control_jobs.c:915 ../src/imageio/storage/disk.c:68
+#: ../src/control/jobs/control_jobs.c:875
+#: ../src/control/jobs/control_jobs.c:932 ../src/imageio/storage/disk.c:68
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/gallery.c:79
 #: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
 #: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "selecteer map"
 
-#: ../src/control/jobs/control_jobs.c:881
+#: ../src/control/jobs/control_jobs.c:898
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -875,94 +878,94 @@ msgstr[1] ""
 "wilt u de %d geselecteerde afbeeldingen verplaatsen naar %s?\n"
 "(alle niet geselecteerde afbeeldingen worden niet meegenomen)"
 
-#: ../src/control/jobs/control_jobs.c:885
+#: ../src/control/jobs/control_jobs.c:902
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "afbeelding verplaatsen?"
 msgstr[1] "afbeeldingen verplaatsen?"
 
-#: ../src/control/jobs/control_jobs.c:938
+#: ../src/control/jobs/control_jobs.c:955
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "wilt u de %d geselecteerde afbeelding kopiëren naar %s?"
 msgstr[1] "wilt u de %d geselecteerde afbeeldingen kopiëren naar %s?"
 
-#: ../src/control/jobs/control_jobs.c:941
+#: ../src/control/jobs/control_jobs.c:958
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopieer afbeelding"
 msgstr[1] "kopieer afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1023
 #, c-format
 msgid "moving %d image"
 msgstr "verplaats %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:1006
+#: ../src/control/jobs/control_jobs.c:1023
 #, c-format
 msgid "moving %d images"
 msgstr "verplaats %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1012
+#: ../src/control/jobs/control_jobs.c:1029
 #, c-format
 msgid "copying %d image"
 msgstr "kopieer %d afbeelding"
 
-#: ../src/control/jobs/control_jobs.c:1012
+#: ../src/control/jobs/control_jobs.c:1029
 #, c-format
 msgid "copying %d images"
 msgstr "kopieer %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1027
+#: ../src/control/jobs/control_jobs.c:1044
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "maakt lokale kopie van %d afbeelding"
 msgstr[1] "maakt lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1029
+#: ../src/control/jobs/control_jobs.c:1046
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "verwijder de lokale kopie van een afbeelding"
 msgstr[1] "verwijder lokale kopieën van %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1092
+#: ../src/control/jobs/control_jobs.c:1109
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "het opvragen instellingen van de opslag module `%s' is mislukt, het "
 "exporteren is gestopt"
 
-#: ../src/control/jobs/control_jobs.c:1096
+#: ../src/control/jobs/control_jobs.c:1113
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporteer %d afbeelding"
 msgstr[1] "exporteren %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1098
+#: ../src/control/jobs/control_jobs.c:1115
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporteer %d afbeelding naar %s"
 msgstr[1] "exporteren %d afbeeldingen naar %s"
 
-#: ../src/control/jobs/control_jobs.c:1162
-#: ../src/control/jobs/control_jobs.c:1163 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1179
+#: ../src/control/jobs/control_jobs.c:1180 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "afbeelding `%s' is op dit moment niet beschikbaar"
 
-#: ../src/control/jobs/control_jobs.c:1242
+#: ../src/control/jobs/control_jobs.c:1259
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "pas tijdsverschil toe op %d afbeelding"
 msgstr[1] "pas tijdsverschil toe op %d afbeeldingen"
 
-#: ../src/control/jobs/control_jobs.c:1262
+#: ../src/control/jobs/control_jobs.c:1279
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "tijdsverschil toegepast aan %d afbeelding(en)"
@@ -1407,48 +1410,48 @@ msgstr "toewijzen buffer t.g.v. mengen mislukt"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:297 ../src/develop/imageop.c:305
+#: ../src/develop/imageop.c:296 ../src/develop/imageop.c:304
 msgid "error creating GUI, see stderr"
 msgstr "foutmelding bij aanmaak GUI, zie stderr"
 
 #. should never happen
-#: ../src/develop/imageop.c:380
+#: ../src/develop/imageop.c:379
 msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
 msgstr "foutmelding bij aanmaak GUI, DT_SIMPLE_GUI_NONE niet gevonden"
 
-#: ../src/develop/imageop.c:1180
+#: ../src/develop/imageop.c:1179
 msgid "new instance"
 msgstr "nieuw exemplaar"
 
-#: ../src/develop/imageop.c:1185
+#: ../src/develop/imageop.c:1184
 msgid "duplicate instance"
 msgstr "dupliceer exemplaar"
 
-#: ../src/develop/imageop.c:1190 ../src/libs/masks.c:1040
+#: ../src/develop/imageop.c:1189 ../src/libs/masks.c:1040
 msgid "move up"
 msgstr "eerder"
 
-#: ../src/develop/imageop.c:1196 ../src/libs/masks.c:1043
+#: ../src/develop/imageop.c:1195 ../src/libs/masks.c:1043
 msgid "move down"
 msgstr "later"
 
 #. delete
-#: ../src/develop/imageop.c:1202 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:1201 ../src/libs/image.c:146
 #: ../src/libs/styles.c:396 ../src/libs/tagging.c:488
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2084
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2084
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:1454 ../src/gui/accelerators.c:758
+#: ../src/develop/imageop.c:1453 ../src/gui/accelerators.c:758
 #: ../src/gui/accelerators.c:838 ../src/gui/accelerators.c:1005
 #: ../src/gui/accelerators.c:1030 ../src/gui/presets.c:197
 #: ../src/gui/presets.c:299 ../src/gui/presets.c:604
@@ -1457,41 +1460,41 @@ msgstr "%s is uitgeschakeld"
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:1497
+#: ../src/develop/imageop.c:1496
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusie"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1502
+#: ../src/develop/imageop.c:1501
 msgctxt "accel"
 msgid "show module"
 msgstr "toon module"
 
-#: ../src/develop/imageop.c:1503
+#: ../src/develop/imageop.c:1502
 msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1506 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1505 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1508 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1507 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:2054
+#: ../src/develop/imageop.c:2053
 msgid "multiple instances actions"
 msgstr "meerdere exemplaren"
 
-#: ../src/develop/imageop.c:2063 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2062 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "reset"
 
-#: ../src/develop/imageop.c:2072 ../src/gui/preferences.c:404
+#: ../src/develop/imageop.c:2071 ../src/gui/preferences.c:404
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "voorkeuren"
@@ -1804,78 +1807,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "gebruik YYYY-MM-DD voor datum overschrijving"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:893
+#: ../src/gui/gtk.c:913
 msgctxt "accel"
 msgid "capture view"
 msgstr "bekijk opname"
 
-#: ../src/gui/gtk.c:894
+#: ../src/gui/gtk.c:914
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "weergave bibliotheek"
 
-#: ../src/gui/gtk.c:895
+#: ../src/gui/gtk.c:915
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "weergave ontwikkelen"
 
-#: ../src/gui/gtk.c:896
+#: ../src/gui/gtk.c:916
 msgctxt "accel"
 msgid "map view"
 msgstr "bekijk kaart"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:919
+#: ../src/gui/gtk.c:939
 msgctxt "accel"
 msgid "quit"
 msgstr "verlaat"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:926
+#: ../src/gui/gtk.c:946
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "versterk helderheid"
 
-#: ../src/gui/gtk.c:928
+#: ../src/gui/gtk.c:948
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "verminder helderheid"
 
-#: ../src/gui/gtk.c:930
+#: ../src/gui/gtk.c:950
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "versterk contrast"
 
-#: ../src/gui/gtk.c:932
+#: ../src/gui/gtk.c:952
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "verminder contrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:953
+#: ../src/gui/gtk.c:973
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "volledig scherm aan/uit"
 
-#: ../src/gui/gtk.c:954
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "verlaat volledig scherm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:966
+#: ../src/gui/gtk.c:986
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "zijpanelen aan/uit"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:969
+#: ../src/gui/gtk.c:989
 msgctxt "accel"
 msgid "toggle header"
 msgstr "header aan/uit"
 
 #. View-switch
-#: ../src/gui/gtk.c:973
+#: ../src/gui/gtk.c:993
 msgctxt "accel"
 msgid "switch view"
 msgstr "wissel weergave"
@@ -2074,7 +2077,7 @@ msgid "binding"
 msgstr "koppeling"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:598 ../src/imageio/format/webp.c:289
+#: ../src/gui/preferences.c:598 ../src/imageio/format/webp.c:314
 msgid "default"
 msgstr "standaard"
 
@@ -2327,36 +2330,36 @@ msgstr "maak clone"
 msgid "OpenEXR"
 msgstr "OpenEXR"
 
-#: ../src/imageio/format/j2k.c:573
+#: ../src/imageio/format/j2k.c:579
 msgid "JPEG 2000"
 msgstr "JPEG 2000"
 
-#: ../src/imageio/format/j2k.c:608
+#: ../src/imageio/format/j2k.c:614
 msgid "jp2"
 msgstr "jp2"
 
-#: ../src/imageio/format/j2k.c:613
+#: ../src/imageio/format/j2k.c:619
 msgid "J2K"
 msgstr "J2K"
 
-#: ../src/imageio/format/j2k.c:620 ../src/imageio/format/jpeg.c:547
-#: ../src/libs/camera.c:617 ../src/imageio/format/webp.c:269
+#: ../src/imageio/format/j2k.c:626 ../src/imageio/format/jpeg.c:547
+#: ../src/libs/camera.c:617 ../src/imageio/format/webp.c:294
 msgid "quality"
 msgstr "kwaliteit"
 
-#: ../src/imageio/format/j2k.c:629
+#: ../src/imageio/format/j2k.c:635
 msgid "DCP mode"
 msgstr "DCP modus"
 
-#: ../src/imageio/format/j2k.c:635
+#: ../src/imageio/format/j2k.c:641
 msgid "Cinema2K, 24FPS"
 msgstr "Cinema2K, 24FPS"
 
-#: ../src/imageio/format/j2k.c:636
+#: ../src/imageio/format/j2k.c:642
 msgid "Cinema2K, 48FPS"
 msgstr "Cinema2K, 48FPS"
 
-#: ../src/imageio/format/j2k.c:637
+#: ../src/imageio/format/j2k.c:643
 msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
@@ -5992,73 +5995,73 @@ msgstr ""
 "verplicht\n"
 "erkende variabelen:"
 
-#: ../src/libs/collect.c:115
+#: ../src/libs/collect.c:116
 msgid "collect images"
 msgstr "catalogus"
 
-#: ../src/libs/collect.c:415
+#: ../src/libs/collect.c:416
 msgid "search filmroll"
 msgstr "zoek map"
 
-#: ../src/libs/collect.c:503
+#: ../src/libs/collect.c:504
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "probleem bij het kiezen van een nieuw vorm voor de map in %s"
 
-#: ../src/libs/collect.c:542
+#: ../src/libs/collect.c:543
 msgid "search filmroll..."
 msgstr "zoek map"
 
-#: ../src/libs/collect.c:548
+#: ../src/libs/collect.c:549
 msgid "sync..."
 msgstr "synchroniseren"
 
-#: ../src/libs/collect.c:554
+#: ../src/libs/collect.c:555
 msgid "remove..."
 msgstr "uitschrijven"
 
-#: ../src/libs/collect.c:1106 ../src/libs/collect.c:1108
+#: ../src/libs/collect.c:1228 ../src/libs/collect.c:1230
 msgid "not altered"
 msgstr "niet gewijzigd"
 
-#: ../src/libs/collect.c:1303
+#: ../src/libs/collect.c:1427
 msgid "local HDD"
 msgstr "lokale HDD"
 
-#: ../src/libs/collect.c:1388 ../src/libs/collect.c:1402
-#: ../src/libs/collect.c:1788
+#: ../src/libs/collect.c:1513 ../src/libs/collect.c:1527
+#: ../src/libs/collect.c:1916
 msgid "clear this rule"
 msgstr "verwijder voorwaarde"
 
-#: ../src/libs/collect.c:1393
+#: ../src/libs/collect.c:1518
 msgid "clear this rule or add new rules"
 msgstr "voorwaarde toevoegen / verwijderen"
 
-#: ../src/libs/collect.c:1794
+#: ../src/libs/collect.c:1922
 msgid "narrow down search"
 msgstr "submappen"
 
-#: ../src/libs/collect.c:1798
+#: ../src/libs/collect.c:1926
 msgid "add more images"
 msgstr "afbeeldingen toevoegen "
 
-#: ../src/libs/collect.c:1802
+#: ../src/libs/collect.c:1930
 msgid "exclude images"
 msgstr "afbeeldingen uitsluiten "
 
-#: ../src/libs/collect.c:1808
+#: ../src/libs/collect.c:1936
 msgid "change to: and"
 msgstr "wijzig in <en>"
 
-#: ../src/libs/collect.c:1812
+#: ../src/libs/collect.c:1940
 msgid "change to: or"
 msgstr "wijzig in <of>"
 
-#: ../src/libs/collect.c:1816
+#: ../src/libs/collect.c:1944
 msgid "change to: except"
 msgstr "wijzig in <en niet>"
 
-#: ../src/libs/collect.c:1863
+#: ../src/libs/collect.c:1991
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "type uw zoekopdracht, gebruik `%' als vervanging"
@@ -6825,10 +6828,6 @@ msgstr "mappen"
 #: ../src/libs/import.c:834
 msgid "select a folder to import as film roll"
 msgstr "importeer nieuwe map(pen)"
-
-#: ../src/libs/keywords.c:64
-msgid "keywords"
-msgstr "trefwoorden"
 
 #: ../src/libs/lib.c:205
 #, c-format
@@ -8173,65 +8172,71 @@ msgstr "gecreëerde vormen"
 msgid "lua options"
 msgstr "lua opties"
 
-#: ../src/imageio/format/webp.c:112
+#: ../src/imageio/format/webp.c:137
 #, c-format
 msgid "[webp export] error saving to %s\n"
 msgstr "[webp export] fout bij het opslaan naar %s\n"
 
-#: ../src/imageio/format/webp.c:131
+#: ../src/imageio/format/webp.c:156
 #, c-format
 msgid "[webp export] error during encoding!\n"
 msgstr "[webp export] fout tijdens het coderen!\n"
 
-#: ../src/imageio/format/webp.c:132
+#: ../src/imageio/format/webp.c:157
 #, c-format
 msgid "[webp export] error code: %d (%s)\n"
 msgstr "[webp export] foutcode: %d (%s)\n"
 
-#: ../src/imageio/format/webp.c:219
+#: ../src/imageio/format/webp.c:244
 msgid "WebP"
 msgstr "WebP"
 
-#: ../src/imageio/format/webp.c:252
+#: ../src/imageio/format/webp.c:277
 msgid "compression type"
 msgstr "compressie type"
 
-#: ../src/imageio/format/webp.c:257
+#: ../src/imageio/format/webp.c:282
 msgid "lossy"
 msgstr "met verlies"
 
-#: ../src/imageio/format/webp.c:262
+#: ../src/imageio/format/webp.c:287
 msgid "lossless"
 msgstr "verliesloos"
 
-#: ../src/imageio/format/webp.c:272
+#: ../src/imageio/format/webp.c:297
 msgid "applies only to lossy setting"
 msgstr "geldt alleen voor verlieshebbende instellingen"
 
-#: ../src/imageio/format/webp.c:280
-#, fuzzy
+#: ../src/imageio/format/webp.c:305
 msgid "Image Hint"
-msgstr "afbeeldings id"
+msgstr "afbeeldings Hint"
 
-#: ../src/imageio/format/webp.c:281
+#: ../src/imageio/format/webp.c:306
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
 "picture : digital picture, like portrait, inner shot\n"
 "photo   : outdoor photograph, with natural lighting\n"
 "graphic : discrete tone image (graph, map-tile etc)"
 msgstr ""
+"beeldkenmerken hints voor de onderliggende encoder\afbeelding: digtale "
+"afbeelding, zoals portrait, binnen opname\n"
+"foto: buiten opname, met natuurlijk licht\n"
+"plaatje: aparte afbeelding curve (grafiek, kaart-tegels etc)    "
 
-#: ../src/imageio/format/webp.c:290
+#: ../src/imageio/format/webp.c:315
 msgid "picture"
 msgstr "afbeelding"
 
-#: ../src/imageio/format/webp.c:291
+#: ../src/imageio/format/webp.c:316
 msgid "photo"
 msgstr "foto"
 
-#: ../src/imageio/format/webp.c:292
+#: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "grafisch"
+
+#~ msgid "keywords"
+#~ msgstr "trefwoorden"
 
 #~ msgid ""
 #~ "step 1: a new window or tab of your browser should have been loaded. you "
