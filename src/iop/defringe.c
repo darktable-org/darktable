@@ -95,12 +95,6 @@ int flags ()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int
-output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  return sizeof(float);
-}
-
 // Verify before actually using this
 /*
 void tiling_callback  (dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, dt_develop_tiling_t *tiling)
