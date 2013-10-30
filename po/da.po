@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-10-28 22:04+0100\n"
-"PO-Revision-Date: 2013-10-28 22:43+0100\n"
+"PO-Revision-Date: 2013-10-30 21:48+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da_DK\n"
@@ -8165,15 +8165,15 @@ msgstr "komprimeringstype"
 
 #: ../src/imageio/format/webp.c:282
 msgid "lossy"
-msgstr "med tab"
+msgstr "med kvalitetstab"
 
 #: ../src/imageio/format/webp.c:287
 msgid "lossless"
-msgstr "tabsfri"
+msgstr "uden kvalitetstab"
 
 #: ../src/imageio/format/webp.c:297
 msgid "applies only to lossy setting"
-msgstr "anvendes kun til indstilling med tab"
+msgstr "anvendes kun til indstilling med kvalitetstab"
 
 #: ../src/imageio/format/webp.c:305
 msgid "Image Hint"
