@@ -23,6 +23,42 @@
 #include "develop/masks.h"
 #include "common/debug.h"
 
+/** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
+static int _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
+{
+  const int stepsize = 300000;
+  const int reserve = 100000;
+
+  //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
+
+  if(*buffer == NULL)
+  {
+    *buffer = malloc(stepsize*sizeof(float));
+    *buffer_count = 0;
+    *buffer_max = stepsize;
+    return TRUE;
+  }
+
+  if(*buffer_count > *buffer_max)
+  {
+    fprintf(stderr, "_path_buffer_grow: memory size exceeded and detected too late :(\n");
+  }
+
+  if(*buffer_count + reserve > *buffer_max)
+  {
+    float *oldbuffer = *buffer;
+    *buffer_max += stepsize;
+    *buffer = malloc(*buffer_max*sizeof(float));
+    if(*buffer == NULL) return FALSE;
+    memset(*buffer, 0, *buffer_max*sizeof(float));
+    memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
+    free(oldbuffer);
+  }
+
+  return TRUE;
+}
+
+
 /** get the point of the path at pos t [0,1]  */
 static void _path_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x, float p3y,
                           float t, float *x, float *y)
@@ -478,11 +514,21 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
   float wd = pipe->iwidth, ht = pipe->iheight;
 
-  //we allocate buffer (very large) => how to handle this ???
-  *points = malloc(600000*sizeof(float));
-  memset(*points,0,600000*sizeof(float));
-  if (border) *border = malloc(600000*sizeof(float));
-  if (border) memset(*border,0,600000*sizeof(float));
+  int points_max, pos;
+  int border_max, posb;
+
+  *points = NULL;
+  points_max = 0;
+  pos = 0;
+  if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
+
+  if (border)
+  {
+    *border = NULL;
+    border_max = 0;
+    posb = 0;
+    if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
+  }
 
   //we store all points
   float dx,dy;
@@ -518,8 +564,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     }
   }
 
-  int pos = 6*nb;
-  int posb = 6*nb;
+  pos = 6*nb;
+  posb = 6*nb;
   float *border_init = malloc(sizeof(float)*6*nb);
   int cw = _path_is_clockwise(form);
   if (cw == 0) cw = -1;
@@ -548,8 +594,19 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     float bmax[2] = {-99999,-99999};
     float cmin[2] = {-99999,-99999};
     float cmax[2] = {-99999,-99999};
-    if (border) _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
-    else _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
+    if (border)
+    {
+      _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
+      if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
+      if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
+    }
+    else
+    {
+      _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
+      if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
+    }
+
+
     //we check gaps in the border (sharp edges)
     if (border && ((*border)[posb-2]-rb[0] > 1 || (*border)[posb-2]-rb[0] < -1 || (*border)[posb-1]-rb[1] > 1 || (*border)[posb-1]-rb[1] < -1))
     {
@@ -560,6 +617,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     (*points)[pos++] = rc[0];
     (*points)[pos++] = rc[1];
     border_init[k*6+4] = -posb;
+
+
     if (border)
     {
 
@@ -578,6 +637,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
       (*border)[k*6] = border_init[k*6] = (*border)[pb];
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
+
+      if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
     }
 
     //we first want to be sure that there are no gaps in border
@@ -593,6 +654,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
         _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb,_path_is_clockwise(form));
+        if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
+        if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
       }
     }
   }
