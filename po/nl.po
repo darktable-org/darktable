@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-10-31 20:48+0100\n"
-"PO-Revision-Date: 2013-10-31 21:05+0100\n"
+"PO-Revision-Date: 2013-10-31 21:23+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -70,7 +70,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1142
 msgid "ask before removing images from database"
-msgstr "vraag om bevestiging eerdat afbeeldingen worden uitgeschreven"
+msgstr "vraag bevestiging voordat afbeeldingen worden uitgeschreven"
 
 #: ../build/src/preferences_gen.h:1154
 msgid "always ask the user before any image is removed from DB."
@@ -133,19 +133,19 @@ msgstr "herhaal doorkruisen mappen tijdens importeren map"
 
 #: ../build/src/preferences_gen.h:1279
 msgid "creator to be applied when importing"
-msgstr "deze naam fotograaf toevoegen tijdens importeren "
+msgstr "deze fotograaf naam toevoegen tijdens het importeren "
 
 #: ../build/src/preferences_gen.h:1297
 msgid "publisher to be applied when importing"
-msgstr "deze naam uitgever toevoegen tijdens importeren  "
+msgstr "deze uitgevers naam toevoegen tijdens het importeren  "
 
 #: ../build/src/preferences_gen.h:1315
 msgid "rights to be applied when importing"
-msgstr "deze rechten toevoegen tijdens importeren "
+msgstr "deze rechten tijdens importeren toevoegen"
 
 #: ../build/src/preferences_gen.h:1333
 msgid "comma separated tags to be applied when importing"
-msgstr "deze door komma's gescheiden labels toevoegen tijdens het importeren "
+msgstr "deze door komma's gescheiden labels tijdens het importeren toevoegen"
 
 #: ../build/src/preferences_gen.h:1351
 msgid "initial import rating"
@@ -267,7 +267,7 @@ msgstr "vraag om bevestiging eerdat een label wordt verwijderd"
 
 #: ../build/src/preferences_gen.h:1552
 msgid "maximum number of images drawn on map"
-msgstr "maximaal aantal weer te geven afbeeldingen op de kaart"
+msgstr "maximaal aantal op de kaart weer te geven afbeeldingen"
 
 #: ../build/src/preferences_gen.h:1569
 msgid ""
@@ -289,7 +289,7 @@ msgstr "vertoon in de informatie module een beter leesbare weergave"
 
 #: ../build/src/preferences_gen.h:1595
 msgid "expand a single lighttable module at a time"
-msgstr "uitbreiden een enkele bibliotheek module per keer "
+msgstr "uitbreiding; een enkele bibliotheek module per keer "
 
 #: ../build/src/preferences_gen.h:1607
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
@@ -298,7 +298,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1614
 msgid "expand a single darkroom module at a time"
-msgstr "uitbreiden een enkele ontwikkel module per keer "
+msgstr "uitbreiding; een enkele ontwikkel module per keer "
 
 #: ../build/src/preferences_gen.h:1626
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
