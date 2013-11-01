@@ -127,7 +127,6 @@ src/libs/histogram.c
 src/libs/history.c
 src/libs/image.c
 src/libs/import.c
-src/libs/keywords.c
 src/libs/lib.c
 src/libs/live_view.c
 src/libs/location.c
