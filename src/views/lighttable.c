@@ -1111,7 +1111,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_paint(cr);
 
-  const int display_focus = dt_conf_get_int("plugins/lighttable/display_focus");
+  const int display_focus = dt_conf_get_bool("plugins/lighttable/display_focus");
   const int frows = 5, fcols = 5;
   if(display_focus)
   {
