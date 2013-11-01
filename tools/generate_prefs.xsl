@@ -197,7 +197,15 @@
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type/enum]" mode="change">
-		<xsl:text>  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));</xsl:text>
+		<xsl:text>  GtkTreeIter iter;
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &amp;iter))
+  {
+    gchar *s = NULL;
+    gtk_tree_model_get(gtk_combo_box_get_model(GTK_COMBO_BOX(widget)), &amp;iter, 0, &amp;s, -1);
+    dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", s);
+    g_free(s);
+  }
+</xsl:text>
 	</xsl:template>
 
 <!-- TAB -->
@@ -267,19 +275,24 @@
 	</xsl:template>
 
 	<xsl:template match="dtconfig[type/enum]" mode="tab">
-		<xsl:text>    widget = gtk_combo_box_text_new();
-    {
-      gchar *str = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
-      gint pos = -1;
+		<xsl:text>    GtkTreeIter iter;
+    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    gchar *str = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+    gint pos = -1;
 </xsl:text>
-		<xsl:for-each select="./type/enum/option">
-			<xsl:text>      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), "</xsl:text><xsl:value-of select="."/><xsl:text>");
-      if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
-        pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
+    <xsl:for-each select="./type/enum/option">
+      <xsl:text>    gtk_list_store_append(store, &amp;iter);
+    gtk_list_store_set(store, &amp;iter, 0, "</xsl:text><xsl:value-of select="."/><xsl:text>", 1, C_("preferences", "</xsl:text><xsl:value-of select="."/><xsl:text>"), -1);
+    if(pos == -1 &amp;&amp; strcmp(str, "</xsl:text><xsl:value-of select="."/><xsl:text>") == 0)
+      pos = </xsl:text><xsl:value-of select="position()-1" /><xsl:text>;
 </xsl:text>
-		</xsl:for-each>
-		<xsl:text>      gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
-    }
+    </xsl:for-each>
+    <xsl:text>    widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+    g_object_unref(store);
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), renderer, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer, "text", 1, NULL);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
     g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
     g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
     snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
