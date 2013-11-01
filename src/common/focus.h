@@ -26,29 +26,27 @@ typedef struct dt_focus_cluster_t
 }
 dt_focus_cluster_t;
 
-#define USE_CDF22
-#ifdef USE_CDF22
 #define gbuf(BUF, A, B) ((BUF)[4*(width*((B)) + ((A))) + ch])
+#define FOCUS_THRS 10
+#define CHANNEL 1
+
 static inline uint8_t _to_uint8(int i)
 {
-  // fprintf(stderr, "detail = %d\n", i);
   return (uint8_t)CLAMP(i + 127, 0, 255);
 }
 static inline int _from_uint8(uint8_t i)
 {
   return i - 127;
 }
-#define CHANNEL 1
 static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int width, const int height)
 {
-  // const int wd = (int)(1 + (width>>(l-1))), ht = (int)(1 + (height>>(l-1)));
   const int ch = CHANNEL;
 
   const int step = 1<<l;
   const int st = step/2;
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) shared(buf) schedule(static)
 #endif
   for(int j=0; j<height; j++)
   {
@@ -56,16 +54,16 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
     // predict, get detail
     int i = st;
     for(; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i-st, j) + (int)gbuf(buf, i+st, j))/2);
+      gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i-st, j) + (int)gbuf(buf, i+st, j))/2);
     if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = _to_uint8(gbuf(buf, i, j) - gbuf(buf, i-st, j));
     // update coarse
     /*for(ch=0; ch<3; ch++)*/ gbuf(buf, 0, j) += _from_uint8(gbuf(buf, st, j))/2;
     for(i=step; i<width-st; i+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i-st, j)) + _from_uint8(gbuf(buf, i+st, j)))/4;
+      gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i-st, j)) + _from_uint8(gbuf(buf, i+st, j)))/4;
     if(i < width) /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += _from_uint8(gbuf(buf, i-st, j))/2;
   }
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) shared(buf) schedule(static)
 #endif
   for(int i=0; i<width; i++)
   {
@@ -73,20 +71,16 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
     int j = st;
     // predict, get detail
     for(; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i, j-st) + (int)gbuf(buf, i, j+st))/2);
+      gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - ((int)gbuf(buf, i, j-st) + (int)gbuf(buf, i, j+st))/2);
     if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) = _to_uint8((int)gbuf(buf, i, j) - (int)gbuf(buf, i, j-st));
     // update
     /*for(ch=0; ch<3; ch++)*/ gbuf(buf, i, 0) += _from_uint8(gbuf(buf, i, st))/2;
     for(j=step; j<height-st; j+=step) /*for(ch=0; ch<3; ch++)*/
-        gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i, j-st)) + _from_uint8(gbuf(buf, i, j+st)))/4;
+      gbuf(buf, i, j) += (_from_uint8(gbuf(buf, i, j-st)) + _from_uint8(gbuf(buf, i, j+st)))/4;
     if(j < height) /*for(int ch=0; ch<3; ch++)*/ gbuf(buf, i, j) += _from_uint8(gbuf(buf, i, j-st))/2;
   }
 }
 
-#undef gbuf
-#endif
-
-#define FOCUS_THRS 10
 static void _dt_focus_update(
     dt_focus_cluster_t *f,
     int frows,
@@ -140,84 +134,84 @@ void dt_focus_create_clusters(
     int buffer_width,
     int buffer_height)
 {
-      // mark in-focus pixels:
-      const int wd = buffer_width;
-      const int ht = buffer_height;
-#ifdef USE_CDF22 // two-stage haar wavelet transform, use HH1 and HH2 to detect very sharp and sharp spots:
-      // pretend we already did the first step (coarse will stay in place, maybe even where the pre-demosaic sample was at)
-      // _lighttable_cdf22_wtf(lib->full_res_thumb, 1, wd, ht);
-      _dt_focus_cdf22_wtf(buffer, 2, wd, ht);
-      // go through HH1 and detect sharp clusters:
-      memset(focus, 0, sizeof(dt_focus_cluster_t)*fcols*frows);
+  // mark in-focus pixels:
+  const int wd = buffer_width;
+  const int ht = buffer_height;
+  const int fs = frows*fcols;
+  // two-stage cdf 2/2 wavelet transform, use HH1 and HH2 to detect very sharp and sharp spots:
+  // pretend we already did the first step (coarse will stay in place, maybe even where the pre-demosaic sample was at)
+  _dt_focus_cdf22_wtf(buffer, 2, wd, ht);
+  // go through HH1 and detect sharp clusters:
+  memset(focus, 0, sizeof(dt_focus_cluster_t)*fcols*frows);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-      for(int j=0;j<ht-1;j+=4)
-        for(int i=0;i<wd-1;i+=4)
-        {
-          _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(_from_uint8(buffer[4*((j+2)*wd + i) + CHANNEL])));
-          _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(_from_uint8(buffer[4*(j*wd + i+2) + CHANNEL])));
-        }
+  for(int j=0;j<ht-1;j+=4)
+    for(int i=0;i<wd-1;i+=4)
+    {
+      _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(_from_uint8(buffer[4*((j+2)*wd + i) + CHANNEL])));
+      _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(_from_uint8(buffer[4*(j*wd + i+2) + CHANNEL])));
+    }
 
 #if 1 // second pass, HH2
-      int num_clusters = 0;
-      for(int k=0;k<49;k++)
-        if(focus[k].n*4 > wd*ht/49.0f * 0.01f) num_clusters ++;
-      fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
-      if(num_clusters < 1)
-      {
-        memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*49);
-        _lighttable_cdf22_wtf(lib->full_res_thumb, 3, wd, ht);
+  int num_clusters = 0;
+  for(int k=0;k<fs;k++)
+    if(focus[k].n*4 > wd*ht/(float)fs * 0.01f) num_clusters ++;
+  fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
+  if(num_clusters < 1)
+  {
+    memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*fs);
+    _lighttable_cdf22_wtf(lib->full_res_thumb, 3, wd, ht);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-        for(int j=0;j<ht-1;j+=8)
-          for(int i=0;i<wd-1;i+=8)
-          {
-            _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*((j+4)*wd + i) + CHANNEL])));
-            _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*(j*wd + i+4) + CHANNEL])));
-          }
-        num_clusters = 0;
-        for(int k=0;k<49;k++)
-          if(focus[k].n*8.0f > wd*ht/49.0f * 0.01f)
-          {
-            focus[k].n *= -1;
-            num_clusters ++;
-          }
-        fprintf(stderr, "found %d HL2/LH2 clusters\n", num_clusters);
+    for(int j=0;j<ht-1;j+=8)
+      for(int i=0;i<wd-1;i+=8)
+      {
+        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*((j+4)*wd + i) + CHANNEL])));
+        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*(j*wd + i+4) + CHANNEL])));
       }
+    num_clusters = 0;
+    for(int k=0;k<fs;k++)
+      if(focus[k].n*8.0f > wd*ht/(float)fs * 0.01f)
+      {
+        focus[k].n *= -1;
+        num_clusters ++;
+      }
+    fprintf(stderr, "found %d HL2/LH2 clusters\n", num_clusters);
+  }
 #endif
 #undef CHANNEL
 
-#else // simple high pass filter, doesn't work on slighty unsharp/high iso images
-      memset(focus, 0, sizeof(dt_focus_cluster_t)*49);
+#if 0// simple high pass filter, doesn't work on slighty unsharp/high iso images
+  memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
-      for(int j=1;j<ht-1;j++)
-      {
-        int index = 4*j*wd+4;
-        for(int i=1;i<wd-1;i++)
-        {
-          int32_t diff = 4*buffer[index+1]
-                         - buffer[index-4+1]
-                         - buffer[index+4+1]
-                         - buffer[index-4*wd+1]
-                         - buffer[index+4*wd+1];
-          _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(diff));
-          index += 4;
-        }
-      }
+  for(int j=1;j<ht-1;j++)
+  {
+    int index = 4*j*wd+4;
+    for(int i=1;i<wd-1;i++)
+    {
+      int32_t diff = 4*buffer[index+1]
+        - buffer[index-4+1]
+        - buffer[index+4+1]
+        - buffer[index-4*wd+1]
+        - buffer[index+4*wd+1];
+      _dt_focus_update(focus, frows, fcols, i, j, wd, ht, abs(diff));
+      index += 4;
+    }
+  }
 #endif
-      // normalize data in clusters:
-      for(int k=0;k<49;k++)
-      {
-        focus[k].thrs /= fabsf((float)focus[k].n);
-        focus[k].x  /= fabsf((float)focus[k].n);
-        focus[k].x2 /= fabsf((float)focus[k].n);
-        focus[k].y  /= fabsf((float)focus[k].n);
-        focus[k].y2 /= fabsf((float)focus[k].n);
-      }
+  // normalize data in clusters:
+  for(int k=0;k<fs;k++)
+  {
+    focus[k].thrs /= fabsf((float)focus[k].n);
+    focus[k].x  /= fabsf((float)focus[k].n);
+    focus[k].x2 /= fabsf((float)focus[k].n);
+    focus[k].y  /= fabsf((float)focus[k].n);
+    focus[k].y2 /= fabsf((float)focus[k].n);
+  }
 }
 
 void dt_focus_draw_clusters(
@@ -230,136 +224,136 @@ void dt_focus_draw_clusters(
     int frows,
     int fcols)
 {
-#if 1 // only draw focus region overlays:
-    cairo_save(cr);
-    cairo_translate(cr, width/2.0, height/2.0f);
+  const int fs = frows*fcols;
+  cairo_save(cr);
+  cairo_translate(cr, width/2.0, height/2.0f);
 
-    int wd = buffer_width, ht = buffer_height;
+  int wd = buffer_width, ht = buffer_height;
+  if(orientation & 4)
+    wd = buffer_height, ht = buffer_width;
+
+  // array with cluster positions
+  float pos[fs*6], *offx = pos + fs*2, *offy = pos + fs*4;
+  for(int k=0;k<fs;k++)
+  {
+    const float stddevx = sqrtf(focus[k].x2 - focus[k].x*focus[k].x);
+    const float stddevy = sqrtf(focus[k].y2 - focus[k].y*focus[k].y);
+    float x = focus[k].x, y = focus[k].y;
+    if(orientation & 1)
+    {
+      x = buffer_width - 1 - x;
+    }
+    if(orientation & 2)
+    {
+      y = buffer_height - 1 - y;
+    }
     if(orientation & 4)
-      wd = buffer_height, ht = buffer_width;
-
-    // array with cluster positions
-    float pos[49*6], *offx = pos + 49*2, *offy = pos + 49*4;
-    for(int k=0;k<49;k++)
     {
-      const float stddevx = sqrtf(focus[k].x2 - focus[k].x*focus[k].x);
-      const float stddevy = sqrtf(focus[k].y2 - focus[k].y*focus[k].y);
-      float x = focus[k].x, y = focus[k].y;
-      if(orientation & 1)
-      {
-        x = buffer_width - 1 - x;
-      }
-      if(orientation & 2)
-      {
-        y = buffer_height - 1 - y;
-      }
-      if(orientation & 4)
-      {
-        pos[2*k + 0] = y;
-        pos[2*k + 1] = x;
-        offx[2*k + 0] = y + stddevy;
-        offx[2*k + 1] = x;
-        offy[2*k + 0] = y;
-        offy[2*k + 1] = x + stddevx;
-      }
-      else
-      {
-        pos[2*k + 0] = x;
-        pos[2*k + 1] = y;
-        offx[2*k + 0] = x + stddevx;
-        offx[2*k + 1] = y;
-        offy[2*k + 0] = x;
-        offy[2*k + 1] = y + stddevy;
-      }
+      pos[2*k + 0] = y;
+      pos[2*k + 1] = x;
+      offx[2*k + 0] = y + stddevy;
+      offx[2*k + 1] = x;
+      offy[2*k + 0] = y;
+      offy[2*k + 1] = x + stddevx;
     }
-    if(dt_image_altered(imgid))
+    else
     {
-      dt_develop_t dev;
-      dt_dev_init(&dev, 0);
-      dt_dev_load_image(&dev, imgid);
-      dt_dev_pixelpipe_t pipe;
-      int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
-      if(res)
-      {
-        // set mem pointer to 0, won't be used.
-        dt_dev_pixelpipe_set_input(&pipe, &dev, 0, wd, ht, 1.0f);
-        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-        dt_dev_pixelpipe_synch_all(&pipe, &dev);
-        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-        res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, 49*3);
-        dt_dev_pixelpipe_cleanup(&pipe);
-        wd = pipe.processed_width;
-        ht = pipe.processed_height;
-      }
-      dt_dev_cleanup(&dev);
+      pos[2*k + 0] = x;
+      pos[2*k + 1] = y;
+      offx[2*k + 0] = x + stddevx;
+      offx[2*k + 1] = y;
+      offy[2*k + 0] = x;
+      offy[2*k + 1] = y + stddevy;
     }
-
-    // XXX check 0.97! probably need to remove it
-    const float scale = 0.97f*fminf(fminf(darktable.thumbnail_width, width)/(float)wd,
-                                    fminf(darktable.thumbnail_height, height)/(float)ht);
-    cairo_scale(cr, scale, scale);
-
-    cairo_translate(cr, -wd/2.0f, -ht/2.0f);
-
-    double shortdashes[] = {10}, longdashes[] = {20};
-    double *dashes = shortdashes;
-    int    ndash  = sizeof (shortdashes)/sizeof(dashes[0]);
-    double offset = 0.0f;
-    cairo_set_dash (cr, dashes, ndash, offset);
-
-    // draw clustered focus regions
-    for(int k=0;k<49;k++)
+  }
+  if(dt_image_altered(imgid))
+  {
+    dt_develop_t dev;
+    dt_dev_init(&dev, 0);
+    dt_dev_load_image(&dev, imgid);
+    dt_dev_pixelpipe_t pipe;
+    int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
+    if(res)
     {
-      const float intens = (focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
-      int draw = 0;
-      float col = .4f;
-      if(focus[k].n*4.0f > buffer_width*buffer_height/49.0f * 0.01f)
+      // set mem pointer to 0, won't be used.
+      dt_dev_pixelpipe_set_input(&pipe, &dev, 0, wd, ht, 1.0f);
+      dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+      dt_dev_pixelpipe_synch_all(&pipe, &dev);
+      dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
+      res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, fs*3);
+      dt_dev_pixelpipe_cleanup(&pipe);
+      wd = pipe.processed_width;
+      ht = pipe.processed_height;
+    }
+    dt_dev_cleanup(&dev);
+  }
+
+  const float scale = fminf(fminf(darktable.thumbnail_width, width)/(float)wd,
+      fminf(darktable.thumbnail_height, height)/(float)ht);
+  cairo_scale(cr, scale, scale);
+
+  cairo_translate(cr, -wd/2.0f, -ht/2.0f);
+
+  double shortdashes[] = {10}, longdashes[] = {20};
+  double *dashes = shortdashes;
+  int    ndash  = sizeof (shortdashes)/sizeof(dashes[0]);
+  double offset = 0.0f;
+  cairo_set_dash (cr, dashes, ndash, offset);
+
+  // draw clustered focus regions
+  for(int k=0;k<fs;k++)
+  {
+    const float intens = (focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
+    int draw = 0;
+    float col = .4f;
+    if(focus[k].n*4.0f > buffer_width*buffer_height/(float)fs * 0.01f)
+    {
+      col = .4f;
+      dashes = shortdashes;
+      cairo_set_line_width(cr, fminf(8.0f, 4.0f*intens + 4.0f));
+      draw = 1;
+    }
+    else if(-focus[k].n*8.0f > buffer_width*buffer_height/(float)fs * 0.01f)
+    {
+      col = .2f;
+      dashes = longdashes;
+      cairo_set_line_width(cr, fminf(4.0f, 4.0f*intens));
+      draw = 1;
+    }
+    if(draw)
+    {
+      for(int i=0;i<2;i++)
       {
-        col = .4f;
-        dashes = shortdashes;
-        cairo_set_line_width(cr, fminf(8.0f, 4.0f*intens + 4.0f));
-        draw = 1;
-      }
-      else if(-focus[k].n*8.0f > buffer_width*buffer_height/49.0f * 0.01f)
-      {
-        col = .2f;
-        dashes = longdashes;
-        cairo_set_line_width(cr, fminf(4.0f, 4.0f*intens));
-        draw = 1;
-      }
-      if(draw)
-      {
-        for(int i=0;i<2;i++)
+        if(i)
         {
-          if(i)
-          {
-            cairo_set_source_rgb(cr, .5f+col, .5f+col, .5f+col);
-            cairo_set_dash (cr, dashes, ndash, dashes[0]);
-          }
-          else
-          {
-            cairo_set_source_rgb(cr, .5f-col, .5f-col, .5f-col);
-            cairo_set_dash (cr, dashes, ndash, 0);
-          }
-          cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
-          cairo_curve_to(cr, -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
-                             -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
-                             offy[2*k+0], offy[2*k+1]);
-          cairo_curve_to(cr, pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
-                             pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
-                             2*pos[2*k+0] - offx[2*k+0], 2*pos[2*k+1] - offx[2*k+1]);
-          cairo_curve_to(cr, 3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
-                             3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
-                             2*pos[2*k+0] - offy[2*k+0], 2*pos[2*k+1] - offy[2*k+1]);
-          cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
-                             pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
-                             offx[2*k+0], offx[2*k+1]);
-          cairo_stroke(cr);
+          cairo_set_source_rgb(cr, .5f+col, .5f+col, .5f+col);
+          cairo_set_dash (cr, dashes, ndash, dashes[0]);
         }
+        else
+        {
+          cairo_set_source_rgb(cr, .5f-col, .5f-col, .5f-col);
+          cairo_set_dash (cr, dashes, ndash, 0);
+        }
+        cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
+        cairo_curve_to(cr, -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+            -pos[2*k+0] + offx[2*k+0] + offy[2*k+0], -pos[2*k+1] + offx[2*k+1] + offy[2*k+1],
+            offy[2*k+0], offy[2*k+1]);
+        cairo_curve_to(cr, pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+            pos[2*k+0] - offx[2*k+0] + offy[2*k+0], pos[2*k+1] - offx[2*k+1] + offy[2*k+1],
+            2*pos[2*k+0] - offx[2*k+0], 2*pos[2*k+1] - offx[2*k+1]);
+        cairo_curve_to(cr, 3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+            3*pos[2*k+0] - offx[2*k+0] - offy[2*k+0], 3*pos[2*k+1] - offx[2*k+1] - offy[2*k+1],
+            2*pos[2*k+0] - offy[2*k+0], 2*pos[2*k+1] - offy[2*k+1]);
+        cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+            pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
+            offx[2*k+0], offx[2*k+1]);
+        cairo_stroke(cr);
       }
     }
-    cairo_restore(cr);
+  }
+  cairo_restore(cr);
 }
-#endif
-
+#undef CHANNEL
+#undef gbuf
+#undef FOCUS_THRS
 #endif
