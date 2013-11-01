@@ -160,8 +160,8 @@ void dt_focus_create_clusters(
   fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
   if(num_clusters < 1)
   {
-    memset(lib->full_res_focus, 0, sizeof(dt_focus_cluster_t)*fs);
-    _lighttable_cdf22_wtf(lib->full_res_thumb, 3, wd, ht);
+    memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
+    _dt_focus_cdf22_wtf(buffer, 3, wd, ht);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)
 #endif
@@ -216,6 +216,8 @@ void dt_focus_create_clusters(
 
 void dt_focus_draw_clusters(
     cairo_t *cr,
+    int width,
+    int height,
     int imgid,
     int buffer_width,
     int buffer_height,

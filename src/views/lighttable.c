@@ -1,19 +1,19 @@
 /*
-      This file is part of darktable,
-      copyright (c) 2009--2011 johannes hanika.
-      copyright (c) 2011--2012 Henrik Andersson.
-      darktable is free software: you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published by
-      the Free Software Foundation, either version 3 of the License, or
-      (at your option) any later version.
-  
-      darktable is distributed in the hope that it will be useful,
-      but WITHOUT ANY WARRANTY; without even the implied warranty of
-      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-      GNU General Public License for more details.
-  
-      You should have received a copy of the GNU General Public License
-      along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+    This file is part of darktable,
+    copyright (c) 2009--2011 johannes hanika.
+    copyright (c) 2011--2012 Henrik Andersson.
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** this is the view for the lighttable module.  */
 #include "views/view.h"
@@ -28,6 +28,7 @@
 #include "common/colorlabels.h"
 #include "common/selection.h"
 #include "common/debug.h"
+#include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"
 #include "common/ratings.h"
@@ -1110,6 +1111,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   cairo_paint(cr);
 
 #if 1
+    // XXX TODO: if some setting
   gboolean from_cache = FALSE;
   char filename[2048];
   dt_image_full_path(lib->full_preview_id, filename, 2048, &from_cache);
@@ -1123,17 +1125,13 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     int error = dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, &lib->full_res_thumb_wd, &lib->full_res_thumb_ht, &lib->full_res_thumb_orientation);
     if(!error)
       lib->full_res_thumb_id = lib->full_preview_id;
-    // XXX TODO: and some setting
-    if(!error && 1)
+    if(lib->full_res_thumb_id == lib->full_preview_id)
     {
-      if(lib->full_res_thumb_id == lib->full_preview_id)
-      {
-        dt_focus_create_clusters(
-            lib->full_res_focus, 7, 7,
-            lib->full_res_thumb,
-            lib->full_res_thumb_wd,
-            lib->full_res_thumb_ht);
-      }
+      dt_focus_create_clusters(
+          lib->full_res_focus, 7, 7,
+          lib->full_res_thumb,
+          lib->full_res_thumb_wd,
+          lib->full_res_thumb_ht);
     }
   }
 #if 0 // expose full res thumbnail:
@@ -1198,6 +1196,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
   // XXX if draw clusters setting
   dt_focus_draw_clusters(cr,
+      width, height,
       lib->full_preview_id,
       lib->full_res_thumb_wd,
       lib->full_res_thumb_ht,
