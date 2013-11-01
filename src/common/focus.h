@@ -157,7 +157,6 @@ void dt_focus_create_clusters(
   int num_clusters = 0;
   for(int k=0;k<fs;k++)
     if(focus[k].n*4 > wd*ht/(float)fs * 0.01f) num_clusters ++;
-  fprintf(stderr, "found %d HH1 clusters\n", num_clusters);
   if(num_clusters < 1)
   {
     memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
@@ -166,19 +165,22 @@ void dt_focus_create_clusters(
 #pragma omp parallel for schedule(static) default(shared)
 #endif
     for(int j=0;j<ht-1;j+=8)
+    {
       for(int i=0;i<wd-1;i+=8)
       {
-        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*((j+4)*wd + i) + CHANNEL])));
-        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 2*abs(_from_uint8(buffer[4*(j*wd + i+4) + CHANNEL])));
+        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 1.5*abs(_from_uint8(buffer[4*((j+4)*wd + i) + CHANNEL])));
+        _dt_focus_update(focus, frows, fcols, i, j, wd, ht, 1.5*abs(_from_uint8(buffer[4*(j*wd + i+4) + CHANNEL])));
       }
+    }
     num_clusters = 0;
     for(int k=0;k<fs;k++)
-      if(focus[k].n*8.0f > wd*ht/(float)fs * 0.01f)
+    {
+      if(focus[k].n*6.0f > wd*ht/(float)fs * 0.01f)
       {
         focus[k].n *= -1;
         num_clusters ++;
       }
-    fprintf(stderr, "found %d HL2/LH2 clusters\n", num_clusters);
+    }
   }
 #endif
 #undef CHANNEL
@@ -309,7 +311,7 @@ void dt_focus_draw_clusters(
     int draw = 0;
     if(focus[k].n*4.0f > buffer_width*buffer_height/(float)fs * 0.01f)
       draw = 1;
-    else if(-focus[k].n*8.0f > buffer_width*buffer_height/(float)fs * 0.01f)
+    else if(-focus[k].n*6.0f > buffer_width*buffer_height/(float)fs * 0.01f)
       draw = 2;
     if(draw)
     {
