@@ -296,9 +296,8 @@ void dt_focus_draw_clusters(
 
   cairo_translate(cr, -wd/2.0f, -ht/2.0f);
 
-  double shortdashes[] = {10}, longdashes[] = {20};
-  double *dashes = shortdashes;
-  int    ndash  = sizeof (shortdashes)/sizeof(dashes[0]);
+  double dashes[] = {3};
+  int    ndash  = sizeof (dashes)/sizeof(dashes[0]);
   double offset = 0.0f;
   cairo_set_dash (cr, dashes, ndash, offset);
 
@@ -306,34 +305,25 @@ void dt_focus_draw_clusters(
   for(int k=0;k<fs;k++)
   {
     const float intens = (focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
+    const float col = fminf(1.0f, intens);
     int draw = 0;
-    float col = .4f;
     if(focus[k].n*4.0f > buffer_width*buffer_height/(float)fs * 0.01f)
-    {
-      col = .4f;
-      dashes = shortdashes;
-      cairo_set_line_width(cr, fminf(8.0f, 4.0f*intens + 4.0f));
       draw = 1;
-    }
     else if(-focus[k].n*8.0f > buffer_width*buffer_height/(float)fs * 0.01f)
-    {
-      col = .2f;
-      dashes = longdashes;
-      cairo_set_line_width(cr, fminf(4.0f, 4.0f*intens));
-      draw = 1;
-    }
+      draw = 2;
     if(draw)
     {
       for(int i=0;i<2;i++)
       {
         if(i)
         {
-          cairo_set_source_rgb(cr, .5f+col, .5f+col, .5f+col);
+          if(draw == 2) cairo_set_source_rgb(cr, .1f, .1f, col);
+          else          cairo_set_source_rgb(cr, col, .1f, .1f);
           cairo_set_dash (cr, dashes, ndash, dashes[0]);
         }
         else
         {
-          cairo_set_source_rgb(cr, .5f-col, .5f-col, .5f-col);
+          cairo_set_source_rgb(cr, .1f, .1f, .1f);
           cairo_set_dash (cr, dashes, ndash, 0);
         }
         cairo_move_to(cr, offx[2*k+0], offx[2*k+1]);
@@ -349,7 +339,12 @@ void dt_focus_draw_clusters(
         cairo_curve_to(cr, pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
             pos[2*k+0] + offx[2*k+0] - offy[2*k+0], pos[2*k+1] + offx[2*k+1] - offy[2*k+1],
             offx[2*k+0], offx[2*k+1]);
+
+        cairo_save(cr);
+        cairo_scale(cr, 1./scale, 1./scale);
+        cairo_set_line_width(cr, 2.0f);
         cairo_stroke(cr);
+        cairo_restore(cr);
       }
     }
   }
