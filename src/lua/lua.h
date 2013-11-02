@@ -51,12 +51,17 @@ void dt_lua_debug_stack_internal(lua_State *L, const char* function, int line);
 #define dt_lua_debug_table(L,index) dt_lua_debug_table_internal(L,index,__FUNCTION__,__LINE__)
 void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int line);
 
+typedef struct {
+  lua_State* state;
+} dt_lua_state_t;
+
 #else
 /* defines to easily have a few lua types when lua is not available */
 typedef int lua_State ;
 typedef int (*lua_CFunction)(lua_State *L);
 typedef int luaA_Type;
 #define LUAA_INVALID_TYPE -1
+typedef struct {} dt_lua_state_t;
 #endif
 
 

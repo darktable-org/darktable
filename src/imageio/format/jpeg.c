@@ -512,7 +512,7 @@ flags(dt_imageio_module_data_t *data)
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_jpeg_t,quality,int);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_jpeg_t,quality,int);
 #endif
 }
 void cleanup(dt_imageio_module_format_t *self) {}

@@ -73,10 +73,10 @@ void dt_lua_init_early(lua_State*L)
 {
   if(!L)
     L= luaL_newstate();
-  darktable.lua_state= L;
+  darktable.lua_state.state= L;
   dt_lua_init_lock();
   dt_lua_lock();
-  luaL_openlibs(darktable.lua_state);
+  luaL_openlibs(darktable.lua_state.state);
   luaA_open();
   dt_lua_push_darktable_lib(L);
   // set the metatable
@@ -138,11 +138,11 @@ void dt_lua_init(lua_State*L,const int init_gui)
     // run global init script
     dt_loc_get_datadir(tmp_path, PATH_MAX);
     g_strlcat(tmp_path,"/luarc",PATH_MAX);
-    dt_lua_dofile(darktable.lua_state,tmp_path);
+    dt_lua_dofile(L,tmp_path);
     // run user init script
     dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
     g_strlcat(tmp_path,"/luarc",PATH_MAX);
-    dt_lua_dofile(darktable.lua_state,tmp_path);
+    dt_lua_dofile(L,tmp_path);
   }
 
   dt_lua_unlock();

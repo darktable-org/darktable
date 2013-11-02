@@ -871,11 +871,11 @@ void dt_control_quit()
 #endif
 
 #ifdef USE_LUA
-  if(darktable.lua_state)
+  if(darktable.lua_state.state)
   {
-    lua_close(darktable.lua_state);
+    lua_close(darktable.lua_state.state);
     luaA_close();
-    darktable.lua_state = NULL;
+    darktable.lua_state.state = NULL;
   }
 #endif
   dt_gui_gtk_quit();

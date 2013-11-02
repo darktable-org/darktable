@@ -502,8 +502,8 @@ params_size(dt_imageio_module_storage_t *self)
 void init(dt_imageio_module_storage_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_gallery_t,filename,char_path_length);
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_gallery_t,title,char_1024);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_gallery_t,filename,char_path_length);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_gallery_t,title,char_1024);
 #endif
 }
 

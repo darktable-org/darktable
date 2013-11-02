@@ -162,7 +162,7 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     gpointer p)
 {
   dt_lua_lock();
-  lua_pushstring(darktable.lua_state,(char*)p);
+  lua_pushstring(darktable.lua_state.state,(char*)p);
   run_event("shortcut",1);
   dt_lua_unlock();
   return TRUE;
@@ -336,30 +336,30 @@ static int lua_register_event(lua_State *L) {
 
 
 static void run_event(const char*event,int nargs) {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
-    lua_settop(darktable.lua_state,0);
+  lua_getfield(darktable.lua_state.state,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  if(lua_isnil(darktable.lua_state.state,-1)) {// events have been disabled
+    lua_settop(darktable.lua_state.state,0);
     return; 
   }
-  lua_getfield(darktable.lua_state,-1,event);
-  event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
-  lua_pop(darktable.lua_state,2);
+  lua_getfield(darktable.lua_state.state,-1,event);
+  event_handler * handler =  lua_touserdata(darktable.lua_state.state,-1);
+  lua_pop(darktable.lua_state.state,2);
   if(!handler->in_use) { 
-    lua_pop(darktable.lua_state,nargs);
+    lua_pop(darktable.lua_state.state,nargs);
     return; 
   }
-  lua_pushcfunction(darktable.lua_state,handler->on_event);
-  lua_insert(darktable.lua_state,-nargs -1);
-  lua_pushstring(darktable.lua_state,event);
-  lua_pushnumber(darktable.lua_state,nargs);
-  dt_lua_do_chunk(darktable.lua_state,nargs+2,0);
+  lua_pushcfunction(darktable.lua_state.state,handler->on_event);
+  lua_insert(darktable.lua_state.state,-nargs -1);
+  lua_pushstring(darktable.lua_state.state,event);
+  lua_pushnumber(darktable.lua_state.state,nargs);
+  dt_lua_do_chunk(darktable.lua_state.state,nargs+2,0);
   
 }
 #if 0
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
   warning to self : add locking
-  lua_State* L = darktable.lua_state;
+  lua_State* L = darktable.lua_state.state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
   dt_imageio_module_storage_t  *mstorage  = dt_imageio_get_storage_by_index(export_data->storage_index);
@@ -426,22 +426,22 @@ static void on_export_image_tmpfile(gpointer instance,
     char *filename,
      gpointer user_data){
   dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
-  lua_pushstring(darktable.lua_state,filename);
+  luaA_push(darktable.lua_state.state,dt_lua_image_t,&imgid);
+  lua_pushstring(darktable.lua_state.state,filename);
   run_event("intermediate-export-image",2);
   dt_lua_unlock();
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
   dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_image_t,&id);
+  luaA_push(darktable.lua_state.state,dt_lua_image_t,&id);
   run_event("post-import-image",1);
   dt_lua_unlock();
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
   dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_film_t,&id);
+  luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
   run_event("post-import-film",1);
   dt_lua_unlock();
 }

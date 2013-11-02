@@ -113,18 +113,18 @@ dt_imageio_j2k_gui_t;
 void init(dt_imageio_module_format_t *self)
 {
 #ifdef USE_LUA
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,bpp,int);
-  luaA_enum(darktable.lua_state,dt_imageio_j2k_format_t);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k",false);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_format_t,J2K_CFMT,"jp2",false);
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,format,dt_imageio_j2k_format_t);
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,quality,int);
-  luaA_enum(darktable.lua_state,dt_imageio_j2k_preset_t);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off",false);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_24,"cinema2k_24",false);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_48,"cinema2k_48",false);
-  luaA_enum_value_name(darktable.lua_state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA4K_24,"cinema4k_24",false);
-  dt_lua_register_module_member(darktable.lua_state,self,dt_imageio_j2k_t,preset,dt_imageio_j2k_preset_t);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,bpp,int);
+  luaA_enum(darktable.lua_state.state,dt_imageio_j2k_format_t);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"j2k",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_format_t,J2K_CFMT,"jp2",false);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,format,dt_imageio_j2k_format_t);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,quality,int);
+  luaA_enum(darktable.lua_state.state,dt_imageio_j2k_preset_t);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_OFF,"off",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_24,"cinema2k_24",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA2K_48,"cinema2k_48",false);
+  luaA_enum_value_name(darktable.lua_state.state,dt_imageio_j2k_preset_t,DT_J2K_PRESET_CINEMA4K_24,"cinema4k_24",false);
+  dt_lua_register_module_member(darktable.lua_state.state,self,dt_imageio_j2k_t,preset,dt_imageio_j2k_preset_t);
 #endif
 }
 void cleanup(dt_imageio_module_format_t *self) {}
