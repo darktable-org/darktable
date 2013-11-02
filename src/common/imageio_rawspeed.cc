@@ -157,6 +157,10 @@ dt_imageio_open_rawspeed(
     img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
     img->height = (orientation & 4) ? r->dim.x : r->dim.y;
 
+    /* needed in exposure iop for Deflicke */
+    img->raw_black_level = r->blackLevel;
+    img->raw_white_point = r->whitePoint;
+
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
@@ -190,6 +194,10 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   const int orientation = dt_image_orientation(img);
   img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
   img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+
+  /* needed by Deflicker */
+  img->raw_black_level = r->blackLevel;
+  img->raw_white_point = r->whitePoint;
 
   int raw_width = r->dim.x;
   int raw_height = r->dim.y;
