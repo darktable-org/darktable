@@ -302,7 +302,7 @@ static void
 histogram_collect(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_t *roi,
                   float **histogram, float *histogram_max)
 {
-  if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
+  if(*histogram == NULL) *histogram = malloc(module->histogram_bins_count*4*sizeof(float));
 
   if(*histogram == NULL) return;
 
@@ -311,59 +311,62 @@ histogram_collect(dt_iop_module_t *module, const float *pixel, const dt_iop_roi_
   float *hist = *histogram;
 
   histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
-  memset (hist, 0, 64*4*sizeof(float));
+  memset (hist, 0, module->histogram_bins_count*4*sizeof(float));
 
   switch(cst)
   {
     case iop_cs_RAW:
-      for(int j=0; j<roi->height; j+=3) for(int i=0; i<roi->width; i+=3)  // sample one out of 9 pixels, un-locked with bayer pattern
+      for(int j=0; j<roi->height; j+=module->histogram_step_raw)
+        for(int i=0; i<roi->width; i+=module->histogram_step_raw)  // sample one out of module->histogram_step_raw**2 pixels, un-locked with bayer pattern
         {
-          uint8_t V = CLAMP(64.0f*pixel[4*(j*roi->width+i)], 0, 63);
+          uint32_t V = CLAMP((float)(module->histogram_bins_count)*pixel[4*(j*roi->width+i)], 0, module->histogram_bins_count-1);
           hist[4*V] ++;
         }
-      for(int k=0; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=0; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
       break;
 
     case iop_cs_rgb:
-      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)  // sample one out of 16 pixels
+      for(int j=0; j<roi->height; j+=module->histogram_step_rgb)
+        for(int i=0; i<roi->width; i+=module->histogram_step_rgb)  // sample one out of module->histogram_step_rgb**2 pixels
         {
           float Rv = pixel[4*(j*roi->width+i)];
           float Gv = pixel[4*(j*roi->width+i)+1];
           float Bv = pixel[4*(j*roi->width+i)+2];
           float gv = fmaxf(Rv, fmaxf(Gv, Bv));
-          uint8_t R = CLAMP(64.0f*Rv, 0, 63);
-          uint8_t G = CLAMP(64.0f*Gv, 0, 63);
-          uint8_t B = CLAMP(64.0f*Bv, 0, 63);
-          uint8_t g = CLAMP(64.0f*gv, 0, 63);
+          uint32_t R = CLAMP((float)(module->histogram_bins_count)*Rv, 0, module->histogram_bins_count-1);
+          uint32_t G = CLAMP((float)(module->histogram_bins_count)*Gv, 0, module->histogram_bins_count-1);
+          uint32_t B = CLAMP((float)(module->histogram_bins_count)*Bv, 0, module->histogram_bins_count-1);
+          uint32_t g = CLAMP((float)(module->histogram_bins_count)*gv, 0, module->histogram_bins_count-1);
           hist[4*R] ++;
           hist[4*G + 1] ++;
           hist[4*B + 2] ++;
           hist[4*g + 3] ++;
         }
       // don't count <= 0 pixels
-      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-      for(int k=5; k<4*64; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k=6; k<4*64; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-      for(int k=7; k<4*64; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
+      for(int k=4; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=5; k<4*module->histogram_bins_count; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*module->histogram_bins_count; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=7; k<4*module->histogram_bins_count; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
       break;
 
     case iop_cs_Lab:
     default:
-      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)   // sample one out of 16 pixels
+      for(int j=0; j<roi->height; j+=module->histogram_step_lab)
+        for(int i=0; i<roi->width; i+=module->histogram_step_lab)   // sample one out of module->histogram_step_lab**2 pixels
         {
-          uint8_t L = CLAMP(64.0f/100.0f*(pixel[4*(j*roi->width+i)]), 0, 63);
-          uint8_t a = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, 63);
-          uint8_t b = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, 63);
+          uint32_t L = CLAMP((float)(module->histogram_bins_count)/100.0f*(pixel[4*(j*roi->width+i)]), 0, module->histogram_bins_count-1);
+          uint32_t a = CLAMP((float)(module->histogram_bins_count)/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, module->histogram_bins_count-1);
+          uint32_t b = CLAMP((float)(module->histogram_bins_count)/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, module->histogram_bins_count-1);
           hist[4*L] ++;
           hist[4*a + 1] ++;
           hist[4*b + 2] ++;
         }
       // don't count <= 0 pixels in L
-      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=4; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
 
       // don't count <= -128 and >= +128 pixels in a and b
-      for(int k=5; k<4*63; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k=6; k<4*63; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=5; k<4*(module->histogram_bins_count-1); k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*(module->histogram_bins_count-1); k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
       break;
   }
 }
@@ -377,7 +380,7 @@ static void
 histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
                      float **histogram, float *histogram_max)
 {
-  if(*histogram == NULL) *histogram = malloc(64*4*sizeof(float));
+  if(*histogram == NULL) *histogram = malloc(module->histogram_bins_count*4*sizeof(float));
   if(*histogram == NULL) return;
 
   float *pixel = dt_alloc_align(64, roi->width*roi->height*4*sizeof(float));
@@ -395,60 +398,63 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
   float *hist = *histogram;
 
   histogram_max[0] = histogram_max[1] = histogram_max[2] = histogram_max[3] = 0;
-  memset (hist, 0, 64*4*sizeof(float));
+  memset (hist, 0, module->histogram_bins_count*4*sizeof(float));
 
 
   switch(cst)
   {
     case iop_cs_RAW:
-      for(int j=0; j<roi->height; j+=3) for(int i=0; i<roi->width; i+=3)  // sample one out of 9 pixels, un-locked with bayer pattern
+      for(int j=0; j<roi->height; j+=module->histogram_step_raw)
+        for(int i=0; i<roi->width; i+=module->histogram_step_raw)  // sample one out of module->histogram_step_raw**2 pixels, un-locked with bayer pattern
         {
-          uint8_t V = CLAMP(64.0f*pixel[4*(j*roi->width+i)], 0, 63);
+          uint32_t V = CLAMP((float)(module->histogram_bins_count)*pixel[4*(j*roi->width+i)], 0, module->histogram_bins_count-1);
           hist[4*V] ++;
         }
-      for(int k=0; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=0; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
       break;
 
     case iop_cs_rgb:
-      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)  // sample one out of 16 pixels
+      for(int j=0; j<roi->height; j+=module->histogram_step_rgb)
+        for(int i=0; i<roi->width; i+=module->histogram_step_rgb)  // sample one out of module->histogram_step_rgb**2 pixels
         {
           float Rv = pixel[4*(j*roi->width+i)];
           float Gv = pixel[4*(j*roi->width+i)+1];
           float Bv = pixel[4*(j*roi->width+i)+2];
           float gv = fmaxf(Rv, fmaxf(Gv, Bv));
-          uint8_t R = CLAMP(64.0f*Rv, 0, 63);
-          uint8_t G = CLAMP(64.0f*Gv, 0, 63);
-          uint8_t B = CLAMP(64.0f*Bv, 0, 63);
-          uint8_t g = CLAMP(64.0f*gv, 0, 63);
+          uint32_t R = CLAMP((float)(module->histogram_bins_count)*Rv, 0, module->histogram_bins_count-1);
+          uint32_t G = CLAMP((float)(module->histogram_bins_count)*Gv, 0, module->histogram_bins_count-1);
+          uint32_t B = CLAMP((float)(module->histogram_bins_count)*Bv, 0, module->histogram_bins_count-1);
+          uint32_t g = CLAMP((float)(module->histogram_bins_count)*gv, 0, module->histogram_bins_count-1);
           hist[4*R] ++;
           hist[4*G + 1] ++;
           hist[4*B + 2] ++;
           hist[4*g + 3] ++;
         }
       // don't count <= 0 pixels
-      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
-      for(int k=5; k<4*64; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k=6; k<4*64; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
-      for(int k=7; k<4*64; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
+      for(int k=4; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=5; k<4*module->histogram_bins_count; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*module->histogram_bins_count; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=7; k<4*module->histogram_bins_count; k+=4) histogram_max[3] = histogram_max[3] > hist[k] ? histogram_max[3] : hist[k];
       break;
 
     case iop_cs_Lab:
     default:
-      for(int j=0; j<roi->height; j+=4) for(int i=0; i<roi->width; i+=4)   // sample one out of 16 pixels
+      for(int j=0; j<roi->height; j+=module->histogram_step_lab)
+        for(int i=0; i<roi->width; i+=module->histogram_step_lab)   // sample one out of module->histogram_step_lab**2 pixels
         {
-          uint8_t L = CLAMP(64.0f/100.0f*(pixel[4*(j*roi->width+i)]), 0, 63);
-          uint8_t a = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, 63);
-          uint8_t b = CLAMP(64.0f/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, 63);
+          uint32_t L = CLAMP((float)(module->histogram_bins_count)/100.0f*(pixel[4*(j*roi->width+i)]), 0, module->histogram_bins_count-1);
+          uint32_t a = CLAMP((float)(module->histogram_bins_count)/256.0f*(pixel[4*(j*roi->width+i)+1]+128.0f), 0, module->histogram_bins_count-1);
+          uint32_t b = CLAMP((float)(module->histogram_bins_count)/256.0f*(pixel[4*(j*roi->width+i)+2]+128.0f), 0, module->histogram_bins_count-1);
           hist[4*L] ++;
           hist[4*a + 1] ++;
           hist[4*b + 2] ++;
         }
       // don't count <= 0 pixels in L
-      for(int k=4; k<4*64; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
+      for(int k=4; k<4*module->histogram_bins_count; k+=4) histogram_max[0] = histogram_max[0] > hist[k] ? histogram_max[0] : hist[k];
 
       // don't count <= -128 and >= +128 pixels in a and b
-      for(int k=5; k<4*63; k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
-      for(int k=6; k<4*63; k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
+      for(int k=5; k<4*(module->histogram_bins_count-1); k+=4) histogram_max[1] = histogram_max[1] > hist[k] ? histogram_max[1] : hist[k];
+      for(int k=6; k<4*(module->histogram_bins_count-1); k+=4) histogram_max[2] = histogram_max[2] > hist[k] ? histogram_max[2] : hist[k];
       break;
   }
 
