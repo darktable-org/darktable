@@ -46,8 +46,6 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <gdk/gdkx.h>
-#include <X11/Xatom.h>
 #ifdef MAC_INTEGRATION
 #   include <gtkosxapplication.h>
 #endif
@@ -661,13 +659,6 @@ window_configure (GtkWidget *da, GdkEvent *event, gpointer user_data)
 }
 
 static gboolean
-window_realize (GtkWidget *da, gpointer user_data)
-{
-  gdk_property_change(GDK_WINDOW(da), gdk_atom_intern("_GTK_THEME_VARIANT", FALSE), (GdkAtom)XA_STRING, 8, GDK_PROP_MODE_REPLACE, (guchar *)"dark", 4);
-  return FALSE;
-}
-
-static gboolean
 key_pressed_override (GtkWidget *w, GdkEventKey *event, gpointer user_data)
 {
   return dt_control_key_pressed_override(
@@ -905,9 +896,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   // update the profile when the window is moved. resize is already handled in configure()
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect (G_OBJECT (widget), "configure-event", G_CALLBACK (window_configure), NULL);
-
-  // Hint GNOME 3 window manager to use dark window borders
-  g_signal_connect (G_OBJECT (widget), "realize", G_CALLBACK(window_realize), NULL);
 
   // register keys for view switching
   dt_accel_register_global(NC_("accel", "capture view"), GDK_KEY_t, 0);
