@@ -20,6 +20,13 @@
 
 /* this file can safely be included when lua is disabled */
 
+
+/* these include are out of the ifdef to avoid compile errors when compiling with/without lua
+   users that accidentally use it won't be affected by the ifdef USE_LUA
+ */
+#include <glib.h>
+#include "common/dtpthread.h"
+
 #ifdef USE_LUA
 #include <lua.h>
 #include <lualib.h>
@@ -53,6 +60,8 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
 
 typedef struct {
   lua_State* state;
+  dt_pthread_mutex_t mutex;
+
 } dt_lua_state_t;
 
 #else

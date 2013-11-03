@@ -16,7 +16,8 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/lua.h"
-#include "common/dtpthread.h"
+#include "common/darktable.h"
+#include "control/control.h"
 
 void dt_lua_debug_stack_internal(lua_State *L, const char* function, int line)
 {
@@ -43,7 +44,6 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
   }
 }
 
-static dt_pthread_mutex_t lua_mutex;
 
 int dt_lua_push_darktable_lib(lua_State* L)
 {
@@ -78,17 +78,17 @@ void dt_lua_init_lock()
     pthread_mutexattr_t a;
     pthread_mutexattr_init(&a);
     pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
-    dt_pthread_mutex_init(&lua_mutex,&a);
+    dt_pthread_mutex_init(&darktable.lua_state.mutex,&a);
     pthread_mutexattr_destroy(&a);
 }
 
 void dt_lua_lock()
 {
-  dt_pthread_mutex_lock(&lua_mutex);
+  dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 }
 void dt_lua_unlock()
 {
-  dt_pthread_mutex_unlock(&lua_mutex);
+  dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
