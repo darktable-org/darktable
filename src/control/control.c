@@ -1674,6 +1674,14 @@ void dt_control_gdk_unlock()
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
 }
 
+gboolean dt_control_gdk_haslock()
+{
+  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
+    return TRUE;
+  return _control_gdk_lock_mine;
+  
+}
+
 void dt_control_queue_redraw()
 {
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);

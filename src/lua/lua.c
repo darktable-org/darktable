@@ -84,6 +84,10 @@ void dt_lua_init_lock()
 
 void dt_lua_lock()
 {
+   if( dt_control_gdk_haslock()) {
+     dt_print(DT_DEBUG_LUA,"LUA WARNING taking the lua lock with the gui lock\n");
+   }
+
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
 }
 void dt_lua_unlock()
