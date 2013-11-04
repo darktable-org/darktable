@@ -89,9 +89,9 @@ typedef struct dt_image_t
   float exif_focal_length;
   float exif_focus_distance;
   float exif_crop;
-  char exif_maker[32];
-  char exif_model[32];
-  char exif_lens[52];
+  char exif_maker[64];
+  char exif_model[64];
+  char exif_lens[128];
   char exif_datetime_taken[20];
   char filename[DT_MAX_FILENAME_LEN];
 

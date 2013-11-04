@@ -46,7 +46,8 @@ typedef struct dt_iop_lensfun_modifier_t
 }
 dt_iop_lensfun_modifier_t;
 
-typedef struct dt_iop_lensfun_params_t
+// legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
+typedef struct dt_iop_lensfun_params2_t
 {
   int modify_flags;
   int inverse;
@@ -61,7 +62,25 @@ typedef struct dt_iop_lensfun_params_t
   int tca_override;
   float tca_r, tca_b;
 }
+dt_iop_lensfun_params2_t;
+
+typedef struct dt_iop_lensfun_params_t
+{
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
+  char camera[128];
+  char lens[128];
+  int tca_override;
+  float tca_r, tca_b;
+}
 dt_iop_lensfun_params_t;
+
 
 typedef struct dt_iop_lensfun_gui_data_t
 {

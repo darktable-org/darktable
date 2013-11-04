@@ -40,7 +40,7 @@
 #include "iop/lens.h"
 
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 const char*
 name()
@@ -100,6 +100,33 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "tca B", GTK_WIDGET(g->tca_b));
 }
 
+
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 2 && new_version == 3)
+  {
+    const dt_iop_lensfun_params2_t *old = old_params;
+    dt_iop_lensfun_params_t *new = new_params;
+
+    new->modify_flags = old->modify_flags;
+    new->inverse = old->inverse;
+    new->scale = old->scale;
+    new->crop = old->crop;
+    new->focal = old->focal;
+    new->aperture = old->aperture;
+    new->distance = old->distance;
+    new->target_geom = old->target_geom;
+    new->tca_override = old->tca_override;
+    new->tca_r = old->tca_r;
+    new->tca_b = old->tca_b;
+    strncpy(new->camera, old->camera, sizeof(new->camera));
+    strncpy(new->lens, old->lens, sizeof(new->lens));
+
+    return 0;
+  }
+  return 1;
+}
 
 static char*
 _lens_sanitize(const char *orig_lens)
@@ -857,8 +884,8 @@ void reload_defaults(dt_iop_module_t *module)
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
-  g_strlcpy(tmp.lens, _lens_sanitize(img->exif_lens), 52);
-  g_strlcpy(tmp.camera, img->exif_model, 52);
+  g_strlcpy(tmp.lens, _lens_sanitize(img->exif_lens), sizeof(tmp.lens));
+  g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.lens));
   tmp.crop     = img->exif_crop;
   tmp.aperture = img->exif_aperture;
   tmp.focal    = img->exif_focal_length;
@@ -1059,7 +1086,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
     return;
   }
 
-  g_strlcpy(p->camera, cam->Model, 52);
+  g_strlcpy(p->camera, cam->Model, sizeof(p->camera));
   p->crop = cam->CropFactor;
   g->camera = cam;
 
@@ -1328,7 +1355,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   maker = lf_mlstr_get (lens->Maker);
   model = lf_mlstr_get (lens->Model);
 
-  g_strlcpy(p->lens, model, 52);
+  g_strlcpy(p->lens, model, sizeof(p->lens));
 
   if (model)
   {

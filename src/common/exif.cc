@@ -518,21 +518,21 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
          ((pos = exifData.findKey(Exiv2::ExifKey("Exif.Canon.0x0095")))     != exifData.end())
         ) && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end() && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 #if EXIV2_MINOR_VERSION>20
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 #endif
     else if ( (pos=Exiv2::lensName(exifData)) != exifData.end() && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_lens, 52, pos, exifData);
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
 
 #if 0
@@ -553,8 +553,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Make")))
          != exifData.end() && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_maker, 32, pos, exifData);
-      for(char *c=img->exif_maker+31; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
+      dt_strlcpy_to_utf8(img->exif_maker, sizeof(img->exif_maker), pos, exifData);
+      for(char *c=img->exif_maker+sizeof(img->exif_maker)-1; c > img->exif_maker; c--) if(*c != ' ' && *c != '\0')
         {
           *(c+1) = '\0';
           break;
@@ -563,8 +563,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Model")))
          != exifData.end() && pos->size())
     {
-      dt_strlcpy_to_utf8(img->exif_model, 32, pos, exifData);
-      for(char *c=img->exif_model+31; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
+      dt_strlcpy_to_utf8(img->exif_model, sizeof(img->exif_model), pos, exifData);
+      for(char *c=img->exif_model+sizeof(img->exif_model)-1; c > img->exif_model; c--) if(*c != ' ' && *c != '\0')
         {
           *(c+1) = '\0';
           break;
@@ -730,7 +730,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
       {
         std::string str = pos->print(&exifData);
-        sprintf(img->exif_lens, "%s", str.c_str());
+        snprintf(img->exif_lens, sizeof(img->exif_lens), "%s", str.c_str());
       }
     };
 
