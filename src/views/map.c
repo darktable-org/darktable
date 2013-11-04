@@ -560,6 +560,8 @@ void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_r, GDK_CONTROL_MASK);
+  // Film strip shortcuts
+  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
@@ -573,12 +575,27 @@ static gboolean _view_map_undo_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
+static gboolean
+film_strip_key_accel(GtkAccelGroup *accel_group,
+                     GObject *acceleratable, guint keyval,
+                     GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  gboolean vs = dt_lib_is_visible(m);
+  dt_lib_set_visible(m,!vs);
+  return TRUE;
+}
+
 void connect_key_accels(dt_view_t *self)
 {
   GClosure *closure = g_cclosure_new(G_CALLBACK(_view_map_undo_callback),
                                      (gpointer)self, NULL);
   dt_accel_connect_view(self, "undo", closure);
   dt_accel_connect_view(self, "redo", closure);
+  // Film strip shortcuts
+  closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel),
+                           (gpointer)self, NULL);
+  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 
