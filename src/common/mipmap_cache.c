@@ -1260,7 +1260,6 @@ _init_8(
   else if(!altered && !dt_conf_get_bool("never_use_embedded_thumb") && !incompatible)
   {
     // try to load the embedded thumbnail in raw
-    int ret;
     gboolean from_cache = TRUE;
     memset(filename, 0, DT_MAX_PATH_LEN);
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
@@ -1285,47 +1284,14 @@ _init_8(
     }
     else
     {
-      // raw image thumbnail
-      libraw_data_t *raw = libraw_init(0);
-      libraw_processed_image_t *image = NULL;
-      ret = libraw_open_file(raw, filename);
-      if(ret) goto libraw_fail;
-      ret = libraw_unpack_thumb(raw);
-      if(ret) goto libraw_fail;
-      ret = libraw_adjust_sizes_info_only(raw);
-      if(ret) goto libraw_fail;
-
-      image = libraw_dcraw_make_mem_thumb(raw, &ret);
-      if(!image || ret) goto libraw_fail;
-      const int orientation = raw->sizes.flip;
-      if(image->type == LIBRAW_IMAGE_JPEG)
+      uint8_t *tmp = 0;
+      int32_t thumb_width, thumb_height, orientation;
+      res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &orientation);
+      if(!res)
       {
-        // JPEG: decode (directly rescaled to mip4)
-        dt_imageio_jpeg_t jpg;
-        if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
-        uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
-        if(dt_imageio_jpeg_decompress(&jpg, tmp))
-        {
-          free(tmp);
-          goto libraw_fail;
-        }
         // scale to fit
-        dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
-
+        dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         free(tmp);
-        res = 0;
-      }
-
-      // clean up raw stuff.
-      libraw_recycle(raw);
-      libraw_close(raw);
-      free(image);
-      if(0)
-      {
-libraw_fail:
-        // fprintf(stderr,"[imageio] %s: %s\n", filename, libraw_strerror(ret));
-        libraw_close(raw);
-        res = 1;
       }
     }
   }

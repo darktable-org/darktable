@@ -1177,7 +1177,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);
-          fprintf(stderr, _("image `%s' is currently unavailable"), imgfilename);
+          fprintf(stderr, "image `%s' is currently unavailable", imgfilename);
           // dt_image_remove(imgid);
           dt_image_cache_read_release(darktable.image_cache, image);
         }

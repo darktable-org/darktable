@@ -146,6 +146,8 @@ int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels);
 // inits the pixelpipe with settings optimized for thumbnail export (no history stack cache)
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
+// inits all but the pixel caches, so you can't actually process an image (just get dimensions and distortions)
+int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
 int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.

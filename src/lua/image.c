@@ -477,9 +477,9 @@ int dt_lua_init_image(lua_State * L)
   luaA_struct_member(L,dt_image_t,exif_focal_length,float);
   luaA_struct_member(L,dt_image_t,exif_focus_distance,float);
   luaA_struct_member(L,dt_image_t,exif_crop,float);
-  luaA_struct_member(L,dt_image_t,exif_maker,char_32);
-  luaA_struct_member(L,dt_image_t,exif_model,char_32);
-  luaA_struct_member(L,dt_image_t,exif_lens,char_52);
+  luaA_struct_member(L,dt_image_t,exif_maker,char_64);
+  luaA_struct_member(L,dt_image_t,exif_model,char_64);
+  luaA_struct_member(L,dt_image_t,exif_lens,char_128);
   luaA_struct_member(L,dt_image_t,exif_datetime_taken,char_20);
   luaA_struct_member(L,dt_image_t,filename,const char_filename_length);
   luaA_struct_member(L,dt_image_t,width,const int32_t);

@@ -557,7 +557,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
  * @see https://developers.google.com/picasa-web/docs/2.0/developers_guide_protocol#PostPhotos
  * @return the id of the uploaded photo
  */
-static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albumid, gchar *fname, gchar *caption, gchar *description, const int imgid)
+static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albumid, gchar *fname, gchar *title, gchar *summary, const int imgid)
 {
   _buffer_t buffer;
   memset(&buffer,0,sizeof(_buffer_t));
@@ -578,7 +578,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
                    "<category scheme=\"http://schemas.google.com/g/2005#kind\"\n"
                    " term=\"http://schemas.google.com/photos/2007#photo\"/>"
                    "</entry>",
-                   caption, description);
+                   title, summary);
 
   gchar *authHeader = NULL;
   authHeader = dt_util_dstrcat(authHeader, "Authorization: OAuth %s", ctx->token);
@@ -1425,31 +1425,15 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   //get metadata
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
-  char *caption = NULL;
-  char *description = NULL;
-  GList *title = NULL;
-  GList *desc = NULL;
+  char *title = NULL;
+  char *summary = NULL;
+  GList *meta_title = NULL;
 
-  title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  if(title != NULL)
-  {
-    caption = title->data;
-  }
-  if (caption == NULL)
-  {
-    caption = g_path_get_basename( img->filename );
-    (g_strrstr(caption,"."))[0]='\0'; // Chop extension...
-  }
+  title = g_path_get_basename( img->filename );
+  (g_strrstr(title,"."))[0]='\0'; // Chop extension...
 
-  /* Google is showing the description field as the caption field */
-  /*
-  desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-  if (desc != NULL)
-  {
-    description = desc->data;
-  }
-  */
-  description = caption;
+  meta_title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+  summary = meta_title != NULL ? meta_title->data : "";
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
@@ -1479,7 +1463,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
     g_snprintf (ctx->album_id, 1024, "%s", album_id);
   }
 
-  const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, caption, description, imgid);
+  const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, title, summary, imgid);
   if (photoid == NULL)
   {
     dt_control_log(_("unable to export photo to google+ album"));
@@ -1489,12 +1473,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
 cleanup:
   unlink( fname );
-  g_free( caption );
-  if(desc)
-  {
-    //no need to free desc->data as caption points to it
-    g_list_free(desc);
-  }
+  g_free( title );
 
   if (result)
   {

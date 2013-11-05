@@ -113,6 +113,13 @@
     <shortdescription>whether to use pinned memory transfer during tiling</shortdescription>
     <longdescription>during tiling huge amounts of memory need to be transfered between host and device. for some OpenCL implementations direct memory transfers give a drastic performance penalty. this can often be avoided by using indirect transfers via pinned memory. other devices have more efficient direct memory transfer implementations. AMD seems to belong to the first group, nvidia to the second.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>opencl_use_cpu_devices</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to make use of CPU OpenCL devices</shortdescription>
+    <longdescription>typically darktable's hand-optimized CPU code is much faster than any OpenCL-on-CPU code; therefore CPUs are excluded from being used as OpenCL devices by default. can be changed by setting this configuration option to TRUE (needs a restart).</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>never_use_embedded_thumb</name>
     <type>bool</type>
@@ -456,11 +463,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/lighttable/display_focus</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>indicate focus regions</shortdescription>
+    <longdescription>in full screen preview in lighttable (`z'-mode), draw an overlay indicating image sharpness. red is very sharp, blue slightly less so.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>plugins/lighttable/filmstrip/visible</name>
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription>enable filmstrip</shortdescription>
-    <longdescription>enable the filmstrip in darkroom and tethering modes.</longdescription>
+    <longdescription>enable the filmstrip in darkroom, tethering and map modes.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filmstrip/height</name>

@@ -50,13 +50,13 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
         img->exif_datetime_taken[0] = '\0';
     str = (char *)sqlite3_column_text(stmt, 5);
-    if(str) g_strlcpy(img->filename,   str, 512);
+    if(str) g_strlcpy(img->filename,   str, sizeof(img->filename));
     str = (char *)sqlite3_column_text(stmt, 6);
-    if(str) g_strlcpy(img->exif_maker, str, 32);
+    if(str) g_strlcpy(img->exif_maker, str, sizeof(img->exif_maker));
     str = (char *)sqlite3_column_text(stmt, 7);
-    if(str) g_strlcpy(img->exif_model, str, 32);
+    if(str) g_strlcpy(img->exif_model, str, sizeof(img->exif_model));
     str = (char *)sqlite3_column_text(stmt, 8);
-    if(str) g_strlcpy(img->exif_lens,  str, 52);
+    if(str) g_strlcpy(img->exif_lens,  str, sizeof(img->exif_lens));
     img->exif_exposure = sqlite3_column_double(stmt, 9);
     img->exif_aperture = sqlite3_column_double(stmt, 10);
     img->exif_iso = sqlite3_column_double(stmt, 11);

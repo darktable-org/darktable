@@ -29,6 +29,8 @@
 typedef char* char_20;
 typedef char* char_32;
 typedef char* char_52;
+typedef char* char_64;
+typedef char* char_128;
 typedef char* char_512;
 typedef char* char_1024;
 typedef char* char_filename_length;
