@@ -474,7 +474,7 @@
     <type>bool</type>
     <default>TRUE</default>
     <shortdescription>enable filmstrip</shortdescription>
-    <longdescription>enable the filmstrip in darkroom and tethering modes.</longdescription>
+    <longdescription>enable the filmstrip in darkroom, tethering and map modes.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/filmstrip/height</name>

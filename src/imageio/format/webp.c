@@ -134,7 +134,7 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
   pic.width = webp_data->width;
   pic.height = webp_data->height;
   if (!out) {
-    fprintf(stderr, _("[webp export] error saving to %s\n"), filename);
+    fprintf(stderr, "[webp export] error saving to %s\n", filename);
     goto Error;
   } else {
     pic.writer = FileWriter;
@@ -153,8 +153,8 @@ write_image (dt_imageio_module_data_t *webp, const char *filename, const void *i
     goto Error;
   }
   if (!WebPEncode(&config, &pic)) {
-    fprintf(stderr, _("[webp export] error during encoding!\n"));
-    fprintf(stderr, _("[webp export] error code: %d (%s)\n"),
+    fprintf(stderr, "[webp export] error during encoding!\n");
+    fprintf(stderr, "[webp export] error code: %d (%s)\n",
             pic.error_code, EncoderError[pic.error_code]);
     goto Error;
   }
@@ -302,7 +302,7 @@ void gui_init (dt_imageio_module_format_t *self)
 
   GtkWidget *hint_hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(self->widget), hint_hbox, TRUE, TRUE, 0);
-  GtkWidget *hint_label = gtk_label_new(_("Image Hint"));
+  GtkWidget *hint_label = gtk_label_new(_("image hint"));
   g_object_set(G_OBJECT(hint_label), "tooltip-text",_("image characteristics hint for the underlying encoder.\n"
                                                       "picture : digital picture, like portrait, inner shot\n"
                                                       "photo   : outdoor photograph, with natural lighting\n"
