@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-02 13:37+0100\n"
-"PO-Revision-Date: 2013-11-02 13:43+0100\n"
+"POT-Creation-Date: 2013-11-05 18:37+0100\n"
+"PO-Revision-Date: 2013-11-05 18:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -57,6 +57,14 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 msgid "double click to reset to `%s'"
 msgstr "double-cliquer pour réinitialiser `%s'"
 
+#: ../build/src/preferences_gen.h:1157 ../build/src/preferences_gen.h:1276
+#: ../build/src/preferences_gen.h:1295 ../build/src/preferences_gen.h:1411
+#: ../build/src/preferences_gen.h:1648 ../build/src/preferences_gen.h:1935
+#: ../build/src/preferences_gen.h:1954
+msgctxt "preferences"
+msgid "FALSE"
+msgstr "FAUX"
+
 #: ../build/src/preferences_gen.h:1160
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
@@ -69,6 +77,15 @@ msgstr ""
 #: ../build/src/preferences_gen.h:1167
 msgid "ask before removing images from database"
 msgstr "demander avant d'enlever des images"
+
+#: ../build/src/preferences_gen.h:1176 ../build/src/preferences_gen.h:1195
+#: ../build/src/preferences_gen.h:1214 ../build/src/preferences_gen.h:1233
+#: ../build/src/preferences_gen.h:1430 ../build/src/preferences_gen.h:1587
+#: ../build/src/preferences_gen.h:1629 ../build/src/preferences_gen.h:1667
+#: ../build/src/preferences_gen.h:1854 ../build/src/preferences_gen.h:1912
+msgctxt "preferences"
+msgid "TRUE"
+msgstr "VRAI"
 
 #: ../build/src/preferences_gen.h:1179
 msgid "always ask the user before any image is removed from DB."
@@ -170,8 +187,8 @@ msgid "enable filmstrip"
 msgstr "activer le bandeau"
 
 #: ../build/src/preferences_gen.h:1433
-msgid "enable the filmstrip in darkroom and tethering modes."
-msgstr "activer le bandeau en modes chambre noire et capture"
+msgid "enable the filmstrip in darkroom, tethering and map modes."
+msgstr "activer le bandeau en mode chambre noire, capture et carte."
 
 #: ../build/src/preferences_gen.h:1440
 msgid "maximum width of image drawing area"
@@ -205,7 +222,8 @@ msgstr ""
 msgid "compression of thumbnail images"
 msgstr "compression des miniatures"
 
-#: ../build/src/preferences_gen.h:1498 ../build/src/preferences_gen.h:1537
+#: ../build/src/preferences_gen.h:1498 ../build/src/preferences_gen.h:1517
+#: ../build/src/preferences_gen.h:1537 ../build/src/preferences_gen.h:1568
 msgctxt "preferences"
 msgid "off"
 msgstr "désactivé(e)"
@@ -317,7 +335,7 @@ msgstr "cette option échange le comportement du shift-clic de la chambre noire"
 msgid "method to use for getting the display profile"
 msgstr "méthode à utiliser pour récupérer le profil d'affichage"
 
-#: ../build/src/preferences_gen.h:1687
+#: ../build/src/preferences_gen.h:1687 ../build/src/preferences_gen.h:1706
 msgctxt "preferences"
 msgid "all"
 msgstr "tout"
@@ -426,7 +444,7 @@ msgctxt "preferences"
 msgid "always"
 msgstr "toujours"
 
-#: ../build/src/preferences_gen.h:1882
+#: ../build/src/preferences_gen.h:1882 ../build/src/preferences_gen.h:1893
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "seulement les grands"
@@ -487,7 +505,7 @@ msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "toujours bilinéaire (rapide)"
 
-#: ../build/src/preferences_gen.h:1978
+#: ../build/src/preferences_gen.h:1978 ../build/src/preferences_gen.h:1993
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "au mieux PPG (raisonnable)"
@@ -527,7 +545,7 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:2025
+#: ../build/src/preferences_gen.h:2025 ../build/src/preferences_gen.h:2036
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
@@ -544,7 +562,7 @@ msgstr ""
 msgid "password storage backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
-#: ../build/src/preferences_gen.h:2056
+#: ../build/src/preferences_gen.h:2056 ../build/src/preferences_gen.h:2075
 msgctxt "preferences"
 msgid "none"
 msgstr "aucun"
@@ -831,7 +849,7 @@ msgstr "le style '%s' a été importé"
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
-#: ../src/iop/lens.c:1741 ../src/libs/export.c:644 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1768 ../src/libs/export.c:644 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -1095,8 +1113,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exportation de %d image vers %s"
 msgstr[1] "exportation de %d images vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1179
-#: ../src/control/jobs/control_jobs.c:1180 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1179 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image '%s\" non disponible actuellement"
@@ -1956,78 +1973,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:919
+#: ../src/gui/gtk.c:901
 msgctxt "accel"
 msgid "capture view"
 msgstr "capture"
 
-#: ../src/gui/gtk.c:920
+#: ../src/gui/gtk.c:902
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "table lumineuse"
 
-#: ../src/gui/gtk.c:921
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "chambre noire"
 
-#: ../src/gui/gtk.c:922
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "map view"
 msgstr "vue carte"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:945
+#: ../src/gui/gtk.c:927
 msgctxt "accel"
 msgid "quit"
 msgstr "quitter"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:952
+#: ../src/gui/gtk.c:934
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "augmenter la luminosité"
 
-#: ../src/gui/gtk.c:954
+#: ../src/gui/gtk.c:936
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "diminuer la luminosité"
 
-#: ../src/gui/gtk.c:956
+#: ../src/gui/gtk.c:938
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "augmenter le contraste"
 
-#: ../src/gui/gtk.c:958
+#: ../src/gui/gtk.c:940
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "diminuer le contraste"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:979
+#: ../src/gui/gtk.c:961
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activer/désactiver le plein écran"
 
-#: ../src/gui/gtk.c:980
+#: ../src/gui/gtk.c:962
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "quitter le mode plein écran"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:992
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activer/désactiver les panneaux latéraux"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:995
+#: ../src/gui/gtk.c:977
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activer/désactiver le panneau supérieur"
 
 #. View-switch
-#: ../src/gui/gtk.c:999
+#: ../src/gui/gtk.c:981
 msgctxt "accel"
 msgid "switch view"
 msgstr "changer de vue"
@@ -2226,7 +2243,8 @@ msgid "binding"
 msgstr "lien"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:598 ../src/imageio/format/webp.c:314
+#: ../src/gui/preferences.c:598
+msgctxt "preferences"
 msgid "default"
 msgstr "défaut"
 
@@ -2568,7 +2586,7 @@ msgstr "impossible d'écrire dans le répertoire %s !"
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1193 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1459
+#: ../src/imageio/storage/picasa.c:1443
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
@@ -2693,11 +2711,11 @@ msgstr "public"
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1468
+#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1452
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1475
+#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1459
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
@@ -2846,12 +2864,12 @@ msgstr "authentification google+"
 msgid "google+ photos"
 msgstr "photos google+"
 
-#: ../src/imageio/storage/picasa.c:1485
+#: ../src/imageio/storage/picasa.c:1469
 msgid "unable to export photo to google+ album"
 msgstr "impossible d'exporter les photos vers l'album google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1502
+#: ../src/imageio/storage/picasa.c:1481
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exportée(s) vers l'album google+"
@@ -3058,7 +3076,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
-#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:1893
+#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:1920
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1050
 msgid "scale"
 msgstr "échelle"
@@ -3673,7 +3691,7 @@ msgstr "sections de spirale d'or"
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1747
+#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1774
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "tout"
@@ -4328,7 +4346,7 @@ msgstr "profil pour ISO %d trouvé"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1902
+#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1929
 msgid "mode"
 msgstr "mode"
 
@@ -4829,7 +4847,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "sélectionne les corrections"
 
-#: ../src/iop/lens.c:1086
+#: ../src/iop/lens.c:1113
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4842,15 +4860,15 @@ msgstr ""
 "monture :\t\t%s\n"
 " facteur de recadrage :\t%.1f"
 
-#: ../src/iop/lens.c:1317
+#: ../src/iop/lens.c:1344
 msgid "camera/lens not found - please select manually"
 msgstr "boîtier/objectif introuvable  > sélection manuelle"
 
-#: ../src/iop/lens.c:1319
+#: ../src/iop/lens.c:1346
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "trouver votre boîtier/objectif dans les menus ci-dessus"
 
-#: ../src/iop/lens.c:1364
+#: ../src/iop/lens.c:1391
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4869,147 +4887,147 @@ msgstr ""
 "type:\t\t%s\n"
 "montures:\t\t%s"
 
-#: ../src/iop/lens.c:1410
+#: ../src/iop/lens.c:1437
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1411
+#: ../src/iop/lens.c:1438
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.c:1438
+#: ../src/iop/lens.c:1465
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1439
+#: ../src/iop/lens.c:1466
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.c:1454
+#: ../src/iop/lens.c:1481
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1455
+#: ../src/iop/lens.c:1482
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.c:1753
+#: ../src/iop/lens.c:1780
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.c:1759
+#: ../src/iop/lens.c:1786
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.c:1765
+#: ../src/iop/lens.c:1792
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.c:1771
+#: ../src/iop/lens.c:1798
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.c:1777
+#: ../src/iop/lens.c:1804
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.c:1783
+#: ../src/iop/lens.c:1810
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.c:1806
+#: ../src/iop/lens.c:1833
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.c:1823
+#: ../src/iop/lens.c:1850
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.c:1856
+#: ../src/iop/lens.c:1883
 msgid "corrections"
 msgstr "corrections"
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1885
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.c:1873
+#: ../src/iop/lens.c:1900
 msgid "geometry"
 msgstr "géométrie"
 
-#: ../src/iop/lens.c:1875
+#: ../src/iop/lens.c:1902
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.c:1876
+#: ../src/iop/lens.c:1903
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.c:1877
+#: ../src/iop/lens.c:1904
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:1878
+#: ../src/iop/lens.c:1905
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.c:1879
+#: ../src/iop/lens.c:1906
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.c:1881
+#: ../src/iop/lens.c:1908
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.c:1882
+#: ../src/iop/lens.c:1909
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.c:1883
+#: ../src/iop/lens.c:1910
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.c:1884
+#: ../src/iop/lens.c:1911
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:1892
+#: ../src/iop/lens.c:1919
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.c:1904
+#: ../src/iop/lens.c:1931
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.c:1905
+#: ../src/iop/lens.c:1932
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.c:1906
+#: ../src/iop/lens.c:1933
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.c:1913
+#: ../src/iop/lens.c:1940
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.c:1914
+#: ../src/iop/lens.c:1941
 msgid "TCA red"
 msgstr "AC rouge"
 
-#: ../src/iop/lens.c:1919
+#: ../src/iop/lens.c:1946
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.c:1920
+#: ../src/iop/lens.c:1947
 msgid "TCA blue"
 msgstr "bleu"
 
-#: ../src/iop/lens.c:1927
+#: ../src/iop/lens.c:1954
 msgid "corrections done: "
 msgstr "corrections effectuées :"
 
-#: ../src/iop/lens.c:1928
+#: ../src/iop/lens.c:1955
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -8065,6 +8083,7 @@ msgstr "aucun boîtier disponible pour la capture..."
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:564 ../src/views/darkroom.c:1673
+#: ../src/views/map.c:564
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
@@ -8407,21 +8426,6 @@ msgstr "masques existants"
 msgid "lua options"
 msgstr "options lua"
 
-#: ../src/imageio/format/webp.c:137
-#, c-format
-msgid "[webp export] error saving to %s\n"
-msgstr "[export webp] impossible d'enregistrer %s\n"
-
-#: ../src/imageio/format/webp.c:156
-#, c-format
-msgid "[webp export] error during encoding!\n"
-msgstr "[export webp] erreur pendant l'encodage!\n"
-
-#: ../src/imageio/format/webp.c:157
-#, c-format
-msgid "[webp export] error code: %d (%s)\n"
-msgstr "[export webp] code erreur: %d (%s)\n"
-
 #: ../src/imageio/format/webp.c:244
 msgid "WebP"
 msgstr "WebP"
@@ -8443,8 +8447,8 @@ msgid "applies only to lossy setting"
 msgstr "uniquement pour la compression avec perte"
 
 #: ../src/imageio/format/webp.c:305
-msgid "Image Hint"
-msgstr "Type d'Image"
+msgid "image hint"
+msgstr "type d'image"
 
 #: ../src/imageio/format/webp.c:306
 msgid ""
@@ -8458,6 +8462,10 @@ msgstr ""
 "photo: photographie d'extérieur, avec lumière naturelle\n"
 " graphique: image avec des couleurs uniformes (schéma, etc)"
 
+#: ../src/imageio/format/webp.c:314
+msgid "default"
+msgstr "défaut"
+
 #: ../src/imageio/format/webp.c:315
 msgid "picture"
 msgstr "image"
@@ -8469,6 +8477,15 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "[webp export] error saving to %s\n"
+#~ msgstr "[export webp] impossible d'enregistrer %s\n"
+
+#~ msgid "[webp export] error during encoding!\n"
+#~ msgstr "[export webp] erreur pendant l'encodage!\n"
+
+#~ msgid "[webp export] error code: %d (%s)\n"
+#~ msgstr "[export webp] code erreur: %d (%s)\n"
 
 #~ msgid "keywords"
 #~ msgstr "mots-clés de collection"
