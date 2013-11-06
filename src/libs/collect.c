@@ -821,7 +821,7 @@ expand_row (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GtkTreeVi
   gtk_tree_model_get (model, iter, DT_LIB_COLLECT_COL_VISIBLE, &state, -1);
 
   if (state)
-    gtk_tree_view_expand_row (view, path, TRUE);
+    gtk_tree_view_expand_to_path(view, path);
 
   return FALSE;
 }
@@ -1054,10 +1054,9 @@ folders_view (dt_lib_collect_rule_t *dr)
   gtk_widget_show(GTK_WIDGET(d->sw2));
 }
 
-#define UNCATEGORIZED_TAG "uncategorized"
+static const char *UNCATEGORIZED_TAG = N_("uncategorized");
 static void tags_view (dt_lib_collect_rule_t *dr)
 {
-  
   // update related list
   dt_lib_collect_t *d = get_collect(dr);
   sqlite3_stmt *stmt;
@@ -1076,15 +1075,15 @@ static void tags_view (dt_lib_collect_rule_t *dr)
   gtk_widget_hide(GTK_WIDGET(d->sw2));
 
   set_properties (dr);
-  
+
   /* query construction */
   char query[1024];
   const gchar *text = NULL;
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   gchar *escaped_text = NULL;
   escaped_text = dt_util_str_replace(text, "'", "''");
-  snprintf(query, 1024, "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name) DESC", escaped_text);
-  
+  snprintf(query, 1024, "SELECT distinct name, id, name LIKE '%%%s%%' FROM tags ORDER BY UPPER(name) DESC", escaped_text);
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   while (sqlite3_step(stmt) == SQLITE_ROW)
@@ -1095,14 +1094,15 @@ static void tags_view (dt_lib_collect_rule_t *dr)
       if (!uncategorized.stamp)
       {
         gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &uncategorized, NULL,0);
-        gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &uncategorized, 0, _(UNCATEGORIZED_TAG), -1);
+        gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &uncategorized, DT_LIB_COLLECT_COL_TEXT, _(UNCATEGORIZED_TAG),
+                           DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE, FALSE, -1);
       }
 
-      /* adding a uncategorized tag */
+      /* adding an uncategorized tag */
       gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &temp, &uncategorized,0);
       gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &temp, DT_LIB_COLLECT_COL_TEXT, sqlite3_column_text(stmt, 0),
                          DT_LIB_COLLECT_COL_PATH, sqlite3_column_text(stmt, 0),
-                         DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+                         DT_LIB_COLLECT_COL_VISIBLE, sqlite3_column_int(stmt, 2), -1);
     }
     else
     {
@@ -1113,7 +1113,15 @@ static void tags_view (dt_lib_collect_rule_t *dr)
 
       if (pch != NULL)
       {
+        int max_level = 0;
         int j = 0;
+        while(pch[j] != NULL)
+        {
+          max_level++;
+          j++;
+        }
+        max_level--;
+        j=0;
         while (pch[j] != NULL)
         {
           gboolean found=FALSE;
@@ -1142,17 +1150,17 @@ static void tags_view (dt_lib_collect_rule_t *dr)
     
             for (int i=0; i <= level; i++)
             {
-                pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
+              pth2 = dt_util_dstrcat(pth2, "%s|", pch[i]);
             }
-            if (strlen(pth2) > 0) snprintf(pth2+strlen(pth2)-1, 2, "%s", "%\0");
-            else snprintf(pth2, 2, "%s", "%\0");
-            
+            if(level == max_level) pth2[strlen(pth2)-1] = '\0';
+            else pth2 = dt_util_dstrcat(pth2, "%%");
+
             int count = _count_images(pth2);
             gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &iter, level>0?&current:NULL,0);
             gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &iter, DT_LIB_COLLECT_COL_TEXT, pch[j],
                               DT_LIB_COLLECT_COL_PATH, pth2,
                               DT_LIB_COLLECT_COL_COUNT, count,
-                              DT_LIB_COLLECT_COL_VISIBLE, TRUE, -1);
+                              DT_LIB_COLLECT_COL_VISIBLE, sqlite3_column_int(stmt, 2), -1);
             current = iter;
           }
 
@@ -1171,9 +1179,16 @@ static void tags_view (dt_lib_collect_rule_t *dr)
   gtk_tree_view_set_model(GTK_TREE_VIEW(view), tagsmodel);
   gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
   gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
-  
-  if (strcmp(text,"") != 0) gtk_tree_view_expand_all(GTK_TREE_VIEW(view));
-  g_object_unref(tagsmodel);  
+
+  if(text[0] == '\0')
+  {
+    GtkTreePath *path = gtk_tree_model_get_path(tagsmodel, &uncategorized);
+    gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
+    gtk_tree_path_free(path);
+  }
+  else
+    gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)expand_row, view);
+  g_object_unref(tagsmodel);
 }
 
 static void
