@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-05 15:06+0100\n"
-"PO-Revision-Date: 2013-11-05 15:05+0100\n"
+"POT-Creation-Date: 2013-11-06 23:38+0100\n"
+"PO-Revision-Date: 2013-11-06 11:51+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -639,13 +639,13 @@ msgstr ""
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:907
 #: ../src/iop/colorbalance.c:945 ../src/iop/colorbalance.c:983
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1238
-#: ../src/libs/collect.c:1240
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1253
+#: ../src/libs/collect.c:1255
 msgid "red"
 msgstr "Rot"
 
 #: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1244 ../src/libs/collect.c:1246
+#: ../src/libs/collect.c:1259 ../src/libs/collect.c:1261
 msgid "yellow"
 msgstr "Gelb"
 
@@ -653,8 +653,8 @@ msgstr "Gelb"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:916
 #: ../src/iop/colorbalance.c:954 ../src/iop/colorbalance.c:992
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1250
-#: ../src/libs/collect.c:1252
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1265
+#: ../src/libs/collect.c:1267
 msgid "green"
 msgstr "Grün"
 
@@ -662,19 +662,19 @@ msgstr "Grün"
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:925
 #: ../src/iop/colorbalance.c:963 ../src/iop/colorbalance.c:1001
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1256
-#: ../src/libs/collect.c:1258
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1271
+#: ../src/libs/collect.c:1273
 msgid "blue"
 msgstr "Blau"
 
-#: ../src/common/collection.c:483 ../src/libs/collect.c:1262
-#: ../src/libs/collect.c:1264
+#: ../src/common/collection.c:483 ../src/libs/collect.c:1277
+#: ../src/libs/collect.c:1279
 msgid "purple"
 msgstr "Violett"
 
 #. history
-#: ../src/common/collection.c:490 ../src/libs/collect.c:1222
-#: ../src/libs/collect.c:1224
+#: ../src/common/collection.c:490 ../src/libs/collect.c:1237
+#: ../src/libs/collect.c:1239
 msgid "altered"
 msgstr "geändert"
 
@@ -6224,48 +6224,52 @@ msgstr "synchronisieren ..."
 msgid "remove..."
 msgstr "entfernen ..."
 
-#: ../src/libs/collect.c:1228 ../src/libs/collect.c:1230
+#: ../src/libs/collect.c:1057
+msgid "uncategorized"
+msgstr "Sonstige"
+
+#: ../src/libs/collect.c:1243 ../src/libs/collect.c:1245
 msgid "not altered"
 msgstr "ungeändert"
 
-#: ../src/libs/collect.c:1427
+#: ../src/libs/collect.c:1442
 msgid "local HDD"
 msgstr "lokale Festplatte"
 
-#: ../src/libs/collect.c:1513 ../src/libs/collect.c:1527
-#: ../src/libs/collect.c:1916
+#: ../src/libs/collect.c:1528 ../src/libs/collect.c:1542
+#: ../src/libs/collect.c:1931
 msgid "clear this rule"
 msgstr "diese Regel löschen"
 
-#: ../src/libs/collect.c:1518
+#: ../src/libs/collect.c:1533
 msgid "clear this rule or add new rules"
 msgstr "diese Regel löschen oder weitere Regeln hinzufügen"
 
-#: ../src/libs/collect.c:1922
+#: ../src/libs/collect.c:1937
 msgid "narrow down search"
 msgstr "Suche verfeinern"
 
-#: ../src/libs/collect.c:1926
+#: ../src/libs/collect.c:1941
 msgid "add more images"
 msgstr "mehr Bilder hinzufügen"
 
-#: ../src/libs/collect.c:1930
+#: ../src/libs/collect.c:1945
 msgid "exclude images"
 msgstr "Bilder ausschließen"
 
-#: ../src/libs/collect.c:1936
+#: ../src/libs/collect.c:1951
 msgid "change to: and"
 msgstr "ändere zu: UND"
 
-#: ../src/libs/collect.c:1940
+#: ../src/libs/collect.c:1955
 msgid "change to: or"
 msgstr "ändere zu: ODER"
 
-#: ../src/libs/collect.c:1944
+#: ../src/libs/collect.c:1959
 msgid "change to: except"
 msgstr "ändere zu: AUSSER"
 
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:2006
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "Anfrage eingeben, ‚%‘ als Paltzhalter benutzen"
