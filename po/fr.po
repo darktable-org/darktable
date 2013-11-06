@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-05 18:37+0100\n"
-"PO-Revision-Date: 2013-11-05 18:40+0100\n"
+"POT-Creation-Date: 2013-11-06 16:30+0100\n"
+"PO-Revision-Date: 2013-11-06 16:33+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -635,13 +635,13 @@ msgstr ""
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1238
-#: ../src/libs/collect.c:1240
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1253
+#: ../src/libs/collect.c:1255
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1244 ../src/libs/collect.c:1246
+#: ../src/libs/collect.c:1259 ../src/libs/collect.c:1261
 msgid "yellow"
 msgstr "jaune"
 
@@ -649,8 +649,8 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1250
-#: ../src/libs/collect.c:1252
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1265
+#: ../src/libs/collect.c:1267
 msgid "green"
 msgstr "vert"
 
@@ -658,19 +658,19 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1256
-#: ../src/libs/collect.c:1258
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1271
+#: ../src/libs/collect.c:1273
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:483 ../src/libs/collect.c:1262
-#: ../src/libs/collect.c:1264
+#: ../src/common/collection.c:483 ../src/libs/collect.c:1277
+#: ../src/libs/collect.c:1279
 msgid "purple"
 msgstr "violet"
 
 #. history
-#: ../src/common/collection.c:490 ../src/libs/collect.c:1222
-#: ../src/libs/collect.c:1224
+#: ../src/common/collection.c:490 ../src/libs/collect.c:1237
+#: ../src/libs/collect.c:1239
 msgid "altered"
 msgstr "développées"
 
@@ -6212,48 +6212,52 @@ msgstr "synchronisation..."
 msgid "remove..."
 msgstr "enlever..."
 
-#: ../src/libs/collect.c:1228 ../src/libs/collect.c:1230
+#: ../src/libs/collect.c:1057
+msgid "uncategorized"
+msgstr "sans catégorie"
+
+#: ../src/libs/collect.c:1243 ../src/libs/collect.c:1245
 msgid "not altered"
 msgstr "non développées"
 
-#: ../src/libs/collect.c:1427
+#: ../src/libs/collect.c:1442
 msgid "local HDD"
 msgstr "disque dur local"
 
-#: ../src/libs/collect.c:1513 ../src/libs/collect.c:1527
-#: ../src/libs/collect.c:1916
+#: ../src/libs/collect.c:1528 ../src/libs/collect.c:1542
+#: ../src/libs/collect.c:1931
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1518
+#: ../src/libs/collect.c:1533
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1922
+#: ../src/libs/collect.c:1937
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1926
+#: ../src/libs/collect.c:1941
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1930
+#: ../src/libs/collect.c:1945
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1936
+#: ../src/libs/collect.c:1951
 msgid "change to: and"
 msgstr "changer en \"et\""
 
-#: ../src/libs/collect.c:1940
+#: ../src/libs/collect.c:1955
 msgid "change to: or"
 msgstr "changer en \"ou\""
 
-#: ../src/libs/collect.c:1944
+#: ../src/libs/collect.c:1959
 msgid "change to: except"
 msgstr "changer en \"mais sans\""
 
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:2006
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
