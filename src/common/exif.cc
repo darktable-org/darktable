@@ -1401,6 +1401,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
 
     sqlite3_stmt *stmt;
 
+#if 0
     // get rid of old meta data
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from meta_data where id = ?1", -1, &stmt, NULL);
@@ -1424,6 +1425,7 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+#endif
 
     if(!history_only)
     {
