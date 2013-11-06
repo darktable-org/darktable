@@ -395,9 +395,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->vbox2 = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->vbox2), TRUE, TRUE, 5);
 
-  g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 3);
+  g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 4);
   g_object_set(G_OBJECT(g->black), "tooltip-text", _("adjust the black level"), (char *)NULL);
-  dt_bauhaus_slider_set_format(g->black,"%.3f");
+  dt_bauhaus_slider_set_format(g->black,"%.4f");
   dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
 
   g->exposure = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .02, p->exposure, 3);
