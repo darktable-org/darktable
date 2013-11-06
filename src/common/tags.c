@@ -557,7 +557,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   return count;
 }
 
-void _free_result_item(dt_tag_t *t,gpointer unused)
+static void _free_result_item(dt_tag_t *t,gpointer unused)
 {
   g_free(t->tag);
   g_free(t);
