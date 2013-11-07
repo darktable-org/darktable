@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-02 13:23+0100\n"
-"PO-Revision-Date: 2013-11-02 13:34+0100\n"
+"POT-Creation-Date: 2013-11-07 23:14+0100\n"
+"PO-Revision-Date: 2013-11-07 23:20+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -80,6 +80,14 @@ msgstr ""
 msgid "double click to reset to `%s'"
 msgstr "dubbelklicka för att återställa till `%s'"
 
+#: ../build/src/preferences_gen.h:1157 ../build/src/preferences_gen.h:1276
+#: ../build/src/preferences_gen.h:1295 ../build/src/preferences_gen.h:1411
+#: ../build/src/preferences_gen.h:1648 ../build/src/preferences_gen.h:1935
+#: ../build/src/preferences_gen.h:1954
+msgctxt "preferences"
+msgid "FALSE"
+msgstr "FALSKT"
+
 #: ../build/src/preferences_gen.h:1160
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
@@ -92,6 +100,15 @@ msgstr ""
 #: ../build/src/preferences_gen.h:1167
 msgid "ask before removing images from database"
 msgstr "fråga innan en bild tas bort från databas"
+
+#: ../build/src/preferences_gen.h:1176 ../build/src/preferences_gen.h:1195
+#: ../build/src/preferences_gen.h:1214 ../build/src/preferences_gen.h:1233
+#: ../build/src/preferences_gen.h:1430 ../build/src/preferences_gen.h:1587
+#: ../build/src/preferences_gen.h:1629 ../build/src/preferences_gen.h:1667
+#: ../build/src/preferences_gen.h:1854 ../build/src/preferences_gen.h:1912
+msgctxt "preferences"
+msgid "TRUE"
+msgstr "SANT"
 
 #: ../build/src/preferences_gen.h:1179
 msgid "always ask the user before any image is removed from DB."
@@ -179,7 +196,9 @@ msgstr "visa fokuserade områden"
 msgid ""
 "in full screen preview in lighttable (`z'-mode), draw an overlay indicating "
 "image sharpness. red is very sharp, blue slightly less so."
-msgstr "visa på var bilden är i fokus i fullskärmsförhandsvisning i lightroom ('z'-läge).  rött för mycket skarpt, blått för aningen mindre skarpt."
+msgstr ""
+"visa på var bilden är i fokus i fullskärmsförhandsvisning i lightroom ('z'-"
+"läge).  rött för mycket skarpt, blått för aningen mindre skarpt."
 
 #: ../build/src/preferences_gen.h:1421
 msgid "enable filmstrip"
@@ -219,7 +238,8 @@ msgstr ""
 msgid "compression of thumbnail images"
 msgstr "komprimering av miniatyrbilder"
 
-#: ../build/src/preferences_gen.h:1498 ../build/src/preferences_gen.h:1537
+#: ../build/src/preferences_gen.h:1498 ../build/src/preferences_gen.h:1517
+#: ../build/src/preferences_gen.h:1537 ../build/src/preferences_gen.h:1568
 msgctxt "preferences"
 msgid "off"
 msgstr "av"
@@ -329,7 +349,7 @@ msgstr "detta val slår om beteendet för shift-klick i darkroom"
 msgid "method to use for getting the display profile"
 msgstr "metod för att få tag på skärmprofilen"
 
-#: ../build/src/preferences_gen.h:1687
+#: ../build/src/preferences_gen.h:1687 ../build/src/preferences_gen.h:1706
 msgctxt "preferences"
 msgid "all"
 msgstr "alla"
@@ -348,7 +368,10 @@ msgstr "colord"
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
-msgstr "det här valet tillåter dig att tvinga fram en specifik metod för att få tag på skärmens färgprofil.  detta är användbart när det annars blir felaktiga resultat"
+msgstr ""
+"det här valet tillåter dig att tvinga fram en specifik metod för att få tag "
+"på skärmens färgprofil.  detta är användbart när det annars blir felaktiga "
+"resultat"
 
 #: ../build/src/preferences_gen.h:1744
 msgid "core options"
@@ -432,7 +455,7 @@ msgctxt "preferences"
 msgid "always"
 msgstr "alltid"
 
-#: ../build/src/preferences_gen.h:1882
+#: ../build/src/preferences_gen.h:1882 ../build/src/preferences_gen.h:1893
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "enbart de med stort innehåll"
@@ -442,7 +465,10 @@ msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
-msgstr "innehållet i xmp-taggar kan bli rätt stort och kan bli större än tillgängligt utrymme för att ligga in historiestacken i exporterade filer.  detta tillåter att xmp-taggar komprimeras och därmed sparar utrymme."
+msgstr ""
+"innehållet i xmp-taggar kan bli rätt stort och kan bli större än "
+"tillgängligt utrymme för att ligga in historiestacken i exporterade filer.  "
+"detta tillåter att xmp-taggar komprimeras och därmed sparar utrymme."
 
 #: ../build/src/preferences_gen.h:1903
 msgid "activate OpenCL support"
@@ -491,7 +517,7 @@ msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "alltid bilinear (snabbt)"
 
-#: ../build/src/preferences_gen.h:1978
+#: ../build/src/preferences_gen.h:1978 ../build/src/preferences_gen.h:1993
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "PPG som mest (rimligt)"
@@ -531,7 +557,7 @@ msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:2025
+#: ../build/src/preferences_gen.h:2025 ../build/src/preferences_gen.h:2036
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
@@ -548,7 +574,7 @@ msgstr ""
 msgid "password storage backend to use"
 msgstr "lagringsmetod att använda för lösenord"
 
-#: ../build/src/preferences_gen.h:2056
+#: ../build/src/preferences_gen.h:2056 ../build/src/preferences_gen.h:2075
 msgctxt "preferences"
 msgid "none"
 msgstr "ingen"
@@ -615,13 +641,13 @@ msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1238
-#: ../src/libs/collect.c:1240
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1253
+#: ../src/libs/collect.c:1255
 msgid "red"
 msgstr "röd"
 
 #: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1244 ../src/libs/collect.c:1246
+#: ../src/libs/collect.c:1259 ../src/libs/collect.c:1261
 msgid "yellow"
 msgstr "gul"
 
@@ -629,8 +655,8 @@ msgstr "gul"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1250
-#: ../src/libs/collect.c:1252
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1265
+#: ../src/libs/collect.c:1267
 msgid "green"
 msgstr "grön"
 
@@ -638,19 +664,19 @@ msgstr "grön"
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1256
-#: ../src/libs/collect.c:1258
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1271
+#: ../src/libs/collect.c:1273
 msgid "blue"
 msgstr "blå"
 
-#: ../src/common/collection.c:483 ../src/libs/collect.c:1262
-#: ../src/libs/collect.c:1264
+#: ../src/common/collection.c:483 ../src/libs/collect.c:1277
+#: ../src/libs/collect.c:1279
 msgid "purple"
 msgstr "lila"
 
 #. history
-#: ../src/common/collection.c:490 ../src/libs/collect.c:1222
-#: ../src/libs/collect.c:1224
+#: ../src/common/collection.c:490 ../src/libs/collect.c:1237
+#: ../src/libs/collect.c:1239
 msgid "altered"
 msgstr "förändrad"
 
@@ -826,7 +852,7 @@ msgstr "importerade stilen '%s'"
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
-#: ../src/iop/lens.c:1741 ../src/libs/export.c:644 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1768 ../src/libs/export.c:644 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -1081,8 +1107,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1179
-#: ../src/control/jobs/control_jobs.c:1180 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1179 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
@@ -1929,78 +1954,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "använd datumformatet YYYY-MM-DD för egna datum"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:919
+#: ../src/gui/gtk.c:901
 msgctxt "accel"
 msgid "capture view"
 msgstr "tjudring"
 
-#: ../src/gui/gtk.c:920
+#: ../src/gui/gtk.c:902
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "ljusbord"
 
-#: ../src/gui/gtk.c:921
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mörkrum"
 
-#: ../src/gui/gtk.c:922
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "map view"
 msgstr "karta"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:945
+#: ../src/gui/gtk.c:927
 msgctxt "accel"
 msgid "quit"
 msgstr "avsluta"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:952
+#: ../src/gui/gtk.c:934
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "öka ljusstyrka"
 
-#: ../src/gui/gtk.c:954
+#: ../src/gui/gtk.c:936
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "minska ljusstyrka"
 
-#: ../src/gui/gtk.c:956
+#: ../src/gui/gtk.c:938
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "öka kontrast"
 
-#: ../src/gui/gtk.c:958
+#: ../src/gui/gtk.c:940
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "minska kontrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:979
+#: ../src/gui/gtk.c:961
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "växla fullskärm"
 
-#: ../src/gui/gtk.c:980
+#: ../src/gui/gtk.c:962
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "lämna fullskärm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:992
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "växla visning av paneler"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:995
+#: ../src/gui/gtk.c:977
 msgctxt "accel"
 msgid "toggle header"
 msgstr "växla visning av huvud"
 
 #. View-switch
-#: ../src/gui/gtk.c:999
+#: ../src/gui/gtk.c:981
 msgctxt "accel"
 msgid "switch view"
 msgstr "byt vy"
@@ -2199,7 +2224,8 @@ msgid "binding"
 msgstr "bindning"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:598 ../src/imageio/format/webp.c:314
+#: ../src/gui/preferences.c:598
+msgctxt "preferences"
 msgid "default"
 msgstr "standard"
 
@@ -2540,7 +2566,7 @@ msgstr "kunde inte skriva till katalog `%s'!"
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1193 ../src/imageio/storage/flickr.c:670
 #: ../src/imageio/storage/gallery.c:328 ../src/imageio/storage/gallery.c:347
-#: ../src/imageio/storage/picasa.c:1459
+#: ../src/imageio/storage/picasa.c:1443
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunde inte exportera till fil `%s'!"
@@ -2667,11 +2693,11 @@ msgstr "publik"
 msgid "friends of friends"
 msgstr "vänners vänner"
 
-#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1468
+#: ../src/imageio/storage/facebook.c:1202 ../src/imageio/storage/picasa.c:1452
 msgid "unable to create album, no title provided"
 msgstr "kunde inte skapa album, ingen titel angiven"
 
-#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1475
+#: ../src/imageio/storage/facebook.c:1209 ../src/imageio/storage/picasa.c:1459
 msgid "unable to create album"
 msgstr "kunde inte skapa album"
 
@@ -2820,12 +2846,12 @@ msgstr "google+-autentisering"
 msgid "google+ photos"
 msgstr "google+-bilder"
 
-#: ../src/imageio/storage/picasa.c:1485
+#: ../src/imageio/storage/picasa.c:1469
 msgid "unable to export photo to google+ album"
 msgstr "kunde inte exportera bild till google+-album"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1502
+#: ../src/imageio/storage/picasa.c:1481
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exporterad till google+-album"
@@ -3017,36 +3043,40 @@ msgid "fujifilm like"
 msgstr "liknande fujifilm"
 
 #: ../src/iop/basecurve.c:114
+msgid "nokia like"
+msgstr "liknande nokia"
+
+#: ../src/iop/basecurve.c:115
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenetic (point & shoot)"
 
-#: ../src/iop/basecurve.c:115
+#: ../src/iop/basecurve.c:116
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (ev3)"
 
-#: ../src/iop/basecurve.c:196
+#: ../src/iop/basecurve.c:198
 msgid "base curve"
 msgstr "baskurva"
 
-#: ../src/iop/basecurve.c:759
+#: ../src/iop/basecurve.c:761
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
-#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:1893
+#: ../src/iop/basecurve.c:769 ../src/iop/lens.c:1920
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1050
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/basecurve.c:768 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:770 ../src/iop/profile_gamma.c:125
 #: ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "linjär"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:771
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:770
+#: ../src/iop/basecurve.c:772
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3639,7 +3669,7 @@ msgstr "gyllene spiralsektioner"
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1747
+#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1774
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "alla"
@@ -4285,7 +4315,7 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1902
+#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1929
 msgid "mode"
 msgstr "läge"
 
@@ -4782,7 +4812,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "välj korrigeringar"
 
-#: ../src/iop/lens.c:1086
+#: ../src/iop/lens.c:1113
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4795,15 +4825,15 @@ msgstr ""
 "montering:\t\t\t%s\n"
 "beskärningsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:1317
+#: ../src/iop/lens.c:1344
 msgid "camera/lens not found - please select manually"
 msgstr "fann inte kamera/objektiv - var god välj manuellt"
 
-#: ../src/iop/lens.c:1319
+#: ../src/iop/lens.c:1346
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "försök att hitta din kamera eller ditt objektiv i de två menyerna ovan"
 
-#: ../src/iop/lens.c:1364
+#: ../src/iop/lens.c:1391
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4822,151 +4852,151 @@ msgstr ""
 "typ:\t\t\t\t\t%s\n"
 "monteringar:\t\t%s"
 
-#: ../src/iop/lens.c:1410
+#: ../src/iop/lens.c:1437
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1411
+#: ../src/iop/lens.c:1438
 msgid "focal length (mm)"
 msgstr "brännvidd (mm)"
 
-#: ../src/iop/lens.c:1438
+#: ../src/iop/lens.c:1465
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1439
+#: ../src/iop/lens.c:1466
 msgid "f-number (aperture)"
 msgstr "bländartal"
 
-#: ../src/iop/lens.c:1454
+#: ../src/iop/lens.c:1481
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1455
+#: ../src/iop/lens.c:1482
 msgid "distance to subject"
 msgstr "distans till motivet"
 
-#: ../src/iop/lens.c:1753
+#: ../src/iop/lens.c:1780
 msgid "distortion & TCA"
 msgstr "distortioner & TCA"
 
-#: ../src/iop/lens.c:1759
+#: ../src/iop/lens.c:1786
 msgid "distortion & vignetting"
 msgstr "distortioner och vinjettering"
 
-#: ../src/iop/lens.c:1765
+#: ../src/iop/lens.c:1792
 msgid "TCA & vignetting"
 msgstr "TCA & vinjettering"
 
-#: ../src/iop/lens.c:1771
+#: ../src/iop/lens.c:1798
 msgid "only distortion"
 msgstr "enbart distortioner"
 
-#: ../src/iop/lens.c:1777
+#: ../src/iop/lens.c:1804
 msgid "only TCA"
 msgstr "enbart TCA"
 
-#: ../src/iop/lens.c:1783
+#: ../src/iop/lens.c:1810
 msgid "only vignetting"
 msgstr "enbart vinjettering"
 
-#: ../src/iop/lens.c:1806
+#: ../src/iop/lens.c:1833
 msgid "find camera"
 msgstr "sök kamera"
 
-#: ../src/iop/lens.c:1823
+#: ../src/iop/lens.c:1850
 msgid "find lens"
 msgstr "sök objektiv"
 
-#: ../src/iop/lens.c:1856
+#: ../src/iop/lens.c:1883
 msgid "corrections"
 msgstr "korrigeringar"
 
-#: ../src/iop/lens.c:1858
+#: ../src/iop/lens.c:1885
 msgid "which corrections to apply"
 msgstr "vilka korrigeringar som ska utföras"
 
-#: ../src/iop/lens.c:1873
+#: ../src/iop/lens.c:1900
 msgid "geometry"
 msgstr "geometrisk"
 
-#: ../src/iop/lens.c:1875
+#: ../src/iop/lens.c:1902
 msgid "target geometry"
 msgstr "målgeometri"
 
-#: ../src/iop/lens.c:1876
+#: ../src/iop/lens.c:1903
 msgid "rectilinear"
 msgstr "rätlinjig"
 
-#: ../src/iop/lens.c:1877
+#: ../src/iop/lens.c:1904
 msgid "fish-eye"
 msgstr "fisköga"
 
-#: ../src/iop/lens.c:1878
+#: ../src/iop/lens.c:1905
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:1879
+#: ../src/iop/lens.c:1906
 msgid "equirectangular"
 msgstr "ekvirektangulär"
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:1881
+#: ../src/iop/lens.c:1908
 msgid "orthographic"
 msgstr ""
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:1882
+#: ../src/iop/lens.c:1909
 msgid "stereographic"
 msgstr ""
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:1883
+#: ../src/iop/lens.c:1910
 msgid "equisolid angle"
 msgstr ""
 
 # NEEDS REVIEWING
-#: ../src/iop/lens.c:1884
+#: ../src/iop/lens.c:1911
 msgid "thoby fish-eye"
 msgstr "thoby fisköga"
 
-#: ../src/iop/lens.c:1892
+#: ../src/iop/lens.c:1919
 msgid "auto scale"
 msgstr "autoskalning"
 
-#: ../src/iop/lens.c:1904
+#: ../src/iop/lens.c:1931
 msgid "correct distortions or apply them"
 msgstr "korrigera eller applicera förvridningar"
 
-#: ../src/iop/lens.c:1905
+#: ../src/iop/lens.c:1932
 msgid "correct"
 msgstr "korrigering"
 
-#: ../src/iop/lens.c:1906
+#: ../src/iop/lens.c:1933
 msgid "distort"
 msgstr "förvrid"
 
-#: ../src/iop/lens.c:1913
+#: ../src/iop/lens.c:1940
 msgid "Transversal Chromatic Aberration red"
 msgstr "röd transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:1914
+#: ../src/iop/lens.c:1941
 msgid "TCA red"
 msgstr "röd TCA"
 
-#: ../src/iop/lens.c:1919
+#: ../src/iop/lens.c:1946
 msgid "Transversal Chromatic Aberration blue"
 msgstr "blå transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:1920
+#: ../src/iop/lens.c:1947
 msgid "TCA blue"
 msgstr "blå TCA"
 
-#: ../src/iop/lens.c:1927
+#: ../src/iop/lens.c:1954
 msgid "corrections done: "
 msgstr "gjorda korrigeringar: "
 
-#: ../src/iop/lens.c:1928
+#: ../src/iop/lens.c:1955
 msgid "which corrections have actually been done"
 msgstr "vilka korrigeringar som faktiskt har gjorts"
 
@@ -6134,48 +6164,52 @@ msgstr "synk..."
 msgid "remove..."
 msgstr "ta bort..."
 
-#: ../src/libs/collect.c:1228 ../src/libs/collect.c:1230
+#: ../src/libs/collect.c:1057
+msgid "uncategorized"
+msgstr "ej kategoriserad"
+
+#: ../src/libs/collect.c:1243 ../src/libs/collect.c:1245
 msgid "not altered"
 msgstr "oförändrad"
 
-#: ../src/libs/collect.c:1427
+#: ../src/libs/collect.c:1442
 msgid "local HDD"
 msgstr "lokal hårddisk"
 
-#: ../src/libs/collect.c:1513 ../src/libs/collect.c:1527
-#: ../src/libs/collect.c:1916
+#: ../src/libs/collect.c:1528 ../src/libs/collect.c:1542
+#: ../src/libs/collect.c:1931
 msgid "clear this rule"
 msgstr "ta bort denna regel"
 
-#: ../src/libs/collect.c:1518
+#: ../src/libs/collect.c:1533
 msgid "clear this rule or add new rules"
 msgstr "rensa denna regel eller skapa en ny"
 
-#: ../src/libs/collect.c:1922
+#: ../src/libs/collect.c:1937
 msgid "narrow down search"
 msgstr "smalna av sökning"
 
-#: ../src/libs/collect.c:1926
+#: ../src/libs/collect.c:1941
 msgid "add more images"
 msgstr "lägg till fler bilder"
 
-#: ../src/libs/collect.c:1930
+#: ../src/libs/collect.c:1945
 msgid "exclude images"
 msgstr "exkludera bilder"
 
-#: ../src/libs/collect.c:1936
+#: ../src/libs/collect.c:1951
 msgid "change to: and"
 msgstr "ändra till: och"
 
-#: ../src/libs/collect.c:1940
+#: ../src/libs/collect.c:1955
 msgid "change to: or"
 msgstr "ändra till: eller"
 
-#: ../src/libs/collect.c:1944
+#: ../src/libs/collect.c:1959
 msgid "change to: except"
 msgstr "ändra till: för utom"
 
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:2006
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "ange din förfrågan, använd `%' som wildcard"
@@ -7936,6 +7970,7 @@ msgstr "ingen kamera ansluten som stödjer tjudrad fångst för användning..."
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:564 ../src/views/darkroom.c:1673
+#: ../src/views/map.c:564
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
@@ -8278,21 +8313,6 @@ msgstr "skapa former"
 msgid "lua options"
 msgstr "lua-inställningar"
 
-#: ../src/imageio/format/webp.c:137
-#, c-format
-msgid "[webp export] error saving to %s\n"
-msgstr "[webp-export] kunde inte skriva till %s\n"
-
-#: ../src/imageio/format/webp.c:156
-#, c-format
-msgid "[webp export] error during encoding!\n"
-msgstr "[webp-export] fel under kodning!\n"
-
-#: ../src/imageio/format/webp.c:157
-#, c-format
-msgid "[webp export] error code: %d (%s)\n"
-msgstr "[webp-export] felkod %s (%s)\n"
-
 #: ../src/imageio/format/webp.c:244
 msgid "WebP"
 msgstr "WebP"
@@ -8313,8 +8333,9 @@ msgstr "icke-destruktiv"
 msgid "applies only to lossy setting"
 msgstr "enbart för destruktiv komprimering"
 
+# THESE WEBP STRINGS NEED REWRITING!  They are really not comprehensible in any sane way, and they get even worse when trying to traduce them to swedish.  /Richard Levitte
 #: ../src/imageio/format/webp.c:305
-msgid "Image Hint"
+msgid "image hint"
 msgstr ""
 
 #: ../src/imageio/format/webp.c:306
@@ -8324,6 +8345,10 @@ msgid ""
 "photo   : outdoor photograph, with natural lighting\n"
 "graphic : discrete tone image (graph, map-tile etc)"
 msgstr ""
+
+#: ../src/imageio/format/webp.c:314
+msgid "default"
+msgstr "standard"
 
 #: ../src/imageio/format/webp.c:315
 msgid "picture"
@@ -8336,6 +8361,15 @@ msgstr ""
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr ""
+
+#~ msgid "[webp export] error saving to %s\n"
+#~ msgstr "[webp-export] kunde inte skriva till %s\n"
+
+#~ msgid "[webp export] error during encoding!\n"
+#~ msgstr "[webp-export] fel under kodning!\n"
+
+#~ msgid "[webp export] error code: %d (%s)\n"
+#~ msgstr "[webp-export] felkod %s (%s)\n"
 
 #~ msgid "keywords"
 #~ msgstr "nyckelord"
