@@ -1344,6 +1344,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/colisa/visible</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/colisa/expanded</name>
     <type>bool</type>
     <default>TRUE</default>
