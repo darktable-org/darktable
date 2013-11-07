@@ -27,13 +27,19 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <errno.h>
+
 typedef struct dt_database_t
 {
   gboolean is_new_database;
-  gboolean already_locked;
+  gboolean lock_acquired;
 
   /* database filename */
-  gchar *dbfilename;
+  gchar *dbfilename, *lockfile;
 
   /* ondisk DB */
   sqlite3 *handle;
@@ -87,6 +93,54 @@ dt_database_t *dt_database_init(char *alternative)
   memset(db,0,sizeof(dt_database_t));
   db->dbfilename = g_strdup(dbfilename);
   db->is_new_database = FALSE;
+  db->lock_acquired = FALSE;
+
+  /* having more than one instance of darktable using the same database is a bad idea */
+  /* try to get a lock for the database */
+  mode_t old_mode;
+  int fd, lock_tries = 0;
+  db->lockfile = g_strconcat(dbfilename, ".lock", NULL);
+lock_again:
+  lock_tries++;
+  old_mode = umask(0);
+  fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+  umask(old_mode);
+
+  if(fd >= 0) // the lockfile was successfully created - write our PID into it
+  {
+    gchar *pid = g_strdup_printf("%d", getpid());
+    if(write(fd, pid, strlen(pid)+1) > -1)
+      db->lock_acquired = TRUE;
+    close(fd);
+  }
+  else // the lockfile already exists - see if it's a stale one left over from a crashed instance
+  {
+    char buf[64];
+    memset(buf, 0, sizeof(buf));
+    fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
+    if(fd >= 0)
+    {
+      if(read(fd, buf, sizeof(buf) - 1) > -1)
+      {
+        int other_pid = atoi(buf);
+        if((kill(other_pid, 0) == -1) && errno == ESRCH)
+        {
+          // the other process seems to no longer exist. unlink the .lock file and try again
+          unlink(db->lockfile);
+          if(lock_tries < 5)
+            goto lock_again;
+        }
+      }
+      close(fd);
+    }
+  }
+
+  if(!db->lock_acquired)
+  {
+    fprintf(stderr, "[init] database is locked, probably another process is already using it\n");
+    g_free(dbname);
+    return db;
+  }
 
   /* test if databasefile is available */
   if(!g_file_test(dbfilename, G_FILE_TEST_IS_REGULAR))
@@ -103,18 +157,9 @@ dt_database_t *dt_database_init(char *alternative)
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
     sqlite3_close(db->handle);
     g_free(dbname);
+    g_free(db->lockfile);
     g_free(db);
     return NULL;
-  }
-
-  /* having more than one instance of darktable using the same database is a bad idea */
-  if(sqlite3_exec(db->handle, "delete from lock", NULL, NULL, NULL) > SQLITE_ERROR)
-  {
-    fprintf(stderr, "[init] database is locked, probably another process is already using it\n");
-    sqlite3_close(db->handle);
-    g_free(dbname);
-    db->already_locked = TRUE;
-    return db;
   }
 
   /* attach a memory database to db connection for use with temporary tables
@@ -133,6 +178,8 @@ dt_database_t *dt_database_init(char *alternative)
 void dt_database_destroy(const dt_database_t *db)
 {
   sqlite3_close(db->handle);
+  unlink(db->lockfile);
+  g_free(db->lockfile);
   g_free((dt_database_t *)db);
 }
 
@@ -197,9 +244,9 @@ static void _database_delete_mipmaps_files()
   }
 }
 
-gboolean dt_database_get_already_locked(const dt_database_t *db)
+gboolean dt_database_get_lock_acquired(const dt_database_t *db)
 {
-  return db->already_locked;
+  return db->lock_acquired;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

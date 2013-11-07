@@ -558,7 +558,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
     printf("ERROR : cannot open database\n");
     return 1;
   }
-  else if(dt_database_get_already_locked(darktable.db))
+  else if(!dt_database_get_lock_acquired(darktable.db))
   {
     // send the images to the other instance via dbus
     if(images_to_load)
