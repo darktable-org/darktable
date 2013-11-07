@@ -39,6 +39,9 @@
 #include "gui/draw.h"
 #include "iop/lens.h"
 
+#if LF_VERSION < ((0 << 24) | (2 << 16) | (9 << 8) | 0)
+#define LF_SEARCH_SORT_AND_UNIQUIFY 2
+#endif
 
 DT_MODULE(3)
 
@@ -1580,7 +1583,7 @@ static void lens_menusearch_clicked(
   (void)button;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,NULL,NULL, 0);
+  lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,NULL,NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if (!lenslist) return;
   lens_menu_fill (self, lenslist);
@@ -1607,7 +1610,7 @@ static void lens_autosearch_clicked(
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
                                    make [0] ? make : NULL,
-                                   model [0] ? model : NULL, 0);
+                                   model [0] ? model : NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if (!lenslist) return;
   lens_menu_fill (self, lenslist);
@@ -2016,7 +2019,7 @@ void gui_update(struct dt_iop_module_t *self)
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfLens **lenslist = lf_db_find_lenses_hd (dt_iop_lensfun_db, g->camera,
                               make [0] ? make : NULL,
-                              model [0] ? model : NULL, 0);
+                              model [0] ? model : NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
     if(lenslist) lens_set (self, lenslist[0]);
     else         lens_set (self, NULL);
     lf_free (lenslist);
