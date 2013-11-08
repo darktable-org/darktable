@@ -97,43 +97,54 @@ dt_database_t *dt_database_init(char *alternative)
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get a lock for the database */
+#ifdef __WIN32__
+  db->lock_acquired = TRUE;
+#else
   mode_t old_mode;
   int fd, lock_tries = 0;
-  db->lockfile = g_strconcat(dbfilename, ".lock", NULL);
-lock_again:
-  lock_tries++;
-  old_mode = umask(0);
-  fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
-  umask(old_mode);
-
-  if(fd >= 0) // the lockfile was successfully created - write our PID into it
+  if(!strcmp(dbfilename, ":memory:"))
   {
-    gchar *pid = g_strdup_printf("%d", getpid());
-    if(write(fd, pid, strlen(pid)+1) > -1)
-      db->lock_acquired = TRUE;
-    close(fd);
+    db->lock_acquired = TRUE;
   }
-  else // the lockfile already exists - see if it's a stale one left over from a crashed instance
+  else
   {
-    char buf[64];
-    memset(buf, 0, sizeof(buf));
-    fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
-    if(fd >= 0)
+    db->lockfile = g_strconcat(dbfilename, ".lock", NULL);
+lock_again:
+    lock_tries++;
+    old_mode = umask(0);
+    fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
+    umask(old_mode);
+
+    if(fd >= 0) // the lockfile was successfully created - write our PID into it
     {
-      if(read(fd, buf, sizeof(buf) - 1) > -1)
-      {
-        int other_pid = atoi(buf);
-        if((kill(other_pid, 0) == -1) && errno == ESRCH)
-        {
-          // the other process seems to no longer exist. unlink the .lock file and try again
-          unlink(db->lockfile);
-          if(lock_tries < 5)
-            goto lock_again;
-        }
-      }
+      gchar *pid = g_strdup_printf("%d", getpid());
+      if(write(fd, pid, strlen(pid)+1) > -1)
+        db->lock_acquired = TRUE;
       close(fd);
     }
+    else // the lockfile already exists - see if it's a stale one left over from a crashed instance
+    {
+      char buf[64];
+      memset(buf, 0, sizeof(buf));
+      fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
+      if(fd >= 0)
+      {
+        if(read(fd, buf, sizeof(buf) - 1) > -1)
+        {
+          int other_pid = atoi(buf);
+          if((kill(other_pid, 0) == -1) && errno == ESRCH)
+          {
+            // the other process seems to no longer exist. unlink the .lock file and try again
+            unlink(db->lockfile);
+            if(lock_tries < 5)
+              goto lock_again;
+          }
+        }
+        close(fd);
+      }
+    }
   }
+#endif
 
   if(!db->lock_acquired)
   {

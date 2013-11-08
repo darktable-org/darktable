@@ -199,13 +199,15 @@ static void dt_control_sanitize_database()
 
 int dt_control_load_config(dt_control_t *c)
 {
+  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
   int width  = dt_conf_get_int("ui_last/window_w");
   int height = dt_conf_get_int("ui_last/window_h");
+#ifndef __WIN32__
   gint x = dt_conf_get_int("ui_last/window_x");
   gint y = dt_conf_get_int("ui_last/window_y");
-  GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   gtk_window_move(GTK_WINDOW(widget),x,y);
+#endif
   gtk_window_resize(GTK_WINDOW(widget), width, height);
   int fullscreen = dt_conf_get_bool("ui_last/fullscreen");
   if(fullscreen) gtk_window_fullscreen  (GTK_WINDOW(widget));
@@ -538,6 +540,8 @@ void dt_control_init(dt_control_t *s)
   {
     s->new_res[k] = 0;
     pthread_create(&s->thread_res[k], NULL, dt_control_work_res, s);
+    dt_pthread_mutex_init(&s->job_res[k].state_mutex, NULL);
+    dt_pthread_mutex_init(&s->job_res[k].wait_mutex, NULL);
   }
   s->button_down = 0;
   s->button_down_which = 0;
