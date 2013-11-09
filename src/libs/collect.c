@@ -1182,6 +1182,12 @@ static void tags_view (dt_lib_collect_rule_t *dr)
 
   if(text[0] == '\0')
   {
+    if (!uncategorized.stamp)
+    {
+      gtk_tree_store_insert(GTK_TREE_STORE(tagsmodel), &uncategorized, NULL,0);
+      gtk_tree_store_set(GTK_TREE_STORE(tagsmodel), &uncategorized, DT_LIB_COLLECT_COL_TEXT, _(UNCATEGORIZED_TAG),
+                         DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE, FALSE, -1);
+    }
     GtkTreePath *path = gtk_tree_model_get_path(tagsmodel, &uncategorized);
     gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
     gtk_tree_path_free(path);
