@@ -142,12 +142,12 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s);
  */
 struct dt_job_t;
 typedef void (*dt_job_state_change_callback)(struct dt_job_t*,int state);
-#define DT_JOB_STATE_INITIALIZED		0
-#define DT_JOB_STATE_QUEUED		1
-#define DT_JOB_STATE_RUNNING		2
-#define DT_JOB_STATE_FINISHED		3
-#define DT_JOB_STATE_CANCELLED		4
-#define DT_JOB_STATE_DISCARDED		5
+#define DT_JOB_STATE_INITIALIZED    0
+#define DT_JOB_STATE_QUEUED         1
+#define DT_JOB_STATE_RUNNING        2
+#define DT_JOB_STATE_FINISHED       3
+#define DT_JOB_STATE_CANCELLED      4
+#define DT_JOB_STATE_DISCARDED      5
 typedef struct dt_job_t
 {
   int32_t (*execute) (struct dt_job_t *job);
