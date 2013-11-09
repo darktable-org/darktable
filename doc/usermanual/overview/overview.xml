@@ -192,8 +192,8 @@
                 <indexterm>
                      <primary>basic workflow</primary>
                 </indexterm>
-                <para>This section tries to give a first rough overview of a typical darktable workflow. Novice users may take this as a starting point. We describe 
-                      how to get an image into darktable, which basic steps are typically part of a raw development workflow, and how to export the final result.</para>
+                <para>This section describes a typical darktable workflow which novice users may take as a starting point. We describe 
+                      how to get an image into darktable, the basic steps of a raw development workflow and how to export the final result.</para>
 		<sect2 status ="final"><title>Importing images</title>
 			<para>To begin with darktable, you first need to import images. The import module is in the left pane of the lighttable
                                 view (<xref linkend="import"/>). You can either import
@@ -310,9 +310,8 @@
 			</sect3>
 
 			<sect3 status="final"><title>Adjusting tonal values</title>
-				<para>Almost each workflow covers as one basic element the adjustment of 
-                                      tonal values. You will want to control how the image's tonal values cover the available range of your output 
-                                      medium by adjusting global contrast and the overall brightness of your image. darktable offers several alternative modules to take 
+
+                                <para>Almost every workflow is likely to include adjusting the image's tonal range. darktable offers several alternative modules to take 
                                       care of that. The most basic one is the <link linkend="contrast_brightness_saturation"><emphasis>contrast brightness saturation</emphasis></link> module.
                                       In the <link linkend="tone_curve"><emphasis>tone curve</emphasis></link> module, tonal values are adjusted by constructing a 
                                       gradient curve. The <link linkend="levels"><emphasis>levels</emphasis></link> module offers a concise interface, with three 

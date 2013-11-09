@@ -27,15 +27,15 @@
    </para>
 
    <sect1 id="lua_usage"><title>Lua usage</title>
-   <para>In a typical use case you want to define actions which darktable performs whenever certain events are triggered.
-         One example is calling an external application during file export in order to apply additional processing steps outside of darktable.
+   <para>Lua can be used to define actions which darktable should perform whenever a specified event is triggered.
+         One example might be calling an external application during file export in order to apply additional processing steps outside of darktable.
    </para>
    <para>darktable uses <ulink url="http://www.lua.org/"><emphasis>Lua</emphasis></ulink>, which is an
          independent project founded in 1993, providing a powerful, fast, lightweight, embeddable scripting 
-         language. Lua is widely used by many open source applications, in commercial programs, and for game programming.
+         language. Lua is widely used by many open source applications, in commercial programs, and for games programming.
    </para>
 
-   <para>darktable uses Lua version 5.2. Describing the principles and syntax of Lua would be beyond the scope of this usermanual. For a detailed introduction 
+   <para>darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the scope of this usermanual. For a detailed introduction 
          see the <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
    </para>
 
@@ -50,7 +50,7 @@
                <para>The API is incomplete. If you find something missing please report on IRC, in the mailing list, or open a feature request.</para>
             </listitem>
             <listitem>
-               <para>darktable's Lua API is generally limited to the lighttable view. In other words we aim at being able to do with Lua everything that can 
+               <para>darktable's Lua API is for lighttable functions. Our goal is to be able to do with Lua everything that can 
                      be done in the lighttable, but anything that can only be done in darkroom mode is off-limit.</para>
             </listitem>
          </itemizedlist>
@@ -58,7 +58,7 @@
 
       <sect2 id="lua_basic_principles">
          <title>Basic principles</title>
-         <para>At startup, darktable will run two Lua scripts:</para>
+         <para>At startup, darktable will automatically run two Lua scripts:</para>
          <itemizedlist>
             <listitem>
                <para>a script called <emphasis>luarc</emphasis> in <emphasis>$DARKTABLE/share/darktable</emphasis> 
@@ -85,7 +85,7 @@
             </listitem>
          </itemizedlist>
          <para>In other word, if you place a file called <emphasis>c.lua</emphasis> in the directory <emphasis>~/.config/darktable/lua/a/b/</emphasis> then <quote>@require "a.b.c"</quote>
-          will find your script. The normal way to install a script is to copy it in <emphasis>~/.config/darktable/lua/</emphasis> then adding a <quote>require</quote> line to the file 
+          will find your script. The normal way to install a script is to place it in <emphasis>~/.config/darktable/lua/</emphasis> then add a <quote>require</quote> line to the file 
           <emphasis>~/.config/darktable/luarc</emphasis>.</para>
       </sect2>
    </sect1>
@@ -1356,7 +1356,7 @@
 
    <sect1 status="draft" id="lua_scripts">
       <title>Lua scripts</title>
-      <para>This section presents a list of scripts provided by beta testers of the Lua API. There is no guarentee whatsoever that they will work. The API is still in beta and might have changed since the script was uploaded.</para>
+      <para>This section presents a list of scripts provided by beta testers of the Lua API. There is no guarentee whatsoever that they will work as the API is still in beta and might have changed since the script was uploaded.</para>
       <sect2 id="mosaic_lua">
          <title>Simple mosaic script</title>
          
@@ -1422,7 +1422,7 @@ for i=1,buffer_count do
 	end,"save to buffer "..i)
 	dt.register_event("shortcut",function()
 		dt.gui.selection(saved_selection)
-	end,"restor from buffer "..i)
+	end,"restore from buffer "..i)
 end
 
 local bounce_buffer = {}
@@ -1430,33 +1430,33 @@ dt.register_event("shortcut",function()
 	bounce_buffer = dt.gui.selection(bounce_buffer)
 end,"switch selection with temporary buffer")
 </programlisting>
-         <para>This script will add a couple of shortcuts to help manipulate selection.</para>
-         <para>The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might not exist).</para>
-         <para>Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (again, the file might not exist):</para>
+         <para>This script will add two new shortcuts <quote>save to buffer</quote> and <quote>restore from buffer</quote> to help manipulate selections.</para>
+         <para>Save this script in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might need to be created) and
+               add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (the file might need to be created):</para>
 <programlisting>require "save_selection"
 </programlisting>
-         <para>New options will appear under global-&gt;lua. These shortcuts allow you to save and restore the current selection to/from five different save bufffers.</para>
-         <para>There is also a shortcut to exchange the current selection with the content of a fast buffer.</para>
+         <para>Now these new options will appear under global-&gt;lua. and allow you to save and restore the current selection to/from five different save bufffers.
+               The third shortcut <quote>switch selection with temporary buffer</quote> exchanges the current selection with the content of a fast buffer.</para>
       </sect2>
    </sect1>
 
 
    <sect1 status="draft" id="lua_debugging"><title>Lua debugging</title>
          <sect2><title>Enable error logging</title>
-            <para>The first step to debugging Lua is to enable Lua logging. this is done by enabling the Lua logdomain with the command line argument <quote>-d lua</quote>.</para>
+            <para>Start darktable with the command line <quote>darktable -d lua</quote> to enable Lua error logging.</para>
             <itemizedlist>
                <listitem>
-                  <para>Messages printed by a Lua script using darktable.print_error will be visible on the standard out.</para>
+                  <para>messages printed from Lua using <emphasis>darktable.print_error</emphasis> will be visible on the standard out.</para>
                </listitem>
                <listitem>
-                  <para>In case of Lua error, the whole traceback (and not just the error message) will be printed to the console.</para>
+                  <para>for fatal Lua errors the whole traceback (and not just the error message) will be printed to the console.</para>
                </listitem>
             </itemizedlist>
          </sect2>
 
-         <sect2 id="lua_analyzing_data">
-            <title>Analyzing data</title>
-            <para>darktable provides some debugging helpers. Below is an example:</para>
+         <sect2 id="lua_inspecting_internal_objects">
+            <title>Inspecting internal objects</title>
+            <para>darktable provides some debugging helpers which can be called from Lua as per the following example:</para>
 <programlisting>dt_debug = require "darktable.debug"
 dt_debug.debug.debug = true
 
