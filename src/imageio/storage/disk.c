@@ -42,6 +42,7 @@ DT_MODULE(1)
 typedef struct disk_t
 {
   GtkEntry *entry;
+  GtkToggleButton *overwrite_btn;
 }
 disk_t;
 
@@ -91,12 +92,6 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   gtk_widget_destroy (filechooser);
 }
 
-static void
-overwrite_callback (GtkWidget *widget, dt_imageio_module_storage_t *self)
-{
-  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (widget)));
-}
-
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -132,10 +127,9 @@ gui_init (dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  widget = gtk_check_button_new_with_label(_("overwrite"));
-  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (widget),TRUE,FALSE,0);
-  g_signal_connect(widget, "toggled", G_CALLBACK(overwrite_callback),d);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), dt_conf_get_bool("plugins/imageio/storage/disk/overwrite"));
+  d->overwrite_btn = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("overwrite")));
+  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (d->overwrite_btn),TRUE,FALSE,0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 
   g_free(tooltip_text);
 }
@@ -298,7 +292,7 @@ get_params(dt_imageio_module_storage_t *self)
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
   g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
-  d->overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite");
+  d->overwrite = gtk_toggle_button_get_active(g->overwrite_btn);
   return d;
 }
 
@@ -318,7 +312,6 @@ set_params(dt_imageio_module_storage_t *self, const void *params, const int size
   disk_t *g = (disk_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
-  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", d->overwrite);
   return 0;
 }
 
