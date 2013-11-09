@@ -155,18 +155,33 @@ static int trigger_keyed_event(lua_State * L) {
  * shortcut events
  * keyed event with a tuned registration to handle shortcuts
  */
+typedef struct {
+  char* name;
+} shortcut_callback_data;
+static int32_t shortcut_callback_job(struct dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  shortcut_callback_data *t = (shortcut_callback_data*)job->param;
+  lua_pushstring(darktable.lua_state.state,t->name);
+  free(t->name);
+  run_event("shortcut",1);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
 static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable,
     guint keyval,
     GdkModifierType modifier,
     gpointer p)
 {
-  dt_lua_lock();
-  lua_pushstring(darktable.lua_state.state,(char*)p);
-  run_event("shortcut",1);
-  dt_lua_unlock();
+  dt_job_t job;
+  dt_control_job_init(&job, "lua: on export image tmpfile");
+  job.execute = &shortcut_callback_job;
+  shortcut_callback_data *t = (shortcut_callback_data*)job.param;
+  t->name = strdup(p);
+  dt_control_add_job(darktable.control, &job);
   return TRUE;
 }
+
 
 static void closure_destroy(gpointer data,GClosure *closure) {
   free(data);
@@ -421,29 +436,34 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
 }
 #endif
 
+/*
+   called on a signal, from a secondary thread
+   => we have the gdk lock, but the main UI thread can run if we release it
+   */
+
 static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
      gpointer user_data){
-  dt_lua_lock();
+  gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state.state,filename);
   run_event("intermediate-export-image",2);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
-  dt_lua_lock();
+  gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&id);
   run_event("post-import-image",1);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
-  dt_lua_lock();
+  gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
   run_event("post-import-film",1);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 int dt_lua_init_events(lua_State *L) {

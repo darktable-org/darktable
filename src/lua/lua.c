@@ -37,8 +37,8 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
     printf("%s - %s\n",
-           luaL_checkstring(L,-2),
-           lua_typename(L, lua_type(L, -1)));
+        luaL_checkstring(L,-2),
+        lua_typename(L, lua_type(L, -1)));
     /* removes 'value'; keeps 'key' for next iteration */
     lua_pop(L, 1);
   }
@@ -75,24 +75,32 @@ void dt_lua_goto_subtable(lua_State *L,const char* sub_name)
 
 void dt_lua_init_lock()
 {
-    pthread_mutexattr_t a;
-    pthread_mutexattr_init(&a);
-    pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
-    dt_pthread_mutex_init(&darktable.lua_state.mutex,&a);
-    pthread_mutexattr_destroy(&a);
+  pthread_mutexattr_t a;
+  pthread_mutexattr_init(&a);
+  pthread_mutexattr_settype(&a, PTHREAD_MUTEX_RECURSIVE);
+  dt_pthread_mutex_init(&darktable.lua_state.mutex,&a);
+  pthread_mutexattr_destroy(&a);
 }
 
-void dt_lua_lock()
+gboolean dt_lua_lock()
 {
-   if( dt_control_gdk_haslock()) {
-     dt_print(DT_DEBUG_LUA,"LUA WARNING taking the lua lock with the gui lock\n");
-   }
+  gboolean had_lock = dt_control_gdk_haslock();
+  if(had_lock){
+    dt_control_gdk_unlock();
+  }
+  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0) {
+    dt_print(DT_DEBUG_LUA,"LUA WARNING locking from the gui thread should be avoided\n");
+  }
 
   dt_pthread_mutex_lock(&darktable.lua_state.mutex);
+  return had_lock;
 }
-void dt_lua_unlock()
+void dt_lua_unlock(gboolean relock_gdk)
 {
   dt_pthread_mutex_unlock(&darktable.lua_state.mutex);
+  if(relock_gdk) {
+    dt_control_gdk_lock();
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
