@@ -178,7 +178,7 @@ attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   dt_tag_attach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
 
-  dt_collection_hint_message(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 static void
@@ -202,7 +202,7 @@ detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   dt_tag_detach(tagid,imgsel);
   dt_image_synch_xmp(imgsel);
 
-  dt_collection_hint_message(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 static void
@@ -258,7 +258,7 @@ new_button_clicked (GtkButton *button, gpointer user_data)
   /** clear input box */
   gtk_entry_set_text(d->entry, "");
 
-  dt_collection_hint_message(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 static void
@@ -277,7 +277,7 @@ entry_activated (GtkButton *button, gpointer user_data)
   update(self, 0);
   gtk_entry_set_text(d->entry, "");
 
-  dt_collection_hint_message(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 static void
@@ -353,7 +353,7 @@ delete_button_clicked (GtkButton *button, gpointer user_data)
   update(self, 0);
   update(self, 1);
 
-  dt_collection_hint_message(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void
@@ -373,11 +373,17 @@ position ()
 
 static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
 {
-  dt_lib_module_t *self =(dt_lib_module_t *)user_data;
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
   int imgsel = -1;
   DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
   if(imgsel != d->imgsel) update (self, 0);
+}
+
+static void _lib_tagging_tags_changed_callback(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  update(self, 1);
 }
 
 void
@@ -503,6 +509,7 @@ gui_init (dt_lib_module_t *self)
 
   /* connect to mouse over id */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(_lib_tagging_redraw_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
 
   set_keyword(self, d);
 }
@@ -513,6 +520,7 @@ gui_cleanup (dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t*)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   free(self->data);
   self->data = NULL;
 }
@@ -558,6 +566,7 @@ _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t
       update(self, 1);
       update(self, 0);
       gtk_widget_destroy(d->floating_tag_window);
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
       return TRUE;
     }
   }
