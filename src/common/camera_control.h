@@ -161,10 +161,10 @@ typedef struct dt_camctl_listener_t
   void (*control_status)(dt_camctl_status_t status,void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
-  const char * (*request_image_path)(const dt_camera_t *camera,void *data);
+  const char * (*request_image_path)(const dt_camera_t *camera,time_t exif_time,void *data);
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
-  const char * (*request_image_filename)(const dt_camera_t *camera,const char *filename,void *data);
+  const char * (*request_image_filename)(const dt_camera_t *camera,const char *filename,time_t exif_time,void *data);
 
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
