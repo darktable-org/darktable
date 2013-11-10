@@ -22,6 +22,7 @@
 #include "common/camera_control.h"
 #include "control/control.h"
 #include "libraw/libraw.h"
+#include "common/exif.h"
 #include <gphoto2/gphoto2-file.h>
 
 #include <unistd.h>
@@ -98,6 +99,7 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
 const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *filename,const dt_camera_t *camera);
+gboolean _dispatch_request_if_exif_needed(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -106,6 +108,7 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
 int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
+void _dispatch_camera_exif_data_changed(const dt_camctl_t *c,const time_t exif_time, const dt_camera_t *camera);
 
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
@@ -787,6 +790,37 @@ gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
 
 
 
+void _get_exif_time_from_import(const dt_camctl_t *c,const char* folder,const char* filename, const dt_camera_t *cam)
+{
+  CameraFile* file;
+  uint8_t* data;
+  unsigned long size;
+  
+  gp_file_new(&file);
+  gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, file, NULL);
+  
+  gp_file_get_data_and_size(file, (const char**)&data, &size);  
+  dt_image_t img;
+  dt_exif_read_from_blob(&img, data, size);
+  
+  gp_file_free(file);
+  
+  struct tm exif_tm= {0};
+  sscanf(img.exif_datetime_taken,"%d:%d:%d %d:%d:%d",
+             &exif_tm.tm_year,
+             &exif_tm.tm_mon,
+             &exif_tm.tm_mday,
+             &exif_tm.tm_hour,
+             &exif_tm.tm_min,
+             &exif_tm.tm_sec);
+  exif_tm.tm_year -= 1900;
+  exif_tm.tm_mon--;
+  time_t exif_time = mktime(&exif_tm);
+  
+  _dispatch_camera_exif_data_changed(c, exif_time, cam);
+}
+
+
 void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 {
   //dt_camctl_t *camctl=(dt_camctl_t *)c;
@@ -794,7 +828,6 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
 
   GList *ifile=g_list_first(images);
 
-  const char *output_path=_dispatch_request_image_path(c,cam);
   if(ifile)
     do
     {
@@ -810,6 +843,10 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
       g_strlcat(filename, eos+1, DT_MAX_PATH_LEN);
       g_free(_file);
 
+      if (_dispatch_request_if_exif_needed(c,cam)) {
+        _get_exif_time_from_import(c, folder, filename, cam);
+      }
+      const char *output_path=_dispatch_request_image_path(c,cam);
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname)
         continue;
@@ -1439,7 +1476,6 @@ const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *fi
   return path;
 }
 
-
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
@@ -1456,6 +1492,24 @@ const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t 
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
   return path;
 }
+
+gboolean _dispatch_request_if_exif_needed(const dt_camctl_t *c,const dt_camera_t *camera)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  GList *listener;
+  gboolean needs_exif=FALSE;
+  dt_pthread_mutex_lock(&camctl->listeners_lock);
+  if((listener=g_list_first(camctl->listeners))!=NULL)
+    do
+    {
+      if( ((dt_camctl_listener_t*)listener->data)->request_if_exif_needed != NULL )
+        needs_exif=((dt_camctl_listener_t*)listener->data)->request_if_exif_needed(camera,((dt_camctl_listener_t*)listener->data)->data);
+    }
+    while((listener=g_list_next(listener))!=NULL);
+  dt_pthread_mutex_unlock(&camctl->listeners_lock);
+  return needs_exif;
+}
+
 
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera)
 {
@@ -1575,6 +1629,21 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
     {
       if( ((dt_camctl_listener_t*)listener->data)->camera_error != NULL )
         ((dt_camctl_listener_t*)listener->data)->camera_error(camera,error,((dt_camctl_listener_t*)listener->data)->data);
+    }
+    while((listener=g_list_next(listener))!=NULL);
+  dt_pthread_mutex_unlock(&camctl->listeners_lock);
+}
+
+void _dispatch_camera_exif_data_changed(const dt_camctl_t *c,const time_t exif_time, const dt_camera_t *camera)
+{
+  dt_camctl_t *camctl=(dt_camctl_t *)c;
+  GList *listener;
+  dt_pthread_mutex_lock(&camctl->listeners_lock);
+  if((listener=g_list_first(camctl->listeners))!=NULL)
+    do
+    {
+      if( ((dt_camctl_listener_t*)listener->data)->camera_exif_data_changed != NULL )
+        ((dt_camctl_listener_t*)listener->data)->camera_exif_data_changed(camera,exif_time,((dt_camctl_listener_t*)listener->data)->data);
     }
     while((listener=g_list_next(listener))!=NULL);
   dt_pthread_mutex_unlock(&camctl->listeners_lock);

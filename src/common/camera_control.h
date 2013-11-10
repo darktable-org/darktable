@@ -165,6 +165,9 @@ typedef struct dt_camctl_listener_t
 
   /** Invoked before images are fetched from camera and when tethered capture fetching an image. \note That only one listener should implement this at time... */
   const char * (*request_image_filename)(const dt_camera_t *camera,const char *filename,void *data);
+  
+  /** Invoked before fetching an image from the camera. */
+  gboolean (*request_if_exif_needed)(const dt_camera_t *camera,void *data);
 
   /** Invoked when a image is downloaded while in tethered mode or  by import */
   void (*image_downloaded)(const dt_camera_t *camera,const char *filename,void *data);
@@ -176,6 +179,9 @@ typedef struct dt_camctl_listener_t
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
   /** Invoked when accessibility of a property is changed. */
   void (*camera_property_accessibility_changed)(const dt_camera_t *camera,const char *name,gboolean read_only,void *data);
+  /** Invoked when fetching an image from the camera. */
+  void (*camera_exif_data_changed)(const dt_camera_t *camera,time_t exif_time,void *data);
+
 
   /** Invoked from dt_camctl_detect_cameras() when a new camera is connected */
   void (*camera_connected)(const dt_camera_t *camera,void *data);
