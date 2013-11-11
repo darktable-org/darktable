@@ -871,11 +871,11 @@ void dt_control_quit()
 #endif
 
 #ifdef USE_LUA
-  if(darktable.lua_state)
+  if(darktable.lua_state.state)
   {
-    lua_close(darktable.lua_state);
+    lua_close(darktable.lua_state.state);
     luaA_close();
-    darktable.lua_state = NULL;
+    darktable.lua_state.state = NULL;
   }
 #endif
   dt_gui_gtk_quit();
@@ -1672,6 +1672,14 @@ void dt_control_gdk_unlock()
     gdk_threads_leave();
   }
   dt_pthread_mutex_unlock(&_control_gdk_lock_threads_mutex);
+}
+
+gboolean dt_control_gdk_haslock()
+{
+  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0)
+    return TRUE;
+  return _control_gdk_lock_mine;
+  
 }
 
 void dt_control_queue_redraw()

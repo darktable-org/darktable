@@ -722,17 +722,27 @@ int dt_collection_image_offset(int imgid)
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t*)user_data;
+  int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection);
   if(!collection->clone)
+  {
+    if(old_count != collection->count)
+      dt_collection_hint_message(collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
 }
 
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t*)user_data;
+  int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection);
   if(!collection->clone)
+  {
+    if(old_count != collection->count)
+      dt_collection_hint_message(collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

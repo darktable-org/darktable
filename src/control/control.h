@@ -111,6 +111,9 @@ gboolean dt_control_gdk_lock();
 /** \brief smart wrapper for leaving a gdk critical section */
 void dt_control_gdk_unlock();
 
+/** \brief returns true if we have the gdk lock */
+gboolean dt_control_gdk_haslock();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
 

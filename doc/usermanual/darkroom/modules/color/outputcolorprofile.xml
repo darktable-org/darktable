@@ -116,8 +116,9 @@
                            <primary>display profile</primary>
                         </indexterm>
 
-          		<para>Sets the color profile for the display. The additional option <quote>system display profile</quote> is taken directly from your system's
-                        color manager or from your X Server. When working with a calibrated display this is the preferred option to choose.</para>
+          		<para>Sets the color profile for the display. The additional option <quote>system display profile</quote> is the preferred setting 
+                        when working with a calibrated display; the profile is taken either from your system's color manager or from your X display server.
+                        In <emphasis>gui options</emphasis> (see <xref linkend="gui_options"/>) you can specify which method to use.</para>
                 </sect5>
 	</sect4>
 </sect3>

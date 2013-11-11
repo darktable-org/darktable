@@ -87,26 +87,26 @@ int dt_lua_dofile(lua_State *L,const char* filename)
 
 static gboolean poll_events(gpointer data)
 {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
-  lua_pushlightuserdata(darktable.lua_state,data);
-  lua_gettable(darktable.lua_state,-2);
-  if(lua_isnoneornil(darktable.lua_state,-1)) {
-    lua_pop(darktable.lua_state,2);
-    luaL_error(darktable.lua_state,"Unknown thread was called for delay action");
+  lua_getfield(darktable.lua_state.state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
+  lua_pushlightuserdata(darktable.lua_state.state,data);
+  lua_gettable(darktable.lua_state.state,-2);
+  if(lua_isnoneornil(darktable.lua_state.state,-1)) {
+    lua_pop(darktable.lua_state.state,2);
+    luaL_error(darktable.lua_state.state,"Unknown thread was called for delay action");
     return FALSE;
   }
-  lua_State * L = lua_tothread(darktable.lua_state,-1);
+  lua_State * L = lua_tothread(darktable.lua_state.state,-1);
   dt_lua_do_chunk(L,lua_gettop(L) -1,0);
-  lua_pushlightuserdata(darktable.lua_state,data);
-  lua_pushnil(darktable.lua_state);
-  lua_settable(darktable.lua_state,-4);
-  lua_pop(darktable.lua_state,2);
+  lua_pushlightuserdata(darktable.lua_state.state,data);
+  lua_pushnil(darktable.lua_state.state);
+  lua_settable(darktable.lua_state.state,-4);
+  lua_pop(darktable.lua_state.state,2);
   return FALSE;
 }
 
 
 void dt_lua_delay_chunk(lua_State *L,int nargs) {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
+  lua_getfield(darktable.lua_state.state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
   lua_State * new_thread = lua_newthread(L);
   lua_pushlightuserdata(L,new_thread);
   lua_insert(L,-2);
@@ -121,7 +121,7 @@ void dt_lua_delay_chunk(lua_State *L,int nargs) {
 
 int dt_lua_init_call(lua_State *L) {
   lua_newtable(L);
-  lua_setfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
+  lua_setfield(darktable.lua_state.state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
   return 0;
 }
 

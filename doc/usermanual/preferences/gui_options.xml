@@ -76,6 +76,12 @@
 		</para>
         </sect4>
 
+	<sect4><title>indicate focus regions</title>
+		<para>If enabled an overlay indicating image sharpness is displayed in full screen preview in lighttable mode (<quote>z</quote>-option, see <xref linkend="lighttable_overview"/>).
+                Very sharp areas are indicated in red; slightly less sharp areas in blue (default off).
+		</para>
+        </sect4>
+
 	<sect4><title>enable filmstrip</title>
 		<para>Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
 		</para>
@@ -128,5 +134,11 @@
                 <para>Controls how darkroom modules are expanded. If this option is enabled, expanding a module by <emphasis>clicking</emphasis> collapses any currently expanded module.
                 If you want to expand a module without collapsing the others you do so with <emphasis>shift+click</emphasis>. Disabling this option reverts the meaning of <emphasis>click</emphasis>
                 and <emphasis>shift+click</emphasis> (default on).</para>
+        </sect4>
+
+        <sect4><title>method to use for getting the display profile</title>
+                <para>This option allows to force a specific means of getting the current display profile in the output color profile module (see <xref linkend="output_color_profile"/>). 
+                In the default setting <quote>all</quote> darktable will either query the X display server's xatom or the <emphasis>colord</emphasis> system service. You can set this option to
+                <quote>xatom</quote> or <quote>colord</quote> to enforce a specific method if the alternative gives wrong results.</para>
         </sect4>
 </sect1>

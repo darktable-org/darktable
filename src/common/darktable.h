@@ -209,7 +209,7 @@ typedef struct darktable_t
   char *tmpdir;
   char *configdir;
   char *cachedir;
-  lua_State *lua_state;
+  dt_lua_state_t lua_state;
 }
 darktable_t;
 
