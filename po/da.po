@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-05 18:46+0100\n"
-"PO-Revision-Date: 2013-11-05 18:56+0100\n"
+"POT-Creation-Date: 2013-11-11 09:27+0100\n"
+"PO-Revision-Date: 2013-11-11 09:29+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da_DK\n"
@@ -637,13 +637,13 @@ msgstr ""
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1238
-#: ../src/libs/collect.c:1240
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1259
+#: ../src/libs/collect.c:1261
 msgid "red"
 msgstr "rød"
 
 #: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1244 ../src/libs/collect.c:1246
+#: ../src/libs/collect.c:1265 ../src/libs/collect.c:1267
 msgid "yellow"
 msgstr "gul"
 
@@ -651,8 +651,8 @@ msgstr "gul"
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1250
-#: ../src/libs/collect.c:1252
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1271
+#: ../src/libs/collect.c:1273
 msgid "green"
 msgstr "grøn"
 
@@ -660,19 +660,19 @@ msgstr "grøn"
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1256
-#: ../src/libs/collect.c:1258
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1277
+#: ../src/libs/collect.c:1279
 msgid "blue"
 msgstr "blå"
 
-#: ../src/common/collection.c:483 ../src/libs/collect.c:1262
-#: ../src/libs/collect.c:1264
+#: ../src/common/collection.c:483 ../src/libs/collect.c:1283
+#: ../src/libs/collect.c:1285
 msgid "purple"
 msgstr "lilla"
 
 #. history
-#: ../src/common/collection.c:490 ../src/libs/collect.c:1222
-#: ../src/libs/collect.c:1224
+#: ../src/common/collection.c:490 ../src/libs/collect.c:1243
+#: ../src/libs/collect.c:1245
 msgid "altered"
 msgstr "ændret"
 
@@ -856,11 +856,11 @@ msgstr "stil %s blev succesfuldt importeret"
 msgid "none"
 msgstr "intet"
 
-#: ../src/control/control.c:1436 ../src/control/control.c:1439
+#: ../src/control/control.c:1440 ../src/control/control.c:1443
 msgid "working.."
 msgstr "arbejder.."
 
-#: ../src/control/control.c:1522
+#: ../src/control/control.c:1526
 #, c-format
 msgid "switch to %s mode"
 msgstr "skift til %s tilstand"
@@ -1585,7 +1585,7 @@ msgstr "flyt ned"
 
 #. delete
 #: ../src/develop/imageop.c:1201 ../src/libs/image.c:146
-#: ../src/libs/styles.c:396 ../src/libs/tagging.c:488
+#: ../src/libs/styles.c:396 ../src/libs/tagging.c:494
 msgid "delete"
 msgstr "slet"
 
@@ -2981,95 +2981,99 @@ msgstr "mørk kontrast"
 
 #: ../src/iop/basecurve.c:99
 msgid "canon EOS like"
-msgstr "canon EOS agtig"
+msgstr "canon EOS-agtig"
 
 #: ../src/iop/basecurve.c:100
 msgid "canon EOS like alternate"
-msgstr "canon EOS agtig alternativ"
+msgstr "canon EOS-agtig alternativ"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
-msgstr "nikon agtig"
+msgstr "nikon-agtig"
 
 #: ../src/iop/basecurve.c:102
 msgid "nikon like alternate"
-msgstr "nikon agtig alternativ"
+msgstr "nikon-agtig alternativ"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
-msgstr "sony alpha agtig"
+msgstr "sony alpha-agtig"
 
 #: ../src/iop/basecurve.c:104
 msgid "pentax like"
-msgstr "pentax agtig"
+msgstr "pentax-agtig"
 
 #: ../src/iop/basecurve.c:105
 msgid "ricoh like"
-msgstr "ricoh agtig"
+msgstr "ricoh-agtig"
 
 #: ../src/iop/basecurve.c:106
 msgid "olympus like"
-msgstr "olympus agtig"
+msgstr "olympus-agtig"
 
 #: ../src/iop/basecurve.c:107
 msgid "olympus like alternate"
-msgstr "olympus agtig alternativ"
+msgstr "olympus-agtig alternativ"
 
 #: ../src/iop/basecurve.c:108
 msgid "panasonic like"
-msgstr "panasonic agtig"
+msgstr "panasonic-agtig"
 
 #: ../src/iop/basecurve.c:109
 msgid "leica like"
-msgstr "leica agtig"
+msgstr "leica-agtig"
 
 #: ../src/iop/basecurve.c:110
 msgid "kodak easyshare like"
-msgstr "kodak easyshare agtig"
+msgstr "kodak easyshare-agtig"
 
 #: ../src/iop/basecurve.c:111
 msgid "konica minolta like"
-msgstr "konica minolta agtig"
+msgstr "konica minolta-agtig"
 
 #: ../src/iop/basecurve.c:112
 msgid "samsung like"
-msgstr "samsung agtig"
+msgstr "samsung-agtig"
 
 #: ../src/iop/basecurve.c:113
 msgid "fujifilm like"
-msgstr "fujifilm agtig"
+msgstr "fujifilm-agtig"
 
 #: ../src/iop/basecurve.c:114
+msgid "nokia like"
+msgstr "nokia-agtig"
+
+#: ../src/iop/basecurve.c:115
 msgid "fotogenetic (point & shoot)"
 msgstr "fotogenerisk (point & shoot)"
 
-#: ../src/iop/basecurve.c:115
+#: ../src/iop/basecurve.c:116
 msgid "fotogenetic (EV3)"
 msgstr "fotogenerisk (EV3)"
 
-#: ../src/iop/basecurve.c:196
+#: ../src/iop/basecurve.c:198
 msgid "base curve"
 msgstr "grundkurve"
 
-#: ../src/iop/basecurve.c:759
+#: ../src/iop/basecurve.c:761
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse: input, ordinat: output. virker på RGB-kanaler"
 
-#: ../src/iop/basecurve.c:767 ../src/iop/lens.c:1920
+#: ../src/iop/basecurve.c:769 ../src/iop/lens.c:1920
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1050
 msgid "scale"
 msgstr "skalér"
 
-#: ../src/iop/basecurve.c:768 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:770 ../src/iop/profile_gamma.c:125
 #: ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "lineær"
 
-#: ../src/iop/basecurve.c:769
+#: ../src/iop/basecurve.c:771
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:770
+#: ../src/iop/basecurve.c:772
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -6150,48 +6154,52 @@ msgstr "synk..."
 msgid "remove..."
 msgstr "fjern..."
 
-#: ../src/libs/collect.c:1228 ../src/libs/collect.c:1230
+#: ../src/libs/collect.c:1057
+msgid "uncategorized"
+msgstr ""
+
+#: ../src/libs/collect.c:1249 ../src/libs/collect.c:1251
 msgid "not altered"
 msgstr "ikke ændret"
 
-#: ../src/libs/collect.c:1427
+#: ../src/libs/collect.c:1448
 msgid "local HDD"
 msgstr "lokal harddisk"
 
-#: ../src/libs/collect.c:1513 ../src/libs/collect.c:1527
-#: ../src/libs/collect.c:1916
+#: ../src/libs/collect.c:1534 ../src/libs/collect.c:1548
+#: ../src/libs/collect.c:1937
 msgid "clear this rule"
 msgstr "fjern denne regel"
 
-#: ../src/libs/collect.c:1518
+#: ../src/libs/collect.c:1539
 msgid "clear this rule or add new rules"
 msgstr "fjern denne regel eller tilføj nye regler"
 
-#: ../src/libs/collect.c:1922
+#: ../src/libs/collect.c:1943
 msgid "narrow down search"
 msgstr "indsnævr søgning"
 
-#: ../src/libs/collect.c:1926
+#: ../src/libs/collect.c:1947
 msgid "add more images"
 msgstr "tilføj flere billeder"
 
-#: ../src/libs/collect.c:1930
+#: ../src/libs/collect.c:1951
 msgid "exclude images"
 msgstr "ekskludér billeder"
 
-#: ../src/libs/collect.c:1936
+#: ../src/libs/collect.c:1957
 msgid "change to: and"
 msgstr "ændr til: og"
 
-#: ../src/libs/collect.c:1940
+#: ../src/libs/collect.c:1961
 msgid "change to: or"
 msgstr "ændr til: eller"
 
-#: ../src/libs/collect.c:1944
+#: ../src/libs/collect.c:1965
 msgid "change to: except"
 msgstr "ændr til: undtagen"
 
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:2012
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "indtast din forespørgsel, brug `%' som jokertegn"
@@ -7564,7 +7572,7 @@ msgstr[1] ""
 msgid "delete tag?"
 msgstr "slet mærke?"
 
-#: ../src/libs/tagging.c:417
+#: ../src/libs/tagging.c:423
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -7572,27 +7580,27 @@ msgstr ""
 "fastgjorte mærker,\n"
 "dobbeltklik for at frigøre"
 
-#: ../src/libs/tagging.c:424
+#: ../src/libs/tagging.c:430
 msgid "attach"
 msgstr "fastgør"
 
-#: ../src/libs/tagging.c:426
+#: ../src/libs/tagging.c:432
 msgid "attach tag to all selected images"
 msgstr "fastgør mærke til alle valgte billeder"
 
-#: ../src/libs/tagging.c:431
+#: ../src/libs/tagging.c:437
 msgid "detach"
 msgstr "frigør"
 
-#: ../src/libs/tagging.c:433
+#: ../src/libs/tagging.c:439
 msgid "detach tag from all selected images"
 msgstr "frigør mærke fra alle valgte billeder"
 
-#: ../src/libs/tagging.c:446
+#: ../src/libs/tagging.c:452
 msgid "enter tag name"
 msgstr "skriv mærkenavn"
 
-#: ../src/libs/tagging.c:474
+#: ../src/libs/tagging.c:480
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -7600,11 +7608,11 @@ msgstr ""
 "relaterede mærker,\n"
 "dobbeltklik for at fastgøre"
 
-#: ../src/libs/tagging.c:481
+#: ../src/libs/tagging.c:487
 msgid "new"
 msgstr "nyt"
 
-#: ../src/libs/tagging.c:483
+#: ../src/libs/tagging.c:489
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -7612,7 +7620,7 @@ msgstr ""
 "opret et nyt mærke med det\n"
 "navn du skrev"
 
-#: ../src/libs/tagging.c:490
+#: ../src/libs/tagging.c:496
 msgid "delete selected tag"
 msgstr "slet valgt mærke"
 
