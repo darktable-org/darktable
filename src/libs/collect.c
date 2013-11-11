@@ -120,8 +120,7 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
-static void
-selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d);
+static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
 /* Update the params struct with active ruleset */
 static void _lib_collect_update_params(dt_lib_collect_t *d)
@@ -1471,8 +1470,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       gtk_tree_view_set_enable_search(tree, TRUE);
       gtk_tree_view_set_search_column (tree, DT_LIB_COLLECT_COL_PATH);
 
-      GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
-      g_signal_connect(selection, "changed", G_CALLBACK(selection_change), d);
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
       g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
       g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
 
@@ -1594,11 +1592,12 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
 }
 
 static void
-selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d)
+row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
 
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   gchar *text;
 
@@ -2031,9 +2030,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  //g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->view);
-  g_signal_connect(selection, "changed", G_CALLBACK(selection_change), d);
+  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
