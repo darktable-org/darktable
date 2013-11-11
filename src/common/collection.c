@@ -473,7 +473,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
-      if(strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      if(strlen(escaped_text)==0 || strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
       else
       {
         if     (strcmp(escaped_text,_("red")   )==0) color=0;
