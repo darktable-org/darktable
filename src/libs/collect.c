@@ -481,8 +481,8 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       }
       g_free(query);
 
-      /* reset filter to display all images, otherwise view may remain empty */
-      dt_view_filter_reset_to_show_all(darktable.view_manager);
+      /* reset filter so that view isn't empty */
+      dt_view_filter_reset(darktable.view_manager, FALSE);
 
       /* update collection to view missing filmroll */
       _lib_folders_update_collection(new_path);
