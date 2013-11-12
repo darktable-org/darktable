@@ -31,9 +31,6 @@ int dt_lua_dofile(lua_State *L,const char* filename);
 /** directly run a lua chunk */
 int dt_lua_do_chunk(lua_State *L,int nargs,int nresults);
 
-/** queue a lua call for "later" (next gtk_idle) */
-void dt_lua_delay_chunk(lua_State *L,int nargs);
-
 
 int dt_lua_init_call(lua_State *L);
 
