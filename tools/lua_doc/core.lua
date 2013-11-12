@@ -616,4 +616,6 @@ for k,v in pairs(debug.getregistry().dt_lua_event_list) do
 end
 
 M.toplevel = toplevel
+M.create_documentation_node = create_documentation_node
+M.document_function = document_function
 return M;

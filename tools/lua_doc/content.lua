@@ -501,3 +501,20 @@ attributes.has_equal:set_text([[This object has a specific comparison function t
 attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator]])
 attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it]])
 
+----------------------
+--  SYSTEM          --
+----------------------
+doc.toplevel.system = doc.create_documentation_node(nil,doc.toplevel,"system")
+local system = doc.toplevel.system
+system:set_text([[This section documents changes to system functions]])
+system.yield = doc.document_function(nil,system,"yield");
+system.yield:set_real_name("yield")
+system.yield:set_text([[Lua functions can yield at any point. the parameters and return types depend on why we want to yield
+A callback that is yielding allows other lua code to run.
+
+* wait_ms : one extra parameter, the execution will pause for that many miliseconds. yield returns nothing
+* file_readable : an opened file from a call to the os library. Will return when the file is readable. returns nothing
+* run_command : a command to be run by "sh -c" will return when the command terminates. returns the return code of the execution]])
+system.yield:add_parameter("type","string",[[The type of yield, can be one of "wait_ms", "file_readable", "run_command"]])
+system.yield:add_parameter("extra","variable",[[extra parameter, integer for "wait_ms", open file for "file_readable", string for "run_command"]])
+system.yield:add_return("variable",[[nothing for "wait_ms" and "file_readable", the returned code of the command for "run_command"]])
