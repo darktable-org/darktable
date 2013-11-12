@@ -343,7 +343,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_column_add_attribute (col, renderer, "text", DT_STYLES_COL_NAME);
 
   int ht = get_font_height( GTK_WIDGET (d->list), "Dreggn");
-  gtk_widget_set_size_request (GTK_WIDGET (d->list), -1, 5*ht);
+  gtk_widget_set_size_request (GTK_WIDGET (d->list), -1, 8*ht);
 
   gtk_tree_selection_set_mode (gtk_tree_view_get_selection(GTK_TREE_VIEW(d->list)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model (GTK_TREE_VIEW(d->list), GTK_TREE_MODEL(liststore));
