@@ -1309,11 +1309,39 @@ list_view (dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-      snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso", operator, number);
+      else if(number)
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso", number);
+      else
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_APERTURE: // aperture
-      snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture %s %s order by aperture", operator, number);
+      else if(number)
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture = %s order by aperture", number);
+      else
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;

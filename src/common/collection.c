@@ -454,6 +454,44 @@ GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
   return list;
 }
 
+
+/* splits an input string into a number part and an optional operator part.
+   number can be a decimal integer or rational numerical item.
+   operator can be any of "=", "<", ">", "<=", ">=" and "<>".
+
+   number and operator are returned as pointers to null terminated strings in g_mallocated
+   memory (to be g_free'd after use) - or NULL if no match is found.
+*/
+void
+dt_collection_split_operator_number (const gchar *input, char **number, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  *number = *operator = NULL;
+   
+  regex = g_regex_new("\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 3)
+  {
+    *operator = g_match_info_fetch(match_info, 1);
+    *number = g_match_info_fetch(match_info, 2);
+
+    if(*operator && strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator = NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+} 
+
+
 static void
 get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query)
 {
@@ -524,11 +562,39 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-      snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "(iso %s %s)", operator, number);
+      else if(number)
+        snprintf(query, 1024, "(iso = %s)", number);
+      else
+        snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_APERTURE: // aperture
-      snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "(aperture %s %s)", operator, number);
+      else if(number)
+        snprintf(query, 1024, "(aperture = %s)", number);
+      else
+        snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
       break;
