@@ -88,6 +88,19 @@
           will find your script. The normal way to install a script is to place it in <emphasis>~/.config/darktable/lua/</emphasis> then add a <quote>require</quote> line to the file 
           <emphasis>~/.config/darktable/luarc</emphasis>.</para>
       </sect2>
+      <sect2 id="Yielding from lua code">
+	      <title> "Yielding from lua code"</title>
+
+	      <para>Lua code in DT is allowed to yield (see the yield system call in the lua documentation)
+
+Lua code that yields allows other lua callbacks to run, be aware of that
+
+It is important to yield whenever you have some code that you expect to block to allow other lua code to run.
+
+In particular you should always yield when calling an external program, particularly if it's a long, image processing task.
+
+see LuaAPI for details about the syntax of the yield call in Darktable</para>
+</sect2>
    </sect1>
 
 
