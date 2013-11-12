@@ -1715,6 +1715,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   static char   vimkey_input[256];
   if(darktable.control->vimkey_cnt)
   {
+    guchar unichar = gdk_keyval_to_unicode(key);
     if(key == GDK_KEY_Return)
     {
       if(!strcmp(darktable.control->vimkey, ":q"))
@@ -1741,7 +1742,8 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     else if(key == GDK_KEY_BackSpace)
     {
-      darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
+      darktable.control->vimkey_cnt -= (darktable.control->vimkey + darktable.control->vimkey_cnt) -
+                                       g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
         dt_control_log_ack_all();
@@ -1778,14 +1780,19 @@ int dt_control_key_pressed_override(guint key, guint state)
       }
       dt_control_log(darktable.control->vimkey);
     }
-    else if(key >= ' ' && key <= '~') // printable ascii character
+    else if(g_unichar_isprint(unichar)) // printable unicode character
     {
-      darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
-      darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
-      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
-      dt_control_log(darktable.control->vimkey);
-      g_list_free(autocomplete);
-      autocomplete = NULL;
+      gchar utf8[6];
+      gint char_width = g_unichar_to_utf8(unichar, utf8);
+      if(darktable.control->vimkey_cnt + 1 + char_width < 256)
+      {
+        g_utf8_strncpy(darktable.control->vimkey + darktable.control->vimkey_cnt, utf8, 1);
+        darktable.control->vimkey_cnt += char_width;
+        darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+        dt_control_log(darktable.control->vimkey);
+        g_list_free(autocomplete);
+        autocomplete = NULL;
+      }
     }
     else if(key == GDK_KEY_Up)
     {
