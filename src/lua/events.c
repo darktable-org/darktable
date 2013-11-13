@@ -114,7 +114,7 @@ static int register_keyed_event(lua_State* L) {
   }
   lua_getfield(L,-1,luaL_checkstring(L,3));
   if(!lua_isnil(L,-1)) 
-    return luaL_error(L,"key already registerd for event : %s",luaL_checkstring(L,3));
+    return luaL_error(L,"key already registered for event : %s",luaL_checkstring(L,3));
   lua_pop(L,1);
 
   lua_pushvalue(L,2);

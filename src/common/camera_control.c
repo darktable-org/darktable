@@ -907,7 +907,7 @@ libraw_thumb_fail:
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF,exif,c->gpcontext) < GP_OK )
           {
             exif=NULL;
-            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive exif of file %s\n",filename);
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retrieve exif of file %s\n",filename);
           }
         }
 
