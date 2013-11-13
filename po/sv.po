@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-07 23:14+0100\n"
-"PO-Revision-Date: 2013-11-07 23:20+0100\n"
+"POT-Creation-Date: 2013-11-13 11:40+0100\n"
+"PO-Revision-Date: 2013-11-13 11:44+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: Svenska <>\n"
 "Language: \n"
@@ -205,8 +205,9 @@ msgid "enable filmstrip"
 msgstr "visa filmrulle"
 
 #: ../build/src/preferences_gen.h:1433
-msgid "enable the filmstrip in darkroom and tethering modes."
-msgstr "aktivera visning av filmrulle i vyer som stöder det."
+#, fuzzy
+msgid "enable the filmstrip in darkroom, tethering and map modes."
+msgstr "aktivera visning av filmrulle i mörkrums-, tjudrar samt kartläge."
 
 #: ../build/src/preferences_gen.h:1440
 msgid "maximum width of image drawing area"
@@ -637,50 +638,50 @@ msgstr "okänt suffix ',%s'"
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "kunde inte hämta parametrar från formatmodul, avbryter exporten..."
 
-#: ../src/common/collection.c:479 ../src/develop/lightroom.c:974
+#: ../src/common/collection.c:517 ../src/develop/lightroom.c:974
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1253
-#: ../src/libs/collect.c:1255
+#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1255
+#: ../src/libs/collect.c:1257
 msgid "red"
 msgstr "röd"
 
-#: ../src/common/collection.c:480 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1259 ../src/libs/collect.c:1261
+#: ../src/common/collection.c:518 ../src/develop/lightroom.c:976
+#: ../src/libs/collect.c:1261 ../src/libs/collect.c:1263
 msgid "yellow"
 msgstr "gul"
 
-#: ../src/common/collection.c:481 ../src/develop/lightroom.c:978
+#: ../src/common/collection.c:519 ../src/develop/lightroom.c:978
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1265
-#: ../src/libs/collect.c:1267
+#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1267
+#: ../src/libs/collect.c:1269
 msgid "green"
 msgstr "grön"
 
-#: ../src/common/collection.c:482 ../src/develop/lightroom.c:980
+#: ../src/common/collection.c:520 ../src/develop/lightroom.c:980
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1271
-#: ../src/libs/collect.c:1273
+#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1273
+#: ../src/libs/collect.c:1275
 msgid "blue"
 msgstr "blå"
 
-#: ../src/common/collection.c:483 ../src/libs/collect.c:1277
-#: ../src/libs/collect.c:1279
+#: ../src/common/collection.c:521 ../src/libs/collect.c:1279
+#: ../src/libs/collect.c:1281
 msgid "purple"
 msgstr "lila"
 
 #. history
-#: ../src/common/collection.c:490 ../src/libs/collect.c:1237
-#: ../src/libs/collect.c:1239
+#: ../src/common/collection.c:528 ../src/libs/collect.c:1239
+#: ../src/libs/collect.c:1241
 msgid "altered"
 msgstr "förändrad"
 
-#: ../src/common/collection.c:685
+#: ../src/common/collection.c:751
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -775,7 +776,7 @@ msgstr ""
 "misslyckades med att tilldela minne för export, var god och minska antalet "
 "trådar som används för export eller köp mer minne."
 
-#: ../src/common/imageio.c:616 ../src/common/mipmap_cache.c:1153
+#: ../src/common/imageio.c:616 ../src/common/mipmap_cache.c:1163
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "bild `%s' är inte tillgänglig"
@@ -858,11 +859,11 @@ msgstr "importerade stilen '%s'"
 msgid "none"
 msgstr "ingen"
 
-#: ../src/control/control.c:1436 ../src/control/control.c:1439
+#: ../src/control/control.c:1440 ../src/control/control.c:1443
 msgid "working.."
 msgstr "arbetar.."
 
-#: ../src/control/control.c:1522
+#: ../src/control/control.c:1526
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
@@ -1590,7 +1591,7 @@ msgstr "flytta ner"
 
 #. delete
 #: ../src/develop/imageop.c:1201 ../src/libs/image.c:146
-#: ../src/libs/styles.c:396 ../src/libs/tagging.c:488
+#: ../src/libs/styles.c:396 ../src/libs/tagging.c:494
 msgid "delete"
 msgstr "radera"
 
@@ -6143,73 +6144,73 @@ msgstr ""
 msgid "collect images"
 msgstr "samling av bilder"
 
-#: ../src/libs/collect.c:416
+#: ../src/libs/collect.c:415
 msgid "search filmroll"
 msgstr "sök filmrulle"
 
-#: ../src/libs/collect.c:504
+#: ../src/libs/collect.c:503
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problem med att välja ny sökväg för filmrullen i %s"
 
-#: ../src/libs/collect.c:543
+#: ../src/libs/collect.c:542
 msgid "search filmroll..."
 msgstr "sök filmrulle..."
 
-#: ../src/libs/collect.c:549
+#: ../src/libs/collect.c:548
 msgid "sync..."
 msgstr "synk..."
 
-#: ../src/libs/collect.c:555
+#: ../src/libs/collect.c:554
 msgid "remove..."
 msgstr "ta bort..."
 
-#: ../src/libs/collect.c:1057
+#: ../src/libs/collect.c:1056
 msgid "uncategorized"
 msgstr "ej kategoriserad"
 
-#: ../src/libs/collect.c:1243 ../src/libs/collect.c:1245
+#: ../src/libs/collect.c:1245 ../src/libs/collect.c:1247
 msgid "not altered"
 msgstr "oförändrad"
 
-#: ../src/libs/collect.c:1442
+#: ../src/libs/collect.c:1472
 msgid "local HDD"
 msgstr "lokal hårddisk"
 
-#: ../src/libs/collect.c:1528 ../src/libs/collect.c:1542
-#: ../src/libs/collect.c:1931
+#: ../src/libs/collect.c:1557 ../src/libs/collect.c:1571
+#: ../src/libs/collect.c:1961
 msgid "clear this rule"
 msgstr "ta bort denna regel"
 
-#: ../src/libs/collect.c:1533
+#: ../src/libs/collect.c:1562
 msgid "clear this rule or add new rules"
 msgstr "rensa denna regel eller skapa en ny"
 
-#: ../src/libs/collect.c:1937
+#: ../src/libs/collect.c:1967
 msgid "narrow down search"
 msgstr "smalna av sökning"
 
-#: ../src/libs/collect.c:1941
+#: ../src/libs/collect.c:1971
 msgid "add more images"
 msgstr "lägg till fler bilder"
 
-#: ../src/libs/collect.c:1945
+#: ../src/libs/collect.c:1975
 msgid "exclude images"
 msgstr "exkludera bilder"
 
-#: ../src/libs/collect.c:1951
+#: ../src/libs/collect.c:1981
 msgid "change to: and"
 msgstr "ändra till: och"
 
-#: ../src/libs/collect.c:1955
+#: ../src/libs/collect.c:1985
 msgid "change to: or"
 msgstr "ändra till: eller"
 
-#: ../src/libs/collect.c:1959
+#: ../src/libs/collect.c:1989
 msgid "change to: except"
 msgstr "ändra till: för utom"
 
-#: ../src/libs/collect.c:2006
+#: ../src/libs/collect.c:2036
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "ange din förfrågan, använd `%' som wildcard"
@@ -7583,7 +7584,7 @@ msgstr[1] ""
 msgid "delete tag?"
 msgstr "ta bort tagg?"
 
-#: ../src/libs/tagging.c:417
+#: ../src/libs/tagging.c:423
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -7591,27 +7592,27 @@ msgstr ""
 "tilllagda taggar,\n"
 "dubbelklicka för att ta bort"
 
-#: ../src/libs/tagging.c:424
+#: ../src/libs/tagging.c:430
 msgid "attach"
 msgstr "lägg till"
 
-#: ../src/libs/tagging.c:426
+#: ../src/libs/tagging.c:432
 msgid "attach tag to all selected images"
 msgstr "lägg till tagg på alla valda bilder"
 
-#: ../src/libs/tagging.c:431
+#: ../src/libs/tagging.c:437
 msgid "detach"
 msgstr "ta bort"
 
-#: ../src/libs/tagging.c:433
+#: ../src/libs/tagging.c:439
 msgid "detach tag from all selected images"
 msgstr "ta bort tagg från alla valda bilder"
 
-#: ../src/libs/tagging.c:446
+#: ../src/libs/tagging.c:452
 msgid "enter tag name"
 msgstr "ange namn för tagg"
 
-#: ../src/libs/tagging.c:474
+#: ../src/libs/tagging.c:480
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -7619,11 +7620,11 @@ msgstr ""
 "relativa taggar,\n"
 "dubbelklicka för att lägga till"
 
-#: ../src/libs/tagging.c:481
+#: ../src/libs/tagging.c:487
 msgid "new"
 msgstr "ny"
 
-#: ../src/libs/tagging.c:483
+#: ../src/libs/tagging.c:489
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -7631,7 +7632,7 @@ msgstr ""
 "skapa en ny tag med\n"
 "namnet du angav"
 
-#: ../src/libs/tagging.c:490
+#: ../src/libs/tagging.c:496
 msgid "delete selected tag"
 msgstr "ta bort vald tagg"
 
