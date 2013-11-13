@@ -570,7 +570,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           break;
         }
     }
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal")))
+         != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
@@ -1101,6 +1106,17 @@ int dt_exif_read_blob(
         g_free(long_str);
         g_free(lat_str);
       }
+
+      // According to the Exif specs DateTime is to be set to the last modification time while DateTimeOriginal is to be kept.
+      // For us "keeping" it means to write out what we have in DB to support people adding a time offset in the geotagging module.
+      gchar new_datetime[20];
+      dt_gettime(new_datetime);
+      exifData["Exif.Image.DateTime"] = new_datetime;
+      exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      // FIXME: What about DateTimeDigitized? we currently update it, too, which might not be what is expected for scanned images
+      exifData["Exif.Photo.DateTimeDigitized"] = cimg->exif_datetime_taken;
+
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
 
