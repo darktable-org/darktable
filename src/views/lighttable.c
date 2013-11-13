@@ -1675,8 +1675,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
 
       //dt_dev_invalidate(darktable.develop);
+      return 1;
     }
-    return 1;
+    return 0;
   }
 
   if(key == accels->lighttable_left.accel_key
