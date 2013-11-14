@@ -141,12 +141,6 @@ int dt_opencl_finish(const int devid);
 /** enqueues a synchronization point. */
 int dt_opencl_enqueue_barrier(const int devid);
 
-/** parse a single token of priority string and store priorities in priority_list */
-void dt_opencl_priority_parse(char *configstr, int *priority_list);
-
-/** parse a complete priority string */
-void dt_opencl_priorities_parse(const char *configstr);
-
 /** locks a device for your thread's exclusive use */
 int dt_opencl_lock_device(const int pipetype);
 
