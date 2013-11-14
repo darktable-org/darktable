@@ -1060,15 +1060,10 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     /* Build outer select criteria */
     gchar *filter_criteria = g_strdup_printf(
-                               "inner join images on s1.imgid=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
-                               img->filename,
+                               "INNER JOIN memory.collected_images AS col ON s1.imgid=col.imgid WHERE col.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid=%d) ORDER BY rowid %s LIMIT 1",
                                (offset > 0) ? ">" : "<",
                                lib->full_preview_id,
-                               (offset > 0) ? ">" : "<",
-                               img->filename,
-                               (offset > 0) ? "" : "DESC",
-                               (offset > 0) ? "" : "DESC");
-
+                               (offset > 0) ? "ASC" : "DESC");
     dt_image_cache_read_release(darktable.image_cache, img);
 
     sqlite3_stmt *stmt;
@@ -1076,7 +1071,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if (sel_img_count > 1)
     {
       stmt_string = g_strdup_printf(
-                      "select images.id as id from (select imgid from selected_images) as s1 %s",
+                      "SELECT col.imgid AS id FROM (SELECT imgid FROM selected_images) AS s1 %s",
                       filter_criteria);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
@@ -1087,7 +1082,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
        * row we need. */
       const char *main_query = sqlite3_sql(lib->statements.main_query);
       stmt_string = g_strdup_printf(
-                      "select images.id as id from (%s) as s1 %s",
+                      "SELECT col.imgid AS id FROM (%s) AS s1 %s",
                       main_query, filter_criteria);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
