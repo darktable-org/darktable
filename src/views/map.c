@@ -50,8 +50,11 @@ typedef struct dt_map_t
   struct
   {
     sqlite3_stmt *main_query;
+    sqlite3_stmt *coll_query;
   } statements;
   gboolean drop_filmstrip_activated;
+  gboolean filter_images_drawn;
+  int max_images_drawn;
 } dt_map_t;
 
 typedef struct dt_map_image_t
@@ -72,6 +75,10 @@ static void _view_map_show_osd(const dt_view_t *view, gboolean enabled);
 static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* wrapper for setting the map source in the GObject */
 static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source);
+/* proxy function to check if preferences have changed */
+static void _view_map_check_preference_change(const dt_view_t *view);
+/* callback when the collection changs */
+static void _view_map_collection_change(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -92,6 +99,10 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
 
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
+
+static gboolean _view_map_is_imgid_in_collection(dt_map_t *lib, int imgid);
+static gboolean _view_map_prefs_changed(dt_map_t *lib);
+static void _view_map_build_main_query(dt_map_t *lib);
 
 const char *name(dt_view_t *self)
 {
@@ -307,23 +318,19 @@ void init(dt_view_t *self)
   }
 
   /* build the query string */
-  int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
-  if(max_images_drawn == 0)
-    max_images_drawn = 100;
-  char *geo_query = g_strdup_printf("select * from (select id, latitude from images where \
-                              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-                              and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-                              limit 0, %d) order by (180 - latitude), id", max_images_drawn);
+  lib->statements.main_query = NULL;
+  _view_map_build_main_query(lib);
 
-  /* prepare the main query statement */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
+  lib->statements.coll_query = NULL;
 
-  g_free(geo_query);
 #ifdef USE_LUA
   int my_typeid = dt_lua_module_get_entry_typeid(darktable.lua_state.state,"view",self->module_name);
   dt_lua_register_type_callback_list_typeid(darktable.lua_state.state,my_typeid,map_index,map_newindex,map_fields_name);
 
 #endif //USE_LUA
+  /* connect collection changed signal */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+      G_CALLBACK(_view_map_collection_change), (gpointer)self);
 }
 
 void cleanup(dt_view_t *self)
@@ -336,6 +343,10 @@ void cleanup(dt_view_t *self)
     // FIXME: it would be nice to cleanly destroy the object, but we are doing this inside expose() so removing the widget can cause segfaults.
 //     g_object_unref(G_OBJECT(lib->map));
   }
+  if(lib->statements.main_query)
+    sqlite3_finalize(lib->statements.main_query);
+  if(lib->statements.coll_query)
+    sqlite3_finalize(lib->statements.coll_query);
   free(self->data);
 }
 
@@ -360,6 +371,7 @@ static gboolean _view_map_redraw(gpointer user_data)
 static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
+  int i=0;
 
   OsmGpsMapPoint bb[2];
 
@@ -388,6 +400,10 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   dt_conf_set_float("plugins/map/latitude", center_lat);
   dt_conf_set_int("plugins/map/zoom", zoom);
 
+  /* check if the prefs have changed and rebuild main_query if needed */
+  if(_view_map_prefs_changed(lib))
+    _view_map_build_main_query(lib);
+
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
   DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
@@ -411,14 +427,17 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
-  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+  while(i<lib->max_images_drawn && sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
+    if(lib->filter_images_drawn && !_view_map_is_imgid_in_collection(lib, imgid))
+      continue;
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
 
     if(buf.buf)
     {
+      i++;
       GdkPixbuf *source = NULL, *thumb = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
@@ -650,6 +669,7 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
   darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;
   darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
+  darktable.view_manager->proxy.map.check_preference_change = _view_map_check_preference_change;
 
   /* restore last zoom,location in map */
   float lon = dt_conf_get_float("plugins/map/longitude");
@@ -786,6 +806,32 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
   lib->map_source = map_source;
   dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
   _view_map_set_map_source_g_object(view, map_source);
+}
+
+static void _view_map_check_preference_change(const dt_view_t *view)
+{
+  dt_map_t *lib = (dt_map_t*)view->data;
+
+  if(_view_map_prefs_changed(lib))
+    g_signal_emit_by_name(lib->map, "changed");
+}
+
+static void _view_map_collection_change(gpointer instance, gpointer user_data)
+{
+  dt_view_t *view = (dt_view_t*)user_data;
+  dt_map_t *lib = (dt_map_t*)view->data;
+
+  if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
+  {
+    /* force build new query */
+    if(lib->statements.coll_query)
+      sqlite3_finalize(lib->statements.coll_query);
+    lib->statements.coll_query = NULL;
+
+    /* only redraw when map mode is cuurently active, otherwise enter() does the magic */
+    if(darktable.view_manager->proxy.map.view)
+      g_signal_emit_by_name(lib->map, "changed");
+  }
 }
 
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)
@@ -966,6 +1012,92 @@ static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext 
   g_signal_emit_by_name(lib->map, "changed");
 
   return TRUE;
+}
+
+static gboolean _view_map_is_imgid_in_collection(dt_map_t *lib, int imgid)
+{
+  uint32_t count=1;
+  const dt_collection_t *collection = darktable.collection;
+  const gchar *query = dt_collection_get_query(collection);
+  gchar *count_query = NULL;
+
+  if(lib->statements.coll_query==NULL)
+  {
+    /* prepare new query */
+    gchar *fw = g_strstr_len(query, strlen(query), "where") + 6;
+    gchar *qq = NULL;
+    
+    qq = dt_util_dstrcat(qq, "id=?3 and %s", fw);
+
+    if ((collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
+      count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s and id=?3", collection->where_ext);
+    else
+      count_query = dt_util_dstrcat(count_query, "select count(id) from images where %s", qq);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &lib->statements.coll_query, NULL);
+    g_free(qq);
+    g_free(count_query);
+  }
+  else
+  {
+    /* reuse existing query */
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.coll_query);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.coll_query);
+  }
+
+  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) &&
+      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
+  {
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 1, 0);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 2, -1);
+  }
+  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 3, imgid);
+
+  if(sqlite3_step(lib->statements.coll_query) == SQLITE_ROW)
+    count = sqlite3_column_int(lib->statements.coll_query, 0);
+  return count>0;
+}
+
+static gboolean _view_map_prefs_changed(dt_map_t *lib)
+{
+  gboolean prefs_changed = FALSE;
+  int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
+  gboolean filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
+
+  if(lib->max_images_drawn!=max_images_drawn)
+    prefs_changed=TRUE;
+  if(lib->filter_images_drawn!=filter_images_drawn)
+    prefs_changed=TRUE;
+
+  return prefs_changed;
+}
+
+static void _view_map_build_main_query(dt_map_t *lib)
+{
+  char *limit;
+  char *geo_query;
+
+  if(lib->statements.main_query)
+    sqlite3_finalize(lib->statements.main_query);
+
+  lib->max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
+  if(lib->max_images_drawn == 0)
+    lib->max_images_drawn = 100;
+  lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
+  if(lib->filter_images_drawn)
+    limit = g_strdup("");
+  else
+    limit = g_strdup_printf("limit 0, %d", lib->max_images_drawn);
+  geo_query = g_strdup_printf("select * from (select id, latitude from images where \
+              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
+      and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
+      %s) order by (180 - latitude), id", limit);
+
+  /* prepare the main query statement */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
+
+  g_free(limit);
+  g_free(geo_query);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
