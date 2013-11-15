@@ -1051,32 +1051,28 @@ int dt_exif_read_blob(
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.ImageDescription"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
       if(res != NULL)
       {
         exifData["Exif.Photo.UserComment"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);

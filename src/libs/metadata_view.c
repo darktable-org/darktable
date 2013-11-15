@@ -277,8 +277,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
     else
       snprintf(value, vl, NODATA_STRING);
@@ -288,8 +287,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
     else
       snprintf(value, vl, NODATA_STRING);
@@ -299,8 +297,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       snprintf(value, vl, "%s", (char*)res->data);
       _filter_non_printable(value, vl);
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
     else
       snprintf(value, vl, NODATA_STRING);

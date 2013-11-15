@@ -524,8 +524,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
     if( res )
     {
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
 
     res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
@@ -537,8 +536,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
     if( res )
     {
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
 
     res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
@@ -550,8 +548,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
     if( res )
     {
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
 
     res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
@@ -563,8 +560,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
     if( res )
     {
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
 
     res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
@@ -576,8 +572,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
     if( res )
     {
-      g_free(res->data);
-      g_list_free(res);
+      g_list_free_full(res, &g_free);
     }
 
   }
