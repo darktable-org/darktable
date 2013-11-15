@@ -906,9 +906,9 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
-      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
-      dt_bauhaus_combobox_add(g->cbox3, _("linear RGB"));
-      dt_bauhaus_combobox_add(g->cbox5, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear Rec709 RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {

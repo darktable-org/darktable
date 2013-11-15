@@ -662,9 +662,9 @@ dt_colorspaces_create_linear_rgb_profile(void)
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "linear rgb");
+  cmsMLUsetASCII(mlu1, "en", "US", "linear rec709 rgb");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear RGB");
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear Rec709 RGB");
   cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
   cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
@@ -703,7 +703,7 @@ dt_colorspaces_create_linear_infrared_profile(void)
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "linear infrared bgr");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable Linear Infrared RGB");
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable Linear Infrared BGR");
   cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
   cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP

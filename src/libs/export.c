@@ -567,7 +567,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear RGB"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 

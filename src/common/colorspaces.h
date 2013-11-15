@@ -27,7 +27,7 @@ cmsHPROFILE dt_colorspaces_create_lab_profile();
 /** create the ICC virtual profile for srgb space. */
 cmsHPROFILE dt_colorspaces_create_srgb_profile(void);
 
-/** create the ICC virtual profile for linear rgb space. */
+/** create the ICC virtual profile for linear rec709 rgb space. */
 cmsHPROFILE dt_colorspaces_create_linear_rgb_profile(void);
 
 /** create the ICC virtual profile for linear infrared bgr space. */

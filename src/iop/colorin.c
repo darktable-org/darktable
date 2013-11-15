@@ -472,7 +472,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // user selected a non-supported output profile, check that:
   if(!d->xform[0] && d->cmatrix[0] == -666.0f)
   {
-    dt_control_log(_("unsupported input profile has been replaced by linear RGB!"));
+    dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     d->input = dt_colorspaces_create_linear_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
@@ -754,7 +754,7 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -786,7 +786,7 @@ static void update_profile_list(dt_iop_module_t *self)
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
     else if(!strcmp(prof->name, "linear_rgb"))
-      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -811,7 +811,7 @@ void gui_init(struct dt_iop_module_t *self)
   // the profiles that are available for every image
   int pos = -1;
 
-  // add linear RGB profile:
+  // add linear Rec709 RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
   g_strlcpy(prof->name, "linear_rgb", sizeof(prof->name));
