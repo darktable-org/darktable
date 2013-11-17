@@ -406,7 +406,7 @@ void dt_ctl_set_display_profile()
 #endif
 
   int profile_changed = buffer_size > 0 &&
-                        (darktable.control->xprofile_size != buffer_size || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
+                        (darktable.control->xprofile_size != buffer_size || (buffer && memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0));
   if(profile_changed)
   {
     // thanks to ufraw for this!
