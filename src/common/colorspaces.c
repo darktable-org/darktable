@@ -925,6 +925,53 @@ dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **mod
   (*modelo)++;
 }
 
+void
+dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name, size_t len)
+{
+  cmsUInt32Number size;
+  gchar *buf = NULL;
+  wchar_t *wbuf = NULL;
+  gchar *utf8 = NULL;
+
+  size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, NULL, 0);
+  if(size == 0)
+    goto error;
+
+  buf = (char*)malloc(sizeof(char) * (size + 1));
+  size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, buf, size);
+  if(size == 0)
+    goto error;
+
+  // most unix like systems should work with this, but at least Windows doesn't
+  if(sizeof(wchar_t) != 4 || g_utf8_validate(buf, -1, NULL))
+    g_strlcpy(name, buf, len); // better a little weird than totally borked
+  else
+  {
+    wbuf = (wchar_t*)malloc(sizeof(wchar_t) * (size + 1));
+    size = cmsGetProfileInfo(p, cmsInfoDescription, language, country, wbuf, sizeof(wchar_t) * size);
+    if(size == 0)
+      goto error;
+    utf8 = g_ucs4_to_utf8((gunichar*)wbuf, -1, NULL, NULL, NULL);
+    if(!utf8)
+      goto error;
+    g_strlcpy(name, utf8, len);
+  }
+
+  free(buf);
+  free(wbuf);
+  g_free(utf8);
+  return;
+
+error:
+  if(buf)
+    g_strlcpy(name, buf, len); // better a little weird than totally borked
+  else
+    *name = '\0'; // nothing to do here
+  free(buf);
+  free(wbuf);
+  g_free(utf8);
+}
+
 void rgb2hsl(const float rgb[3],float *h,float *s,float *l)
 {
   const float r=rgb[0], g=rgb[1], b=rgb[2];
