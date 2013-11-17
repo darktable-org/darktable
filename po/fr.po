@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-15 13:28+0100\n"
-"PO-Revision-Date: 2013-11-15 13:34+0100\n"
+"POT-Creation-Date: 2013-11-17 16:39+0100\n"
+"PO-Revision-Date: 2013-11-17 16:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4782,7 +4782,7 @@ msgstr "force de la correction des pixels chauds"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:324
-msgid "detect by 3 neighbours"
+msgid "detect by 3 neighbors"
 msgstr "détection par 3 voisins"
 
 #: ../src/iop/hotpixels.c:331
