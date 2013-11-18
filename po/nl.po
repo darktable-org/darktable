@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-17 15:03+0100\n"
-"PO-Revision-Date: 2013-11-17 15:04+0100\n"
+"POT-Creation-Date: 2013-11-18 13:25+0100\n"
+"PO-Revision-Date: 2013-11-18 13:35+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -32,7 +32,7 @@ msgstr "dubbelklik om te resetten naar `%d'"
 
 #: ../build/src/preferences_gen.h:1141
 msgid "(needs a restart)"
-msgstr "(opnieuw opstarten vereist)"
+msgstr "(opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1148
 msgid "don't use embedded preview JPEG but half-size raw"
@@ -206,8 +206,7 @@ msgid ""
 msgstr ""
 "maximale breedte van het afbeeldingstekengebied in de ontwikkelen modus, "
 "stel die in naar uw scherm\n"
-"(opnieuw opstarten is vereist, de huidige verkleinde miniatuur caches "
-"vervallen)"
+"(opnieuw opstarten, huidige miniatuur caches vervallen)"
 
 #: ../build/src/preferences_gen.h:1464
 msgid "maximum height of image drawing area"
@@ -221,7 +220,7 @@ msgid ""
 msgstr ""
 "maximale hoogte van het afbeeldingstekengebied in de modus ontwikkelen, stel "
 "die in naar uw scherm\n"
-"(opnieuw opstarten is vereist en huidige miniatuur caches vervallen)"
+"(opnieuw opstarten, huidige miniatuur caches vervallen)"
 
 #: ../build/src/preferences_gen.h:1488
 msgid "compression of thumbnail images"
@@ -306,7 +305,7 @@ msgid ""
 "number can slow drawing of the map down (needs a restart)."
 msgstr ""
 "het maximaal aantal weer te geven afbeeldingen op de kaart, hogere waarden "
-"vertragen het inladen van de kaart (opnieuw opstarten vereist)"
+"vertragen het inladen van de kaart (opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1620
 msgid "pretty print the image location"
@@ -380,6 +379,8 @@ msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
 msgstr ""
+"hiermee bepaal je het geheugen gebruik voor miniaturen en overige buffers "
+"(opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1772
 msgid "number of background threads"
@@ -393,7 +394,7 @@ msgid ""
 msgstr ""
 "dit bepaald bv. het aan aantal benodigde handeling voor de aanmaak van "
 "voorvertoningen, de cache wordt maximaal twee keer zo groot bij afbeeldingen "
-"van volledige resolutie (herstarten is noodzakelijk)"
+"van volledige resolutie (opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1796
 msgid "host memory limit (in MB) for tiling"
@@ -409,7 +410,7 @@ msgstr ""
 "deze variabele bepaald het maximale geheugen gebruik (in MB) voor module "
 "tijdens een bewerking. lagere waarden forceert geheugen vretende modules om "
 "beeldbewerkingen in meerdere stappen te doen, nul betekent geen limiet, "
-"waarden <500 blijven 500 (herstarten is noodzakelijk)"
+"waarden <500 blijven 500 (opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1820
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
@@ -423,7 +424,7 @@ msgid ""
 msgstr ""
 "een waarde groter dan nul bepaald het minimale geheugen (in MB) wat voor een "
 "enkele afbeeldingsbewerking wordt genomen. het heeft voorrang op een "
-"heuristiek gebaseerd host-geheugen limiet (herstarten noodzakelijk)"
+"heuristiek gebaseerd host-geheugen limiet (opnieuw opstarten)"
 
 #: ../build/src/preferences_gen.h:1845
 msgid "write sidecar file for each image"
@@ -856,7 +857,7 @@ msgstr "stijl '%s' is geïmporteerd"
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
-#: ../src/iop/lens.c:1770 ../src/libs/export.c:644 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1770 ../src/libs/export.c:642 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -2246,7 +2247,7 @@ msgstr "importeren"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:614 ../src/libs/export.c:670
+#: ../src/gui/preferences.c:614 ../src/libs/export.c:668
 #: ../src/libs/styles.c:410
 msgid "export"
 msgstr "exporteren"
@@ -3912,13 +3913,13 @@ msgstr "alternatieve kleuren matrix "
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (b.v. JPG)"
 
-#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:921
-#: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
+#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:919
+#: ../src/iop/colorout.c:920 ../src/iop/colorout.c:921
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
-#: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:909
-#: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
+#: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:907
+#: ../src/iop/colorout.c:908 ../src/iop/colorout.c:909
 #: ../src/libs/export.c:570
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
@@ -3936,12 +3937,12 @@ msgstr "lineair XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:897 ../src/iop/denoiseprofile.c:1723
-#: ../src/libs/export.c:611
+#: ../src/iop/colorin.c:895 ../src/iop/denoiseprofile.c:1723
+#: ../src/libs/export.c:609
 msgid "profile"
 msgstr "profiel"
 
-#: ../src/iop/colorin.c:906
+#: ../src/iop/colorin.c:904
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ICC profielen in %s/kleur/in van %s/kleur/in"
@@ -4068,82 +4069,82 @@ msgstr "gamma controle"
 msgid "soft proof"
 msgstr "soft proof"
 
-#: ../src/iop/colorout.c:868
+#: ../src/iop/colorout.c:866
 msgid "output intent"
 msgstr "voorgenomen output "
 
-#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
+#: ../src/iop/colorout.c:867 ../src/iop/colorout.c:874
 #: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "perceptueel"
 
-#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
+#: ../src/iop/colorout.c:868 ../src/iop/colorout.c:875
 #: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "relatieve colorimetrie"
 
-#: ../src/iop/colorout.c:871 ../src/iop/colorout.c:878
+#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
 #: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "verzadiging"
 
-#: ../src/iop/colorout.c:872 ../src/iop/colorout.c:879
+#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
 #: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "absolute colorimetrie"
 
-#: ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:872
 msgid "display intent"
 msgstr "toon voornemen"
 
-#: ../src/iop/colorout.c:892
+#: ../src/iop/colorout.c:890
 msgid "output profile"
 msgstr "uitgaand profiel"
 
-#: ../src/iop/colorout.c:893
+#: ../src/iop/colorout.c:891
 msgid "softproof profile"
 msgstr "softproof profiel"
 
-#: ../src/iop/colorout.c:894
+#: ../src/iop/colorout.c:892
 msgid "display profile"
 msgstr "toon profiel"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:905 ../src/libs/export.c:623
+#: ../src/iop/colorout.c:903 ../src/libs/export.c:621
 msgid "system display profile"
 msgstr "systeem weergave profiel"
 
-#: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/libs/export.c:551
+#: ../src/iop/colorout.c:913 ../src/iop/colorout.c:914
+#: ../src/iop/colorout.c:915 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-veilig)"
 
-#: ../src/iop/colorout.c:935
+#: ../src/iop/colorout.c:933
 msgid "rendering intent"
 msgstr "rendering intent"
 
-#: ../src/iop/colorout.c:936
+#: ../src/iop/colorout.c:934
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC profielen in%s/kleur/uit van %s/kleur/uit"
 
-#: ../src/iop/colorout.c:938
+#: ../src/iop/colorout.c:936
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "toon ICC profielen in %s/kleur/uit van %s/kleur/uit"
 
-#: ../src/iop/colorout.c:940
+#: ../src/iop/colorout.c:938
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "softproof ICC profielen in %s/kleur/uit van %s/kleur/uit"
 
-#: ../src/iop/colorout.c:978
+#: ../src/iop/colorout.c:976
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "softproofing aan/uit"
 
-#: ../src/iop/colorout.c:981
+#: ../src/iop/colorout.c:979
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "gamma check aan/uit"
@@ -4747,8 +4748,8 @@ msgstr "herstelkracht voor hot pixels"
 
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:324
-msgid "detect by 3 neighbours"
-msgstr "detecteer met 3 naastliggende"
+msgid "detect by 3 neighbors"
+msgstr "detecteer met 3 ernaastliggende"
 
 #: ../src/iop/hotpixels.c:331
 msgid "mark fixed pixels"
@@ -6525,7 +6526,7 @@ msgid "intent"
 msgstr "intensie"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:538 ../src/libs/export.c:618
+#: ../src/libs/export.c:538 ../src/libs/export.c:616
 msgid "image settings"
 msgstr "afbeeldings instellingen"
 
@@ -6533,26 +6534,26 @@ msgstr "afbeeldings instellingen"
 msgid "Adobe RGB"
 msgstr "Adobe RGB"
 
-#: ../src/libs/export.c:631
+#: ../src/libs/export.c:629
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "uitgaande ICC profielen in %s/kleur/uit of %s/kleur/uit"
 
 #. Add style combo
-#: ../src/libs/export.c:637
+#: ../src/libs/export.c:635
 msgid "style"
 msgstr "stijl"
 
-#: ../src/libs/export.c:654
+#: ../src/libs/export.c:652
 msgid "temporary style to append while exporting"
 msgstr "toe te voegen stijl bij het exporteren"
 
-#: ../src/libs/export.c:672
+#: ../src/libs/export.c:670
 msgid "export with current settings (ctrl-e)"
 msgstr "exporteer met bovenstaande instellingen   (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:877 ../src/libs/styles.c:69
+#: ../src/libs/export.c:875 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1689
 msgctxt "accel"
 msgid "export"
