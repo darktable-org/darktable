@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-18 13:25+0100\n"
-"PO-Revision-Date: 2013-11-18 13:35+0100\n"
+"PO-Revision-Date: 2013-11-18 16:25+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4749,7 +4749,7 @@ msgstr "herstelkracht voor hot pixels"
 #. 3 neighbours
 #: ../src/iop/hotpixels.c:324
 msgid "detect by 3 neighbors"
-msgstr "detecteer met 3 ernaastliggende"
+msgstr "detecteer met 3 naaste"
 
 #: ../src/iop/hotpixels.c:331
 msgid "mark fixed pixels"
@@ -4840,7 +4840,7 @@ msgstr ""
 
 #: ../src/iop/lens.c:1346
 msgid "camera/lens not found - please select manually"
-msgstr "camera/lens is niet gevonden, selecteer handmatig"
+msgstr "onbekende camera/lens; selecteer handmatig"
 
 #: ../src/iop/lens.c:1348
 msgid "try to locate your camera/lens in the above two menus"
