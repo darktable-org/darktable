@@ -44,21 +44,22 @@ endif(Glib_FIND_VERSION)
 # Main include dir
 find_path(Glib_INCLUDE_DIR
   NAMES glib.h
-  PATHS ${Glib_PKGCONF_INCLUDE_DIRS}
+  HINTS ${Glib_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES glib-2.0
 )
 
 # Glib-related libraries also use a separate config header, which is in lib dir
 find_path(GlibConfig_INCLUDE_DIR
   NAMES glibconfig.h
-  PATHS ${Glib_PKGCONF_INCLUDE_DIRS} /usr
+  HINTS ${Glib_PKGCONF_INCLUDE_DIRS}
+  PATHS /usr
   PATH_SUFFIXES lib/glib-2.0/include ../lib/glib-2.0/include
 )
 
 # Finally the library itself
 find_library(Glib_LIBRARY
   NAMES glib-2.0
-  PATHS ${Glib_PKGCONF_LIBRARY_DIRS}
+  HINTS ${Glib_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
