@@ -52,7 +52,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 
 const char* name()
 {
-  return _("history");
+  return _("history stack");
 }
 
 uint32_t views()
@@ -101,7 +101,7 @@ void gui_init(dt_lib_module_t *self)
   self->widget =  gtk_vbox_new (FALSE,2);
   d->history_box = gtk_vbox_new(FALSE,0);
 
-  GtkWidget *hhbox = gtk_hbox_new (FALSE,2);
+  GtkWidget *hvbox = gtk_vbox_new (FALSE,2);
 
   GtkWidget *hbutton = gtk_button_new_with_label (_("compress history stack"));
   d->compress_button = hbutton;
@@ -114,12 +114,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),NULL);
 
   /* add buttons to buttonbox */
-  gtk_box_pack_start (GTK_BOX (hhbox),hbutton,TRUE,TRUE,0);
-  gtk_box_pack_start (GTK_BOX (hhbox),hbutton2,TRUE,TRUE,0);
+  gtk_box_pack_start (GTK_BOX (hvbox),hbutton,TRUE,TRUE,2);
+  gtk_box_pack_start (GTK_BOX (hvbox),hbutton2,TRUE,TRUE,1);
 
   /* add history list and buttonbox to widget */
   gtk_box_pack_start (GTK_BOX (self->widget),d->history_box,FALSE,FALSE,0);
-  gtk_box_pack_start (GTK_BOX (self->widget),hhbox,FALSE,FALSE,0);
+  gtk_box_pack_start (GTK_BOX (self->widget),hvbox,FALSE,FALSE,0);
 
 
   gtk_widget_show_all (self->widget);
