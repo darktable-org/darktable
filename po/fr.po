@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-17 16:39+0100\n"
-"PO-Revision-Date: 2013-11-17 16:40+0100\n"
+"POT-Creation-Date: 2013-11-19 20:00+0100\n"
+"PO-Revision-Date: 2013-11-19 20:02+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -750,7 +750,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
+#: ../src/iop/vignette.c:1120 ../src/libs/history.c:152
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "désactivé(e)"
@@ -857,7 +857,7 @@ msgstr "le style '%s' a été importé"
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
 #: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
-#: ../src/iop/lens.c:1770 ../src/libs/export.c:644 ../src/libs/live_view.c:324
+#: ../src/iop/lens.c:1770 ../src/libs/export.c:642 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
@@ -2264,7 +2264,7 @@ msgstr "importation"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:614 ../src/libs/export.c:670
+#: ../src/gui/preferences.c:614 ../src/libs/export.c:668
 #: ../src/libs/styles.c:410
 msgid "export"
 msgstr "exporter"
@@ -3932,13 +3932,14 @@ msgstr "alternative à la matrice de couleur"
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
-#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:921
-#: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
+#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:919
+#: ../src/iop/colorout.c:920 ../src/iop/colorout.c:921
+#: ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
-#: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:909
-#: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
+#: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:907
+#: ../src/iop/colorout.c:908 ../src/iop/colorout.c:909
 #: ../src/libs/export.c:570
 msgid "linear Rec709 RGB"
 msgstr "linéaire RVB Rec709"
@@ -3956,12 +3957,12 @@ msgstr "linéaire XYZ"
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:897 ../src/iop/denoiseprofile.c:1723
-#: ../src/libs/export.c:611
+#: ../src/iop/colorin.c:895 ../src/iop/denoiseprofile.c:1723
+#: ../src/libs/export.c:609
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:906
+#: ../src/iop/colorin.c:904
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "profils ICC dans %s/color/in ou %s/color/in"
@@ -4088,87 +4089,87 @@ msgstr "vérification de gamut"
 msgid "soft proof"
 msgstr "épreuvage"
 
-#: ../src/iop/colorout.c:868
+#: ../src/iop/colorout.c:866
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
+#: ../src/iop/colorout.c:867 ../src/iop/colorout.c:874
 #: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
+#: ../src/iop/colorout.c:868 ../src/iop/colorout.c:875
 #: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:871 ../src/iop/colorout.c:878
+#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
 #: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:872 ../src/iop/colorout.c:879
+#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
 #: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
-#: ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:872
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/iop/colorout.c:892
+#: ../src/iop/colorout.c:890
 msgid "output profile"
 msgstr "profil (sortie)"
 
-#: ../src/iop/colorout.c:893
+#: ../src/iop/colorout.c:891
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
-#: ../src/iop/colorout.c:894
+#: ../src/iop/colorout.c:892
 msgid "display profile"
 msgstr "profil (écran)"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:905 ../src/libs/export.c:623
+#: ../src/iop/colorout.c:903 ../src/libs/export.c:621
 msgid "system display profile"
 msgstr "système"
 
-#: ../src/iop/colorout.c:915 ../src/iop/colorout.c:916
-#: ../src/iop/colorout.c:917 ../src/libs/export.c:551
+#: ../src/iop/colorout.c:913 ../src/iop/colorout.c:914
+#: ../src/iop/colorout.c:915 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
-#: ../src/iop/colorout.c:935
+#: ../src/iop/colorout.c:933
 msgid "rendering intent"
 msgstr ""
 "mode de rendu\n"
 "définit comment les couleurs hors gamut sont reproduites\n"
 "perceptif est adapté à la photographie"
 
-#: ../src/iop/colorout.c:936
+#: ../src/iop/colorout.c:934
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC dans %s/color/out ou %s/color/out"
 
-#: ../src/iop/colorout.c:938
+#: ../src/iop/colorout.c:936
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC d'affichage dans %s/color/out ou %s/color/out"
 
-#: ../src/iop/colorout.c:940
+#: ../src/iop/colorout.c:938
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr ""
 "profils ICC d'épreuvage sur écran (imprimantes) dans %s/color/out or %s/"
 "color/out"
 
-#: ../src/iop/colorout.c:978
+#: ../src/iop/colorout.c:976
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "activer/désactiver l'épreuvage"
 
-#: ../src/iop/colorout.c:981
+#: ../src/iop/colorout.c:979
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "activer/désactiver la vérification du gamut"
@@ -6300,7 +6301,7 @@ msgstr "date"
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/libs/collect.h:36 ../src/libs/history.c:55
+#: ../src/libs/collect.h:36
 msgid "history"
 msgstr "historique"
 
@@ -6375,7 +6376,7 @@ msgid "display sample areas on image"
 msgstr "afficher les zones sur l'image"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/libs/copy_history.c:50
+#: ../src/libs/copy_history.c:50 ../src/libs/history.c:55
 msgid "history stack"
 msgstr "développement"
 
@@ -6581,34 +6582,30 @@ msgid "intent"
 msgstr "rendu"
 
 #. gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(d->profile), 1, 2, 9, 10, GTK_EXPAND|GTK_FILL, 0, 0, 0);
-#: ../src/libs/export.c:538 ../src/libs/export.c:618
+#: ../src/libs/export.c:538 ../src/libs/export.c:616
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:558
-msgid "Adobe RGB"
-msgstr "Adobe RGB"
-
-#: ../src/libs/export.c:631
+#: ../src/libs/export.c:629
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "profils ICC de sortie dans %s/color/out ou %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:637
+#: ../src/libs/export.c:635
 msgid "style"
 msgstr "style"
 
-#: ../src/libs/export.c:654
+#: ../src/libs/export.c:652
 msgid "temporary style to append while exporting"
 msgstr "style temporaire à ajouter lors de l'exportation"
 
-#: ../src/libs/export.c:672
+#: ../src/libs/export.c:670
 msgid "export with current settings (ctrl-e)"
 msgstr "exporte avec les réglages actuels (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:877 ../src/libs/styles.c:69
+#: ../src/libs/export.c:875 ../src/libs/styles.c:69
 #: ../src/views/darkroom.c:1689
 msgctxt "accel"
 msgid "export"
@@ -6778,11 +6775,15 @@ msgstr "compresser l'historique"
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:116
+#: ../src/libs/history.c:111
+msgid "create style"
+msgstr "créer un style"
+
+#: ../src/libs/history.c:113
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:184 ../src/libs/snapshots.c:365
+#: ../src/libs/history.c:181 ../src/libs/snapshots.c:365
 msgid "original"
 msgstr "original"
 
@@ -7855,37 +7856,37 @@ msgstr "bandeau"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1757
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1797
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1758
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1798
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1759
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1799
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1760
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1800
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1761
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1801
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1762
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1802
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1763
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1803
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -7923,27 +7924,27 @@ msgstr "cloner l'image"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1778
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1818
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1779
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1819
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1780
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1820
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1781
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1821
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1782
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1822
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -8033,7 +8034,7 @@ msgstr "préférences"
 msgid "hinter"
 msgstr "rendu"
 
-#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:127
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:128
 msgid "lighttable"
 msgstr "table lumineuse"
 
@@ -8202,86 +8203,86 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
-#: ../src/views/lighttable.c:471
+#: ../src/views/lighttable.c:496
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:473
+#: ../src/views/lighttable.c:498
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:475
+#: ../src/views/lighttable.c:500
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module 'importer'"
 
-#: ../src/views/lighttable.c:482
+#: ../src/views/lighttable.c:507
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:489
+#: ../src/views/lighttable.c:514
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
-#: ../src/views/lighttable.c:1765
+#: ../src/views/lighttable.c:1805
 msgctxt "accel"
 msgid "expose statuses"
 msgstr "afficher états"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1768
+#: ../src/views/lighttable.c:1808
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:1770
+#: ../src/views/lighttable.c:1810
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:1772
+#: ../src/views/lighttable.c:1812
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:1774
+#: ../src/views/lighttable.c:1814
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1785
+#: ../src/views/lighttable.c:1825
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:1787
+#: ../src/views/lighttable.c:1827
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:1789
+#: ../src/views/lighttable.c:1829
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:1791
+#: ../src/views/lighttable.c:1831
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite "
 
-#: ../src/views/lighttable.c:1793
+#: ../src/views/lighttable.c:1833
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:1795
+#: ../src/views/lighttable.c:1835
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
 #. Preview key
-#: ../src/views/lighttable.c:1799
+#: ../src/views/lighttable.c:1839
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
@@ -8493,6 +8494,9 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "Adobe RGB"
+#~ msgstr "Adobe RGB"
 
 #~ msgid "[webp export] error saving to %s\n"
 #~ msgstr "[export webp] impossible d'enregistrer %s\n"
