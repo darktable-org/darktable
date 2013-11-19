@@ -373,6 +373,7 @@ types.dt_imageio_module_format.mime:set_text([[the mime type associated with the
 types.dt_imageio_module_format.max_width:set_text([[the max width allowed for the format ( 0 : unlimited )]])
 types.dt_imageio_module_format.max_height:set_text([[the max height allowed for the format ( 0 : unlimited )]])
 types.dt_imageio_module_format.write_image:set_text([[exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
+types.dt_imageio_module_format.write_image:set_attribute("implicit_yield",true)
 types.dt_imageio_module_format.write_image:add_parameter("format",types.dt_imageio_module_format,[[The format that will be used to export]])
 types.dt_imageio_module_format.write_image:add_parameter("image",types.dt_lua_image_t,[[The image object to export]])
 types.dt_imageio_module_format.write_image:add_parameter("filename","string",[[The filename to export to]])
@@ -500,6 +501,7 @@ attributes.has_ipairs:set_text([[This object can be used as an argument to the s
 attributes.has_equal:set_text([[This object has a specific comparison function that will be used when comparing it to an object of the same type]])
 attributes.has_length:set_text([[This object has a specific length function that will be used by the # operator]])
 attributes.has_tostring:set_text([[This object has a specific reimplementation of the "tostring" method that allows pretty-printing it]])
+attributes.implicit_yield:set_text([[This call will release the lua lock while executing, thus allowing other lua callbacks to run.]])
 
 ----------------------
 --  SYSTEM          --
