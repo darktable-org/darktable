@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-18 13:25+0100\n"
-"PO-Revision-Date: 2013-11-18 16:25+0100\n"
+"POT-Creation-Date: 2013-11-19 19:00+0100\n"
+"PO-Revision-Date: 2013-11-19 19:01+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -750,7 +750,7 @@ msgstr "aan"
 #: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
+#: ../src/iop/vignette.c:1120 ../src/libs/history.c:152
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "uit"
@@ -3915,6 +3915,7 @@ msgstr "sRGB (b.v. JPG)"
 
 #: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:919
 #: ../src/iop/colorout.c:920 ../src/iop/colorout.c:921
+#: ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
@@ -6530,10 +6531,6 @@ msgstr "intensie"
 msgid "image settings"
 msgstr "afbeeldings instellingen"
 
-#: ../src/libs/export.c:558
-msgid "Adobe RGB"
-msgstr "Adobe RGB"
-
 #: ../src/libs/export.c:629
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
@@ -6726,11 +6723,15 @@ msgstr "comprimeer bewerkingsstappen"
 msgid "create a minimal history stack which produces the same image"
 msgstr "minimaliseer aantal bewerkingstappen"
 
-#: ../src/libs/history.c:116
+#: ../src/libs/history.c:111
+msgid "create style"
+msgstr "creëer stijl"
+
+#: ../src/libs/history.c:113
 msgid "create a style from the current history stack"
 msgstr "creëer stijl van bewerkingsstappen"
 
-#: ../src/libs/history.c:184 ../src/libs/snapshots.c:365
+#: ../src/libs/history.c:181 ../src/libs/snapshots.c:365
 msgid "original"
 msgstr "origineel"
 
@@ -7756,37 +7757,37 @@ msgstr "fotoreeks"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1757
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1797
 msgctxt "accel"
 msgid "rate 0"
 msgstr "waardering 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1758
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1798
 msgctxt "accel"
 msgid "rate 1"
 msgstr "waardering 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1759
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1799
 msgctxt "accel"
 msgid "rate 2"
 msgstr "waardering 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1760
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1800
 msgctxt "accel"
 msgid "rate 3"
 msgstr "waardering 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1761
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1801
 msgctxt "accel"
 msgid "rate 4"
 msgstr "waardering 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1762
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1802
 msgctxt "accel"
 msgid "rate 5"
 msgstr "waardering 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1763
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1803
 msgctxt "accel"
 msgid "rate reject"
 msgstr "waardering afgekeurd"
@@ -7824,27 +7825,27 @@ msgstr "kloon afbeelding"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1778
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1818
 msgctxt "accel"
 msgid "color red"
 msgstr "kleur rood"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1779
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1819
 msgctxt "accel"
 msgid "color yellow"
 msgstr "kleur geel"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1780
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1820
 msgctxt "accel"
 msgid "color green"
 msgstr "kleur groen"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1781
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1821
 msgctxt "accel"
 msgid "color blue"
 msgstr "kleur blauw"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1782
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1822
 msgctxt "accel"
 msgid "color purple"
 msgstr "kleur paars"
@@ -7934,7 +7935,7 @@ msgstr "voorkeuren"
 msgid "hinter"
 msgstr "'hinter' (achter?)"
 
-#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:127
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:128
 msgid "lighttable"
 msgstr "bibliotheek"
 
@@ -8103,85 +8104,85 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "overbelicht"
 
-#: ../src/views/lighttable.c:471
+#: ../src/views/lighttable.c:496
 msgid "there are no images in this collection"
 msgstr "er bevinden zich geen afbeeldingen in deze catalogus"
 
-#: ../src/views/lighttable.c:473
+#: ../src/views/lighttable.c:498
 msgid "if you have not imported any images yet"
 msgstr "als nog geen afbeeldingen zijn geïmporteerd"
 
-#: ../src/views/lighttable.c:475
+#: ../src/views/lighttable.c:500
 msgid "you can do so in the import module"
 msgstr "dan kan dit worden uitgevoerd vanuit de module importeren"
 
-#: ../src/views/lighttable.c:482
+#: ../src/views/lighttable.c:507
 msgid "try to relax the filter settings in the top panel"
 msgstr "verruim het filter in het top paneel "
 
-#: ../src/views/lighttable.c:489
+#: ../src/views/lighttable.c:514
 msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
-#: ../src/views/lighttable.c:1765
+#: ../src/views/lighttable.c:1805
 msgctxt "accel"
 msgid "expose statuses"
 msgstr "belichtings statussen"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1768
+#: ../src/views/lighttable.c:1808
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigeer omhoog"
 
-#: ../src/views/lighttable.c:1770
+#: ../src/views/lighttable.c:1810
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigeer omlaag"
 
-#: ../src/views/lighttable.c:1772
+#: ../src/views/lighttable.c:1812
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "volgende pagina"
 
-#: ../src/views/lighttable.c:1774
+#: ../src/views/lighttable.c:1814
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "vorige pagina"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1785
+#: ../src/views/lighttable.c:1825
 msgctxt "accel"
 msgid "scroll up"
 msgstr "blader omhoog"
 
-#: ../src/views/lighttable.c:1787
+#: ../src/views/lighttable.c:1827
 msgctxt "accel"
 msgid "scroll down"
 msgstr "blader omlaag"
 
-#: ../src/views/lighttable.c:1789
+#: ../src/views/lighttable.c:1829
 msgctxt "accel"
 msgid "scroll left"
 msgstr "blader naar links"
 
-#: ../src/views/lighttable.c:1791
+#: ../src/views/lighttable.c:1831
 msgctxt "accel"
 msgid "scroll right"
 msgstr "blader naar rechts"
 
-#: ../src/views/lighttable.c:1793
+#: ../src/views/lighttable.c:1833
 msgctxt "accel"
 msgid "scroll center"
 msgstr "scroll naar middelpunt"
 
-#: ../src/views/lighttable.c:1795
+#: ../src/views/lighttable.c:1835
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "afbeeldingen opnieuw op raster uitlijnen"
 
 #. Preview key
-#: ../src/views/lighttable.c:1799
+#: ../src/views/lighttable.c:1839
 msgctxt "accel"
 msgid "preview"
 msgstr "voorvertoning"
@@ -8391,6 +8392,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "grafisch"
+
+#~ msgid "Adobe RGB"
+#~ msgstr "Adobe RGB"
 
 #~ msgid "[webp export] error saving to %s\n"
 #~ msgstr "[webp export] fout bij het opslaan naar %s\n"
