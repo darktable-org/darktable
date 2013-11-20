@@ -124,6 +124,7 @@ darktable.gui.hovered:set_text([[The image under the cursor or nil if no image i
 darktable.gui.selection:set_text([[Allows to change the set of selected images]])
 darktable.gui.selection:add_parameter("selection","table",[[a table of images, will set the selected images, if this parameter is not given, the selection will be untouched. If an empty table is given, the selection will be emptied]]):set_attribute("optional",true)
 darktable.gui.selection:add_return("table",[[a table containing the selection as it was before the function was called]])
+darktable.gui.selection:set_attribute("implicit_yield",true)
 ----------------------
 --  DARKTABLE.TAGS  --
 ----------------------
