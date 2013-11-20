@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-19 20:00+0100\n"
+"POT-Creation-Date: 2013-11-20 21:07+0100\n"
 "PO-Revision-Date: 2013-11-19 23:28+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -28,7 +28,7 @@ msgstr "taille des panneaux latéraux en pixels"
 #: ../build/src/preferences_gen.h:1835 ../src/lua/preferences.c:373
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "double-cliquer pour réinitialiser `%d'"
+msgstr "double-cliquer pour réinitialiser '%d'"
 
 #: ../build/src/preferences_gen.h:1141
 msgid "(needs a restart)"
@@ -55,7 +55,7 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 #: ../src/lua/preferences.c:356 ../src/lua/preferences.c:364
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "double-cliquer pour réinitialiser `%s'"
+msgstr "double-cliquer pour réinitialiser '%s'"
 
 #: ../build/src/preferences_gen.h:1157 ../build/src/preferences_gen.h:1276
 #: ../build/src/preferences_gen.h:1295 ../build/src/preferences_gen.h:1411
@@ -370,7 +370,7 @@ msgstr "mémoire (en mégaoctets) à utiliser pour le cache mipmap"
 #: ../build/src/preferences_gen.h:1762
 #, c-format
 msgid "double click to reset to `%<PRId64>'"
-msgstr "double-cliquer pour réinitialiser `%<PRId64>'"
+msgstr "double-cliquer pour réinitialiser '%<PRId64>'"
 
 #: ../build/src/preferences_gen.h:1765
 msgid ""
@@ -692,7 +692,7 @@ msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 #: ../src/common/darktable.c:295
 #, c-format
 msgid "found strange path `%s'"
-msgstr "chemin étrange `%s'"
+msgstr "chemin étrange '%s'"
 
 #: ../src/common/darktable.c:313
 #, c-format
@@ -937,7 +937,7 @@ msgstr "fourchette d'exposition uniquement pour les raw"
 #: ../src/control/jobs/control_jobs.c:154
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "échec de l'obtention du cache pour l'image `%s'"
+msgstr "échec de l'obtention du cache pour l'image '%s'"
 
 #: ../src/control/jobs/control_jobs.c:173
 msgid "images have to be of same size!"
@@ -946,7 +946,7 @@ msgstr "les images doivent avoir la même taille !"
 #: ../src/control/jobs/control_jobs.c:249
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "HDR image `%s' écrite"
+msgstr "HDR image '%s' écrite"
 
 #: ../src/control/jobs/control_jobs.c:275
 #, c-format
@@ -2277,7 +2277,7 @@ msgstr "entrer la nouvelle combinaison de touches"
 #: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "voulez-vous réellement supprimer le pré-réglage `%s' ?"
+msgstr "voulez-vous réellement supprimer le pré-réglage '%s' ?"
 
 #: ../src/gui/preferences.c:1078 ../src/gui/presets.c:193
 #: ../src/libs/lib.c:316
@@ -2303,7 +2303,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1303 ../src/gui/presets.c:368
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "éditer `%s' pour le module `%s'"
+msgstr "éditer '%s' pour le module '%s'"
 
 #: ../src/gui/preferences.c:1332 ../src/gui/presets.c:399
 #: ../src/libs/lib.c:234
@@ -7059,7 +7059,7 @@ msgstr "sélectionner un dossier à importer"
 #: ../src/libs/lib.c:205
 #, c-format
 msgid "edit `%s'"
-msgstr "modifier `%s'"
+msgstr "modifier '%s'"
 
 #: ../src/libs/live_view.c:134
 msgid "live view"
