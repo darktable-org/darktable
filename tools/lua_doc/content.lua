@@ -50,9 +50,7 @@ doc.create_artificial_parent("dt_imageio_module_format",types,all_sons);
 doc.toplevel:set_text([[
 To access the darktable specific functions you must load the darktable environement:
 
-<pre>
 darktable = require "darktable"
-</pre>
 
 All functions and data are accessed through the darktable module.
 
@@ -72,7 +70,7 @@ darktable.register_event:set_text([[This function register a callback to be call
 Events are documented in the event section.]])
 darktable.register_event:add_parameter("event_type","string",[[the name of the event to register to]])
 darktable.register_event:add_parameter("callback","function",[[the function to call on event; the signature of the function depends on the type of event]])
-darktable.register_event:add_parameter("...","depends on event_type",[[some events need extra parameters at registraion time; these must be specified here]])
+darktable.register_event:add_parameter("...","variable",[[some events need extra parameters at registraion time; these must be specified here]])
 
 darktable.register_storage:set_text([[This function will add a new storage implemented in Lua. 
 A storage is a module that is responsible for handling images once they have been generated during export. Examples of core storages include filesystem, e-mail, facebook...]])
@@ -228,7 +226,7 @@ darktable.styles.duplicate:set_main_parent(darktable.styles)
 
 darktable.styles.apply:set_text([[Apply a style to an image. The order of parameters can be inverted.]])
 darktable.styles.apply:add_parameter("style",types.dt_style_t,[[the style to use]])
-darktable.styles.apply:add_parameter("style",types.dt_lua_image_t,[[the image to apply the style to]])
+darktable.styles.apply:add_parameter("image",types.dt_lua_image_t,[[the image to apply the style to]])
 darktable.styles.apply:set_main_parent(darktable.styles)
 
 -------------------------
@@ -291,9 +289,9 @@ darktable.modules.storage.email:set_alias(darktable.modules.storage.picasa)
 --  DARKTABLE.DEBUG --
 ----------------------
 darktable.debug:set_text([[This section must be activated separately by calling 
-<pre>
+
 require "darktable.debug"
-</pre>]])
+]])
 
 darktable.debug.dump:set_text([[This will return a string describing everything Lua knows about an object, used to know what an object is.
 
