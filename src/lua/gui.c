@@ -34,7 +34,6 @@ static int selection_cb(lua_State *L)
   GList *image = dt_collection_get_selected(darktable.collection, -1);
   if(lua_gettop(L) > 0)
   {
-    dt_selection_clear(darktable.selection);
     GList * new_selection = NULL;
     luaL_checktype(L,-1,LUA_TTABLE);
     lua_pushnil(L);
@@ -48,6 +47,7 @@ static int selection_cb(lua_State *L)
     }
     new_selection = g_list_reverse(new_selection);
     dt_lua_unlock(true);// we need the gdk lock to update ui information
+    dt_selection_clear(darktable.selection);
     dt_selection_select_list(darktable.selection,new_selection);
     dt_lua_lock();
     g_list_free(new_selection);
