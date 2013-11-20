@@ -28,7 +28,7 @@ msgstr "taille des panneaux latéraux en pixels"
 #: ../build/src/preferences_gen.h:1835 ../src/lua/preferences.c:373
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "double-cliquer pour réinitialiser '%d'"
+msgstr "double-cliquer pour réinitialiser «%d»"
 
 #: ../build/src/preferences_gen.h:1141
 msgid "(needs a restart)"
@@ -55,7 +55,7 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 #: ../src/lua/preferences.c:356 ../src/lua/preferences.c:364
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "double-cliquer pour réinitialiser '%s'"
+msgstr "double-cliquer pour réinitialiser «%s»"
 
 #: ../build/src/preferences_gen.h:1157 ../build/src/preferences_gen.h:1276
 #: ../build/src/preferences_gen.h:1295 ../build/src/preferences_gen.h:1411
@@ -607,7 +607,7 @@ msgstr "ficher de sortie existant, il va être renommé"
 #: ../src/cli/main.c:177
 #, c-format
 msgid "error: can't open file %s"
-msgstr "erreur : impossible d'ouvrir le fichier '%s'"
+msgstr "erreur : impossible d'ouvrir le fichier «%s»"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
 #: ../src/cli/main.c:201
@@ -692,22 +692,22 @@ msgstr[1] "%d images sur %d de la collection courante sont sélectionnées"
 #: ../src/common/darktable.c:295
 #, c-format
 msgid "found strange path `%s'"
-msgstr "chemin étrange '%s'"
+msgstr "chemin étrange «%s»"
 
 #: ../src/common/darktable.c:313
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "erreur de chargement du dossier '%s'"
+msgstr "erreur de chargement du dossier «%s»"
 
 #: ../src/common/darktable.c:333
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "le fichier '%s' possède un format inconnu !"
+msgstr "le fichier «%s» possède un format inconnu !"
 
 #: ../src/common/darktable.c:347 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
-msgstr "erreur de chargement du fichier '%s'"
+msgstr "erreur de chargement du fichier «%s»"
 
 #: ../src/common/darktable.c:505
 #, c-format
@@ -788,7 +788,7 @@ msgstr "image '%s\" non disponible"
 #: ../src/common/imageio.c:632
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "impossible de trouve le style '%s' à appliquer pendant l'exportation."
+msgstr "impossible de trouve le style «%s» à appliquer pendant l'exportation."
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
@@ -816,7 +816,7 @@ msgstr "aucune image sélectionnée pour appliquer les étoiles"
 #: ../src/common/styles.c:110
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "le style '%s' existe déjà"
+msgstr "le style «%s» existe déjà"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:228 ../src/common/styles.c:232
@@ -831,7 +831,7 @@ msgstr "styles/appliquer %s"
 #: ../src/common/styles.c:309 ../src/gui/styles_dialog.c:145
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "le style '%s' a été créé"
+msgstr "le style «%s» a été créé"
 
 #. fail :(
 #: ../src/common/styles.c:391 ../src/common/styles.c:410
@@ -847,12 +847,12 @@ msgstr "impossible de remplacer le style %s"
 #: ../src/common/styles.c:671
 #, c-format
 msgid "style file for %s exists"
-msgstr "le fichier du style '%s' existe"
+msgstr "le fichier du style «%s» existe"
 
 #: ../src/common/styles.c:909
 #, c-format
 msgid "style %s was successfully imported"
-msgstr "le style '%s' a été importé"
+msgstr "le style «%s» a été importé"
 
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
@@ -937,7 +937,7 @@ msgstr "fourchette d'exposition uniquement pour les raw"
 #: ../src/control/jobs/control_jobs.c:154
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "échec de l'obtention du cache pour l'image '%s'"
+msgstr "échec de l'obtention du cache pour l'image «%s»"
 
 #: ../src/control/jobs/control_jobs.c:173
 msgid "images have to be of same size!"
@@ -946,7 +946,7 @@ msgstr "les images doivent avoir la même taille !"
 #: ../src/control/jobs/control_jobs.c:249
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "image HDR '%s' écrite"
+msgstr "image HDR «%s» écrite"
 
 #: ../src/control/jobs/control_jobs.c:275
 #, c-format
@@ -1568,7 +1568,7 @@ msgstr ""
 #: ../src/develop/blend.c:1929 ../src/develop/blend.c:2223
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "fusion ignorée dans le module '%s': paramètres incompatibles"
+msgstr "fusion ignorée dans le module «%s»: paramètres incompatibles"
 
 #: ../src/develop/blend.c:2028 ../src/develop/blend.c:2268
 msgid "could not allocate buffer for blending"
@@ -1577,7 +1577,7 @@ msgstr "impossible d'allouer la mémoire pour la fusion"
 #: ../src/develop/develop.c:976
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: module '%s' version non cohérentes: %d != %d"
+msgstr "%s: module «%s» version non cohérentes: %d != %d"
 
 #: ../src/develop/imageop.c:296 ../src/develop/imageop.c:304
 msgid "error creating GUI, see stderr"
@@ -2277,7 +2277,7 @@ msgstr "entrer la nouvelle combinaison de touches"
 #: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "voulez-vous réellement supprimer le pré-réglage '%s' ?"
+msgstr "voulez-vous réellement supprimer le pré-réglage «%s» ?"
 
 #: ../src/gui/preferences.c:1078 ../src/gui/presets.c:193
 #: ../src/libs/lib.c:316
@@ -2303,7 +2303,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1303 ../src/gui/presets.c:368
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "éditer '%s' pour le module '%s'"
+msgstr "éditer '%s' pour le module «%s»"
 
 #: ../src/gui/preferences.c:1332 ../src/gui/presets.c:399
 #: ../src/libs/lib.c:234
@@ -2435,7 +2435,7 @@ msgstr "mettre à jour le pré-réglage"
 #: ../src/libs/styles.c:252
 #, c-format
 msgid "style %s was successfully saved"
-msgstr "le style '%s' a été sauvegardé"
+msgstr "le style «%s» a été sauvegardé"
 
 #: ../src/gui/styles_dialog.c:293
 #, c-format
@@ -6396,7 +6396,7 @@ msgstr "tous les fichiers"
 #: ../src/libs/copy_history.c:102
 #, c-format
 msgid "error loading file '%s'"
-msgstr "erreur de chargement du fichier '%s'"
+msgstr "erreur de chargement du fichier «%s»"
 
 #: ../src/libs/copy_history.c:258
 msgid ""
@@ -7059,7 +7059,7 @@ msgstr "sélectionner un dossier à importer"
 #: ../src/libs/lib.c:205
 #, c-format
 msgid "edit `%s'"
-msgstr "modifier '%s'"
+msgstr "modifier «%s»"
 
 #: ../src/libs/live_view.c:134
 msgid "live view"
@@ -8091,7 +8091,7 @@ msgstr "impossible de créer le chemin de session %s"
 #: ../src/views/capture.c:321
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "nouvelle session initiée '%s'"
+msgstr "nouvelle session initiée «%s»"
 
 #: ../src/views/capture.c:458
 msgid "no camera with tethering support available for use..."
@@ -8116,7 +8116,7 @@ msgstr "aucun pré-réglage trouvé pour les modules favoris"
 #: ../src/views/darkroom.c:882
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "applique le style '%s' à l'image actuelle"
+msgstr "applique le style «%s» à l'image actuelle"
 
 #: ../src/views/darkroom.c:940
 msgid "no styles have been created yet"
