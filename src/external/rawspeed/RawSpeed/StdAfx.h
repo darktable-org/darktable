@@ -29,22 +29,31 @@
 #endif
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+
+// there's no <malloc.h> on OS X
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
+
 #include <stdio.h>
+
 #ifdef __MINGW32__
 #include <stdlib.h>
 #endif    
+
 #if !defined(__unix__) && !defined(__APPLE__) 
 #include <tchar.h>
 #include <io.h>
 #include <windows.h>
+
 #ifndef __MINGW32__
 #include <crtdbg.h>
 #else
 #include <stdexcept>
 #endif
 
-#else // if unix
+#else // !defined(__unix__) && !defined(__APPLE__) 
+
 #ifdef _XOPEN_SOURCE
 #if (_XOPEN_SOURCE < 600)
 #undef _XOPEN_SOURCE
