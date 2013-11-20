@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-19 19:00+0100\n"
-"PO-Revision-Date: 2013-11-19 19:01+0100\n"
+"POT-Creation-Date: 2013-11-20 08:54+0100\n"
+"PO-Revision-Date: 2013-11-20 21:56+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2156,7 +2156,7 @@ msgstr "$(DESKTOP) - Bureaublad"
 
 #: ../src/gui/preferences.c:222
 msgid "darktable preferences"
-msgstr "Darktable voorkeuren"
+msgstr "darktable voorkeuren"
 
 #: ../src/gui/preferences.c:224
 msgid "close"
@@ -6258,7 +6258,7 @@ msgstr "datum"
 msgid "time"
 msgstr "tijd"
 
-#: ../src/libs/collect.h:36 ../src/libs/history.c:55
+#: ../src/libs/collect.h:36
 msgid "history"
 msgstr "geschiedenis"
 
@@ -6332,7 +6332,7 @@ msgstr "beperk histogram tot selectie"
 msgid "display sample areas on image"
 msgstr "toon voorbeeld gebied op afbeelding"
 
-#: ../src/libs/copy_history.c:50
+#: ../src/libs/copy_history.c:50 ../src/libs/history.c:55
 msgid "history stack"
 msgstr "bewerkingsstappen"
 
@@ -7526,7 +7526,7 @@ msgstr "selecteer stijl"
 
 #: ../src/libs/styles.c:276
 msgid "darktable style files"
-msgstr "DT-stijl bestanden"
+msgstr "dt-stijl bestanden"
 
 #: ../src/libs/styles.c:352
 msgid ""
