@@ -1314,14 +1314,12 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   GtkBox *box = GTK_BOX(gtk_vbox_new(FALSE, 5));
   gtk_container_add (GTK_CONTAINER(alignment), GTK_WIDGET(box));
   GtkWidget *label;
-  // GtkBox *vbox1 = GTK_BOX(gtk_vbox_new(TRUE, 5));
 
-  GtkBox *vbox2 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  GtkBox *vbox3 = GTK_BOX(gtk_vbox_new(TRUE, 5));
-  GtkBox *vbox4 = GTK_BOX(gtk_vbox_new(TRUE, 5));
+  // GTK3: probably use GtkGrid instead...
+  GtkWidget *grid = gtk_table_new(7,3,TRUE);
 
   dt_gui_presets_edit_dialog_t *g = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
-//   g->module = module;
+  // g->module = module;
   g->rowid = rowid;
   g->tree = tree;
   g->name = GTK_LABEL(gtk_label_new(name));
@@ -1340,12 +1338,8 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   g_signal_connect(G_OBJECT(g->filter),    "toggled", G_CALLBACK(check_buttons_activated), g);
 
   g->details   = GTK_BOX(gtk_hbox_new(FALSE, 0));
-  GtkBox *hbox = GTK_BOX(gtk_hbox_new(TRUE, 5));
   gtk_box_pack_start(box,  GTK_WIDGET(g->details),  FALSE, FALSE, 0);
-  gtk_box_pack_start(g->details, GTK_WIDGET(hbox),  FALSE, FALSE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox2), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox3), TRUE, TRUE, 0);
-  gtk_box_pack_start(hbox, GTK_WIDGET(vbox4), TRUE, TRUE, 0);
+  gtk_box_pack_start(g->details, GTK_WIDGET(grid),  FALSE, FALSE, 0);
 
   // model, maker, lens
   g->model = GTK_ENTRY(gtk_entry_new());
@@ -1353,43 +1347,42 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   g_object_set(G_OBJECT(g->model), "tooltip-text", _("string to match model (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("model"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->model), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 0, 1);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->model), 1, 2, 0, 1);
+
   g->maker = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->maker), "tooltip-text", _("string to match maker (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("maker"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->maker), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 1, 2);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->maker), 1, 2, 1, 2);
+
   g->lens  = GTK_ENTRY(gtk_entry_new());
   /* xgettext:no-c-format */
   g_object_set(G_OBJECT(g->lens), "tooltip-text", _("string to match lens (use % as wildcard)"), (char *)NULL);
   label = gtk_label_new(_("lens"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->lens), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 2, 3);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->lens), 1, 2, 2, 3);
 
   // iso
   label = gtk_label_new(_("ISO"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 3, 4);
   g->iso_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_min), "tooltip-text", _("minimum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_min, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->iso_min), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->iso_min), 1, 2, 3, 4);
   g->iso_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 51200, 100));
   g_object_set(G_OBJECT(g->iso_max), "tooltip-text", _("maximum ISO value"), (char *)NULL);
   gtk_spin_button_set_digits(g->iso_max, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->iso_max), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->iso_max), 2, 3, 3, 4);
 
   // exposure
   label = gtk_label_new(_("exposure"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 4, 5);
   g->exposure_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->exposure_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->exposure_min), "tooltip-text", _("minimum exposure time"), (char *)NULL);
@@ -1398,13 +1391,13 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_min), dt_gui_presets_exposure_value_str[k]);
   for(int k=0; k<dt_gui_presets_exposure_value_cnt; k++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->exposure_max), dt_gui_presets_exposure_value_str[k]);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->exposure_min), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->exposure_max), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->exposure_min), 1, 2, 4, 5);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->exposure_max), 2, 3, 4, 5);
 
   // aperture
   label = gtk_label_new(_("aperture"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 5, 6);
   g->aperture_min = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g->aperture_max = GTK_COMBO_BOX(gtk_combo_box_text_new());
   g_object_set(G_OBJECT(g->aperture_min), "tooltip-text", _("minimum aperture value"), (char *)NULL);
@@ -1413,22 +1406,21 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_min), dt_gui_presets_aperture_value_str[k]);
   for(int k=0; k<dt_gui_presets_aperture_value_cnt; k++)
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(g->aperture_max), dt_gui_presets_aperture_value_str[k]);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->aperture_min), FALSE, FALSE, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->aperture_max), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->aperture_min), 1, 2, 5, 6);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->aperture_max), 2, 3, 5, 6);
 
   // focal length
   label = gtk_label_new(_("focal length"));
   gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
-  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), label, 0, 1, 6, 7);
   g->focal_length_min = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   gtk_spin_button_set_digits(g->focal_length_min, 0);
-  gtk_box_pack_start(vbox3, GTK_WIDGET(g->focal_length_min), FALSE, FALSE, 0);
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->focal_length_min), 1, 2, 6, 7);
   g->focal_length_max = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, 1000, 10));
   g_object_set(G_OBJECT(g->focal_length_min), "tooltip-text", _("minimum focal length"), (char *)NULL);
   g_object_set(G_OBJECT(g->focal_length_max), "tooltip-text", _("maximum focal length"), (char *)NULL);
   gtk_spin_button_set_digits(g->focal_length_max, 0);
-  gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
-
+  gtk_table_attach_defaults(GTK_TABLE(grid), GTK_WIDGET(g->focal_length_max), 2, 3, 6, 7);
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
