@@ -946,7 +946,7 @@ msgstr "les images doivent avoir la même taille !"
 #: ../src/control/jobs/control_jobs.c:249
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "HDR image '%s' écrite"
+msgstr "image HDR '%s' écrite"
 
 #: ../src/control/jobs/control_jobs.c:275
 #, c-format
