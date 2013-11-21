@@ -15,10 +15,17 @@ to regenerate the documentation you must first add the tools to your lua path
 once the lua documentation is in your path you need to require the correct file
 	
 	wiki = require "wiki"
+or
+	usermanual = require "usermanual"
 
 and last you need to print the doc. To print to stdout simply run the following
 
 	print (wiki.get_doc())
+
+or 
+	outfile =io.open("/home/rosen/perso/darktable/darktable/doc/usermanual/lua/lua_api.xml","w+")
+	outfile:write(usermanual.get_doc())
+	outfile:close()
 
 If you want to exit darktable immediately, you can use the following
 
