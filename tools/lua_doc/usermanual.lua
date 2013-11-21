@@ -5,6 +5,20 @@ local page_name="/redmine/projects/darktable/wiki/LuaAPI"
 
 local parse_doc_node
 
+
+local function sorted_pairs (t, f)
+	local a = {}
+	for n in pairs(t) do table.insert(a, n) end
+	table.sort(a, f)
+	local i = 0      -- iterator variable
+	local iter = function ()   -- iterator function
+		i = i + 1
+		if a[i] == nil then return nil
+		else return a[i], t[a[i]]
+		end
+	end
+	return iter
+end
 local function get_node_with_link(node,name)
 		 --return "\""..name.."\":"..page_name.."#"..doc.get_name(node)
 		 return '<link linkend="'..doc.get_name(node)..'">'..name..'</link>'
@@ -56,7 +70,7 @@ local function print_content(node)
 	end
 	result = result ..parse_text(node).."\n"
 	local concat=""
-	for k2,v2 in pairs(node._luadoc_attributes) do
+	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
 		if not doc.get_attribute(doc.toplevel.attributes[k2],"skiped") then
 			concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
 		end

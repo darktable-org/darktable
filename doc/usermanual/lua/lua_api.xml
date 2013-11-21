@@ -13,7 +13,7 @@
 <para></para>
 <para>All functions and data are accessed through the darktable module.</para>
 <para></para>
-<para>This documentation was generated with version 1.3+1426~gaeec214</para>
+<para>This documentation was generated with version 1.3+1423~g093dcf2</para>
 
 <section status="draft" id="darktable">
 <title>darktable</title>
@@ -245,7 +245,7 @@
 <secondary>films</secondary>
 </indexterm>
 <para>A table containing all the film objects in the database.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <section status="draft" id="darktable.films.#">
 <title>#</title>
@@ -333,7 +333,7 @@
 <secondary>tags</secondary>
 </indexterm>
 <para>Allows access to all existing tags.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <section status="draft" id="darktable.tags.#">
 <title>#</title>
@@ -736,7 +736,7 @@
 <secondary>styles</secondary>
 </indexterm>
 <para>This pseude table allows you to access and manipulate styles.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <section status="draft" id="darktable.styles.#">
 <title>#</title>
@@ -882,7 +882,7 @@
 <secondary>database</secondary>
 </indexterm>
 <para>Allows to access the database of images. Note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes. Also note that all images are here. This table is not influenced by any GUI filtering (collections, stars etc...).</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <section status="draft" id="darktable.database.#">
 <title>#</title>
@@ -1357,7 +1357,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <para>Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.</para>
 <para></para>
 <para>Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.</para>
-<synopsis><link linkend="attributes.has_tostring">has_tostring</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_equal">has_equal</link> </synopsis>
+<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <section status="draft" >
 <title>attach</title>
@@ -3494,7 +3494,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A film in darktable; this represents a directory containing imported images.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <section status="draft" id="types.dt_lua_film_t.#">
 <title>#</title>
@@ -3539,7 +3539,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A style that can be applied to an image.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <section status="draft" >
 <title>delete</title>
@@ -3648,7 +3648,7 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A tag that can be attached to an image.</para>
-<synopsis><link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <section status="draft" >
 <title>delete</title>
@@ -3697,9 +3697,8 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-<synopsis>undocumented</synopsis>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>the images that have that tag attached to them</para>
-<synopsis><link linkend="attributes.read">read</link> </synopsis>
 
 </section>
 
