@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable 1.3\n"
+"Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-20 20:41+0100\n"
 "PO-Revision-Date: \n"
@@ -28,7 +28,7 @@ msgstr "Dimensione dei pannelli laterali in pixel"
 #: ../build/src/preferences_gen.h:1835 ../src/lua/preferences.c:373
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "Doppio click per ripristinare a `%d'"
+msgstr "Doppio click per ripristinare a '%d'"
 
 #: ../build/src/preferences_gen.h:1141
 msgid "(needs a restart)"
@@ -55,7 +55,7 @@ msgstr "Non usare l'anteprima jpeg incorporata, ma la dimensione media RAW "
 #: ../src/lua/preferences.c:356 ../src/lua/preferences.c:364
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Doppio click per ripristinare a `%s'"
+msgstr "Doppio click per ripristinare a '%s'"
 
 #: ../build/src/preferences_gen.h:1157 ../build/src/preferences_gen.h:1276
 #: ../build/src/preferences_gen.h:1295 ../build/src/preferences_gen.h:1411
@@ -699,22 +699,22 @@ msgstr[1] "%d immagini di %d sono state selezionate nella raccolta"
 #: ../src/common/darktable.c:295
 #, c-format
 msgid "found strange path `%s'"
-msgstr "Trovato percorso anomalo `%s'"
+msgstr "Trovato percorso anomalo '%s'"
 
 #: ../src/common/darktable.c:313
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "Errore nel caricamento della cartella `%s'"
+msgstr "Errore nel caricamento della cartella '%s'"
 
 #: ../src/common/darktable.c:333
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "Il file `%s' ha un formato sconosciuto!"
+msgstr "Il file '%s' ha un formato sconosciuto!"
 
 #: ../src/common/darktable.c:347 ../src/libs/import.c:715
 #, c-format
 msgid "error loading file `%s'"
-msgstr "Errore nel caricamento del file `%s'"
+msgstr "Errore nel caricamento del file '%s'"
 
 #: ../src/common/darktable.c:505
 #, c-format
@@ -790,7 +790,7 @@ msgstr ""
 #: ../src/common/imageio.c:616 ../src/common/mipmap_cache.c:1163
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "L'immagine `%s' non è disponibile!"
+msgstr "L'immagine '%s' non è disponibile!"
 
 #: ../src/common/imageio.c:632
 #, c-format
@@ -916,7 +916,7 @@ msgstr "Inizio importazioni immagini dalla fotocamera"
 #, c-format
 msgid "failed to create import path `%s', import aborted."
 msgstr ""
-"Impossibile creare il percorso di importazione `%s'. Importazione annullata. "
+"Impossibile creare il percorso di importazione '%s'. Importazione annullata. "
 
 #: ../src/control/jobs/camera_jobs.c:415
 #, c-format
@@ -945,7 +945,7 @@ msgstr "Il bracketing dell'esposizione è disponibile solo per le immagini RAW"
 #: ../src/control/jobs/control_jobs.c:154
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "Impossibile leggere il buffer RAW dall'immagine `%s'"
+msgstr "Impossibile leggere il buffer RAW dall'immagine '%s'"
 
 #: ../src/control/jobs/control_jobs.c:173
 msgid "images have to be of same size!"
@@ -954,7 +954,7 @@ msgstr "Le immagini devono avere la stessa dimensione!"
 #: ../src/control/jobs/control_jobs.c:249
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "Creata fusione HDR `%s'"
+msgstr "Creata fusione HDR '%s'"
 
 #: ../src/control/jobs/control_jobs.c:275
 #, c-format
@@ -1107,7 +1107,7 @@ msgstr[1] "Rimozione copie locali per %d immagini"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"Impossibile ottenere i parametri dal modulo di salvataggio `%s', "
+"Impossibile ottenere i parametri dal modulo di salvataggio '%s', "
 "annullamento esportazione.."
 
 #: ../src/control/jobs/control_jobs.c:1113
@@ -1127,7 +1127,7 @@ msgstr[1] "Esporto %d immagini in %s"
 #: ../src/control/jobs/control_jobs.c:1179 ../src/views/darkroom.c:472
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "Immagine `%s' al momento non disponibile"
+msgstr "Immagine '%s' al momento non disponibile"
 
 #: ../src/control/jobs/control_jobs.c:1259
 #, c-format
@@ -1577,7 +1577,7 @@ msgstr "Impossibile allocare il buffer per la fusione"
 #: ../src/develop/develop.c:976
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: mancata corrispondenza di versione del modulo `%s': %d != %d"
+msgstr "%s: mancata corrispondenza di versione del modulo '%s': %d != %d"
 
 #: ../src/develop/imageop.c:296 ../src/develop/imageop.c:304
 msgid "error creating GUI, see stderr"
@@ -1680,7 +1680,7 @@ msgstr "Impossibile trovare file xmp di Lightroom!"
 #: ../src/develop/lightroom.c:507
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "`%s' non è un file xmp di Lightroom!"
+msgstr "'%s' non è un file xmp di Lightroom!"
 
 #: ../src/develop/lightroom.c:1413 ../src/libs/import.c:515
 msgid "tags"
@@ -2272,7 +2272,7 @@ msgstr "Premi la nuova combinazione di tasti"
 #: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "Vuoi veramente eliminare l'impostazione `%s'?"
+msgstr "Vuoi veramente eliminare l'impostazione '%s'?"
 
 #: ../src/gui/preferences.c:1078 ../src/gui/presets.c:193
 #: ../src/libs/lib.c:316
@@ -2298,7 +2298,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1303 ../src/gui/presets.c:368
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "Modifica `%s' per il modulo `%s'"
+msgstr "Modifica '%s' per il modulo '%s'"
 
 #: ../src/gui/preferences.c:1332 ../src/gui/presets.c:399
 #: ../src/libs/lib.c:234
@@ -2399,7 +2399,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Preset `%s' già esistente.\n"
+"Preset '%s' già esistente.\n"
 "Vuoi sovrascriverlo?"
 
 #: ../src/gui/presets.c:259 ../src/libs/lib.c:141
@@ -2582,12 +2582,12 @@ msgstr ""
 #: ../src/imageio/storage/latex.c:250
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "Impossibile creare la directory `%s'!"
+msgstr "Impossibile creare la directory '%s'!"
 
 #: ../src/imageio/storage/disk.c:208
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "Impossibile scrivere nella directory `%s'!"
+msgstr "Impossibile scrivere nella directory '%s'!"
 
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:671
@@ -2595,7 +2595,7 @@ msgstr "Impossibile scrivere nella directory `%s'!"
 #: ../src/imageio/storage/picasa.c:1443
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "Impossibile esportare il file `%s'!"
+msgstr "Impossibile esportare il file '%s'!"
 
 #: ../src/imageio/storage/disk.c:257 ../src/imageio/storage/email.c:116
 #: ../src/imageio/storage/gallery.c:355 ../src/imageio/storage/latex.c:339
@@ -7003,7 +7003,7 @@ msgstr "Seleziona una cartella da importare come rullino"
 #: ../src/libs/lib.c:205
 #, c-format
 msgid "edit `%s'"
-msgstr "Modifica `%s'"
+msgstr "Modifica '%s'"
 
 #: ../src/libs/live_view.c:134
 msgid "live view"
@@ -7614,10 +7614,10 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"Vuoi veramente eliminare l'etichetta`%s'?\n"
+"Vuoi veramente eliminare l'etichetta '%s'?\n"
 "A %d immagine è assegnata questa etichetta!"
 msgstr[1] ""
-"Vuoi veramente eliminare l'etichetta`%s'?\n"
+"Vuoi veramente eliminare l'etichetta '%s'?\n"
 "A %d immagini è assegnata questa etichetta!"
 
 #: ../src/libs/tagging.c:323
@@ -8026,7 +8026,7 @@ msgstr "Non sono state trovate preimpostazioni per i moduli preferiti "
 #: ../src/views/darkroom.c:882
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "Applicato lo stile `%s' sull'immagine corrente"
+msgstr "Applicato lo stile '%s' sull'immagine corrente"
 
 #: ../src/views/darkroom.c:940
 msgid "no styles have been created yet"
@@ -8644,11 +8644,11 @@ msgstr "Grafica"
 #~ "backtrace log to mailing list with information about your CPU and where "
 #~ "you got the package from."
 #~ msgstr ""
-#~ "darktable è in corso in un'istruzione non valida il che probabilmente "
+#~ "darktable è incorso in un'istruzione non valida, il che probabilmente "
 #~ "significa che si sta usando un codepath ottimizzato e non valido per la "
 #~ "tua cpu. Prova a riprodurre il crash eseguendo 'gdb darktable' dal "
 #~ "terminale e invia il log di backtrace nella mailing list con le "
-#~ "informazioni sulla tua CPU a dove hai ottenuto il pacchetto. "
+#~ "informazioni sulla tua CPU e su dove hai ottenuto il pacchetto. "
 
 #~ msgid "SIMD extensions found: "
 #~ msgstr "Estensioni SIMD trovate:"
