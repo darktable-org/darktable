@@ -263,7 +263,10 @@ void gui_reset(dt_lib_module_t *self)
   d->snapshot_image = NULL;
 
   for(uint32_t k=0; k<d->size; k++)
+  {
     gtk_widget_hide(d->snapshot[k].button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
+  }
 
   dt_control_queue_redraw_center();
 }
