@@ -31,7 +31,9 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
 // there's no <malloc.h> on OS X
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(__DragonFly__) &&			\
+    !defined(__FreeBSD__) && !defined(__NetBSD__) &&			\
+    !defined(__OpenBSD__)
 #include <malloc.h>
 #endif
 
