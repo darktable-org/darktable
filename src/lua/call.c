@@ -70,9 +70,11 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
           dt_control_queue_redraw();
           dt_lua_lock();
         }
-        lua_pop(L,1);
-        int result= lua_gettop(new_thread) -1;
-        lua_xmove(new_thread,L,result);
+        if(nresults !=LUA_MULTRET) {
+          lua_settop(new_thread,nresults);
+        }
+        int result= lua_gettop(new_thread);
+        lua_xmove(new_thread,new_thread,result);
         return result;
       case LUA_YIELD:
         {
