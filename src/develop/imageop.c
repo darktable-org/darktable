@@ -2756,8 +2756,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
     dt_iop_gui_set_state(module,dt_iop_state_ACTIVE);
   }
 
-  // FIXME
-  //dt_gui_iop_modulegroups_switch(module->groups());
+  dt_dev_modulegroups_switch(darktable.develop,module);
   dt_iop_gui_set_expanded(module, TRUE);
   dt_iop_request_focus(module);
   return TRUE;
