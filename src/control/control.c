@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
+#include "common/colorspaces.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -51,6 +52,7 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
+#include <lcms2.h>
 
 /* the queue can have scheduled jobs but all
     the workers is sleeping, so this kicks the workers
@@ -340,7 +342,7 @@ void dt_ctl_set_display_profile()
     else
       atom_name = g_strdup("_ICC_PROFILE");
 
-    profile_source = g_strdup(atom_name);
+    profile_source = g_strdup_printf("xatom %s", atom_name);
 
     GdkAtom type = GDK_NONE;
     gint format = 0;
@@ -409,11 +411,19 @@ void dt_ctl_set_display_profile()
                         (darktable.control->xprofile_size != buffer_size || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
   if(profile_changed)
   {
+    cmsHPROFILE profile = NULL;
+    char name[512];
     // thanks to ufraw for this!
     g_free(darktable.control->xprofile_data);
     darktable.control->xprofile_data = buffer;
     darktable.control->xprofile_size = buffer_size;
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile from the %s (size: %d)\n", profile_source, buffer_size);
+    profile = cmsOpenProfileFromMem(buffer, buffer_size);
+    if(profile)
+    {
+      dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
+      cmsCloseProfile(profile);
+    }
+    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n", *name?name:"(unknown)", profile_source, buffer_size);
   }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   if(profile_changed)
