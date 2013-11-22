@@ -36,7 +36,7 @@ local function get_reported_type(node,simple)
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
-		rtype = rtype.."( "
+		rtype = rtype.."("
 		local sig = doc.get_attribute(node,"signature")
 		for k,v in pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
@@ -45,13 +45,13 @@ local function get_reported_type(node,simple)
 				rtype = rtype.."<emphasis>"..doc.get_short_name(v).."</emphasis>"
 			end
 			if next(sig,k) then
-				rtype = rtype..", "
+				rtype = rtype..","
 			end
 		end
-		rtype = rtype.." )"
+		rtype = rtype..")"
 	end
 	if(not simple and doc.get_attribute(node,"ret_val")) then
-		rtype = rtype.." : "..get_reported_type(doc.get_attribute(node,"ret_val",true))
+		rtype = rtype..":"..get_reported_type(doc.get_attribute(node,"ret_val",true))
 	end
 	return rtype
 end
@@ -72,11 +72,14 @@ local function print_content(node)
 	local concat=""
 	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
 		if not doc.get_attribute(doc.toplevel.attributes[k2],"skiped") then
-			concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
+			if concat ~= "" then
+				concat = concat..", "
+			end
+			concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2)
 		end
 	end
 	if concat ~="" then
-		result = result.."<synopsis>"..concat.."</synopsis>\n"
+		result = result.."<synopsis>Attributes: "..concat.."</synopsis>\n"
 	end
 
 	result = result.."\n"

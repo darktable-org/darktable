@@ -13,7 +13,7 @@
 <para></para>
 <para>All functions and data are accessed through the darktable module.</para>
 <para></para>
-<para>This documentation was generated with darktable version 1.3+1426~gaeec214.</para>
+<para>This documentation was generated with darktable version 1.3+1475~gb837db7.</para>
 
 <sect2 status="draft" id="darktable">
 <title>darktable</title>
@@ -29,7 +29,7 @@
 <primary>Lua API</primary>
 <secondary>print</secondary>
 </indexterm>
-<synopsis>function( <emphasis>message</emphasis> )</synopsis>
+<synopsis>function(<emphasis>message</emphasis>)</synopsis>
 <para>Will print a string to the darktable control log (the long overlayed window that appears over the main panel).</para>
 
 <variablelist>
@@ -48,7 +48,7 @@
 <primary>Lua API</primary>
 <secondary>print_error</secondary>
 </indexterm>
-<synopsis>function( <emphasis>message</emphasis> )</synopsis>
+<synopsis>function(<emphasis>message</emphasis>)</synopsis>
 <para>This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.</para>
 
 <variablelist>
@@ -67,7 +67,7 @@
 <primary>Lua API</primary>
 <secondary>register_event</secondary>
 </indexterm>
-<synopsis>function( <emphasis>event_type</emphasis>, <emphasis>callback</emphasis>, <emphasis>...</emphasis> )</synopsis>
+<synopsis>function(<emphasis>event_type</emphasis>,<emphasis>callback</emphasis>,<emphasis>...</emphasis>)</synopsis>
 <para>This function registers a callback to be called when a given event happens.</para>
 <para></para>
 <para>Events are documented in the event section.</para>
@@ -100,7 +100,7 @@
 <primary>Lua API</primary>
 <secondary>register_storage</secondary>
 </indexterm>
-<synopsis>function( <emphasis>plugin_name</emphasis>, <emphasis>name</emphasis>, [<emphasis>store</emphasis>], [<emphasis>finalize</emphasis>], [<emphasis>supported</emphasis>] )</synopsis>
+<synopsis>function(<emphasis>plugin_name</emphasis>,<emphasis>name</emphasis>,[<emphasis>store</emphasis>],[<emphasis>finalize</emphasis>],[<emphasis>supported</emphasis>])</synopsis>
 <para>This function will add a new storage implemented in Lua. </para>
 <para>A storage is a module that is responsible for handling images once they have been generated during export. Examples of core storages include filesystem, e-mail, facebook...</para>
 
@@ -118,7 +118,7 @@
 </listitem></varlistentry>
 
 <varlistentry><term id="darktable.register_storage.store">store</term><listitem>
-<synopsis>function( <emphasis>storage</emphasis>, <emphasis>image</emphasis>, <emphasis>format</emphasis>, <emphasis>filename</emphasis>, <emphasis>number</emphasis>, <emphasis>total</emphasis>, <emphasis>high_quality</emphasis>, <emphasis>extra_data</emphasis> )</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
 <para>This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.</para>
 
 <variablelist>
@@ -174,7 +174,7 @@
 </listitem></varlistentry>
 
 <varlistentry><term id="darktable.register_storage.finalize">finalize</term><listitem>
-<synopsis>function( <emphasis>storage</emphasis>, <emphasis>image_table</emphasis>, <emphasis>extra_data</emphasis> )</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image_table</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
 <para>This function is called once all images are processed and all store calls are finished.</para>
 
 <variablelist>
@@ -200,7 +200,7 @@
 </listitem></varlistentry>
 
 <varlistentry><term id="darktable.register_storage.supported">supported</term><listitem>
-<synopsis>function( <emphasis>storage</emphasis>, <emphasis>format</emphasis> ) : boolean</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>format</emphasis>):boolean</synopsis>
 <para>A function called to check if a given image format is supported by the Lua storage; this is used to build the dropdown format list for the GUI.</para>
 <para></para>
 <para>Nate that the parameters in the format are the ones currently set in the GUI; the user might change them before export.</para>
@@ -238,7 +238,7 @@
 <secondary>films</secondary>
 </indexterm>
 <para>A table containing all the film objects in the database.</para>
-<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" id="darktable.films.#">
 <title>darktable.films.#</title>
@@ -262,7 +262,7 @@
 <para>This subtable contains function and data to manipulate the darktable user interface with Lua.</para>
 <para></para>
 <para>Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" id="darktable.gui.action_images">
 <title>darktable.gui.action_images</title>
@@ -295,9 +295,9 @@
 <primary>Lua API</primary>
 <secondary>selection</secondary>
 </indexterm>
-<synopsis>function( [<emphasis>selection</emphasis>] ) : table</synopsis>
+<synopsis>function([<emphasis>selection</emphasis>]):table</synopsis>
 <para>Allows to change the set of selected images.</para>
-<synopsis><link linkend="attributes.implicit_yield">implicit_yield</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
 
 <variablelist>
 <varlistentry><term id="darktable.gui.selection.selection">selection</term><listitem>
@@ -325,7 +325,7 @@
 <secondary>tags</secondary>
 </indexterm>
 <para>Allows access to all existing tags.</para>
-<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" id="darktable.tags.#">
 <title>darktable.tags.#</title>
@@ -344,7 +344,7 @@
 <primary>Lua API</primary>
 <secondary>create</secondary>
 </indexterm>
-<synopsis>function( <emphasis>name</emphasis> )</synopsis>
+<synopsis>function(<emphasis>name</emphasis>)</synopsis>
 <para>Creates a new tag and return it. If the tag exists return the existing tag.</para>
 
 <variablelist>
@@ -363,7 +363,7 @@
 <primary>Lua API</primary>
 <secondary>find</secondary>
 </indexterm>
-<synopsis>function( <emphasis>name</emphasis> ) : <link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<synopsis>function(<emphasis>name</emphasis>):<link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
 <para>Returns the tag object or nil if the tag doesn't exist.</para>
 
 <variablelist>
@@ -389,7 +389,7 @@
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( <emphasis>tag</emphasis> )</synopsis>
+<synopsis>function(<emphasis>tag</emphasis>)</synopsis>
 <para>Deletes the tag object, detaching it from all images.</para>
 
 <variablelist>
@@ -408,7 +408,7 @@
 <primary>Lua API</primary>
 <secondary>attach</secondary>
 </indexterm>
-<synopsis>function( <emphasis>tag</emphasis>, <emphasis>image</emphasis> )</synopsis>
+<synopsis>function(<emphasis>tag</emphasis>,<emphasis>image</emphasis>)</synopsis>
 <para>Attach a tag to an image; the order of the parameters can be reversed.</para>
 
 <variablelist>
@@ -433,7 +433,7 @@
 <primary>Lua API</primary>
 <secondary>detach</secondary>
 </indexterm>
-<synopsis>function( <emphasis>tag</emphasis>, <emphasis>image</emphasis> )</synopsis>
+<synopsis>function(<emphasis>tag</emphasis>,<emphasis>image</emphasis>)</synopsis>
 <para>Detach a tag from an image; the order of the parameters can be reversed.</para>
 
 <variablelist>
@@ -458,7 +458,7 @@
 <primary>Lua API</primary>
 <secondary>get_tags</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis> ) : table</synopsis>
+<synopsis>function(<emphasis>image</emphasis>):table</synopsis>
 <para>Gets all tags attached to an image.</para>
 
 <variablelist>
@@ -580,7 +580,7 @@
 <primary>Lua API</primary>
 <secondary>register</secondary>
 </indexterm>
-<synopsis>function( <emphasis>script</emphasis>, <emphasis>name</emphasis>, <emphasis>type</emphasis>, <emphasis>label</emphasis>, <emphasis>tooltip</emphasis>, [<emphasis>default</emphasis>], [<emphasis>min</emphasis>], [<emphasis>max</emphasis>] )</synopsis>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>,<emphasis>label</emphasis>,<emphasis>tooltip</emphasis>,[<emphasis>default</emphasis>],[<emphasis>min</emphasis>],[<emphasis>max</emphasis>])</synopsis>
 <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
 
 <variablelist>
@@ -641,7 +641,7 @@
 <primary>Lua API</primary>
 <secondary>read</secondary>
 </indexterm>
-<synopsis>function( <emphasis>script</emphasis>, <emphasis>name</emphasis>, <emphasis>type</emphasis> ) : depends on type</synopsis>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>):depends on type</synopsis>
 <para>Reads a value from a Lua preference.</para>
 
 <variablelist>
@@ -679,7 +679,7 @@
 <primary>Lua API</primary>
 <secondary>write</secondary>
 </indexterm>
-<synopsis>function( <emphasis>script</emphasis>, <emphasis>name</emphasis>, <emphasis>type</emphasis>, <emphasis>value</emphasis> )</synopsis>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>,<emphasis>value</emphasis>)</synopsis>
 <para>Writes a value to a Lua preference.</para>
 
 <variablelist>
@@ -719,7 +719,7 @@
 <secondary>styles</secondary>
 </indexterm>
 <para>This pseude table allows you to access and manipulate styles.</para>
-<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" id="darktable.styles.#">
 <title>darktable.styles.#</title>
@@ -738,7 +738,7 @@
 <primary>Lua API</primary>
 <secondary>create</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, <emphasis>name</emphasis>, <emphasis>description</emphasis> ) : <link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<synopsis>function(<emphasis>image</emphasis>,<emphasis>name</emphasis>,<emphasis>description</emphasis>):<link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an image.</para>
 
 <variablelist>
@@ -776,7 +776,7 @@
 <primary>Lua API</primary>
 <secondary>delete</secondary>
 </indexterm>
-<synopsis>function( <emphasis>style</emphasis> )</synopsis>
+<synopsis>function(<emphasis>style</emphasis>)</synopsis>
 <para>Deletes an existing style.</para>
 
 <variablelist>
@@ -795,7 +795,7 @@
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
 </indexterm>
-<synopsis>function( <emphasis>style</emphasis>, <emphasis>name</emphasis>, <emphasis>description</emphasis> ) : <link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<synopsis>function(<emphasis>style</emphasis>,<emphasis>name</emphasis>,<emphasis>description</emphasis>):<link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
 <para>Create a new style based on an existing style.</para>
 
 <variablelist>
@@ -833,7 +833,7 @@
 <primary>Lua API</primary>
 <secondary>apply</secondary>
 </indexterm>
-<synopsis>function( <emphasis>style</emphasis>, <emphasis>image</emphasis> )</synopsis>
+<synopsis>function(<emphasis>style</emphasis>,<emphasis>image</emphasis>)</synopsis>
 <para>Apply a style to an image. The order of parameters can be inverted.</para>
 
 <variablelist>
@@ -861,7 +861,7 @@
 <secondary>database</secondary>
 </indexterm>
 <para>Allows to access the database of images. Note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes. Also note that all images are here. This table is not influenced by any GUI filtering (collections, stars etc...).</para>
-<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" id="darktable.database.#">
 <title>darktable.database.#</title>
@@ -880,7 +880,7 @@
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis> ) : <link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<synopsis>function(<emphasis>image</emphasis>):<link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
 <para>Creates a duplicate of an image and returns it.</para>
 
 <variablelist>
@@ -906,7 +906,7 @@
 <primary>Lua API</primary>
 <secondary>import</secondary>
 </indexterm>
-<synopsis>function( <emphasis>location</emphasis> )</synopsis>
+<synopsis>function(<emphasis>location</emphasis>)</synopsis>
 <para>Imports new images into the database.</para>
 
 <variablelist>
@@ -944,7 +944,7 @@
 <secondary>format</secondary>
 </indexterm>
 <para>Functions to get parameter objects for the different export formats.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect5 status="draft" id="darktable.modules.format.png">
 <title>darktable.modules.format.png</title>
@@ -952,7 +952,7 @@
 <primary>Lua API</primary>
 <secondary>png</secondary>
 </indexterm>
-<synopsis>function(  ) : <link linkend="types.dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
+<synopsis>function():<link linkend="types.dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
 <para>Used to get a new png format object.</para>
 
 <variablelist>
@@ -1057,7 +1057,7 @@ see <link linkend="darktable.modules.format.png">darktable.modules.format.png</l
 <para>Functions to get parameter objects for the different export storages.</para>
 <para></para>
 <para>New values may appear in this table if new storages are registered using Lua.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect5 status="draft" id="darktable.modules.storage.email">
 <title>darktable.modules.storage.email</title>
@@ -1065,7 +1065,7 @@ see <link linkend="darktable.modules.format.png">darktable.modules.format.png</l
 <primary>Lua API</primary>
 <secondary>email</secondary>
 </indexterm>
-<synopsis>function(  ) : <link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<synopsis>function():<link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
 <para>Used to get a new email storage object.</para>
 
 <variablelist>
@@ -1161,7 +1161,7 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 <primary>Lua API</primary>
 <secondary>dump</secondary>
 </indexterm>
-<synopsis>function( <emphasis>object</emphasis>, [<emphasis>name</emphasis>] ) : string</synopsis>
+<synopsis>function(<emphasis>object</emphasis>,[<emphasis>name</emphasis>]):string</synopsis>
 <para>This will return a string describing everything Lua knows about an object, used to know what an object is.</para>
 <para></para>
 <para>This function is recursion-safe and can be used to dump _G if needed.</para>
@@ -1206,7 +1206,7 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 <primary>Lua API</primary>
 <secondary>type</secondary>
 </indexterm>
-<synopsis>function( <emphasis>object</emphasis> ) : string</synopsis>
+<synopsis>function(<emphasis>object</emphasis>):string</synopsis>
 <para>Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.</para>
 
 <variablelist>
@@ -1246,7 +1246,7 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>TBSL, force first</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_email.plugin_name</title>
@@ -1330,7 +1330,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <para>Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.</para>
 <para></para>
 <para>Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.</para>
-<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_lua_image_t.attach_tag</title>
@@ -1757,7 +1757,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <primary>Lua API</primary>
 <secondary>group_with</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, [<emphasis>image2</emphasis>] )</synopsis>
+<synopsis>function(<emphasis>image</emphasis>,[<emphasis>image2</emphasis>])</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
 
 <variablelist>
@@ -1782,7 +1782,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <primary>Lua API</primary>
 <secondary>make_group_leader</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis> )</synopsis>
+<synopsis>function(<emphasis>image</emphasis>)</synopsis>
 <para>Makes the image the leader of its group.</para>
 
 <variablelist>
@@ -1801,7 +1801,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <primary>Lua API</primary>
 <secondary>get_group_members</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis> ) : table</synopsis>
+<synopsis>function(<emphasis>image</emphasis>):table</synopsis>
 <para>Returns a table containing all images of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
 
 <variablelist>
@@ -1915,9 +1915,9 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
 </indexterm>
-<synopsis>function( <emphasis>format</emphasis>, <emphasis>image</emphasis>, <emphasis>filename</emphasis> ) : boolean</synopsis>
+<synopsis>function(<emphasis>format</emphasis>,<emphasis>image</emphasis>,<emphasis>filename</emphasis>):boolean</synopsis>
 <para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
-<synopsis><link linkend="attributes.implicit_yield">implicit_yield</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
 
 <variablelist>
 <varlistentry><term id="types.dt_imageio_module_format.write_image.format">format</term><listitem>
@@ -1958,7 +1958,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to png.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_png.plugin_name</title>
@@ -2051,7 +2051,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to tiff.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_tiff.plugin_name</title>
@@ -2144,7 +2144,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to exr.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_exr.plugin_name</title>
@@ -2226,7 +2226,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to copy.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_copy.plugin_name</title>
@@ -2308,7 +2308,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to pfm.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_pfm.plugin_name</title>
@@ -2390,7 +2390,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to jpeg.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_jpeg.plugin_name</title>
@@ -2483,7 +2483,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to ppm.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_ppm.plugin_name</title>
@@ -2565,7 +2565,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to webp.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_webp.plugin_name</title>
@@ -2680,7 +2680,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to jpeg2000.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_j2k.plugin_name</title>
@@ -2879,7 +2879,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
 </indexterm>
-<synopsis>function( <emphasis>storage</emphasis>, <emphasis>format</emphasis> ) : boolean</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>format</emphasis>):boolean</synopsis>
 <para>Checks if a format is supported by this storage.</para>
 
 <variablelist>
@@ -2915,7 +2915,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to flickr.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_flickr.plugin_name</title>
@@ -2997,7 +2997,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to facebook.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_facebook.plugin_name</title>
@@ -3079,7 +3079,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to latex.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_latex.plugin_name</title>
@@ -3183,7 +3183,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to picasa.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_picasa.plugin_name</title>
@@ -3265,7 +3265,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to gallery.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_gallery.plugin_name</title>
@@ -3369,7 +3369,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to disk.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_disk.plugin_name</title>
@@ -3462,7 +3462,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A film in darktable; this represents a directory containing imported images.</para>
-<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
 
 <sect4 status="draft" id="types.dt_lua_film_t.#">
 <title>types.dt_lua_film_t.#</title>
@@ -3507,7 +3507,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A style that can be applied to an image.</para>
-<synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_style_t.delete</title>
@@ -3582,7 +3582,7 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An element that is part of a style.</para>
-<synopsis><link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
 
 <sect4 status="draft" id="types.dt_style_item_t.name">
 <title>types.dt_style_item_t.name</title>
@@ -3616,7 +3616,7 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A tag that can be attached to an image.</para>
-<synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
 
 <sect4 status="draft" >
 <title>types.dt_lua_tag_t.delete</title>
@@ -3667,7 +3667,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 </indexterm>
 <synopsis>undocumented</synopsis>
 <para>The images that have that tag attached to them.</para>
-<synopsis><link linkend="attributes.read">read</link> <link linkend="attributes.write">write</link> </synopsis>
+<synopsis>Attributes: <link linkend="attributes.read">read</link></synopsis>
 
 </sect4>
 
@@ -3698,7 +3698,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( <emphasis>event</emphasis>, <emphasis>image</emphasis>, <emphasis>filename</emphasis> )</synopsis>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>image</emphasis>,<emphasis>filename</emphasis>)</synopsis>
 <para></para>
 
 <variablelist>
@@ -3752,7 +3752,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( <emphasis>event</emphasis>, <emphasis>image</emphasis> )</synopsis>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>image</emphasis>)</synopsis>
 <para></para>
 
 <variablelist>
@@ -3804,7 +3804,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( <emphasis>event</emphasis>, <emphasis>shortcut</emphasis> )</synopsis>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>shortcut</emphasis>)</synopsis>
 <para></para>
 
 <variablelist>
@@ -3859,7 +3859,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>callback</secondary>
 </indexterm>
-<synopsis>function( <emphasis>event</emphasis>, <emphasis>film</emphasis> )</synopsis>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>film</emphasis>)</synopsis>
 <para></para>
 
 <variablelist>
@@ -3996,7 +3996,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <primary>Lua API</primary>
 <secondary>yield</secondary>
 </indexterm>
-<synopsis>function( <emphasis>type</emphasis>, <emphasis>extra</emphasis> ) : variable</synopsis>
+<synopsis>function(<emphasis>type</emphasis>,<emphasis>extra</emphasis>):variable</synopsis>
 <para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
 <para>A callback that is yielding allows other Lua code to run.</para>
 <para></para>
