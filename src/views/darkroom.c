@@ -650,7 +650,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         g_value_init(&gv,G_TYPE_INT);
         gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
-        dt_iop_gui_set_expanded(module, TRUE);
+        dt_iop_gui_set_expanded(module, TRUE, FALSE);
         dt_iop_gui_update_blending(module);
       }
 
@@ -1208,7 +1208,7 @@ void enter(dt_view_t *self)
                                  DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
+      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
     }
 
     /* setup key accelerators */
