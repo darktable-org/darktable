@@ -109,8 +109,7 @@ darktable.gui:set_text([[This subtable contains function and data to manipulate 
 Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).]])
 
 darktable.gui.action_images:set_text([[A table of images on which the user expects us to act.
-It is based on both the hovered image and the selection and is
-consistent with the way darktable works.
+It is based on both the hovered image and the selection and is consistent with the way darktable works.
 
 It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.]])
 for k, v in darktable.gui.action_images:all_children() do
