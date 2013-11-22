@@ -40,7 +40,7 @@ local function get_reported_type(node,simple)
 		local sig = doc.get_attribute(node,"signature")
 		for k,v in pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
-				rtype = rtype.."[ <emphasis>"..doc.get_short_name(v).."</emphasis> ]"
+				rtype = rtype.."[<emphasis>"..doc.get_short_name(v).."</emphasis>]"
 			else
 				rtype = rtype.."<emphasis>"..doc.get_short_name(v).."</emphasis>"
 			end
@@ -145,10 +145,10 @@ parse_doc_node = function(node,parent,prev_name)
 			result = result..'id="'..doc.get_name(node)..'"'
 		end
 		result = result..'>\n'
-		result = result..'<title>'..doc.get_name(node)..'</title>\n'
+		result = result..'<title>'..node_name..'</title>\n'
 		result = result..'<indexterm>\n'
 		result = result..'<primary>Lua API</primary>\n'
-		result = result..'<secondary>'..node:get_short_name()..'</secondary>\n'
+		result = result..'<secondary>'..prev_name..'</secondary>\n'
 		result = result..'</indexterm>\n'
 
 	end

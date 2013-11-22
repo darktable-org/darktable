@@ -100,7 +100,7 @@
 <primary>Lua API</primary>
 <secondary>register_storage</secondary>
 </indexterm>
-<synopsis>function( <emphasis>plugin_name</emphasis>, <emphasis>name</emphasis>, [ <emphasis>store</emphasis> ], [ <emphasis>finalize</emphasis> ], [ <emphasis>supported</emphasis> ] )</synopsis>
+<synopsis>function( <emphasis>plugin_name</emphasis>, <emphasis>name</emphasis>, [<emphasis>store</emphasis>], [<emphasis>finalize</emphasis>], [<emphasis>supported</emphasis>] )</synopsis>
 <para>This function will add a new storage implemented in Lua. </para>
 <para>A storage is a module that is responsible for handling images once they have been generated during export. Examples of core storages include filesystem, e-mail, facebook...</para>
 
@@ -295,7 +295,7 @@
 <primary>Lua API</primary>
 <secondary>selection</secondary>
 </indexterm>
-<synopsis>function( [ <emphasis>selection</emphasis> ] ) : table</synopsis>
+<synopsis>function( [<emphasis>selection</emphasis>] ) : table</synopsis>
 <para>Allows to change the set of selected images.</para>
 <synopsis><link linkend="attributes.implicit_yield">implicit_yield</link> </synopsis>
 
@@ -580,7 +580,7 @@
 <primary>Lua API</primary>
 <secondary>register</secondary>
 </indexterm>
-<synopsis>function( <emphasis>script</emphasis>, <emphasis>name</emphasis>, <emphasis>type</emphasis>, <emphasis>label</emphasis>, <emphasis>tooltip</emphasis>, [ <emphasis>default</emphasis> ], [ <emphasis>min</emphasis> ], [ <emphasis>max</emphasis> ] )</synopsis>
+<synopsis>function( <emphasis>script</emphasis>, <emphasis>name</emphasis>, <emphasis>type</emphasis>, <emphasis>label</emphasis>, <emphasis>tooltip</emphasis>, [<emphasis>default</emphasis>], [<emphasis>min</emphasis>], [<emphasis>max</emphasis>] )</synopsis>
 <para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
 
 <variablelist>
@@ -967,80 +967,80 @@
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.tiff</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>tiff</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.exr</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>exr</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.copy</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>copy</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.pfm</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>pfm</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.jpeg</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>jpeg</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.ppm</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>ppm</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.webp</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>webp</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.format.png</title>
+<title>darktable.modules.format.j2k</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>png</secondary>
+<secondary>j2k</secondary>
 </indexterm>
 see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
 
@@ -1080,60 +1080,60 @@ see <link linkend="darktable.modules.format.png">darktable.modules.format.png</l
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.latex</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>latex</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.disk</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>disk</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.gallery</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>gallery</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.flickr</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>flickr</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.facebook</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>facebook</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
 </sect5>
 
 <sect5 status="draft" >
-<title>darktable.modules.storage.email</title>
+<title>darktable.modules.storage.picasa</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>email</secondary>
+<secondary>picasa</secondary>
 </indexterm>
 see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
 
@@ -1161,7 +1161,7 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 <primary>Lua API</primary>
 <secondary>dump</secondary>
 </indexterm>
-<synopsis>function( <emphasis>object</emphasis>, [ <emphasis>name</emphasis> ] ) : string</synopsis>
+<synopsis>function( <emphasis>object</emphasis>, [<emphasis>name</emphasis>] ) : string</synopsis>
 <para>This will return a string describing everything Lua knows about an object, used to know what an object is.</para>
 <para></para>
 <para>This function is recursion-safe and can be used to dump _G if needed.</para>
@@ -1249,7 +1249,7 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_email.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -1259,7 +1259,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_email.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -1269,7 +1269,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_email.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -1279,7 +1279,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_email.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -1289,7 +1289,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_email.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -1299,7 +1299,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_email.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -1309,7 +1309,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_email.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -1333,27 +1333,27 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <sect4 status="draft" >
-<title>darktable.tags.attach</title>
+<title>types.dt_lua_image_t.attach_tag</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>attach</secondary>
+<secondary>attach_tag</secondary>
 </indexterm>
 see <link linkend="darktable.tags.attach">darktable.tags.attach</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.tags.detach</title>
+<title>types.dt_lua_image_t.detach_tag</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>detach</secondary>
+<secondary>detach_tag</secondary>
 </indexterm>
 see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.tags.get_tags</title>
+<title>types.dt_lua_image_t.get_tags</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>get_tags</secondary>
@@ -1363,27 +1363,27 @@ see <link linkend="darktable.tags.get_tags">darktable.tags.get_tags</link>
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.styles.create</title>
+<title>types.dt_lua_image_t.create_style</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>create</secondary>
+<secondary>create_style</secondary>
 </indexterm>
 see <link linkend="darktable.styles.create">darktable.styles.create</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.styles.apply</title>
+<title>types.dt_lua_image_t.apply_style</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>apply</secondary>
+<secondary>apply_style</secondary>
 </indexterm>
 see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.database.duplicate</title>
+<title>types.dt_lua_image_t.duplicate</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
@@ -1712,40 +1712,40 @@ see <link linkend="darktable.database.duplicate">darktable.database.duplicate</l
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_lua_image_t.red</title>
+<title>types.dt_lua_image_t.blue</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>red</secondary>
+<secondary>blue</secondary>
 </indexterm>
 see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_lua_image_t.red</title>
+<title>types.dt_lua_image_t.green</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>red</secondary>
+<secondary>green</secondary>
 </indexterm>
 see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_lua_image_t.red</title>
+<title>types.dt_lua_image_t.yellow</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>red</secondary>
+<secondary>yellow</secondary>
 </indexterm>
 see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_lua_image_t.red</title>
+<title>types.dt_lua_image_t.purple</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>red</secondary>
+<secondary>purple</secondary>
 </indexterm>
 see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 
@@ -1757,7 +1757,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <primary>Lua API</primary>
 <secondary>group_with</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, [ <emphasis>image2</emphasis> ] )</synopsis>
+<synopsis>function( <emphasis>image</emphasis>, [<emphasis>image2</emphasis>] )</synopsis>
 <para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
 
 <variablelist>
@@ -1961,7 +1961,7 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_png.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -1971,7 +1971,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_png.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -1981,7 +1981,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_png.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -1991,7 +1991,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_png.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2001,7 +2001,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_png.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2011,7 +2011,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_png.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2021,7 +2021,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_png.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2054,7 +2054,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_tiff.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2064,7 +2064,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_tiff.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2074,7 +2074,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_tiff.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2084,7 +2084,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_tiff.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2094,7 +2094,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_tiff.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2104,7 +2104,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_tiff.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2114,7 +2114,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_tiff.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2147,7 +2147,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_exr.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2157,7 +2157,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_exr.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2167,7 +2167,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_exr.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2177,7 +2177,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_exr.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2187,7 +2187,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_exr.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2197,7 +2197,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_exr.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2207,7 +2207,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_exr.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2229,7 +2229,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_copy.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2239,7 +2239,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_copy.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2249,7 +2249,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_copy.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2259,7 +2259,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_copy.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2269,7 +2269,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_copy.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2279,7 +2279,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_copy.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2289,7 +2289,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_copy.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2311,7 +2311,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_pfm.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2321,7 +2321,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_pfm.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2331,7 +2331,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_pfm.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2341,7 +2341,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_pfm.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2351,7 +2351,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_pfm.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2361,7 +2361,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_pfm.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2371,7 +2371,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_pfm.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2393,7 +2393,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_jpeg.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2403,7 +2403,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_jpeg.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2413,7 +2413,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_jpeg.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2423,7 +2423,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_jpeg.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2433,7 +2433,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_jpeg.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2443,7 +2443,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_jpeg.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2453,7 +2453,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_jpeg.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2486,7 +2486,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_ppm.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2496,7 +2496,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_ppm.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2506,7 +2506,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_ppm.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2516,7 +2516,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_ppm.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2526,7 +2526,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_ppm.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2536,7 +2536,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_ppm.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2546,7 +2546,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_ppm.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2568,7 +2568,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_webp.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2578,7 +2578,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_webp.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2588,7 +2588,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_webp.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2598,7 +2598,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_webp.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2608,7 +2608,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_webp.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2618,7 +2618,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_webp.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2628,7 +2628,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_webp.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2683,7 +2683,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.plugin_name</title>
+<title>types.dt_imageio_module_format_data_j2k.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2693,7 +2693,7 @@ see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.name</title>
+<title>types.dt_imageio_module_format_data_j2k.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2703,7 +2703,7 @@ see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.extension</title>
+<title>types.dt_imageio_module_format_data_j2k.extension</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>extension</secondary>
@@ -2713,7 +2713,7 @@ see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.mime</title>
+<title>types.dt_imageio_module_format_data_j2k.mime</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>mime</secondary>
@@ -2723,7 +2723,7 @@ see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_width</title>
+<title>types.dt_imageio_module_format_data_j2k.max_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_width</secondary>
@@ -2733,7 +2733,7 @@ see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_mo
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.max_height</title>
+<title>types.dt_imageio_module_format_data_j2k.max_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>max_height</secondary>
@@ -2743,7 +2743,7 @@ see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_m
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_format.write_image</title>
+<title>types.dt_imageio_module_format_data_j2k.write_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>write_image</secondary>
@@ -2918,7 +2918,7 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_flickr.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -2928,7 +2928,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_flickr.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -2938,7 +2938,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_flickr.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -2948,7 +2948,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_flickr.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -2958,7 +2958,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_flickr.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -2968,7 +2968,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_flickr.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -2978,7 +2978,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_flickr.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3000,7 +3000,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_facebook.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -3010,7 +3010,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_facebook.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -3020,7 +3020,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_facebook.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -3030,7 +3030,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_facebook.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -3040,7 +3040,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_facebook.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -3050,7 +3050,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_facebook.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -3060,7 +3060,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_facebook.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3082,7 +3082,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_latex.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -3092,7 +3092,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_latex.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -3102,7 +3102,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_latex.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -3112,7 +3112,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_latex.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -3122,7 +3122,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_latex.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -3132,7 +3132,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_latex.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -3142,7 +3142,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_latex.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3186,7 +3186,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_picasa.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -3196,7 +3196,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_picasa.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -3206,7 +3206,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_picasa.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -3216,7 +3216,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_picasa.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -3226,7 +3226,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_picasa.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -3236,7 +3236,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_picasa.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -3246,7 +3246,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_picasa.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3268,7 +3268,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_gallery.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -3278,7 +3278,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_gallery.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -3288,7 +3288,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_gallery.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -3298,7 +3298,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_gallery.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -3308,7 +3308,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_gallery.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -3318,7 +3318,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_gallery.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -3328,7 +3328,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_gallery.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3372,7 +3372,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_pairs">has_pairs</link> </synopsis>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.plugin_name</title>
+<title>types.dt_imageio_module_storage_data_disk.plugin_name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>plugin_name</secondary>
@@ -3382,7 +3382,7 @@ see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.name</title>
+<title>types.dt_imageio_module_storage_data_disk.name</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>name</secondary>
@@ -3392,7 +3392,7 @@ see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.width</title>
+<title>types.dt_imageio_module_storage_data_disk.width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>width</secondary>
@@ -3402,7 +3402,7 @@ see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_modul
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.height</title>
+<title>types.dt_imageio_module_storage_data_disk.height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>height</secondary>
@@ -3412,7 +3412,7 @@ see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_modu
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_width</title>
+<title>types.dt_imageio_module_storage_data_disk.recommended_width</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_width</secondary>
@@ -3422,7 +3422,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_i
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.recommended_height</title>
+<title>types.dt_imageio_module_storage_data_disk.recommended_height</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>recommended_height</secondary>
@@ -3432,7 +3432,7 @@ see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_
 </sect4>
 
 <sect4 status="draft" >
-<title>types.dt_imageio_module_storage.supports_format</title>
+<title>types.dt_imageio_module_storage_data_disk.supports_format</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>supports_format</secondary>
@@ -3510,7 +3510,7 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <synopsis><link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <sect4 status="draft" >
-<title>darktable.styles.delete</title>
+<title>types.dt_style_t.delete</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
@@ -3520,7 +3520,7 @@ see <link linkend="darktable.styles.delete">darktable.styles.delete</link>
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.styles.duplicate</title>
+<title>types.dt_style_t.duplicate</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>duplicate</secondary>
@@ -3530,7 +3530,7 @@ see <link linkend="darktable.styles.duplicate">darktable.styles.duplicate</link>
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.styles.apply</title>
+<title>types.dt_style_t.apply</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>apply</secondary>
@@ -3619,7 +3619,7 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 <synopsis><link linkend="attributes.has_equal">has_equal</link> <link linkend="attributes.has_ipairs">has_ipairs</link> <link linkend="attributes.has_length">has_length</link> <link linkend="attributes.has_pairs">has_pairs</link> <link linkend="attributes.has_tostring">has_tostring</link> </synopsis>
 
 <sect4 status="draft" >
-<title>darktable.tags.delete</title>
+<title>types.dt_lua_tag_t.delete</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>delete</secondary>
@@ -3629,7 +3629,7 @@ see <link linkend="darktable.tags.delete">darktable.tags.delete</link>
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.tags.attach</title>
+<title>types.dt_lua_tag_t.attach</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>attach</secondary>
@@ -3639,7 +3639,7 @@ see <link linkend="darktable.tags.attach">darktable.tags.attach</link>
 </sect4>
 
 <sect4 status="draft" >
-<title>darktable.tags.detach</title>
+<title>types.dt_lua_tag_t.detach</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>detach</secondary>
@@ -3727,7 +3727,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <title>events.intermediate-export-image.extra_registration_parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
+<secondary>extra_registration_parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
@@ -3775,7 +3775,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <title>events.post-import-image.extra_registration_parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
+<secondary>extra_registration_parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
@@ -3827,7 +3827,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <title>events.shortcut.extra_registration_parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
+<secondary>extra_registration_parameters</secondary>
 </indexterm>
 <para></para>
 
@@ -3882,7 +3882,7 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 <title>events.post-import-film.extra_registration_parameters</title>
 <indexterm>
 <primary>Lua API</primary>
-<secondary>extra registration parameters</secondary>
+<secondary>extra_registration_parameters</secondary>
 </indexterm>
 <para>This event has no extra registration parameters.</para>
 
