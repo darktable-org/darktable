@@ -45,6 +45,7 @@
 
 DT_MODULE(5)
 
+#define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 // number of gui guides in combo box
 #define NUM_GUIDES 8
@@ -2634,6 +2635,11 @@ commit_box (dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clippin
       p->cy = points[1]/(float)piece->buf_out.height;
       p->cw = copysignf(points[2]/(float)piece->buf_out.width, p->cw);
       p->ch = copysignf(points[3]/(float)piece->buf_out.height, p->ch);
+      //verify that the crop area stay in the image area
+      if (p->cx >= 1.0f) p->cx = 0.5f;
+      if (p->cy >= 1.0f) p->cy = 0.5f;
+      p->cw = CLAMPF(p->cw,-1.0f,1.0f);
+      p->ch = CLAMPF(p->ch,-1.0f,1.0f);
     }
   }
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
