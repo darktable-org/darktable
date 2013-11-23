@@ -16,14 +16,14 @@ libfind_pkg_check_modules(GraphicsMagick_PKGCONF GraphicsMagick)
 # Include dir
 find_path(GraphicsMagick_INCLUDE_DIR
   NAMES magick/api.h
-  PATHS ${GraphicsMagick_PKGCONF_INCLUDE_DIRS}
+  HINTS ${GraphicsMagick_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES GraphicsMagick
 )
 
 # Finally the library itself
 find_library(GraphicsMagick_LIBRARY
   NAMES GraphicsMagick
-  PATHS ${GraphicsMagick_PKGCONF_LIBRARY_DIRS}
+  HINTS ${GraphicsMagick_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

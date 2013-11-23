@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
- */
+   */
 #include <glib.h>
 #include "common/collection.h"
 #include "common/selection.h"
@@ -34,7 +34,7 @@ static int selection_cb(lua_State *L)
   GList *image = dt_collection_get_selected(darktable.collection, -1);
   if(lua_gettop(L) > 0)
   {
-    dt_selection_clear(darktable.selection);
+    GList * new_selection = NULL;
     luaL_checktype(L,-1,LUA_TTABLE);
     lua_pushnil(L);
     while (lua_next(L, -2) != 0)
@@ -42,10 +42,15 @@ static int selection_cb(lua_State *L)
       /* uses 'key' (at index -2) and 'value' (at index -1) */
       int imgid;
       luaA_to(L,dt_lua_image_t,&imgid,-1);
-      dt_selection_toggle(darktable.selection,imgid);
-
+      new_selection = g_list_prepend(new_selection,GINT_TO_POINTER(imgid));
       lua_pop(L,1);
     }
+    new_selection = g_list_reverse(new_selection);
+    dt_lua_unlock(true);// we need the gdk lock to update ui information
+    dt_selection_clear(darktable.selection);
+    dt_selection_select_list(darktable.selection,new_selection);
+    dt_lua_lock();
+    g_list_free(new_selection);
   }
   lua_newtable(L);
   while(image)

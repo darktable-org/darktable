@@ -486,9 +486,6 @@ end
 
 local function get_name_sub(node,ancestors)
 	if not node then return "" end
-	if node._luadoc_name then
-		return  node._luadoc_name
-	end
 	if not ancestors then return "" end -- our node is the toplevel node
 
 	local subname = get_name_sub(node._luadoc_parents[ancestors[1]][1],ancestors[2])
@@ -616,4 +613,6 @@ for k,v in pairs(debug.getregistry().dt_lua_event_list) do
 end
 
 M.toplevel = toplevel
+M.create_documentation_node = create_documentation_node
+M.document_function = document_function
 return M;

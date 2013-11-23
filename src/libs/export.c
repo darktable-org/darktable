@@ -555,7 +555,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("Adobe RGB"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -567,7 +567,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear RGB"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -596,9 +596,7 @@ gui_init (dt_lib_module_t *self)
         if (!lang) lang = "en_US";
 
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-        char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
-        g_strlcpy(prof->name, name, sizeof(prof->name));
+        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);

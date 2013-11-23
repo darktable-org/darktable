@@ -148,7 +148,7 @@ void CompressImage( u8 const* rgba, const int width, const int height, void* blo
 	for( int y = 0; y < height; y += 4 )
 	{
     // initialise the block output
-    u8* targetBlock = reinterpret_cast< u8* >( blocks ) + bytesPerBlock*(width/4)*(y/4);
+    u8* targetBlock = reinterpret_cast< u8* >( blocks ) + bytesPerBlock*((width+3)/4)*(y/4);
 
 		for( int x = 0; x < width; x += 4 )
 		{
@@ -206,7 +206,7 @@ void DecompressImage( u8* rgba, const int width, const int height, void const* b
 	for( int y = 0; y < height; y += 4 )
 	{
     // initialise the block input
-    u8 const* sourceBlock = reinterpret_cast< u8 const* >( blocks ) + bytesPerBlock*(width/4)*(y/4);
+    u8 const* sourceBlock = reinterpret_cast< u8 const* >( blocks ) + bytesPerBlock*((width+3)/4)*(y/4);
 
 		for( int x = 0; x < width; x += 4 )
 		{

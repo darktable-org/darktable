@@ -90,6 +90,7 @@ typedef struct dt_library_t
   dt_view_image_over_t image_over;
   int full_preview;
   int32_t full_preview_id;
+  int32_t full_preview_rowid;
   gboolean offset_changed;
   GdkColor star_color;
   int images_in_row;
@@ -269,6 +270,8 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 static void _update_collected_images(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  sqlite3_stmt *stmt;
+  int32_t min_before = 0, min_after = 0;
 
   /* check if we can get a query from collection */
   const gchar *query=dt_collection_get_query (darktable.collection);
@@ -278,13 +281,21 @@ static void _update_collected_images(dt_view_t *self)
   // we have a new query for the collection of images to display. For speed reason we collect all images into
   // a temporary (in-memory) table (collected_images).
   //
+  // 0. get current lower rowid
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images", -1, &stmt, NULL);
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min_before = sqlite3_column_int(stmt, 0);
+  }
+
   // 1. drop previous data
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.collected_images", NULL, NULL, NULL);
 
   // 2. insert collected images into the temporary table
 
-  sqlite3_stmt *stmt;
   char col_query[2048];
 
   snprintf(col_query, 2048, "INSERT INTO memory.collected_images (imgid) %s", query);
@@ -294,6 +305,20 @@ static void _update_collected_images(dt_view_t *self)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  // 3. get new low-bound, then update the full preview rowid accordingly
+
+  DT_DEBUG_SQLITE3_PREPARE_V2
+    (dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images", -1, &stmt, NULL);
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    min_after = sqlite3_column_int(stmt, 0);
+  }
+
+  // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE above,
+  // but rowid is incremented each time we INSERT.
+
+  lib->full_preview_rowid += (min_after - min_before - 1);
 
   /* if we have a statment lets clean it */
   if(lib->statements.main_query)
@@ -1060,15 +1085,10 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     /* Build outer select criteria */
     gchar *filter_criteria = g_strdup_printf(
-                               "inner join images on s1.imgid=images.id WHERE ((images.filename = \"%s\") and (images.id %s %d)) or (images.filename %s \"%s\") ORDER BY images.filename %s, images.id %s LIMIT 1",
-                               img->filename,
+                               "INNER JOIN memory.collected_images AS col ON s1.imgid=col.imgid WHERE col.rowid %s %d ORDER BY rowid %s LIMIT 1",
                                (offset > 0) ? ">" : "<",
-                               lib->full_preview_id,
-                               (offset > 0) ? ">" : "<",
-                               img->filename,
-                               (offset > 0) ? "" : "DESC",
-                               (offset > 0) ? "" : "DESC");
-
+                               lib->full_preview_rowid,
+                               (offset > 0) ? "ASC" : "DESC");
     dt_image_cache_read_release(darktable.image_cache, img);
 
     sqlite3_stmt *stmt;
@@ -1076,7 +1096,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if (sel_img_count > 1)
     {
       stmt_string = g_strdup_printf(
-                      "select images.id as id from (select imgid from selected_images) as s1 %s",
+                      "SELECT col.imgid AS id, col.rowid FROM (SELECT imgid FROM selected_images) AS s1 %s",
                       filter_criteria);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
@@ -1087,7 +1107,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
        * row we need. */
       const char *main_query = sqlite3_sql(lib->statements.main_query);
       stmt_string = g_strdup_printf(
-                      "select images.id as id from (%s) as s1 %s",
+                      "SELECT col.imgid AS id, col.rowid FROM (%s) AS s1 %s",
                       main_query, filter_criteria);
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
@@ -1101,6 +1121,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       lib->full_preview_id = sqlite3_column_int(stmt, 0);
+      lib->full_preview_rowid = sqlite3_column_int(stmt, 1);
       DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->full_preview_id);
     }
 
@@ -1625,6 +1646,7 @@ int key_released(dt_view_t *self, guint key, guint state)
   {
 
     lib->full_preview_id = -1;
+    lib->full_preview_rowid = -1;
     DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
 
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
@@ -1662,6 +1684,19 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       lib->full_preview = 0;
       lib->full_preview_id = mouse_over_id;
 
+      // set corresponding rowid in the collected images
+      {
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->full_preview_id);
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+      }
+
       // let's hide some gui components
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT)&1) << 0;
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
@@ -1675,8 +1710,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
 
       //dt_dev_invalidate(darktable.develop);
+      return 1;
     }
-    return 1;
+    return 0;
   }
 
   if(key == accels->lighttable_left.accel_key

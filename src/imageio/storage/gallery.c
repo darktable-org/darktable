@@ -268,20 +268,18 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     pair_t *pair = malloc(sizeof(pair_t));
 
     char *title = NULL, *description = NULL;
-    GList *res;
+    GList *res_title, *res_desc;
 
-    res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
-    if(res)
+    res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+    if(res_title)
     {
-      title = res->data;
-      g_list_free(res);
+      title = res_title->data;
     }
 
-    res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
-    if(res)
+    res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+    if(res_desc)
     {
-      description = res->data;
-      g_list_free(res);
+      description = res_desc->data;
     }
 
     char relfilename[256], relthumbfilename[256];
@@ -315,8 +313,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     sprintf(prev, "img_%d.html", (num==1)?total:num-1);
 
     pair->pos = num;
-    g_free(title);
-    g_free(description);
+    if(res_title) g_list_free_full(res_title, &g_free);
+    if(res_desc) g_list_free_full(res_desc, &g_free);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);

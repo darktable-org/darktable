@@ -72,7 +72,7 @@ static const char EveningSun[] = N_("evening sun");
 static const char Underwater[] = N_("underwater");
 static const char BlackNWhite[] = N_("black & white");
 
-const char uf_spot_wb[] = "spot WB";
+const char uf_spot_wb[] = N_("spot WB");
 const char uf_manual_wb[] = N_("manual WB");
 const char uf_camera_wb[] = N_("camera WB");
 const char uf_auto_wb[] = N_("auto WB");

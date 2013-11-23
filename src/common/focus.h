@@ -298,7 +298,7 @@ void dt_focus_draw_clusters(
 
   cairo_translate(cr, -wd/2.0f, -ht/2.0f);
 
-  cairo_rectangle(cr, 0, 0, buffer_width, buffer_height);
+  cairo_rectangle(cr, 0, 0, wd, ht);
   cairo_clip(cr);
 
   double dashes[] = {3};

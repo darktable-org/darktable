@@ -164,7 +164,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
       dtgtk_cairo_paint_refresh(cri,
                                 (d->vertical ? width*d->vp_xpointer : width*0.5)-(s*0.5),
                                 (d->vertical ? height*0.5 : height*d->vp_ypointer)-(s*0.5),
-                                s,s,d->vertical?1:0);
+                                s,s,0);
     }
   }
 }
@@ -263,7 +263,10 @@ void gui_reset(dt_lib_module_t *self)
   d->snapshot_image = NULL;
 
   for(uint32_t k=0; k<d->size; k++)
+  {
     gtk_widget_hide(d->snapshot[k].button);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->snapshot[k].button), FALSE);
+  }
 
   dt_control_queue_redraw_center();
 }

@@ -839,7 +839,7 @@ dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *module)
   gboolean is_zero = (module->multi_priority == 0);
 
   //we set the focus to the other instance
-  dt_iop_gui_set_expanded(next, TRUE);
+  dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
   //we remove the plugin effectively
@@ -1114,15 +1114,15 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     g_value_init(&gv,G_TYPE_INT);
     gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
     gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module+1);
-    dt_iop_gui_set_expanded(module, TRUE);
+    dt_iop_gui_set_expanded(module, TRUE, FALSE);
     dt_iop_gui_update_blending(module);
 
   }
 
   if(dt_conf_get_bool("darkroom/ui/single_module"))
   {
-    dt_iop_gui_set_expanded(base, FALSE);
-    dt_iop_gui_set_expanded(module, TRUE);
+    dt_iop_gui_set_expanded(base, FALSE, FALSE);
+    dt_iop_gui_set_expanded(module, TRUE, FALSE);
   }
 
   /* setup key accelerators */
@@ -1812,7 +1812,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
  * NEW EXPANDER
  */
 
-void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
+static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean expanded)
 {
   if(!module->expander) return;
 
@@ -1864,9 +1864,50 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded)
       dt_control_queue_redraw_center();
     }
   }
-
 }
 
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others)
+{
+  if(!module->expander) return;
+
+  /* handle shiftclick on expander, hide all except this */
+  if(collapse_others)
+  {
+    int current_group = dt_dev_modulegroups_get(module->dev);
+    GList *iop = g_list_first(module->dev->iop);
+    gboolean all_other_closed = TRUE;
+    while(iop)
+    {
+      dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+      uint32_t additional_flags = 0;
+
+      /* add special group flag for module in active pipe */
+      if(module->enabled)
+        additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+      /* add special group flag for favorite */
+      if(module->state == dt_iop_state_FAVORITE)
+        additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+
+      if(m != module && (current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+      {
+        all_other_closed = all_other_closed && !m->expanded;
+        dt_iop_gui_set_single_expanded(m, FALSE);
+      }
+
+      iop = g_list_next(iop);
+    }
+    if(all_other_closed)
+      dt_iop_gui_set_single_expanded(module, !module->expanded);
+    else
+      dt_iop_gui_set_single_expanded(module, TRUE);
+  }
+  else
+  {
+    /* else just toggle */
+    dt_iop_gui_set_single_expanded(module, expanded);
+  }
+}
 
 void dt_iop_gui_update_expanded(dt_iop_module_t *module)
 {
@@ -1927,43 +1968,8 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
 
   if (e->button == 1)
   {
-    /* handle shiftclick on expander, hide all except this */
-    if (!dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
-    {
-      int current_group = dt_dev_modulegroups_get(module->dev);
-      GList *iop = g_list_first(module->dev->iop);
-      gboolean all_other_closed = TRUE;
-      while (iop)
-      {
-        dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-        uint32_t additional_flags=0;
-
-        /* add special group flag for module in active pipe */
-        if(module->enabled)
-          additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-        /* add special group flag for favorite */
-        if(module->state == dt_iop_state_FAVORITE)
-          additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-        if (m != module && (current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
-        {
-          all_other_closed = all_other_closed && !m->expanded;
-          dt_iop_gui_set_expanded(m, FALSE);
-        }
-
-        iop = g_list_next(iop);
-      }
-      if(all_other_closed)
-        dt_iop_gui_set_expanded(module, !module->expanded);
-      else
-        dt_iop_gui_set_expanded(module, TRUE);
-    }
-    else
-    {
-      /* else just toggle */
-      dt_iop_gui_set_expanded(module, !module->expanded);
-    }
+    gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
+    dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
     return TRUE;
   }
@@ -2756,9 +2762,8 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
     dt_iop_gui_set_state(module,dt_iop_state_ACTIVE);
   }
 
-  // FIXME
-  //dt_gui_iop_modulegroups_switch(module->groups());
-  dt_iop_gui_set_expanded(module, TRUE);
+  dt_dev_modulegroups_switch(darktable.develop,module);
+  dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
   dt_iop_request_focus(module);
   return TRUE;
 }

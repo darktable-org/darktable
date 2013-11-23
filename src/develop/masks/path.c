@@ -597,13 +597,22 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     if (border)
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
-      if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
-      if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
+      if (!_path_buffer_grow(points, &pos, &points_max)) {
+        free(border_init);
+        return 0;
+      }
+      if (!_path_buffer_grow(border, &posb, &border_max)) {
+        free(border_init);
+        return 0;
+      }
     }
     else
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
-      if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
+        if (!_path_buffer_grow(points, &pos, &points_max)) {
+          free(border_init);
+          return 0;
+        }
     }
 
 
@@ -638,7 +647,10 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       (*border)[k*6] = border_init[k*6] = (*border)[pb];
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
 
-      if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
+      if (!_path_buffer_grow(border, &posb, &border_max)) {
+        free(border_init);
+        return 0;
+      }
     }
 
     //we first want to be sure that there are no gaps in border
@@ -654,8 +666,14 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
         _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb,_path_is_clockwise(form));
-        if (!_path_buffer_grow(points, &pos, &points_max)) return 0;
-        if (!_path_buffer_grow(border, &posb, &border_max)) return 0;
+        if (!_path_buffer_grow(points, &pos, &points_max)) {
+          free(border_init);
+          return 0;
+        }
+        if (!_path_buffer_grow(border, &posb, &border_max)) {
+          free(border_init);
+          return 0;
+        }
       }
     }
   }
