@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-22 21:44+0100\n"
-"PO-Revision-Date: 2013-11-22 21:46+0100\n"
+"POT-Creation-Date: 2013-11-23 21:39+0100\n"
+"PO-Revision-Date: 2013-11-23 21:55+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -111,7 +111,7 @@ msgstr "vraag om bevestiging voordat afbeeldingen uit mappen worden gehaald"
 #: ../build/src/preferences_gen.h:1217
 msgid "always ask the user before any image file is moved."
 msgstr ""
-"altijd eerst de gebruiker vragen voordat een afbeelding wordt verwijderd"
+"vraag altijd eerst de gebruiker voordat een afbeelding wordt verwijderd"
 
 #: ../build/src/preferences_gen.h:1224
 msgid "ask before copying images to new film roll folder"
@@ -141,7 +141,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"wanneer raw+JPEG beelden in dezelfde map staan heeft het geen zin om ze "
+"wanneer raw+JPEG beelden in dezelfde map staan heeft het weinig zin om ze "
 "beide te importeren. negeer hiermee alle gevonden JPEG's"
 
 #: ../build/src/preferences_gen.h:1286
@@ -182,13 +182,12 @@ msgid ""
 "in full screen preview in lighttable (`z'-mode), draw an overlay indicating "
 "image sharpness. red is very sharp, blue slightly less so."
 msgstr ""
-"geef in bibliotheek modus,  in schermvullend voorbeeld ('z'-mode) een "
-"overlay met daarin scherpe gebieden, rood is erg scherp, blauw iets minder "
-"scherp"
+"toon in de bibliotheek modus,  in een schermvullend voorbeeld ('z'-mode) de  "
+"scherpe gebieden, rode gebieden zijn zeer scherp, blauw iets minder"
 
 #: ../build/src/preferences_gen.h:1421
 msgid "enable filmstrip"
-msgstr "vertoon fotoreeks"
+msgstr "toon filmstrip"
 
 #: ../build/src/preferences_gen.h:1433
 msgid "enable the filmstrip in darkroom, tethering and map modes."
@@ -863,11 +862,11 @@ msgstr "stijl '%s' is geïmporteerd"
 msgid "none"
 msgstr "geen"
 
-#: ../src/control/control.c:1440 ../src/control/control.c:1443
+#: ../src/control/control.c:1450 ../src/control/control.c:1453
 msgid "working.."
 msgstr "bezig..."
 
-#: ../src/control/control.c:1526
+#: ../src/control/control.c:1536
 #, c-format
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
