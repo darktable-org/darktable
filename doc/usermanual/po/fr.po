@@ -2270,11 +2270,11 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1093(title)
 msgid "HDR image files"
-msgstr "Images HDR"
+msgstr "Fichiers images HDR"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1096(secondary)
 msgid "HDR files"
-msgstr ""
+msgstr "Fichiers HDR"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1099(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1429(primary)
