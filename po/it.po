@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-20 20:41+0100\n"
+"POT-Creation-Date: 2013-11-23 19:18+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -757,7 +757,7 @@ msgstr "Abilitato"
 #: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:152
+#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "Disabilitato"
@@ -870,11 +870,11 @@ msgstr "Lo stile %s è stato importato con successo"
 msgid "none"
 msgstr "Nessuno"
 
-#: ../src/control/control.c:1440 ../src/control/control.c:1443
+#: ../src/control/control.c:1450 ../src/control/control.c:1453
 msgid "working.."
 msgstr "Elaborazione..."
 
-#: ../src/control/control.c:1526
+#: ../src/control/control.c:1536
 #, c-format
 msgid "switch to %s mode"
 msgstr "Passa alla modalità %s"
@@ -1613,12 +1613,12 @@ msgstr "Sposta giù"
 msgid "delete"
 msgstr "Elimina"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched on"
 msgstr "%s è abilitato"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched off"
 msgstr "%s è disabilitato"
@@ -1658,15 +1658,15 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "Mostra il menù dei preset"
 
-#: ../src/develop/imageop.c:2053
+#: ../src/develop/imageop.c:2059
 msgid "multiple instances actions"
 msgstr "Azioni delle istanze multiple"
 
-#: ../src/develop/imageop.c:2062 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2068 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "Ripristina parametri"
 
-#: ../src/develop/imageop.c:2071 ../src/gui/preferences.c:404
+#: ../src/develop/imageop.c:2077 ../src/gui/preferences.c:404
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "Preset"
@@ -2183,45 +2183,45 @@ msgid "name"
 msgstr "Nome file"
 
 #. exif
-#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1354
+#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1348
 #: ../src/gui/presets.c:420 ../src/libs/metadata_view.c:89
 msgid "model"
 msgstr "Modello"
 
-#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1362
+#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1356
 #: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:90
 msgid "maker"
 msgstr "Costruttore"
 
-#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1370
+#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1364
 #: ../src/gui/presets.c:434 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:91
 msgid "lens"
 msgstr "Obiettivo"
 
 #. iso
-#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1377
+#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1370
 #: ../src/gui/presets.c:441 ../src/libs/camera.c:597 ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:96
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
-#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1390
+#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1383
 #: ../src/gui/presets.c:454 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "Esposizione"
 
 #. aperture
-#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1405
+#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1398
 #: ../src/gui/presets.c:469 ../src/libs/camera.c:549 ../src/libs/camera.c:558
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:92
 msgid "aperture"
 msgstr "Diaframma"
 
 #. focal length
-#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1420
+#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1413
 #: ../src/gui/presets.c:484 ../src/libs/camera.c:568
 #: ../src/libs/metadata_view.c:94
 msgid "focal length"
@@ -2300,24 +2300,24 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "Modifica '%s' per il modulo '%s'"
 
-#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:399
+#: ../src/gui/preferences.c:1330 ../src/gui/presets.c:399
 #: ../src/libs/lib.c:234
 msgid "description or further information"
 msgstr "Descrizione o ulteriori informazioni"
 
-#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:401
+#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:401
 msgid "auto apply this preset to matching images"
 msgstr ""
 "Applica automaticamente questo present alle\n"
 "immagini che corrispondono a questi criteri:"
 
-#: ../src/gui/preferences.c:1336 ../src/gui/presets.c:403
+#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:403
 msgid "only show this preset for matching images"
 msgstr ""
 "Mostra solo questo preset per le immagini\n"
 "che corrispondono a questi criteri:"
 
-#: ../src/gui/preferences.c:1337 ../src/gui/presets.c:404
+#: ../src/gui/preferences.c:1335 ../src/gui/presets.c:404
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -2325,50 +2325,50 @@ msgstr ""
 "Attento con questa opzione. Potrebbe essere l'ultima volta che vedi il tuo "
 "preset."
 
-#: ../src/gui/preferences.c:1353 ../src/gui/presets.c:419
+#: ../src/gui/preferences.c:1347 ../src/gui/presets.c:419
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "Stringa per la corrispondenza del modello (usa % come jolly)"
 
-#: ../src/gui/preferences.c:1361 ../src/gui/presets.c:426
+#: ../src/gui/preferences.c:1355 ../src/gui/presets.c:426
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "Stringa per la corrispondenza del Costruttore (usa % come jolly)"
 
-#: ../src/gui/preferences.c:1369 ../src/gui/presets.c:433
+#: ../src/gui/preferences.c:1363 ../src/gui/presets.c:433
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "Stringa per la corrispondenza degli obiettivi (usa % come jolly)"
 
-#: ../src/gui/preferences.c:1381 ../src/gui/presets.c:445
+#: ../src/gui/preferences.c:1374 ../src/gui/presets.c:445
 msgid "minimum ISO value"
 msgstr "Valore iso minimo"
 
-#: ../src/gui/preferences.c:1385 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1378 ../src/gui/presets.c:449
 msgid "maximum ISO value"
 msgstr "Valore iso massimo"
 
-#: ../src/gui/preferences.c:1395 ../src/gui/presets.c:459
+#: ../src/gui/preferences.c:1388 ../src/gui/presets.c:459
 msgid "minimum exposure time"
 msgstr "Tempo di esposizione minimo"
 
-#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:460
+#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:460
 msgid "maximum exposure time"
 msgstr "Tempo di esposizione massimo"
 
-#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:474
+#: ../src/gui/preferences.c:1403 ../src/gui/presets.c:474
 msgid "minimum aperture value"
 msgstr "Apertura diaframma minima"
 
-#: ../src/gui/preferences.c:1411 ../src/gui/presets.c:475
+#: ../src/gui/preferences.c:1404 ../src/gui/presets.c:475
 msgid "maximum aperture value"
 msgstr "Apertura diaframma massima"
 
-#: ../src/gui/preferences.c:1427 ../src/gui/presets.c:491
+#: ../src/gui/preferences.c:1420 ../src/gui/presets.c:491
 msgid "minimum focal length"
 msgstr "Lunghezza focale minima"
 
-#: ../src/gui/preferences.c:1428 ../src/gui/presets.c:492
+#: ../src/gui/preferences.c:1421 ../src/gui/presets.c:492
 msgid "maximum focal length"
 msgstr "Lunghezza focale massima"
 
@@ -3079,29 +3079,29 @@ msgstr "Fotogenetic (punta & scatta)"
 msgid "fotogenetic (EV3)"
 msgstr "Fotogenetic (EV3) "
 
-#: ../src/iop/basecurve.c:198
+#: ../src/iop/basecurve.c:201
 msgid "base curve"
 msgstr "Curva base"
 
-#: ../src/iop/basecurve.c:761
+#: ../src/iop/basecurve.c:764
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "Ascissa: input, Ordinata: output. Lavorano sui canali RGB"
 
-#: ../src/iop/basecurve.c:769 ../src/iop/lens.c:1922
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1922
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "Scala"
 
-#: ../src/iop/basecurve.c:770 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:125
 #: ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "Lineare"
 
-#: ../src/iop/basecurve.c:771
+#: ../src/iop/basecurve.c:774
 msgid "logarithmic"
 msgstr "Logaritmica"
 
-#: ../src/iop/basecurve.c:772
+#: ../src/iop/basecurve.c:775
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -5978,17 +5978,21 @@ msgstr "Sott'acqua"
 msgid "black & white"
 msgstr "bianco & nero"
 
+#: ../src/iop/wb_presets.c:75
+msgid "spot WB"
+msgstr "Bilanciamento del bianco spot"
+
 #: ../src/iop/wb_presets.c:76
 msgid "manual WB"
 msgstr "Bilanciamento del bianco manuale"
 
 #: ../src/iop/wb_presets.c:77
 msgid "camera WB"
-msgstr "Fotocamera"
+msgstr "Bilanciamento del bianco fotocamera"
 
 #: ../src/iop/wb_presets.c:78
 msgid "auto WB"
-msgstr "Automatico"
+msgstr "Bilanciamento del bianco automatico"
 
 #: ../src/iop/zonesystem.c:94
 msgid "zone system"
@@ -6273,7 +6277,7 @@ msgstr "Data"
 msgid "time"
 msgstr "Ora"
 
-#: ../src/libs/collect.h:36
+#: ../src/libs/collect.h:36 ../src/libs/history.c:55
 msgid "history"
 msgstr "Coda di sviluppo"
 
@@ -6345,7 +6349,7 @@ msgstr "Restringi l'istogramma alla selezione"
 msgid "display sample areas on image"
 msgstr "Visualizza l'area campionata sull'immagine"
 
-#: ../src/libs/copy_history.c:50 ../src/libs/history.c:55
+#: ../src/libs/copy_history.c:50
 msgid "history stack"
 msgstr "Coda di sviluppo"
 
@@ -6735,15 +6739,11 @@ msgstr "Comprimi coda di sviluppo"
 msgid "create a minimal history stack which produces the same image"
 msgstr "Crea una minima coda di sviluppo che produce la stessa immagine"
 
-#: ../src/libs/history.c:111
-msgid "create style"
-msgstr "Crea stile"
-
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
 msgstr "Crea uno stile dall'attuale coda di sviluppo"
 
-#: ../src/libs/history.c:181 ../src/libs/snapshots.c:365
+#: ../src/libs/history.c:184 ../src/libs/snapshots.c:368
 msgid "original"
 msgstr "Originale"
 
@@ -7492,11 +7492,11 @@ msgid "take snapshot"
 msgstr "Scatta un'istantanea"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:291
+#: ../src/libs/snapshots.c:294
 msgid "take snapshot"
 msgstr "Scatta un'istantanea"
 
-#: ../src/libs/snapshots.c:295
+#: ../src/libs/snapshots.c:298
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -7504,7 +7504,7 @@ msgstr ""
 "Prende un'istantanea da confrontare con un'altra immagine o la stessa in un "
 "altro punto dello sviluppo "
 
-#: ../src/libs/snapshots.c:373
+#: ../src/libs/snapshots.c:376
 msgid "unknown"
 msgstr "Sconosciuto"
 
@@ -7761,7 +7761,7 @@ msgstr ""
 
 #: ../src/libs/tools/filmstrip.c:135
 msgid "filmstrip"
-msgstr "provino"
+msgstr "Provino"
 
 #. setup rating key accelerators
 #. Initializing accelerators
@@ -8403,6 +8403,9 @@ msgstr "Fotografia"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "Grafica"
+
+#~ msgid "create style"
+#~ msgstr "Crea stile"
 
 #~ msgid "Adobe RGB"
 #~ msgstr "Adobe RGB"
