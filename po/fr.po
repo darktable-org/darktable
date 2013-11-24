@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-20 21:07+0100\n"
-"PO-Revision-Date: 2013-11-21 08:55+0100\n"
+"POT-Creation-Date: 2013-11-24 09:26+0100\n"
+"PO-Revision-Date: 2013-11-24 09:28+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -750,7 +750,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:152
+#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "désactivé(e)"
@@ -854,20 +854,20 @@ msgstr "le fichier du style «%s» existe"
 msgid "style %s was successfully imported"
 msgstr "le style «%s» a été importé"
 
-#: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
-#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
-#: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
+#: ../src/common/variables.c:220 ../src/iop/clipping.c:1461
+#: ../src/iop/clipping.c:1703 ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783
 #: ../src/iop/lens.c:1770 ../src/libs/export.c:642 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
 msgstr "sans"
 
-#: ../src/control/control.c:1440 ../src/control/control.c:1443
+#: ../src/control/control.c:1450 ../src/control/control.c:1453
 msgid "working.."
 msgstr "en cours..."
 
-#: ../src/control/control.c:1526
+#: ../src/control/control.c:1536
 #, c-format
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
@@ -1614,12 +1614,12 @@ msgstr "descendre"
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
@@ -1659,15 +1659,15 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:2053
+#: ../src/develop/imageop.c:2059
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:2062 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2068 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:2071 ../src/gui/preferences.c:404
+#: ../src/develop/imageop.c:2077 ../src/gui/preferences.c:404
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "pré-réglages"
@@ -2188,45 +2188,45 @@ msgid "name"
 msgstr "nom"
 
 #. exif
-#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1354
+#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1348
 #: ../src/gui/presets.c:420 ../src/libs/metadata_view.c:89
 msgid "model"
 msgstr "modèle"
 
-#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1362
+#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1356
 #: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:90
 msgid "maker"
 msgstr "fabricant"
 
-#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1370
+#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1364
 #: ../src/gui/presets.c:434 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:91
 msgid "lens"
 msgstr "objectif"
 
 #. iso
-#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1377
+#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1370
 #: ../src/gui/presets.c:441 ../src/libs/camera.c:597 ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:96
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
-#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1390
+#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1383
 #: ../src/gui/presets.c:454 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
-#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1405
+#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1398
 #: ../src/gui/presets.c:469 ../src/libs/camera.c:549 ../src/libs/camera.c:558
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:92
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
-#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1420
+#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1413
 #: ../src/gui/presets.c:484 ../src/libs/camera.c:568
 #: ../src/libs/metadata_view.c:94
 msgid "focal length"
@@ -2305,20 +2305,20 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "éditer '%s' pour le module «%s»"
 
-#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:399
+#: ../src/gui/preferences.c:1330 ../src/gui/presets.c:399
 #: ../src/libs/lib.c:234
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
-#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:401
+#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:401
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
 
-#: ../src/gui/preferences.c:1336 ../src/gui/presets.c:403
+#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:403
 msgid "only show this preset for matching images"
 msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
 
-#: ../src/gui/preferences.c:1337 ../src/gui/presets.c:404
+#: ../src/gui/preferences.c:1335 ../src/gui/presets.c:404
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -2326,50 +2326,50 @@ msgstr ""
 "soyez vigilants avec cette option, ce pourrait être la dernière fois que "
 "vous voyez votre pré-réglage"
 
-#: ../src/gui/preferences.c:1353 ../src/gui/presets.c:419
+#: ../src/gui/preferences.c:1347 ../src/gui/presets.c:419
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (use % as wildcard)"
 
-#: ../src/gui/preferences.c:1361 ../src/gui/presets.c:426
+#: ../src/gui/preferences.c:1355 ../src/gui/presets.c:426
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (use % as wildcard)"
 
-#: ../src/gui/preferences.c:1369 ../src/gui/presets.c:433
+#: ../src/gui/preferences.c:1363 ../src/gui/presets.c:433
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (use % as wildcard)"
 
-#: ../src/gui/preferences.c:1381 ../src/gui/presets.c:445
+#: ../src/gui/preferences.c:1374 ../src/gui/presets.c:445
 msgid "minimum ISO value"
 msgstr "valeur d'ISO minimale"
 
-#: ../src/gui/preferences.c:1385 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1378 ../src/gui/presets.c:449
 msgid "maximum ISO value"
 msgstr "valeur d'ISO maximale"
 
-#: ../src/gui/preferences.c:1395 ../src/gui/presets.c:459
+#: ../src/gui/preferences.c:1388 ../src/gui/presets.c:459
 msgid "minimum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1396 ../src/gui/presets.c:460
+#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:460
 msgid "maximum exposure time"
 msgstr "temps d'exposition maximum"
 
-#: ../src/gui/preferences.c:1410 ../src/gui/presets.c:474
+#: ../src/gui/preferences.c:1403 ../src/gui/presets.c:474
 msgid "minimum aperture value"
 msgstr "valeur d'ouverture minimale"
 
-#: ../src/gui/preferences.c:1411 ../src/gui/presets.c:475
+#: ../src/gui/preferences.c:1404 ../src/gui/presets.c:475
 msgid "maximum aperture value"
 msgstr "valeur d'ouverture maximale"
 
-#: ../src/gui/preferences.c:1427 ../src/gui/presets.c:491
+#: ../src/gui/preferences.c:1420 ../src/gui/presets.c:491
 msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
-#: ../src/gui/preferences.c:1428 ../src/gui/presets.c:492
+#: ../src/gui/preferences.c:1421 ../src/gui/presets.c:492
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
@@ -3080,29 +3080,29 @@ msgstr "fotogenetic (point & shoot)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (EV3)"
 
-#: ../src/iop/basecurve.c:198
+#: ../src/iop/basecurve.c:201
 msgid "base curve"
 msgstr "courbe de base"
 
-#: ../src/iop/basecurve.c:761
+#: ../src/iop/basecurve.c:764
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
-#: ../src/iop/basecurve.c:769 ../src/iop/lens.c:1922
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1922
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "échelle"
 
-#: ../src/iop/basecurve.c:770 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:125
 #: ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "linéaire"
 
-#: ../src/iop/basecurve.c:771
+#: ../src/iop/basecurve.c:774
 msgid "logarithmic"
 msgstr "logarithmique"
 
-#: ../src/iop/basecurve.c:772
+#: ../src/iop/basecurve.c:775
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3263,7 +3263,7 @@ msgid "select frame line color"
 msgstr "sélectionne la couleur du cadre"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1740
+#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
 #: ../src/libs/import.c:818
 msgid "image"
 msgstr "image"
@@ -3280,15 +3280,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1749
+#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1750
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1741
+#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1742
 msgid "golden cut"
 msgstr "rapport d'or"
 
-#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1743
+#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1744
 msgid "3:2"
 msgstr "3:2"
 
@@ -3296,15 +3296,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1748
+#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1749
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1745
+#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1746
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1747
+#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1748
 msgid "square"
 msgstr "carré"
 
@@ -3340,7 +3340,7 @@ msgstr "taille du cadre"
 msgid "size of the border in percent of the full image"
 msgstr "taille du cadre en pourcentage de l'image"
 
-#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1738
+#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1739
 msgid "aspect"
 msgstr "aspect"
 
@@ -3533,191 +3533,191 @@ msgstr "taille des caractéristiques à preserver"
 msgid "strength of the effect"
 msgstr "force de l'effet"
 
-#: ../src/iop/clipping.c:284
+#: ../src/iop/clipping.c:285
 msgid "crop and rotate"
 msgstr "recadrer et pivoter"
 
-#: ../src/iop/clipping.c:1361
+#: ../src/iop/clipping.c:1362
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1704
-#: ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1705
+#: ../src/iop/clipping.c:1722
 msgid "vertical"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1703
-#: ../src/iop/clipping.c:1722
+#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1704
+#: ../src/iop/clipping.c:1723
 msgid "horizontal"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1723
+#: ../src/iop/clipping.c:1464 ../src/iop/clipping.c:1724
 msgid "full"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1464
+#: ../src/iop/clipping.c:1465
 msgid "old system"
 msgstr "système précédent"
 
-#: ../src/iop/clipping.c:1465
+#: ../src/iop/clipping.c:1466
 msgid "correction applied"
 msgstr "correction appliquée"
 
-#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1781
+#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1782
 #: ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "symétrie miroir"
 
-#: ../src/iop/clipping.c:1705 ../src/iop/clipping.c:1785
+#: ../src/iop/clipping.c:1706 ../src/iop/clipping.c:1786
 #: ../src/libs/live_view.c:339
 msgid "both"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1707
+#: ../src/iop/clipping.c:1708
 msgid "mirror image horizontally and/or vertically"
 msgstr "retourne l'image horizontalement et/ou horizontalement"
 
-#: ../src/iop/clipping.c:1712
+#: ../src/iop/clipping.c:1713
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:1715
+#: ../src/iop/clipping.c:1716
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "clic-droit et tracer une ligne pour indiquer l'horizontale"
 
-#: ../src/iop/clipping.c:1719
+#: ../src/iop/clipping.c:1720
 msgid "keystone"
 msgstr "perspective"
 
-#: ../src/iop/clipping.c:1724
+#: ../src/iop/clipping.c:1725
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
 
-#: ../src/iop/clipping.c:1729
+#: ../src/iop/clipping.c:1730
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/clipping.c:1730 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:236
 msgid "no"
 msgstr "non"
 
-#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1732 ../src/libs/metadata_view.c:236
 msgid "yes"
 msgstr "oui"
 
-#: ../src/iop/clipping.c:1732
+#: ../src/iop/clipping.c:1733
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
-#: ../src/iop/clipping.c:1739
+#: ../src/iop/clipping.c:1740
 msgid "free"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:1742
+#: ../src/iop/clipping.c:1743
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1744
+#: ../src/iop/clipping.c:1745
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1746
+#: ../src/iop/clipping.c:1747
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1750
+#: ../src/iop/clipping.c:1751
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1751
+#: ../src/iop/clipping.c:1752
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:1756
+#: ../src/iop/clipping.c:1757
 msgid "set the aspect ratio (w:h)"
 msgstr "rapport largeur/hauteur"
 
-#: ../src/iop/clipping.c:1762 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "grille"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1766 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "règle des tiers"
 
-#: ../src/iop/clipping.c:1766
+#: ../src/iop/clipping.c:1767
 msgid "metering"
 msgstr "mesure"
 
-#: ../src/iop/clipping.c:1767
+#: ../src/iop/clipping.c:1768
 msgid "perspective"
 msgstr "perspective"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1768 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonales"
 
-#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "triangles harmonieux"
 
-#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "nombre d'or"
 
-#: ../src/iop/clipping.c:1776 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:1777 ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:1783 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:1786 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "guides additionnels"
 
-#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "sections d'or"
 
-#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "sections de spirale d'or"
 
-#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1776
+#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1776
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "tout"
 
-#: ../src/iop/clipping.c:1796 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "afficher des guides supplémentaires"
 
-#: ../src/iop/clipping.c:2820
+#: ../src/iop/clipping.c:2826
 msgctxt "accel"
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:2822
+#: ../src/iop/clipping.c:2828
 msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
@@ -6000,6 +6000,10 @@ msgstr "sous l'eau"
 msgid "black & white"
 msgstr "noir et blanc"
 
+#: ../src/iop/wb_presets.c:75
+msgid "spot WB"
+msgstr "BdB spot"
+
 #: ../src/iop/wb_presets.c:76
 msgid "manual WB"
 msgstr "BdB manuelle"
@@ -6301,7 +6305,7 @@ msgstr "date"
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/libs/collect.h:36
+#: ../src/libs/collect.h:36 ../src/libs/history.c:55
 msgid "history"
 msgstr "historique"
 
@@ -6376,7 +6380,7 @@ msgid "display sample areas on image"
 msgstr "afficher les zones sur l'image"
 
 # dans le contexte de la table lumineuse, "history stack" se traduit par "développement"
-#: ../src/libs/copy_history.c:50 ../src/libs/history.c:55
+#: ../src/libs/copy_history.c:50
 msgid "history stack"
 msgstr "développement"
 
@@ -6775,15 +6779,11 @@ msgstr "compresser l'historique"
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:111
-msgid "create style"
-msgstr "créer un style"
-
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:181 ../src/libs/snapshots.c:365
+#: ../src/libs/history.c:184 ../src/libs/snapshots.c:368
 msgid "original"
 msgstr "original"
 
@@ -7572,11 +7572,11 @@ msgid "take snapshot"
 msgstr "prendre un instantané"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:291
+#: ../src/libs/snapshots.c:294
 msgid "take snapshot"
 msgstr "prendre un instantané"
 
-#: ../src/libs/snapshots.c:295
+#: ../src/libs/snapshots.c:298
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -7584,7 +7584,7 @@ msgstr ""
 "prends un instantané pour le comparer avec une autre image or avec la même "
 "image à une autre étape du développement"
 
-#: ../src/libs/snapshots.c:373
+#: ../src/libs/snapshots.c:376
 msgid "unknown"
 msgstr "inconnu"
 
@@ -8494,6 +8494,9 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "create style"
+#~ msgstr "créer un style"
 
 #~ msgid "Adobe RGB"
 #~ msgstr "Adobe RGB"
