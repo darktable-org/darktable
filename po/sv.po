@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-21 08:02+0100\n"
-"PO-Revision-Date: 2013-11-21 11:00+0100\n"
+"POT-Creation-Date: 2013-11-24 10:55+0100\n"
+"PO-Revision-Date: 2013-11-24 10:58+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -755,7 +755,7 @@ msgstr "på"
 #: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
 #: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:152
+#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:405
 msgid "off"
 msgstr "av"
@@ -857,20 +857,20 @@ msgstr "stil fil med namn '%s' existerar redan"
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/common/variables.c:220 ../src/iop/clipping.c:1460
-#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1720
-#: ../src/iop/clipping.c:1763 ../src/iop/clipping.c:1782
+#: ../src/common/variables.c:220 ../src/iop/clipping.c:1461
+#: ../src/iop/clipping.c:1703 ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783
 #: ../src/iop/lens.c:1770 ../src/libs/export.c:642 ../src/libs/live_view.c:324
 #: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
 #, c-format
 msgid "none"
 msgstr "ingen"
 
-#: ../src/control/control.c:1440 ../src/control/control.c:1443
+#: ../src/control/control.c:1450 ../src/control/control.c:1453
 msgid "working.."
 msgstr "arbetar.."
 
-#: ../src/control/control.c:1526
+#: ../src/control/control.c:1536
 #, c-format
 msgid "switch to %s mode"
 msgstr "byt till %s vy"
@@ -1602,12 +1602,12 @@ msgstr "flytta ner"
 msgid "delete"
 msgstr "radera"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched on"
 msgstr "%s är påslagen"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2083
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
 #, c-format
 msgid "%s is switched off"
 msgstr "%s är avslagen"
@@ -1647,15 +1647,15 @@ msgctxt "accel"
 msgid "show preset menu"
 msgstr "ny förinställningar"
 
-#: ../src/develop/imageop.c:2053
+#: ../src/develop/imageop.c:2059
 msgid "multiple instances actions"
 msgstr "hantera multipla instanser"
 
-#: ../src/develop/imageop.c:2062 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2068 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "återställ parametrar"
 
-#: ../src/develop/imageop.c:2071 ../src/gui/preferences.c:404
+#: ../src/develop/imageop.c:2077 ../src/gui/preferences.c:404
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "fördefinierade"
@@ -3062,29 +3062,29 @@ msgstr "fotogenetic (point & shoot)"
 msgid "fotogenetic (EV3)"
 msgstr "fotogenetic (ev3)"
 
-#: ../src/iop/basecurve.c:198
+#: ../src/iop/basecurve.c:201
 msgid "base curve"
 msgstr "baskurva"
 
-#: ../src/iop/basecurve.c:761
+#: ../src/iop/basecurve.c:764
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
-#: ../src/iop/basecurve.c:769 ../src/iop/lens.c:1922
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1922
 #: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "skala"
 
-#: ../src/iop/basecurve.c:770 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:125
 #: ../src/iop/tonecurve.c:242
 msgid "linear"
 msgstr "linjär"
 
-#: ../src/iop/basecurve.c:771
+#: ../src/iop/basecurve.c:774
 msgid "logarithmic"
 msgstr "logaritmisk"
 
-#: ../src/iop/basecurve.c:772
+#: ../src/iop/basecurve.c:775
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -3239,7 +3239,7 @@ msgid "select frame line color"
 msgstr "välj ramlinjens färg"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1740
+#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
 #: ../src/libs/import.c:818
 msgid "image"
 msgstr "bild"
@@ -3256,15 +3256,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1749
+#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1750
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1741
+#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1742
 msgid "golden cut"
 msgstr "gyllene snitt"
 
-#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1743
+#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1744
 msgid "3:2"
 msgstr "3:2"
 
@@ -3272,15 +3272,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1748
+#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1749
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1745
+#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1746
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1747
+#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1748
 msgid "square"
 msgstr "kvadrat"
 
@@ -3316,7 +3316,7 @@ msgstr "kantens storlek"
 msgid "size of the border in percent of the full image"
 msgstr "storlek på kant i procent av hela bilden"
 
-#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1738
+#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1739
 msgid "aspect"
 msgstr "aspekt"
 
@@ -3507,191 +3507,191 @@ msgstr "storlek av detaljer att bevara"
 msgid "strength of the effect"
 msgstr "sluttningen påverkar effektens styrka"
 
-#: ../src/iop/clipping.c:284
+#: ../src/iop/clipping.c:285
 msgid "crop and rotate"
 msgstr "beskär och rotera"
 
-#: ../src/iop/clipping.c:1361
+#: ../src/iop/clipping.c:1362
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "felaktig format för bildförhållande. det borde vara \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1461 ../src/iop/clipping.c:1704
-#: ../src/iop/clipping.c:1721
+#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1705
+#: ../src/iop/clipping.c:1722
 msgid "vertical"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1703
-#: ../src/iop/clipping.c:1722
+#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1704
+#: ../src/iop/clipping.c:1723
 msgid "horizontal"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1723
+#: ../src/iop/clipping.c:1464 ../src/iop/clipping.c:1724
 msgid "full"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1464
+#: ../src/iop/clipping.c:1465
 msgid "old system"
 msgstr "gammalt system"
 
-#: ../src/iop/clipping.c:1465
+#: ../src/iop/clipping.c:1466
 msgid "correction applied"
 msgstr "korrigering gjord"
 
-#: ../src/iop/clipping.c:1701 ../src/iop/clipping.c:1781
+#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1782
 #: ../src/libs/live_view.c:335
 msgid "flip"
 msgstr "vänd"
 
-#: ../src/iop/clipping.c:1705 ../src/iop/clipping.c:1785
+#: ../src/iop/clipping.c:1706 ../src/iop/clipping.c:1786
 #: ../src/libs/live_view.c:339
 msgid "both"
 msgstr "båda"
 
-#: ../src/iop/clipping.c:1707
+#: ../src/iop/clipping.c:1708
 msgid "mirror image horizontally and/or vertically"
 msgstr "vänd bild horisontellt och/eller vertikalt"
 
-#: ../src/iop/clipping.c:1712
+#: ../src/iop/clipping.c:1713
 msgid "angle"
 msgstr "vinkel"
 
-#: ../src/iop/clipping.c:1715
+#: ../src/iop/clipping.c:1716
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "högerklicka och dra en linje på bilden för att dra en rak linje"
 
-#: ../src/iop/clipping.c:1719
+#: ../src/iop/clipping.c:1720
 msgid "keystone"
 msgstr "perspektivkorr"
 
-#: ../src/iop/clipping.c:1724
+#: ../src/iop/clipping.c:1725
 msgid "set perspective correction for your image"
 msgstr "korrigera perspektivet på din bild"
 
-#: ../src/iop/clipping.c:1729
+#: ../src/iop/clipping.c:1730
 msgid "automatic cropping"
 msgstr "automatiskt beskärning"
 
-#: ../src/iop/clipping.c:1730 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:236
 msgid "no"
 msgstr "nej"
 
-#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1732 ../src/libs/metadata_view.c:236
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1732
+#: ../src/iop/clipping.c:1733
 msgid "automatically crop to avoid black edges"
 msgstr "beskär automatiskt för att undvika svarta kanter"
 
-#: ../src/iop/clipping.c:1739
+#: ../src/iop/clipping.c:1740
 msgid "free"
 msgstr "fri"
 
-#: ../src/iop/clipping.c:1742
+#: ../src/iop/clipping.c:1743
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1744
+#: ../src/iop/clipping.c:1745
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1746
+#: ../src/iop/clipping.c:1747
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1750
+#: ../src/iop/clipping.c:1751
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1751
+#: ../src/iop/clipping.c:1752
 msgid "10:8 in print"
 msgstr "10:8 för utskrift"
 
-#: ../src/iop/clipping.c:1756
+#: ../src/iop/clipping.c:1757
 msgid "set the aspect ratio (w:h)"
 msgstr "ange bildförhållandet (b:h)"
 
-#: ../src/iop/clipping.c:1762 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:323
 msgid "guides"
 msgstr "guider"
 
-#: ../src/iop/clipping.c:1764 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:325
 msgid "grid"
 msgstr "rutmönster"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1766 ../src/libs/live_view.c:326
 msgid "rules of thirds"
 msgstr "tredjedelsregeln"
 
-#: ../src/iop/clipping.c:1766
+#: ../src/iop/clipping.c:1767
 msgid "metering"
 msgstr "mätskala"
 
-#: ../src/iop/clipping.c:1767
+#: ../src/iop/clipping.c:1768
 msgid "perspective"
 msgstr "perspektiv"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1768 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:327
 msgid "diagonal method"
 msgstr "diagonal metod"
 
-#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:328
 msgid "harmonious triangles"
 msgstr "harmoniska trianglar"
 
-#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:329
 msgid "golden mean"
 msgstr "gyllene snitt"
 
-#: ../src/iop/clipping.c:1776 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:1777 ../src/libs/live_view.c:330
 msgid "display guide lines to help compose your photograph"
 msgstr "visa guider för att hjälpa dig att komponera ditt fotografi"
 
-#: ../src/iop/clipping.c:1783 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:337
 msgid "horizontally"
 msgstr "horisontellt"
 
-#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:338
 msgid "vertically"
 msgstr "vertikalt"
 
-#: ../src/iop/clipping.c:1786 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:340
 msgid "flip guides"
 msgstr "vänd guider"
 
-#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:344
 msgid "extra"
 msgstr "extra"
 
-#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:345
 msgid "golden sections"
 msgstr "gyllene sektioner"
 
-#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:346
 msgid "golden spiral sections"
 msgstr "gyllene spiralsektioner"
 
-#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:347
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1795 ../src/iop/lens.c:1776
+#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1776
 #: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
 msgid "all"
 msgstr "alla"
 
-#: ../src/iop/clipping.c:1796 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:349
 msgid "show some extra guides"
 msgstr "visa extra guider"
 
-#: ../src/iop/clipping.c:2820
+#: ../src/iop/clipping.c:2826
 msgctxt "accel"
 msgid "commit"
 msgstr "applicera"
 
-#: ../src/iop/clipping.c:2822
+#: ../src/iop/clipping.c:2828
 msgctxt "accel"
 msgid "angle"
 msgstr "vinkel"
@@ -5953,6 +5953,10 @@ msgstr "under vatten"
 msgid "black & white"
 msgstr "svart & vitt"
 
+#: ../src/iop/wb_presets.c:75
+msgid "spot WB"
+msgstr "punkt VB"
+
 #: ../src/iop/wb_presets.c:76
 msgid "manual WB"
 msgstr "manuell VB"
@@ -6247,7 +6251,7 @@ msgstr "datum"
 msgid "time"
 msgstr "tid"
 
-#: ../src/libs/collect.h:36
+#: ../src/libs/collect.h:36 ../src/libs/history.c:55
 msgid "history"
 msgstr "historik"
 
@@ -6319,7 +6323,7 @@ msgstr "begränsa histogram till val"
 msgid "display sample areas on image"
 msgstr "visa prov ytor på bilden"
 
-#: ../src/libs/copy_history.c:50 ../src/libs/history.c:55
+#: ../src/libs/copy_history.c:50
 msgid "history stack"
 msgstr "historik"
 
@@ -6708,15 +6712,11 @@ msgstr "komprimera historiken"
 msgid "create a minimal history stack which produces the same image"
 msgstr "skapar en minimal historik som producerar samma bildresultat"
 
-#: ../src/libs/history.c:111
-msgid "create style"
-msgstr "skapa stil"
-
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:116
 msgid "create a style from the current history stack"
 msgstr "skapa en stil utifrån nuvarande historik"
 
-#: ../src/libs/history.c:181 ../src/libs/snapshots.c:365
+#: ../src/libs/history.c:184 ../src/libs/snapshots.c:368
 msgid "original"
 msgstr "original"
 
@@ -7460,11 +7460,11 @@ msgid "take snapshot"
 msgstr "skapa avbild"
 
 #. create take snapshot button
-#: ../src/libs/snapshots.c:291
+#: ../src/libs/snapshots.c:294
 msgid "take snapshot"
 msgstr "skapa avbild"
 
-#: ../src/libs/snapshots.c:295
+#: ../src/libs/snapshots.c:298
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
@@ -7472,7 +7472,7 @@ msgstr ""
 "ta en ögonblicksbild för att jämföra med en annan bild eller samma bild i "
 "ett senare skede"
 
-#: ../src/libs/snapshots.c:373
+#: ../src/libs/snapshots.c:376
 msgid "unknown"
 msgstr "okänd"
 
@@ -8370,6 +8370,9 @@ msgstr ""
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr ""
+
+#~ msgid "create style"
+#~ msgstr "skapa stil"
 
 #~ msgid "Adobe RGB"
 #~ msgstr "Adobe RGB"
