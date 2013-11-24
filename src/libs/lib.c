@@ -460,7 +460,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 
     if (darktable.gui->last_preset && found)
     {
-      char label[60];
+      char label[128];
       g_strlcpy(label, _("update preset"), sizeof(label));
       strcat (label, " <span weight=\"bold\">%s</span>");
       char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);

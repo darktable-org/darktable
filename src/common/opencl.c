@@ -40,6 +40,10 @@
 
 static const char *dt_opencl_get_vendor_by_id(unsigned int id);
 static char *_ascii_str_canonical(const char *in, char *out, int maxlen);
+/** parse a single token of priority string and store priorities in priority_list */
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list);
+/** parse a complete priority string */
+static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
@@ -408,7 +412,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
     // apply config settings for device priority
-    dt_opencl_priorities_parse(dt_conf_get_string("opencl_device_priority"));
+    dt_opencl_priorities_parse(cl, dt_conf_get_string("opencl_device_priority"));
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");
@@ -639,9 +643,8 @@ static char *_strsep(char **stringp, const char *delim)
 
 
 // parse a single token of priority string and store priorities in priority_list
-void dt_opencl_priority_parse(char *configstr, int *priority_list)
+static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *priority_list)
 {
-  dt_opencl_t *cl = darktable.opencl;
   int devs = cl->num_devs;
   int count = 0;
   int full[devs+1];
@@ -721,9 +724,8 @@ void dt_opencl_priority_parse(char *configstr, int *priority_list)
 }
 
 // parse a complete priority string
-void dt_opencl_priorities_parse(const char *configstr)
+static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
 {
-  dt_opencl_t *cl = darktable.opencl;
   char tmp[2048];
   int len = 0;
 
@@ -743,16 +745,16 @@ void dt_opencl_priorities_parse(const char *configstr)
 
   // now split config string into tokens, separated by '/' and parse them one after the other
   char *prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(prio, cl->dev_priority_image);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_image);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(prio, cl->dev_priority_preview);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(prio, cl->dev_priority_export);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_export);
 
   prio = _strsep(&str, "/");
-  dt_opencl_priority_parse(prio, cl->dev_priority_thumbnail);
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail);
 }
 
 

@@ -1,0 +1,4032 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+   <sect1 status="draft" id="lua_api"><title>Lua API</title>
+   <indexterm>
+      <primary>Lua API</primary>
+   </indexterm>
+<para>To access the darktable specific functions you must load the darktable environement:</para>
+<para></para>
+<para>darktable = require "darktable"</para>
+<para></para>
+<para>All functions and data are accessed through the darktable module.</para>
+<para></para>
+<para>This documentation was generated with darktable version 1.3+1475~gb837db7.</para>
+
+<sect2 status="draft" id="darktable">
+<title>darktable</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>darktable</secondary>
+</indexterm>
+<para>The darktable library is the main entry point for all access to the darktable internals.</para>
+
+<sect3 status="draft" id="darktable.print">
+<title>darktable.print</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print</secondary>
+</indexterm>
+<synopsis>function(<emphasis>message</emphasis>)</synopsis>
+<para>Will print a string to the darktable control log (the long overlayed window that appears over the main panel).</para>
+
+<variablelist>
+<varlistentry><term id="darktable.print.message">message</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to display which should be a single line.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect3>
+
+<sect3 status="draft" id="darktable.print_error">
+<title>darktable.print_error</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>print_error</secondary>
+</indexterm>
+<synopsis>function(<emphasis>message</emphasis>)</synopsis>
+<para>This function will print its parameter if the Lua logdomain is activated. Start darktable with the "-d lua" command line option to enable the Lua logdomain.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.print_error.message">message</term><listitem>
+<synopsis>string</synopsis>
+<para>The string to display.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect3>
+
+<sect3 status="draft" id="darktable.register_event">
+<title>darktable.register_event</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_event</secondary>
+</indexterm>
+<synopsis>function(<emphasis>event_type</emphasis>,<emphasis>callback</emphasis>,<emphasis>...</emphasis>)</synopsis>
+<para>This function registers a callback to be called when a given event happens.</para>
+<para></para>
+<para>Events are documented in the event section.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.register_event.event_type">event_type</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event to register to.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_event.callback">callback</term><listitem>
+<synopsis>function</synopsis>
+<para>The function to call on event. The signature of the function depends on the type of event.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_event....">...</term><listitem>
+<synopsis>variable</synopsis>
+<para>Some events need extra parameters at registraion time; these must be specified here.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect3>
+
+<sect3 status="draft" id="darktable.register_storage">
+<title>darktable.register_storage</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register_storage</secondary>
+</indexterm>
+<synopsis>function(<emphasis>plugin_name</emphasis>,<emphasis>name</emphasis>,[<emphasis>store</emphasis>],[<emphasis>finalize</emphasis>],[<emphasis>supported</emphasis>])</synopsis>
+<para>This function will add a new storage implemented in Lua. </para>
+<para>A storage is a module that is responsible for handling images once they have been generated during export. Examples of core storages include filesystem, e-mail, facebook...</para>
+
+<variablelist>
+<varlistentry><term id="darktable.register_storage.plugin_name">plugin_name</term><listitem>
+<synopsis>string</synopsis>
+<para>A Unique name for the plugin.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>A human readable name for the plugin.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store">store</term><listitem>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
+<para>This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.register_storage.store.storage">storage</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>The storage object used for the export.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The exported image object.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.format">format</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_format">types.dt_imageio_module_format</link></synopsis>
+<para>The format object used for the export.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.filename">filename</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of a temporary file where the processed image is stored.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.number">number</term><listitem>
+<synopsis>integer</synopsis>
+<para>The number of the image out of the export series.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.total">total</term><listitem>
+<synopsis>integer</synopsis>
+<para>The total number of images in the export series.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.high_quality">high_quality</term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the export is high quality.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.store.extra_data">extra_data</term><listitem>
+<synopsis>table</synopsis>
+<para>An empty Lua table to take extra data. This table is common to all calls to store and the call to finalize in a given export series.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.finalize">finalize</term><listitem>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image_table</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
+<para>This function is called once all images are processed and all store calls are finished.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.register_storage.finalize.storage">storage</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>The storage object used for the export.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.finalize.image_table">image_table</term><listitem>
+<synopsis>table</synopsis>
+<para>A table keyed by the exported image objects and valued with the corresponding temporary export filename.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.finalize.extra_data">extra_data</term><listitem>
+<synopsis>table</synopsis>
+<para>An empty Lua table to store extra data. This table is common to all calls to store and the call to finalize in a given export series.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.supported">supported</term><listitem>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>format</emphasis>):boolean</synopsis>
+<para>A function called to check if a given image format is supported by the Lua storage; this is used to build the dropdown format list for the GUI.</para>
+<para></para>
+<para>Nate that the parameters in the format are the ones currently set in the GUI; the user might change them before export.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.register_storage.supported.storage">storage</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>The storage object tested.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.register_storage.supported.format">format</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_format">types.dt_imageio_module_format</link></synopsis>
+<para>The format object to report about.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the corresponding format is supported.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</listitem></varlistentry>
+
+</variablelist>
+</sect3>
+
+<sect3 status="draft" id="darktable.films">
+<title>darktable.films</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>films</secondary>
+</indexterm>
+<para>A table containing all the film objects in the database.</para>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" id="darktable.films.#">
+<title>darktable.films.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>Each film has a numeric entry in the database.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.gui">
+<title>darktable.gui</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>gui</secondary>
+</indexterm>
+<para>This subtable contains function and data to manipulate the darktable user interface with Lua.</para>
+<para></para>
+<para>Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" id="darktable.gui.action_images">
+<title>darktable.gui.action_images</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>action_images</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>A table of images on which the user expects us to act.</para>
+<para>It is based on both the hovered image and the selection and is</para>
+<para>consistent with the way darktable works.</para>
+<para></para>
+<para>It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.gui.hovered">
+<title>darktable.gui.hovered</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>hovered</secondary>
+</indexterm>
+<para>The image under the cursor or nil if no image is hovered.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.gui.selection">
+<title>darktable.gui.selection</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>selection</secondary>
+</indexterm>
+<synopsis>function([<emphasis>selection</emphasis>]):table</synopsis>
+<para>Allows to change the set of selected images.</para>
+<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
+
+<variablelist>
+<varlistentry><term id="darktable.gui.selection.selection">selection</term><listitem>
+<synopsis>table</synopsis>
+<para>A table of images which will define the selected images. If this parameter is not given the selection will be untouched. If an empty table is given the selection will be emptied.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table</synopsis>
+<para>A table containing the selection as it was before the function was called.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.tags">
+<title>darktable.tags</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>tags</secondary>
+</indexterm>
+<para>Allows access to all existing tags.</para>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" id="darktable.tags.#">
+<title>darktable.tags.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>Each existing tag has a numeric entry in the tags table - use ipairs to iterate over them.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.create">
+<title>darktable.tags.create</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>create</secondary>
+</indexterm>
+<synopsis>function(<emphasis>name</emphasis>)</synopsis>
+<para>Creates a new tag and return it. If the tag exists return the existing tag.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.create.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the new tag.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.find">
+<title>darktable.tags.find</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>find</secondary>
+</indexterm>
+<synopsis>function(<emphasis>name</emphasis>):<link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>Returns the tag object or nil if the tag doesn't exist.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.find.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the tag to find.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag object or nil.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.delete">
+<title>darktable.tags.delete</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>delete</secondary>
+</indexterm>
+<synopsis>function(<emphasis>tag</emphasis>)</synopsis>
+<para>Deletes the tag object, detaching it from all images.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.delete.tag">tag</term><listitem>
+<synopsis><link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag to be deleted.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.attach">
+<title>darktable.tags.attach</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>attach</secondary>
+</indexterm>
+<synopsis>function(<emphasis>tag</emphasis>,<emphasis>image</emphasis>)</synopsis>
+<para>Attach a tag to an image; the order of the parameters can be reversed.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.attach.tag">tag</term><listitem>
+<synopsis><link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag to be attached.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.tags.attach.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to attach the tag to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.detach">
+<title>darktable.tags.detach</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>detach</secondary>
+</indexterm>
+<synopsis>function(<emphasis>tag</emphasis>,<emphasis>image</emphasis>)</synopsis>
+<para>Detach a tag from an image; the order of the parameters can be reversed.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.detach.tag">tag</term><listitem>
+<synopsis><link linkend="types.dt_lua_tag_t">types.dt_lua_tag_t</link></synopsis>
+<para>The tag to be detached.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.tags.detach.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to detach the tag from.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.tags.get_tags">
+<title>darktable.tags.get_tags</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>get_tags</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>):table</synopsis>
+<para>Gets all tags attached to an image.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.tags.get_tags.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to get the tags from.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table</synopsis>
+<para>A table of tags that are attached to the image.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.configuration">
+<title>darktable.configuration</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>configuration</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>This table regroups values that describe details of the configuration of darktable.</para>
+
+<sect4 status="draft" id="darktable.configuration.version">
+<title>darktable.configuration.version</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>version</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The version number of darktable.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.configuration.has_gui">
+<title>darktable.configuration.has_gui</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_gui</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if darktable has a GUI (launched through the main darktable command, not darktable-cli).</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.configuration.verbose">
+<title>darktable.configuration.verbose</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>verbose</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the Lua logdomain is enabled.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.configuration.tmp_dir">
+<title>darktable.configuration.tmp_dir</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>tmp_dir</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the directory where darktable will store temporary files.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.configuration.config_dir">
+<title>darktable.configuration.config_dir</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>config_dir</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the directory where darktable will find its global configuration objects (modules).</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.configuration.cache_dir">
+<title>darktable.configuration.cache_dir</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>cache_dir</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the directory where darktable will store its mipmaps.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.preferences">
+<title>darktable.preferences</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>preferences</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.</para>
+<para></para>
+<para>Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.</para>
+<para></para>
+<para>Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. Allowed values are the following strings</para>
+<para></para>
+<para>* string</para>
+<para>* bool</para>
+<para>* integer</para>
+
+<sect4 status="draft" id="darktable.preferences.register">
+<title>darktable.preferences.register</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>register</secondary>
+</indexterm>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>,<emphasis>label</emphasis>,<emphasis>tooltip</emphasis>,[<emphasis>default</emphasis>],[<emphasis>min</emphasis>],[<emphasis>max</emphasis>])</synopsis>
+<para>Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).</para>
+
+<variablelist>
+<varlistentry><term id="darktable.preferences.register.script">script</term><listitem>
+<synopsis>string</synopsis>
+<para>Invisible prefix to guarantee unicity of preferences.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>A unique name used with the script part to identify the preference.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.type">type</term><listitem>
+<synopsis>string</synopsis>
+<para>The type of the preference - one of the string values described above.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.label">label</term><listitem>
+<synopsis>string</synopsis>
+<para>The label displayed in the preference screen.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.tooltip">tooltip</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip to display in the preference menue.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.default">default</term><listitem>
+<synopsis>depends on type</synopsis>
+<para>Default value to use when not set explicitely or by the user.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.min">min</term><listitem>
+<synopsis>int</synopsis>
+<para>Minimum value (integer preferences only).</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.register.max">max</term><listitem>
+<synopsis>int</synopsis>
+<para>Maximum value (integer preferences only).</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.preferences.read">
+<title>darktable.preferences.read</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>read</secondary>
+</indexterm>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>):depends on type</synopsis>
+<para>Reads a value from a Lua preference.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.preferences.read.script">script</term><listitem>
+<synopsis>string</synopsis>
+<para>Invisible prefix to guarantee unicity of preferences.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.read.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the preference displayed in the preference screen.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.read.type">type</term><listitem>
+<synopsis>string</synopsis>
+<para>The type of the preference - one of the string values described above.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>depends on type</synopsis>
+<para>The value of the preference.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.preferences.write">
+<title>darktable.preferences.write</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write</secondary>
+</indexterm>
+<synopsis>function(<emphasis>script</emphasis>,<emphasis>name</emphasis>,<emphasis>type</emphasis>,<emphasis>value</emphasis>)</synopsis>
+<para>Writes a value to a Lua preference.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.preferences.write.script">script</term><listitem>
+<synopsis>string</synopsis>
+<para>Invisible prefix to guarantee unicity of preferences.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.write.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the preference displayed in the preference screen.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.write.type">type</term><listitem>
+<synopsis>string</synopsis>
+<para>The type of the preference - one of the string values described above.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.preferences.write.value">value</term><listitem>
+<synopsis>depends on type</synopsis>
+<para>The value to set the preference to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.styles">
+<title>darktable.styles</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>styles</secondary>
+</indexterm>
+<para>This pseude table allows you to access and manipulate styles.</para>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" id="darktable.styles.#">
+<title>darktable.styles.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>Each existing style has a numeric index; you can iterate them using ipairs.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.styles.create">
+<title>darktable.styles.create</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>create</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>,<emphasis>name</emphasis>,<emphasis>description</emphasis>):<link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>Create a new style based on an image.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.styles.create.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to create the style from.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.styles.create.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The name to give to the new style.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.styles.create.description">description</term><listitem>
+<synopsis>string</synopsis>
+<para>The description of the new style.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>The new style object.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.styles.delete">
+<title>darktable.styles.delete</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>delete</secondary>
+</indexterm>
+<synopsis>function(<emphasis>style</emphasis>)</synopsis>
+<para>Deletes an existing style.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.styles.delete.style">style</term><listitem>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>the style to delete</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.styles.duplicate">
+<title>darktable.styles.duplicate</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>duplicate</secondary>
+</indexterm>
+<synopsis>function(<emphasis>style</emphasis>,<emphasis>name</emphasis>,<emphasis>description</emphasis>):<link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>Create a new style based on an existing style.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.styles.duplicate.style">style</term><listitem>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>The style to base the new style on.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.styles.duplicate.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>The new style's name.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.styles.duplicate.description">description</term><listitem>
+<synopsis>string</synopsis>
+<para>The new style's description.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>The new style object.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.styles.apply">
+<title>darktable.styles.apply</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>apply</secondary>
+</indexterm>
+<synopsis>function(<emphasis>style</emphasis>,<emphasis>image</emphasis>)</synopsis>
+<para>Apply a style to an image. The order of parameters can be inverted.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.styles.apply.style">style</term><listitem>
+<synopsis><link linkend="types.dt_style_t">types.dt_style_t</link></synopsis>
+<para>The style to use.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.styles.apply.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to apply the style to.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.database">
+<title>darktable.database</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>database</secondary>
+</indexterm>
+<para>Allows to access the database of images. Note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes. Also note that all images are here. This table is not influenced by any GUI filtering (collections, stars etc...).</para>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" id="darktable.database.#">
+<title>darktable.database.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Each image in the database appears with a numerical index; you can interate them using ipairs.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.database.duplicate">
+<title>darktable.database.duplicate</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>duplicate</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>):<link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Creates a duplicate of an image and returns it.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.database.duplicate.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>the image to duplicate</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The created image if an image is imported or the toplevel film object if a film was imported.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.database.import">
+<title>darktable.database.import</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>import</secondary>
+</indexterm>
+<synopsis>function(<emphasis>location</emphasis>)</synopsis>
+<para>Imports new images into the database.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.database.import.location">location</term><listitem>
+<synopsis>string</synopsis>
+<para>The filename or directory to import images from.</para>
+<para></para>
+<para>NOTE: If the images are set to be imported recursively in preferences only the toplevel film is returned (the one whose path was given as a parameter).</para>
+<para></para>
+<para>NOTE2: If the parameter is a directory the call is non-blocking; the film object will not have the newly imported images yet. Use a post-import-film filtering on that film to react when images are actually imported.</para>
+<para></para>
+<para></para>
+<para></para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.modules">
+<title>darktable.modules</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>modules</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>This table describe the different loadable modules of darktable.</para>
+
+<sect4 status="draft" id="darktable.modules.format">
+<title>darktable.modules.format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>format</secondary>
+</indexterm>
+<para>Functions to get parameter objects for the different export formats.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect5 status="draft" id="darktable.modules.format.png">
+<title>darktable.modules.format.png</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>png</secondary>
+</indexterm>
+<synopsis>function():<link linkend="types.dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
+<para>Used to get a new png format object.</para>
+
+<variablelist>
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_format_data_png">types.dt_imageio_module_format_data_png</link></synopsis>
+<para>A new format object describing the parameters to export to png - initialised to the values contained in the GUI.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.tiff</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>tiff</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.exr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exr</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.copy</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>copy</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.pfm</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>pfm</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.jpeg</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>jpeg</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.ppm</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>ppm</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.webp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>webp</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.format.j2k</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>j2k</secondary>
+</indexterm>
+see <link linkend="darktable.modules.format.png">darktable.modules.format.png</link>
+
+</sect5>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.modules.storage">
+<title>darktable.modules.storage</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>storage</secondary>
+</indexterm>
+<para>Functions to get parameter objects for the different export storages.</para>
+<para></para>
+<para>New values may appear in this table if new storages are registered using Lua.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect5 status="draft" id="darktable.modules.storage.email">
+<title>darktable.modules.storage.email</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>email</secondary>
+</indexterm>
+<synopsis>function():<link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>Used to get a new email storage object.</para>
+
+<variablelist>
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>A new storage object describing the parameters to export with - initialised to the values contained in the GUI.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.latex</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>latex</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.disk</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>disk</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.gallery</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>gallery</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.flickr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>flickr</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.facebook</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>facebook</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+<sect5 status="draft" >
+<title>darktable.modules.storage.picasa</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>picasa</secondary>
+</indexterm>
+see <link linkend="darktable.modules.storage.email">darktable.modules.storage.email</link>
+
+</sect5>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="darktable.debug">
+<title>darktable.debug</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>debug</secondary>
+</indexterm>
+<synopsis>table</synopsis>
+<para>This section must be activated separately by calling </para>
+<para></para>
+<para>require "darktable.debug"</para>
+<para></para>
+
+<sect4 status="draft" id="darktable.debug.dump">
+<title>darktable.debug.dump</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dump</secondary>
+</indexterm>
+<synopsis>function(<emphasis>object</emphasis>,[<emphasis>name</emphasis>]):string</synopsis>
+<para>This will return a string describing everything Lua knows about an object, used to know what an object is.</para>
+<para></para>
+<para>This function is recursion-safe and can be used to dump _G if needed.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.debug.dump.object">object</term><listitem>
+<synopsis>anything</synopsis>
+<para>The object to dump.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable.debug.dump.name">name</term><listitem>
+<synopsis>string</synopsis>
+<para>A name to use for the object.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>A string containing a text description of the object - can be very long.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="darktable.debug.debug">
+<title>darktable.debug.debug</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>debug</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>Initialized to false; set it to true to also dump information about metatables.</para>
+
+</sect4>
+
+<sect4 status="draft" id="darktable.debug.type">
+<title>darktable.debug.type</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>type</secondary>
+</indexterm>
+<synopsis>function(<emphasis>object</emphasis>):string</synopsis>
+<para>Similar to the system function type() but it will return the real type instead of "userdata" for darktable specific objects.</para>
+
+<variablelist>
+<varlistentry><term id="darktable.debug.type.object">object</term><listitem>
+<synopsis>anything</synopsis>
+<para>The object whos type must be reported.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>string</synopsis>
+<para>A string describing the type of the object.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+</sect2>
+
+<sect2 status="draft" id="types">
+<title>types</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>types</secondary>
+</indexterm>
+<para>This section documents types that are specific to darktable's Lua API.</para>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_email">
+<title>types.dt_imageio_module_storage_data_email</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_email</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>TBSL, force first</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_email.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_lua_image_t">
+<title>types.dt_lua_image_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_image_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.</para>
+<para></para>
+<para>Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.</para>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.attach_tag</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>attach_tag</secondary>
+</indexterm>
+see <link linkend="darktable.tags.attach">darktable.tags.attach</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.detach_tag</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>detach_tag</secondary>
+</indexterm>
+see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.get_tags</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>get_tags</secondary>
+</indexterm>
+see <link linkend="darktable.tags.get_tags">darktable.tags.get_tags</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.create_style</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>create_style</secondary>
+</indexterm>
+see <link linkend="darktable.styles.create">darktable.styles.create</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.apply_style</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>apply_style</secondary>
+</indexterm>
+see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.duplicate</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>duplicate</secondary>
+</indexterm>
+see <link linkend="darktable.database.duplicate">darktable.database.duplicate</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.id">
+<title>types.dt_lua_image_t.id</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>id</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>A unique id identifying the image in the database.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.path">
+<title>types.dt_lua_image_t.path</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>path</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The file the directory containing the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.film">
+<title>types.dt_lua_image_t.film</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>film</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film object that contains this image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.filename">
+<title>types.dt_lua_image_t.filename</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>filename</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.duplicate_index">
+<title>types.dt_lua_image_t.duplicate_index</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>duplicate_index</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>If there are multiple images based on a same file, each will have a unique number, starting from 0.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.publisher">
+<title>types.dt_lua_image_t.publisher</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>publisher</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The publisher field of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.title">
+<title>types.dt_lua_image_t.title</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>title</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The title field of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.creator">
+<title>types.dt_lua_image_t.creator</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>creator</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The creator field of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.rights">
+<title>types.dt_lua_image_t.rights</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rights</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The rights field of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.description">
+<title>types.dt_lua_image_t.description</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>description</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The description field for the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_maker">
+<title>types.dt_lua_image_t.exif_maker</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_maker</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The maker exif data.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_model">
+<title>types.dt_lua_image_t.exif_model</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_model</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The camera model used.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_lens">
+<title>types.dt_lua_image_t.exif_lens</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_lens</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The id string of the lens used.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_aperture">
+<title>types.dt_lua_image_t.exif_aperture</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_aperture</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The aperture saved in the exif data.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_exposure">
+<title>types.dt_lua_image_t.exif_exposure</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_exposure</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The exposure time of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_focal_length">
+<title>types.dt_lua_image_t.exif_focal_length</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_focal_length</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The focal length of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_iso">
+<title>types.dt_lua_image_t.exif_iso</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_iso</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The iso used on the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_datetime_taken">
+<title>types.dt_lua_image_t.exif_datetime_taken</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_datetime_taken</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The date and time of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_focus_distance">
+<title>types.dt_lua_image_t.exif_focus_distance</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_focus_distance</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The distance of the subject.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.exif_crop">
+<title>types.dt_lua_image_t.exif_crop</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>exif_crop</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The exif crop data.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.latitude">
+<title>types.dt_lua_image_t.latitude</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>latitude</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>GPS latitude data of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.longitude">
+<title>types.dt_lua_image_t.longitude</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>longitude</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>GPS longitude data of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.is_raw">
+<title>types.dt_lua_image_t.is_raw</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_raw</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the image is a RAW file.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.is_ldr">
+<title>types.dt_lua_image_t.is_ldr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_ldr</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the image is a ldr image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.is_hdr">
+<title>types.dt_lua_image_t.is_hdr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>is_hdr</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the image is a hdr image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.width">
+<title>types.dt_lua_image_t.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The width of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.height">
+<title>types.dt_lua_image_t.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The height of the image.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.rating">
+<title>types.dt_lua_image_t.rating</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rating</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The rating of the image (-1 for rejected).</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.red">
+<title>types.dt_lua_image_t.red</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>red</secondary>
+</indexterm>
+<synopsis>boolean</synopsis>
+<para>True if the image has the corresponding colorlabel.</para>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.blue</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>blue</secondary>
+</indexterm>
+see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.green</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>green</secondary>
+</indexterm>
+see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.yellow</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>yellow</secondary>
+</indexterm>
+see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_image_t.purple</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>purple</secondary>
+</indexterm>
+see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.group_with">
+<title>types.dt_lua_image_t.group_with</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>group_with</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>,[<emphasis>image2</emphasis>])</synopsis>
+<para>Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.</para>
+
+<variablelist>
+<varlistentry><term id="types.dt_lua_image_t.group_with.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image whose group must be changed.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types.dt_lua_image_t.group_with.image2">image2</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image we want to group with.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.make_group_leader">
+<title>types.dt_lua_image_t.make_group_leader</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>make_group_leader</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>)</synopsis>
+<para>Makes the image the leader of its group.</para>
+
+<variablelist>
+<varlistentry><term id="types.dt_lua_image_t.make_group_leader.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image we want as the leader.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.get_group_members">
+<title>types.dt_lua_image_t.get_group_members</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>get_group_members</secondary>
+</indexterm>
+<synopsis>function(<emphasis>image</emphasis>):table</synopsis>
+<para>Returns a table containing all images of the group. The group leader is both at a numeric key and at the "leader" special key (so you probably want to use ipairs to iterate through that table).</para>
+
+<variablelist>
+<varlistentry><term id="types.dt_lua_image_t.get_group_members.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image whose group we are querying.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>table</synopsis>
+<para>A table of image objects containing all images that are in the same group as the image.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_image_t.group_leader">
+<title>types.dt_lua_image_t.group_leader</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>group_leader</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image which is the leader of the group this image is a member of.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format">
+<title>types.dt_imageio_module_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format</secondary>
+</indexterm>
+<synopsis>virtual type</synopsis>
+<para>A virtual type representing all format types.</para>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.plugin_name">
+<title>types.dt_imageio_module_format.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>A unique name for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.name">
+<title>types.dt_imageio_module_format.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>A human readable name for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.extension">
+<title>types.dt_imageio_module_format.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The typical filename extension for that format.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.mime">
+<title>types.dt_imageio_module_format.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The mime type associated with the format.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.max_width">
+<title>types.dt_imageio_module_format.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The max width allowed for the format (0 = unlimited).</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.max_height">
+<title>types.dt_imageio_module_format.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The max height allowed for the format (0 = unlimited).</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format.write_image">
+<title>types.dt_imageio_module_format.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+<synopsis>function(<emphasis>format</emphasis>,<emphasis>image</emphasis>,<emphasis>filename</emphasis>):boolean</synopsis>
+<para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
+<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
+
+<variablelist>
+<varlistentry><term id="types.dt_imageio_module_format.write_image.format">format</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_format">types.dt_imageio_module_format</link></synopsis>
+<para>The format that will be used to export.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types.dt_imageio_module_format.write_image.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image object to export.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types.dt_imageio_module_format.write_image.filename">filename</term><listitem>
+<synopsis>string</synopsis>
+<para>The filename to export to.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>Returns true on success.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_png">
+<title>types.dt_imageio_module_format_data_png</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_png</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to png.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_png.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_png.bpp">
+<title>types.dt_imageio_module_format_data_png.bpp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>bpp</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The bpp parameter to use when exporting.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_tiff">
+<title>types.dt_imageio_module_format_data_tiff</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_tiff</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to tiff.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_tiff.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_tiff.bpp">
+<title>types.dt_imageio_module_format_data_tiff.bpp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>bpp</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The bpp parameter to use when exporting.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_exr">
+<title>types.dt_imageio_module_format_data_exr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_exr</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to exr.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_exr.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_copy">
+<title>types.dt_imageio_module_format_data_copy</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_copy</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to copy.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_copy.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_pfm">
+<title>types.dt_imageio_module_format_data_pfm</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_pfm</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to pfm.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_pfm.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_jpeg">
+<title>types.dt_imageio_module_format_data_jpeg</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_jpeg</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to jpeg.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_jpeg.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_jpeg.quality">
+<title>types.dt_imageio_module_format_data_jpeg.quality</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>quality</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The quality to use at export time.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_ppm">
+<title>types.dt_imageio_module_format_data_ppm</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_ppm</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to ppm.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_ppm.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_webp">
+<title>types.dt_imageio_module_format_data_webp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_webp</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to webp.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_webp.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_webp.quality">
+<title>types.dt_imageio_module_format_data_webp.quality</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>quality</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The quality to use at export time.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_webp.comp_type">
+<title>types.dt_imageio_module_format_data_webp.comp_type</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>comp_type</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The overall quality to use; can be one of "webp_lossy" or "webp_lossless".</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_webp.hint">
+<title>types.dt_imageio_module_format_data_webp.hint</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>hint</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>A hint on the overall content of the image, can be one of "hint_default", "hint_picture", "hint_photo", "hint_graphic".</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_format_data_j2k">
+<title>types.dt_imageio_module_format_data_j2k</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_format_data_j2k</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>Type object describing parameters to export to jpeg2000.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.plugin_name">types.dt_imageio_module_format.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.name">types.dt_imageio_module_format.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.extension</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extension</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.extension">types.dt_imageio_module_format.extension</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.mime</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>mime</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.mime">types.dt_imageio_module_format.mime</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.max_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_width">types.dt_imageio_module_format.max_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.max_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>max_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.max_height">types.dt_imageio_module_format.max_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_format_data_j2k.write_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write_image</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_module_format.write_image</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_j2k.quality">
+<title>types.dt_imageio_module_format_data_j2k.quality</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>quality</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The quality to use at export time.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_j2k.bpp">
+<title>types.dt_imageio_module_format_data_j2k.bpp</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>bpp</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The bpp parameter to use when exporting.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_j2k.format">
+<title>types.dt_imageio_module_format_data_j2k.format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>format</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The format to use can be one of "j2k" or "jp2".</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_format_data_j2k.preset">
+<title>types.dt_imageio_module_format_data_j2k.preset</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>preset</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The preset to use can be one of "cinema2k_24", "cinema2k_48", "cinema4k_24".</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage">
+<title>types.dt_imageio_module_storage</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage</secondary>
+</indexterm>
+<synopsis>virtual type</synopsis>
+<para>A virtual type representing all storage types.</para>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.plugin_name">
+<title>types.dt_imageio_module_storage.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>A unique name for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.name">
+<title>types.dt_imageio_module_storage.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>A human readable name for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.width">
+<title>types.dt_imageio_module_storage.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The currently selected width for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.height">
+<title>types.dt_imageio_module_storage.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The currently selected height for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.recommended_width">
+<title>types.dt_imageio_module_storage.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The recommended width for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.recommended_height">
+<title>types.dt_imageio_module_storage.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The recommended height for the plugin.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage.supports_format">
+<title>types.dt_imageio_module_storage.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>format</emphasis>):boolean</synopsis>
+<para>Checks if a format is supported by this storage.</para>
+
+<variablelist>
+<varlistentry><term id="types.dt_imageio_module_storage.supports_format.storage">storage</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_storage">types.dt_imageio_module_storage</link></synopsis>
+<para>The storage type to check against.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types.dt_imageio_module_storage.supports_format.format">format</term><listitem>
+<synopsis><link linkend="types.dt_imageio_module_format">types.dt_imageio_module_format</link></synopsis>
+<para>The format type to check.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>True if the format is supported by the storage.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_flickr">
+<title>types.dt_imageio_module_storage_data_flickr</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_flickr</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to flickr.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_flickr.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_facebook">
+<title>types.dt_imageio_module_storage_data_facebook</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_facebook</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to facebook.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_facebook.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_latex">
+<title>types.dt_imageio_module_storage_data_latex</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_latex</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to latex.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_latex.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage_data_latex.filename">
+<title>types.dt_imageio_module_storage_data_latex.filename</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>filename</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename to export to.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage_data_latex.title">
+<title>types.dt_imageio_module_storage_data_latex.title</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>title</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The title to use for export.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_picasa">
+<title>types.dt_imageio_module_storage_data_picasa</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_picasa</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to picasa.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_picasa.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_gallery">
+<title>types.dt_imageio_module_storage_data_gallery</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_gallery</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to gallery.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_gallery.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage_data_gallery.filename">
+<title>types.dt_imageio_module_storage_data_gallery.filename</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>filename</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename to export to.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage_data_gallery.title">
+<title>types.dt_imageio_module_storage_data_gallery.title</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>title</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The title to use for export.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_imageio_module_storage_data_disk">
+<title>types.dt_imageio_module_storage_data_disk</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_imageio_module_storage_data_disk</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An object containing parameters to export to disk.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.plugin_name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>plugin_name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.plugin_name">types.dt_imageio_module_storage.plugin_name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.name">types.dt_imageio_module_storage.name</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.width">types.dt_imageio_module_storage.width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.height">types.dt_imageio_module_storage.height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.recommended_width</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_width</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_width">types.dt_imageio_module_storage.recommended_width</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.recommended_height</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>recommended_height</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.recommended_height">types.dt_imageio_module_storage.recommended_height</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_imageio_module_storage_data_disk.supports_format</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>supports_format</secondary>
+</indexterm>
+see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_imageio_module_storage.supports_format</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_imageio_module_storage_data_disk.filename">
+<title>types.dt_imageio_module_storage_data_disk.filename</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>filename</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The filename to export to.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_lua_film_t">
+<title>types.dt_lua_film_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_film_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A film in darktable; this represents a directory containing imported images.</para>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
+
+<sect4 status="draft" id="types.dt_lua_film_t.#">
+<title>types.dt_lua_film_t.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The different images within the film.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_film_t.id">
+<title>types.dt_lua_film_t.id</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>id</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>A unique numeric id used by this film.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_film_t.path">
+<title>types.dt_lua_film_t.path</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>path</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The path represented by this film.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_style_t">
+<title>types.dt_style_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_style_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A style that can be applied to an image.</para>
+<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_style_t.delete</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>delete</secondary>
+</indexterm>
+see <link linkend="darktable.styles.delete">darktable.styles.delete</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_style_t.duplicate</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>duplicate</secondary>
+</indexterm>
+see <link linkend="darktable.styles.duplicate">darktable.styles.duplicate</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_style_t.apply</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>apply</secondary>
+</indexterm>
+see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_style_t.name">
+<title>types.dt_style_t.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the style.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_style_t.description">
+<title>types.dt_style_t.description</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>description</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The description of the style.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_style_t.#">
+<title>types.dt_style_t.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types.dt_style_item_t">types.dt_style_item_t</link></synopsis>
+<para>The different items that make the style.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_style_item_t">
+<title>types.dt_style_item_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_style_item_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>An element that is part of a style.</para>
+<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
+
+<sect4 status="draft" id="types.dt_style_item_t.name">
+<title>types.dt_style_item_t.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the style item.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_style_item_t.num">
+<title>types.dt_style_item_t.num</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>num</secondary>
+</indexterm>
+<synopsis>number</synopsis>
+<para>The position of the style item within its style.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="types.dt_lua_tag_t">
+<title>types.dt_lua_tag_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lua_tag_t</secondary>
+</indexterm>
+<synopsis>dt_type</synopsis>
+<para>A tag that can be attached to an image.</para>
+<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
+
+<sect4 status="draft" >
+<title>types.dt_lua_tag_t.delete</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>delete</secondary>
+</indexterm>
+see <link linkend="darktable.tags.delete">darktable.tags.delete</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_tag_t.attach</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>attach</secondary>
+</indexterm>
+see <link linkend="darktable.tags.attach">darktable.tags.attach</link>
+
+</sect4>
+
+<sect4 status="draft" >
+<title>types.dt_lua_tag_t.detach</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>detach</secondary>
+</indexterm>
+see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_tag_t.name">
+<title>types.dt_lua_tag_t.name</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>name</secondary>
+</indexterm>
+<synopsis>string</synopsis>
+<para>The name of the tag.</para>
+
+</sect4>
+
+<sect4 status="draft" id="types.dt_lua_tag_t.#">
+<title>types.dt_lua_tag_t.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis>undocumented</synopsis>
+<para>The images that have that tag attached to them.</para>
+<synopsis>Attributes: <link linkend="attributes.read">read</link></synopsis>
+
+</sect4>
+
+</sect3>
+
+</sect2>
+
+<sect2 status="draft" id="events">
+<title>events</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>events</secondary>
+</indexterm>
+<para>This section documents events that can be used to trigger Lua callbacks.</para>
+
+<sect3 status="draft" id="events.intermediate-export-image">
+<title>events.intermediate-export-image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>intermediate-export-image</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is called each time an image is exported, once for each image after the image has been processed to an image format but before the storage has moved the image to its final destination.</para>
+
+<sect4 status="draft" id="events.intermediate-export-image.callback">
+<title>events.intermediate-export-image.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>image</emphasis>,<emphasis>filename</emphasis>)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry><term id="events.intermediate-export-image.callback.event">event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="events.intermediate-export-image.callback.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image object that has been exported.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="events.intermediate-export-image.callback.filename">filename</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the file that is the result of the image being processed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="events.intermediate-export-image.extra_registration_parameters">
+<title>events.intermediate-export-image.extra_registration_parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra_registration_parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="events.post-import-image">
+<title>events.post-import-image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>post-import-image</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered whenever a new image is imported into the database.</para>
+<para></para>
+<para>This event can be registered multiple times, all callbacks will be called.</para>
+
+<sect4 status="draft" id="events.post-import-image.callback">
+<title>events.post-import-image.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>image</emphasis>)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry><term id="events.post-import-image.callback.event">event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="events.post-import-image.callback.image">image</term><listitem>
+<synopsis><link linkend="types.dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image object that has been exported.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="events.post-import-image.extra_registration_parameters">
+<title>events.post-import-image.extra_registration_parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra_registration_parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="events.shortcut">
+<title>events.shortcut</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>shortcut</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event registers a new keyboad shortcut. The shortcut isn't bound to any key until the users does so in the preference panel.</para>
+<para></para>
+<para>The event is triggered whenever the shortcut is triggered.</para>
+<para></para>
+<para></para>
+<para>This event can only be registered once per value of shortcut.</para>
+<para></para>
+
+<sect4 status="draft" id="events.shortcut.callback">
+<title>events.shortcut.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>shortcut</emphasis>)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry><term id="events.shortcut.callback.event">event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="events.shortcut.callback.shortcut">shortcut</term><listitem>
+<synopsis>string</synopsis>
+<para>The tooltip string that was given at registration time.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="events.shortcut.extra_registration_parameters">
+<title>events.shortcut.extra_registration_parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra_registration_parameters</secondary>
+</indexterm>
+<para></para>
+
+<variablelist>
+<varlistentry><term id="events.shortcut.extra_registration_parameters.tooltip">tooltip</term><listitem>
+<synopsis>string</synopsis>
+<para>The string that will be displayed on the shortcut preference panel describing the shortcut.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+</sect3>
+
+<sect3 status="draft" id="events.post-import-film">
+<title>events.post-import-film</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>post-import-film</secondary>
+</indexterm>
+<synopsis>event</synopsis>
+<para>This event is triggered when an film import is finished (all post-import-image callbacks have already been triggered). This event can be registered multiple times.</para>
+<para></para>
+
+<sect4 status="draft" id="events.post-import-film.callback">
+<title>events.post-import-film.callback</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>callback</secondary>
+</indexterm>
+<synopsis>function(<emphasis>event</emphasis>,<emphasis>film</emphasis>)</synopsis>
+<para></para>
+
+<variablelist>
+<varlistentry><term id="events.post-import-film.callback.event">event</term><listitem>
+<synopsis>string</synopsis>
+<para>The name of the event that triggered the callback.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="events.post-import-film.callback.film">film</term><listitem>
+<synopsis><link linkend="types.dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The new film that has been added. If multiple films were added recursively only the top level film is reported.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</sect4>
+
+<sect4 status="draft" id="events.post-import-film.extra_registration_parameters">
+<title>events.post-import-film.extra_registration_parameters</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>extra_registration_parameters</secondary>
+</indexterm>
+<para>This event has no extra registration parameters.</para>
+
+</sect4>
+
+</sect3>
+
+</sect2>
+
+<sect2 status="draft" id="attributes">
+<title>attributes</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>attributes</secondary>
+</indexterm>
+<para>This section documents various attributes used throughout the documentation.</para>
+
+<sect3 status="draft" id="attributes.write">
+<title>attributes.write</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>write</secondary>
+</indexterm>
+<para>This object is a variable that can be written to.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.read">
+<title>attributes.read</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>read</secondary>
+</indexterm>
+<para>This object is a variable that can be read.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.has_pairs">
+<title>attributes.has_pairs</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_pairs</secondary>
+</indexterm>
+<para>This object can be used as an argument to the system function "pairs" and iterated upon.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.has_ipairs">
+<title>attributes.has_ipairs</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_ipairs</secondary>
+</indexterm>
+<para>This object can be used as an argument to the system function "ipairs" and iterated upon.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.has_equal">
+<title>attributes.has_equal</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_equal</secondary>
+</indexterm>
+<para>This object has a specific comparison function that will be used when comparing it to an object of the same type.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.has_length">
+<title>attributes.has_length</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_length</secondary>
+</indexterm>
+<para>This object has a specific length function that will be used by the # operator.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.has_tostring">
+<title>attributes.has_tostring</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>has_tostring</secondary>
+</indexterm>
+<para>This object has a specific reimplementation of the "tostring" method that allows pretty-printing it.</para>
+
+</sect3>
+
+<sect3 status="draft" id="attributes.implicit_yield">
+<title>attributes.implicit_yield</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>implicit_yield</secondary>
+</indexterm>
+<para>This call will release the Lua lock while executing, thus allowing other Lua callbacks to run.</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 status="draft" id="system">
+<title>system</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>system</secondary>
+</indexterm>
+<para>This section documents changes to system functions.</para>
+
+<sect3 status="draft" id="system.yield">
+<title>system.yield</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>yield</secondary>
+</indexterm>
+<synopsis>function(<emphasis>type</emphasis>,<emphasis>extra</emphasis>):variable</synopsis>
+<para>Lua functions can yield at any point. The parameters and return types depend on why we want to yield.</para>
+<para>A callback that is yielding allows other Lua code to run.</para>
+<para></para>
+<para>* wait_ms: one extra parameter; the execution will pause for that many miliseconds; yield returns nothing;</para>
+<para>* file_readable: an opened file from a call to the OS library; will return when the file is readable; returns nothing;</para>
+<para>* run_command: a command to be run by "sh -c"; will return when the command terminates; returns the return code of the execution.</para>
+
+<variablelist>
+<varlistentry><term id="system.yield.type">type</term><listitem>
+<synopsis>string</synopsis>
+<para>The type of yield; can be one of "wait_ms", "file_readable", "run_command".</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="system.yield.extra">extra</term><listitem>
+<synopsis>variable</synopsis>
+<para>An extra parameter: integer for "wait_ms", open file for "file_readable", string for "run_command".</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>variable</synopsis>
+<para>Nothing for "wait_ms" and "file_readable"; the returned code of the command for "run_command".</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</sect3>
+
+</sect2>
+
+</sect1>

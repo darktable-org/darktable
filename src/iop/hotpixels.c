@@ -321,7 +321,7 @@ void gui_init     (dt_iop_module_t *self)
   g_signal_connect(G_OBJECT (g->strength), "value-changed", G_CALLBACK (strength_callback), self);
 
   /* 3 neighbours */
-  g->permissive  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("detect by 3 neighbours")));
+  g->permissive  = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("detect by 3 neighbors")));
   gtk_toggle_button_set_active(g->permissive, p->permissive);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->permissive), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->permissive), "toggled", G_CALLBACK(permissive_callback), self);

@@ -884,7 +884,9 @@ void reload_defaults(dt_iop_module_t *module)
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
-  g_strlcpy(tmp.lens, _lens_sanitize(img->exif_lens), sizeof(tmp.lens));
+  char *new_lens = _lens_sanitize(img->exif_lens);
+  g_strlcpy(tmp.lens, new_lens, sizeof(tmp.lens));
+  free(new_lens);
   g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.lens));
   tmp.crop     = img->exif_crop;
   tmp.aperture = img->exif_aperture;

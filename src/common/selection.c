@@ -301,6 +301,33 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
 
   selection->last_single_id = -1;
 }
+
+
+void dt_selection_select_list(struct dt_selection_t *selection, GList * list)
+{
+  gchar *query = NULL;
+  if(!list) return;
+
+  int imgid = GPOINTER_TO_INT(list->data);
+  selection->last_single_id = imgid;
+  query = dt_util_dstrcat(query,"insert or ignore into selected_images values (%d)",imgid);
+  list = g_list_next(list);
+  while(list) {
+    int imgid = GPOINTER_TO_INT(list->data);
+    selection->last_single_id = imgid;
+    query = dt_util_dstrcat(query,",(%d)",imgid);
+    list = g_list_next(list);
+  }
+
+  sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+
+  g_free(query);
+
+  /* update hint message */
+  dt_collection_hint_message(darktable.collection);
+}
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

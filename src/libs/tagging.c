@@ -630,6 +630,7 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
   gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->related)));
   gtk_entry_completion_set_text_column(completion, 0);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
+  gtk_entry_completion_set_popup_set_width(completion, FALSE);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);

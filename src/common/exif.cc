@@ -450,6 +450,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       float value = pos->toFloat();
       img->exif_focus_distance = (0.01 * pow(10, value/40));
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusFi.FocusDistance")))
+              != exifData.end() && pos->size())
+    {
+      float value = pos->toFloat();
+      img->exif_focus_distance = (0.001 * value);
+    }
     else if ( (pos=Exiv2::subjectDistance(exifData))
               != exifData.end() && pos->size())
     {
@@ -534,6 +540,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
 
 #if 0
     /* Read flash mode */
@@ -570,7 +580,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
           break;
         }
     }
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.DateTimeOriginal")))
+         != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal")))
          != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
@@ -1046,32 +1061,28 @@ int dt_exif_read_blob(
       if(res != NULL)
       {
         exifData["Exif.Image.Artist"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.ImageDescription"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
       if(res != NULL)
       {
         exifData["Exif.Photo.UserComment"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.dc.rights", NULL);
       if(res != NULL)
       {
         exifData["Exif.Image.Copyright"] = (char*)res->data;
-        g_free(res->data);
-        g_list_free(res);
+        g_list_free_full(res, &g_free);
       }
 
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
@@ -1101,6 +1112,17 @@ int dt_exif_read_blob(
         g_free(long_str);
         g_free(lat_str);
       }
+
+      // According to the Exif specs DateTime is to be set to the last modification time while DateTimeOriginal is to be kept.
+      // For us "keeping" it means to write out what we have in DB to support people adding a time offset in the geotagging module.
+      gchar new_datetime[20];
+      dt_gettime(new_datetime);
+      exifData["Exif.Image.DateTime"] = new_datetime;
+      exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
+      // FIXME: What about DateTimeDigitized? we currently update it, too, which might not be what is expected for scanned images
+      exifData["Exif.Photo.DateTimeDigitized"] = cimg->exif_datetime_taken;
+
       dt_image_cache_read_release(darktable.image_cache, cimg);
     }
 

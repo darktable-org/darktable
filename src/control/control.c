@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "develop/develop.h"
+#include "common/colorspaces.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/debug.h"
@@ -51,6 +52,7 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <gdk/gdkkeysyms.h>
+#include <lcms2.h>
 
 /* the queue can have scheduled jobs but all
     the workers is sleeping, so this kicks the workers
@@ -340,7 +342,7 @@ void dt_ctl_set_display_profile()
     else
       atom_name = g_strdup("_ICC_PROFILE");
 
-    profile_source = g_strdup(atom_name);
+    profile_source = g_strdup_printf("xatom %s", atom_name);
 
     GdkAtom type = GDK_NONE;
     gint format = 0;
@@ -409,11 +411,19 @@ void dt_ctl_set_display_profile()
                         (darktable.control->xprofile_size != buffer_size || memcmp(darktable.control->xprofile_data, buffer, buffer_size) != 0);
   if(profile_changed)
   {
+    cmsHPROFILE profile = NULL;
+    char name[512];
     // thanks to ufraw for this!
     g_free(darktable.control->xprofile_data);
     darktable.control->xprofile_data = buffer;
     darktable.control->xprofile_size = buffer_size;
-    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile from the %s (size: %d)\n", profile_source, buffer_size);
+    profile = cmsOpenProfileFromMem(buffer, buffer_size);
+    if(profile)
+    {
+      dt_colorspaces_get_profile_name(profile, "en", "US", name, sizeof(name));
+      cmsCloseProfile(profile);
+    }
+    dt_print(DT_DEBUG_CONTROL, "[color profile] we got a new screen profile `%s' from the %s (size: %d)\n", *name?name:"(unknown)", profile_source, buffer_size);
   }
   pthread_rwlock_unlock(&darktable.control->xprofile_lock);
   if(profile_changed)
@@ -1715,6 +1725,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   static char   vimkey_input[256];
   if(darktable.control->vimkey_cnt)
   {
+    guchar unichar = gdk_keyval_to_unicode(key);
     if(key == GDK_KEY_Return)
     {
       if(!strcmp(darktable.control->vimkey, ":q"))
@@ -1741,7 +1752,8 @@ int dt_control_key_pressed_override(guint key, guint state)
     }
     else if(key == GDK_KEY_BackSpace)
     {
-      darktable.control->vimkey_cnt = MAX(0, darktable.control->vimkey_cnt-1);
+      darktable.control->vimkey_cnt -= (darktable.control->vimkey + darktable.control->vimkey_cnt) -
+                                       g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
         dt_control_log_ack_all();
@@ -1778,14 +1790,19 @@ int dt_control_key_pressed_override(guint key, guint state)
       }
       dt_control_log(darktable.control->vimkey);
     }
-    else if(key >= ' ' && key <= '~') // printable ascii character
+    else if(g_unichar_isprint(unichar)) // printable unicode character
     {
-      darktable.control->vimkey[darktable.control->vimkey_cnt] = key;
-      darktable.control->vimkey_cnt = MIN(255, darktable.control->vimkey_cnt+1);
-      darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
-      dt_control_log(darktable.control->vimkey);
-      g_list_free(autocomplete);
-      autocomplete = NULL;
+      gchar utf8[6];
+      gint char_width = g_unichar_to_utf8(unichar, utf8);
+      if(darktable.control->vimkey_cnt + 1 + char_width < 256)
+      {
+        g_utf8_strncpy(darktable.control->vimkey + darktable.control->vimkey_cnt, utf8, 1);
+        darktable.control->vimkey_cnt += char_width;
+        darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
+        dt_control_log(darktable.control->vimkey);
+        g_list_free(autocomplete);
+        autocomplete = NULL;
+      }
     }
     else if(key == GDK_KEY_Up)
     {

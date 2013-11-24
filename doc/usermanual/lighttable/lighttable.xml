@@ -110,7 +110,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>
-						<entry>Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with indication of the one small area in focus. 
+						<entry>Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with indication of the areas in focus. 
                                                 Focus detection is based on an embedded JPEG thumbnail of the original RAW file independent of further processing steps within darktable.
 						</entry>
 						<entry>

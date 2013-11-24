@@ -79,18 +79,228 @@
 			<para>Most modules can exist as multiple instances. Together with the mask feature, you can let an operation have 
                               different effects on different parts of the image.</para>
 		</listitem>
-                <listitem><para>darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser that always just works (tm). It's designed as a module where the 
+                <listitem><para>darktable introduces a highly efficient, yet simple <quote>single-click</quote> denoiser that always just works&trade;. It's designed as a module where the 
                           denoising performance only depends on camera and ISO setting. A database of profiles contains parameters for over
                           100 popular camera models.</para>
                 </listitem>
                 <listitem><para>darktable comes with a versatile scripting interface for functionality enhancement using Lua as a scripting language.</para>
                 </listitem>
-
-
-
 	</itemizedlist>
 		
-		
+
+        <sect1 status="draft" id="program_invocation"><title>Program invocation</title>
+                <indexterm>
+                    <primary>program invocation</primary>
+                </indexterm>
+                <indexterm>
+                    <primary>command line parameters</primary>
+                </indexterm>
+
+                <para>darktable comes with two binaries: the standard GUI variant which is started by calling <computeroutput>darktable</computeroutput> and 
+                      a command line interface variant which is started by calling <computeroutput>darktable-cli</computeroutput>.
+                </para>
+
+                <sect2 status="draft" id="darktable_commandline_parameters"><title><computeroutput>darktable</computeroutput> binary</title>
+                      <para>This binary starts darktable with its GUI and full functionality; it is the standard way of using darktable.</para>
+
+                      <para><computeroutput>darktable</computeroutput> is called with the following command line parameters:</para>
+
+                      <synopsis>darktable [-d {all,cache,camctl,control,dev,fswatch,
+               input,lighttable,masks,memory,nan,opencl,
+               perf,pwstorage,sql}]
+          [IMG_1234.{RAW,..}|image_folder/] 
+          [--disable-opencl] 
+          [--library &lt;library file&gt;] 
+          [--datadir &lt;data directory&gt;] 
+          [--moduledir &lt;module directory&gt;]
+          [--tmpdir &lt;tmp directory&gt;] 
+          [--configdir &lt;user config directory&gt;]
+          [--cachedir &lt;user cache directory&gt;]
+          [--localedir &lt;locale directory&gt;]
+          [--conf &lt;key&gt;=&lt;value&gt;]</synopsis>
+
+                      <para>
+                      All parameters are optional; in most cases users will start darktable without any additional parameters in which case darktable uses suitable defaults.
+                      <variablelist>
+                           <varlistentry><term>-d</term>
+                              <listitem>
+                                <para>This option enables debug output to the terminal. There are several subsystems
+                                      of darktable and debugging of each of them can be activated separately. You can use this option
+                                      multiple times if you want debugging output of more than one subsystem.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>IMG_1234.{RAW,..} | image_folder/</term>
+                              <listitem>
+                                <para>You may optionally supply the filename of an image or the name of a folder containing image files. If a filename is given
+                                      darktable starts in darkroom view with that file opened. If a folder is given darktable starts in lighttable view with the
+                                      content of that folder as the current collection.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--disable-opencl</term>
+                              <listitem>
+                                <para>This option prevents darktable from initializing the OpenCL subsystem. Use this option in case darktable crashes at startup due
+                                      to a defective OpenCL implementation.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--library &lt;library file&gt;</term>
+                              <listitem>
+                                <para>darktable keeps image information in an sqlite database for fast access. The default location of that database file is 
+                                      <quote>$HOME/.config/darktable/library.db</quote>. You may give an alternative location, e.g. if you want to do some experiments without
+                                      compromising your original library.db. If the database file does not exist, darktable creates it for you. You may also give
+                                      <quote>:memory:</quote> as a library file in which case the database is kept in system memory - all changes are discarded when
+                                      darktable terminates.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--datadir &lt;data directory&gt;</term>
+                              <listitem>
+                                <para>This option defines the directory where darktable finds its runtime data. The default place depends on your installation. Typical
+                                      places are <quote>/opt/darktable/share/darktable/</quote> and <quote>/usr/share/darktable/</quote>.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--moduledir &lt;module directory&gt;</term>
+                              <listitem>
+                                <para>darktable has a modular structure and organizes its modules as shared libraries for loading at runtime. With this option you tell
+                                      darktable where to look for its shared libraries. The default place depends on your installation; typical places are
+                                      <quote>/opt/darktable/lib64/darktable/</quote> and <quote>/usr/lib64/darktable/</quote>.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--tmpdir &lt;tmp directory&gt;</term>
+                              <listitem>
+                                <para>The place where darktable stores its temporary files. If this option is not supplied darktable uses the system default.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--configdir &lt;config directory&gt;</term>
+                              <listitem>
+                                <para>This option defines the directory where darktable stores the user specific configuration. The default place is
+                                      <quote>$HOME/.config/darktable/</quote>.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--cachedir &lt;cache directory&gt;</term>
+                              <listitem>
+                                <para>darktable keeps a cache of image thumbnails for fast image preview and of precompiled OpenCL binaries for fast startup.
+                                      By default the cache is located in <quote>$HOME/.cache/darktable/</quote>. There may exist multiple thumbnail caches in
+                                      parallel - one for each library file.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--localedir &lt;locale directory&gt;</term>
+                              <listitem>
+                                <para>The place where darktable finds its language specific text strings. The default place depends on your installation.
+                                      Typical places are <quote>/opt/darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote></para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--conf &lt;key&gt;=&lt;value&gt;</term>
+                              <listitem>
+                                <para>darktable supports a rich set of configuration parameters which the user defines in <quote>darktablerc</quote> - darktable's configuration file
+                                      in the user config directory. You may temporarily overwrite individual settings on the command line with this option - however, these settings will not
+                                      be stored in <quote>darktablerc</quote>.</para>
+                              </listitem>
+                           </varlistentry>
+
+
+                     </variablelist>
+
+                     </para>
+                </sect2>
+
+                <sect2 status="draft" id="darktable_cli_commandline_parameters"><title><computeroutput>darktable-cli</computeroutput> binary</title>
+                      <indexterm>
+                          <primary>darktable-cli</primary>
+                      </indexterm>
+                      <para>This binary starts the command line interface variant of darktable which allows exporting images.</para>
+
+                      <para><computeroutput>darktable-cli</computeroutput> is called with the following command line parameters:</para>
+
+                      <synopsis>darktable-cli &lt;input file&gt;
+              [&lt;xmp file&gt;] 
+              &lt;output file&gt;
+              [--width &lt;max width&gt;]
+              [--height &lt;max height&gt;]
+              [--bpp &lt;bpp&gt;]
+              [--hq &lt;0|1|true|false&gt;]
+              [--verbose] 
+              [--core &lt;darktable options&gt;]</synopsis>
+
+                      <para>
+                      The user needs to supply an input filename and an output filename. All other parameters are optional.
+                      <variablelist>
+                           <varlistentry><term>&lt;input file&gt;</term>
+                              <listitem>
+                                <para>The name of the input file to export.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>&lt;xmp file&gt;</term>
+                              <listitem>
+                                <para>The optional name of an XMP sidecar file containing the history stack data to be applied during export. If this option is not
+                                      given darktable will search for an XMP file that belongs to the given input file.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>&lt;output file&gt;</term>
+                              <listitem>
+                                <para>The name of the output file. darktable derives the export file format from the file extension.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--width &lt;max width&gt;</term>
+                              <listitem>
+                                <para>This optional parameter allows to limit the width of the exported image to that number of pixels.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--height &lt;max height&gt;</term>
+                              <listitem>
+                                <para>This optional parameter allows to limit the height of the exported image to that number of pixels.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--bpp &lt;bpp&gt;</term>
+                              <listitem>
+                                <para>An optional parameter to define the bit depth of the exported image; allowed values depend on the file format.
+                                      Currently this option is not yet functional. If you need to define the bit depth you need to use the following
+                                      workaround:</para>
+                                <synopsis>--core
+--conf plugins/imageio/format/&lt;FORMAT&gt;/bpp=&lt;VALUE&gt;</synopsis>
+                                <para>where &lt;FORMAT&gt; is the name of the selected output format.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--hq &lt;0|1|true|false&gt;</term>
+                              <listitem>
+                                <para>A flag that defines whether to use high quality resampling during export (see <xref linkend="core_options"/>).
+                                      Defaults to true.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--verbose</term>
+                              <listitem>
+                                <para>Enables verbose output.</para>
+                              </listitem>
+                           </varlistentry>
+
+                           <varlistentry><term>--core &lt;darktable options&gt;</term>
+                              <listitem>
+                                <para>All command line parameters following <quote>--core</quote> are passed to the darktable core and handled as
+                                      standard parameters. See <xref linkend="darktable_commandline_parameters"/> for a detailed description.</para>
+                              </listitem>
+                           </varlistentry>
+
+                     </variablelist>
+
+                     </para>
+                </sect2>
+        </sect1>
+
 	<sect1 status="final" id="user_interface"><title>User interface</title>
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
 					<colspec colwidth='6*'/>

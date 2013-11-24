@@ -236,7 +236,7 @@ void RawDecoder::setMetaData(CameraMetaData *meta, string make, string model, st
   Camera *cam = meta->getCamera(make, model, mode);
   if (!cam) {
     printf("[rawspeed] ISO:%d\n", iso_speed);
-    printf("[rawspeed] Unable to find camera in database: %s %s %s\nPlease upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
+    printf("[rawspeed] Unable to find camera in database: %s %s %s\n[rawspeed] Please upload file to ftp.rawstudio.org, thanks!\n", make.c_str(), model.c_str(), mode.c_str());
     return;
   }
 

@@ -1163,20 +1163,21 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   //get metadata
   const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
   char *caption = NULL;
-  GList *title = NULL;
-  GList *desc = NULL;
+  GList *caption_list = NULL;
 
-  title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  if(title != NULL)
+  caption_list = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+  if(caption_list != NULL)
   {
-    caption = title->data;
+    caption = g_strdup(caption_list->data);
+    g_list_free_full(caption_list, &g_free);
   }
-  if (caption == NULL)
+  else
   {
-    desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-    if(desc != NULL)
+    caption_list = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    if(caption_list != NULL)
     {
-      caption = desc->data;
+      caption = g_strdup(caption_list->data);
+      g_list_free_full(caption_list, &g_free);
     }
   }
   dt_image_cache_read_release(darktable.image_cache, img);
@@ -1224,11 +1225,6 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 cleanup:
   unlink( fname );
   g_free( caption );
-  if(desc)
-  {
-    //no need to free desc->data as caption points to it
-    g_list_free(desc);
-  }
 
   if (result)
   {

@@ -847,9 +847,7 @@ void gui_init(struct dt_iop_module_t *self)
         if (!lang) lang = "en_US";
 
         dt_iop_color_profile_t *prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
-        char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
-        g_strlcpy(prof->name, name, sizeof(prof->name));
+        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         prof->display_pos = ++display_pos;
@@ -906,9 +904,9 @@ void gui_init(struct dt_iop_module_t *self)
     }
     else if(!strcmp(prof->name, "linear_rgb"))
     {
-      dt_bauhaus_combobox_add(g->cbox2, _("linear RGB"));
-      dt_bauhaus_combobox_add(g->cbox3, _("linear RGB"));
-      dt_bauhaus_combobox_add(g->cbox5, _("linear RGB"));
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear Rec709 RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {

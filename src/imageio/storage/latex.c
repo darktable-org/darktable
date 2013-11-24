@@ -267,41 +267,39 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
 #if 0 // let's see if we actually want titles and such to be exported:
     char *title = NULL, *description = NULL, *tags = NULL;
-    GList *res;
+    GList *res_title, *res_desc, *res_subj;
 
-    res = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
-    if(res)
+    res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+    if(res_title)
     {
-      title = res->data;
-      g_list_free(res);
+      title = res_title->data;
     }
 
-    res = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
-    if(res)
+    res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+    if(res_desc)
     {
-      description = res->data;
-      g_list_free(res);
+      description = res_desc->data;
     }
 
     unsigned int count = 0;
-    res = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
-    if(res)
+    res_subj = dt_metadata_get(imgid, "Xmp.dc.subject", &count);
+    if(res_subj)
     {
       // don't show the internal tags (darktable|...)
-      res = g_list_first(res);
-      GList *iter = res;
+      res_subj = g_list_first(res_subj);
+      GList *iter = res_subj;
       while(iter)
       {
         GList *next = g_list_next(iter);
         if(g_str_has_prefix(iter->data, "darktable|"))
         {
           g_free(iter->data);
-          res = g_list_delete_link(res, iter);
+          res_subj = g_list_delete_link(res_subj, iter);
           count--;
         }
         iter = next;
       }
-      tags = dt_util_glist_to_str(", ", res, count);
+      tags = dt_util_glist_to_str(", ", res_subj, count);
     }
 #endif
 
@@ -324,8 +322,9 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "\\newpage\n\n", relfilename);
 
     pair->pos = num;
-    // g_free(title);
-    // g_free(description);
+    // if(res_title) g_list_free_full(res_title, &g_free);
+    // if(res_desc) g_list_free_full(res_desc, &g_free);
+    // if(res_subj) g_list_free_full(res_subj, &g_free);
     // g_free(tags);
     d->l = g_list_insert_sorted(d->l, pair, (GCompareFunc)sort_pos);
   } // end of critical block

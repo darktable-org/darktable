@@ -648,7 +648,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
         g_value_init(&gv,G_TYPE_INT);
         gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
-        dt_iop_gui_set_expanded(module, TRUE);
+        dt_iop_gui_set_expanded(module, TRUE, FALSE);
         dt_iop_gui_update_blending(module);
 
         //the pipe need to be reconstruct

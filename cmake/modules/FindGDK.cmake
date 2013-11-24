@@ -18,21 +18,22 @@ libfind_pkg_check_modules(GDK_PKGCONF gdk-2.0)
 # Main include dir
 find_path(GDK_INCLUDE_DIR
   NAMES gdk/gdk.h
-  PATHS ${GDK_PKGCONF_INCLUDE_DIRS}
+  HINTS ${GDK_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES gtk-2.0
 )
 
 # Glib-related libraries also use a separate config header, which is in lib dir
 find_path(GDKConfig_INCLUDE_DIR
   NAMES gdkconfig.h
-  PATHS ${GDK_PKGCONF_INCLUDE_DIRS} /usr
+  HINTS ${GDK_PKGCONF_INCLUDE_DIRS}
+  PATHS /usr
   PATH_SUFFIXES lib/gtk-2.0/include
 )
 
 # Finally the library itself
 find_library(GDK_LIBRARY
   NAMES gdk-x11-2.0
-  PATHS ${GDK_PKGCONF_LIBRARY_DIRS}
+  HINTS ${GDK_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

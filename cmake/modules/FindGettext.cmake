@@ -19,7 +19,6 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 if(WIN32 OR APPLE)
   set(Gettext_LIBRARY_SEARCH_DIRS
-    ${Gettext_PKGCONF_LIBRARY_DIRS}
     /opt/local/lib
     /sw/local/lib
   )
@@ -27,6 +26,7 @@ if(WIN32 OR APPLE)
   find_library(Gettext_LIBRARY
     NAMES intl
     PATHS ${Gettext_LIBRARY_SEARCH_DIRS}
+    HINTS ${Gettext_PKGCONF_LIBRARY_DIRS}
   )
 
   set(Gettext_PROCESS_LIBS Gettext_LIBRARY)
@@ -34,7 +34,8 @@ endif()
 
 find_path(Gettext_INCLUDE_DIR
   NAMES libintl.h
-  PATHS ${Gettext_PKGCONF_INCLUDE_DIRS} /opt/local/include
+  HINTS ${Gettext_PKGCONF_INCLUDE_DIRS}
+  PATHS /opt/local/include
 )
 
 set(Gettext_PROCESS_INCLUDES Gettext_INCLUDE_DIR)

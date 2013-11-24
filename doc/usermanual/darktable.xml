@@ -6,7 +6,7 @@
 		]>
 
 <book lang="en">
-	<title>darktable 1.3</title>
+	<title>darktable 1.4</title>
 	<bookinfo>
 		<legalnotice>
 			<para>
@@ -28,14 +28,16 @@
 			</para>
 			<para>
    			You should have received a copy of the GNU General Public License
-   			along with darktable.  If not, see <emphasis> http://www.gnu.org/licenses/</emphasis>.
+   			along with darktable. If not, see <ulink url="http://www.gnu.org/licenses/">
+                        <emphasis>the GNU homepage</emphasis></ulink>.
 			</para>
 			<para>
 			</para>
 			<para>
 			The present user manual is under license <emphasis>cc by-sa </emphasis>,
 			meaning <emphasis>Attribution Share Alike </emphasis>.
-			You can visit <emphasis>http://creativecommons.org/about/licenses/</emphasis> to get more information.
+			You can visit <ulink url="http://creativecommons.org/about/licenses/">
+                        <emphasis>the creative commons page</emphasis></ulink> to get more information.
 			</para>
 		</legalnotice>
 		<copyright>
@@ -67,13 +69,13 @@
 						</row>
 						<row>
 							<entry>user manual</entry>
-							<entry>1.3.0</entry>
-							<entry>August 2013</entry>
+							<entry>1.4.0</entry>
+							<entry>November 2013</entry>
 						</row>
 						<row>
 							<entry>darktable</entry>
-							<entry>1.3</entry>
-							<entry>August 2013</entry>
+							<entry>1.4</entry>
+							<entry>November 2013</entry>
 						</row>
 					</tbody>
 				</tgroup></informaltable>

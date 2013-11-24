@@ -16,7 +16,7 @@ libfind_pkg_check_modules(GIO_PKGCONF gio-2.0)
 # Find the library
 find_library(GIO_LIBRARY
   NAMES gio-2.0
-  PATHS ${GIO_PKGCONF_LIBRARY_DIRS}
+  HINTS ${GIO_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

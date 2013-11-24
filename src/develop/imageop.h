@@ -350,7 +350,7 @@ void dt_iop_gui_update(dt_iop_module_t *module);
 /** reset the ui to its defaults */
 void dt_iop_gui_reset(dt_iop_module_t *module);
 /** set expanded state of iop */
-void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded);
+void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolean collapse_others);
 /** refresh iop according to set expanded state */
 void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
