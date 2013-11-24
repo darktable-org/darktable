@@ -79,7 +79,14 @@ local function print_content(node)
 		end
 	end
 	if concat ~="" then
-		result = result.."<synopsis>Attributes: "..concat.."</synopsis>\n"
+		result = result..[[<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis>]]..concat..[[</synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>]]
 	end
 
 	result = result.."\n"

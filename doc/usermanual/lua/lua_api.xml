@@ -9,7 +9,7 @@
    </indexterm>
 <para>To access the darktable specific functions you must load the darktable environement:</para>
 <para></para>
-<synopsis>darktable = require "darktable"</synopsis>
+<para>darktable = require "darktable"</para>
 <para></para>
 <para>All functions and data are accessed through the darktable module.</para>
 <para></para>
@@ -118,8 +118,7 @@
 </listitem></varlistentry>
 
 <varlistentry><term id="darktable.register_storage.store">store</term><listitem>
-<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,
-<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
 <para>This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.</para>
 
 <variablelist>
@@ -239,8 +238,14 @@
 <secondary>films</secondary>
 </indexterm>
 <para>A table containing all the film objects in the database.</para>
-<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="darktable.films.#">
 <title>darktable.films.#</title>
 <indexterm>
@@ -263,8 +268,14 @@
 <para>This subtable contains function and data to manipulate the darktable user interface with Lua.</para>
 <para></para>
 <para>Most of these function won't do anything if the GUI is not enabled (i.e you are using the command line version darktabl-cli instead of darktable).</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="darktable.gui.action_images">
 <title>darktable.gui.action_images</title>
 <indexterm>
@@ -273,8 +284,7 @@
 </indexterm>
 <synopsis>table</synopsis>
 <para>A table of images on which the user expects us to act.</para>
-<para>It is based on both the hovered image and the selection and is</para>
-<para>consistent with the way darktable works.</para>
+<para>It is based on both the hovered image and the selection and is consistent with the way darktable works.</para>
 <para></para>
 <para>It is recommended to use this table to implement Lua actions rather than dt.gui.hovered or dt.gui.selected to be consistant with darktable's GUI.</para>
 
@@ -298,8 +308,14 @@
 </indexterm>
 <synopsis>function([<emphasis>selection</emphasis>]):table</synopsis>
 <para>Allows to change the set of selected images.</para>
-<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.implicit_yield">implicit_yield</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry><term id="darktable.gui.selection.selection">selection</term><listitem>
 <synopsis>table</synopsis>
@@ -326,8 +342,14 @@
 <secondary>tags</secondary>
 </indexterm>
 <para>Allows access to all existing tags.</para>
-<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="darktable.tags.#">
 <title>darktable.tags.#</title>
 <indexterm>
@@ -720,8 +742,14 @@
 <secondary>styles</secondary>
 </indexterm>
 <para>This pseude table allows you to access and manipulate styles.</para>
-<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="darktable.styles.#">
 <title>darktable.styles.#</title>
 <indexterm>
@@ -862,8 +890,14 @@
 <secondary>database</secondary>
 </indexterm>
 <para>Allows to access the database of images. Note that duplicate images (images with the same RAW but different XMP) will appear multiple times with different duplicate indexes. Also note that all images are here. This table is not influenced by any GUI filtering (collections, stars etc...).</para>
-<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="darktable.database.#">
 <title>darktable.database.#</title>
 <indexterm>
@@ -945,8 +979,14 @@
 <secondary>format</secondary>
 </indexterm>
 <para>Functions to get parameter objects for the different export formats.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect5 status="draft" id="darktable.modules.format.png">
 <title>darktable.modules.format.png</title>
 <indexterm>
@@ -1058,8 +1098,14 @@ see <link linkend="darktable.modules.format.png">darktable.modules.format.png</l
 <para>Functions to get parameter objects for the different export storages.</para>
 <para></para>
 <para>New values may appear in this table if new storages are registered using Lua.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect5 status="draft" id="darktable.modules.storage.email">
 <title>darktable.modules.storage.email</title>
 <indexterm>
@@ -1247,8 +1293,14 @@ see <link linkend="darktable.modules.storage.email">darktable.modules.storage.em
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>TBSL, force first</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_email.plugin_name</title>
 <indexterm>
@@ -1331,8 +1383,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 <para>Image objects represent an image in the database. This is slightly different from a file on disk since a file can have multiple developements.</para>
 <para></para>
 <para>Note that this is the real image object; changing the value of a field will immediately change it in darktable and will be reflected on any copy of that image object you may have kept.</para>
-<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_lua_image_t.attach_tag</title>
 <indexterm>
@@ -1918,8 +1976,14 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 </indexterm>
 <synopsis>function(<emphasis>format</emphasis>,<emphasis>image</emphasis>,<emphasis>filename</emphasis>):boolean</synopsis>
 <para>Exports an image to a file. This is a blocking operation that will not return until the image is exported.</para>
-<synopsis>Attributes: <link linkend="attributes.implicit_yield">implicit_yield</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.implicit_yield">implicit_yield</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <variablelist>
 <varlistentry><term id="types.dt_imageio_module_format.write_image.format">format</term><listitem>
 <synopsis><link linkend="types.dt_imageio_module_format">types.dt_imageio_module_format</link></synopsis>
@@ -1959,8 +2023,14 @@ see <link linkend="types.dt_lua_image_t.red">types.dt_lua_image_t.red</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to png.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_png.plugin_name</title>
 <indexterm>
@@ -2052,8 +2122,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to tiff.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_tiff.plugin_name</title>
 <indexterm>
@@ -2145,8 +2221,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to exr.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_exr.plugin_name</title>
 <indexterm>
@@ -2227,8 +2309,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to copy.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_copy.plugin_name</title>
 <indexterm>
@@ -2309,8 +2397,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to pfm.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_pfm.plugin_name</title>
 <indexterm>
@@ -2391,8 +2485,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to jpeg.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_jpeg.plugin_name</title>
 <indexterm>
@@ -2484,8 +2584,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to ppm.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_ppm.plugin_name</title>
 <indexterm>
@@ -2566,8 +2672,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to webp.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_webp.plugin_name</title>
 <indexterm>
@@ -2681,8 +2793,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>Type object describing parameters to export to jpeg2000.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_format_data_j2k.plugin_name</title>
 <indexterm>
@@ -2916,8 +3034,14 @@ see <link linkend="types.dt_imageio_module_format.write_image">types.dt_imageio_
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to flickr.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_flickr.plugin_name</title>
 <indexterm>
@@ -2998,8 +3122,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to facebook.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_facebook.plugin_name</title>
 <indexterm>
@@ -3080,8 +3210,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to latex.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_latex.plugin_name</title>
 <indexterm>
@@ -3184,8 +3320,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to picasa.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_picasa.plugin_name</title>
 <indexterm>
@@ -3266,8 +3408,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to gallery.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_gallery.plugin_name</title>
 <indexterm>
@@ -3370,8 +3518,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An object containing parameters to export to disk.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_imageio_module_storage_data_disk.plugin_name</title>
 <indexterm>
@@ -3463,8 +3617,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A film in darktable; this represents a directory containing imported images.</para>
-<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="types.dt_lua_film_t.#">
 <title>types.dt_lua_film_t.#</title>
 <indexterm>
@@ -3508,8 +3668,14 @@ see <link linkend="types.dt_imageio_module_storage.supports_format">types.dt_ima
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A style that can be applied to an image.</para>
-<synopsis>Attributes: <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_style_t.delete</title>
 <indexterm>
@@ -3583,8 +3749,14 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>An element that is part of a style.</para>
-<synopsis>Attributes: <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" id="types.dt_style_item_t.name">
 <title>types.dt_style_item_t.name</title>
 <indexterm>
@@ -3617,8 +3789,14 @@ see <link linkend="darktable.styles.apply">darktable.styles.apply</link>
 </indexterm>
 <synopsis>dt_type</synopsis>
 <para>A tag that can be attached to an image.</para>
-<synopsis>Attributes: <link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.has_equal">has_equal</link>, <link linkend="attributes.has_ipairs">has_ipairs</link>, <link linkend="attributes.has_length">has_length</link>, <link linkend="attributes.has_pairs">has_pairs</link>, <link linkend="attributes.has_tostring">has_tostring</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 <sect4 status="draft" >
 <title>types.dt_lua_tag_t.delete</title>
 <indexterm>
@@ -3668,8 +3846,14 @@ see <link linkend="darktable.tags.detach">darktable.tags.detach</link>
 </indexterm>
 <synopsis>undocumented</synopsis>
 <para>The images that have that tag attached to them.</para>
-<synopsis>Attributes: <link linkend="attributes.read">read</link></synopsis>
-
+<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis><link linkend="attributes.read">read</link></synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>
 </sect4>
 
 </sect3>
