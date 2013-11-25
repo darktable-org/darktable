@@ -218,6 +218,11 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   {
 
     char tmp_dir[DT_MAX_PATH_LEN];
+
+    d->vp->filename = dirname;
+    d->vp->jobcode = "export";
+    d->vp->imgid = imgid;
+    d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(tmp_dir, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
 
@@ -235,10 +240,6 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     g_strlcpy(d->filename, fixed_path, DT_MAX_PATH_LEN);
     g_free(fixed_path);
 
-    d->vp->filename = dirname;
-    d->vp->jobcode = "export";
-    d->vp->imgid = imgid;
-    d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
     g_strlcpy(filename, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
     g_strlcpy(dirname, filename, DT_MAX_PATH_LEN);

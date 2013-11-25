@@ -9,7 +9,7 @@
    </indexterm>
 <para>To access the darktable specific functions you must load the darktable environement:</para>
 <para></para>
-<para>darktable = require "darktable"</para>
+<synopsis>darktable = require "darktable"</synopsis>
 <para></para>
 <para>All functions and data are accessed through the darktable module.</para>
 <para></para>
@@ -118,7 +118,8 @@
 </listitem></varlistentry>
 
 <varlistentry><term id="darktable.register_storage.store">store</term><listitem>
-<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
+<synopsis>function(<emphasis>storage</emphasis>,<emphasis>image</emphasis>,<emphasis>format</emphasis>,<emphasis>filename</emphasis>,<emphasis>number</emphasis>,<emphasis>total</emphasis>,
+<emphasis>high_quality</emphasis>,<emphasis>extra_data</emphasis>)</synopsis>
 <para>This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.</para>
 
 <variablelist>
