@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-24 08:50+0100\n"
-"PO-Revision-Date: 2013-11-24 13:03+0100\n"
+"PO-Revision-Date: 2013-11-24 16:35+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da_DK\n"
@@ -7314,7 +7314,7 @@ msgstr "vis moduler eksplicit specificeret af bruger"
 
 #: ../src/libs/modulegroups.c:113
 msgid "the modules used in active pipe"
-msgstr "moduler der bruges i aktiv rækkefølge"
+msgstr "moduler der bruges i aktiv datakanal"
 
 #: ../src/libs/modulegroups.c:118
 msgid "basic group"
@@ -7798,27 +7798,27 @@ msgstr "duplikér billede"
 #: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1818
 msgctxt "accel"
 msgid "color red"
-msgstr "farve rød"
+msgstr "sæt rød farve"
 
 #: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1819
 msgctxt "accel"
 msgid "color yellow"
-msgstr "farve gul"
+msgstr "sæt gul farve"
 
 #: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1820
 msgctxt "accel"
 msgid "color green"
-msgstr "farve grøn"
+msgstr "sæt grøn farve"
 
 #: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1821
 msgctxt "accel"
 msgid "color blue"
-msgstr "farve blå"
+msgstr "sæt blå farve"
 
 #: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1822
 msgctxt "accel"
 msgid "color purple"
-msgstr "farve lilla"
+msgstr "sæt lilla farve"
 
 #. setup selection accelerators
 #. selection accels
