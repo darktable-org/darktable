@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-24 08:50+0100\n"
-"PO-Revision-Date: 2013-11-24 16:35+0100\n"
+"POT-Creation-Date: 2013-11-25 21:55+0100\n"
+"PO-Revision-Date: 2013-11-25 21:57+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da_DK\n"
@@ -778,8 +778,8 @@ msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
 msgstr ""
-"fejl under allokering af hukommelse til eksport; formindst venligst "
-"antallet af tråde for eksport eller køb mere hukommelse."
+"fejl under allokering af hukommelse til eksport; formindst venligst antallet "
+"af tråde for eksport eller køb mere hukommelse."
 
 #: ../src/common/imageio.c:616 ../src/common/mipmap_cache.c:1163
 #, c-format
@@ -1101,7 +1101,7 @@ msgstr ""
 #: ../src/control/jobs/control_jobs.c:1113
 #, c-format
 msgid "exporting %d image.."
-msgid_plural "exporting %d images …"
+msgid_plural "exporting %d images.."
 msgstr[0] "eksporterer %d billede …"
 msgstr[1] "eksporterer %d billeder …"
 
@@ -2560,7 +2560,7 @@ msgstr ""
 "skriv stien, hvor eksporterede billeder skal anbringes\n"
 "genkendte variable:"
 
-#: ../src/imageio/storage/disk.c:201 ../src/imageio/storage/gallery.c:253
+#: ../src/imageio/storage/disk.c:201 ../src/imageio/storage/gallery.c:254
 #: ../src/imageio/storage/latex.c:250
 #, c-format
 msgid "could not create directory `%s'!"
@@ -2573,14 +2573,14 @@ msgstr "kunne ikke skrive til mappe ‘%s’!"
 
 #: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
 #: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:671
-#: ../src/imageio/storage/gallery.c:326 ../src/imageio/storage/gallery.c:345
+#: ../src/imageio/storage/gallery.c:327 ../src/imageio/storage/gallery.c:346
 #: ../src/imageio/storage/picasa.c:1443
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "kunne ikke eksportere til fil ‘%s’!"
 
 #: ../src/imageio/storage/disk.c:257 ../src/imageio/storage/email.c:116
-#: ../src/imageio/storage/gallery.c:355 ../src/imageio/storage/latex.c:339
+#: ../src/imageio/storage/gallery.c:356 ../src/imageio/storage/latex.c:339
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "%d/%d eksporteret til ‘%s’"
