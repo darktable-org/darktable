@@ -1,5 +1,5 @@
 # ###
-# Greek translation (en.GR)
+# Greek translation (el_GR)
 # Original translator Dimitrios Psychogios <jinxos@google.com>, 2013
 # Contributors: Simos Xenitellis <simos.lists@googlemail.com>, 2013
 # ###
@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-24 15:00+0100\n"
-"PO-Revision-Date: 2013-11-24 16:35+0100\n"
+"POT-Creation-Date: 2013-11-25 18:45+0100\n"
+"PO-Revision-Date: 2013-11-25 19:13+0100\n"
 "Last-Translator: Dimitrios Psychogios <jinxos@linux.com>\n"
 "Language-Team: \n"
 "Language: el_GR\n"
@@ -280,7 +280,7 @@ msgstr "αδιαφάνεια (απόλυτη)"
 #: ../build/src/preferences_gen.h:1557
 msgctxt "preferences"
 msgid "brush size (relative)"
-msgstr "μέγεθος βούρτσας (σχετικό)"
+msgstr "μέγεθος πινέλου (σχετικό)"
 
 #: ../build/src/preferences_gen.h:1571
 msgid ""
@@ -387,7 +387,7 @@ msgid ""
 "buffers (needs a restart)."
 msgstr ""
 "επιτρέπει τον έλεγχο του ποσού μνήμης που θα χρησιμοποιηθεί για μικρογραφίες "
-"και παρόμοιων δεδομένων (χρειάζεται επανεκκίνηση)."
+"και παρόμοια δεδομένα (χρειάζεται επανεκκίνηση)."
 
 #: ../build/src/preferences_gen.h:1772
 msgid "number of background threads"
@@ -1518,7 +1518,7 @@ msgstr "περιληπτική"
 
 #: ../src/develop/blend_gui.c:1672
 msgid "exclusive & inverted"
-msgstr "αποκλειστική & ανάστροφη"
+msgstr "αποκλειστική και ανάστροφη"
 
 #: ../src/develop/blend_gui.c:1675
 msgid "inclusive & inverted"
@@ -2259,7 +2259,7 @@ msgstr "εξαγωγή"
 
 #: ../src/gui/preferences.c:914
 msgid "press key combination to remap..."
-msgstr "Πιέστε συνδυασμό πλήκτρων προς ανάθεση..."
+msgstr "πιέστε συνδυασμό πλήκτρων προς ανάθεση..."
 
 #: ../src/gui/preferences.c:1077 ../src/gui/presets.c:192
 #: ../src/libs/lib.c:315
@@ -2723,12 +2723,12 @@ msgstr "αδυναμία εξαγωγής εικόνας σε λεύκωμα ι�
 #: ../src/imageio/storage/facebook.c:1232
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
-msgstr "%d/%d εξαγωγές σε λεύκωμα Facebook"
+msgstr "%d/%d εξαγωγές σε λεύκωμα facebook"
 
 #: ../src/imageio/storage/flickr.c:116
 #, c-format
 msgid "flickr authentication: %s"
-msgstr "ταυτοποίηση Flickr: %s"
+msgstr "ταυτοποίηση flickr: %s"
 
 #: ../src/imageio/storage/flickr.c:191
 msgid ""
@@ -2746,11 +2746,11 @@ msgstr "βήμα 2: πατήστε OK όταν τελειώσετε."
 
 #: ../src/imageio/storage/flickr.c:199
 msgid "flickr authentication"
-msgstr "ταυτοποίηση Flickr"
+msgstr "ταυτοποίηση flickr"
 
 #: ../src/imageio/storage/flickr.c:308
 msgid "flickr webalbum"
-msgstr "συλλογή Flickr"
+msgstr "συλλογή flickr"
 
 #: ../src/imageio/storage/flickr.c:332 ../src/imageio/storage/flickr.c:372
 #: ../src/imageio/storage/flickr.c:847 ../src/imageio/storage/flickr.c:853
@@ -2796,7 +2796,7 @@ msgstr "ανανέωση λίστας λευκωμάτων"
 
 #: ../src/imageio/storage/flickr.c:527
 msgid "flickr login"
-msgstr "σύνδεση Flickr"
+msgstr "σύνδεση flickr"
 
 #: ../src/imageio/storage/flickr.c:534
 msgid "export tags"
@@ -2822,7 +2822,7 @@ msgstr "όλοι"
 #: ../src/imageio/storage/flickr.c:742
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
-msgstr "%d/%d εξαγωγές σε συλλογή Flickr"
+msgstr "%d/%d εξαγωγές σε λεύκωμα flickr"
 
 #: ../src/imageio/storage/gallery.c:71
 msgid "website gallery"
@@ -2858,7 +2858,7 @@ msgstr "πιστοποίηση google+"
 
 #: ../src/imageio/storage/picasa.c:1290
 msgid "google+ photos"
-msgstr "εικόνες Google+"
+msgstr "εικόνες google+"
 
 #: ../src/imageio/storage/picasa.c:1469
 msgid "unable to export photo to google+ album"
@@ -2885,7 +2885,7 @@ msgstr "ενίσχυση τραχύτητας"
 
 #: ../src/iop/atrous.c:797
 msgid "sharpen and denoise (strong)"
-msgstr "όξυνση & καθαρισμός (δυνατό)"
+msgstr "όξυνση και καθαρισμός (δυνατό)"
 
 #: ../src/iop/atrous.c:811
 msgid "sharpen and denoise"
@@ -3926,7 +3926,7 @@ msgstr "γραμμικό Rec709 RGB"
 
 #: ../src/iop/colorin.c:759 ../src/iop/colorin.c:791
 msgid "linear infrared BGR"
-msgstr "υπέρυθρο γραμμικό BGR"
+msgstr "γραμμικό υπέρυθρο BGR"
 
 #: ../src/iop/colorin.c:761 ../src/iop/colorin.c:793
 msgid "linear XYZ"
@@ -4249,7 +4249,7 @@ msgstr "μέθοδος"
 
 #: ../src/iop/demosaic.c:1319
 msgid "demosaicing raw data method"
-msgstr "μέθοδος demosaicing raw δεδομένων"
+msgstr "μέθοδος αποψηφίδωσης raw δεδομένων"
 
 #: ../src/iop/demosaic.c:1322
 msgid ""
@@ -4291,7 +4291,7 @@ msgstr "πέντε φορές"
 
 #: ../src/iop/demosaic.c:1335
 msgid "how many color smoothing median steps after demosaicing"
-msgstr "how many color smoothing median steps after demosaicing"
+msgstr "αριθμός βημάτων εξομάλυνσης χρωμάτων μετά την αποψηφίδωση"
 
 #: ../src/iop/demosaic.c:1339
 msgid "match greens"
@@ -4424,7 +4424,7 @@ msgstr "απόσβεση"
 
 #: ../src/iop/equalizer.c:42
 msgid "legacy equalizer"
-msgstr "legacy ισοσταθμιστής"
+msgstr "παρωχημένος ισοσταθμιστής"
 
 #: ../src/iop/equalizer.c:269
 msgctxt "equalizer"
@@ -5164,7 +5164,7 @@ msgstr "διμερές φίλτρο"
 
 #: ../src/iop/lowpass.c:618
 msgid "radius of gaussian/bilateral blur"
-msgstr "ακτίνα gaussian blur"
+msgstr "ακτίνα gaussian/διπολικής θόλωσης"
 
 #: ../src/iop/lowpass.c:619
 msgid "contrast of lowpass filter"
@@ -5897,45 +5897,45 @@ msgstr "Tungsten"
 
 #: ../src/iop/wb_presets.c:55
 msgid "fluorescent"
-msgstr "Φθορισμού"
+msgstr "φθορισμού"
 
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:57
 msgid "fluorescent high"
-msgstr "Φθορίζον υψηλό"
+msgstr "φθορίζον υψηλό"
 
 #: ../src/iop/wb_presets.c:58
 msgid "cool white fluorescent"
-msgstr "Ψυχρό φθορίζον λευκό"
+msgstr "ψυχρό φθορίζον λευκό"
 
 #: ../src/iop/wb_presets.c:59
 msgid "warm white fluorescent"
-msgstr "Θερμό φθορίζον λευκό"
+msgstr "θερμό φθορίζον λευκό"
 
 #: ../src/iop/wb_presets.c:60
 msgid "daylight fluorescent"
-msgstr "Φθορισμού ημέρας"
+msgstr "φθορισμού ημέρας"
 
 #: ../src/iop/wb_presets.c:61
 msgid "neutral fluorescent"
-msgstr "Φθορισμού ουδέτερο"
+msgstr "φθορισμού ουδέτερο"
 
 #: ../src/iop/wb_presets.c:62
 msgid "white fluorescent"
-msgstr "Φθορίζον λευκό"
+msgstr "φθορίζον λευκό"
 
 #. In some newer Nikon cameras:
 #: ../src/iop/wb_presets.c:64
 msgid "sodium-vapor fluorescent"
-msgstr "Φθορισμού νατρίου"
+msgstr "φθορισμού νατρίου"
 
 #: ../src/iop/wb_presets.c:65
 msgid "day white fluorescent"
-msgstr "Φθορίζον λευκό ημέρας"
+msgstr "φθορίζον λευκό ημέρας"
 
 #: ../src/iop/wb_presets.c:66
 msgid "high temp. mercury-vapor fluorescent"
-msgstr "Υψ.Θερμ. φθορισμού"
+msgstr "υψ.Θερμ. φθορισμού"
 
 #: ../src/iop/wb_presets.c:68
 msgid "flash"
@@ -5952,11 +5952,11 @@ msgstr "ηλιοβασίλεμα"
 
 #: ../src/iop/wb_presets.c:72
 msgid "underwater"
-msgstr "Υποβρύχια"
+msgstr "υποβρύχια"
 
 #: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1156
 msgid "black & white"
-msgstr "Ασπρόμαυρο"
+msgstr "ασπρόμαυρο"
 
 #: ../src/iop/wb_presets.c:75
 msgid "spot WB"
@@ -5964,7 +5964,7 @@ msgstr "WB σημείου"
 
 #: ../src/iop/wb_presets.c:76
 msgid "manual WB"
-msgstr "Χειροκίνητο WB"
+msgstr "χειροκίνητο WB"
 
 #: ../src/iop/wb_presets.c:77
 msgid "camera WB"
@@ -5972,7 +5972,7 @@ msgstr "WB μηχανής"
 
 #: ../src/iop/wb_presets.c:78
 msgid "auto WB"
-msgstr "Αυτόματο WB"
+msgstr "αυτόματο WB"
 
 #: ../src/iop/zonesystem.c:94
 msgid "zone system"
@@ -6094,7 +6094,7 @@ msgstr ""
 
 #: ../src/libs/camera.c:516
 msgid "properties"
-msgstr "Ιδιότητες"
+msgstr "ιδιότητες"
 
 #: ../src/libs/camera.c:520
 msgid "program"
@@ -6957,7 +6957,7 @@ msgstr "υποστηριζόμενοι τύποι αρχείων"
 
 #: ../src/libs/import.c:729
 msgid "file has unknown format!"
-msgstr "Ο τύπος του αρχείου είναι άγνωστος!"
+msgstr "ο τύπος του αρχείου είναι άγνωστος!"
 
 #: ../src/libs/import.c:747
 msgid "import film"
@@ -7161,7 +7161,7 @@ msgstr "ρυθμίσεις χάρτη"
 
 #: ../src/libs/map_settings.c:92
 msgid "show OSD"
-msgstr "Εμφάνιση OSD"
+msgstr "εμφάνιση OSD"
 
 #: ../src/libs/map_settings.c:93
 msgid "toggle the visibility of the map overlays"
@@ -7204,7 +7204,7 @@ msgstr "εγγραφή μεταδεδομένων για τις επιλεγμέ
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:454
 msgid "CC BY"
-msgstr "CC-by"
+msgstr "CC BY"
 
 #: ../src/libs/metadata.c:454
 msgid "Creative Commons Attribution (CC BY)"
@@ -7212,7 +7212,7 @@ msgstr "Creative Commons Attribution (CC-BY)"
 
 #: ../src/libs/metadata.c:455
 msgid "CC BY-SA"
-msgstr "CC-by-sa"
+msgstr "CC BY-SA"
 
 #: ../src/libs/metadata.c:455
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
@@ -7220,7 +7220,7 @@ msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
 #: ../src/libs/metadata.c:456
 msgid "CC BY-ND"
-msgstr "CC-by-nd"
+msgstr "CC BY-ND"
 
 #: ../src/libs/metadata.c:456
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
@@ -7228,7 +7228,7 @@ msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
 #: ../src/libs/metadata.c:457
 msgid "CC BY-NC"
-msgstr "CC-by-nc"
+msgstr "CC BY-NC"
 
 #: ../src/libs/metadata.c:457
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
@@ -7236,7 +7236,7 @@ msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
 #: ../src/libs/metadata.c:458
 msgid "CC BY-NC-SA"
-msgstr "CC-by-nc-sa"
+msgstr "CC BY-NC-SA"
 
 #: ../src/libs/metadata.c:458
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
@@ -7244,7 +7244,7 @@ msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
 #: ../src/libs/metadata.c:459
 msgid "CC BY-NC-ND"
-msgstr "CC-by-nc-nd"
+msgstr "CC BY-NC-ND"
 
 #: ../src/libs/metadata.c:459
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
@@ -7256,7 +7256,7 @@ msgstr "με επιφύλαξη παντός δικαιώματος"
 
 #: ../src/libs/metadata.c:460
 msgid "all rights reserved."
-msgstr "με επιφύλαξη παντός δικαιώματος"
+msgstr "με επιφύλαξη παντός δικαιώματος."
 
 #. internal
 #: ../src/libs/metadata_view.c:81
@@ -7740,37 +7740,37 @@ msgstr "φιλμοταινία"
 #: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1797
 msgctxt "accel"
 msgid "rate 0"
-msgstr "Ταχύτητα"
+msgstr "διαβάθμιση 0"
 
 #: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1798
 msgctxt "accel"
 msgid "rate 1"
-msgstr "βαθμός 1"
+msgstr "διαβάθμιση 1"
 
 #: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1799
 msgctxt "accel"
 msgid "rate 2"
-msgstr "βαθμός 2"
+msgstr "διαβάθμιση 2"
 
 #: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1800
 msgctxt "accel"
 msgid "rate 3"
-msgstr "βαθμός 3"
+msgstr "διαβάθμιση 3"
 
 #: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1801
 msgctxt "accel"
 msgid "rate 4"
-msgstr "βαθμός 4"
+msgstr "διαβάθμιση 4"
 
 #: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1802
 msgctxt "accel"
 msgid "rate 5"
-msgstr "βαθμός 5"
+msgstr "διαβάθμιση 5"
 
 #: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1803
 msgctxt "accel"
 msgid "rate reject"
-msgstr "απόρριψη βαθμού"
+msgstr "διαβάθμιση προς απόρριψη"
 
 #. setup history key accelerators
 #: ../src/libs/tools/filmstrip.c:171
