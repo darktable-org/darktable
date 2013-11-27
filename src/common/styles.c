@@ -116,7 +116,7 @@ _dt_style_cleanup_multi_instance(int id)
     if (strncmp(last_operation,operation,128)!=0)
     {
       last_mi=0;
-      strncpy(last_operation,operation,128);
+      g_strlcpy(last_operation, operation, 128);
     }
     else
       last_mi++;
