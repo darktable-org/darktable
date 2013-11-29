@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-23 21:39+0100\n"
-"PO-Revision-Date: 2013-11-23 21:55+0100\n"
+"PO-Revision-Date: 2013-11-24 20:59+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -6804,7 +6804,9 @@ msgstr "cache lokaal"
 
 #: ../src/libs/image.c:211
 msgid "copy the image locally"
-msgstr "kopieer afbeelding lokaal"
+msgstr ""
+"kopieer afbeelding lokaal (bedoeld voor bewerkingen van afbeeldingen op niet "
+"aangesloten externe schijven)"
 
 #: ../src/libs/image.c:215
 msgid "reset cache"

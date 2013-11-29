@@ -709,9 +709,6 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   // draw grid
   cairo_set_line_width(cr, .4);
   cairo_set_source_rgb (cr, .1, .1, .1);
-  if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
-    dt_draw_waveform_lines(cr, 0, 0, width, height);
-  else
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // if autoscale_ab is on: do not display a and b curves

@@ -74,7 +74,8 @@ int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
           lua_settop(new_thread,nresults);
         }
         int result= lua_gettop(new_thread);
-        lua_xmove(new_thread,new_thread,result);
+        lua_pop(L,1);
+        lua_xmove(new_thread,L,result);
         return result;
       case LUA_YIELD:
         {

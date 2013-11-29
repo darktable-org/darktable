@@ -252,7 +252,8 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
   cmsToneCurve* transferFunction;
 
-  transferFunction = cmsBuildGamma(NULL, 2.2);
+  // AdobeRGB's "2.2" gamma is technically defined as 2 + 51/256
+  transferFunction = cmsBuildGamma(NULL, 2.19921875);
 
   hAdobeRGB = cmsCreateProfilePlaceholder(0);
 

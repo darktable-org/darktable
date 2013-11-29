@@ -12,17 +12,17 @@ add_library(pfm MODULE "pfm.c")
 add_library(tiff MODULE "tiff.c")
 
 if(WEBP_FOUND)
-        list(APPEND MODULES ${MODULES} "webp")
+        list(APPEND MODULES "webp")
         add_library(webp MODULE "webp.c")
 endif(WEBP_FOUND)
 
 if(OPENEXR_FOUND)
-	list(APPEND MODULES ${MODULES} "exr")
+	list(APPEND MODULES "exr")
 	add_library(exr MODULE "exr.cc")
 endif(OPENEXR_FOUND)
 
 if(OPENJPEG_FOUND)
-	list(APPEND MODULES ${MODULES} "j2k")
+	list(APPEND MODULES "j2k")
 	add_library(j2k MODULE "j2k.c")
 endif(OPENJPEG_FOUND)
 

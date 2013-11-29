@@ -89,16 +89,62 @@ static void
 _dt_style_cleanup_multi_instance(int id)
 {
   sqlite3_stmt *stmt;
+  GList *list = NULL;
+  struct _data {
+    int rowid;
+    int mi;
+  };
+  char last_operation[128] = {0};
+  int last_mi = 0;
 
   /* let's clean-up the style multi-instance. What we want to do is have a unique multi_priority value for each iop.
      Furthermore this value must start to 0 and increment one by one for each multi-instance of the same module. On
      SQLite there is no notion of ROW_NUMBER, so we use rather resource consuming SQL statement, but as a style has
      never a huge number of items that's not a real issue. */
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE style_items SET multi_priority=(SELECT COUNT(0)-1 FROM style_items sty2 WHERE sty2.multi_priority<=style_items.multi_priority AND sty2.operation=style_items.operation AND sty2.styleid=?1) WHERE styleid=?1 ORDER BY multi_priority ASC LIMIT (SELECT COUNT(*) FROM style_items WHERE styleid=?1)", -1, &stmt, NULL);
+  /* 1. read all data for the style and record multi_instance value. */
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT rowid,operation FROM style_items WHERE styleid=?1 ORDER BY operation, multi_priority ASC", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step (stmt);
-  sqlite3_finalize (stmt);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    struct _data *d = malloc(sizeof(struct _data));
+    const char *operation = (const char *)sqlite3_column_text (stmt, 1);
+
+    if (strncmp(last_operation,operation,128)!=0)
+    {
+      last_mi=0;
+      g_strlcpy(last_operation, operation, 128);
+    }
+    else
+      last_mi++;
+
+    d->rowid = sqlite3_column_int (stmt, 0);
+    d->mi = last_mi;
+    list = g_list_append (list,d);
+  }
+  sqlite3_finalize(stmt);
+
+  /* 2. now update all multi_instance values previously recorded */
+
+  list = g_list_first (list);
+  while (list)
+  {
+    struct _data *d = (struct _data *)list->data;
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE style_items SET multi_priority=?1 WHERE rowid=?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, d->mi);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, d->rowid);
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+
+    list=g_list_next(list);
+  }
+
+  g_list_free_full(list,free);
 }
 
 static gboolean
