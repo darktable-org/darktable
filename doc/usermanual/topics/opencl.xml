@@ -114,7 +114,8 @@ darktable -d opencl
                       CPU and GPU processing of an image!</para>
 
 		<para>There also exists a few on-CPU implementations of OpenCL. These come as drivers provided by INTEL or AMD. We observed that they do not give us any speed gain versus
-                      our hand-optimized CPU code. Therefore we simply discard these devices.</para>
+                      our hand-optimized CPU code. Therefore we simply discard these devices by default. This behavior can be changed by setting the configuration variable 
+                      opencl_use_cpu_devices to TRUE.</para>
 	</sect2>
 
         <sect2 status="final"><title>Setting up OpenCL for AMD/ATI devices</title>

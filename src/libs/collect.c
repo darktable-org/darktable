@@ -120,8 +120,7 @@ void init_presets(dt_lib_module_t *self)
 {
 }
 
-static void
-selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d);
+static void row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d);
 
 /* Update the params struct with active ruleset */
 static void _lib_collect_update_params(dt_lib_collect_t *d)
@@ -482,8 +481,8 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       }
       g_free(query);
 
-      /* reset filter to display all images, otherwise view may remain empty */
-      dt_view_filter_reset_to_show_all(darktable.view_manager);
+      /* reset filter so that view isn't empty */
+      dt_view_filter_reset(darktable.view_manager, FALSE);
 
       /* update collection to view missing filmroll */
       _lib_folders_update_collection(new_path);
@@ -1182,9 +1181,12 @@ static void tags_view (dt_lib_collect_rule_t *dr)
 
   if(text[0] == '\0')
   {
-    GtkTreePath *path = gtk_tree_model_get_path(tagsmodel, &uncategorized);
-    gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
-    gtk_tree_path_free(path);
+    if (uncategorized.stamp)
+    {
+      GtkTreePath *path = gtk_tree_model_get_path(tagsmodel, &uncategorized);
+      gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
+      gtk_tree_path_free(path);
+    }
   }
   else
     gtk_tree_model_foreach(tagsmodel, (GtkTreeModelForeachFunc)expand_row, view);
@@ -1307,11 +1309,39 @@ list_view (dt_lib_collect_rule_t *dr)
       snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-      snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso", operator, number);
+      else if(number)
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso", number);
+      else
+        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_APERTURE: // aperture
-      snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture %s %s order by aperture", operator, number);
+      else if(number)
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture = %s order by aperture", number);
+      else
+        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;
@@ -1465,8 +1495,7 @@ create_folders_gui (dt_lib_collect_rule_t *dr)
       gtk_tree_view_set_enable_search(tree, TRUE);
       gtk_tree_view_set_search_column (tree, DT_LIB_COLLECT_COL_PATH);
 
-      GtkTreeSelection *selection = gtk_tree_view_get_selection(tree);
-      g_signal_connect(selection, "changed", G_CALLBACK(selection_change), d);
+      g_signal_connect(G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), d);
       g_signal_connect(G_OBJECT (tree), "button-press-event", G_CALLBACK (view_onButtonPressed), NULL);
       g_signal_connect(G_OBJECT (tree), "popup-menu", G_CALLBACK (view_onPopupMenu), NULL);
 
@@ -1588,11 +1617,12 @@ combo_changed (GtkComboBox *combo, dt_lib_collect_rule_t *d)
 }
 
 static void
-selection_change (GtkTreeSelection *selection, dt_lib_collect_t *d)
+row_activated (GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, dt_lib_collect_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
 
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   gchar *text;
 
@@ -2025,9 +2055,7 @@ gui_init (dt_lib_module_t *self)
   gtk_tree_view_set_headers_visible(view, FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
-  //g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->view);
-  g_signal_connect(selection, "changed", G_CALLBACK(selection_change), d);
+  g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);

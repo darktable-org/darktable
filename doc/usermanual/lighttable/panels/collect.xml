@@ -59,8 +59,7 @@
             </row>
             <row>
                <entry>tag</entry>
-               <entry><para>any tag that is attached to the image; see the <emphasis>keywords</emphasis> panel
-               (<xref linkend="keywords"/>) for further options to select by tags.</para></entry>
+               <entry><para>any tag that is attached to the image; if activated a hierarchical list of known tags is displayed for quick selection</para></entry>
             </row>
             <row>
                <entry>date</entry>

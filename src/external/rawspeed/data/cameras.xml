@@ -1099,6 +1099,16 @@
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="0" white="4096"/>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D5300">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4096"/>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D60">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -1263,6 +1273,16 @@
 		<Sensor black="0" white="0"/>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON 1 V2" decoder_version="4">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON 1 AW1" decoder_version="4">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>
@@ -1628,7 +1648,7 @@
 			<Color x="1" y="1">RED</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="0" white="4095"/>
+		<Sensor black="255" white="4095"/>
 	</Camera>	
 	<Camera make="OLYMPUS IMAGING CORP." model="E-M5">
 		<CFA width="2" height="2">
@@ -1638,7 +1658,7 @@
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
-		<Sensor black="250" white="4095"/>
+		<Sensor black="255" white="4095"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-P1">
 		<CFA width="2" height="2">

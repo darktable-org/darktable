@@ -1,14 +1,31 @@
 This file is here to allow devs to easily add stuff in the release notes for the next release, it allows easy syncing with the release team, since you don't have to be around when the release takes place...
- 
+
 Just dump whatever you want to have mentioned in the release notes here. Please take care that it is in a way that allows copy&paste to the release notes. That is making sure that spelling/grammar/whatever is usable and that you are using complete sentences, not just single words. Please do *NOT* split lines after 80 chars!
- 
+
 Stuff that belongs in here:
 * groundbreaking changes 
 * changed dependencies (new things, version bumps, stuff that was removed)
 * known bugs
- 
+
 The release team should empty this file after each release.
 ==========================================================================================
 
-- better UX for bauhaus sliders: the popup now has a blinking cursor to make possible text entry more discoverable.
-- text entry for bauhaus sliders and vimkeys' :set command can now evaluate mathematical expressions.
+- darktable now integrates a lua engine that allows writing scripts to make it easier to use with other image processing software. These scripts can be run when a particular event takes place (for example when a new image is imported) or when a particular keyboard shortcut is used. There are very few scripts available at this point but we expect the community to provide some more during the next release cycle.
+- darktable now include several kinds of drawn masks: brush, circle, ellipse, path and gradients
+- exporting in WebP format
+- serious speed enhancements of lighttable when using large colections
+- focus detection on lighttable
+- local cached copies of images for offline files
+- a few new blend mode like "HSV lightness", "HSV color", "Lab lightness" and "Lab color"
+- new modules "contrast brightness saturation", "color balance" and "color mapping" which replaces the now deprecated "color transfer" module
+- new histogram mode "waveform"
+- added a setting to automatically collapse modules to only have a single one expanded
+- better user experience for bauhaus sliders: the popup now has a blinking cursor to make possible text entry more discoverable
+- the text entry for bauhaus sliders and vimkeys' ":set" command can now evaluate mathematical expressions
+- many bug fixes and small improvements
+
+- a tool for measuring basecurves from a sample image
+
+- updated usermanual
+
+- darktable now requires Gtk+ in version >= 2.24, Glib in version >= 2.30

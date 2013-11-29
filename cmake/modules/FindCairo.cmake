@@ -16,14 +16,14 @@ libfind_pkg_check_modules(Cairo_PKGCONF cairo)
 # Include dir
 find_path(Cairo_INCLUDE_DIR
   NAMES cairo.h
-  PATHS ${Cairo_PKGCONF_INCLUDE_DIRS}
+  HINTS ${Cairo_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES cairo
 )
 
 # Finally the library itself
 find_library(Cairo_LIBRARY
   NAMES cairo
-  PATHS ${Cairo_PKGCONF_LIBRARY_DIRS}
+  HINTS ${Cairo_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

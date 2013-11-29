@@ -1714,7 +1714,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile_cnt = 0;
   g->profile  = dt_bauhaus_combobox_new(self);
   g->mode     = dt_bauhaus_combobox_new(self);
-  g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 2.f, 0);
+  g->radius   = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1., 1.f, 0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);

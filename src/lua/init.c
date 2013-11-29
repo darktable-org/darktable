@@ -34,6 +34,7 @@
 #include "lua/film.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
+#include "control/jobs.h"
 
 
 // closed on GC of the dt lib, usually when the lua interpreter closes
@@ -73,10 +74,9 @@ void dt_lua_init_early(lua_State*L)
 {
   if(!L)
     L= luaL_newstate();
-  darktable.lua_state= L;
+  darktable.lua_state.state= L;
   dt_lua_init_lock();
-  dt_lua_lock();
-  luaL_openlibs(darktable.lua_state);
+  luaL_openlibs(darktable.lua_state.state);
   luaA_open();
   dt_lua_push_darktable_lib(L);
   // set the metatable
@@ -92,15 +92,39 @@ void dt_lua_init_early(lua_State*L)
   /* modules need to be initialized before the are used */
   dt_lua_init_modules(L);
 
-  dt_lua_unlock();
 }
+
+static int32_t run_early_script(struct dt_job_t *job) {
+  char tmp_path[PATH_MAX];
+  lua_State *L = darktable.lua_state.state;
+  gboolean has_lock = dt_lua_lock();
+  // run global init script
+  dt_loc_get_datadir(tmp_path, PATH_MAX);
+  g_strlcat(tmp_path,"/luarc",PATH_MAX);
+  dt_lua_dofile(L,tmp_path);
+  // run user init script
+  dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
+  g_strlcat(tmp_path,"/luarc",PATH_MAX);
+  dt_lua_dofile(L,tmp_path);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
+
 
 
 void dt_lua_init(lua_State*L,const int init_gui)
 {
-  char tmp_path[PATH_MAX];
+  /*
+     Note to reviewers
+     this is the only place where lua code is run without the lua lock.
+     At this point, no user script has been called,
+     so we are completely thread-safe. no need to lock
 
-  dt_lua_lock();
+     This is also the only place where lua code is run with the gdk lock
+     held, but this is not a problem because it is very brief, user calls
+     are delegated to a secondary job
+     */
+  char tmp_path[PATH_MAX];
   // init the lua environment
   lua_CFunction* cur_type = init_funcs;
   while(*cur_type)
@@ -135,17 +159,12 @@ void dt_lua_init(lua_State*L,const int init_gui)
 
   if(init_gui)
   {
-    // run global init script
-    dt_loc_get_datadir(tmp_path, PATH_MAX);
-    g_strlcat(tmp_path,"/luarc",PATH_MAX);
-    dt_lua_dofile(darktable.lua_state,tmp_path);
-    // run user init script
-    dt_loc_get_user_config_dir(tmp_path, PATH_MAX);
-    g_strlcat(tmp_path,"/luarc",PATH_MAX);
-    dt_lua_dofile(darktable.lua_state,tmp_path);
+    dt_job_t job;
+    dt_control_job_init(&job, "lua: run initial script");
+    job.execute = &run_early_script;
+    dt_control_add_job(darktable.control, &job);
   }
 
-  dt_lua_unlock();
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

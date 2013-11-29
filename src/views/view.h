@@ -180,7 +180,7 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*reset_filter)(struct dt_lib_module_t *);
+      void (*reset_filter)(struct dt_lib_module_t *, gboolean smart_filter);
     } filter;
 
     /* module collection proxy object */
@@ -315,7 +315,7 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
 /*
  * Filter dropdown proxy
  */
-void dt_view_filter_reset_to_show_all(const dt_view_manager_t *vm);
+void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
 
 /*
  * NEW filmstrip api

@@ -454,6 +454,44 @@ GList *dt_collection_get_selected (const dt_collection_t *collection, int limit)
   return list;
 }
 
+
+/* splits an input string into a number part and an optional operator part.
+   number can be a decimal integer or rational numerical item.
+   operator can be any of "=", "<", ">", "<=", ">=" and "<>".
+
+   number and operator are returned as pointers to null terminated strings in g_mallocated
+   memory (to be g_free'd after use) - or NULL if no match is found.
+*/
+void
+dt_collection_split_operator_number (const gchar *input, char **number, char **operator)
+{
+  GRegex *regex;
+  GMatchInfo *match_info;
+  int match_count;
+
+  *number = *operator = NULL;
+   
+  regex = g_regex_new("\\s*(=|<|>|<=|>=|<>)?\\s*([0-9]+\\.?[0-9]*)\\s*", 0, 0, NULL);
+  g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
+  match_count = g_match_info_get_match_count(match_info);
+
+  if(match_count == 3)
+  {
+    *operator = g_match_info_fetch(match_info, 1);
+    *number = g_match_info_fetch(match_info, 2);
+
+    if(*operator && strcmp(*operator, "") == 0)
+    {
+      g_free(*operator);
+      *operator = NULL;
+    }
+  }
+
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+} 
+
+
 static void
 get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query)
 {
@@ -473,7 +511,7 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
-      if(strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      if(strlen(escaped_text)==0 || strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
       else
       {
         if     (strcmp(escaped_text,_("red")   )==0) color=0;
@@ -524,11 +562,39 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
-      snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "(iso %s %s)", operator, number);
+      else if(number)
+        snprintf(query, 1024, "(iso = %s)", number);
+      else
+        snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_APERTURE: // aperture
-      snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
-      break;
+    {
+      gchar *operator, *number;
+      dt_collection_split_operator_number(escaped_text, &number, &operator);
+
+      if(operator && number)
+        snprintf(query, 1024, "(aperture %s %s)", operator, number);
+      else if(number)
+        snprintf(query, 1024, "(aperture = %s)", number);
+      else
+        snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
+
+      g_free(operator);
+      g_free(number);
+    }
+    break;
+
     case DT_COLLECTION_PROP_FILENAME: // filename
       snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
       break;
@@ -722,17 +788,27 @@ int dt_collection_image_offset(int imgid)
 static void _dt_collection_recount_callback_1(gpointer instace, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t*)user_data;
+  int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection);
   if(!collection->clone)
+  {
+    if(old_count != collection->count)
+      dt_collection_hint_message(collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
 }
 
 static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t*)user_data;
+  int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection);
   if(!collection->clone)
+  {
+    if(old_count != collection->count)
+      dt_collection_hint_message(collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

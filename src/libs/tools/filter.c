@@ -35,8 +35,8 @@ typedef struct dt_lib_tool_filter_t
 }
 dt_lib_tool_filter_t;
 
-/* proxy function to reset filter back to 'all' */
-static void _lib_filter_reset_to_show_all(dt_lib_module_t *self);
+/* proxy function to intelligently reset filter */
+static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
 
 /* callback for filter combobox change */
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data);
@@ -156,7 +156,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* initialize proxy */
   darktable.view_manager->proxy.filter.module = self;
-  darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset_to_show_all;
+  darktable.view_manager->proxy.filter.reset_filter = _lib_filter_reset;
 
 }
 
@@ -231,12 +231,35 @@ static void _lib_filter_update_query(dt_lib_module_t *self)
 }
 
 static void
-_lib_filter_reset_to_show_all(dt_lib_module_t *self)
+_lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
 {
   dt_lib_tool_filter_t *dropdowns = (dt_lib_tool_filter_t *)self->data;
 
-  /* Reset to topmost item, 'all' */
-  gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
+  if (smart_filter == TRUE)
+  {
+    /* initial import rating setting */
+    int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
+
+    /* current selection in filter dropdown */
+    int current_filter = gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter));
+
+    /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
+    int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
+
+    /* new filter is the lesser of the initial rating and the current filter rating */
+    int new_filter_rating = MIN(initial_rating, current_filter_rating);
+
+    /* convert new filter rating to filter dropdown selector */
+    int new_filter = (new_filter_rating >= 1 && new_filter_rating <= 5) ? new_filter_rating + 1 : new_filter_rating;
+
+    /* Reset to new filter dropdown item */
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
+  }
+  else
+  {
+    /* Reset to topmost item, 'all' */
+    gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
+  }
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -890,7 +890,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
               if(ret) goto libraw_thumb_fail;
               image = libraw_dcraw_make_mem_thumb(raw, &ret);
               if(!image || ret) goto libraw_thumb_fail;
-              char *img = (char *) malloc(image->data_size);
+              char *img = (char *) malloc(image->data_size); // gphoto takes care of freeing img eventually
               if (!img) goto libraw_thumb_fail;
               memcpy(img, image->data, image->data_size);
               gp_file_set_data_and_size(preview, img,(unsigned long int) image->data_size);
@@ -907,12 +907,14 @@ libraw_thumb_fail:
           if( gp_camera_file_get(c->active_camera->gpcam, path, filename, GP_FILE_TYPE_EXIF,exif,c->gpcontext) < GP_OK )
           {
             exif=NULL;
-            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retreive exif of file %s\n",filename);
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to retrieve exif of file %s\n",filename);
           }
         }
 
         // let's dispatch to host app.. return if we should stop...
-        if (!_dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif))
+        int res = _dispatch_camera_storage_image_filename(c,c->active_camera,file,preview,exif);
+        gp_file_free(preview);
+        if(!res)
         {
           g_free(file);
           return 0;

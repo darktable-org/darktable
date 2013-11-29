@@ -44,7 +44,7 @@
 #include <xmmintrin.h>
 
 #define DT_MIPMAP_CACHE_FILE_MAGIC 0xD71337
-#define DT_MIPMAP_CACHE_FILE_VERSION 22
+#define DT_MIPMAP_CACHE_FILE_VERSION 23
 #define DT_MIPMAP_CACHE_DEFAULT_FILE_NAME "mipmaps"
 
 #define DT_MIPMAP_BUFFER_DSC_FLAG_GENERATE (1<<0)
@@ -362,7 +362,11 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   int32_t magic_file = 0;
   rd = fread(&magic_file, sizeof(int32_t), 1, f);
   if(rd != 1) goto read_error;
-  if(magic_file != magic)
+  if(magic_file == DT_MIPMAP_CACHE_FILE_MAGIC + 22)
+  {
+    // same format, but compression was broken in 22 and below
+  }
+  else if(magic_file != magic)
   {
     if(magic_file > DT_MIPMAP_CACHE_FILE_MAGIC && magic_file < magic)
       fprintf(stderr, "[mipmap_cache] cache version too old, dropping `%s' cache\n", dbfilename);
@@ -381,6 +385,12 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
             compression == 0 ? "uncompressed" : (compression == 1 ? "low quality compressed" : "high quality compressed"),
             cache->compression_type == 0 ? "no compression" : (cache->compression_type == 1 ? "low quality compression" : "high quality compression"),
             dbfilename);
+    goto read_finalize;
+  }
+  if(compression && (magic_file == DT_MIPMAP_CACHE_FILE_MAGIC + 22))
+  {
+    // compression is enabled and we have the affected version. can't read that.
+    fprintf(stderr, "[mipmap_cache] dropping compressed cache v22 to regenerate mips without artifacts.\n");
     goto read_finalize;
   }
 

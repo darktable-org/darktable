@@ -18,44 +18,159 @@
 #include "lua/lua.h"
 #include "lua/call.h"
 #include "control/control.h"
+#include <glib.h>
+#include <sys/select.h>
 
-static int dump_error(lua_State *L)
-{
-  const char * message = lua_tostring(L,-1);
-  if(darktable.unmuted & DT_DEBUG_LUA)
-    luaL_traceback(L,L,message,0);
-  // else : the message is already on the top of the stack, don't touch
+
+typedef enum {
+  WAIT_MS,
+  FILE_READABLE,
+  RUN_COMMAND
+
+} yield_type;
+
+static int protected_to_yield(lua_State*L) {
+  yield_type type;
+  luaA_to(L,yield_type,&type,1);
+  lua_pushnumber(L,type);
+  return 1;
+}
+
+static int protected_to_int(lua_State*L) {
+  int result = luaL_checkinteger(L,1);
+  lua_pushnumber(L,result);
+  return 1;
+}
+
+static int protected_to_userdata(lua_State*L) {
+  const char* type = lua_tostring(L,2);
+  lua_pop(L,1);
+  luaL_checkudata(L,1,type);
+  return 1;
+}
+
+static int protected_to_string(lua_State*L) {
+  luaL_checkstring(L,1);
   return 1;
 }
 
 int dt_lua_do_chunk(lua_State *L,int nargs,int nresults)
 {
-  int result;
-  lua_pushcfunction(L,dump_error);
-  lua_insert(L,lua_gettop(L)-(nargs+1));
-  result = lua_gettop(L)-(nargs+1); // remember the stack size to findout the number of results in case of multiret
-  if(lua_pcall(L, nargs, nresults,result))
-  {
-    dt_print(DT_DEBUG_LUA,"LUA ERROR %s\n",lua_tostring(L,-1));
-    lua_pop(L,2);
-    if(nresults !=LUA_MULTRET)
-    {
-      for(int i= 0 ; i < nresults; i++)
-      {
-        lua_pushnil(L);
-      }
+  lua_State * new_thread = lua_newthread(L);
+  lua_insert(L,-(nargs+2));
+  lua_xmove(L,new_thread,nargs+1);
+  int thread_result = lua_resume(new_thread, L,nargs);
+  do {
+    switch(thread_result) {
+      case LUA_OK:
+        if(darktable.gui!=NULL)
+        {
+          dt_lua_unlock(false);
+          dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
+          dt_control_queue_redraw();
+          dt_lua_lock();
+        }
+        if(nresults !=LUA_MULTRET) {
+          lua_settop(new_thread,nresults);
+        }
+        int result= lua_gettop(new_thread);
+        lua_pop(L,1);
+        lua_xmove(new_thread,L,result);
+        return result;
+      case LUA_YIELD:
+        {
+          if(lua_gettop(new_thread) == 0) {
+            lua_pushstring(new_thread,"no parameter passed to yield");
+            goto error;
+          }
+          yield_type type;
+          lua_pushcfunction(new_thread,protected_to_yield);
+          lua_pushvalue(new_thread,1);
+          thread_result = lua_pcall(new_thread,1,1,0);
+          if(thread_result!= LUA_OK) 
+            goto error;
+          type = lua_tointeger(new_thread,-1);
+          lua_pop(new_thread,1);
+          switch(type) {
+            case WAIT_MS:
+              {
+                lua_pushcfunction(new_thread,protected_to_int);
+                lua_pushvalue(new_thread,2);
+                thread_result = lua_pcall(new_thread,1,1,0);
+                if(thread_result!= LUA_OK) 
+                  goto error;
+                int wait_time = lua_tointeger(new_thread,-1);
+                lua_pop(new_thread,1);
+                dt_lua_unlock(false);
+                g_usleep(wait_time*1000);
+                dt_lua_lock();
+                thread_result = lua_resume(new_thread,L,0);
+                break;
+              }
+            case FILE_READABLE:
+              {
+                lua_pushcfunction(new_thread,protected_to_userdata);
+                lua_pushvalue(new_thread,2);
+                lua_pushstring(new_thread,LUA_FILEHANDLE);
+                thread_result = lua_pcall(new_thread,2,1,0);
+                if(thread_result!= LUA_OK) 
+                  goto error;
+                luaL_Stream * stream = lua_touserdata(new_thread,-1);
+                lua_pop(new_thread,1);
+                int myfileno = fileno(stream->f);
+                fd_set fdset;
+                FD_ZERO(&fdset);
+                FD_SET(myfileno,&fdset);
+                dt_lua_unlock(false);
+                select(myfileno+1,&fdset,NULL,NULL,0);
+                dt_lua_lock();
+                thread_result = lua_resume(new_thread,L,0);
+                break;
+              }
+            case RUN_COMMAND:
+              {
+                lua_pushcfunction(new_thread,protected_to_string);
+                lua_pushvalue(new_thread,2);
+                thread_result = lua_pcall(new_thread,1,1,0);
+                if(thread_result!= LUA_OK) 
+                  goto error;
+                const char* command = lua_tostring(new_thread,-1);
+                lua_pop(L,1);
+                dt_lua_unlock(false);
+                int result = system(command);
+                dt_lua_lock();
+                lua_pushinteger(L,result);
+                thread_result = lua_resume(new_thread,L,1);
+                break;
+              }
+            default:
+              lua_pushstring(new_thread,"program error, shouldn't happen");
+              goto error;
+          }
+          break;
+        }
+      default:
+        goto error;
     }
-  } else {
-    lua_remove(L,result); // remove the error handler
+  }while(true);
+error:
+  if(darktable.unmuted & DT_DEBUG_LUA) {
+    dt_print(DT_DEBUG_LUA,"LUA ERROR : %s", lua_tostring(new_thread,-1));
+    luaL_traceback(L,new_thread,"",0);
+    const char * error = lua_tostring(L,-1);
+    dt_print(DT_DEBUG_LUA,error);
+    lua_pop(L,1);
   }
-  result= lua_gettop(L) -result;
-
-  if(darktable.gui!=NULL)
+  lua_pop(L,1);
+  if(nresults !=LUA_MULTRET)
   {
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED); // just for good measure
-    dt_control_queue_redraw();
+    for(int i= 0 ; i < nresults; i++)
+    {
+      lua_pushnil(L);
+    }
+    return nresults;
   }
-  return result;
+  return 0;
 }
 
 int dt_lua_protect_call(lua_State *L,lua_CFunction func)
@@ -85,43 +200,12 @@ int dt_lua_dofile(lua_State *L,const char* filename)
   return dt_lua_do_chunk(L,0,0);
 }
 
-static gboolean poll_events(gpointer data)
-{
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
-  lua_pushlightuserdata(darktable.lua_state,data);
-  lua_gettable(darktable.lua_state,-2);
-  if(lua_isnoneornil(darktable.lua_state,-1)) {
-    lua_pop(darktable.lua_state,2);
-    luaL_error(darktable.lua_state,"Unknown thread was called for delay action");
-    return FALSE;
-  }
-  lua_State * L = lua_tothread(darktable.lua_state,-1);
-  dt_lua_do_chunk(L,lua_gettop(L) -1,0);
-  lua_pushlightuserdata(darktable.lua_state,data);
-  lua_pushnil(darktable.lua_state);
-  lua_settable(darktable.lua_state,-4);
-  lua_pop(darktable.lua_state,2);
-  return FALSE;
-}
-
-
-void dt_lua_delay_chunk(lua_State *L,int nargs) {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
-  lua_State * new_thread = lua_newthread(L);
-  lua_pushlightuserdata(L,new_thread);
-  lua_insert(L,-2);
-  lua_settable(L,-3);
-  lua_pop(L,1);
-  lua_xmove(L,new_thread,nargs+1);
-  gdk_threads_add_idle(poll_events,new_thread);
-}
-
-
-
 
 int dt_lua_init_call(lua_State *L) {
-  lua_newtable(L);
-  lua_setfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_delayed_events");
+  luaA_enum(L,yield_type);
+  luaA_enum_value(L,yield_type,WAIT_MS,false);
+  luaA_enum_value(L,yield_type,FILE_READABLE,false);
+  luaA_enum_value(L,yield_type,RUN_COMMAND,false);
   return 0;
 }
 

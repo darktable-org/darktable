@@ -650,7 +650,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         g_value_init(&gv,G_TYPE_INT);
         gtk_container_child_get_property(GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),base->expander,"position",&gv);
         gtk_box_reorder_child (dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),expander,g_value_get_int(&gv)+pos_base-pos_module);
-        dt_iop_gui_set_expanded(module, TRUE);
+        dt_iop_gui_set_expanded(module, TRUE, FALSE);
         dt_iop_gui_update_blending(module);
       }
 
@@ -819,8 +819,10 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
                           GObject *acceleratable, guint keyval,
                           GdkModifierType modifier, gpointer data)
 {
+  dt_develop_t *dev = (dt_develop_t*)data;
+
   /* write history before exporting */
-  dt_dev_write_history((dt_develop_t *)data);
+  dt_dev_write_history(dev);
 
   /* export current image */
   int max_width  = dt_conf_get_int ("plugins/lighttable/export/width");
@@ -833,7 +835,9 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
-  dt_control_export(dt_collection_get_selected(darktable.collection, -1), max_width, max_height, format_index, storage_index, high_quality,style);
+  // darkroom is for single images, so only export the one the user is working on
+  GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
+  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, style);
   return TRUE;
 }
 
@@ -1204,7 +1208,7 @@ void enter(dt_view_t *self)
                                  DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
       snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
-      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option));
+      dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
     }
 
     /* setup key accelerators */

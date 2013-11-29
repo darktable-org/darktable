@@ -114,7 +114,7 @@ static int register_keyed_event(lua_State* L) {
   }
   lua_getfield(L,-1,luaL_checkstring(L,3));
   if(!lua_isnil(L,-1)) 
-    return luaL_error(L,"key already registerd for event : %s",luaL_checkstring(L,3));
+    return luaL_error(L,"key already registered for event : %s",luaL_checkstring(L,3));
   lua_pop(L,1);
 
   lua_pushvalue(L,2);
@@ -155,18 +155,33 @@ static int trigger_keyed_event(lua_State * L) {
  * shortcut events
  * keyed event with a tuned registration to handle shortcuts
  */
+typedef struct {
+  char* name;
+} shortcut_callback_data;
+static int32_t shortcut_callback_job(struct dt_job_t *job) {
+  gboolean has_lock = dt_lua_lock();
+  shortcut_callback_data *t = (shortcut_callback_data*)job->param;
+  lua_pushstring(darktable.lua_state.state,t->name);
+  free(t->name);
+  run_event("shortcut",1);
+  dt_lua_unlock(has_lock);
+  return 0;
+}
 static gboolean shortcut_callback(GtkAccelGroup *accel_group,
     GObject *acceleratable,
     guint keyval,
     GdkModifierType modifier,
     gpointer p)
 {
-  dt_lua_lock();
-  lua_pushstring(darktable.lua_state,(char*)p);
-  run_event("shortcut",1);
-  dt_lua_unlock();
+  dt_job_t job;
+  dt_control_job_init(&job, "lua: on shortcut");
+  job.execute = &shortcut_callback_job;
+  shortcut_callback_data *t = (shortcut_callback_data*)job.param;
+  t->name = strdup(p);
+  dt_control_add_job(darktable.control, &job);
   return TRUE;
 }
+
 
 static void closure_destroy(gpointer data,GClosure *closure) {
   free(data);
@@ -241,77 +256,6 @@ static int trigger_multiinstance_event(lua_State * L) {
   return nresult;
 }
 
-#if 0
-static int register_chained_event(lua_State* L) {
-  // 1 is the event name (checked)
-  // 2 is the action to perform (checked)
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
-  lua_getfield(L,-1,lua_tostring(L,1));
-  if(lua_isnil(L,-1)) {
-    lua_pop(L,1);
-    lua_newtable(L);
-    lua_pushvalue(L,-1);
-    lua_setfield(L,-3,lua_tostring(L,1));
-  }
-
-  lua_pushvalue(L,2);
-  luaL_ref(L,-2);
-  lua_pop(L,2);
-  return 0;
-}
-
-static int trigger_chained_event(lua_State * L,const char* evt_name, int nargs,int nresults) {
-  // -1..-n a
-  if(nargs<nresults)
-        dt_print(DT_DEBUG_LUA,"error chained parameters must have less results than args (args %d results %d\n",nargs,nresults);
-  int arg_top=lua_gettop(L);
-  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_event_data");
-  lua_getfield(L,-1,evt_name);
-  if(lua_isnil(L,-1)) {
-    lua_pop(L,2); // remove what we built
-    for(int i = 0 ; i < nargs - nresults ; i++) lua_remove(L,-(nresults+1));
-    return nresults;
-  }
-  lua_remove(L,-2);
-
-  // copy variable args on the top of the stack
-  for(int i = 0 ; i< nresults; i++) {
-    lua_pushvalue(L,arg_top -nresults +i+1);
-  }
-
-  lua_pushnil(L);  /* first key */
-  while (lua_next(L, -(nresults+2)) != 0) {
-    /* stack at this point
-       - all args from the function entry
-       - table with all the functions to chain
-       - variable args at this point
-       - "key" the index we just looked into
-       - "value" function to call
-       */
-    // remove the loop index
-    const int loop_index=luaL_checkint(L,-2);
-    lua_remove(L,-2);
-    // move the function below the variable args
-    lua_insert(L,-(nresults+1)); // move fn call below args
-    //move the evt name just above the function
-    lua_pushstring(L,evt_name);// param 1 is the event
-    lua_insert(L,-(nresults+1)); // move evt name below params
-
-    // add all fixed args at their final place
-    for(int i = 0; i < nargs - nresults ; i++) {
-      lua_pushvalue(L,arg_top -nargs+i+1); // copy all invariant args at the top
-      lua_insert(L,-(nresults+1));// move them at their final place
-    }
-    /* uses 'key' (at index -2) and 'value' (at index -1) */
-    // prepare the call
-    dt_lua_do_chunk(L,nargs+1,nresults);
-    lua_pushinteger(L,loop_index);
-  }
-  for(int i=0; i< nargs+1 ; i++) 
-    lua_remove(L,-nresults -1); //remove all args that are below the results and the fn table
-  return nresults;
-}
-#endif
 
 
 static int lua_register_event(lua_State *L) {
@@ -336,30 +280,30 @@ static int lua_register_event(lua_State *L) {
 
 
 static void run_event(const char*event,int nargs) {
-  lua_getfield(darktable.lua_state,LUA_REGISTRYINDEX,"dt_lua_event_list");
-  if(lua_isnil(darktable.lua_state,-1)) {// events have been disabled
-    lua_settop(darktable.lua_state,0);
+  lua_getfield(darktable.lua_state.state,LUA_REGISTRYINDEX,"dt_lua_event_list");
+  if(lua_isnil(darktable.lua_state.state,-1)) {// events have been disabled
+    lua_settop(darktable.lua_state.state,0);
     return; 
   }
-  lua_getfield(darktable.lua_state,-1,event);
-  event_handler * handler =  lua_touserdata(darktable.lua_state,-1);
-  lua_pop(darktable.lua_state,2);
+  lua_getfield(darktable.lua_state.state,-1,event);
+  event_handler * handler =  lua_touserdata(darktable.lua_state.state,-1);
+  lua_pop(darktable.lua_state.state,2);
   if(!handler->in_use) { 
-    lua_pop(darktable.lua_state,nargs);
+    lua_pop(darktable.lua_state.state,nargs);
     return; 
   }
-  lua_pushcfunction(darktable.lua_state,handler->on_event);
-  lua_insert(darktable.lua_state,-nargs -1);
-  lua_pushstring(darktable.lua_state,event);
-  lua_pushnumber(darktable.lua_state,nargs);
-  dt_lua_do_chunk(darktable.lua_state,nargs+2,0);
+  lua_pushcfunction(darktable.lua_state.state,handler->on_event);
+  lua_insert(darktable.lua_state.state,-nargs -1);
+  lua_pushstring(darktable.lua_state.state,event);
+  lua_pushnumber(darktable.lua_state.state,nargs);
+  dt_lua_do_chunk(darktable.lua_state.state,nargs+2,0);
   
 }
 #if 0
 static void on_export_selection(gpointer instance,dt_control_image_enumerator_t * export_descriptor,
      gpointer user_data){
   warning to self : add locking
-  lua_State* L = darktable.lua_state;
+  lua_State* L = darktable.lua_state.state;
   dt_control_export_t *export_data= (dt_control_export_t*)export_descriptor->data;
 
   dt_imageio_module_storage_t  *mstorage  = dt_imageio_get_storage_by_index(export_data->storage_index);
@@ -421,29 +365,34 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
 }
 #endif
 
+/*
+   called on a signal, from a secondary thread
+   => we have the gdk lock, but the main UI thread can run if we release it
+   */
+
 static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
      gpointer user_data){
-  dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_image_t,&imgid);
-  lua_pushstring(darktable.lua_state,filename);
+  gboolean has_lock = dt_lua_lock();
+  luaA_push(darktable.lua_state.state,dt_lua_image_t,&imgid);
+  lua_pushstring(darktable.lua_state.state,filename);
   run_event("intermediate-export-image",2);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
-  dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_image_t,&id);
+  gboolean has_lock = dt_lua_lock();
+  luaA_push(darktable.lua_state.state,dt_lua_image_t,&id);
   run_event("post-import-image",1);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
-  dt_lua_lock();
-  luaA_push(darktable.lua_state,dt_lua_film_t,&id);
+  gboolean has_lock = dt_lua_lock();
+  luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
   run_event("post-import-film",1);
-  dt_lua_unlock();
+  dt_lua_unlock(has_lock);
 }
 
 int dt_lua_init_events(lua_State *L) {

@@ -160,8 +160,15 @@ if(OPENEXR_FOUND)
   list(APPEND SOURCES "common/imageio_exr.cc")
 endif(OPENEXR_FOUND)
 
+find_package(WebP)
+if(WEBP_FOUND)
+  include_directories(${WebP_INCLUDE_DIRS})
+  list(APPEND LIBS ${WebP_LIBRARIES})
+  add_definitions(${WebP_DEFINITIONS})
+endif(WEBP_FOUND)
+
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2 WebP)
+foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
@@ -568,13 +575,13 @@ if(USE_COLORD)
 endif(USE_COLORD)
 
 if(USE_SQUISH)
-# libsquish for compressed thumbnails:
-add_dependencies(lib_darktable squish)
-add_library(squish_static STATIC IMPORTED)
-set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-target_link_libraries(lib_darktable squish_static)
-add_subdirectory(external/squish)
-add_definitions("-DHAVE_SQUISH")
+  # libsquish for compressed thumbnails:
+  add_dependencies(lib_darktable squish)
+  add_library(squish_static STATIC IMPORTED)
+  set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
+  target_link_libraries(lib_darktable squish_static)
+  add_subdirectory(external/squish)
+  add_definitions("-DHAVE_SQUISH")
 endif(USE_SQUISH)
 
 if(USE_LUA)

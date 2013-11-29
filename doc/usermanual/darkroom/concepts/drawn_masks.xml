@@ -9,6 +9,10 @@
           <primary>masks</primary>
           <secondary>drawn masks</secondary>
        </indexterm>
+       <indexterm>
+          <primary>local adjustments</primary>
+       </indexterm>
+       <para>Almost all darktable modules have the option to narrow down their effect by a drawn mask and thus allowing local adjustments.</para>
 
        <sect3 status="final"><title>Overview</title>
            <para>With the drawn mask feature you can construct a mask by drawing directly on the image base. Different drawing operators, called shapes,

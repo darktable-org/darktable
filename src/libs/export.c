@@ -232,7 +232,7 @@ format_changed (GtkComboBox *widget, dt_lib_export_t *d)
   darktable.gui->reset = 0;
 }
 
-void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *height)
+static void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *height)
 {
   gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
   dt_imageio_module_storage_t *storage = dt_imageio_get_storage_by_name(storage_name);
@@ -255,7 +255,7 @@ void _get_max_output_dimension(dt_lib_export_t *d,uint32_t *width, uint32_t *hei
   }
 }
 
-void _update_dimensions(dt_lib_export_t *d)
+static void _update_dimensions(dt_lib_export_t *d)
 {
   uint32_t w=0,h=0;
   _get_max_output_dimension(d,&w,&h);
@@ -373,7 +373,7 @@ position ()
   return 0;
 }
 
-gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
+static gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
 {
   g_assert( text!=NULL );
   g_assert( cb!=NULL );
@@ -403,7 +403,7 @@ gboolean _combo_box_set_active_text(GtkComboBox *cb, const gchar *text)
   return FALSE;
 }
 
-void _update_formats_combobox(dt_lib_export_t *d)
+static void _update_formats_combobox(dt_lib_export_t *d)
 {
   // Clear format combo box
   gtk_list_store_clear( GTK_LIST_STORE(gtk_combo_box_get_model(d->format) ) );
@@ -555,7 +555,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "adobergb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("Adobe RGB"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
   prof->pos = 2;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -567,7 +567,7 @@ gui_init (dt_lib_module_t *self)
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, _("linear RGB"), sizeof(prof->name));
+  dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
@@ -596,9 +596,7 @@ gui_init (dt_lib_module_t *self)
         if (!lang) lang = "en_US";
 
         dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-        char name[1024];
-        cmsGetProfileInfoASCII(tmpprof, cmsInfoDescription, lang, lang+3, name, 1024);
-        g_strlcpy(prof->name, name, sizeof(prof->name));
+        dt_colorspaces_get_profile_name(tmpprof, lang, lang+3, prof->name, sizeof(prof->name));
         g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
         prof->pos = ++pos;
         cmsCloseProfile(tmpprof);

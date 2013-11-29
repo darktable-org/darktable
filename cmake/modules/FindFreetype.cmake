@@ -13,14 +13,14 @@ libfind_pkg_check_modules(Freetype_PKGCONF freetype2)
 # Include dir
 find_path(Freetype_INCLUDE_DIR
   NAMES freetype/freetype.h
-  PATHS ${Freetype_PKGCONF_INCLUDE_DIRS}
+  HINTS ${Freetype_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES freetype2
 )
 
 # Finally the library itself
 find_library(Freetype_LIBRARY
   NAMES freetype
-  PATHS ${Freetype_PKGCONF_LIBRARY_DIRS}
+  HINTS ${Freetype_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

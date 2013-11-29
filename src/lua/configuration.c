@@ -45,7 +45,7 @@ int dt_lua_init_configuration(lua_State*L)
   lua_settable(L,-3);
 
   lua_pushstring(L,"version");
-  lua_pushstring(darktable.lua_state,PACKAGE_VERSION);
+  lua_pushstring(L,PACKAGE_VERSION);
   lua_settable(L,-3);
 
   lua_pushstring(L,"verbose");

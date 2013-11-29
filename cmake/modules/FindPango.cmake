@@ -18,14 +18,14 @@ libfind_pkg_check_modules(Pango_PKGCONF pango)
 # Include dir
 find_path(Pango_INCLUDE_DIR
   NAMES pango/pango.h
-  PATHS ${Pango_PKGCONF_INCLUDE_DIRS}
+  HINTS ${Pango_PKGCONF_INCLUDE_DIRS}
   PATH_SUFFIXES pango-1.0
 )
 
 # Finally the library itself
 find_library(Pango_LIBRARY
   NAMES pango-1.0
-  PATHS ${Pango_PKGCONF_LIBRARY_DIRS}
+  HINTS ${Pango_PKGCONF_LIBRARY_DIRS}
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
