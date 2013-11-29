@@ -12,3 +12,6 @@ The release team should empty this file after each release.
 
 - better UX for bauhaus sliders: the popup now has a blinking cursor to make possible text entry more discoverable.
 - text entry for bauhaus sliders and vimkeys' :set command can now evaluate mathematical expressions.
+
+
+darktable now integrates a lua engine that allows writing scripts to make it easier to use with other image processing software. These scripts can be run when a particular event takes place (for example when a new image is imported) or when a particular keyboard shortcut is used. There are very few scripts available at this point but we expect the community to provide some more during the next release cycle.
