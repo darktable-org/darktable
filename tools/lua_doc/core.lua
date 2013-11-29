@@ -56,7 +56,7 @@ end
 
 local function is_type(node)
 	has_entry,entry = pcall(function() return node.__luaA_Type end)
-	return has_entry and entry and not node.__is_singleton
+	return has_entry and entry and not node.__singleton
 end
 
 local function document_unknown(node,parent,prev_name)
@@ -77,7 +77,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			set_attribute(result,"has_length",true)
 		elseif field == "__tostring" then
 			set_attribute(result,"has_tostring",true)
-		elseif field == "__is_singleton" then
+		elseif field == "__singleton" then
 			set_attribute(result,"is_singleton",true)
 		elseif field == "__number_index" then
 			nojoin[value] = true
@@ -152,7 +152,7 @@ local function is_dt_singleton(node)
 	local obj_type = type(node)
 	if obj_type ~= "userdata" then return false end
 	local mt = getmetatable(node)
-	return mt and mt.__is_singleton
+	return mt and mt.__singleton
 end
 local function document_dt_singleton(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_singleton",parent,prev_name);

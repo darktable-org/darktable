@@ -91,6 +91,15 @@ void dt_lua_register_type_callback_default_typeid(lua_State* L,luaA_Type type_id
   dt_lua_register_type_callback_stack_typeid(L,luaA_type_find(#type_name),name)
 void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,const char* name);
 
+/**
+  * similar to dt_lua_init_type but creates a type for int id
+  * the type must be an int and will guarentee a singleton per memory pointed
+  * i.e if you push the same int twice, you will push the same lua object 
+  * not recreate a different one each time
+  */
+#define dt_lua_init_int_type(L,type_name) \
+  dt_lua_init_int_type_typeid(L,luaA_type_id(type_name))
+luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
 
 /**
  * similar to dt_lua_init_type but creates a singleton type
@@ -105,12 +114,6 @@ void dt_lua_initialize_types(lua_State *L);
 
 
 
-int dt_lua_autotype_next(lua_State *L);
-int dt_lua_autotype_pairs(lua_State *L);
-int dt_lua_autotype_index(lua_State *L);
-int dt_lua_autotype_newindex(lua_State *L);
-int autotype_full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin);
-void dt_lua_autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
