@@ -8,7 +8,6 @@
 include(LibFindMacros)
 
 # Dependencies
-libfind_package(Pango Freetype)
 libfind_package(Pango Glib)
 libfind_package(Pango GObject)
 
@@ -30,7 +29,7 @@ find_library(Pango_LIBRARY
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(Pango_PROCESS_INCLUDES Pango_INCLUDE_DIR Freetype_INCLUDE_DIRS Glib_INCLUDE_DIRS)
-set(Pango_PROCESS_LIBS Pango_LIBRARY Freetype_LIBRARIES Glib_LIBRARIES GObject_LIBRARIES)
+set(Pango_PROCESS_INCLUDES Pango_INCLUDE_DIR Glib_INCLUDE_DIRS)
+set(Pango_PROCESS_LIBS Pango_LIBRARY Glib_LIBRARIES GObject_LIBRARIES)
 libfind_process(Pango)
 
