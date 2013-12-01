@@ -21,7 +21,11 @@
 #include "common/image.h"
 #include "common/mipmap_cache.h"
 
-#if __cplusplus >= 201103L || defined(__clang__)
+#ifndef __has_include
+#define __has_include(x) 1
+#endif
+
+#if !__has_include(<tr1/memory>)
 #include <memory>
 #else
 #include <tr1/memory>
@@ -60,7 +64,7 @@ public:
   }
 
   uint32_t size;
-#if __cplusplus >= 201103L || defined(__clang__)
+#if !__has_include(<tr1/memory>)
   std::shared_ptr<uint8_t> data;
 #else
   std::tr1::shared_ptr<uint8_t> data;
