@@ -5,7 +5,7 @@ darktable-cli - a command line darktable variant
 
 =head1 SYNOPSIS
 
-    darktable-cli [options] IMG_1234.{RAW,...} [<xmp file>] <output file>
+    darktable-cli IMG_1234.{RAW,...} [<xmp file>] <output file> [options] [--core <darktable options>]
 
 Options:
 
@@ -13,8 +13,7 @@ Options:
     --height <max height>
     --bpp <bpp>
     --hq <0|1|true|false>
-    --verbose] 
-    --core <darktable options>
+    --verbose
 
 =head1 DESCRIPTION
 
@@ -65,14 +64,14 @@ allowed values depend on the file format.  Currently this option is
 not yet functional. If you need to define the bit depth you need to
 use the following workaround:
 
-    --core --conf plugins/imageio/format/B<FORMAT>/bpp=B<VALUE>
+    --core --conf plugins/imageio/format/<FORMAT>/bpp=<VALUE>
 
-where B<FORMAT> is the name of the selected output format.
+where B<FORMAT> is the name of the selected output format, for example B<png>.
 
 =item B<< --hq <0|1|true|false>  >>
 
 A flag that defines whether to use high quality resampling during
-export (see <xref linkend="core_options"/>). Defaults to true.
+export. Defaults to true.
 
 =item B<< --verbose  >>
 

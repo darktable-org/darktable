@@ -197,7 +197,7 @@ Increase brightness
 
 Leave fullscreen mode
 
-=item B<< <primary>q >>
+=item B<< <Primary>q >>
 
 Quit
 
@@ -209,7 +209,7 @@ Switch between lighttable and darkroom views
 
 Switch between fullscreen and normal modes of the application's window
 
-=item B<< <primary>h >>
+=item B<< <Primary>h >>
 
 Show/hide header
 
@@ -427,7 +427,7 @@ L<darktable-cli(1)|darktable-cli(1)>
 
 =head1 OTHER INFO
 
-Please visit B<darktable>'s website for news, bug tracker and forum: L<http://www.darktable.org>
+Please visit B<darktable>'s website for news, bug tracker and forum: L<http://www.darktable.org/>
 
 =head1 RELATED
 
@@ -440,7 +440,7 @@ Please visit B<darktable>'s website for news, bug tracker and forum: L<http://ww
 =head1 REPORTING BUGS
 
 Please use the bug tracker on
-L<http://darktable.org/redmine/projects/darktable/issues> to report
+L<http://www.darktable.org/redmine/projects/darktable/issues/> to report
 bugs, feature requests and so on.
 
 =head1 AUTHORS
