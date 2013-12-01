@@ -79,7 +79,7 @@ local function print_content(node)
 		end
 	end
 	if concat ~="" then
-		result = result..[[<informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
+		result = result..[[<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
 <colspec colwidth="2*"/>
 <colspec colwidth="8*"/>
 <tbody><row>
@@ -163,7 +163,7 @@ parse_doc_node = function(node,parent,prev_name)
 
 	end
 	if(not doc.is_main_parent(node,parent,prev_name) ) then
-		result = result .. "see "..get_node_with_link(node,doc.get_name(node)).."\n\n"
+		result = result .. "<para>see "..get_node_with_link(node,doc.get_name(node)).."</para>\n\n"
 	else
 		result = result .. print_content(node,parent)
 	end
@@ -181,7 +181,7 @@ M = {}
 M.page_name = page_name
 
 function M.get_doc()
-	 return [[<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+	 return [[<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
