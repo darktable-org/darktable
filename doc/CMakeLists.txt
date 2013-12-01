@@ -13,7 +13,7 @@ add_custom_command(
 	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable.1
 	${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod 
 	${CMAKE_CURRENT_BINARY_DIR}/darktable.1 
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
 	
 )
 
@@ -23,7 +23,7 @@ add_custom_command(
 	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1
 	${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod 
 	${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1 
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
 	
 )
 
