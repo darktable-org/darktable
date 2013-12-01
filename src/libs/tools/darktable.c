@@ -231,7 +231,7 @@ static void _lib_darktable_show_about_dialog()
     "Moritz Lipp",
     "Olivier Tribout",
     "Pascal de Bruijn",
-    "Pacal Obry",
+    "Pascal Obry",
     "parafin",
     "Petr Styblo",
     "Pierre Le Magourou",
