@@ -210,7 +210,6 @@ static void _lib_darktable_show_about_dialog()
     "Edouard Gomez",
     "Edward Herr",
     "František Šidák",
-    "Franz Netykafka",
     "Gaspard Jankowiak",
     "Ger Siemerink",
     "Gianluigi Calcaterra",
