@@ -369,8 +369,11 @@ void dt_ctl_set_display_profile()
     screen = gdk_screen_get_default();
   int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(widget));
 
+  CGDirectDisplayID ids[monitor + 1];
+  uint32_t total_ids;
   CMProfileRef prof = NULL;
-  CMGetProfileByAVID(monitor, &prof);
+  if(CGGetOnlineDisplayList(monitor + 1, &ids[0], &total_ids) == kCGErrorSuccess && total_ids == monitor + 1)
+    CMGetProfileByAVID(ids[monitor], &prof);
   if ( prof!=NULL )
   {
     CFDataRef data;

@@ -33,15 +33,6 @@ static int tag_name(lua_State*L)
   return 1;
 }
 
-static int tag_eq(lua_State*L)
-{
-  dt_lua_tag_t tagid1;
-  luaA_to(L,dt_lua_tag_t,&tagid1,-1);
-  dt_lua_tag_t tagid2;
-  luaA_to(L,dt_lua_tag_t,&tagid2,-2);
-  lua_pushboolean(L,tagid1==tagid2);
-  return 1;
-}
 static int tag_tostring(lua_State *L)
 {
   dt_lua_tag_t tagid1;
@@ -212,7 +203,7 @@ int dt_lua_tag_get_attached(lua_State *L)
 
 int dt_lua_init_tags(lua_State*L)
 {
-  dt_lua_init_type(L,dt_lua_tag_t);
+  dt_lua_init_int_type(L,dt_lua_tag_t);
   dt_lua_register_type_callback_number(L,dt_lua_tag_t,tag_index,NULL,tag_length);
   dt_lua_register_type_callback(L,dt_lua_tag_t,tag_name,NULL,"name",NULL);
   lua_pushcfunction(L,tag_delete);
@@ -222,8 +213,6 @@ int dt_lua_init_tags(lua_State*L)
   lua_pushcfunction(L,dt_lua_tag_detach);
   dt_lua_register_type_callback_stack(L,dt_lua_tag_t,"detach");
   luaL_getmetatable(L,"dt_lua_tag_t");
-  lua_pushcfunction(L,tag_eq);
-  lua_setfield(L,-2,"__eq");
   lua_pushcfunction(L,tag_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
