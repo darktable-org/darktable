@@ -2091,6 +2091,21 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
         for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
       }
     }
+    else if ((!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+    {
+      //no form defined but drawn mask active
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
+    }
     else
     {
       //we fill the buffer with 1.0f or 0.0f depending on mask_combine
@@ -2326,6 +2341,21 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #endif
         for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
       }
+    }
+    else if ((!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+    {
+      //no form defined but drawn mask active
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
     }
     else
     {
