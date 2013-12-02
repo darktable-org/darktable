@@ -17,10 +17,13 @@ if(X11_FOUND)
   add_definitions("-DHAVE_X11")
 endif(X11_FOUND)
 
-if(COLORD_FOUND)
+if(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
+  message(STATUS "building darktable-cmstest with colord support. nice.")
   target_link_libraries(darktable-cmstest ${COLORD_LIBRARIES})
   add_definitions("-DHAVE_COLORD")
-endif(COLORD_FOUND)
+else(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
+  message(STATUS "no colord support for darktable-cmstest. not cool.")
+endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 
 
 set_target_properties(darktable-cmstest PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
