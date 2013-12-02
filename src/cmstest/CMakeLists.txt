@@ -26,9 +26,9 @@ else(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
 
 
-set_target_properties(darktable-cmstest PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set_target_properties(darktable-cmstest PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set_target_properties(darktable-cmstest PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
+#set_target_properties(darktable-cmstest PROPERTIES CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#set_target_properties(darktable-cmstest PROPERTIES CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+#set_target_properties(darktable-cmstest PROPERTIES INSTALL_RPATH $ORIGIN/../${LIB_INSTALL}/darktable)
 set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
 
 install(TARGETS darktable-cmstest DESTINATION bin)
