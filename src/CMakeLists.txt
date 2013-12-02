@@ -654,6 +654,10 @@ endif(HAVE_OPENCL)
 # have a command line interface
 add_subdirectory(cli)
 
+# have a small test program that verifies your color management setup
+if(BUILD_CMSTEST)
+  add_subdirectory(cmstest)
+endif(BUILD_CMSTEST)
 
 #
 # build darktable executable
