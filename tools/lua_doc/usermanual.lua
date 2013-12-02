@@ -21,7 +21,7 @@ local function sorted_pairs (t, f)
 end
 local function get_node_with_link(node,name)
 		 --return "\""..name.."\":"..page_name.."#"..doc.get_name(node)
-		 return '<link linkend="'..doc.get_name(node)..'">'..name..'</link>'
+		 return '<link linkend="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..name..'</link>'
 end
 
 local function get_reported_type(node,simple)
@@ -152,7 +152,7 @@ parse_doc_node = function(node,parent,prev_name)
 	elseif depth ~= 0 then
 		result = result..'<sect'..(depth+1)..' status="draft" '
 		if(doc.is_main_parent(node,parent,prev_name) ) then
-			result = result..'id="'..doc.get_name(node)..'"'
+			result = result..'id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'"'
 		end
 		result = result..'>\n'
 		result = result..'<title>'..node_name..'</title>\n'
