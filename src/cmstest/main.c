@@ -122,6 +122,9 @@ int main(int argc, char *arg[])
   printf("this executable was built without colord support\n");
 #endif // HAVE_COLORD
 
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+  g_type_init();
+#endif
 
   // get a list of all possible screens from xrandr
   GList *monitor_list = NULL;
