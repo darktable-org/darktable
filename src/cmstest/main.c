@@ -303,7 +303,7 @@ int main(int argc, char *arg[])
     printf("\n%s", monitor_name);
     if(message)
       printf("\t%s", message);
-    printf("\n\tX atom\t%s\n\t\t%s\n", x_atom_name, x_atom_description);
+    printf("\n\tX atom\t%s\t%ld bytes\n\t\t%s\n", x_atom_name, monitor->x_atom_length, x_atom_description);
 #ifdef HAVE_COLORD
     printf("\tcolord\t%s\n\t\t%s\n", colord_filename, colord_description);
 #endif
