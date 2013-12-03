@@ -111,7 +111,7 @@ int dt_lua_autotype_inext(lua_State *L)
 }
 
 
-int dt_lua_autotype_next(lua_State *L)
+static int autotype_next(lua_State *L)
 {
   if(luaL_getmetafield(L,-2,"__len") )
   {
@@ -205,7 +205,7 @@ int dt_lua_autotype_ipairs(lua_State *L)
   return 3;
 }
 
-int dt_lua_autotype_pairs(lua_State *L)
+static int autotype_pairs(lua_State *L)
 {
   luaL_getmetafield(L,-1,"__next");
   lua_pushvalue(L,-2);
@@ -213,7 +213,7 @@ int dt_lua_autotype_pairs(lua_State *L)
   return 3;
 }
 
-int dt_lua_autotype_index(lua_State *L)
+static int autotype_index(lua_State *L)
 {
   luaL_getmetafield(L,-2,"__get");
   int pos_get = lua_gettop(L); // points at __get
@@ -240,7 +240,7 @@ int dt_lua_autotype_index(lua_State *L)
 }
 
 
-int dt_lua_autotype_newindex(lua_State *L)
+static int autotype_newindex(lua_State *L)
 {
   luaL_getmetafield(L,-3,"__set");
   int pos_set = lua_gettop(L); // points at __get
@@ -268,7 +268,7 @@ int dt_lua_autotype_newindex(lua_State *L)
 }
 
 
-int dt_lua_autotype_full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
+static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
   size_t type_size= luaA_type_size(type_id);
   void* udata = lua_newuserdata(L,type_size);
@@ -277,10 +277,38 @@ int dt_lua_autotype_full_pushfunc(lua_State *L, luaA_Type type_id, const void *c
   return 1;
 }
 
-void dt_lua_autotype_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
+static void full_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
 {
   void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
   memcpy(cout,udata,luaA_type_size(type_id));
+}
+
+static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id));
+  luaL_getsubtable(L,-1,"__values");
+  int singleton = *(int*)cin;
+  lua_pushnumber(L,singleton);
+  lua_gettable(L,-2);
+  if(lua_isnoneornil(L,-1)) {
+    lua_pop(L,1);
+    int* udata = lua_newuserdata(L,sizeof(int));
+    *udata = singleton;
+    luaL_setmetatable(L,luaA_type_name(type_id));
+    lua_pushinteger(L,singleton);
+    lua_pushvalue(L,-2);
+    lua_settable(L,-4);
+
+  }
+  lua_remove(L,-2);//__values
+  lua_remove(L,-2);//metatable
+  return 1;
+}
+
+static void int_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
+{
+  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  memcpy(cout,udata,sizeof(int));
 }
 
 void dt_lua_register_type_callback_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,...)
@@ -426,7 +454,7 @@ void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,c
   lua_pop(L,4);
 }
 
-luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
+static void init_metatable(lua_State* L, luaA_Type type_id)
 {
   luaL_newmetatable(L,luaA_type_name(type_id));
 
@@ -436,19 +464,16 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
   lua_pushnumber(L,type_id);
   lua_setfield(L,-2,"__luaA_Type");
 
-
-  luaA_conversion_typeid(type_id,dt_lua_autotype_full_pushfunc,dt_lua_autotype_tofunc);
-
-  lua_pushcfunction(L,dt_lua_autotype_next);
+  lua_pushcfunction(L,autotype_next);
   lua_setfield(L,-2,"__next");
 
-  lua_pushcfunction(L,dt_lua_autotype_pairs);
+  lua_pushcfunction(L,autotype_pairs);
   lua_setfield(L,-2,"__pairs");
 
-  lua_pushcfunction(L,dt_lua_autotype_index);
+  lua_pushcfunction(L,autotype_index);
   lua_setfield(L,-2,"__index");
 
-  lua_pushcfunction(L,dt_lua_autotype_newindex);
+  lua_pushcfunction(L,autotype_newindex);
   lua_setfield(L,-2,"__newindex");
 
   lua_newtable(L);
@@ -456,28 +481,46 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
 
   lua_newtable(L);
   lua_setfield(L,-2,"__set");
-  // remove the metatable
-  lua_pop(L,1);
-  return type_id;
+  // leave metatable on top of stack
 }
 
+
+luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
+{
+  init_metatable(L,type_id);
+  lua_pop(L,1);
+  luaA_conversion_typeid(type_id,full_pushfunc,full_tofunc);
+  return type_id;
+}
 
 luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
 {
   char tmp_name[1024];
   snprintf(tmp_name,1024,"dt_lua_singleton_%s",unique_name);
 
-  luaA_Type type_id = dt_lua_init_type_typeid(L,luaA_type_add(tmp_name,sizeof(void*)));
-  void *tmp=NULL;
-  luaA_push_typeid(L,type_id,&tmp);
-  lua_getmetatable(L,-1);
-  lua_pushboolean(L,true);
-  lua_setfield(L,-2,"__is_singleton");
-  lua_pop(L,1);
+  luaA_Type type_id = luaA_type_add(tmp_name,sizeof(void*));
+  init_metatable(L,type_id);
+
+  void* udata = lua_newuserdata(L,sizeof(void*));
+  memset(udata,0,sizeof(void*));
+
+  lua_pushvalue(L,-1);
+  luaL_setmetatable(L,tmp_name);
+  lua_setfield(L,-3,"__singleton");
+  lua_remove(L,-2);
 
   return type_id;
 }
 
+luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
+{
+  init_metatable(L,type_id);
+  lua_newtable(L);
+  lua_setfield(L,-2,"__values");
+  lua_pop(L,1);
+  luaA_conversion_typeid(type_id,int_pushfunc,int_tofunc);
+  return type_id;
+}
 
 void dt_lua_initialize_types(lua_State *L)
 {

@@ -13,11 +13,21 @@ add_custom_command(
 	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable.1
 	${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod 
 	${CMAKE_CURRENT_BINARY_DIR}/darktable.1 
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
 	
 )
 
-add_custom_target(manpages ALL DEPENDS darktable.1)
+add_custom_command(
+	OUTPUT darktable-cli.1
+	SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod
+	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../tools/makeman.sh ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1
+	${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod 
+	${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1 
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/darktable-cli.pod ${CMAKE_CURRENT_SOURCE_DIR}/AUTHORS ${CMAKE_CURRENT_BINARY_DIR}/../src/config.h
+	
+)
+
+add_custom_target(manpages ALL DEPENDS darktable.1 darktable-cli.1)
 
 if(NOT MAN_INSTALL_DIR)
 	if(CMAKE_SYSTEM_NAME MATCHES "^(DragonFly|FreeBSD|NetBSD|OpenBSD)$")
@@ -27,7 +37,7 @@ if(NOT MAN_INSTALL_DIR)
 	endif()
 endif(NOT MAN_INSTALL_DIR)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 DESTINATION ${MAN_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.1 ${CMAKE_CURRENT_BINARY_DIR}/darktable-cli.1 DESTINATION ${MAN_INSTALL_DIR})
 
 
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")

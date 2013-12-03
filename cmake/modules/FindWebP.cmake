@@ -11,7 +11,7 @@
 # Copyright 2013 Google Inc.
 #=============================================================================
 
-SET(WEBP_FIND_REQUIRED ${WEBP_FIND_REQUIRED})
+SET(WEBP_FIND_REQUIRED ${WebP_FIND_REQUIRED})
 
 find_path(WEBP_INCLUDE_DIR NAMES webp/encode.h)
 mark_as_advanced(WEBP_INCLUDE_DIR)

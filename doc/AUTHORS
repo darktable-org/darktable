@@ -1,63 +1,113 @@
 * developers:
 Henrik Andersson,
 Johannes Hanika,
-Tobias Ellinghaus.
+Tobias Ellinghaus,
+Ulrich Pegelow.
 
 * ubuntu packaging, color management, video tutorials:
 Pascal de Bruijn.
 
-* opencl pipeline:
+* opencl pipeline, usermanual:
 Ulrich Pegelow.
 
 * networking, battle testing, translation expert:
 Alexandre Prokoudine.
 
 * translation:
+a3novy,
 Alexandre Prokoudine,
+Anocha Yimsiriwattana,
+Artur de Sousa Rocha,
 Daniele Giorgis,
 Dimitrios Psychogios,
 Ger Siemerink,
+Guilherme Brondani Torri,
 Henrik Andersson,
+José Carlos Casimiro,
 Josep Puigdemont,
+María Leandro,
+Mauro Bartoccelli,
 Michał Prędotka,
 Mikko Ruohola,
+Milan Knížek,
+Olivier Tribout,
+Pascal Obry,
+Richard Levitte,
 Roberto Quintero,
 Sebastien Delcoigne,
 Thomas Costis,
-Tobias Ellinghaus.
+Thomas Pryds,
+Tobias Ellinghaus,
+Victor Lamoine.
 
 * contributors:
-Alexandre Prokoudine
-Alexey Dokuchaev
-Ammon Riley
-Antony Dovgal
-Boucman
-Brian Teague
-Bruce Guenter
-Cherrot Luo
-Denis Cheremisov
-Dimitrios Psychogios
-Edouard Gomez
-Edward Herr
-František Šidák
-Ger Siemerink
-Gianluigi Calcaterra
-James C. McPherson
-Joao Trindade
-Jose Carlos Garcia Sogo
-Michał Prędotka
-Moritz Lipp
-Olivier Tribout
-Pascal de Bruijn
-Petr Styblo
-Robert Bieber
-Rostyslav Pidgornyi
-Sergey Pavlov
-Simon Spannagel
-Terry Jeffress
-Tim Harder
-Tom Vanderpoel
-Ulrich Pegelow
-jan
-maigl
-And all those of you that made previous releases possible
+Aldric Renaudin,
+Alexandre Prokoudine,
+Alexey Dokuchaev,
+Ammon Riley,
+Anton Keks,
+Antony Dovgal,
+Ari Makela,
+Benjamin Cahill,
+Brian Teague,
+Bruce Guenter,
+Cherrot Luo,
+Chris Mason,
+Christian Tellefsen,
+David Morel,
+Denis Cheremisov,
+Dennis Gnad,
+Diego Segura,
+Dimitrios Psychogios,
+Eckhart Pedersen,
+Edouard Gomez,
+Edward Herr,
+František Šidák,
+Gaspard Jankowiak,
+Ger Siemerink,
+Gianluigi Calcaterra,
+Guilherme Brondani Torri,
+Ivan Tarozzi,
+James C. McPherson,
+Jan Kundrát,
+Jean-Sébastien Pédron,
+Jérémy Rosen,
+Jesper Pedersen,
+Joao Trindade,
+Jon Leighton,
+Jose Carlos Garcia Sogo,
+Josef Wells,
+Julian J. M,
+Mattias Eriksson,
+Michal Babej,
+Michał Prędotka,
+Moritz Lipp,
+Olivier Tribout,
+Pascal de Bruijn,
+Pascal Obry,
+parafin,
+Petr Styblo,
+Pierre Le Magourou,
+Richard Levitte,
+Richard Tollerton,
+Robert Bieber,
+Roland Riegel,
+Roman Lebedev,
+Rostyslav Pidgornyi,
+Sergey Pavlov,
+Simon Harhues,
+Simon Spannagel,
+Stuart Henderson,
+Terry Jeffress,
+Tim Harder,
+Togan Muftuoglu,
+Tom Vanderpoel,
+Ulrich Pegelow,
+Wolfgang Goetz,
+Wolfgang Kuehnel,
+Yari Adan,
+hal,
+jan,
+maigl,
+tuxuser.
+And all those of you that made previous releases possible.

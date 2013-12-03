@@ -5,16 +5,24 @@ darktable - a digital photography workflow application
 
 =head1 SYNOPSIS
 
-C<darktable [options] [{IMG_1234.RAW,/path/to/load/}]>
+    darktable [options] [IMG_1234.{RAW,...}|image_folder/]
 
 Options:
 
+    -d {all,cache,camctl,control,dev,fswatch,
+        input,lighttable,masks,memory,nan,opencl,
+        perf,pwstorage,sql}
+    --disable-opencl 
+    --library <library file> 
+    --datadir <data directory> 
+    --moduledir <module directory>
+    --tmpdir <tmp directory> 
+    --configdir <user config directory>
+    --cachedir <user cache directory>
+    --localedir <locale directory>
+    --conf <key>=<value>
     --help        
     --version
-    -d {all,cache,camctl,control,dev,fswatch,memory,opencl,perf,pwstorage,sql}
-    --library override.db
-    --disable-opencl
-    -t num_threads
 
 =head1 DESCRIPTION
 
@@ -38,67 +46,136 @@ create your plug-ins reusing existing code.
 
 =over
 
-=item B<IMG_1234.CR2 or /path/to/load/>
+=item B<IMG_1234.RAW or image_folder/>
 
-Loads the given image in darkroom mode, or imports the given folder.
+You may optionally supply the filename of an image or the name of a
+folder containing image files. If a filename is given darktable starts
+in darkroom view with that file opened. If a folder is given darktable
+starts in lighttable view with the content of that folder as the
+current collection.
 
-=item B<-d control>
+=item B<< -d <debugoption> >>
 
-Enable job queue debugging. If you redirect darktable's output to B<control.log> and
-call B<./tools/create_control_svg.sh control.log>, you will get a nice B<control.svg>
-with a visualization of the threads' work.
+This option enables debug output to the terminal. There are several
+subsystems of darktable and debugging of each of them can be activated
+separately. You can use this option multiple times if you want
+debugging output of more than one subsystem.
 
-=item B<-d cache>
-
-This will give you a lot of debugging info about the mipmap cache for light table mode. If
-compiled in debug mode, this will also tell you where in the code a certain buffer has
-last been locked.
-
-=item B<-d perf>
-
-Use this for performance tweaking your darkroom modules. It will rdtsc-measure the
-runtimes of all plugins and print them to stdout.
-
-=item B<-d all>
-
-Enable all debugging output.
-
-=item B<--library override.db>
-
-Uses override.db instead of the darktablerc specified library file. Should be an absolute path.
-
-=item B<--disable-opencl>
-
-For opencl builds only. Disables GPU computing at runtime. Useful to check
-for bugs in our opencl code and to avoid buggy drivers on certain machines.
-
-=item B<-t num_threads>
-
-For openmp builds only. Overrides the default number of threads (= number of cores).
-
-=back
-
-=head1 OTHER INFO
-
-Please visit B<darktable>'s website for news, bug tracker and forum: L<http://www.darktable.org>
-
-=head1 KEYBINDINGS
-
-All modes:
+A few of those debugoptions are:
 
 =over
 
-=item B<F11>
+=item B<control>
 
-Switch between fullscreen and normal modes of the application's window
+Enable job queue debugging. If you redirect darktable's output to
+B<control.log> and call B<./tools/create_control_svg.sh control.log>,
+you will get a nice B<control.svg> with a visualization of the
+threads' work.
 
-=item B<Tab>
+=item B<cache>
 
-Show/hide sidebars
+This will give you a lot of debugging info about the mipmap cache for
+light table mode. If compiled in debug mode, this will also tell you
+where in the code a certain buffer has last been locked.
 
-=item B<e>
+=item B<perf>
 
-Switch between light-table and darkroom modes
+Use this for performance tweaking your darkroom modules. It will
+rdtsc-measure the runtimes of all plugins and print them to stdout.
+
+=item B<all>
+
+Enable all debugging output.
+
+=back
+
+=item B<--disable-opencl>
+
+Prevent darktable from initializing the OpenCL subsystem. Use this
+option in case darktable crashes at startup due to a defective OpenCL
+implementation.
+
+=item B<< --library <library file> >>
+
+darktable keeps image information in an sqlite database for fast
+access. The default location of that database file is
+C<$HOME/.config/darktable/library.db>. You may give an alternative
+location, e.g. if you want to do some experiments without compromising
+your original library.db. If the database file does not exist,
+darktable creates it for you. You may also give C<:memory:> as a
+library file in which case the database is kept in system memory - all
+changes are discarded when darktable terminates.
+
+=item B<< --datadir <data directory> >>
+
+This option defines the directory where darktable finds its runtime
+data. The default place depends on your installation. Typical places
+are C</opt/darktable/share/darktable/> and
+C</usr/share/darktable/>.
+
+=item B<< --moduledir <module directory> >>
+
+darktable has a modular structure and organizes its modules as shared
+libraries for loading at runtime. With this option you tell darktable
+where to look for its shared libraries. The default place depends on
+your installation; typical places are
+C</opt/darktable/lib64/darktable/> and C</usr/lib64/darktable/>.
+
+=item B<< --tmpdir <tmp directory> >>
+
+The place where darktable stores its temporary files. If this option
+is not supplied darktable uses the system default.
+
+=item B<< --configdir <config directory> >>
+
+This option defines the directory where darktable stores the user
+specific configuration. The default place is
+C<$HOME/.config/darktable/>.
+
+=item B<< --cachedir <cache directory> >>
+
+darktable keeps a cache of image thumbnails for fast image preview and
+of precompiled OpenCL binaries for fast startup. By default the cache
+is located in C<$HOME/.cache/darktable/>. There may exist multiple
+thumbnail caches in parallel - one for each library file.
+
+=item B<< --localedir <locale directory> >>
+
+The place where darktable finds its language specific text strings.
+The default place depends on your installation. Typical places are
+C</opt/darktable/share/locale/> and C</usr/share/locale/>.
+
+=item B<< --conf <key>=<value> >>
+
+darktable supports a rich set of configuration parameters which the
+user defines in C<darktablerc> - darktable's configuration file in the
+user config directory. You may temporarily overwrite individual
+settings on the command line with this option - however, these
+settings will not be stored in C<darktablerc>.
+
+=back
+
+=head1 DEFAULT KEYBINDINGS
+
+=head3 All modes
+
+=over
+
+=item B<l>
+
+Switch to lightroom view
+
+=item B<d>
+
+Switch to darkroom view
+
+=item B<t>
+
+Switch to tethered capture view
+
+=item B<m>
+
+Switch to map view
 
 =item B<F7>
 
@@ -108,15 +185,87 @@ Decrease contrast
 
 Increase contrast
 
+=item B<F9>
+
+Decrease brightness
+
+=item B<F10>
+
+Increase brightness
+
+=item B<Esc>
+
+Leave fullscreen mode
+
+=item B<< <Primary>q >>
+
+Quit
+
+=item B<period>
+
+Switch between lighttable and darkroom views
+
+=item B<F11>
+
+Switch between fullscreen and normal modes of the application's window
+
+=item B<< <Primary>h >>
+
+Show/hide header
+
+=item B<Tab>
+
+Show/hide sidebars
+
 =back
 
-Lighttable mode:
+=head3 Lighttable mode
 
 =over
 
+=item B<< g, <shift>g >>
+
+Navigate to top, bottom row
+
+=item B<PageUp, PageDown>
+
+Navigate one page up, down
+
+=item B<'>
+
+Scroll center
+
+=item B<Down, Left, Right, Up>
+
+Scroll down, left, right, up
+
+=item B<z>
+
+Preview image
+
+=item B<F1, F2, F3, F4, F5>
+
+Color labels: toggle red, yellow, green, blue and purple
+
+=item B<1, 2, 3, 4, 5>
+
+Star rating
+
+=item B<0>
+
+Strip all stars
+
+=item B<r>
+
+Mark as rejected
+
+=item B<l>
+
+Realign images to the grid
+
 =item B<alt-1>
 
-Zoom in on image under cursor
+Zoom in on first visible image
 
 =item B<alt-2, 3>
 
@@ -126,37 +275,37 @@ Adjust zoom
 
 Zoom out completely
 
-=item B<q>
+=item B<< <Primary>a >>
 
-Zoom out to fit all images in one row inside viewport, center on image under cursor
+Select all images
 
-=item B<a, s, d, w>
+=item B<< <Primary><Shift>a >>
 
-Move around (arrows also work)
+Select no images
 
-=item B<1, 2, 3, 4, 5>
+=item B<< <Primary>i >>
 
-Star rating
+Invert selection
 
-=item B<ctrl-backspace>
+=item B<< <Primary>g, <Primary><Shift>g >>
 
-Strip all stars (reject image)
+Group/ungroup selected images
 
-=item B<F1, F2, F3, F4, F5>
+=item B<Delete>
 
-Color labels: toggle red, yellow, green, blue and magenta
+Remove image from collection
 
-=item B<ctrl-g, ctrl-shift-g> 
+=item B<< <Primary>c, <Primary><Shift>c >>
 
-Move to top, bottom, respectively
+Copy all, selected history
 
-=item B<ctrl-e>
+=item B<< <Primary>v, <Primary><Shift>v >>
 
-Export selected images
+Paste all, selected history
 
 =back
 
-Darkroom mode:
+=head3 Darkroom mode
 
 =over
 
@@ -168,23 +317,131 @@ Zoom to 1:1, fill, and fit, respectively
 
 show/hide film strip
 
-=item while cropping: B<Enter/Backspace>
+=item B<Space, Backspace>
 
-apply/revert currently selected cropping frame
+Step to next, previous image
+
+=item B<< <Primary>e >>
+
+Export current image
+
+=item B<o>
+
+Toggle show of over- and under-exposure
+
+=item B<< <Primary>c, <Primary><Shift>c >>
+
+Copy all, selected history
+
+=item B<< <Primary>v, <Primary><Shift>v >>
+
+Paste all, selected history
+
+=item B<g>
+
+Toggle gamut check
+
+=item B<s>
+
+Toggle softproofing
+
+=item B<Enter>
+
+In Crop & Rotate module, commit the crop
+
+=item B<[, ]>
+
+In Flip module, rotate 90 degrees ccw, cw
 
 =back
+
+=head3 Tethered mode
+
+=over
+
+=item B<< <Primary>f >>
+
+Show/hide film strip
+
+=item B<v>
+
+Toggle live view
+
+=back
+
+=head3 Map mode
+
+=over
+
+=item B<< <Primary>f >>
+
+Show/hide film strip
+
+=item B<< <Primary>z >>
+
+Undo
+
+=item B<< <Primary>r >>
+
+Redo
+
+=back
+
+=head3 Film strip (when the cursor is on top of the film strip)
+
+=over
+
+=item B<F1, F2, F3, F4, F5>
+
+Color labels: toggle red, yellow, green, blue and purple
+
+=item B<1, 2, 3, 4, 5>
+
+Star rating
+
+=item B<0>
+
+Strip all stars
+
+=item B<r>
+
+Mark as rejected
+
+=item B<< <Primary>d >>
+
+Duplicate image
+
+=item B<< <Primary>c, <Primary><Shift>c >>
+
+Copy all, selected history
+
+=item B<< <Primary>v, <Primary><Shift>v >>
+
+Paste all, selected history
+
+=back
+
+=head1 SEE ALSO
+
+L<darktable-cli(1)|darktable-cli(1)>
+
+=head1 OTHER INFO
+
+Please visit B<darktable>'s website for news, bug tracker and forum: L<http://www.darktable.org/>
 
 =head1 RELATED
 
 =over
 
-=item B<darktable-viewer> screensaver version of dt. Shows the last active collection in full screen as a slideshow.
+=item B<darktable-viewer> screensaver version of darktable. Shows the last active collection in full screen as a slideshow.
 
 =back
 
-=head1 BUGS
+=head1 REPORTING BUGS
 
-Please use the mailing list to report all the bugs you run into.
+Please use the bug tracker on
+L<http://www.darktable.org/redmine/projects/darktable/issues/> to report
+bugs, feature requests and so on.
 
 =head1 AUTHORS
 
@@ -194,7 +451,8 @@ complete list of contributors to the project is:
 DREGGNAUTHORS
 
 This man page was written by Alexandre Prokoudine 
-E<lt>alexandre.prokoudine@gmail.comE<gt>.
+E<lt>alexandre.prokoudine@gmail.comE<gt> and Richard Levitte
+E<lt>richard@levittr.orgE<gt>.
 
 =head1 HISTORY
 
@@ -203,7 +461,7 @@ The project was started by Johannes Hanika in early 2009 to fill the gap
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 2009-2010 by Authors.
+B<Copyright (C)> 2009-2013 by Authors.
 
 B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
