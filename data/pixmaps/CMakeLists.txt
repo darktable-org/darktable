@@ -18,17 +18,3 @@ install(FILES ${DARKROOM_PLUGIN_PIXMAPS} DESTINATION ${SHARE_INSTALL}/darktable/
 
 FILE(GLOB OTHER_PIXMAPS "*.png")
 install(FILES ${OTHER_PIXMAPS} DESTINATION ${SHARE_INSTALL}/darktable/pixmaps )
-
-#
-# Add debian package postinstall icon cache update
-#
-#set(GTK_UPDATE_ICON_CACHE "gtk-update-icon-cache -f -t ${THEME_DIRECTORY}")
-#set(POSTINSTALL_SCRIPT "# update icon cache\n
-#	if test -z \"$(DESTDIR)\"; then\n 
-#		echo \"Updating Gtk icon cache.\"; \n 
-#		${GTK_UPDATE_ICON_CACHE};\n
-#	else \n 
-#		echo \"*** Icon cache not updated. After (un)install, run this:\";\n 
-#		echo \"*** ${GTK_UPDATE_ICON_CACHE}\";\n
-#	fi")
-#file(APPEND ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/debian/postinst "${POSTINSTALL_SCRIPT}")

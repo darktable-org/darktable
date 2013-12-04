@@ -31,6 +31,7 @@ DT_MODULE(1)
 typedef struct dt_lib_darktable_t
 {
   cairo_surface_t *image;
+  int image_width, image_height;
 }
 dt_lib_darktable_t;
 
@@ -86,14 +87,20 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (self->widget), "button-press-event",
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
 
-  /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, 220, 48);
-
   /* create a cairo surface of dt icon */
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  const char *logo = (lt.tm_mon == 11 && lt.tm_mday >= 24)?"%s/pixmaps/idbutton-2.png":"%s/pixmaps/idbutton.png"; // don't you dare to tell anyone
   dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/idbutton.png", datadir);
+  snprintf(filename, DT_MAX_PATH_LEN, logo, datadir);
   d->image = cairo_image_surface_create_from_png(filename);
+  d->image_width = cairo_image_surface_get_width(d->image);
+  d->image_height = cairo_image_surface_get_height(d->image);
 
+  /* set size of drawing area */
+  gtk_widget_set_size_request(self->widget, d->image_width + 180, d->image_height + 8);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -123,7 +130,7 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   /* paint icon image */
   cairo_set_source_surface(cr, d->image, 0, 7);
-  cairo_rectangle(cr,0,0,48,48);
+  cairo_rectangle(cr,0,0,d->image_width + 8, d->image_height + 8);
   cairo_fill(cr);
 
 
@@ -136,14 +143,14 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
 
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to (cr, 42.0, 5.0);
+  cairo_move_to (cr, d->image_width + 2.0, 5.0);
   pango_cairo_show_layout (cr, layout);
 
   /* print version */
   pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, 44.0, 30.0);
+  cairo_move_to (cr, d->image_width + 4.0, 30.0);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
