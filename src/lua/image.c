@@ -395,15 +395,6 @@ static int colorlabel_newindex(lua_State *L)
   return 0;
 }
 
-static int image_eq(lua_State*L)
-{
-  dt_lua_image_t imgid1;
-  luaA_to(L,dt_lua_image_t,&imgid1,-1);
-  dt_lua_image_t imgid2;
-  luaA_to(L,dt_lua_image_t,&imgid2,-2);
-  lua_pushboolean(L,imgid1==imgid2);
-  return 1;
-}
 static int image_tostring(lua_State *L)
 {
   const dt_image_t * my_image=checkreadimage(L,-1);
@@ -487,7 +478,7 @@ int dt_lua_init_image(lua_State * L)
   luaA_struct_member(L,dt_image_t,longitude,double);
   luaA_struct_member(L,dt_image_t,latitude,double);
 
-  dt_lua_init_type(L,dt_lua_image_t);
+  dt_lua_init_int_type(L,dt_lua_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
@@ -507,8 +498,6 @@ int dt_lua_init_image(lua_State * L)
   lua_pushcfunction(L,dt_lua_tag_get_attached);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"get_tags");
   luaL_getmetatable(L,"dt_lua_image_t");
-  lua_pushcfunction(L,image_eq);
-  lua_setfield(L,-2,"__eq");
   lua_pushcfunction(L,image_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);

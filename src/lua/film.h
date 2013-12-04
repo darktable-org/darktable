@@ -20,7 +20,7 @@
 #include "lua/lua.h"
 
 
-typedef int dt_lua_film_t; // wrapper for dt_image_t id
+typedef int dt_lua_film_t; // wrapper for dt_film_t id
 
 int dt_lua_init_film(lua_State * L);
 #endif

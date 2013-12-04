@@ -25,6 +25,7 @@ The release team should empty this file after each release.
 - many bug fixes and small improvements
 
 - a tool for measuring basecurves from a sample image
+- a tool to check the system's color management setup. call cmake with -DBUILD_CMSTEST=On to build and install it. packagers probably want that.
 
 - updated usermanual
 

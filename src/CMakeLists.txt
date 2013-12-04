@@ -510,11 +510,7 @@ set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 add_dependencies(lib_darktable libraw_r)
 add_library(libraw_static STATIC IMPORTED)
 set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
-if(APPLE)
-  set(LIBRAW_STATIC_LIBS libraw_static stdc++)
-else(APPLE)
-  set(LIBRAW_STATIC_LIBS libraw_static)
-endif(APPLE)
+set(LIBRAW_STATIC_LIBS libraw_static)
 
 target_link_libraries(lib_darktable ${LIBRAW_STATIC_LIBS})
 list(APPEND STATIC_LIBS ${LIBRAW_STATIC_LIBS})
@@ -658,6 +654,10 @@ endif(HAVE_OPENCL)
 # have a command line interface
 add_subdirectory(cli)
 
+# have a small test program that verifies your color management setup
+if(BUILD_CMSTEST)
+  add_subdirectory(cmstest)
+endif(BUILD_CMSTEST)
 
 #
 # build darktable executable

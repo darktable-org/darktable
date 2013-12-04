@@ -66,15 +66,6 @@ static int film_index(lua_State *L)
   return 1;
 }
 
-static int film_eq(lua_State*L)
-{
-  dt_lua_film_t film_id;
-  luaA_to(L,dt_lua_film_t,&film_id,-1);
-  dt_lua_film_t film_id2;
-  luaA_to(L,dt_lua_film_t,&film_id2,-2);
-  lua_pushboolean(L,film_id==film_id2);
-  return 1;
-}
 static int film_tostring(lua_State *L)
 {
   dt_lua_film_t film_id;
@@ -177,12 +168,10 @@ static int films_index(lua_State*L)
 int dt_lua_init_film(lua_State * L)
 {
 
-  dt_lua_init_type(L,dt_lua_film_t);
+  dt_lua_init_int_type(L,dt_lua_film_t);
   dt_lua_register_type_callback_list(L,dt_lua_film_t,film_index,NULL,film_fields_name);
   dt_lua_register_type_callback_number(L,dt_lua_film_t,film_getnum,NULL,film_len);
   luaL_getmetatable(L,"dt_lua_film_t");
-  lua_pushcfunction(L,film_eq);
-  lua_setfield(L,-2,"__eq");
   lua_pushcfunction(L,film_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
