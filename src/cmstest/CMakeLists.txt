@@ -1,12 +1,16 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 add_executable(darktable-cmstest main.c)
 
+target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
+add_definitions(${LCMS2_DEFINITIONS})
 
 target_link_libraries(darktable-cmstest ${Glib_LIBRARIES})
 add_definitions(${Glib_DEFINITIONS})
 
-target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
-add_definitions(${LCMS2_DEFINITIONS})
+find_package(GObject REQUIRED)
+include_directories(${GObject_INCLUDE_DIRS})
+target_link_libraries(darktable-cmstest ${GObject_LIBRARIES})
+add_definitions(${GObject_DEFINITIONS})
 
 # TODO: Add a proper XRandR test, too?
 find_package(X11)

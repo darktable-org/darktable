@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <glib-object.h>
 #include <lcms2.h>
 
 #ifdef HAVE_X11
