@@ -1,5 +1,5 @@
 <sect1 status="final" id="darktable_and_memory"><title>darktable and memory</title>
-        <indexterm class="startofrange" id="ix.memory">
+        <indexterm>
            <primary>memory setup</primary>
         </indexterm>
 	<para>darktable's memory requirements are high. A simple calculation makes this clear. If you have a 20MPx image, darktable for precision reasons will store this internally as a 
@@ -64,33 +64,49 @@
 		<para>If this is the case, take a minute to optimize the preference settings in this case. You will find them under “core options” (<xref linkend="core_options"/>) in darktable’s
                       preference dialog. You should also find these parameters as configuration variables in $HOME/.config/darktable/darktablerc and edit them there.</para>
 
-		<para>Here is a short explanation of the relevant parameters and their proposed settings.</para>
+		<para>Here is a short explanation of the relevant parameters and their proposed settings:
 
-		<sect4><title>number of background threads</title>
-			<para>This parameter defines the maximum number of threads that are allowed in parallel when importing film rolls or doing other background stuff. For obvious reasons 
+                <variablelist>
+                       <varlistentry>
+                         <term>number of background threads</term>
+                         <listitem>
+			 <para>This parameter defines the maximum number of threads that are allowed in parallel when importing film rolls or doing other background stuff. For obvious reasons 
                               on 32-bit systems you can only have one thread eating resources at a time. So you need set this parameter to 1; anything higher will kill you. For the same reason 
                               you also must set the number of parallel export threads to 1.</para>
-		</sect4>
+                         </listitem>
+                       </varlistentry>
 
-		<sect4><title>host memory limit (in MB) for tiling</title>
-			<para>This parameter tells darktable how much memory (in MB) it should assume is available to store image buffers during module operations. If an image can not be 
+                       <varlistentry>
+                         <term>host memory limit (in MB) for tiling</term>
+                         <listitem>
+			 <para>This parameter tells darktable how much memory (in MB) it should assume is available to store image buffers during module operations. If an image can not be 
                               processed within these limits in one chunk, tiling will take over and process the image in several parts, one after the other. Set this to the lowest possible 
                               value of 500 as a starting point. You might experiment later whether you can increase it a bit in order to reduce the overhead of tiling.</para>
-		</sect4>
+                         </listitem>
+                       </varlistentry>
 
-		<sect4><title>minimum amount of memory (in MB) for a single buffer in tiling</title>
-			<para>This is a second parameter that controls tiling. It sets a lower limit for the size of intermediate image buffers in megabytes. The parameter is needed to avoid 
+                       <varlistentry>
+		         <term>minimum amount of memory (in MB) for a single buffer in tiling</term>
+                         <listitem>
+			 <para>This is a second parameter that controls tiling. It sets a lower limit for the size of intermediate image buffers in megabytes. The parameter is needed to avoid 
                               excessive tiling in some cases (for some modules). Set this parameter to a low value of 8. You might tentatively increase it to 16 later.</para>
-		</sect4>
+                         </listitem>
+                       </varlistentry>
 
-		<sect4><title>memory in bytes to use for mipmap cache</title>
-			<para>This controls how many thumbnails (or mip maps) can be stored in memory at a time. As a starting point set this to something like 256MB (give the number in bytes).
+
+                       <varlistentry>
+		         <term>memory in bytes to use for mipmap cache</term>
+                         <listitem>
+			 <para>This controls how many thumbnails (or mip maps) can be stored in memory at a time. As a starting point set this to something like 256MB (give the number in bytes).
                               To avoid the problem of memory fragmentation during longer runs of darktable, the new caching scheme frontloads the memory costs and allocates this cache once 
                               at the beginning. Some Linux kernels use over-committing memory allocation, which means you don't immediately pay for all of the memory in terms of RSS (resident 
                               set size, the non-swapped physical memory), but in any case you pay for the address space. As explained before, this poses a problem for 32-bit systems and will, 
                               at first sight, appear as a regression over the 0.9.3-style cache. In the long run however, this is all the memory that's 
                               ever going to be allocated for thumbnails. So if we can successfully grab this portion once, we are relieving a lot of pressure on fragmentation for long sessions.</para>
-		</sect4>
+                         </listitem>
+                       </varlistentry>
+		</variablelist>
+                </para>
 	</sect2>
 
 	<sect2 status="final"><title>darktable on 64-bit systems</title>
@@ -113,6 +129,5 @@
                       have a value of 1500 and <quote>minimum amount of memory (in MB) for a single buffer in tiling</quote> should be set to 16. In case you are migrating from a 32-bit 
                       to a 64-bit system you should check these settings and manually change them if needed.</para>
 	</sect2>
-        <indexterm class="endofrange" startref="ix.memory"/>
 </sect1>
 

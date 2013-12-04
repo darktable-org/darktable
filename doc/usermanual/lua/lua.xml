@@ -11,13 +11,14 @@
 			<keyword>lua</keyword>
 		</keywordset>
 	</chapterinfo>
-   <indexterm class="startofrange" id="ix.lua">
+
+   <title>Scripting with Lua</title>
+   <indexterm>
       <primary>Lua</primary>
    </indexterm>
    <indexterm>
       <primary>scripting</primary>
    </indexterm>
-   <title>Scripting with Lua</title>
    <para>darktable comes with a versatile scripting interface for functionality enhancement.</para>
    <para>
 	<screenshot>
@@ -226,7 +227,6 @@ print(dt_debug.dump(_G,"Global environement")
             <para>This is always a bug in darktable's Lua API. Please open a bug report and attach the script that caused the crash.</para>
          </sect2>
    </sect1>
-   <indexterm class="endofrange" startref="ix.lua"/>
 </chapter>
 
 
