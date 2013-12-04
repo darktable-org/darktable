@@ -176,18 +176,17 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   if(dt_collection_serialize(buf, bufsize)) return;
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
-  uint32_t curr_pos = 0;
-  if(d->inited)
+  uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
+  if(d->inited || curr_pos!=-1)
   {
-    curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   }
   else
   {
     curr_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
-    d->inited = 1;
   }
-  uint32_t new_pos = 0;
+  d->inited = 1;
+  uint32_t new_pos = curr_pos;
 
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
