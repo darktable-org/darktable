@@ -233,7 +233,7 @@ int main(int argc, char *arg[])
       {
         if(cd_profile_connect_sync(profile, NULL, NULL))
         {
-          CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_NONE, NULL, NULL);
+          CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_FALLBACK_MD5, NULL, NULL);
           if(icc)
           {
             monitor->colord_filename = g_strdup(cd_icc_get_filename(icc));
