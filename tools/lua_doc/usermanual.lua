@@ -147,7 +147,7 @@ parse_doc_node = function(node,parent,prev_name)
 		if(node:get_short_name() == "return") then
 			result = result ..'<varlistentry><term><emphasis>return</emphasis></term><listitem>\n'
 		else
-			result = result ..'<varlistentry><term id="'..doc.get_name(node)..'">'..doc.get_short_name(node).."</term><listitem>\n"
+			result = result ..'<varlistentry><term id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..doc.get_short_name(node).."</term><listitem>\n"
 		end
 	elseif depth ~= 0 then
 		result = result..'<sect'..(depth+1)..' status="draft" '
