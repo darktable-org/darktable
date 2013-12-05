@@ -98,11 +98,14 @@
                    <primary>focus detection</primary>
                 </indexterm>
                 <para>While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image under the mouse cursor is displayed. You can use this feature
-                for a quick inspection of image quality while rating and selecting images. If the corresponding option in <emphasis>gui options</emphasis> (see <xref linkend="gui_options"/>)
-                is enabled darktable automatically analyses images for focus regions. Areas of high sharpness are indicated by a red border - the higher the color intensity the better the
-                sharpness. In case that no area of high sharpness is detected darktable indicates areas of moderate sharpness with a blue border. For this tool to work the input image needs
-                to hold an embedded JPEG thumbnail which is the case for most RAW files. Sometimes pressing <emphasis>z</emphasis> may not reveal an immediate effect - in that case 
-                please click into the center area and press <emphasis>z</emphasis> again.
+                for a quick inspection of image quality while rating and selecting images. Sometimes pressing <emphasis>z</emphasis> may not reveal an immediate effect -
+                in that case please click into the center area and press <emphasis>z</emphasis> again.
+		</para>
+
+                <para>Holding down <emphasis>ctrl-z</emphasis> the same preview is displayed, but now with focus detection enabled. Areas of high sharpness are indicated by a
+		red border - the higher the color intensity the better the sharpness. In case that no area of high sharpness is detected darktable indicates areas of
+		moderate sharpness with a blue border. For this tool to work the input image needs to hold an embedded JPEG thumbnail which is the case for most RAW
+		files.
                 </para>
 
 		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
@@ -110,7 +113,7 @@
 				<colspec colwidth="4*"/>
 				<tbody>
 					<row>
-						<entry>Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with indication of the areas in focus. 
+						<entry>Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key with indication of the areas in focus. 
                                                 Focus detection is based on an embedded JPEG thumbnail of the original RAW file independent of further processing steps within darktable.
 						</entry>
 						<entry>
