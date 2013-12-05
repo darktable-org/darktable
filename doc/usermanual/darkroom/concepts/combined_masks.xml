@@ -87,14 +87,14 @@
                       Your starting point is a mask with all values at 1.0, i.e. all pixels
                       selected. You now gradually change the parametric mask sliders to exclude parts of your image as needed or you directly
                       draw shapes on the canvas to specifically exclude these areas.</para>
+
+                      <para>For your convenience you find in the parametric masks GUI a <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" /> 
+                      toggle button that inverts all channel polarities and toggles
+                      between inclusive and exclusive mode in the <quote>combine masks</quote> combobox.</para>
+
+                      <para>For novice users it is recommended to stick to these two use cases. This implies that you should decide beforehand how you want to
+                      construct your mask. Advanced users will find their way to take advantage of the many possible combinations of polarities and mask combination
+                      modes.</para>
                 </sect4>
-
-         <para>For your convenience you find in the parametric masks GUI a <inlinegraphic fileref="&icon_module_invert;" scalefit="1" width="2%" align="center" /> 
-         toggle button that inverts all channel polarities and toggles
-         between inclusive and exclusive mode in the <quote>combine masks</quote> combobox.</para>
-
-         <para>For novice users it is recommended to stick to these two use cases. This implies that you should decide beforehand how you want to
-         construct your mask. Advanced users will find their way to take advantage of the many possible combinations of polarities and mask combination
-         modes.</para>
     </sect3>
 </sect2>

@@ -21,6 +21,8 @@
 			</tbody>
 		</tgroup>
 	</informaltable>
+
+        <sect3><title>Usage</title>
 		<sect4><title>clear</title>
 			<para>Delete existing metadata from the selected image(s).
 			</para>
@@ -29,5 +31,6 @@
 			<para>Apply new settings, as defined in the fields above, to the selected image(s).
 			</para>
 		</sect4>
+        </sect3>
 </sect2>
 		

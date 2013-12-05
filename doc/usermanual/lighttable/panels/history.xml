@@ -22,6 +22,8 @@
 					</tbody>
 				</tgroup>
 			</informaltable>
+
+                        <sect3><title>Usage</title>
 				<sect4><title>copy</title>
 					<para>Copy the history stack of the selected image. You will be prompted for which items are to be include. If more than one image
                                               is selected, the history stack is taken from the image that has been selected first.
@@ -80,5 +82,5 @@
                                               recommended.
 					</para>
 				</sect4>
-
+                       </sect3>
 		</sect2>

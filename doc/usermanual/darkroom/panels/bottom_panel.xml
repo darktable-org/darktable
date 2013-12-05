@@ -67,18 +67,18 @@
                             </tgroup>
                         </informaltable>
 
-                      <sect5><title>color scheme</title>
+                      <bridgehead renderas="sect5">color scheme</bridgehead>
                               <para>In the default color scheme underexposed pixels are shown in blue and overexposed pixels in red. These
                               colors are easy to identify in most cases. In some cases you may want to change the color scheme to
                               <quote>black &amp; white</quote> or <quote>purple &amp; green</quote>, eg. if you experience overexposed highlights 
                               in red blossoms.</para>
-                      </sect5>
-                      <sect5><title>lower threshold</title>
+
+                      <bridgehead renderas="sect5">lower threshold</bridgehead>
                             <para>Sets the threshold for underexposure warning, expressed as a percentage of the maximal brightness.</para>
-                      </sect5>
-                      <sect5><title>upper threshold</title>
+
+                      <bridgehead renderas="sect5">upper threshold</bridgehead>
                             <para>Sets the threshold for overexposure warning, expressed as a percentage of the maximal brightness.</para>
-                      </sect5>			
+
           </sect3>
 
           <sect3 status="final" id="darkroom_filmstrip"><title>Filmstrip</title>

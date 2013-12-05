@@ -5,10 +5,10 @@
   <keyword>view</keyword>
 </keywordset>
 </chapterinfo>
-<indexterm class="startofrange" id="ix.tethering_chapter">
+<title>Tethering</title>
+<indexterm>
   <primary>tethering view</primary>
 </indexterm>
-<title>Tethering</title>
 <para>The tethering view allows you to capture images directly into darktable from your connected camera.</para>
 <para>
   <screenshot>
@@ -69,5 +69,4 @@
 <!-- Troubleshooting -->
 <xi:include href="troubleshoot.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<indexterm class="endofrange" startref="ix.tethering_chapter"/>
 </chapter>

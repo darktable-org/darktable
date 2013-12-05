@@ -20,6 +20,8 @@
 			</tbody>
 		</tgroup>
 	</informaltable>
+
+        <sect3><title>Usage</title>
 		<sect4><title>remove</title>
                         <indexterm>
                            <primary>remove images</primary>
@@ -106,5 +108,6 @@
 			<para>Remove selected images from the group (see <xref linkend="image_grouping"/>).
 			</para>
 		</sect4>
+        </sect3>
 </sect2>
 

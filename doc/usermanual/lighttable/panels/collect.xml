@@ -39,7 +39,10 @@
     any other film roll chosen.
     </para>
 
-    <para>The left combobox lets you choose from the available attributes:
+  <sect3><title>Usage</title>
+
+    <sect4><title>image attributes</title>
+      <para>The left combobox lets you choose from the available attributes:
       <informaltable frame="none" width="80%">
          <tgroup cols="2" colsep="0" rowsep="0">
          <colspec colwidth='1*'/>
@@ -118,47 +121,52 @@
          </tbody>
          </tgroup>
       </informaltable>
-    </para>
+      </para>
+    </sect4>
 
+    <sect4><title>search rules</title>
+      <para>In the text field right to the attribute you supply a pattern. The pattern is compared against
+      all image's database entries of the selected attribute. A match is detected if the pattern is a substring of
+      the image's attribute. You may use <quote>%</quote> as wildcard character.
+      The collection gets limited to those images where the query matches. 
+      Leaving the text field empty matches all images.
+      </para>
 
-    <para>In the text field right to the attribute you supply a pattern. The pattern is compared against
-    all image's database entries of the selected attribute. A match is detected if the pattern is a substring of
-    the image's attribute. You may use <quote>%</quote> as wildcard character.
-    The collection gets limited to those images where the query matches. 
-    Leaving the text field empty matches all images.
-    </para>
+      <para>The table under the search rule lists all matching database entries of the query you are currently working on. The table 
+      gets updated continuously as you type. You may scroll through the list and select the data of your choice by double-clicking.
+      </para>
 
-    <para>Clicking on the triangle button right to the text field opens a drop-down menu with options to finetune your
-    collection by adding further rules:</para>
-    <sect4><title>clear this rule</title>
+      <para>Clicking on the triangle button right to the text field opens a drop-down menu with options to finetune your
+      collection by adding further rules:</para>
+
+      <sect5><title>clear this rule</title>
         <para>Removes this rule - or resets to default if this is the only rule defined.
         </para>
-    </sect4>
-    <sect4><title>narrow down search</title>
+      </sect5>
+      <sect5><title>narrow down search</title>
         <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>AND</emphasis> operation. An image
         is only part of the collection if it additionally fulfills the added rule.
         </para>
-    </sect4>
-    <sect4><title>add more images</title>
+      </sect5>
+      <sect5><title>add more images</title>
         <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>OR</emphasis> operation. Images
         that fulfill the new rule are added to the collection.
         </para>
-    </sect4>
-    <sect4><title>exclude images</title>
+      </sect5>
+      <sect5><title>exclude images</title>
         <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>EXCEPT</emphasis> operation.
         Images which are selected by the new rule are exempted from the collection.
         </para>
+      </sect5>
     </sect4>
 
-    <para>The logical operators defining the combination of rules are displayed right to the rule: <emphasis>AND</emphasis>
-    by the <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" /> symbol, 
-    <emphasis>OR</emphasis> by the <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" /> symbol,
-    and <emphasis>EXCEPT</emphasis> by the <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" /> symbol.
-    Clicking on either symbol gives a choice to change the logical operation.
-    </para>
-
-    <para>The table below the rules lists all matching database entries of the query you are currently working on. The table 
-    gets updated continuously as you type. You may scroll through the list and select the data of your choice by double-clicking.
-    </para>
-
+    <sect4><title>combining rules</title>
+      <para>The logical operators defining the combination of rules are displayed right to the rule: <emphasis>AND</emphasis>
+      by the <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" /> symbol, 
+      <emphasis>OR</emphasis> by the <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" /> symbol,
+      and <emphasis>EXCEPT</emphasis> by the <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" /> symbol.
+      Clicking on either symbol gives a choice to change the logical operation.
+      </para>
+    </sect4>
+  </sect3>
 </sect2>	

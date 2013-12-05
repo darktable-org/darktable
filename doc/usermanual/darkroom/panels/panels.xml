@@ -1,6 +1,6 @@
 <sect1 status="final" id="darkroom_panels"><title>Darkroom panels</title>
 
-        <indexterm class="startofrange" id="ix.darkroom_panels">
+        <indexterm>
            <primary>darkroom panels</primary>
         </indexterm>
 
@@ -23,5 +23,4 @@
         <!-- Bottom -->
 	<xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>        
 
-        <indexterm class="endofrange" startref="ix.darkroom_panels"/>
 </sect1>

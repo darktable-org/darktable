@@ -1,9 +1,10 @@
 <sect2 status="final" id="camera_settings">
-  <indexterm>
-    <primary>tethering view</primary>
-    <secondary>camera settings</secondary>
-  </indexterm>
-  <title>Camera settings</title>
+<title>Camera settings</title>
+<indexterm>
+  <primary>tethering view</primary>
+  <secondary>camera settings</secondary>
+</indexterm>
+<para>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="6*"/>
     <colspec colwidth="4*"/>
@@ -20,4 +21,5 @@
     </tbody>
   </tgroup>
   </informaltable>
+</para>
 </sect2>

@@ -25,52 +25,52 @@
         </para>
 
 
-	  <sect4><title>auto apply this preset to matching images</title>
+	  <bridgehead renderas="sect4">auto apply this preset to matching images</bridgehead>
 		<para>activate this checkbutton to automatically apply the preset on newly imported images; a set of
                       fields is displayed where you can define patterns to be matched against EXIF data.
 		</para>
-	  </sect4>
 
-	  <sect4><title>only show this preset for matching images</title>
+
+	  <bridgehead renderas="sect4">only show this preset for matching images</bridgehead>
 		<para>activate this checkbutton to hide the preset in darkroom mode if it does not match the defined patterns.
 		</para>
-	  </sect4>
 
-	  <sect4><title>model</title>
+
+	  <bridgehead renderas="sect4">model</bridgehead>
 		<para>a pattern to be matched against the EXIF field that describes your camera model; use "%" as wildcard.
 		</para>
-	  </sect4>
 
-	  <sect4><title>maker</title>
+
+	  <bridgehead renderas="sect4">maker</bridgehead>
 		<para>a pattern to be matched against the EXIF field that describes the maker of your camera; use "%" as wildcard.
 		</para>
-	  </sect4>
 
-	  <sect4><title>lens</title>
+
+	  <bridgehead renderas="sect4">lens</bridgehead>
 		<para>a pattern to be matched against the EXIF field that describes your lens; use "%" as wildcard.
 		</para>
-	  </sect4>
 
-	  <sect4><title>iso</title>
+
+	  <bridgehead renderas="sect4">iso</bridgehead>
 		<para>only apply the preset if the ISO value of your image lies within the given range.
 		</para>
-	  </sect4>
 
-	  <sect4><title>exposure</title>
+
+	  <bridgehead renderas="sect4">exposure</bridgehead>
 		<para>only apply the preset if the exposure time of your image lies within the given range; set "+" as the upper value
                       to match arbitrarily long exposures.
 		</para>
-	  </sect4>
 
-	  <sect4><title>aperture</title>
+
+	  <bridgehead renderas="sect4">aperture</bridgehead>
 		<para>only apply the preset if the aperture of your image lies within the given range; set "f/0" as the lower value to match arbitrarily
                       open apertures; set "f/+" as the upper value to match arbitrarily closed apertures.
 		</para>
-	  </sect4>
 
-	  <sect4><title>focal length</title>
+
+	  <bridgehead renderas="sect4">focal length</bridgehead>
 		<para>only apply the preset if the focal length of your image lies within the given range (from 0 to 1000).
 		</para>
-	  </sect4>
+
 
 </sect1>

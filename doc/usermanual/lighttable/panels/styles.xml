@@ -23,6 +23,8 @@
 			</tbody>
 		</tgroup>
 	</informaltable>
+
+        <sect3><title>Usage</title>
                 <para>This panel displays a list of all available styles. A search field above the list allows you to input a text
                       string which is compared against the styles' names and descriptions, thus limiting the list to the matching ones.
                 </para>
@@ -65,5 +67,6 @@
 			<para>This option saves a selected style to disk as a <quote>.dtstyle</quote> file. This allows publishing styles and sharing styles with other users.
 			</para>
 		</sect4>
+        </sect3>
 </sect2>
     

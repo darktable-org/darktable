@@ -6,10 +6,10 @@
   <keyword>view</keyword>
 </keywordset>
 </chapterinfo>
-<indexterm class="startofrange" id="ix.map_chapter">
+<title>Map</title>
+<indexterm>
   <primary>map view</primary>
 </indexterm>
-<title>Map</title>
 <para>The Map view is were you geotag your images.</para>
 <para>
     <screenshot>
@@ -77,5 +77,4 @@
 <!-- Panels -->
 <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<indexterm class="endofrange" startref="ix.map_chapter"/>
 </chapter>

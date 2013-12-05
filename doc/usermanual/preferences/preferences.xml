@@ -14,10 +14,10 @@
   <keyword>accelerators</keyword>
 </keywordset>
 </chapterinfo>
-<indexterm class="startofrange" id="ix.preferences_chapter">
+<title>Preferences and settings</title>
+<indexterm>
   <primary>preferences and settings</primary>
 </indexterm>
-<title>Preferences and settings</title>
 <para>darktable comes with a number of settings that can be configured by users. You reach the configuration
       menu by clicking <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> at the top
       of the screen.</para>
@@ -41,5 +41,4 @@
 <!-- presets -->
 <xi:include href="presets.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-<indexterm class="endofrange" startref="ix.preferences_chapter"/>
 </chapter>		

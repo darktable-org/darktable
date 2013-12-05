@@ -1,4 +1,5 @@
 <sect3 status="final" id="shadows_and_highlights">
+  <title>Shadows and Highlights</title>
   <indexterm>
     <primary>modules</primary>
     <secondary>shadows and highlights</secondary>
@@ -6,7 +7,6 @@
   <indexterm>
     <primary>shadows and highlights</primary>
   </indexterm>
-  <title>Shadows and Highlights</title>
   <sect4>
     <title>Overview</title>
     <informaltable frame="none" >

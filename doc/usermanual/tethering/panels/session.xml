@@ -1,9 +1,10 @@
 <sect2 status="final" id="session">
-  <indexterm>
-    <primary>tethering view</primary>
-    <secondary>sessions</secondary>
-  </indexterm>
-  <title>Session</title>
+<title>Session</title>
+<indexterm>
+  <primary>tethering view</primary>
+  <secondary>sessions</secondary>
+</indexterm>
+<para>
   <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="6*"/>
     <colspec colwidth="4*"/>
@@ -22,4 +23,5 @@
     </tbody>
   </tgroup>
   </informaltable>
+</para>
 </sect2>

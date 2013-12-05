@@ -96,12 +96,6 @@
 		</informaltable>
     </para>
 		</sect5>
-		<para> TIP: If you know you intend to use the graduated density filter before actually making a shot with your camera you might want to underexpose by one or two
-			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the graduated density filter cannot produce
-			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
-			please consult your camera's manual, look for <quote>exposure compensation</quote>.
-
-		</para>		
 	</sect4>
 	
 	<sect4><title>Examples</title>
@@ -193,6 +187,12 @@
 			</informaltable>
 		</para>	
 
+		<para> TIP: If you know you intend to use the graduated density filter before actually making a shot with your camera you might want to underexpose by one or two
+			thirds of an f-stop to make sure detail remains in the highlights. When all detail has truly been blown out the graduated density filter cannot produce
+			a pleasing results, this is a limitation that is inherent to digital postprocessing. For instructions on how to intentionally underexpose,
+			please consult your camera's manual, look for <quote>exposure compensation</quote>.
+
+		</para>		
 
 	</sect4>
 </sect3>

@@ -32,14 +32,17 @@
                       modify it. You can also create additional nodes by clicking on a curve segment between two nodes. In order to remove a node drag it outside of the 
                       widget area.
                 </para>
-		<sect5><title>scale</title>
-			<para>This combobox toggles between <quote>linear</quote> and <quote>logarithmic</quote> view. In the double logarithmic view more space is given to
-                              the lower values allowing a more fine-grained adjustment of the shadows.</para>
-		</sect5>
 
                 <para>Tip: If you intend to take full manual control of the tonal values with the <emphasis>tone curve</emphasis> module or the <emphasis>zone system</emphasis>
                       module (see <xref linkend="tone_curve"/> and <xref linkend="zone_system"/>) it may be easier to leave the image in
                       linear RGB. Disable the <emphasis>base curve</emphasis> module in this case.
                 </para>
+
+		<sect5><title>scale</title>
+			<para>This combobox toggles between <quote>linear</quote> and <quote>logarithmic</quote> view. In the double logarithmic view more space is given to
+                              the lower values allowing a more fine-grained adjustment of the shadows.</para>
+		</sect5>
+
+
 	</sect4>
 </sect3>

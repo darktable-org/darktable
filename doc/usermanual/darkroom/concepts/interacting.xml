@@ -39,7 +39,7 @@
 
      <para>The most frequently used control elements of modules are sliders, comboboxes and curves.
      </para>
-     <sect4><title>Sliders</title>
+     <sect3><title>Sliders</title>
      <indexterm>
         <primary>module usage</primary>
         <secondary>sliders</secondary>
@@ -99,9 +99,9 @@
 			     </para>
 			   </listitem>		   
 		  </orderedlist>
-      </sect4>
+      </sect3>
 
-      <sect4><title>Comboboxes</title>
+      <sect3><title>Comboboxes</title>
            <indexterm>
              <primary>module usage</primary>
              <secondary>comboboxes</secondary>
@@ -115,13 +115,13 @@
              <para>Clicking on a combobox will open a list of available options. Click on the item you want to select. Sometimes the selection list opens close to the
                    bottom or top of the screen and only part of the items are visible; scroll with your mouse wheel to bring up the full list.
              </para>
-      </sect4>
+      </sect3>
            
-      <sect4><title>Curves</title>
+      <sect3><title>Curves</title>
              <para>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective
                  modules are explained.
              </para>
-      </sect4>
+      </sect3>
 </sect2>
 	
 

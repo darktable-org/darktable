@@ -20,6 +20,8 @@
 			</tbody>
 		</tgroup>
 	</informaltable>
+
+        <sect3><title>Usage</title>
 		<sect4><title>select all</title>
 			<para>Select all images in the current view (collection), with respect to the filters.
 			</para>
@@ -40,4 +42,5 @@
 			<para>Select all images that have not yet been developed.
 			</para>
 		</sect4>
+        </sect3>
 </sect2>

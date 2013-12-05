@@ -36,7 +36,7 @@
                                 <para>All settings of this panel can be saved for later reuse. Press the <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> 
                                       button to manage your presets.
                                 </para>
-
+                        <sect3><title>Usage</title>
 				<sect4><title>target storage</title>
 					<para>Where to store your selected images. Different back-ends are implemented, including file on disk, a LaTeX book template and
                                               various web albums. Depending on the selected target, you will be asked to give additional information, like filenames, or account
@@ -181,6 +181,5 @@ exiftool -XMP:all=   image.jpg
                                               progress. Whenever a file is successfully exported, a notification message pops up for a few seconds. You may click on the pop-up to make it disappear.
 					</para>
 				</sect4>
-
-
+                       </sect3>
 		</sect2>

@@ -7,6 +7,9 @@
 <sect2 status="final" id="drawn_mask"><title>Drawn mask</title>
        <indexterm>
           <primary>masks</primary>
+       </indexterm>
+       <indexterm>
+          <primary>masks</primary>
           <secondary>drawn masks</secondary>
        </indexterm>
        <indexterm>
@@ -229,9 +232,11 @@
               (see <xref linkend="combined_masks"/>).</para>
            </sect4>
 
-           <para>More functionality to control the interaction of multiple shapes within a mask can be found in the mask manager panel (see <xref linkend="mask_manager"/>). 
-           Here you can give individual names to your shapes which will help you to keep track of your shapes. You can also select individual shapes for editing - a helpful
-           feature if your masks happens to contain several shapes with overlapping control elements.</para>
+           <sect4><title>mask manager</title>
+              <para>More functionality to control the interaction of multiple shapes within a mask can be found in the mask manager panel (see <xref linkend="mask_manager"/>). 
+              Here you can give individual names to your shapes which will help you to keep track of your shapes. You can also select individual shapes for editing - a helpful
+              feature if your masks happens to contain several shapes with overlapping control elements.</para>
+           </sect4>
       </sect3>
 		
 </sect2>

@@ -25,6 +25,8 @@
 			</tbody>
 		</tgroup>
 	</informaltable>
+
+        <sect3><title>Usage</title>
 		<sect4><title>attach</title>
 			<para>Attach the selected tag(s) from the list below to all selected images.
 			</para>
@@ -41,4 +43,5 @@
 			<para>Delete a tag from the list.
 			</para>
 		</sect4>
+        </sect3>
 </sect2>	

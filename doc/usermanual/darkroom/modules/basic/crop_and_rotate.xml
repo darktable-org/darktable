@@ -29,15 +29,12 @@
 				</tbody>
 			</tgroup>
 		</informaltable>
-	</sect4>
 
-        <sect4>
                <para>Some of the tools of this module, namely adjustment of angle and corrections of perspective distortion, will require the 
                      original image data to be interpolated. For best sharpness results set <quote>lanczos3</quote> as pixel interpolator 
                      in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>).
                </para>
-
-        </sect4>
+	</sect4>
 
 	<sect4><title>Usage</title>
                 <para>Whenever the user interface of this module is in focus, you will see the full uncropped image overlayed with
