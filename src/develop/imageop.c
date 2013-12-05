@@ -1554,7 +1554,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   {
     module = (dt_iop_module_t *)it->data;
     module->instance = dev->iop_instance++;
-    snprintf(module->multi_name,128," ");
+    module->multi_name[0] = '\0';
     it = g_list_next(it);
   }
   return res;
@@ -2038,7 +2038,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add module label */
   char label[128];
-  if(module->multi_name && strcmp(module->multi_name,"0") == 0)
+  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
     g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
   else
     g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
