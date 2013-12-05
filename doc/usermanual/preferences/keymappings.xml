@@ -26,6 +26,7 @@
 <row><entry>&lt;darktable&gt;/views/lighttable/navigate page up</entry> <entry>Page_Up</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/navigate up</entry> <entry>g</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/preview</entry> <entry>z</entry></row>
+<row><entry>&lt;darktable&gt;/views/lighttable/preview with focus detection</entry> <entry>Z</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/rate 1</entry> <entry>1</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/rate 2</entry> <entry>2</entry></row>
 <row><entry>&lt;darktable&gt;/views/lighttable/rate 3</entry> <entry>3</entry></row>

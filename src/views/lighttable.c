@@ -91,6 +91,7 @@ typedef struct dt_library_t
   int full_preview;
   int32_t full_preview_id;
   int32_t full_preview_rowid;
+  int display_focus;
   gboolean offset_changed;
   GdkColor star_color;
   int images_in_row;
@@ -385,6 +386,7 @@ void init(dt_view_t *self)
   lib->zoom_y = dt_conf_get_float("lighttable/ui/zoom_y");
   lib->full_preview = 0;
   lib->full_preview_id = -1;
+  lib->display_focus = 0;
   lib->last_mouse_over_id = -1;
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
@@ -1132,9 +1134,8 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_paint(cr);
 
-  const int display_focus = dt_conf_get_bool("plugins/lighttable/display_focus");
   const int frows = 5, fcols = 5;
-  if(display_focus)
+  if(lib->display_focus)
   {
     if(lib->full_res_thumb_id != lib->full_preview_id)
     {
@@ -1224,7 +1225,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 #endif
   dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr, width, height, 1, pointerx, pointery, TRUE);
 
-  if(display_focus && (lib->full_res_thumb_id == lib->full_preview_id))
+  if(lib->display_focus && (lib->full_res_thumb_id == lib->full_preview_id))
     dt_focus_draw_clusters(cr,
         width, height,
         lib->full_preview_id,
@@ -1641,8 +1642,9 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(!darktable.control->key_accelerators_on)
     return 0;
 
-  if(key == accels->lighttable_preview.accel_key
-      && state == accels->lighttable_preview.accel_mods && lib->full_preview_id !=-1)
+  if((key == accels->lighttable_preview.accel_key || key == accels->lighttable_preview_display_focus.accel_key)
+      && (state == accels->lighttable_preview.accel_mods || state == accels->lighttable_preview_display_focus.accel_mods)
+      && lib->full_preview_id !=-1)
   {
 
     lib->full_preview_id = -1;
@@ -1656,6 +1658,7 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP,    ( lib->full_preview & 16));
 
     lib->full_preview = 0;
+    lib->display_focus = 0;
   }
 
   return 1;
@@ -1673,8 +1676,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   const int layout = dt_conf_get_int("plugins/lighttable/layout");
 
-  if(key == accels->lighttable_preview.accel_key
-      && state == accels->lighttable_preview.accel_mods)
+  if((key == accels->lighttable_preview.accel_key || key == accels->lighttable_preview_display_focus.accel_key)
+      && (state == accels->lighttable_preview.accel_mods || state == accels->lighttable_preview_display_focus.accel_mods))
   {
     int32_t mouse_over_id;
     DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
@@ -1708,6 +1711,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE);
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP)&1) << 4;
       dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
+
+      // preview with focus detection
+      if (state == accels->lighttable_preview_display_focus.accel_mods) {
+        lib->display_focus = 1;
+      }
 
       //dt_dev_invalidate(darktable.develop);
       return 1;
@@ -1837,6 +1845,7 @@ void init_key_accels(dt_view_t *self)
 
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_z, 0);
+  dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_view_t *self)

@@ -149,6 +149,10 @@ static void key_accel_changed(GtkAccelMap *object,
   dt_accel_path_view(path, 256, "lighttable", "preview");
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_preview);
+  dt_accel_path_view(path, 256, "lighttable", "preview with focus detection");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.lighttable_preview_display_focus);
+
 
   // Global
   dt_accel_path_global(path, 256, "toggle side borders");
