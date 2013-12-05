@@ -520,9 +520,10 @@ void dt_gui_gtk_quit()
 
 }
 
-void quit()
+gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_control_quit();
+  return TRUE;
 }
 
 void dt_gui_store_last_preset(const char *name)
@@ -1061,7 +1062,7 @@ void init_widgets()
   gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (dt_control_quit), NULL);
+                    G_CALLBACK (dt_gui_quit_callback), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect (G_OBJECT (widget), "key-release-event",
