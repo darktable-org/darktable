@@ -64,6 +64,8 @@ static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED
   }
 };
 
+static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
+
 int dt_iop_load_preset_interpolated_iso(
   dt_iop_module_t *module,     // module to set params (via add history item)
   const dt_image_t *cimg,      // const image carrying all the exif data to filter by
@@ -1239,6 +1241,18 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
+{
+  char label[128];
+  // if multi_name is emptry or "0"
+  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
+    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+  else
+    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+  gtk_widget_set_name(lab, "panel_label");
+  gtk_label_set_markup(GTK_LABEL(lab),label);
+}
+
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
   /* get the enable button spacer and button */
@@ -2037,14 +2051,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
 
   /* add module label */
-  char label[128];
-  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
-  else
-    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   hw[idx] = gtk_label_new("");
-  gtk_widget_set_name(hw[idx], "panel_label");
-  gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
+  _iop_panel_label (hw[idx++], module);
 
   /* add multi instances menu button */
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
