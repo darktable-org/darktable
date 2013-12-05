@@ -1258,6 +1258,10 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
   /* get the enable button spacer and button */
   GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),0);
   GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),1);
+  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),5);
+
+  // set panel name to display correct multi-instance
+  _iop_panel_label (lab, module);
 
   if (module->hide_enable_button)
   {
@@ -1271,6 +1275,12 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
 }
+
+void dt_iop_gui_update_header(dt_iop_module_t *module)
+{
+  _iop_gui_update_header(module);
+}
+
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
