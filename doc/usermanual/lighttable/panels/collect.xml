@@ -125,14 +125,14 @@
     </sect4>
 
     <sect4><title>search rules</title>
-      <para>In the text field right to the attribute you supply a pattern. The pattern is compared against
-      all image's database entries of the selected attribute. A match is detected if the pattern is a substring of
+      <para>In the text field to the right of the attribute you supply a pattern. The pattern is compared against
+      all database entries of the selected attribute. A match is detected if the pattern is a substring of
       the image's attribute. You may use <quote>%</quote> as wildcard character.
       The collection gets limited to those images where the query matches. 
       Leaving the text field empty matches all images.
       </para>
 
-      <para>The table under the search rule lists all matching database entries of the query you are currently working on. The table 
+      <para>The table below the search rule will show all matching database entries of the query you are currently working on. The table 
       gets updated continuously as you type. You may scroll through the list and select the data of your choice by double-clicking.
       </para>
 
@@ -144,24 +144,24 @@
         </para>
       </sect5>
       <sect5><title>narrow down search</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>AND</emphasis> operation. An image
+        <para>Adds a new rule which is combined with the previous rule(s) in a logical <emphasis>AND</emphasis> operation. An image
         is only part of the collection if it additionally fulfills the added rule.
         </para>
       </sect5>
       <sect5><title>add more images</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>OR</emphasis> operation. Images
+        <para>Adds a new rule which is combined with the previous rule(s) in a logical <emphasis>OR</emphasis> operation. Images
         that fulfill the new rule are added to the collection.
         </para>
       </sect5>
       <sect5><title>exclude images</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>EXCEPT</emphasis> operation.
+        <para>Adds a new rule which is combined with the previous rule(s) in a logical <emphasis>EXCEPT</emphasis> operation.
         Images which are selected by the new rule are exempted from the collection.
         </para>
       </sect5>
     </sect4>
 
     <sect4><title>combining rules</title>
-      <para>The logical operators defining the combination of rules are displayed right to the rule: <emphasis>AND</emphasis>
+      <para>The logical operators defining the combination of rules are displayed to the right of the rule: <emphasis>AND</emphasis>
       by the <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" /> symbol, 
       <emphasis>OR</emphasis> by the <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" /> symbol,
       and <emphasis>EXCEPT</emphasis> by the <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" /> symbol.

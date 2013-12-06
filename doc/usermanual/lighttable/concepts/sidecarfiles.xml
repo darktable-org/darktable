@@ -15,11 +15,11 @@
                 <indexterm>
                    <primary>save button</primary>
                 </indexterm>
-		<para>darktable is a non-destructive image editor. This implies that darktable opens input images read-only. Any newly added metadata, tags and
-                parameters of image operations (history stack) are stored in a separate file, a so called sidecar or XMP file. When you import an input image into
+		<para>darktable is a non-destructive image editor. This implies that darktable opens images read-only. Any newly added metadata, tags and
+                parameters of image operations (history stack) are stored in a separate file, a so called sidecar or XMP file. When you import an image into
                 darktable for the first time an XMP file with default settings is generated automatically.
                 </para>
-                <para>For a given source image multiple edits, called duplicates, can co-exist - sharing the same input (RAW) data but each having their individual
+                <para>For a given source image, multiple edits, called duplicates, can co-exist - sharing the same input (RAW) data but each having their individual
                 set of metadata, tags and history stack. Each duplicate is represented by a separate XMP sidecar file with a filename constructed in the form 
                 <quote>&lt;basename&gt;<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>, where <emphasis>nn</emphasis> represents the (minimum two digit)
                 version number of that edit. The initial edit - the duplicate with version number zero - is represented by sidecar file <quote>&lt;basename&gt;.&lt;extension&gt;.xmp</quote>.

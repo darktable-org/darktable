@@ -10,12 +10,12 @@
                    <primary>local copies</primary>
                 </indexterm>
 		<para>Quite commonly users have huge image collections which they store on an external storage medium like a RAID NAS. It is a
-                frequent wish to be able to develop some of the images during travelling using a notebook and later synchronize them again
-                with the external storage. Copying images manually from external storage to the notebook and back is prone to errors and 
+                frequent wish to be able to develop some of the images while travelling using a notebook and later synchronize them to
+                the external storage. Copying images manually from external storage to the notebook and back is prone to errors and 
                 cumbersome.
                 </para>
 
-                <para>The local copies feature of darktable has been designed to support directly those use cases. With the help of this feature
+                <para>The local copies feature of darktable has been designed to directly support those use cases. With the help of this feature
                 you can create local copies of selected pictures on the local drive of your computer. This copy is then used when the
                 original image is not accessible. At a later point, when connected again with your external storage medium, you can 
                 synchronize back the XMP sidecar files, deleting the local copy of your input image. These operations can be found

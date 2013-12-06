@@ -44,7 +44,7 @@
 				</tgroup>
 		</informaltable>
 
-		<para>While the mouse is over an image frame, there are a number of actions you can perform on the image. Here
+		<para>While the mouse is over an image frame, there are a number of actions you can perform. Here
 		is a table of keyboard shortcuts and assigned actions.
 		<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
 				<colspec colwidth='1*'/>
@@ -91,7 +91,7 @@
 
 		<para>To locate where you are in a collection, there are indicators at the extreme borders of the window: left/right for your position when
                 you are in filemanager mode, left/right and top/bottom for your vertical and your horizontal position, respectively, when you are in
-                zoomable lighttable view.
+                the zoomable lighttable view.
                 </para>
 
                 <indexterm>

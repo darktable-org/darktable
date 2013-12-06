@@ -63,7 +63,7 @@
     </para>
 
 
-    <para>Color labels are an option to mark images which can be used as an alternative or in addition to star ratings. Each image 
+    <para>Color labels are an option to mark images which can be used as an alternative or an additional rating when using star ratings. Each image 
           can carry any combination of color labels in <quote>red</quote>, <quote>yellow</quote>, <quote>green</quote>, 
           <quote>blue</quote>, and <quote>purple</quote>.</para>
 
@@ -76,7 +76,7 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>						
-             <entry>To toggle the color labels of multiple images you select the desired images (see <xref linkend="select"/>) and then press the
+             <entry>To toggle the color labels of multiple images select the desired images (see <xref linkend="select"/>) and then press the
                     corresponding color button in the bottom panel. In order to remove all labels from the selected images press the grey button.
              </entry>
              <entry>

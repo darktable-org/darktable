@@ -18,7 +18,7 @@
 
 			<para>Imported images are organized as film rolls (see <xref linkend="film_rolls"/>). 
                               All film rolls are accessible through the <emphasis>collect images</emphasis> module (see <xref linkend="collect_images"/>). If you set the selection attribute
-                              to <quote>film roll</quote> you get a list of available film rolls, which can be filtered using the editbox to fast find the one of interest.
+                              to <quote>film roll</quote> you get a list of available film rolls, which can be filtered using the editbox to quickly find the one of interest.
 			      Double-click on a film roll in the list and it will open in the lighttable.
 			      You can also click the items in <emphasis>recently used collections</emphasis> (see <xref linkend="recently_used_collections"/>) to open the latest 
                               ones you have worked with.

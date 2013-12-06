@@ -11,7 +11,7 @@
 			<colspec colwidth="4*"/>
 			<tbody>
 				<row>						
-					<entry>This panel keeps tracks of the latest collections you have used, so you can jump within recently used collections without remembering what rules were
+					<entry>This panel keeps track of the latest collections you have used, so you can jump to recently used collections without remembering what rules were
                                         specified in the collection.
 					</entry>
 					<entry>
