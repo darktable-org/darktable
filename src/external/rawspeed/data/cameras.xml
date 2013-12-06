@@ -3403,6 +3403,16 @@
 		<Crop x="0" y="2" width="-10" height="-2"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>  
+        <Camera make="SONY" model="DSC-RX10">
+                <CFA width="2" height="2">
+                        <Color x="0" y="0">RED</Color>
+                        <Color x="1" y="0">GREEN</Color>
+                        <Color x="0" y="1">GREEN</Color>
+                        <Color x="1" y="1">BLUE</Color>
+                </CFA>
+                <Crop x="0" y="0" width="-8" height="0"/>
+                <Sensor black="800" white="16300"/>
+        </Camera>
 	<Camera make="SONY" model="DSC-RX100">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
