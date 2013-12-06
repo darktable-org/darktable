@@ -150,7 +150,7 @@ parse_doc_node = function(node,parent,prev_name)
 			result = result ..'<varlistentry><term id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..doc.get_short_name(node).."</term><listitem>\n"
 		end
 	elseif depth ~= 0 then
-		result = result..'<sect'..(depth+1)..' status="draft" '
+		result = result..'<sect'..(depth+1)..' status="final" '
 		if(doc.is_main_parent(node,parent,prev_name) ) then
 			result = result..'id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'"'
 		end
@@ -186,7 +186,7 @@ function M.get_doc()
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-   <sect1 status="draft" id="lua_api"><title>Lua API</title>
+   <sect1 status="final" id="lua_api"><title>Lua API</title>
    <indexterm>
       <primary>Lua API</primary>
    </indexterm>
