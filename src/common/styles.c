@@ -422,6 +422,10 @@ void
 dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
   gboolean selected = FALSE;
+
+  /* write current history changes so nothing gets lost */
+  dt_dev_write_history(darktable.develop);
+
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
