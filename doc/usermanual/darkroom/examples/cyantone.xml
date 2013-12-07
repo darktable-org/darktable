@@ -12,11 +12,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Cyan is a nice color touchup for black and white images, this example guides you through
-								how to make this with darktable and how to control the tone.
-								You can choose any tone of your like for this tutorial...
-							</entry>
-            <entry><graphic fileref="darkroom/examples/images/cyantone.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Cyan is a nice color touchup for black and white images, this example guides you
+              through how to make this with darktable and how to control the tone. You can
+              choose any tone of your like for this tutorial...
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/cyantone.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -21,13 +21,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is another way to change the lightness of your image, based on Ansel
-                Adams' system. It allows modification of a zone's lightness taking into account
-                the effect on the adjacent zones. It divides the lightness range into a
-                user-defined number of zones.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is another way to change the lightness of your image, based on Ansel
+              Adams' system. It allows modification of a zone's lightness taking into account
+              the effect on the adjacent zones. It divides the lightness range into a
+              user-defined number of zones.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -70,17 +72,22 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  The original image.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The original image.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Here, the darker and lighter zones were compressed to increase contrast, then
-                  the upper parts of darker zones were expanded to increase their visual impact.
-                </para><graphic fileref="darkroom/modules/images/zonesystem_ex2_settings.png" /></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Here, the darker and lighter zones were compressed to increase contrast, then
+                the upper parts of darker zones were expanded to increase their visual impact.
+                <graphic fileref="darkroom/modules/images/zonesystem_ex2_settings.png" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

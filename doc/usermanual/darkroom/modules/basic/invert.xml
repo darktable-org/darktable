@@ -26,10 +26,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                The main purpose of this module is to invert scanned negatives.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/invert.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              The main purpose of this module is to invert scanned negatives.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/invert.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

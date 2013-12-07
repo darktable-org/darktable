@@ -22,10 +22,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This is a denoise algorithm, which will work on chroma and/or luma.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/denoise_nlm.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This is a denoise algorithm, which will work on chroma and/or luma.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/denoise_nlm.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

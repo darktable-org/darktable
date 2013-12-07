@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module can be used to modify the global saturation, give a tint to the
-                image or to split tone it.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colorcorrection.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module can be used to modify the global saturation, give a tint to the image
+              or to split tone it.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorcorrection.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

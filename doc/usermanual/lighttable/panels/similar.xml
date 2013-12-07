@@ -8,9 +8,13 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This module will match and collect images with similar characteristics to the selected one and show them on lighttable.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_similar.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This module will match and collect images with similar characteristics to the
+            selected one and show them on lighttable.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_similar.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

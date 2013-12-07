@@ -12,12 +12,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module transfers color characteristics from one image to another. In its
-                current version this module has several issues and is not recommended for use -
-                a rework is under way.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module transfers color characteristics from one image to another. In its
+              current version this module has several issues and is not recommended for use - a
+              rework is under way.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colortransfer.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

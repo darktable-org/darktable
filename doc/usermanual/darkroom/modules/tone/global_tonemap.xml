@@ -21,12 +21,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This modules implements another approach to compressing the tonal range of an
-                HDR image into the limited tonal range of a typical LDR output file. It offers
-                several implementations of global tonemap operators.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/global_tonemap.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This modules implements another approach to compressing the tonal range of an HDR
+              image into the limited tonal range of a typical LDR output file. It offers several
+              implementations of global tonemap operators.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/global_tonemap.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

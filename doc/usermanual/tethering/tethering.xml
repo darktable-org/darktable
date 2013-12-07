@@ -63,10 +63,15 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>In the center view images are shown while you capture them. You can get an exposure by either using darktable's userinterface
-	  or manually triggering a capture on your camera. If you are using LiveView it will be shown in darktable's center view.
-	  </entry>
-              <entry><graphic fileref="tethering/images/tethering_center_view.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                In the center view images are shown while you capture them. You can get an
+                exposure by either using darktable's userinterface or manually triggering a
+                capture on your camera. If you are using LiveView it will be shown in
+                darktable's center view.
+              </entry>
+              <entry>
+                <graphic fileref="tethering/images/tethering_center_view.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

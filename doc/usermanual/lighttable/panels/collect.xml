@@ -26,10 +26,13 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>The current view in lighttable is called a collection. With this panel you can manage the collection
-                    by filtering with different criteria.
-             </entry>
-          <entry><graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            The current view in lighttable is called a collection. With this panel you can
+            manage the collection by filtering with different criteria.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>
@@ -62,111 +65,179 @@
             <colspec colwidth='3*'/>
             <tbody>
               <row>
-                <entry>film roll</entry>
-                <entry><para>
+                <entry>
+                  film roll
+                </entry>
+                <entry>
+                  <para>
                     the film roll to which the image belongs
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>folders</entry>
-                <entry><para>
+                <entry>
+                  folders
+                </entry>
+                <entry>
+                  <para>
                     the disk folder where the input image file is located
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>camera</entry>
-                <entry><para>
+                <entry>
+                  camera
+                </entry>
+                <entry>
+                  <para>
                     the EXIF string describing the camera
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>tag</entry>
-                <entry><para>
+                <entry>
+                  tag
+                </entry>
+                <entry>
+                  <para>
                     any tag that is attached to the image; if activated a hierarchical list of
                     known tags is displayed for quick selection
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>date</entry>
-                <entry><para>
+                <entry>
+                  date
+                </entry>
+                <entry>
+                  <para>
                     the date when the photo was taken in the format
                     <emphasis>YYYY:MM:DD</emphasis>
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>time</entry>
-                <entry><para>
+                <entry>
+                  time
+                </entry>
+                <entry>
+                  <para>
                     the time (date and time of day) when the photo was taken in the format
                     <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>history</entry>
-                <entry><para>
+                <entry>
+                  history
+                </entry>
+                <entry>
+                  <para>
                     a boolean field stating if the image's history stack has been altered or not
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>color label</entry>
-                <entry><para>
+                <entry>
+                  color label
+                </entry>
+                <entry>
+                  <para>
                     any color label that is attached to the image: <quote>red</quote>,
                     <quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>,
                     <quote>purple</quote>
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>title</entry>
-                <entry><para>
+                <entry>
+                  title
+                </entry>
+                <entry>
+                  <para>
                     the title string as defined in the image's metadata
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>description</entry>
-                <entry><para>
+                <entry>
+                  description
+                </entry>
+                <entry>
+                  <para>
                     the description string as defined in the image's metadata
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>creator</entry>
-                <entry><para>
+                <entry>
+                  creator
+                </entry>
+                <entry>
+                  <para>
                     the creator string as defined in the image's metadata
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>publisher</entry>
-                <entry><para>
+                <entry>
+                  publisher
+                </entry>
+                <entry>
+                  <para>
                     the publisher string as defined in the image's metadata
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>rights</entry>
-                <entry><para>
+                <entry>
+                  rights
+                </entry>
+                <entry>
+                  <para>
                     the copyrights string as defined in the image's metadata
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>lens</entry>
-                <entry><para>
+                <entry>
+                  lens
+                </entry>
+                <entry>
+                  <para>
                     the EXIF string describing the lens
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>ISO</entry>
-                <entry><para>
+                <entry>
+                  ISO
+                </entry>
+                <entry>
+                  <para>
                     the ISO value as derived from EXIF data
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>aperture</entry>
-                <entry><para>
+                <entry>
+                  aperture
+                </entry>
+                <entry>
+                  <para>
                     the aperture value as derived from EXIF data
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry>filename</entry>
-                <entry><para>
+                <entry>
+                  filename
+                </entry>
+                <entry>
+                  <para>
                     the filename of the physical input image
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
             </tbody>
           </tgroup>

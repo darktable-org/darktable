@@ -17,11 +17,14 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel allows manipulating the history stack (development) of images.
-							For each image, development is written in a sidecar file (.xmp), and is fully 
-              						non-destructive.
-							</entry>
-          <entry><graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel allows manipulating the history stack (development) of images. For each
+            image, development is written in a sidecar file (.xmp), and is fully
+            non-destructive.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_historystack.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is an artistic feature which creates vignetting (modification of the
-                brightness/saturation at the borders).
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/vignetting.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is an artistic feature which creates vignetting (modification of the
+              brightness/saturation at the borders).
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/vignetting.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -137,10 +139,12 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/vignetting_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  An image with vignetting and with graphical vignetting controls displayed.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/vignetting_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                An image with vignetting and with graphical vignetting controls displayed.
+              </entry>
             </row>
           </tbody>
         </tgroup>

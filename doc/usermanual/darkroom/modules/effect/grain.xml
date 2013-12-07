@@ -21,10 +21,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is an artistic feature which simulates the grain of a film.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/grain.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is an artistic feature which simulates the grain of a film.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/grain.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

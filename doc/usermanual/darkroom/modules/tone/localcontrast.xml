@@ -22,11 +22,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module allows enhancing local contrast. It uses the unnormalized bilateral
-                filter, and works on the L channel from Lab.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module allows enhancing local contrast. It uses the unnormalized bilateral
+              filter, and works on the L channel from Lab.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -78,14 +80,21 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Before
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Before
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
           <row>
-            <entry>After, a little overdone to demonstrate the effect. Use this sparingly, to avoid a cheap, overprocessed look.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              After, a little overdone to demonstrate the effect. Use this sparingly, to avoid a
+              cheap, overprocessed look.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

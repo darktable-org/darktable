@@ -21,14 +21,16 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                darktable's splittoning method creates a two color linear toning effect where
-                the shadows and highlights are represented by two different colors. In the
-                example image below you can see an original black and white image and one where
-                a splittoning effect is applied with blue in shadows and a yellowish color in
-                highlights.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              darktable's splittoning method creates a two color linear toning effect where the
+              shadows and highlights are represented by two different colors. In the example
+              image below you can see an original black and white image and one where a
+              splittoning effect is applied with blue in shadows and a yellowish color in
+              highlights.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -97,16 +99,20 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Original black and white image.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Original black and white image.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Splittoning with blue shadows and yellow highlights.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Splittoning with blue shadows and yellow highlights.
+              </entry>
             </row>
           </tbody>
         </tgroup>

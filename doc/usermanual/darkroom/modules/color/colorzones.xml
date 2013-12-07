@@ -26,11 +26,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module selectively modifies the colors in your image. It is highly
-                versatile and allows every transformation possible in the LCh colorspace.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module selectively modifies the colors in your image. It is highly versatile
+              and allows every transformation possible in the LCh colorspace.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -26,17 +26,23 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 This module manages the output profiles for display and export as well as the
                 rendering intent to be used when mapping between the different color spaces.
-              </para><para>
+              </para>
+
+              <para>
                 darktable comes with pre-defined profiles sRGB, AdobeRGB, XYZ and linear RGB but
                 you can provide additional profiles by placing these in
                 $DARKTABLE/share/darktable/color/out and $HOME/.config/darktable/color/out.
                 $DARKTABLE is used here to represent your chosen darktable installation
                 directory and $HOME your home directory.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -69,22 +75,38 @@
             <colspec colwidth='6*'/>
             <tbody>
               <row>
-                <entry><emphasis>perceptual</emphasis></entry>
-                <entry>Suited to pictures as it maintains the relative position of colors. This is usually the best choice.
-							</entry>
+                <entry>
+                  <emphasis>perceptual</emphasis>
+                </entry>
+                <entry>
+                  Suited to pictures as it maintains the relative position of colors. This is
+                  usually the best choice.
+                </entry>
               </row>
               <row>
-                <entry><emphasis>relative colorimetric</emphasis></entry>
-                <entry>Out-of-gamut colors are converted to colors having the same lightness,
-							but different saturation. Other colors remain unmodified. </entry>
+                <entry>
+                  <emphasis>relative colorimetric</emphasis>
+                </entry>
+                <entry>
+                  Out-of-gamut colors are converted to colors having the same lightness, but
+                  different saturation. Other colors remain unmodified.
+                </entry>
               </row>
               <row>
-                <entry><emphasis>saturation</emphasis></entry>
-                <entry> Saturation is kept but lightness is slightly changed.</entry>
+                <entry>
+                  <emphasis>saturation</emphasis>
+                </entry>
+                <entry>
+                  Saturation is kept but lightness is slightly changed.
+                </entry>
               </row>
               <row>
-                <entry><emphasis>absolute colorimetric</emphasis></entry>
-                <entry>Keep the white point.</entry>
+                <entry>
+                  <emphasis>absolute colorimetric</emphasis>
+                </entry>
+                <entry>
+                  Keep the white point.
+                </entry>
               </row>
             </tbody>
           </tgroup>

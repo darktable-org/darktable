@@ -82,9 +82,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Right-clicking on the icon opens a dialog with configuration parameters.
-						</entry>
-            <entry><graphic fileref="darkroom/images/panel_overexposed.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Right-clicking on the icon opens a dialog with configuration parameters.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_overexposed.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

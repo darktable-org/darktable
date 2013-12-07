@@ -26,12 +26,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module can be used to override darktable's automatic allocation of input
-                color profile if there is an alternative that more closely matches your original
-                image's color space.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module can be used to override darktable's automatic allocation of input
+              color profile if there is an alternative that more closely matches your original
+              image's color space.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

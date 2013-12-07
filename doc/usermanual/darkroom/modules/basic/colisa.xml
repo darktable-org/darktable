@@ -36,11 +36,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module offers a very basic tool for adjusting an image's contrast,
-                brightness and saturation.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colisa.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module offers a very basic tool for adjusting an image's contrast, brightness
+              and saturation.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colisa.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

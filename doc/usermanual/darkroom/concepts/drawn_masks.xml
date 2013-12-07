@@ -55,10 +55,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>To draw a shape you need to click on one of the shape symbols. You will automatically be moved into 
-                                                the edit mode in which you generate a new instance of the selected shape and afterwards change its properties.
-						</entry>
-            <entry><graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              To draw a shape you need to click on one of the shape symbols. You will
+              automatically be moved into the edit mode in which you generate a new instance of
+              the selected shape and afterwards change its properties.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -141,9 +145,12 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>A brush stroke with controls and activated mask display.
-						</entry>
-              <entry><graphic fileref="darkroom/concepts/images/masks_brush_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                A brush stroke with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_brush_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -186,9 +193,12 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>A circle shape with controls and activated mask display.
-						</entry>
-              <entry><graphic fileref="darkroom/concepts/images/masks_circle_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                A circle shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_circle_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -227,9 +237,12 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>An ellipse shape with controls and activated mask display.
-						</entry>
-              <entry><graphic fileref="darkroom/concepts/images/masks_ellipse_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                An ellipse shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_ellipse_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -293,9 +306,12 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>A path shape with controls and activated mask display.
-						</entry>
-              <entry><graphic fileref="darkroom/concepts/images/masks_path_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                A path shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_path_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -343,9 +359,12 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>A gradient with controls and activated mask display.
-						</entry>
-              <entry><graphic fileref="darkroom/concepts/images/masks_gradient_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                A gradient with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_gradient_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

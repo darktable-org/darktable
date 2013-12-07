@@ -17,9 +17,13 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel allows for a quick selection of images, according to some common criteria.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel allows for a quick selection of images, according to some common
+            criteria.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_select.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

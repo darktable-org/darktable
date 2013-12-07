@@ -14,11 +14,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>The camera settings section allows you to set up a capture job. This can include sequence, bracket and delayed
-               captures. You are also able to control other camera settings such as focus mode, aperture, shutter speed, ISO and
-               white balance.
-	</entry>
-            <entry><graphic fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              The camera settings section allows you to set up a capture job. This can include
+              sequence, bracket and delayed captures. You are also able to control other camera
+              settings such as focus mode, aperture, shutter speed, ISO and white balance.
+            </entry>
+            <entry>
+              <graphic fileref="tethering/images/panel_camera_settings.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

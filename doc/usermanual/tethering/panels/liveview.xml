@@ -14,11 +14,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 This panel gives you control of your camera's live view mode. Functionality such
                 as focus setting, rotation, adding guides and overlays are supported.
-              </para></entry>
-            <entry><graphic fileref="tethering/images/panel_liveview.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="tethering/images/panel_liveview.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

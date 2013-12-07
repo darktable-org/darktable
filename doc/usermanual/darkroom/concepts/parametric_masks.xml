@@ -64,10 +64,13 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>When <emphasis>parametric mask</emphasis> is activated in combobox <quote>blend</quote> an additional set of tabbed controls 
-		                               is shown.
-					</entry>
-              <entry><graphic fileref="darkroom/concepts/images/blendif_1.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                When <emphasis>parametric mask</emphasis> is activated in combobox
+                <quote>blend</quote> an additional set of tabbed controls is shown.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/blendif_1.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -131,29 +134,45 @@
             <colspec colwidth='1*' align='center'/>
             <tbody>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     Range select function
-                  </para></entry>
-                <entry><para>
+                  </para>
+                </entry>
+                <entry>
+                  <para>
                     Range de-select function
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_2a.png" scalefit="1" width="80%" align="center" /></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_3a.png" scalefit="1" width="80%" align="center" /></entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_2a.png" scalefit="1" width="80%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_3a.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
               <row>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_2b.png" scalefit="1" width="80%" align="center" /></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_3b.png" scalefit="1" width="80%" align="center" /></entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_2b.png" scalefit="1" width="80%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_3b.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     A trapezoidal function that selects a narrow range of values for blending.
-                  </para></entry>
-                <entry><para>
+                  </para>
+                </entry>
+                <entry>
+                  <para>
                     A trapezoidal function that de-selects a narrow range of values from
                     blending.
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
             </tbody>
           </tgroup>
@@ -228,37 +247,55 @@
             <colspec colwidth="4*"/>
             <tbody>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     To create a colorkey effect with this poppy blossom in red and the remainder
                     of the image in monochrome, we could apply module
                     <link linkend="monochrome"> <emphasis>monochrome</emphasis></link> to all
                     parts of the image except for of the saturated red petals.
-                  </para><para>
+                  </para>
+
+                  <para>
                     We choose the hue channel to control our mask as hue provides good
                     separation between the petals and background.
-                  </para></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_4.png" scalefit="1" width="80%" align="center" /></entry>
+                  </para>
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_4.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     These settings in hue channel construct a parametric blend mask that
                     excludes the red petals. The small white bar in the gradient was obtained by
                     using the color picker on one of the petals and the markers then closely
                     centered on the indicated hue to increase the selectivity of our mask.
-                  </para></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_5.png" scalefit="1" width="80%" align="center" /></entry>
+                  </para>
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_5.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     The resulting blend mask.
-                  </para></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_6.png" scalefit="1" width="80%" align="center" /></entry>
+                  </para>
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_6.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     The final image after module <emphasis>monochrome</emphasis> is applied.
-                  </para></entry>
-                <entry><graphic fileref="darkroom/concepts/images/blendif_7.png" scalefit="1" width="80%" align="center" /></entry>
+                  </para>
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendif_7.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
             </tbody>
           </tgroup>

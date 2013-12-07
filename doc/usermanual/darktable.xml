@@ -83,18 +83,34 @@
           <tbody>
             <row>
               <entry></entry>
-              <entry>version</entry>
-              <entry>date</entry>
+              <entry>
+                version
+              </entry>
+              <entry>
+                date
+              </entry>
             </row>
             <row>
-              <entry>user manual</entry>
-              <entry>1.4.0</entry>
-              <entry>November 2013</entry>
+              <entry>
+                user manual
+              </entry>
+              <entry>
+                1.4.0
+              </entry>
+              <entry>
+                November 2013
+              </entry>
             </row>
             <row>
-              <entry>darktable</entry>
-              <entry>1.4</entry>
-              <entry>November 2013</entry>
+              <entry>
+                darktable
+              </entry>
+              <entry>
+                1.4
+              </entry>
+              <entry>
+                November 2013
+              </entry>
             </row>
           </tbody>
         </tgroup>

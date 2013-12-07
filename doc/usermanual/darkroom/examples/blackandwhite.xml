@@ -12,11 +12,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Black and white conversion can be achieved in several ways with darktable.
-							Indeed, darktable comes with a lot of modules, especially for color manipulation.
-							In this manual, I will show you 4 ways to perform a black and white conversion.
-							</entry>
-            <entry><graphic fileref="darkroom/examples/images/blackandwhite.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Black and white conversion can be achieved in several ways with darktable. Indeed,
+              darktable comes with a lot of modules, especially for color manipulation. In this
+              manual, I will show you 4 ways to perform a black and white conversion.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/examples/images/blackandwhite.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

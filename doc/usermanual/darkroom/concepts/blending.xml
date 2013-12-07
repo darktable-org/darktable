@@ -52,9 +52,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Modules with blending support exhibit an additional combobox <quote>blend</quote> at the bottom of their GUI.
-						</entry>
-            <entry><graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Modules with blending support exhibit an additional combobox <quote>blend</quote>
+              at the bottom of their GUI.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -215,12 +219,16 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>When blending operators were introduced into darktable, a new module named <emphasis>highpass</emphasis>
-                                                                       (see <xref linkend="highpass"/>) was added. It provides a highpass filter of the image to be implicitly 
-                                                                        used with blending. It is used to produce a gritty detailed image and
-										is a method widely used in the workflow of other imaging software.
-								</entry>
-              <entry><graphic fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                When blending operators were introduced into darktable, a new module named
+                <emphasis>highpass</emphasis> (see <xref linkend="highpass"/>) was added. It
+                provides a highpass filter of the image to be implicitly used with blending. It
+                is used to produce a gritty detailed image and is a method widely used in the
+                workflow of other imaging software.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/blendop_highpass.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -233,22 +241,30 @@
             <colspec colwidth="6*"/>
             <tbody>
               <row>
-                <entry><graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" /></entry>
-                <entry><para>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_1.png" scalefit="1" width="90%" align="center" />
+                </entry>
+                <entry>
+                  <para>
                     This is the original image, pretty heavily processed: first
                     <link linkend="monochrome"> <emphasis>monochrome</emphasis></link>, then
                     some blue <link linkend="splittoning">
                     <emphasis>splittoning</emphasis></link> but as you see it lacks pop in
                     details and is a bit out of focus...
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
               <row>
-                <entry><graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" /></entry>
-                <entry><para>
+                <entry>
+                  <graphic fileref="darkroom/concepts/images/blendop_highpass_ex1_2.png" scalefit="1" width="90%" align="center" />
+                </entry>
+                <entry>
+                  <para>
                     Here we applied the highpass filter with the values shown above. You can now
                     see that the details are greatly boosted and we now have a really gritty
                     detailed image.
-                  </para></entry>
+                  </para>
+                </entry>
               </row>
             </tbody>
           </tgroup>

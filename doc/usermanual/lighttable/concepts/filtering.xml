@@ -23,9 +23,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>The filtering and sort order of images in the lighttable view are controlled in the top panel.
-           </entry>
-            <entry><graphic fileref="lighttable/concepts/images/filter_sort_panel.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              The filtering and sort order of images in the lighttable view are controlled in
+              the top panel.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/filter_sort_panel.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

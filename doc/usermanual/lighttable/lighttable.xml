@@ -43,14 +43,19 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>In the central view, your images are shown as thumbnails, surrounded by a frame. When the mouse is over
- 						an image, its rating and color labels are shown in the frame, along with an indicator 
-						<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
-                                                of whether the image has already been altered in darkroom.
-						Also, when the mouse hovers over an image frame, image information (EXIF data, metadata) is shown in the 
-                                                <link linkend="image_information"><emphasis>image information</emphasis></link> panel in the bottom left.
-						</entry>
-            <entry><graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              In the central view, your images are shown as thumbnails, surrounded by a frame.
+              When the mouse is over an image, its rating and color labels are shown in the
+              frame, along with an indicator
+              <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+              of whether the image has already been altered in darkroom. Also, when the mouse
+              hovers over an image frame, image information (EXIF data, metadata) is shown in
+              the <link linkend="image_information"><emphasis>image
+              information</emphasis></link> panel in the bottom left.
+            </entry>
+            <entry>
+              <graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -65,30 +70,54 @@
           <colspec colwidth='3*'/>
           <tbody>
             <row>
-              <entry><emphasis>0&nbsp;&ndash; 5</emphasis></entry>
-              <entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated.
-							Pressing <emphasis>r</emphasis> rejects the image.
-                				</entry>
+              <entry>
+                <emphasis>0&nbsp;&ndash; 5</emphasis>
+              </entry>
+              <entry>
+                set the rating of the image; if an image has 1 star and you hit the
+                <emphasis>1</emphasis> key, the image will be unrated. Pressing
+                <emphasis>r</emphasis> rejects the image.
+              </entry>
             </row>
             <row>
-              <entry><emphasis>F1&nbsp;&ndash; F5</emphasis></entry>
-              <entry>set a color label</entry>
+              <entry>
+                <emphasis>F1&nbsp;&ndash; F5</emphasis>
+              </entry>
+              <entry>
+                set a color label
+              </entry>
             </row>
             <row>
-              <entry><emphasis>ctrl-c</emphasis></entry>
-              <entry>copy the history stack</entry>
+              <entry>
+                <emphasis>ctrl-c</emphasis>
+              </entry>
+              <entry>
+                copy the history stack
+              </entry>
             </row>
             <row>
-              <entry><emphasis>ctrl-v</emphasis></entry>
-              <entry>paste the copied history stack</entry>
+              <entry>
+                <emphasis>ctrl-v</emphasis>
+              </entry>
+              <entry>
+                paste the copied history stack
+              </entry>
             </row>
             <row>
-              <entry><emphasis>d</emphasis></entry>
-              <entry>open in darkroom view for developing</entry>
+              <entry>
+                <emphasis>d</emphasis>
+              </entry>
+              <entry>
+                open in darkroom view for developing
+              </entry>
             </row>
             <row>
-              <entry><emphasis>z</emphasis></entry>
-              <entry>fully zoom into the image while the key is pressed</entry>
+              <entry>
+                <emphasis>z</emphasis>
+              </entry>
+              <entry>
+                fully zoom into the image while the key is pressed
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -143,10 +172,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with indication of the areas in focus. 
-                                                Focus detection is based on an embedded JPEG thumbnail of the original RAW file independent of further processing steps within darktable.
-						</entry>
-            <entry><graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with
+              indication of the areas in focus. Focus detection is based on an embedded JPEG
+              thumbnail of the original RAW file independent of further processing steps within
+              darktable.
+            </entry>
+            <entry>
+              <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is a quick way to convert an image into black and white and provides
-                a variable color filter for that conversion.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is a quick way to convert an image into black and white and provides a
+              variable color filter for that conversion.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

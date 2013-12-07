@@ -21,12 +21,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module eliminates some of the typical banding artifacts which can occur,
-                when darktable's internal 32-bit floating point data are transferred into a
-                discrete 8-bit or 16-bit integer output format for display or file export.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module eliminates some of the typical banding artifacts which can occur, when
+              darktable's internal 32-bit floating point data are transferred into a discrete
+              8-bit or 16-bit integer output format for display or file export.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

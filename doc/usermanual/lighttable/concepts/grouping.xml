@@ -35,11 +35,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 Images which are members of a group are labeled with a <quote>G</quote> symbol
                 in their thumbnails.
-              </para></entry>
-            <entry><graphic fileref="lighttable/concepts/images/grouping_1.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/grouping_1.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -65,12 +69,16 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 An expanded group in the filemanager mode of lighttable view is indicated by an
                 orange frame which appears as soon as your mouse pointer hovers over one of the
                 images.
-              </para></entry>
-            <entry><graphic fileref="lighttable/concepts/images/grouping_2.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/grouping_2.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

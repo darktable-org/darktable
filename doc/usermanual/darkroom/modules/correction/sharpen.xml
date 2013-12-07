@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This is an standard UnSharp Mask (USM) tool for sharpening the details of an
-                image.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/sharpen.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This is an standard UnSharp Mask (USM) tool for sharpening the details of an
+              image.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/sharpen.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

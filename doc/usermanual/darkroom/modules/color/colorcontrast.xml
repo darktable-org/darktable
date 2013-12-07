@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                The color contrast module provides simplified control for changing the contrast
-                or separation of colors between either green/magenta or blue/yellow axis.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colorcontrast.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              The color contrast module provides simplified control for changing the contrast or
+              separation of colors between either green/magenta or blue/yellow axis.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorcontrast.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

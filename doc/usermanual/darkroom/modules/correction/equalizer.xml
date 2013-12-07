@@ -31,12 +31,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This versatile module can be used to achieve a variety of effects, such as:
-                bloom, denoising, clarity, and local contrast enhancement. It works in the
-                wavelet domain and parameters can be tuned for each frequency band separately.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              This versatile module can be used to achieve a variety of effects, such as: bloom,
+              denoising, clarity, and local contrast enhancement. It works in the wavelet domain
+              and parameters can be tuned for each frequency band separately.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -60,12 +62,16 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Each spline can be dragged with a proportional edit approach; use the mouse wheel to adjust the
-            radius in which your changes will have an effect. The transparent area indicates where you would drag
-            the spline with the current mouse position and radius. The small little triangles on the x-axis can
-            be moved to alter the x-position of the spline nodes.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous-1.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              Each spline can be dragged with a proportional edit approach; use the mouse wheel
+              to adjust the radius in which your changes will have an effect. The transparent
+              area indicates where you would drag the spline with the current mouse position and
+              radius. The small little triangles on the x-axis can be moved to alter the
+              x-position of the spline nodes.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous-1.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -77,11 +83,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Drag the upper line (bright circles, here for the lightness channel) to affect local contrast. Pulling it up, as shown
-            here, will result in a contrast boost for that frequency band. Higher frequencies, i.e. smaller details, are
-            to the right of the grid. Pulling it down works, too.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous-2.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              Drag the upper line (bright circles, here for the lightness channel) to affect
+              local contrast. Pulling it up, as shown here, will result in a contrast boost for
+              that frequency band. Higher frequencies, i.e. smaller details, are to the right of
+              the grid. Pulling it down works, too.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous-2.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -93,11 +103,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>The bottom spline (black circles) is used to perform denoising. It adjusts the wavelet shrinkage
-            threshold for each frequency band. Pull it up to see the effect. In this example, the noise which has been
-            amplified by local contrast enhancement is removed.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous-4.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              The bottom spline (black circles) is used to perform denoising. It adjusts the
+              wavelet shrinkage threshold for each frequency band. Pull it up to see the effect.
+              In this example, the noise which has been amplified by local contrast enhancement
+              is removed.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous-4.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -109,11 +123,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>This screen shows the effect of the sharpen parameter. It is here pulled down to zero for all bands.
-            This is effectively a regular à trous wavelet, without edge detection, and results in the characteristic halos
-            around sharp edges in the image.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous-5.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              This screen shows the effect of the sharpen parameter. It is here pulled down to
+              zero for all bands. This is effectively a regular à trous wavelet, without edge
+              detection, and results in the characteristic halos around sharp edges in the
+              image.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous-5.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -125,10 +143,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>This image is the other extreme. The wavelet basis now oversharpens, which results in ugly
-            gradient reversals near the ridge of the rock.
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/atrous-6.png" scalefit="1" width="90%" align="right" /></entry>
+            <entry>
+              This image is the other extreme. The wavelet basis now oversharpens, which results
+              in ugly gradient reversals near the ridge of the rock.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/atrous-6.png" scalefit="1" width="90%" align="right" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -21,10 +21,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module allows you to control how the demosaic is processed.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module allows you to control how the demosaic is processed.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

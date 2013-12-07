@@ -21,11 +21,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is an artistic feature that adds a solid layer of color to your
-                image.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colorize.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is an artistic feature that adds a solid layer of color to your image.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorize.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

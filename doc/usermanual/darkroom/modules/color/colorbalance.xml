@@ -21,10 +21,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module offers a versatile tool for adjusting an image's color balance.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colorbalance.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module offers a versatile tool for adjusting an image's color balance.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorbalance.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

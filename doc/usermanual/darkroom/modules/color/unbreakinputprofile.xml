@@ -26,13 +26,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module adds a correction curve to image data, which is required if you have
-                selected certain input profiles in module
-                <link linkend="input_color_profile"><emphasis>input color
-                profile</emphasis></link>.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/unbreakinputprofile.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module adds a correction curve to image data, which is required if you have
+              selected certain input profiles in module
+              <link linkend="input_color_profile"><emphasis>input color
+              profile</emphasis></link>.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/unbreakinputprofile.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

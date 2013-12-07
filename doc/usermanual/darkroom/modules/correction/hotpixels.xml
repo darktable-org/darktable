@@ -21,12 +21,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is able to automatically detect and eliminate hotpixels. Hotpixels
-                are pixels which failed to record light level correctly. Detected hotpixels are
-                replaced by an average value of their neighbors.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is able to automatically detect and eliminate hotpixels. Hotpixels are
+              pixels which failed to record light level correctly. Detected hotpixels are
+              replaced by an average value of their neighbors.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

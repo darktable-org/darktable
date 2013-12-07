@@ -17,11 +17,15 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>More modules at the bottom of the right panel is used to show the less frequently used modules. By default only
-						standard modules are shown to the user but you can use this function to make the extra modules visible, or
-                                                alternatively to hide away modules you don't typically use.
-						</entry>
-          <entry><graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            More modules at the bottom of the right panel is used to show the less frequently
+            used modules. By default only standard modules are shown to the user but you can use
+            this function to make the extra modules visible, or alternatively to hide away
+            modules you don't typically use.
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_moremodules.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

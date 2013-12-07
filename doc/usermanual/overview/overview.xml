@@ -494,10 +494,14 @@
         <colspec colwidth='4*'/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 This section describes the layout of the user interface.
-              </para></entry>
-            <entry><graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -518,20 +522,36 @@
             <colspec colwidth='9*'/>
             <tbody>
               <row>
-                <entry><emphasis>l</emphasis></entry>
-                <entry>switches to lighttable</entry>
+                <entry>
+                  <emphasis>l</emphasis>
+                </entry>
+                <entry>
+                  switches to lighttable
+                </entry>
               </row>
               <row>
-                <entry><emphasis>d</emphasis></entry>
-                <entry>switches to darkroom</entry>
+                <entry>
+                  <emphasis>d</emphasis>
+                </entry>
+                <entry>
+                  switches to darkroom
+                </entry>
               </row>
               <row>
-                <entry><emphasis>t</emphasis></entry>
-                <entry>switches to camera tethering</entry>
+                <entry>
+                  <emphasis>t</emphasis>
+                </entry>
+                <entry>
+                  switches to camera tethering
+                </entry>
               </row>
               <row>
-                <entry><emphasis>m</emphasis></entry>
-                <entry>switches to map</entry>
+                <entry>
+                  <emphasis>m</emphasis>
+                </entry>
+                <entry>
+                  switches to map
+                </entry>
               </row>
             </tbody>
           </tgroup>

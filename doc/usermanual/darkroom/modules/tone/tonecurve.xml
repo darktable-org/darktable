@@ -26,12 +26,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is a classic digital photography tool. Unlike other image
-                manipulation software, however, darktable's tone curve acts in Lab color space.
-                Thus, it offers three independent curves for L, a, and b channels.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is a classic digital photography tool. Unlike other image manipulation
+              software, however, darktable's tone curve acts in Lab color space. Thus, it offers
+              three independent curves for L, a, and b channels.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -120,23 +122,29 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/tonecurve_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Original image
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Original image
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/tonecurve_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Tone curve settings. Please note how the center node of our b-curve was
-                  shifted down to negative values. This gives the image its blue tint.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Tone curve settings. Please note how the center node of our b-curve was shifted
+                down to negative values. This gives the image its blue tint.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/tonecurve_ex3.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Resulting image
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex3.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Resulting image
+              </entry>
             </row>
           </tbody>
         </tgroup>

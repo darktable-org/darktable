@@ -71,10 +71,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>When clicking on the <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="4%" align="center"/> icon 
-                                                       a drop-down menu will appear.
-						</entry>
-            <entry><graphic fileref="darkroom/concepts/images/instances.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              When clicking on the
+              <inlinegraphic fileref="&icon_module_instances;"  scalefit="1" width="4%" align="center"/>
+              icon a drop-down menu will appear.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/concepts/images/instances.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

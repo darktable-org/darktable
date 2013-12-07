@@ -12,9 +12,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>SHORT AND CONSIST MODULE DESCRIPTION
-						</entry>
-            <entry><graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              SHORT AND CONSIST MODULE DESCRIPTION
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/soften.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -73,16 +76,24 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
+              <entry>
+                <graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                <para>
                   This is the original image, use it as reference for the changes below...
-                </para></entry>
+                </para>
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
+              <entry>
+                <graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                <para>
                   EXAMPLE 2 DESCRIPTION
-                </para></entry>
+                </para>
+              </entry>
             </row>
           </tbody>
         </tgroup>

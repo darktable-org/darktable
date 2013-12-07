@@ -21,14 +21,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is used to tweak the exposure. It is directly linked to the
-                histogram panel. Indeed, if you correct exposure graphically, using the
-                <emphasis>histogram </emphasis> (see <xref linkend="histogram"/>), you
-                automatically activate the exposure module. The histogram simply acts as a view
-                for the exposure module.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is used to tweak the exposure. It is directly linked to the histogram
+              panel. Indeed, if you correct exposure graphically, using the <emphasis>histogram
+              </emphasis> (see <xref linkend="histogram"/>), you automatically activate the
+              exposure module. The histogram simply acts as a view for the exposure module.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

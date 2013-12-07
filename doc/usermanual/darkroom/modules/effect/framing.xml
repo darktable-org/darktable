@@ -26,13 +26,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is an artistic feature to generate a frame around your image. The
-                frame consists of a border with a user defined color and a frame line inside
-                that border, which has another user defined color. There are various options for
-                you to control the geometry of your frame.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/framing.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is an artistic feature to generate a frame around your image. The
+              frame consists of a border with a user defined color and a frame line inside that
+              border, which has another user defined color. There are various options for you to
+              control the geometry of your frame.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/framing.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -137,10 +139,12 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/framing_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Example image with a user defined frame.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/framing_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Example image with a user defined frame.
+              </entry>
             </row>
           </tbody>
         </tgroup>

@@ -21,11 +21,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                The velvia module enhances image saturation. Its effect is tailored to increases
-                saturation less on lower saturated pixels than on highly saturated pixels.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              The velvia module enhances image saturation. Its effect is tailored to increases
+              saturation less on lower saturated pixels than on highly saturated pixels.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/velvia.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

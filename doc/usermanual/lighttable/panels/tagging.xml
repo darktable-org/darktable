@@ -17,14 +17,17 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel is for managing tags on images.
-					Tags are stored in both, sidecar files (.xmp), and within the 
-					darktable database for a faster access.
-					The panel is divided into two parts: the upper part contains the tag(s) currently set for the image 
-					under mouse (if the mouse is over an image) or the selected image (if the mouse is outside the lighttable).
-					The lower part contains all available tags, which can be filtered in the upper text box.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel is for managing tags on images. Tags are stored in both, sidecar files
+            (.xmp), and within the darktable database for a faster access. The panel is divided
+            into two parts: the upper part contains the tag(s) currently set for the image under
+            mouse (if the mouse is over an image) or the selected image (if the mouse is outside
+            the lighttable). The lower part contains all available tags, which can be filtered
+            in the upper text box.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

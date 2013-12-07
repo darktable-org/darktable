@@ -109,10 +109,13 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element
-                                                       combined with keyboard input.
-						</entry>
-              <entry><graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                darktable's innovative input method: for both coarse and fine value adjustments
+                in a single control element combined with keyboard input.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

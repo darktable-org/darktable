@@ -21,13 +21,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                Vibrance is a widely used term in image processing but the mechanism and end
-                result differ from program to program. Vibrance in darktable saturates and
-                brings down the lightness of the most saturated pixels to make the colors more
-                vivid.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/vibrance.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Vibrance is a widely used term in image processing but the mechanism and end
+              result differ from program to program. Vibrance in darktable saturates and brings
+              down the lightness of the most saturated pixels to make the colors more vivid.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/vibrance.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

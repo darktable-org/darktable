@@ -45,11 +45,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>You can also directly click into the stars displayed in the thumbnails. For example you click the second star
-                    to get a rating of two stars etc. Clicking on the first star gives a one star rating, clicking on it a second time
-                    resets to zero stars.
-             </entry>
-            <entry><graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              You can also directly click into the stars displayed in the thumbnails. For
+              example you click the second star to get a rating of two stars etc. Clicking on
+              the first star gives a one star rating, clicking on it a second time resets to
+              zero stars.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -63,10 +67,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>In order to rate multiple images at once you select those images (see <xref linkend="select"/>) and then set the
-                    desired star rating in the bottom panel of the lighttable view.
-             </entry>
-            <entry><graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              In order to rate multiple images at once you select those images (see
+              <xref linkend="select"/>) and then set the desired star rating in the bottom panel
+              of the lighttable view.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -93,10 +101,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>To toggle the color labels of multiple images select the desired images (see <xref linkend="select"/>) and then press the
-                    corresponding color button in the bottom panel. In order to remove all labels from the selected images press the grey button.
-             </entry>
-            <entry><graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              To toggle the color labels of multiple images select the desired images (see
+              <xref linkend="select"/>) and then press the corresponding color button in the
+              bottom panel. In order to remove all labels from the selected images press the
+              grey button.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -13,12 +13,16 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry><para>
+          <entry>
+            <para>
               In the <emphasis>map settings</emphasis> panel you can select your preferred map
               data from various providers. Some will provide different layers, such as satellite
               view etc., which you can toggle.
-            </para></entry>
-          <entry><graphic fileref="map/images/map_settings.png" scalefit="1" width="80%" align="center" /></entry>
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="map/images/map_settings.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

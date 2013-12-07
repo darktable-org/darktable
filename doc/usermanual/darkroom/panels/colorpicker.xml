@@ -22,15 +22,19 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry><para>
+          <entry>
+            <para>
               Using the global color picker you can take color samples from your image, display
               their values in multiple ways and compare colors from different locations. The
               color picker is activated by pressing the
               <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="3%" align="center" />
               icon. There are multiple parameters for controlling how the color picker works,
               whose settings remain in effect until you leave the darkroom mode.
-            </para></entry>
-          <entry><graphic fileref="darkroom/images/panel_colorpicker.png" scalefit="1" width="80%" align="center" /></entry>
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_colorpicker.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

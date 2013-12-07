@@ -21,15 +21,17 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                Camera sensors provide data in linear RGB format, the original image appears
-                flat and dull. That's the reason why camera manufacturers apply their
-                characteristic base curves to the RAW data when they generate in-camera JPEG
-                images with better colors and contrast. darktable comes with base curve presets
-                that mimic the curves of various manufacturers. These are automatically applied
-                to RAW images according to the manufacturer ID found in EXIF data.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Camera sensors provide data in linear RGB format, the original image appears flat
+              and dull. That's the reason why camera manufacturers apply their characteristic
+              base curves to the RAW data when they generate in-camera JPEG images with better
+              colors and contrast. darktable comes with base curve presets that mimic the curves
+              of various manufacturers. These are automatically applied to RAW images according
+              to the manufacturer ID found in EXIF data.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

@@ -26,11 +26,14 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>Each workflow ends in this panel: the export of your developed images.
-							You can export either to a file on disk, or to various on-line storage places.
-							Tip: you can use <emphasis>ctrl-e</emphasis> from within darkroom mode to export.
-                                                        </entry>
-          <entry><graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            Each workflow ends in this panel: the export of your developed images. You can
+            export either to a file on disk, or to various on-line storage places. Tip: you can
+            use <emphasis>ctrl-e</emphasis> from within darkroom mode to export.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>
@@ -72,92 +75,180 @@
         <tgroup cols="2" colsep="0" rowsep="0">
           <tbody>
             <row>
-              <entry>$(ROLL_NAME)</entry>
-              <entry>roll of the input image</entry>
+              <entry>
+                $(ROLL_NAME)
+              </entry>
+              <entry>
+                roll of the input image
+              </entry>
             </row>
             <row>
-              <entry>$(FILE_FOLDER)</entry>
-              <entry>folder containing the input image</entry>
+              <entry>
+                $(FILE_FOLDER)
+              </entry>
+              <entry>
+                folder containing the input image
+              </entry>
             </row>
             <row>
-              <entry>$(FILE_NAME)</entry>
-              <entry>basename of the input image</entry>
+              <entry>
+                $(FILE_NAME)
+              </entry>
+              <entry>
+                basename of the input image
+              </entry>
             </row>
             <row>
-              <entry>$(FILE_EXTENSION)</entry>
-              <entry>extension of the input image</entry>
+              <entry>
+                $(FILE_EXTENSION)
+              </entry>
+              <entry>
+                extension of the input image
+              </entry>
             </row>
             <row>
-              <entry>$(SEQUENCE)</entry>
-              <entry>a sequence number within export job</entry>
+              <entry>
+                $(SEQUENCE)
+              </entry>
+              <entry>
+                a sequence number within export job
+              </entry>
             </row>
             <row>
-              <entry>$(YEAR)</entry>
-              <entry>year at date of export</entry>
+              <entry>
+                $(YEAR)
+              </entry>
+              <entry>
+                year at date of export
+              </entry>
             </row>
             <row>
-              <entry>$(MONTH)</entry>
-              <entry>month at date of export</entry>
+              <entry>
+                $(MONTH)
+              </entry>
+              <entry>
+                month at date of export
+              </entry>
             </row>
             <row>
-              <entry>$(DAY)</entry>
-              <entry>day at date of export</entry>
+              <entry>
+                $(DAY)
+              </entry>
+              <entry>
+                day at date of export
+              </entry>
             </row>
             <row>
-              <entry>$(HOUR)</entry>
-              <entry>hour at time of export</entry>
+              <entry>
+                $(HOUR)
+              </entry>
+              <entry>
+                hour at time of export
+              </entry>
             </row>
             <row>
-              <entry>$(MINUTE)</entry>
-              <entry>minute at time of export</entry>
+              <entry>
+                $(MINUTE)
+              </entry>
+              <entry>
+                minute at time of export
+              </entry>
             </row>
             <row>
-              <entry>$(SECOND)</entry>
-              <entry>second at time of export</entry>
+              <entry>
+                $(SECOND)
+              </entry>
+              <entry>
+                second at time of export
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_YEAR)</entry>
-              <entry>exif year</entry>
+              <entry>
+                $(EXIF_YEAR)
+              </entry>
+              <entry>
+                exif year
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_MONTH)</entry>
-              <entry>exif month</entry>
+              <entry>
+                $(EXIF_MONTH)
+              </entry>
+              <entry>
+                exif month
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_DAY)</entry>
-              <entry>exif day</entry>
+              <entry>
+                $(EXIF_DAY)
+              </entry>
+              <entry>
+                exif day
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_HOUR)</entry>
-              <entry>exif hour</entry>
+              <entry>
+                $(EXIF_HOUR)
+              </entry>
+              <entry>
+                exif hour
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_MINUTE)</entry>
-              <entry>exif minute</entry>
+              <entry>
+                $(EXIF_MINUTE)
+              </entry>
+              <entry>
+                exif minute
+              </entry>
             </row>
             <row>
-              <entry>$(EXIF_SECOND)</entry>
-              <entry>exif second</entry>
+              <entry>
+                $(EXIF_SECOND)
+              </entry>
+              <entry>
+                exif second
+              </entry>
             </row>
             <row>
-              <entry>$(STARS)</entry>
-              <entry>star rating</entry>
+              <entry>
+                $(STARS)
+              </entry>
+              <entry>
+                star rating
+              </entry>
             </row>
             <row>
-              <entry>$(LABELS)</entry>
-              <entry>colorlabels</entry>
+              <entry>
+                $(LABELS)
+              </entry>
+              <entry>
+                colorlabels
+              </entry>
             </row>
             <row>
-              <entry>$(PICTURES_FOLDER)</entry>
-              <entry>pictures folder</entry>
+              <entry>
+                $(PICTURES_FOLDER)
+              </entry>
+              <entry>
+                pictures folder
+              </entry>
             </row>
             <row>
-              <entry>$(HOME)</entry>
-              <entry>home folder</entry>
+              <entry>
+                $(HOME)
+              </entry>
+              <entry>
+                home folder
+              </entry>
             </row>
             <row>
-              <entry>$(DESKTOP)</entry>
-              <entry>desktop folder</entry>
+              <entry>
+                $(DESKTOP)
+              </entry>
+              <entry>
+                desktop folder
+              </entry>
             </row>
           </tbody>
         </tgroup>

@@ -39,10 +39,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>In the top line of the masks manager panel you find buttons to create new shapes. They are the same as in the
-                                                       <emphasis>drawn mask</emphasis> GUI (see <xref linkend="drawn_mask"/> for more details).
-						</entry>
-            <entry><graphic fileref="darkroom/images/panel_maskmanager_1.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              In the top line of the masks manager panel you find buttons to create new shapes.
+              They are the same as in the <emphasis>drawn mask</emphasis> GUI (see
+              <xref linkend="drawn_mask"/> for more details).
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_maskmanager_1.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -115,10 +119,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>Right-clicking on the shape name opens a drop-down menu. Here you define the way that the individual shapes interact
-                                                       to form the mask. You can also remove shapes from that mask.
-						</entry>
-            <entry><graphic fileref="darkroom/images/panel_maskmanager_2.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Right-clicking on the shape name opens a drop-down menu. Here you define the way
+              that the individual shapes interact to form the mask. You can also remove shapes
+              from that mask.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_maskmanager_2.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -152,15 +160,21 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry>We use as an example a combination of a gradient followed by a path to demonstrate the effect of the set operator
-                                                       which we apply to the path shape. As a convention we say that a pixel is <quote>selected</quote> in a 
-                                                       mask or shape if it has a value higher than zero.
-						</entry>
-            <entry><graphic fileref="darkroom/images/panel_maskmanager_ex1.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              We use as an example a combination of a gradient followed by a path to demonstrate
+              the effect of the set operator which we apply to the path shape. As a convention
+              we say that a pixel is <quote>selected</quote> in a mask or shape if it has a
+              value higher than zero.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_maskmanager_ex1.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
           <row>
             <entry></entry>
-            <entry><graphic fileref="darkroom/images/panel_maskmanager_ex2.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              <graphic fileref="darkroom/images/panel_maskmanager_ex2.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -176,12 +190,17 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>This is the default set operator. It is depicted by the <inlinegraphic fileref="&masks_union;" scalefit="1" width="4%" align="center"/> 
-                                                       symbol left to the shape name. The shape adds to the existing mask
-                                                       in such a way that the resulting mask contains the pixels that are either selected in the existing mask or in the added shape.
-                                                       In overlapping areas the maximum value is taken.
-						</entry>
-              <entry><graphic fileref="darkroom/images/panel_maskmanager_ex3.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                This is the default set operator. It is depicted by the
+                <inlinegraphic fileref="&masks_union;" scalefit="1" width="4%" align="center"/>
+                symbol left to the shape name. The shape adds to the existing mask in such a way
+                that the resulting mask contains the pixels that are either selected in the
+                existing mask or in the added shape. In overlapping areas the maximum value is
+                taken.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/panel_maskmanager_ex3.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -199,12 +218,18 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>This set operator is depicted by the <inlinegraphic fileref="&masks_intersection;" scalefit="1" width="4%" align="center"/> 
-                                                       symbol left to the shape name. The shape adds to the existing mask in such a way
-                                                       that the resulting mask contains only pixels that are selected in both, the existing mask and the added shape. In
-                                                       overlapping areas the minimum value is used. In the given example we use this operator to <quote>imprint</quote> the path with a gradient.
-						</entry>
-              <entry><graphic fileref="darkroom/images/panel_maskmanager_ex4.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                This set operator is depicted by the
+                <inlinegraphic fileref="&masks_intersection;" scalefit="1" width="4%" align="center"/>
+                symbol left to the shape name. The shape adds to the existing mask in such a way
+                that the resulting mask contains only pixels that are selected in both, the
+                existing mask and the added shape. In overlapping areas the minimum value is
+                used. In the given example we use this operator to <quote>imprint</quote> the
+                path with a gradient.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/panel_maskmanager_ex4.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -222,12 +247,18 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>This set operator is depicted by the <inlinegraphic fileref="&masks_difference;" scalefit="1" width="4%" align="center"/> 
-                                                       symbol. In the non-overlapping area the existing mask is unchanged. In the resulting
-                                                       mask pixels get selected only if they are selected in the existing mask but <emphasis>not</emphasis> in the added
-                                                       shape. This set operator can be chosen if you want to <quote>cut out</quote> a region from within an existing selection.
-						</entry>
-              <entry><graphic fileref="darkroom/images/panel_maskmanager_ex5.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                This set operator is depicted by the
+                <inlinegraphic fileref="&masks_difference;" scalefit="1" width="4%" align="center"/>
+                symbol. In the non-overlapping area the existing mask is unchanged. In the
+                resulting mask pixels get selected only if they are selected in the existing
+                mask but <emphasis>not</emphasis> in the added shape. This set operator can be
+                chosen if you want to <quote>cut out</quote> a region from within an existing
+                selection.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/panel_maskmanager_ex5.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -245,12 +276,16 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry>This set operator is depicted by the <inlinegraphic fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/> 
-                                                       symbol. The resulting mask has all pixels selected 
-                                                       that are either selected in the existing mask and not in the added shape or vice versa. 
-                                                       This is equivalent to an <quote>exclusive or</quote>.
-						</entry>
-              <entry><graphic fileref="darkroom/images/panel_maskmanager_ex6.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                This set operator is depicted by the
+                <inlinegraphic fileref="&masks_exclusion;" scalefit="1" width="4%" align="center"/>
+                symbol. The resulting mask has all pixels selected that are either selected in
+                the existing mask and not in the added shape or vice versa. This is equivalent
+                to an <quote>exclusive or</quote>.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/panel_maskmanager_ex6.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

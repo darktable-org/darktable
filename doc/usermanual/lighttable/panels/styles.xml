@@ -17,12 +17,15 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel provides a powerful functionality in darktable: storing a history stack
-                                        as a style, and applying it to other images.
-					Styles are created within this panel or in the darkroom (see <xref linkend="history"/>).
-					They are managed within this lighttable panel, which allows you to create, apply, edit and delete styles.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel provides a powerful functionality in darktable: storing a history stack
+            as a style, and applying it to other images. Styles are created within this panel or
+            in the darkroom (see <xref linkend="history"/>). They are managed within this
+            lighttable panel, which allows you to create, apply, edit and delete styles.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_styles.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

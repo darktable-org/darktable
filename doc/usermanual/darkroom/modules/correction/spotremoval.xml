@@ -25,11 +25,13 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                Spot removal allows you to correct an area in your image by using another area
-                as model.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Spot removal allows you to correct an area in your image by using another area as
+              model.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/spotremoval.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -85,24 +87,30 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Let's use this portrait as example; we want to remove some dirt and unwanted
-                  catchlight from camera popup strobe.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/spotremoval_ex1_1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Let's use this portrait as example; we want to remove some dirt and unwanted
+                catchlight from camera popup strobe.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  I have marked all the spots that I want to remove from the image with circle
-                  shapes and appropriately selected source areas.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/spotremoval_ex1_2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                I have marked all the spots that I want to remove from the image with circle
+                shapes and appropriately selected source areas.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  And here is the result image of the spotremoval.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/spotremoval_ex1_3.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                And here is the result image of the spotremoval.
+              </entry>
             </row>
           </tbody>
         </tgroup>

@@ -22,10 +22,12 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module allows you to correct chromatic aberrations.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/chromatic.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module allows you to correct chromatic aberrations.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/chromatic.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

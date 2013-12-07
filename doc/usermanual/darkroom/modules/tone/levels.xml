@@ -26,12 +26,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                A tool for adjusting black, white, and mid-gray points. This module is
-                especially useful if the histogram of an image does not span the whole
-                horizontal range, from pure black to pure white.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/levels.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              A tool for adjusting black, white, and mid-gray points. This module is especially
+              useful if the histogram of an image does not span the whole horizontal range, from
+              pure black to pure white.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/levels.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

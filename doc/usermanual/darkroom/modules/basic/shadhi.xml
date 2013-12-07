@@ -21,12 +21,14 @@
         <colspec colwidth="4*" />
         <tbody>
           <row>
-            <entry><para>
-                The shadows and highlights module allows adjustment to the tonal range of darker
-                parts of an image (shadows) and lighter parts (highlights); it can bring back
-                details in shadows and highlights by enhancing local contrast.
-              </para></entry>
-            <entry><graphic width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" /></entry>
+            <entry>
+              The shadows and highlights module allows adjustment to the tonal range of darker
+              parts of an image (shadows) and lighter parts (highlights); it can bring back
+              details in shadows and highlights by enhancing local contrast.
+            </entry>
+            <entry>
+              <graphic width="80%" fileref="darkroom/modules/images/shadhi.png" align="center" scalefit="1" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -120,25 +122,31 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/shadhi_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Original image exposed for the outer sunlit wall to avoid clipped highlights.
-                  As a consequence the interior of the barn has pitch black shadows.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/shadhi_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Original image exposed for the outer sunlit wall to avoid clipped highlights. As
+                a consequence the interior of the barn has pitch black shadows.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/shadhi_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Shadows get lightened; highlights are untouched; overall effect toned down a
-                  bit by <link linkend="blending_operators"><emphasis>blend
-                  mode</emphasis></link> <quote>normal</quote> and an opacity of 65%.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/shadhi_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Shadows get lightened; highlights are untouched; overall effect toned down a bit
+                by <link linkend="blending_operators"><emphasis>blend mode</emphasis></link>
+                <quote>normal</quote> and an opacity of 65%.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/shadhi_ex3.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Resulting image.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/shadhi_ex3.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Resulting image.
+              </entry>
             </row>
           </tbody>
         </tgroup>

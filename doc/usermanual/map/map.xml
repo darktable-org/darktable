@@ -57,9 +57,12 @@
           <colspec colwidth='5cm'/>
           <tbody>
             <row>
-              <entry>In the center of the map view you will see a map.
-	  </entry>
-              <entry><graphic fileref="map/images/map_center_view.png" scalefit="1" width="80%" align="center" /></entry>
+              <entry>
+                In the center of the map view you will see a map.
+              </entry>
+              <entry>
+                <graphic fileref="map/images/map_center_view.png" scalefit="1" width="80%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

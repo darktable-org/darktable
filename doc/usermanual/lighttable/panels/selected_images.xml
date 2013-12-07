@@ -17,9 +17,12 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel provides some actions that operate on selected images.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel provides some actions that operate on selected images.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_selectedimages.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

@@ -21,11 +21,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
+            <entry>
+              <para>
                 The <emphasis>low light</emphasis> module allows one to simulate human lowlight
                 vision, thus providing ability to make lowlight pictures look closer to reality.
                 It can also be used to perform a day to night conversion.
-              </para><para>
+              </para>
+
+              <para>
                 The idea is to calculate a
                 <ulink url="http://en.wikipedia.org/wiki/Scotopic_vision">scotopic
                 vision</ulink> image which is perceived by rods rather than than cones in the
@@ -34,8 +37,11 @@
                 able to simulate the
                 <ulink url="http://en.wikipedia.org/wiki/Purkinje_effect">Purkinje
                 effect</ulink> by adding some blueness to the dark parts of the image.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/lowlight.png" scalefit="1" width="80%" align="center" /></entry>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/lowlight.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -81,16 +87,20 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/lowlight_ex1_1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Image 1. This is the original image.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/lowlight_ex1_1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Image 1. This is the original image.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/lowlight_ex1_2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  Image 1. With low light module on.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/lowlight_ex1_2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Image 1. With low light module on.
+              </entry>
             </row>
           </tbody>
         </tgroup>
@@ -101,16 +111,20 @@
           <colspec colwidth="4*"/>
           <tbody>
             <row>
-              <entry><para>
-                  Image 2. This is the original image.
-                </para></entry>
-              <entry><graphic fileref="darkroom/modules/images/lowlight_ex2_1.png" scalefit="1" width="90%" align="center" /></entry>
+              <entry>
+                Image 2. This is the original image.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/lowlight_ex2_1.png" scalefit="1" width="90%" align="center" />
+              </entry>
             </row>
             <row>
-              <entry><para>
-                  Image 2. With low light module on.
-                </para></entry>
-              <entry><graphic fileref="darkroom/modules/images/lowlight_ex2_2.png" scalefit="1" width="90%" align="center" /></entry>
+              <entry>
+                Image 2. With low light module on.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/lowlight_ex2_2.png" scalefit="1" width="90%" align="center" />
+              </entry>
             </row>
           </tbody>
         </tgroup>

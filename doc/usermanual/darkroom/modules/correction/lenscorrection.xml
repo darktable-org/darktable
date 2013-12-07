@@ -21,13 +21,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is able to correct certain lens flaws, namely distortions,
-                transversal chromatic aberrations (TCA) and vignetting. It relies on the
-                external library lensfun, which comes with correction profiles for many (but not
-                all) common cameras end lenses.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is able to correct certain lens flaws, namely distortions, transversal
+              chromatic aberrations (TCA) and vignetting. It relies on the external library
+              lensfun, which comes with correction profiles for many (but not all) common
+              cameras end lenses.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/lenscorrection.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>

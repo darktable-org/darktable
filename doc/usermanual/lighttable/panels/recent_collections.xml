@@ -17,10 +17,14 @@
       <colspec colwidth="4*"/>
       <tbody>
         <row>
-          <entry>This panel keeps track of the latest collections you have used, so you can jump to recently used collections without remembering what rules were
-                                        specified in the collection.
-					</entry>
-          <entry><graphic fileref="lighttable/images/panel_recent_collections.png" scalefit="1" width="80%" align="center" /></entry>
+          <entry>
+            This panel keeps track of the latest collections you have used, so you can jump to
+            recently used collections without remembering what rules were specified in the
+            collection.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_recent_collections.png" scalefit="1" width="80%" align="center" />
+          </entry>
         </row>
       </tbody>
     </tgroup>

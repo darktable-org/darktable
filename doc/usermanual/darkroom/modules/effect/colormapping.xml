@@ -26,13 +26,15 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module transfers the look and feel from one image onto another. It
-                statistically analyses the color characteristics of a source image and a target
-                image. The colors of the source image are then mapped to corresponding colors of
-                the target image.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/colormapping.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module transfers the look and feel from one image onto another. It
+              statistically analyses the color characteristics of a source image and a target
+              image. The colors of the source image are then mapped to corresponding colors of
+              the target image.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colormapping.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -128,25 +130,31 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/colormapping_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  The source image taken shortly after sunset under front lighting conditions.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/colormapping_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The source image taken shortly after sunset under front lighting conditions.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/colormapping_ex2.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  The target image taken in the afternoon with a partly clouded sky. Our goal is
-                  to transfer the evening atmosphere of the source image.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/colormapping_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The target image taken in the afternoon with a partly clouded sky. Our goal is
+                to transfer the evening atmosphere of the source image.
+              </entry>
             </row>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  The target image with color mapping applied. A number of 2 clusters was used.
-                  <quote>color dominance</quote> is set to 100% for a bold but still credible
-                  effect. <quote>histogram equalization</quote> is set to 80%.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/colormapping_ex3.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The target image with color mapping applied. A number of 2 clusters was used.
+                <quote>color dominance</quote> is set to 100% for a bold but still credible
+                effect. <quote>histogram equalization</quote> is set to 80%.
+              </entry>
             </row>
           </tbody>
         </tgroup>

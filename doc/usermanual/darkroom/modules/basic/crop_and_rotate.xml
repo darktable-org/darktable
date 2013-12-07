@@ -29,12 +29,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                This module is used to crop, rotate and correct perspective distortions of your
-                image. You can overlay your image with various helpful guidelines that assist
-                you using the tools.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              This module is used to crop, rotate and correct perspective distortions of your
+              image. You can overlay your image with various helpful guidelines that assist you
+              using the tools.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/crop_and_rotate.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
@@ -97,16 +99,28 @@
             <colspec colwidth='3cm'/>
             <tbody>
               <row>
-                <entry><emphasis>vertical</emphasis></entry>
-                <entry>if you want to limit the correction to vertical lines</entry>
+                <entry>
+                  <emphasis>vertical</emphasis>
+                </entry>
+                <entry>
+                  if you want to limit the correction to vertical lines
+                </entry>
               </row>
               <row>
-                <entry><emphasis>horizontal</emphasis></entry>
-                <entry>limit the correction to horizontal lines</entry>
+                <entry>
+                  <emphasis>horizontal</emphasis>
+                </entry>
+                <entry>
+                  limit the correction to horizontal lines
+                </entry>
               </row>
               <row>
-                <entry><emphasis>free</emphasis></entry>
-                <entry>if you want to correct horizontal and vertical lines</entry>
+                <entry>
+                  <emphasis>free</emphasis>
+                </entry>
+                <entry>
+                  if you want to correct horizontal and vertical lines
+                </entry>
               </row>
             </tbody>
           </tgroup>
@@ -120,23 +134,31 @@
             <colspec colwidth="2*"/>
             <tbody>
               <row>
-                <entry><para>
+                <entry>
+                  <para>
                     Depending on the selected correction type you will see two or four straight
                     adjustment lines overlaid to your image. Two red circles on every line let
                     you modify the line positions with your mouse. Each line additionally
                     carries a <quote>symmetry</quote> button. If activated (and highlighted in
                     red) all movements of the affected line will be mirrored by the opposite
                     line.
-                  </para><para>
+                  </para>
+
+                  <para>
                     In order to correct perspective distortions, you need to find suitable
                     horizontal and/or vertical features in your image and align the adjustment
                     lines with them. When done, press the <quote>OK</quote> button, which is
                     located close to the center of your image. The image will be corrected
                     immediately. You can at any time come back and refine your corrections by
                     selecting <quote>correction applied</quote> in combobox keystone.
-                  </para></entry>
-                <entry><graphic fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" /></entry>
-                <entry><graphic fileref="darkroom/modules/images/crop_and_rotate_k_applied.png" scalefit="1" width="80%" align="center" /></entry>
+                  </para>
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/crop_and_rotate_k_set.png" scalefit="1" width="80%" align="center" />
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/crop_and_rotate_k_applied.png" scalefit="1" width="80%" align="center" />
+                </entry>
               </row>
             </tbody>
           </tgroup>
@@ -167,20 +189,36 @@
             <colspec colwidth='3cm'/>
             <tbody>
               <row>
-                <entry><emphasis>free</emphasis></entry>
-                <entry>free forming the rectangle without any ratio restrictions</entry>
+                <entry>
+                  <emphasis>free</emphasis>
+                </entry>
+                <entry>
+                  free forming the rectangle without any ratio restrictions
+                </entry>
               </row>
               <row>
-                <entry><emphasis>image</emphasis></entry>
-                <entry>this option constrains the ratio to be equal to image ratio</entry>
+                <entry>
+                  <emphasis>image</emphasis>
+                </entry>
+                <entry>
+                  this option constrains the ratio to be equal to image ratio
+                </entry>
               </row>
               <row>
-                <entry><emphasis>golden cut</emphasis></entry>
-                <entry>this option constrains the ratio to be equal the golden number</entry>
+                <entry>
+                  <emphasis>golden cut</emphasis>
+                </entry>
+                <entry>
+                  this option constrains the ratio to be equal the golden number
+                </entry>
               </row>
               <row>
-                <entry><emphasis>square</emphasis></entry>
-                <entry>this option constrains the ratio to be 1</entry>
+                <entry>
+                  <emphasis>square</emphasis>
+                </entry>
+                <entry>
+                  this option constrains the ratio to be 1
+                </entry>
               </row>
             </tbody>
           </tgroup>
@@ -208,11 +246,13 @@
           <colspec colwidth="6*"/>
           <tbody>
             <row>
-              <entry><graphic fileref="darkroom/modules/images/crop_and_rotate_ex1.png" scalefit="1" width="90%" align="center" /></entry>
-              <entry><para>
-                  A cropped image in center view when module crop and rotate is in focus. The
-                  cropped area is visible as well as some guiding lines.
-                </para></entry>
+              <entry>
+                <graphic fileref="darkroom/modules/images/crop_and_rotate_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                A cropped image in center view when module crop and rotate is in focus. The
+                cropped area is visible as well as some guiding lines.
+              </entry>
             </row>
           </tbody>
         </tgroup>

@@ -22,12 +22,14 @@
         <colspec colwidth="4*"/>
         <tbody>
           <row>
-            <entry><para>
-                Raw denoise allows you to perform denoising on pre-demosaic data. It is ported
-                from
-                <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.
-              </para></entry>
-            <entry><graphic fileref="darkroom/modules/images/rawdenoise.png" scalefit="1" width="80%" align="center" /></entry>
+            <entry>
+              Raw denoise allows you to perform denoising on pre-demosaic data. It is ported
+              from
+              <ulink url="http://www.cybercom.net/~dcoffin/dcraw/"><emphasis>dcraw</emphasis></ulink>.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/rawdenoise.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
       </tgroup>
