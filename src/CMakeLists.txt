@@ -160,7 +160,7 @@ if(OPENEXR_FOUND)
   list(APPEND SOURCES "common/imageio_exr.cc")
 endif(OPENEXR_FOUND)
 
-find_package(WebP)
+find_package(WebP 0.3.0)
 if(WEBP_FOUND)
   include_directories(${WebP_INCLUDE_DIRS})
   list(APPEND LIBS ${WebP_LIBRARIES})

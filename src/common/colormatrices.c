@@ -210,6 +210,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // David Meier, Wolf Faust IT8, direct sunlight, well lit
   { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
 
+  // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
+  { "SONY ILCE-7",                  { 913254, 376358,  21606}, { 120987, 1024490, -251312}, {  5142, -318573, 1100876}, {849228, 881241, 717255}},
+
   // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
   { "SONY NEX-3",                   {1157837, 503723,  40894}, { 194550, 1279465, -297058}, {-80719, -471252, 1316238}, {669724, 694839, 586731}},
 
@@ -230,7 +233,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
 
   // Frederic Crozat, Wolf Faust IT8, direct sunlight, well lit
   { "OLYMPUS E-M5",                 { 937775, 279129,  75378}, { 232697, 1345169, -493317}, { 62012, -354202, 1458389}, {722229, 755142, 623749}},
-  { "OLYMPUS E-M1",                 { 937775, 279129,  75378}, { 232697, 1345169, -493317}, { 62012, -354202, 1458389}, {722229, 755142, 623749}},
+
+  // Sebastian Haaf, Wolf Faust IT8, direct sunlight, well lit
+  { "OLYMPUS E-M1",                 { 774292, 245407,  30823}, { 433823, 1410355, -453156}, {-18448, -431107, 1479370}, {758911, 788452, 600266}},
 
   // Karl Mikaelsson, Homebrew ColorChecker, strobe, well lit
   { "OLYMPUS E-500",                { 925171, 247681,  26367}, { 257187, 1270187, -455826}, {-87784, -426529, 1383041}, {790421, 812775, 708054}},

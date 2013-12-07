@@ -1432,6 +1432,7 @@ void enter(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->button = 0;
   lib->pan = 0;
+  dt_collection_hint_message(darktable.collection);
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)

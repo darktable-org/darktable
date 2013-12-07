@@ -709,6 +709,8 @@ film_strip_activated(const int imgid, void *data)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_change_image(dev, imgid);
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+  // record the imgid to display when going back to lighttable
+  dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
   // force redraw
   dt_control_queue_redraw();
 }
@@ -1267,6 +1269,8 @@ void enter(dt_view_t *self)
 
   // prefetch next few from first selected image on.
   dt_view_filmstrip_prefetch();
+
+  dt_collection_hint_message(darktable.collection);
 }
 
 void leave(dt_view_t *self)

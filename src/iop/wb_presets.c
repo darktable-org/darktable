@@ -5651,6 +5651,18 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-C3", "5500K", 0,		{ 2.753906, 1, 1.492188, 0 } },
   { "SONY", "NEX-C3", "6500K", 0,		{ 2.996094, 1, 1.351563, 0 } },
 
+  // firmware ILCE-7 (A7) Ver 1.0.1
+  { "SONY", "ILCE-7", Daylight, 0,		{ 2.39843750, 1, 1.46484375, 0 } },
+  { "SONY", "ILCE-7", Shade, 0,			{ 2.87109375, 1, 1.21093750, 0 } },
+  { "SONY", "ILCE-7", Cloudy, 0,		{ 2.59765625, 1, 1.34765625, 0 } },
+  { "SONY", "ILCE-7", Incandescent, 0,		{ 1.46484375, 1, 2.62109375, 0 } },
+  { "SONY", "ILCE-7", WarmWhiteFluorescent, 0,	{ 1.70312500, 1, 2.60546875, 0 } },
+  { "SONY", "ILCE-7", CoolWhiteFluorescent, 0,	{ 2.24609375, 1, 2.11718750, 0 } },
+  { "SONY", "ILCE-7", DayWhiteFluorescent, 0,	{ 2.29687500, 1, 1.58984375, 0 } },
+  { "SONY", "ILCE-7", DaylightFluorescent, 0,	{ 2.57812500, 1, 1.38281250, 0 } },
+  { "SONY", "ILCE-7", Flash, 0,			{ 2.64843750, 1, 1.32421875, 0 } },
+  { "SONY", "ILCE-7", "5500K", 0,		{ 2.21484375, 1, 1.40625000, 0 } },
+
   { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
   { "SONY", "SLT-A37", Cloudy, 0,		{ 2.8828, 1, 1.3906, 0 } },
