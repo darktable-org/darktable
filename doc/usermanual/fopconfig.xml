@@ -1,21 +1,41 @@
 <fop version="1.0">
-	<base>.</base>
-	<renderers>
-		<renderer mime="application/pdf">
-			<fonts>
-				<font metrics-url="fonts/Ubuntu-R.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-R.ttf" >
-					<font-triplet name="Ubuntu" style="normal" weight="normal"/>
-				</font>
-				<font metrics-url="fonts/Ubuntu-B.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-B.ttf" >
-					<font-triplet name="Ubuntu" style="normal" weight="bold"/>
-				</font>
-				<font metrics-url="fonts/Ubuntu-BI.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-BI.ttf" >
-					<font-triplet name="Ubuntu" style="italic" weight="bold"/>
-				</font>
-				<font metrics-url="fonts/Ubuntu-I.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-I.ttf" >
-					<font-triplet name="Ubuntu" style="italic" weight="normal"/>
-				</font>
-			</fonts>
-		</renderer>
-	</renderers>
+
+  <base>.</base>
+
+  <renderers>
+
+    <renderer mime="application/pdf">
+
+      <fonts>
+
+        <font metrics-url="fonts/Ubuntu-R.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-R.ttf" >
+
+          <font-triplet name="Ubuntu" style="normal" weight="normal"/>
+
+        </font>
+
+        <font metrics-url="fonts/Ubuntu-B.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-B.ttf" >
+
+          <font-triplet name="Ubuntu" style="normal" weight="bold"/>
+
+        </font>
+
+        <font metrics-url="fonts/Ubuntu-BI.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-BI.ttf" >
+
+          <font-triplet name="Ubuntu" style="italic" weight="bold"/>
+
+        </font>
+
+        <font metrics-url="fonts/Ubuntu-I.ttf.xml" kerning="yes" embed-url="fonts/Ubuntu-I.ttf" >
+
+          <font-triplet name="Ubuntu" style="italic" weight="normal"/>
+
+        </font>
+
+      </fonts>
+
+    </renderer>
+
+  </renderers>
+
 </fop>

@@ -1,18 +1,31 @@
 <sect2 status="final" id="color_group">
+
   <title>Color group</title>
-  <para>Modules for working specifically on your image's color are found here in the color group.
+
+  <para>
+    Modules for working specifically on your image's color are found here in the color group.
   </para>
 
   <xi:include href="velvia.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="channelmixer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="outputcolorprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="colorcontrast.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="colorcorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-  <xi:include href="monochrome.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>  
+
+  <xi:include href="monochrome.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="colorzones.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="colorbalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="vibrance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="inputcolorprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="unbreakinputprofile.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect2>

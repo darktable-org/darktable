@@ -1,27 +1,35 @@
-<sect1 status="final" id="shortcuts"><title>Shortcuts</title>
+<sect1 status="final" id="shortcuts">
+
+  <title>Shortcuts</title>
+
   <indexterm>
-     <primary>preferences and settings</primary>
-     <secondary>shortcuts</secondary>
+    <primary>preferences and settings</primary>
+    <secondary>shortcuts</secondary>
   </indexterm>
 
-  <para>darktable has a large set of keyboard shortcuts that, with the work of Robert Bieber,
-        is now user configurable through the preference pane.
+  <para>
+    darktable has a large set of keyboard shortcuts that, with the work of Robert Bieber, is now
+    user configurable through the preference pane.
   </para>
 
-  <para>When you open the shortcuts menu you are presented with a hierarchical list of all actions that
-        can receive a keyboard shortcut. Go to the action you want to change and double click. You are then
-        prompted to press the new key combination to be mapped to the selected action. In order to remove an
-        existing keyboard shortcut, click on the action and press backspace.
+  <para>
+    When you open the shortcuts menu you are presented with a hierarchical list of all actions
+    that can receive a keyboard shortcut. Go to the action you want to change and double click.
+    You are then prompted to press the new key combination to be mapped to the selected action.
+    In order to remove an existing keyboard shortcut, click on the action and press backspace.
   </para>
 
-  <para>You can export your mappings to a file or import mappings from a file. Press <quote>default</quote> to reset all
-        keyaccelerators to their default state.
+  <para>
+    You can export your mappings to a file or import mappings from a file. Press
+    <quote>default</quote> to reset all keyaccelerators to their default state.
   </para>
 
-  <para>Below is a table with the default keybindings for actions available in darktable.
+  <para>
+    Below is a table with the default keybindings for actions available in darktable.
   </para>
 
   <para>
     <xi:include href="keymappings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
   </para>
+
 </sect1>

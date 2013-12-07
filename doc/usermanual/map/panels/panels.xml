@@ -1,13 +1,21 @@
-<sect1 status="final" id="map_panels"><title>Map panels</title>
-	<para>This section contains documentation for panels that are specific to the
-	map view.
-	</para>
+<sect1 status="final" id="map_panels">
 
-	<!-- Left side -->
-        <xi:include href="left_panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <title>Map panels</title>
 
-	<!-- Right side -->
-        <xi:include href="find_location.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="map_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <para>
+    This section contains documentation for panels that are specific to the map view.
+  </para>
+
+<!-- Left side -->
+
+  <xi:include href="left_panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Right side -->
+
+  <xi:include href="find_location.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="map_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>
