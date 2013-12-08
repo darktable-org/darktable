@@ -294,7 +294,8 @@ void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
 void dt_image_flip(const int32_t imgid, const int32_t cw)
 {
   // this is light table only:
-  if(darktable.develop->image_storage.id == imgid) return;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM) return;
   int32_t orientation = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
