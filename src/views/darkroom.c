@@ -575,15 +575,26 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
 
-  GList *modules = g_list_last(dev->iop);
   int nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   for (int i=nb_iop-1; i>0; i--)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop,i));
-    if (module->multi_priority == 0) //if the module is the "base" instance, we keep it
+
+    // the base module is the one with the highest multi_priority
+    const int clen = g_list_length(dev->iop);
+    int mp_base = 0;
+    for (int k=0; k<clen; k++)
     {
+      dt_iop_module_t *mod = (dt_iop_module_t *)(g_list_nth_data(dev->iop,k));
+      if (strcmp(module->op,mod->op)==0)
+        mp_base = MAX (mp_base, mod->multi_priority);
+    }
+
+    if (module->multi_priority == mp_base) //if the module is the "base" instance, we keep it
+    {
+      module->multi_priority = 0;
       dt_iop_reload_defaults(module);
       dt_iop_gui_update(module);
     }
@@ -612,7 +623,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_read_history(dev);
 
   //we have to init all module instances other than "base" instance
-  modules = dev->iop;
+  GList *modules = dev->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -662,7 +673,15 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
       //we update show params for multi-instances for each other instances
       dt_dev_modules_update_multishow(module->dev);
+
     }
+    else
+    {
+      //  update the module header to ensure proper multi-name display
+      if (!dt_iop_is_hidden(module))
+        dt_iop_gui_update_header(module);
+    }
+
     modules = g_list_next(modules);
   }
 
