@@ -262,7 +262,7 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(j->progressbar), CLAMP(progress, 0, 1.0));
 
 #ifdef HAVE_UNITY
-      unity_launcher_entry_set_progress( j->darktable_launcher, progress );
+      unity_launcher_entry_set_progress( j->darktable_launcher, CLAMP(progress, 0, 1.0));
 #endif
     }
   }
