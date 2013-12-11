@@ -356,6 +356,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
 void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 
+void dt_iop_gui_update_header(dt_iop_module_t *module);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
