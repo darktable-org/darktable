@@ -2309,13 +2309,16 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     }
   }
 
-  static int mouse=0;
+  static int mouse_button_1=0;
   if(darktable.control->button_down_which==1){
-    mouse = 1;
+    // TODO block other gui events 
+    mouse_button_1=1;
   }
-  else if(mouse==1){ //mouse 1 released
-    mouse=0;
+  else if(mouse_button_1==1){ //mouse 1 released
+    mouse_button_1=0;
     commit_box (self, g, p);
+    // TODO history
+    // TODO unblock other gui events 
   }
 }
 
