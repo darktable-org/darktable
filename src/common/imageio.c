@@ -645,7 +645,8 @@ int dt_imageio_export_with_flags(
       {
         m = (dt_iop_module_t *)modules->data;
 
-        if (strcmp(m->op, s->name) == 0)
+        //  since the name in the style is returned with a possible multi-name, just check the start of the name
+        if (strncmp(m->op, s->name, strlen(m->op)) == 0)
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
 
