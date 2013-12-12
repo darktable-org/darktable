@@ -192,16 +192,18 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
   uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
-  if(d->inited || curr_pos!=-1)
+  uint32_t new_pos = -1;
+
+  if(!d->inited)
+  {
+    new_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
+  }
+  else if(curr_pos != -1)
   {
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   }
-  else
-  {
-    curr_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
-  }
   d->inited = 1;
-  uint32_t new_pos = curr_pos;
+
 
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
@@ -253,7 +255,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
       g_free(line1);
     }
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", new_pos);
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", (new_pos != -1 ? new_pos : (curr_pos != -1 ? curr_pos : 0)));
   }
   // update button descriptions:
   for(int k=0; k<NUM_LINES; k++)
@@ -295,7 +297,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(d->item[k].button, FALSE);
     gtk_widget_set_visible(d->item[k].button, TRUE);
   }
-  dt_view_lighttable_set_position(darktable.view_manager, new_pos);
+  if((new_pos != -1) && (new_pos != curr_pos)) dt_view_lighttable_set_position(darktable.view_manager, new_pos);
 }
 
 void
