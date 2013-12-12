@@ -601,7 +601,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         // is used to compare against the internal module name.
         const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
 
-        if (!multi_name || strlen(multi_name))
+        if (!multi_name || (strlen(multi_name)==0))
           g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
         else
           g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), multi_name);
