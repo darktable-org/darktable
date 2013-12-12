@@ -249,9 +249,9 @@ msgid ""
 "All darktable core functions operate on 4x32-bit floating point pixel "
 "buffers for high accuracy processing, preventing banding and color breaks."
 msgstr ""
-"Toutes les fonctionnalités de base opèrent sur des tampons de pixels flotants 4x32-bit"
-"pour une grande précision de traitement, prévenant les phénomènes de  \"banding\" et de "
-"rupture entre les couleurs."
+"Toutes les fonctionnalitées de base opèrent sur des tampons de pixels (flottants 4x32-bit)"
+"pour une grande précision de traitement, prévenant ainsi l'apparition de raies de couleurs"
+" et de ruptures dans les dégradés."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:109(para)
 msgid ""
@@ -293,9 +293,9 @@ msgid ""
 "tagging by related tags are useful tools in your every-day photo workflow."
 msgstr ""
 "Un module de filtrage vous permet d'éxecuter des requêtes sur votre base de "
-"données; chercher vos images par tags, notes (étoiles), labels de couleurs "
+"données; chercher vos images par mots-clés, notes (étoiles), labels de couleurs "
 "etc. Le filtrage et tri de votre collection d'images via la base de données "
-"ou simplement par tag sont des outils utils dans le flux de votre travail "
+"ou simplement par mots-clés sont des outils utils dans le flux de votre travail "
 "quotidien."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:126(para)
@@ -315,9 +315,8 @@ msgstr ""
 "grâce à plusieurs niveaux de cache logiciel."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:132(para)
-#, fuzzy
 msgid "Tethered shooting."
-msgstr "Capture"
+msgstr "Capture."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:135(para)
 msgid ""
@@ -331,7 +330,7 @@ msgstr ""
 "stockage sur disque, la copie à l'échelle, les pièces jointes mail et permet "
 "de créer une galerie HTML. darktable permet l'export d'images à faible "
 "dynamique (JPEG, JPEG2000, PNG, TIFF), 16-bit (PPM, TIFF), ou encore les "
-"images a haute plage dynamique (PFM, EXR)."
+"images a grande gamme dynamique (PFM, EXR)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:140(para)
 msgid ""
@@ -453,7 +452,7 @@ msgid ""
 "other actions (see <xref linkend=\"lighttable_chapter\"/>)."
 msgstr ""
 "La vue \"table lumineuse\" est l'endroit où vous organisez les images et les "
-"dossiers. C'est dans cette vue que vous notez, ajoutez des labels, exportez "
+"dossiers. C'est dans cette vue que vous notez, ajoutez des mots clés, labels, exportez "
 "les images et bien d'autres fonctions (voir (see <xref linkend="
 "\"lighttable_chapter\"/>)."
 
@@ -576,7 +575,7 @@ msgstr ""
 "et que vous développez une image, vous pouvez changer d'image à développer "
 "en double-cliquant sur l'aperçu de l'image dans le bandeau. Vous pouvez "
 "aussi noter les images comme vous le feriez dans la table lumineuse, copier/"
-"coller l'historique de l'image, etc."
+"coller le développement de l'image, etc."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:256(title)
 msgid "Preferences"
@@ -733,7 +732,6 @@ msgstr ""
 "significance=\"normal\"><primary>save button</primary></indexterm>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:312(para)
-#, fuzzy
 msgid ""
 "On the left panel in darkroom mode is the <link linkend=\"history"
 "\"><emphasis>history stack</emphasis></link>, showing changes starting from "
@@ -744,7 +742,11 @@ msgid ""
 "happy with what you have done, just compress the history stack."
 msgstr ""
 "Dans le panneau de gauche vous trouverez l'<link linkend=\"history"
-"\"><emphasis>historique</emphasis></link>, il vous montre les premiers "
+"\"><emphasis>historique</emphasis></link>, il vous montre les modifications en partant "
+"du bas. Vous pouvez sélectionner un item dans l'historique du développement pour voir à "
+"quoi l'image ressemblait à cette étape - ce qui permet de comparer. Le développement "
+"peut être compressé: il sera optimisé et les modifications redondantes seront supprimées. "
+"Quand vous pensez avoir terminé votre développement, compressez l'historique."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:320(para)
 msgid ""
@@ -1390,7 +1392,7 @@ msgid ""
 "\"collect_images\"/>)."
 msgstr ""
 "Vous pouvez aisément construire d'autres types de collection basées sur des "
-"attributs comme les métadonnées (données EXIF), nom de fichier, tags etc. "
+"attributs comme les métadonnées (données EXIF), nom de fichier, mots-clés etc. "
 "Plusieurs critères peuvent être combinés logiquement pour réduire ou "
 "agrandir votre collection (voir <xref linkend=\"collect_images\"/>)."
 
@@ -1679,23 +1681,21 @@ msgstr ""
 "Les groupes d'images sont un moyen pratique de protéger un historique de "
 "modifications contre des altérations non voulues. Supposons que vous venez "
 "de terminer l'édition d'une image; tout ce que vous avez à faire est de "
-"créer un clone de l'historique de l'image puis activer le mode groupement. "
+"créer un clone du développement de l'image puis activer le mode groupement. "
 "Ainsi lorsque vous double cliquez sur l'image vous ouvrez la tête du groupe "
-"et ne modifiez pas la copie de l'image. Veuillez notez que seul une copie de "
-"l'historique est créée (et donc un fichier XMP); le fichier image (.JPG, ."
+"et ne modifiez pas la copie de l'image. Veuillez notez que seul une copie du "
+"développement est créée (et donc un fichier XMP); le fichier image (.JPG, ."
 "RAW etc..) n'est pas dupliqué: l'espace disque consommé par le clonage est "
 "très faible."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:829(title)
-#, fuzzy
 msgid "Sidecar files"
-msgstr ""
+msgstr "Fichiers sidecar"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:831(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1532(primary)
-#, fuzzy
 msgid "sidecar files"
-msgstr ""
+msgstr "fichiers sidecar"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:834(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1535(primary)
@@ -1707,7 +1707,6 @@ msgid "save button"
 msgstr "Bouton de sauvegarde"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:839(para)
-#, fuzzy
 msgid ""
 "darktable is a non-destructive image editor. This implies that darktable "
 "opens input images read-only. Any newly added metadata, tags and parameters "
@@ -1718,8 +1717,8 @@ msgid ""
 msgstr ""
 "darktable est un éditeur d'images non destructif. Ceci implique que "
 "darktable ouvre les fichiers importés en lecture seule. Toute nouvelle "
-"donnée; métadonnée, tags, paramètres des opérations sur les images (pile "
-"d'historique) est stockée dans un fichier séparé appelé sidecar ou fichier "
+"donnée; métadonnée, mots-clés, paramètres des opérations sur les images ("
+"développement) est stockée dans un fichier séparé appelé sidecar ou fichier "
 "XMP. Lorsque vous importez une image dans darktable pour la première fois un "
 "fichier XMP est créé automatiquement avec les paramètres par défaut."
 
@@ -1739,8 +1738,8 @@ msgid ""
 msgstr ""
 "Pour une seule image plusieurs versions peuvent co-exister, ces clones d'une "
 "même image se partagent le même fichier importé (IMG.001.JPG par exemple) "
-"mais possèdent des métadonnées, tags, paramètres des opérations (pile "
-"d'historique) différents. Chaque clone est stocké dans un fichier XMP "
+"mais possèdent des métadonnées, mots-clés, paramètres des opérations ("
+"développement) différents. Chaque clone est stocké dans un fichier XMP "
 "distinct dont le nom est construit sous la forme: <quote>&lt;basename&gt;"
 "<emphasis>_nn</emphasis>.&lt;extension&gt;.xmp</quote>. <emphasis>nn</"
 "emphasis> représente le numéro de version (minimum deux chiffres) de ce "
@@ -1782,12 +1781,10 @@ msgstr ""
 "jours éventuelles à appliquer à la base de donnée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:862(title)
-#, fuzzy
 msgid "Importing sidecar files generated by other applications"
 msgstr "Importer des fichiers sidecar générés par d'autres applications"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:863(para)
-#, fuzzy
 msgid ""
 "When importing an image darktable automatically checks if this is "
 "accompanied by a sidecar file. Besides of the format <quote>&lt;basename&gt;."
@@ -1805,7 +1802,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:872(para)
 msgid "tags and hierarchical tags"
-msgstr "tags et hiérarchisation"
+msgstr "mots-clés et hiérarchisation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:874(para)
 msgid "ratings"
@@ -1847,7 +1844,6 @@ msgstr ""
 "proche des modifications originales."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:888(para)
-#, fuzzy
 msgid ""
 "The migration is automatically done when entering the darkroom view provided "
 "that a corresponding XMP sidecar is found."
@@ -1931,7 +1927,6 @@ msgstr ""
 "risquée et souvent succeptible d'entrainer des erreurs de manipulation."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:919(para)
-#, fuzzy
 msgid ""
 "The local copies feature of darktable has been designed to support directly "
 "those use cases. With the help of this feature you can create local copies "
@@ -1952,7 +1947,6 @@ msgstr ""
 "linkend=\"selected_images\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:926(para)
-#, fuzzy
 msgid ""
 "For safety reasons, if local copies exist and the external storage is "
 "available the local XMP sidecars are automatically synchronized at start up."
@@ -1992,7 +1986,7 @@ msgid ""
 msgstr ""
 "Une copie locale est identifiée dans la table lumineuse par un marqueur "
 "blanc sur la droite de la miniature. En plus de ça toutes les copies locales "
-"portent le tag <emphasis>darktable|copie locale</emphasis> pour permettre de "
+"portent le mot-clé <emphasis>darktable|copie locale</emphasis> pour permettre de "
 "les sélectionner facilement."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:972(title)
@@ -2316,29 +2310,28 @@ msgstr "Fichiers HDR"
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1099(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1429(primary)
 msgid "HDR images"
-msgstr ""
+msgstr "Images HDR"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1101(para)
 msgid ""
 "darktable reads high dynamic range images in OpenEXR, RGBE and PFM format."
-msgstr ""
+msgstr "darktable lit les images à grande gamme dynamique au format OpenEXR, RGBE et PFM."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1109(title)
-#, fuzzy
 msgid "Collect images"
-msgstr "Virage cyan"
+msgstr "Filtres de collection"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1112(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1115(primary)
-#, fuzzy
 msgid "collect images"
-msgstr "Virage cyan"
+msgstr "filtres de collection"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1125(entry)
 msgid ""
 "The current view in lighttable is called a collection. With this panel you "
 "can manage the collection by filtering with different criteria."
-msgstr ""
+msgstr "La vue courant dans la tale lumineuse est appellée une collection. Avec ce panneau "
+"vous pouvez gérer votre collection en utilisant des filtres avec différents criètres."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1136(para)
 msgid ""
@@ -2346,91 +2339,100 @@ msgid ""
 "attributes describing each image. A collection is defined by applying "
 "certain filtering rules to these attributes which leads to a subset of your "
 "images being displayed in the lighttable view."
-msgstr ""
+msgstr "Toutes les images importées dans darktable sont enregistrées dans une base de "
+"donnée avec différents attributs décrivant chaque image. Une collection est définie par l'"
+"application de certaines règles de filtrages à ces attributs qui conduisent à un sous-ensemble"
+"de vos images affichées dans la table lumineuse."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1141(para)
 msgid ""
 "The default collection is based on the film roll attribute - it displays all "
 "images of the last imported film roll or any other film roll chosen."
-msgstr ""
+msgstr "La collection par défaut est basée sur les pellicules - elle affiche toutes "
+"les images de la dernière pellicule importée ou tout autre pellicule sélectionnée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1153(para)
 msgid "the film roll to which the image belongs"
-msgstr ""
+msgstr "la pellicule à laquelle appartient l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1157(para)
 msgid "the disk folder where the input image file is located"
-msgstr ""
+msgstr "le fichier sur le disque où se trouve le fichier image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1161(para)
 msgid "the EXIF string describing the camera"
-msgstr ""
+msgstr "la chaîne de caractères EXIF décrivant l'appareil photo"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1165(para)
 msgid ""
 "any tag that is attached to the image; if activated a hierarchical list of "
 "known tags is displayed for quick selection"
-msgstr ""
+msgstr "tout les mots-clés qui sont attachés à l'image; si activé, une liste hiérarchique des "
+"mots-clés connus est affichée pour une sélection rapide"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1169(para)
 msgid ""
 "the date when the photo was taken in the format <emphasis>YYYY:MM:DD</"
 "emphasis>"
-msgstr ""
+msgstr "la date à laquelle l'image a été capturée au format <emphasis>YYYY:MM:DD</"
+"emphasis>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1173(para)
 msgid ""
 "the time (date and time of day) when the photo was taken in the format "
 "<emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
-msgstr ""
+msgstr "la date (jour et heure) à laquelle l'image a été capturée au format "
+"<emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1178(para)
 msgid ""
 "a boolean field stating if the image's history stack has been altered or not"
-msgstr ""
+msgstr "un champ booléen représentant si le développement a été altéré ou non."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1182(para)
 msgid ""
 "any color label that is attached to the image: <quote>red</quote>, "
 "<quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>, "
 "<quote>purple</quote>"
-msgstr ""
+msgstr "tout les labels de couleurs qui sont attachés à l'image; <quote>rouge</quote>, "
+"<quote>jaune</quote>, <quote>vert</quote>, <quote>bleu</quote>, "
+"<quote>violet</quote>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1187(para)
 msgid "the title string as defined in the image's metadata"
-msgstr ""
+msgstr "le titre de l'image extrait des métadonnées de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1191(para)
 msgid "the description string as defined in the image's metadata"
-msgstr ""
+msgstr "la description de l'image extraite des métadonnées de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1195(para)
 msgid "the creator string as defined in the image's metadata"
-msgstr ""
+msgstr "l'auteur de l'image extrait des métadonnées de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1199(para)
 msgid "the publisher string as defined in the image's metadata"
-msgstr ""
+msgstr "le diffuseur de l'image extrait des métadonnées de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1203(para)
 msgid "the copyrights string as defined in the image's metadata"
-msgstr ""
+msgstr "les droits d'utilisation de l'image extrait des métadonnées de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1207(para)
 msgid "the EXIF string describing the lens"
-msgstr ""
+msgstr "la description de l'objectif extrait des données EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1211(para)
 msgid "the ISO value as derived from EXIF data"
-msgstr ""
+msgstr "la valeur ISO extraite des données EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1215(para)
 msgid "the aperture value as derived from EXIF data"
-msgstr ""
+msgstr "la valeur de l'ouverture extraite des données EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1219(para)
 msgid "the filename of the physical input image"
-msgstr ""
+msgstr "le nom de fichier du fichier image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1145(para)
 msgid ""
@@ -2450,7 +2452,22 @@ msgid ""
 "row><row><entry>ISO</entry><placeholder-15/></row><row><entry>aperture</"
 "entry><placeholder-16/></row><row><entry>filename</entry><placeholder-17/></"
 "row></tbody></tgroup></informaltable>"
-msgstr ""
+msgstr "La boîte de sélection à gauche vous permet de choisir parmi les attributs disponibles:"
+"<informaltable frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" "
+"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"3*\"/"
+"><tbody><row><entry>film roll</entry><placeholder-1/></"
+"row><row><entry>folders</entry><placeholder-2/></row><row><entry>camera</"
+"entry><placeholder-3/></row><row><entry>tag</entry><placeholder-4/></"
+"row><row><entry>date</entry><placeholder-5/></row><row><entry>time</"
+"entry><placeholder-6/></row><row><entry>history</entry><placeholder-7/></"
+"row><row><entry>color label</entry><placeholder-8/></row><row><entry>title</"
+"entry><placeholder-9/></row><row><entry>description</entry><placeholder-10/"
+"></row><row><entry>creator</entry><placeholder-11/></"
+"row><row><entry>publisher</entry><placeholder-12/></row><row><entry>rights</"
+"entry><placeholder-13/></row><row><entry>lens</entry><placeholder-14/></"
+"row><row><entry>ISO</entry><placeholder-15/></row><row><entry>aperture</"
+"entry><placeholder-16/></row><row><entry>filename</entry><placeholder-17/></"
+"row></tbody></tgroup></informaltable>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1227(para)
 msgid ""
@@ -2460,57 +2477,68 @@ msgid ""
 "You may use <quote>%</quote> as wildcard character. The collection gets "
 "limited to those images where the query matches. Leaving the text field "
 "empty matches all images."
-msgstr ""
+msgstr "Dans le champ de texte à droite de l'attribut vous renseignez un motif. Le "
+"motif est comparé à l'attribut correspondant de toutes les images de la base de donnée. "
+"Une correspondance est détectée lorsque le motif est une partie de la chaîne de caractères "
+"de l'attribut correspondant sur l'image. Vous pouvez utiliser <quote>%</quote> comme caractère "
+"générique (= joker). La collection sera alors limitée aux images correspondant aux critères requis. Laisser "
+"un champ de texte vide (ou <quote>%</quote>) fera correspondre toutes les images."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1234(para)
 msgid ""
 "Clicking on the triangle button right to the text field opens a drop-down "
 "menu with options to finetune your collection by adding further rules:"
-msgstr ""
+msgstr "Cliquer sur le bouton triangulaire à côté du champ de texte ouvre une liste "
+"déroulante avec des otpions pour affiner votre collection en ajoutant de nouvelles règles:"
+
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1236(title)
 msgid "clear this rule"
-msgstr ""
+msgstr "supprimer cette condition"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1237(para)
 msgid ""
 "Removes this rule - or resets to default if this is the only rule defined."
-msgstr ""
+msgstr "Supprime cette condition - ou réinitialise le module si une seule règle est définie."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1240(title)
 msgid "narrow down search"
-msgstr ""
+msgstr "affiner la recherche"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1241(para)
 msgid ""
 "Adds a new rule which is combined with the previous ones in a logical "
 "<emphasis>AND</emphasis> operation. An image is only part of the collection "
 "if it additionally fulfills the added rule."
-msgstr ""
+msgstr "Ajoute une nouvelle condition qui sera combinée avec les précédente par une "
+"opération <emphasis>ET</emphasis> logique. Une image ne fait alors parti de la "
+"collection que si elle correspond à la nouvelle condition."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1245(title)
-#, fuzzy
 msgid "add more images"
-msgstr "Virage cyan"
+msgstr "inclure des images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1246(para)
 msgid ""
 "Adds a new rule which is combined with the previous ones in a logical "
 "<emphasis>OR</emphasis> operation. Images that fulfill the new rule are "
 "added to the collection."
-msgstr ""
+msgstr "Ajoute une nouelle condition qui sera combinée avec les précédente par une "
+"opération <emphasis>OU</emphasis> logique. Les images qui satisfont cette condition "
+"sont ajoutés à la collection."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1250(title)
-#, fuzzy
 msgid "exclude images"
-msgstr "Virage cyan"
+msgstr "exclure des images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1251(para)
 msgid ""
 "Adds a new rule which is combined with the previous ones in a logical "
 "<emphasis>EXCEPT</emphasis> operation. Images which are selected by the new "
 "rule are exempted from the collection."
-msgstr ""
+msgstr "Ajoute une nouvelle condition qui sera combinée avec la précédente par une "
+"<emphasis>MAIS SANS</emphasis> operation. Images which are selected by the new "
+"rule are exempted from the collection."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1256(para)
 msgid ""
@@ -2523,7 +2551,14 @@ msgid ""
 "\"images/lighttable_icon_except.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> symbol. Clicking on either symbol gives a choice to change the "
 "logical operation."
-msgstr ""
+msgstr "Les opérateurs logique définissant les combinaisons de conditions sont "
+"affichées à droite de la règle: <emphasis>ET</emphasis> par l'icône <inlinegraphic fileref=\"images/"
+"lighttable_icon_and.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> "
+"<emphasis>OU</emphasis> par l'icône <inlinegraphic fileref=\"images/"
+"lighttable_icon_or.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/>"
+"et <emphasis>MAIS SANS</emphasis> par l'icône <inlinegraphic fileref="
+"\"images/lighttable_icon_except.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/>. Cliquer sur une de ces icône permet de changer l'opérateur logique."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1263(para)
 msgid ""
@@ -2531,32 +2566,36 @@ msgid ""
 "you are currently working on. The table gets updated continuously as you "
 "type. You may scroll through the list and select the data of your choice by "
 "double-clicking."
-msgstr ""
+msgstr "La liste en dessous liste toutes les entrée de la base de donnée correspondant "
+"à la requête sur laquelle vous travaillez. La liste est automatique mise à jour au fer à "
+"mesure que vous modifiez votre requête. Vous pouvez faire défiler la liste et double cliquer "
+"sur des éléments pour les sélectionner."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1268(title)
 msgid "Recently used collections"
-msgstr ""
+msgstr "Collections récentes"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1271(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1274(primary)
 msgid "recently used collections"
-msgstr ""
+msgstr "collections récentes"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1281(entry)
 msgid ""
 "This panel keeps tracks of the latest collections you have used, so you can "
 "jump within recently used collections without remembering what rules were "
 "specified in the collection."
-msgstr ""
+msgstr "Ce panneau garde l'historique des dernières collection que vous avez utilisé"
+", de cette manière vous pouvez rapidement retrouver une collection sans vous souvenir des "
+"conditions que vous avez utilisé."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1293(title)
-#, fuzzy
 msgid "Image information"
-msgstr "Préparation de l'image"
+msgstr "Informations de l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1302(primary)
 msgid "EXIF data"
-msgstr ""
+msgstr "Données EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1309(entry)
 msgid ""
@@ -2564,91 +2603,92 @@ msgid ""
 "hovering with the mouse over thumbnails, darktable will update this view, "
 "displaying information of the image currently under the mouse cursor. This "
 "panel is also available in darkroom, tethering and map view."
-msgstr ""
+msgstr "Ce panneau vous montre les information incluse dans les données EXIF d'une image."
+"Quand vous maintenez votre souris sur un aperçu, darktable actualisera ce panneau vous montrant"
+"les informations concernant l'image sous votre souris. Ce panneau est aussi visible dans la chambre noire,"
+"la vue capture et carte."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1323(title)
 msgid "Select"
-msgstr ""
+msgstr "Sélection"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1326(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1329(primary)
-#, fuzzy
 msgid "selecting images"
-msgstr "Virage cyan"
+msgstr "sélectionner des images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1336(entry)
 msgid ""
 "This panel allows for a quick selection of images, according to some common "
 "criteria."
-msgstr ""
+msgstr "Ce panneau vous permet de sélectionner rapidement des images grâces "
+"à des critères usuels."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1345(title)
 msgid "select all"
-msgstr ""
+msgstr "tout"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1346(para)
 msgid ""
 "Select all images in the current view (collection), with respect to the "
 "filters."
-msgstr ""
+msgstr "Sélectionne toutes les images de la collection (= en respectant les "
+"conditions spécifiées)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1349(title)
 msgid "select none"
-msgstr ""
+msgstr "aucune"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1350(para)
-#, fuzzy
 msgid "De-select all images."
-msgstr "Virage cyan"
+msgstr "Dé-sélectionne toutes les images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1353(title)
 msgid "invert selection"
-msgstr ""
+msgstr "inverser"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1354(para)
 msgid "Select all images that are not currently selected."
-msgstr ""
+msgstr "Sélectionne toutes les images qui ne sont pas sélectionnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1357(title)
 msgid "select film roll"
-msgstr ""
+msgstr "dossier"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1358(para)
 msgid ""
 "Select all images that are in the same film roll as the currently selected "
 "images."
-msgstr ""
+msgstr "Sélectionner toutes les images qui sont dans la même pellicule (= dossier)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1361(title)
 msgid "select untouched"
-msgstr ""
+msgstr "non développées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1362(para)
 msgid "Select all images that have not yet been developed."
-msgstr ""
+msgstr "Sélectionne les images n'ayant pas encore été développées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1366(title)
 msgid "Selected image(s)"
-msgstr ""
+msgstr "Images sélectionnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1369(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1372(primary)
-#, fuzzy
 msgid "selected images"
-msgstr "Virage cyan"
+msgstr "images sélectionnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1379(entry)
 msgid "This panel provides some actions that operate on selected images."
-msgstr ""
+msgstr "Ce panneau permet d'effectuer des actions sur les iamges sélectionnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1388(title)
 msgid "remove"
-msgstr ""
+msgstr "enlever"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1390(primary)
-#, fuzzy
 msgid "remove images"
-msgstr "Virage cyan"
+msgstr "supprimer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1392(para)
 msgid ""
@@ -2656,11 +2696,14 @@ msgid ""
 "not be shown in lighttable anymore, but remain on the filesystem. As "
 "darktable stores XMP files with your development parameters on disk, you can "
 "later fully reconstruct your work by just re-importing the images."
-msgstr ""
+msgstr "Supprime les images sélectionnées de la base de donnée de darktable. Toutes les images "
+"ne seront alors plus visible dans la table lumineuse, mais restent dans le système de fichier. "
+"Comme darktable créé un fichier XMP avec vos paramètres de développement sur le disque, vous pourrez"
+"récupérer votre travail en ré-important ces images."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1396(para)
 msgid "When backing up your RAWs make sure to also save the XMP files!"
-msgstr ""
+msgstr "Lorsque vous faites une copie de vos images, veillez à copier les fichiers XMP!"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1399(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1612(title)
@@ -2670,12 +2713,11 @@ msgstr ""
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12164(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12273(secondary)
 msgid "delete"
-msgstr ""
+msgstr "supprimer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1401(primary)
-#, fuzzy
 msgid "delete images"
-msgstr "Virage cyan"
+msgstr "supprimer les images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1403(para)
 msgid ""
@@ -2684,22 +2726,26 @@ msgid ""
 "\"gui_options\"/>). If this configuration option is not active, darktable "
 "will delete the file(s) without further question! This is irreversible, and "
 "will also erase your development work of these images."
-msgstr ""
+msgstr "Supprime les fichiers images de votre système de fichier. Voir l'option "
+"<quote>demander avant de supprimer des images</quote> (<xref linkend=\"gui_options\"/>)"
+"Si cette option est désactivée darktable supprimera les fichiers sans confirmation! Ceci est"
+"irréversible et supprimera aussi le dévloppement réalisé sur ces images."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1407(para)
 msgid ""
 "When deleting an image with duplicates, darktable keeps the original input "
 "file on disk until the last of the duplicates gets deleted."
-msgstr ""
+msgstr "Lorsque vous supprimez des images avec copie, darktable garde le fichier "
+"original sur le disque tant qu'une copie existe encore."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1410(title)
 msgid "move"
-msgstr ""
+msgstr "déplacer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1412(primary)
 #, fuzzy
 msgid "move images"
-msgstr "Virage cyan"
+msgstr "déplacer les images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1414(para)
 msgid ""
@@ -2708,18 +2754,20 @@ msgid ""
 "images in the target folder. If an input image with the given filename "
 "already exists in the target folder the source image is not moved but kept "
 "where it is."
-msgstr ""
+msgstr "Déplace les images (plus les fichiers sidecar XMP) sur le système de fichier. "
+"darktable n'écrase pas les images dans le dossier cible. Si une image avec un nom existant "
+"dans le dossier source et destination existe, l'image ne sera pas déplacée et les deux fichiers "
+"seront conservés intacts."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1419(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1499(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9641(secondary)
 msgid "copy"
-msgstr ""
+msgstr "copier"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1421(primary)
-#, fuzzy
 msgid "copy images"
-msgstr "Virage cyan"
+msgstr "copier les images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1423(para)
 msgid ""
@@ -2727,11 +2775,14 @@ msgid ""
 "file) to another filesystem folder. If an image with the given name already "
 "exists in the target folder it does not get overwritten - instead a new "
 "duplicate with the given history stack is generated."
-msgstr ""
+msgstr "Créé une copie physique des images (plus les fichiers sidecar XMP) dans "
+"un autre dossier. Si un conflit de nom d'image existe entre le dossier source et "
+"destination alors l'image du dossier destination ne sera pas modifiée et une copie "
+"du développement est générée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1427(title)
 msgid "create hdr"
-msgstr ""
+msgstr "créer HDR"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1431(para)
 msgid ""
@@ -2742,54 +2793,62 @@ msgid ""
 "\"><emphasis>Luminance HDR</emphasis></ulink>, and later import them into "
 "darktable for further processing (see <xref linkend=\"supported_file_formats"
 "\"/>)."
-msgstr ""
+msgstr "Créé une image à grande gamme dynamique à partir de la sélection d'images et"
+"créé un fichier au format DNG. Les images doivent être alignées, ce qui implique qu'elles"
+"ont été capturée sur un trépied stable. Vous pouvez aussi généré des images HDR grâce à des "
+"logiciels tels que <ulink url=\"http://qtpfsgui.sourceforge.net/\"><emphasis>Luminance HDR</emphasis></ulink>"
+" et importer les fichiers dans darkable pour continuer le développement (voir "
+"<xref linkend=\"supported_file_formats\"/>.)"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1437(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9444(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9529(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10037(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12174(secondary)
-#, fuzzy
 msgid "duplicate"
-msgstr "application"
+msgstr "cloner"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1439(primary)
-#, fuzzy
 msgid "create images"
-msgstr "Virage cyan"
+msgstr "créer un clone"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1441(para)
 msgid ""
 "Create a virtual copy of selected images within darktable. It allows testing "
 "different developments for the same image, for example. Duplicate images "
 "share the same parent input file, but each have their own XMP sidecar file."
-msgstr ""
+msgstr "Créé une copie virtuelle des images sélectionnées au sein de darktable. "
+"Cela permet par exemple de tester différents développement pour une même image."
+"Les clones partagent le même fichier image mais possèdent leur propre fichier sidecar."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1445(title)
-#, fuzzy
 msgid "rotation"
-msgstr "Saturation"
+msgstr "rotation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1446(para)
 msgid ""
 "Perform a counter-clockwise or clockwise rotation on selected images. The "
 "third button resets the image rotation to the value in the EXIF data."
-msgstr ""
+msgstr "Applique une rotation de 90° dans le sens horaire ou anti-horaire. Le "
+"troisième bouton réinitialise la rotation de l'image à la valeur indiquée dans les "
+"données EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1450(title)
 msgid "cache locally"
-msgstr ""
+msgstr "copier localement"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1454(para)
 msgid ""
 "This action will create local copies of the selected images into the local "
 "drive. These copies will then be used when the original images are not "
 "accessible (see <xref linkend=\"local_copies\"/>)."
-msgstr ""
+msgstr "Cette action créé une copie locale des images sélectionnées dans le "
+"disque local. Ces copies seront alors utilisées lorsque les fichiers originaux"
+"ne sont pas disponibles (voir <xref linkend=\"local_copies\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1458(title)
 msgid "reset cache"
-msgstr ""
+msgstr "supprimer copie locale"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1459(para)
 msgid ""
@@ -2797,78 +2856,90 @@ msgid ""
 "the local copies. Note that if a local copy has been modified and the "
 "external storage is not accessible the local copy won't be deleted (see "
 "<xref linkend=\"local_copies\"/>)."
-msgstr ""
+msgstr "Cette action effectuera la synchronisation des fichiers XMP si nécessaire et "
+"supprimera les copies locales. Notez que si une copie locale à été modifiée et que le "
+"support de stockage externe n'est pas disponible, la copie locale ne sera pas supprimée "
+"(voir <xref linkend=\"local_copies\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1463(title)
 msgid "group"
-msgstr ""
+msgstr "grouper"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1467(para)
 msgid ""
 "Create a new group from selected images (see <xref linkend=\"image_grouping"
 "\"/>)."
-msgstr ""
+msgstr "Créer un nouveau groupe à partir des images sélectionnées (voir <xref linkend=\"image_grouping"
+"\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1470(title)
 msgid "ungroup"
-msgstr ""
+msgstr "dé-grouper"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1471(para)
 msgid ""
 "Remove selected images from the group (see <xref linkend=\"image_grouping\"/"
 ">)."
-msgstr ""
+msgstr "Enlève les images sélectionnées du groupe (voir <xref linkend=\"image_grouping\"/"
+">)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1475(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3110(title)
 msgid "History stack"
-msgstr ""
+msgstr "Développement"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1478(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1481(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3113(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3117(primary)
 msgid "history stack"
-msgstr ""
+msgstr "développement"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1488(entry)
 msgid ""
 "This panel allows manipulating the history stack (development) of images. "
 "For each image, development is written in a sidecar file (.xmp), and is "
 "fully non-destructive."
-msgstr ""
+msgstr "Ce panneau vous permet de manipuler la pile d'historique (développement) "
+"des images. Pour chaque image les développement est écrit dans fichier sidecar (.xmp), "
+"le développement est non destructif."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1500(para)
 msgid ""
 "Copy the history stack of the selected image. You will be prompted for which "
 "items are to be include. If more than one image is selected, the history "
 "stack is taken from the image that has been selected first."
-msgstr ""
+msgstr "Copier le développement de l'image sélectionnée. Il vous sera alors demandé "
+"quels opérations inclure. Si plusieurs images sont sélectionnées, le développement est "
+"copié à partir de la première image qui a été sélectionnée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1504(title)
 msgid "copy all"
-msgstr ""
+msgstr "tout coller"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1505(para)
 msgid ""
 "Copy the complete history stack of the first selected image; all items will "
 "be included. If more than one image is selected, the history stack is taken "
 "from the image that has been selected first."
-msgstr ""
+msgstr "Copier le développement complet de la première image sélectionnée; toutes les "
+"opérations seront incluses. Si plusieurs images sont sélectionnées, le développement est "
+"copié à partir de la première image qui a été sélectionnée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1509(title)
 msgid "discard"
-msgstr ""
+msgstr "supprimer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1510(para)
 msgid ""
 "Physically delete the history stack of the selected images. Beware, this "
 "action can not be undone!"
-msgstr ""
+msgstr "Supprime le fichier sidecar et le développement des images. Attention, "
+"cette action ne peut être annulée!"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1514(title)
 msgid "overwrite/append"
-msgstr ""
+msgstr "empiler/écraser"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1515(para)
 msgid ""
@@ -2876,39 +2947,45 @@ msgid ""
 "already has a history stack. <quote>Overwrite</quote> will delete the "
 "previous history stack, whereas <quote>append</quote> will concatenate the "
 "two history stacks."
-msgstr ""
+msgstr "Décrit la manière dont le développement se comporte lors du collage sur une "
+"image possedant déjà un déeloppement.  <quote>écraser</quote> supprimera l'ancien développement "
+"alors qu'<quote>écraser</quote> concatenera le développement des deux images."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1520(title)
 msgid "paste"
-msgstr ""
+msgstr "coller"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1521(para)
 msgid ""
 "Paste a previously copied history stack onto all selected images. You will "
 "be prompted for which items to include. This button is greyed out, until a "
 "history stack is copied from another image."
-msgstr ""
+msgstr "Colle le développement précédement copié sur la sélection d'images. Il vous "
+"sera alors demandé quelles opérations inclure. Ce bouton est grisé tant que vous n'avez "
+"pas copié le développement d'une image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1525(title)
 msgid "paste all"
-msgstr ""
+msgstr "tout coller"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1526(para)
 msgid ""
 "Paste all previously copied items of a history history stack onto all "
 "selected images. This button is greyed out, until a history stack is copied "
 "from another image."
-msgstr ""
+msgstr "Colle toutes les opérations du développement sur toutes les images sélectionnées."
+"Ce bouton est grisé tant que vous n'avez pas copié le développement d'une image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1530(title)
 msgid "load sidecar file"
-msgstr ""
+msgstr "charger"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1537(para)
 msgid ""
 "Opens a dialog box to select an XMP file, thus loading a history stack that "
 "you can paste on images."
-msgstr ""
+msgstr "Ouvre une boîte de dialogue pour sélectionner un fichier XMP, chanrgant ainsi "
+" un développement que vous pouvez coller sur des images."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1539(para)
 msgid ""
@@ -2919,17 +2996,24 @@ msgid ""
 "file. This feature allows you to recover all parameter settings in case you "
 "have accidentally lost or overwritten the XMP file. All you need is the "
 "source image, typically a RAW, and the exported file."
-msgstr ""
+msgstr "Les fichiers exportés par darktable contiennent traditionnellement le "
+"développement complet si le format d'export supporte les métadonnées (voir <xref linkend="
+"\"export_selected\"/> about this feature and its limitations). Vous pouvez charger "
+"une image exportée comme un fichier sidecar de la même facon que vous le faites avec "
+"un fichier XMP. Cette fonctionnalité vous permet de récupérer toutes opérations et paramètres "
+"dans le cas où vous auriez accidentelement écrasé ou supprimé le fichier XMP. Tout ce dont vous "
+"avez besoin est l'image source et le fichier exporté par darktable."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1547(title)
 msgid "write sidecar files"
-msgstr ""
+msgstr "sauver en XMP"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1548(para)
 msgid ""
 "Write XMP sidecar files for all selected images. The filename is generated "
 "by appending <quote>.xmp</quote> to the name of the underlying input file."
-msgstr ""
+msgstr "Écrit un fichier XMP pour toutes les images sélectionnées. Le nom de fichier est "
+"généré par l'ajout de <quote>.xmp</quote> au nom du fichier original."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1551(para)
 msgid ""
@@ -2937,17 +3021,20 @@ msgid ""
 "whenever you work on an image and change the history stack. You can disable "
 "automatic sidecar file generation in the preferences dialog (see <xref "
 "linkend=\"core_options\"/>). However, this is not recommended."
-msgstr ""
+msgstr "Par défaut darktable génère et actualise les fichier sidecar automatiquement "
+"dès que vous développez une image. Vous pouvez désactiver cette fonctionnalité dans les "
+"préférences (voir <xref linkend=\"core_options\"/>). Bien que cela soit possible, "
+"ce n'est pas recommandé."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1559(title)
 msgid "Styles"
-msgstr ""
+msgstr "Styles"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1562(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1565(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9367(secondary)
 msgid "styles"
-msgstr ""
+msgstr "styles"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1572(entry)
 msgid ""
@@ -2956,23 +3043,29 @@ msgid ""
 "this panel or in the darkroom (see <xref linkend=\"history\"/>). They are "
 "managed within this lighttable panel, which allows you to create, apply, "
 "edit and delete styles."
-msgstr ""
+msgstr "Ce panneau vous permet d'utiliser une fonctionnalité puissante de darktable: "
+"enregistrer un développement en style, et l'appliquer à d'autres images. Les styles sont "
+"créés depuis ce paneau ou depuis la chambre noir (voir <xref linkend=\"history\"/>)."
+"Ils sont gérés depuis ce panneau de la table lumineuse; qui vous permet de créer, appliquer, "
+"modifier et supprimer des styles."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1584(para)
 msgid ""
 "This panel displays a list of all available styles. A search field above the "
 "list allows you to input a text string which is compared against the styles' "
 "names and descriptions, thus limiting the list to the matching ones."
-msgstr ""
+msgstr "Ce panneau affiche une liste de tout les styles disponibles. Un champ de recherche"
+"au dessus de la liste vous permet de rechercher le nom/la description d'un style en limitant "
+"l'affichage aux styles correspondants."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1588(para)
 msgid ""
 "Double clicking on a style name applies the style to all selected images."
-msgstr ""
+msgstr "Double cliquez sur un style pour appliquer les style à toutes les images sélectionnées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1591(title)
 msgid "create duplicate"
-msgstr ""
+msgstr "cloner l'image et appliquer le style"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1592(para)
 msgid ""
@@ -2981,14 +3074,16 @@ msgid ""
 "want to try various styles without creating multiple duplicates; beware that "
 "in this case any existing history stack gets overwritten and cannot be "
 "recovered."
-msgstr ""
+msgstr "Lorsque vous appliquez un style aux images sélectionnées, cocher cette case permet "
+"de créer une copie de l'image avant d'appliquer le style. Désactivez cette option si vous "
+"vous essayez plusieurs style sans créer des copies; soyez au fait que dans ce cas le développement"
+"de l'image est écrasé et ne peut être récupéré."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1598(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8993(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9387(secondary)
-#, fuzzy
 msgid "create"
-msgstr "Virage cyan"
+msgstr "créer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1599(para)
 msgid ""
@@ -2997,11 +3092,14 @@ msgid ""
 "name for the new style and you can add an additional descriptive text. You "
 "have the option to de-select those history stack items which you want to not "
 "be part of the newly created style."
-msgstr ""
+msgstr "Ce bouton permet de créer un nouveau style à partir du développement des images "
+"sélectionnées. Pour chaque image une boîte d'aide à la création de style s'ouvrira. Vous "
+"devez donner un nom unique pour chaque nouveau style et vous pouvez ajouter un texte descriptif."
+"Vous pouvez choisir les éléments du développement que vous voulez inclure ou non dans le style."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1605(title)
 msgid "edit"
-msgstr ""
+msgstr "modifier"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1606(para)
 msgid ""
@@ -3010,40 +3108,47 @@ msgid ""
 "items from the stack. Check option <quote>duplicate</quote> if you want to "
 "create a new style, instead of overwriting the existing one; you need to "
 "provide a new unique style name in this case."
-msgstr ""
+msgstr "Les styles sont des collections de développement. Après avoir cliqué sur le bouton "
+"<quote>modifier</quote> une boîte de dialogue vous propose d'inclure ou d'exclure des "
+"des opérations du développement. Cochez l'option <quote>cloner le style</quote> si vous désirez "
+"créer un nouveau style plutôt que d'écraser celui que vous modifiez; vous devrez alors fournir un "
+"nouveau nom au style."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1613(para)
 msgid "This deletes the selected style, without further question."
-msgstr ""
+msgstr "Ce bouton supprime le style sélectionné sans confirmation."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1618(para)
 msgid ""
 "You can import a style which has been previously saved by darktable. "
 "darktable stores styles as XML files with the extension <quote>.dtstyle</"
 "quote>."
-msgstr ""
+msgstr "Vous pouvez importé un style qui a précédement été sauvegardé par darktable."
+"darktable stocke les styles dans des fichiers XML avec l'extension <quote>.dtstyle</"
+"quote>."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1622(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1731(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1734(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1899(title)
 msgid "export"
-msgstr ""
+msgstr "exporter"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1623(para)
 msgid ""
 "This option saves a selected style to disk as a <quote>.dtstyle</quote> "
 "file. This allows publishing styles and sharing styles with other users."
-msgstr ""
+msgstr "Cette option permet de sauvegarder le style sur le disque local en un fichier "
+"<quote>.dtstyle</quote>. Ceci permet de publier et partager des styles avec d'autres utilisateurs."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1627(title)
 msgid "Geotagging"
-msgstr ""
+msgstr "Localisation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1630(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1633(primary)
 msgid "geo tagging"
-msgstr ""
+msgstr "Localisation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1640(entry)
 msgid ""
@@ -3052,23 +3157,26 @@ msgid ""
 "differences between your camera and GPS receiver. Alternatively, you can "
 "manually geotag images within the <placeholder-1/> view (see <xref linkend="
 "\"map_chapter\"/>)."
-msgstr ""
+msgstr "Utilisez ce panneau pour importer et appliquer des données GPX sur une sélection d'images. "
+"Vous pouvez ajouter un décallage dans le temps aux chemins GPX pour corriger les différences entre votre "
+"GPS et appareil photo. Alternativement vous pouvez géo-localiser manuelement vos images dans la vue "
+"<placeholder-1/> (voir <xref linkend=\"map_chapter\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1652(title)
 msgid "Metadata editor"
-msgstr ""
+msgstr "Éditeur de métadonnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1655(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1658(primary)
 msgid "metadata editor"
-msgstr ""
+msgstr "éditeur de métadonnées"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1665(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10113(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11817(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12003(secondary)
 msgid "title"
-msgstr ""
+msgstr "titre"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1665(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9389(emphasis)
@@ -3078,62 +3186,64 @@ msgstr ""
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10146(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12205(secondary)
 msgid "description"
-msgstr ""
+msgstr "description"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1665(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10124(secondary)
 msgid "creator"
-msgstr ""
+msgstr "auteur"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1666(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10102(secondary)
 msgid "publisher"
-msgstr ""
+msgstr "diffuseur"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1666(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10135(secondary)
 msgid "rights"
-msgstr ""
+msgstr "droits"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1665(entry)
 msgid ""
 "Edit metadata of an image, like <placeholder-1/>, <placeholder-2/>, "
 "<placeholder-3/>, <placeholder-4/>, or <placeholder-5/>. You can define your "
 "own presets, if you want to apply specific settings frequently."
-msgstr ""
+msgstr "Modifier les métadonnées d'une image, comme <placeholder-1/>, <placeholder-2/>, "
+"<placeholder-3/>, <placeholder-4/>, ou <placeholder-5/>. Vous pouvez définir vos propres "
+"pré-réglages si vous voulez appliquer les mêmes paramètres régulièrement."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1675(title)
 msgid "clear"
-msgstr ""
+msgstr "effacer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1676(para)
 msgid "Delete existing metadata from the selected image(s)."
-msgstr ""
+msgstr "Supprime les métadonnées existantes des images sélectionnées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1679(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9482(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12184(secondary)
 msgid "apply"
-msgstr ""
+msgstr "appliquer"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1680(para)
 msgid ""
 "Apply new settings, as defined in the fields above, to the selected image(s)."
-msgstr ""
+msgstr "Applique les nouveaux paramètres renseignés dans les champs aux images sélectionnées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1684(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8063(title)
 msgid "Tagging"
-msgstr ""
+msgstr "Mots-clés"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1687(secondary)
 msgid "tagging"
-msgstr ""
+msgstr "mots-clés"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1690(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8973(secondary)
 msgid "tags"
-msgstr ""
+msgstr "mots-clés"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1697(entry)
 msgid ""
@@ -3143,48 +3253,52 @@ msgid ""
 "currently set for the image under mouse (if the mouse is over an image) or "
 "the selected image (if the mouse is outside the lighttable). The lower part "
 "contains all available tags, which can be filtered in the upper text box."
-msgstr ""
+msgstr "Ce panneau vous permet de gérer les mots-clés de vos images. Les mots-clés "
+"sont stockés à la fois dans le fichier sidecar et dans la base de donnée de dartkable "
+"pour un accès plus rapide. Ce panneau divisé en deux parties: la partie haute contient les "
+"mots-clés appliqués à l'image sous le curseur de la souris (si la souris est en dehors de "
+"la table lumineuse. La partie basse contient tout les mots-clés disponibles qui peuvent être"
+"filtrés avec la boîte de texte."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1711(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9057(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12283(secondary)
 msgid "attach"
-msgstr ""
+msgstr "attacher"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1712(para)
 msgid "Attach the selected tag(s) from the list below to all selected images."
-msgstr ""
+msgstr "Attache les mots-clés sélectionnés dans la liste aux images sélectionnées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1715(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9082(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12293(secondary)
 msgid "detach"
-msgstr ""
+msgstr "détacher"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1716(para)
 msgid "Detach selected tag(s) from the list above from all selected images."
-msgstr ""
+msgstr "Détache les mots-clés sélectionnés dans la liste des images sélectionnées."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1719(title)
 msgid "new"
-msgstr ""
+msgstr "nouveau"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1720(para)
-#, fuzzy
 msgid "Create a new tag for the list."
-msgstr "Créer un nouveau pré-réglage"
+msgstr "Créer un nouveau mot-clé pour la liste."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1724(para)
 msgid "Delete a tag from the list."
-msgstr ""
+msgstr "Supprimer un mot-clé de la liste."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1728(title)
 msgid "Export selected"
-msgstr ""
+msgstr "Exportation de la sélection"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1737(primary)
 msgid "file export"
-msgstr ""
+msgstr "exportation de la sélection"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1746(emphasis)
 msgid "ctrl-e"
@@ -3195,23 +3309,24 @@ msgid ""
 "Each workflow ends in this panel: the export of your developed images. You "
 "can export either to a file on disk, or to various on-line storage places. "
 "Tip: you can use <placeholder-1/> from within darkroom mode to export."
-msgstr ""
+msgstr "A chaque fin de développement vous viendrez dans ce panneau: il permet "
+"d'exporter vos images développées. Vous pouvez au choix exporter l'image sur le disque "
+"local ou sur des espaces en lignes variés. Conseil: vous pouvez utilisez <placeholder-1/> depuis "
+"la chambre noire pour exporter."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1756(para)
-#, fuzzy
 msgid ""
 "All settings of this panel can be saved for later reuse. Press the "
 "<inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> button to manage your presets."
 msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+"Tout les paramètres de ce panneau sont sauvegardés pour une réutilisation ultérieure. "
+"Appuyez sur le bouton <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit="
+"\"1\" width=\"2%\" align=\"center\"/> pour gérer vos pré-réglages."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1760(title)
 msgid "target storage"
-msgstr ""
+msgstr "stockage cible"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1761(para)
 msgid ""
@@ -3219,17 +3334,21 @@ msgid ""
 "including file on disk, a LaTeX book template and various web albums. "
 "Depending on the selected target, you will be asked to give additional "
 "information, like filenames, or account name and password."
-msgstr ""
+msgstr "Le lieu de stockage des images exportées. Différentes options sont implémentées "
+"telles que fichier sur le disque, un modèle de livre LaTeX et différents albums web. "
+"Suivant la cible choisie des informations supplémentaires pourront être nécéssaires comme "
+"les nom de fichiers ou encore les noms et mots de passes des comptes."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1766(title)
 msgid "filename template"
-msgstr ""
+msgstr "motif du nom de fichier"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1767(para)
 msgid ""
 "You can define filenames that darktable generates for export. Several pre-"
 "defined variables can be used as placeholders:"
-msgstr ""
+msgstr "Vous pouvez définir les noms de fichier que darktable génère pour l'export. "
+"Différents pré-réglages peuvent être utilisés pour générer ces noms:"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1772(entry)
 msgid "$(ROLL_NAME)"
@@ -3245,7 +3364,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1775(entry)
 msgid "folder containing the input image"
-msgstr ""
+msgstr "dossier contenant l'image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1778(entry)
 msgid "$(FILE_NAME)"
@@ -3253,7 +3372,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1778(entry)
 msgid "basename of the input image"
-msgstr ""
+msgstr "nom du fichier (sans extension)"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1781(entry)
 msgid "$(FILE_EXTENSION)"
@@ -3261,7 +3380,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1781(entry)
 msgid "extension of the input image"
-msgstr ""
+msgstr "extension du fichier image"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1784(entry)
 msgid "$(SEQUENCE)"
@@ -3269,7 +3388,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1784(entry)
 msgid "a sequence number within export job"
-msgstr ""
+msgstr "un nombre interne à la tâche d'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1787(entry)
 msgid "$(YEAR)"
@@ -3277,7 +3396,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1787(entry)
 msgid "year at date of export"
-msgstr ""
+msgstr "l'année et la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1790(entry)
 msgid "$(MONTH)"
@@ -3285,7 +3404,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1790(entry)
 msgid "month at date of export"
-msgstr ""
+msgstr "le mois à la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1793(entry)
 msgid "$(DAY)"
@@ -3293,7 +3412,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1793(entry)
 msgid "day at date of export"
-msgstr ""
+msgstr "le jour à la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1796(entry)
 msgid "$(HOUR)"
@@ -3301,7 +3420,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1796(entry)
 msgid "hour at time of export"
-msgstr ""
+msgstr "l'heure à la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1799(entry)
 msgid "$(MINUTE)"
@@ -3309,7 +3428,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1799(entry)
 msgid "minute at time of export"
-msgstr ""
+msgstr "la minute à la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1802(entry)
 msgid "$(SECOND)"
@@ -3317,7 +3436,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1802(entry)
 msgid "second at time of export"
-msgstr ""
+msgstr "la seconde à la date de l'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1805(entry)
 msgid "$(EXIF_YEAR)"
@@ -3325,7 +3444,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1805(entry)
 msgid "exif year"
-msgstr ""
+msgstr "année EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1808(entry)
 msgid "$(EXIF_MONTH)"
@@ -3333,7 +3452,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1808(entry)
 msgid "exif month"
-msgstr ""
+msgstr "mois EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1811(entry)
 msgid "$(EXIF_DAY)"
@@ -3341,7 +3460,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1811(entry)
 msgid "exif day"
-msgstr ""
+msgstr "jour EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1814(entry)
 msgid "$(EXIF_HOUR)"
@@ -3349,7 +3468,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1814(entry)
 msgid "exif hour"
-msgstr ""
+msgstr "heure EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1817(entry)
 msgid "$(EXIF_MINUTE)"
@@ -3357,7 +3476,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1817(entry)
 msgid "exif minute"
-msgstr ""
+msgstr "minute EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1820(entry)
 msgid "$(EXIF_SECOND)"
@@ -3365,16 +3484,15 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1820(entry)
 msgid "exif second"
-msgstr ""
+msgstr "seconde EXIF"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1823(entry)
 msgid "$(STARS)"
 msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1823(entry)
-#, fuzzy
 msgid "star rating"
-msgstr "Saturation"
+msgstr "notation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1826(entry)
 msgid "$(LABELS)"
@@ -3382,7 +3500,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1826(entry)
 msgid "colorlabels"
-msgstr ""
+msgstr "labels de couleurs"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1829(entry)
 msgid "$(PICTURES_FOLDER)"
@@ -3390,7 +3508,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1829(entry)
 msgid "pictures folder"
-msgstr ""
+msgstr "dossier des images"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1832(entry)
 msgid "$(HOME)"
@@ -3398,7 +3516,7 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1832(entry)
 msgid "home folder"
-msgstr ""
+msgstr "dossier home"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1835(entry)
 msgid "$(DESKTOP)"
@@ -3406,22 +3524,24 @@ msgstr ""
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1835(entry)
 msgid "desktop folder"
-msgstr ""
+msgstr "dossier bureau"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1841(title)
 msgid "output directory"
-msgstr ""
+msgstr "dossier d'export"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1842(para)
 msgid ""
 "Pressing button <inlinegraphic fileref=\"images/lighttable_directory.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> opens a dialog to select the "
 "parent directory for export."
-msgstr ""
+msgstr "Appuyer sur le bouton <inlinegraphic fileref=\"images/lighttable_directory.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> ouvre une boîte de dialogue pour "
+"sélectionner le dossier d'export sur le système de fichier."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1847(title)
 msgid "file format"
-msgstr ""
+msgstr "format de fichier"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1848(para)
 msgid ""
@@ -3429,7 +3549,10 @@ msgid ""
 "define the desired bit depth of the exported image. If you export to a JPEG "
 "file you can define an output quality. Higher values will lead to larger "
 "file sizes."
-msgstr ""
+msgstr "darktable peut exporter sous plusieurs formats de fichier. Pour certains "
+"d'entre eux vous devrez choisir la profondeur (en bits) de l'image exportée. Si vous "
+"exportez un fichier JPEG vous pouvez choisir la qualité. Des valeurs élevées conduiront "
+"à un fichier plus gros."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1851(para)
 msgid ""
@@ -3438,7 +3561,11 @@ msgid ""
 "file. This information can later be used to reconstruct your parameters and "
 "settings that have produced the exported image (see <xref linkend="
 "\"history_stack\"/>)."
-msgstr ""
+msgstr "Si le format de fichier sélectionnée supporte les métadonnée, comme le JPEG, "
+"JPEG2000 et TIFF, darktable essayera de stocker les opérations du développement dans "
+"les métadonnées du fichier de sortie pour vous pemrettre de reconstruire le développement "
+"que vous avez réalisé (voir <xref linkend="
+"\"history_stack\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1855(emphasis)
 msgid ""
@@ -3447,7 +3574,11 @@ msgid ""
 "advised to not rely their backup strategy on this feature. To backup your "
 "data make sure to save your input (RAW) file as well as all of darktable's "
 "XMP sidecar files."
-msgstr ""
+msgstr "Attention: pour diverses raisons l'écritures des métadonnées du fichier XMP "
+"dans le fichier de sortie peuvent échouer sans avertissement, par exemple si une limite "
+"de taille est rencontrée. Les utilisateurs sont donc prévenus de ne pas compter sur cette "
+"fonctionnalité pour une sauvegarde du développement. Pour sauvegarder vos données soyez sûr"
+"de copier votre image et le fichier sidecar qui l'accompagne."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1859(para)
 msgid ""
@@ -3456,11 +3587,15 @@ msgid ""
 "program <ulink url=\"http://www.sno.phy.queensu.ca/~phil/exiftool/"
 "\"><emphasis>exiftool</emphasis></ulink> with: <programlisting format="
 "\"linespecific\"> exiftool -XMP:all= image.jpg </programlisting>"
-msgstr ""
+msgstr "Si vous ne voulez pas propager votre développement dans les métadonnées "
+"du fichier XMP il existe divers outils pour supprimer les métadonnées. Par exemple "
+"vous pouvez utiliser <ulink url=\"http://www.sno.phy.queensu.ca/~phil/exiftool/"
+"\"><emphasis>exiftool</emphasis></ulink> avec with: <programlisting format="
+"\"linespecific\"> exiftool -XMP:all= image.jpg </programlisting>"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1868(title)
 msgid "max size"
-msgstr ""
+msgstr "taille maximum"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1869(para)
 msgid ""
@@ -3468,7 +3603,10 @@ msgid ""
 "a value of \"0\" to export with full resolution. darktable currently can "
 "only do down-scaling; the maximum output resolution is defined by the parent "
 "image."
-msgstr ""
+msgstr "Défini la hauteur et largeur maximum de l'image en pixels. Définissez les "
+"deux à \"0\" pour exporter en résolution maximale. darktable peut seulement diminuer "
+"la taille des images; la taille maximum d'export est définie par la taille maximum de "
+"l'image à exporter."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1872(emphasis)
 msgid ""
@@ -3476,24 +3614,29 @@ msgid ""
 "10, in these fields, causing darktable to produce miniature output files. "
 "You might think darktable's output is broken, but in fact it only generated "
 "what you asked for."
-msgstr ""
+msgstr "Attention: Une erreur fréquente est de mettre des petites valeurs, comme 1 ou 10 "
+"dans ces champs, entrainant la création d'images illisibles par darktable. Vous pourriez "
+"pendez que la procédure d'export est défaillante alors que vous avez accidentellement commis "
+"une erreur."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1877(title)
 msgid "intent"
-msgstr ""
+msgstr "rendu"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1878(para)
 msgid ""
 "This option lets you define the intent, i.e. the way darktable will deal "
 "with out-of-gamut colors. See <xref linkend=\"output_color_profile\"/> for a "
 "more detailed description of the available options."
-msgstr ""
+msgstr "Cette option vous permet de définir le rendu; la façon dont darktable va "
+"gérer les colors or gamut. Voir <xref linkend=\"output_color_profile\"/> pour une "
+"description plus détaillée des options disponibles."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1883(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5443(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5735(title)
 msgid "profile"
-msgstr ""
+msgstr "profil"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1884(para)
 msgid ""
@@ -3501,7 +3644,10 @@ msgid ""
 "if you want the settings in the <emphasis>output color profile</emphasis> "
 "(see <xref linkend=\"output_color_profile\"/>) module of the individual "
 "images to take precedence."
-msgstr ""
+msgstr "Cette option définit l'espace de couleur utilisé dans le fichier exporté. "
+"Sélectionnez <quote>paramètres d'image</quote> si vous voulez utilisez "
+"les paramètres du module <emphasis>profil de couleur de sortie</emphasis> (voir "
+"<xref linkend=\"output_color_profile\"/>) de chaque image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1888(title)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9427(emphasis)
@@ -3511,7 +3657,7 @@ msgstr ""
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9484(emphasis)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9488(term)
 msgid "style"
-msgstr ""
+msgstr "style"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1889(para)
 msgid ""
@@ -3524,7 +3670,15 @@ msgid ""
 "of sharpening when you produce scaled-down JPEG files for the internet. "
 "Learn more about styles in <xref linkend=\"styles\"/>, and <xref linkend="
 "\"history\"/>."
-msgstr ""
+msgstr "Cette option vous permet de choisir un style (une collection "
+"de parties de développements), darktable concatène le développement existant "
+"avec celui du sytle pour générer le fichier de sortie. Le développement de l'image"
+"n'est pas altéré. Vous pouvez utiliser cette fonctionnalité pour ajouter des étapes "
+"de développement à des images exportés. Par exemple vous pouvez définir un style "
+"pour augmenter la nettetée d'une image lorsque vous exportez une image vers le web."
+"Apprenez plus à propos de styles dans <xref linkend=\"styles\"/>, et <xref linkend="
+"\"history\"/>."
+
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1900(para)
 msgid ""
@@ -3532,7 +3686,11 @@ msgid ""
 "A bar at the bottom of the left side panel displays the progress. Whenever a "
 "file is successfully exported, a notification message pops up for a few "
 "seconds. You may click on the pop-up to make it disappear."
-msgstr ""
+msgstr "Appuyer sur ce bouton démarre un processus d'export des images en "
+"arrière-plan. Une barre de progression en bas à gauche affiche alors l'état "
+"du processus. A chaque fois qu'une une image est exportée avec succès un "
+" message de notification apparait quelques secondes. Vous pouvez cliquer sur "
+"ce message pour le faire disparaitre."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1915(keyword)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1921(primary)
@@ -3540,24 +3698,23 @@ msgid "darkroom"
 msgstr "chambre noire"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1923(para)
-#, fuzzy
 msgid "The darkroom view is where you develop your image."
-msgstr ""
-"La vue \"chambre noire\" est l'endroit où vous développez votre image..."
+msgstr "La chambre noire est l'endroit où vous développez votre image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1926(screeninfo)
 msgid "The darkroom view"
-msgstr "La vue \"chambre noire\""
+msgstr "La vue chambre noire"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1932(para)
 msgid ""
 "Darkroom mode is for photographic development of the image that you selected "
 "from the lighttable. Numerous tools, named modules, are available for "
 "processing that image."
-msgstr ""
+msgstr "Le mode chambre noire permet de développer l'image que vous avez sélectionné "
+"depuis la table lumineuse. De nombreux outils nommés modules sont disponibles pour "
+"traiter votre image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1935(para)
-#, fuzzy
 msgid ""
 "On the left hand side you have navigation, snapshot, history and masks "
 "manager panels, described in <xref linkend=\"darkroom_panels\"/>. In the "
@@ -3565,11 +3722,11 @@ msgid ""
 "for working with the image. At the bottom of the right hand panel you can "
 "enable/disable the view of individual modules."
 msgstr ""
-"Sur la gauche, vous avez les panneaux de navigation, instantanés et "
-"historique, chacun étant décrit plus bas. Sur la droite, vous pouvez voir "
-"l'histogramme ainsi qu'une liste des modules disponibles pour travailler "
-"votre image. En bas du panneau de droite, vous pouvez activer/désactiver "
-"l'affichage des modules dans le panneau. "
+"Sur la gauche, vous trouverez les panneaux de navigation, instantanés et "
+"historique, décrit dans <xref linkend=\"darkroom_panels\"/>. Sur la droite "
+", vous pouvez voir l'histogramme ainsi qu'une liste des modules disponibles "
+"pour travailler votre image. En bas du panneau de droite vous pouvez activer"
+"/désactiver l'affichage des modules dans le panneau."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1941(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3055(primary)
@@ -3583,7 +3740,10 @@ msgid ""
 "zoom in and out between 1:1 and fit-to-screen by mouse scrolling. Mouse "
 "scrolling while holding the control key pressed gives an extended zoom range "
 "between 2:1 and 1:10."
-msgstr ""
+msgstr "Vous pouvez utiliser <emphasis>middle-click</emphasis> pour zommer à 1:1 "
+"sur l'image. Un deuxième <emphasis>middle-click</emphasis> zoom à 2:1. Alternativement "
+"vous pouvez zoomer grâce à la molette de votre souris. Zoomer avec la molette et la touche "
+"contrôle vous permet d'atteindre les ratios 2:1 jusqu'à 1:10."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1948(para)
 msgid ""
@@ -3591,18 +3751,21 @@ msgid ""
 "also export the current image directly from the darkroom by using the "
 "shortcut <emphasis>ctrl-e</emphasis>. Export parameters are then those "
 "currently selected in the lighttable."
-msgstr ""
+msgstr "Vous exportez normalement vos images depuis la table lumineuse mais "
+"vous pouvez exporter directement depuis la chambre noire en utilisant le "
+"raccourci  <emphasis>ctrl-e</emphasis>. Les paramètres d'exports utilisés sont "
+"ceux définis dans la table lumineuse."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1953(title)
-#, fuzzy
 msgid "Darkroom concepts"
-msgstr "Chambre noire"
+msgstr "Concepts de la chambre noire"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1954(para)
 msgid ""
 "This section tries to explain some of the basic concepts on how darktable "
 "develops images in the darkroom."
-msgstr ""
+msgstr "Cette section tente d'expliquer les concepts basique qu'utilise darktable"
+"pour développer vos images dans la chambre noire."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1957(para)
 msgid ""
@@ -3610,38 +3773,39 @@ msgid ""
 "darktable comes with a rich set of over 50 modules for all kind of image "
 "manipulations. In <xref linkend=\"modules\"/> you will find a description "
 "for each of the available modules."
-msgstr ""
+msgstr "L'élément de base d'une opération sur une image est appellé un module."
+"darktalbe est fourni avec une riche sélection de plus de 50 modules pour tout "
+"type de manipulation d'image. Dans la section <xref linkend=\"modules\"/>  vous "
+"trouverez une description précise de tout les modules disponibles."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1961(para)
 msgid ""
 "Modules are applied in a fixed order. This differentiates darktable, as a "
 "non-destructive image editor, from classical image manipulation programs "
 "like The Gimp."
-msgstr ""
+msgstr "Les modules sont appliqués dans un ordre défini. Ceci différencie darktable, "
+"un éditeur non déstructif d'autre programmes de manipulation d'images tels que The Gimp."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1965(title)
 msgid "Interacting with modules"
-msgstr ""
+msgstr "Intéragir avec les modules"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1967(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2003(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2065(primary)
-#, fuzzy
 msgid "module usage"
-msgstr "Modules"
+msgstr "utilisation des modules"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1970(para)
-#, fuzzy
 msgid ""
 "A module has an expander bar <inlinegraphic fileref=\"images/"
 "darkroom_module_expander.png\" scalefit=\"1\" width=\"30%\" align=\"center\"/"
 ">. Clicking on the name of the module expands the module's GUI with all "
 "parameters."
-msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+msgstr "Un module possède une bar extensible <inlinegraphic fileref=\"images/"
+"darkroom_module_expander.png\" scalefit=\"1\" width=\"30%\" align=\"center\"/"
+">. Cliquer sur le nom du module expand la fenêtre du module montrant tout "
+"les paramètres."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1974(para)
 msgid ""
@@ -3652,116 +3816,123 @@ msgid ""
 "remain opened. The expander bar behavior on <emphasis>click</emphasis> and "
 "<emphasis>shift-click</emphasis>, respectively, is controlled by a "
 "preference setting in gui options (see <xref linkend=\"gui_options\"/>)."
-msgstr ""
+msgstr "Par défaut darktable n'étendera qu'un seul module à la fois. Si vous "
+"cliquez sur le la barre d'extension d'un autre module, le module précédement "
+"etendu se rétractera. Si vous voulez pouvoir étendre plusieurs modules, vous "
+"devrez utilisez la combinaison <emphasis>shift-click</emphasis> - tout les "
+"modules étendus le resteront. Le comportement des barres d'extension par "
+"<emphasis>click</emphasis> et <emphasis>shift-click</emphasis> sont pilotés "
+"par les préférences globales (voir <xref linkend=\"gui_options\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1981(para)
-#, fuzzy
 msgid ""
 "Expanding a module does <emphasis>not</emphasis> activate it. You need to "
 "click the <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to turn a module on or "
 "off."
 msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+"Étendre une module ne l'active <emphasis>pas</emphasis>. Vous devez cliquer "
+"sur l'icône <inlinegraphic fileref=\"images/darkroom_module_icon_enable.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> pour activer ou désactiver un "
+"module."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1985(para)
-#, fuzzy
 msgid ""
 "Icon <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> accesses the module's "
 "available presets or creates a new preset from your current settings (see "
 "<xref linkend=\"module_presets\"/>)."
-msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+msgstr "L'icône inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> vous permet d'accéder à vos pré-réglages "
+"ou de créer un nouveau pré-réglage à partir des paramètres actuels du module (voir "
+"<xref linkend=\"module_presets\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1989(para)
-#, fuzzy
 msgid ""
 "The <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon is used to reset the "
 "module parameters to their default values."
 msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+"L'icône <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> permet de réinitialiser "
+" les paramètres du module à ses valeurs par défaut."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1992(para)
-#, fuzzy
 msgid ""
 "Many of darktable's modules can have multiple instances, each with different "
 "settings. Click on the <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> icon to generate new instances and control existing ones (see "
 "<xref linkend=\"multiple_instances\"/>)."
-msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+msgstr "Beaucoup de modules dans darktable peuvent être multi-instanciés, chacun "
+"avec des paramètres différents. Cliquez sur l'icône <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"2%\" align="
+"\"center\"/> pour créer une nouvelle instance et contrôler les instances existantes. (see "
+"<xref linkend=\"multiple_instances\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1999(para)
 msgid ""
 "The most frequently used control elements of modules are sliders, comboboxes "
 "and curves."
-msgstr ""
+msgstr "Les éléments de contrôles les plus utilisés sont les curseurs, "
+"les listes de choix et les courbes."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2001(title)
 msgid "Sliders"
-msgstr ""
+msgstr "Curseurs"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2004(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2008(primary)
 msgid "sliders"
-msgstr ""
+msgstr "curseurs"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2012(para)
 msgid ""
 "Sliders offer four different ways of interaction, depending on the level of "
 "control you need."
-msgstr ""
+msgstr "Les curseurs vous offrent quatre façons d'interagir suivant le nouveau "
+"de précision que vous désirer."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2016(para)
 msgid "Triangular marker"
-msgstr ""
+msgstr "Marqueur triangulaire"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2017(para)
 msgid ""
 "Left-click the slider's triangular marker and drag it to the left or right."
-msgstr ""
+msgstr "Maintenez le clic gauche de votre souris pour déplacer le curseur "
+"vers la gauche ou la droite."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2021(para)
 msgid "Mouse wheel"
-msgstr ""
+msgstr "Molette de la souris"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2022(para)
 msgid ""
 "Hover over any place on the slider with your mouse, then use your mouse "
 "wheel to adjust the value step by step."
-msgstr ""
+msgstr "Survolez n'importe quelle zone du curseur avec votre souris et utilisez la "
+"molette pour ajuster la valeur pas à pas."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2026(para)
 msgid "Right-click"
-msgstr ""
+msgstr "Clic droit"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2027(para)
 msgid ""
 "When your mouse is over a slider right-click gives you a multi-functional "
 "pop-up below the slider for fine control with your mouse or numerical entry "
 "using the keyboard."
-msgstr ""
+msgstr "Lorsque vore souris survole le curseur un clic droit vous ouvre une "
+"vue en dessous du curseur pour avoir un contrôle précis avec votre souris ou "
+"entrer une valeur au clavier."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2035(entry)
 msgid ""
 "darktable's innovative input method: for both coarse and fine value "
 "adjustments in a single control element combined with keyboard input."
-msgstr ""
+msgstr "la méthode de saisie innovante de darktable: pour un ajustement "
+"grossier ou fin des paramètres combiné avec l'utilisation du clavier."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2045(para)
 msgid ""
@@ -3770,7 +3941,10 @@ msgid ""
 "the control; the further away from the triangular marker the finer is your "
 "control. Left-click with your mouse to accept the new value and go back to "
 "normal control."
-msgstr ""
+msgstr "Une ligne courbée partant du marqueur triangulaire bouge au fer et à mesure "
+"que vous bougez votre souris. Plus vous serez proche du marqueur triangulaire et moins "
+"vous serez précis; plus vous serez loin, plus vous serez précis. Un clic gauche de "
+"la souris valide la nouvelle valeur et permet de revenir dans le mode normal du curseur."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2050(para)
 msgid ""
@@ -3778,25 +3952,29 @@ msgid ""
 "hitting the enter key. You may even supply the new value in the form of an "
 "arithmetic expressions which darktable will calculate for you - the old "
 "value is referenced as <quote>x</quote>."
-msgstr ""
+msgstr "Vous pouvez aussi taper une valeur au clavier et appuyer sur la touche entré "
+"de votre clavier. Vous pouvez même donner la valeur sous forme d'une expression "
+"arithmétique et darktable calculera la valeur pour vous, l'ancienne valeur est "
+"référencée par <quote>x</quote>."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2056(para)
 msgid "Double-click"
-msgstr ""
+msgstr "Double clic"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2057(para)
 msgid ""
 "You can double-click on a parameter label to reset its value to default."
-msgstr ""
+msgstr "Vous pouvez doubler cliquer sur le nom d'un paramètre pour "
+"réinitialiser sa valeur."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2063(title)
 msgid "Comboboxes"
-msgstr ""
+msgstr "Listes de choix"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2066(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2070(primary)
 msgid "comboboxes"
-msgstr ""
+msgstr "listes de choix"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2074(para)
 msgid ""
@@ -3804,37 +3982,38 @@ msgid ""
 "item you want to select. Sometimes the selection list opens close to the "
 "bottom or top of the screen and only part of the items are visible; scroll "
 "with your mouse wheel to bring up the full list."
-msgstr ""
+msgstr "Cliquer sur une liste de choix ouvre un menu déroulant. Cliquez sur la "
+"ligne que vous voulez sélectionner. Parfois la liste s'ouvre près du haut ou "
+"du bas de la fenêtre et seulement une partie de la liste est visible; utilisez "
+"alors la molette de votre souris pour parcourir la liste entière."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2079(title)
 msgid "Curves"
-msgstr ""
+msgstr "Courbes"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2080(para)
 msgid ""
 "Some modules are controlled by adjusting curves. More detail is given later "
 "in this chapter when the respective modules are explained."
-msgstr ""
+msgstr "Certains modules sont contrôlés par des courbes. Vous trouverez plus "
+"de détails dans la description des modules."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2087(title)
-#, fuzzy
 msgid "Module presets"
-msgstr "Modules"
+msgstr "Pré-réglages des modules"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2089(primary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8479(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8482(primary)
-#, fuzzy
 msgid "presets"
 msgstr "Pré-réglages"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2090(secondary)
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2094(primary)
 msgid "module presets"
-msgstr ""
+msgstr "pré-réglages des modules"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2097(para)
-#, fuzzy
 msgid ""
 "Presets are stored configurations for a module's parameters. Some modules "
 "already have internal pre-defined presets but you can also define your own. "
@@ -3843,28 +4022,27 @@ msgid ""
 "\"1\" width=\"2%\" align=\"center\"/> icon with the currently activated "
 "preset shown in bold text."
 msgstr ""
-"Les pré-réglages sont des configurations sauvegardées des paramètres de "
-"module ; ils peuvent être internes au programme ou créés par l'utilisateur. "
-"Ils sont accessibles grâce au bouton <inlinegraphic fileref=\"../images/"
-"darkroom_module_icon_presets.png\"/> qui affiche une liste des pré-réglages "
-"disponibles ; le pré-réglage actif est en gras."
+"Les pré-réglagles sont des configurations de modules enregistrées. Certains "
+"modules ont déjà des pré-réglages par défaut et vous pouvez aussi définir "
+"les votre. Les pré-réglages sont affichés en cliquant sur l'icône "
+"<inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" scalefit="
+"\"1\" width=\"2%\" align=\"center\"/> avec le pré-réglage utilisé "
+"affiché en texte gras."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2102(para)
-#, fuzzy
 msgid ""
 "The preset system also supports automatic preset selection based on image "
 "data such as focal length, ISO, camera model and other fields."
 msgstr ""
-"Le système de pré-réglage permet également d'appliquer automatiquement un "
+"Le système de pré-réglages permet également d'appliquer automatiquement un "
 "réglage en se basant sur les métadonnées de l'image telles que la focale, la "
-"sensibilité, le modèle d'appareil photo et plus encore."
+"sensibilité ISO, le modèle d'appareil photo et plus encore."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2106(title)
 msgid "Creating a new preset"
 msgstr "Créer un nouveau pré-réglage"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2107(para)
-#, fuzzy
 msgid ""
 "First configure the module's parameters then click the <inlinegraphic "
 "fileref=\"images/darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%"
@@ -3877,14 +4055,12 @@ msgstr ""
 "s'affiche alors pour configurer le pré-réglage:"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2113(para)
-#, fuzzy
 msgid "The first two fields are used to name and describe the preset."
 msgstr ""
 "Les deux premiers champs sont utilisés pour donner un nom et une description "
 "au pré-réglage."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2116(para)
-#, fuzzy
 msgid ""
 "In the example above we have also checked the auto apply option. This brings "
 "up additional selection fields where you can define a filter used to decide "
@@ -3895,11 +4071,13 @@ msgid ""
 "applied. Also the second checkbox is clicked so this preset will only be "
 "shown in the preset list if the image matches the rule."
 msgstr ""
-"Dans l'exemple, j'ai également coché l'option \"appliquer automatiquement "
-"aux images correspondantes\" ce qui affiche les champs permettant de définir "
-"le filtre. L'exemple ci-dessus introduit les règles suivantes: si le nom de "
+"Dans l'exemple, l'option \"appliquer automatiquement aux images correspondantes\" "
+" est cochée ce qui affiche les champs permettant de définir le filtre utilisé pour "
+"définir le pré-réglage doit être appliqué automatiquement lors de l'ouverture "
+"d'images similaires dans la chambre noire."
+"L'exemple ci-dessus introduit les règles suivantes: si le nom de "
 "la lentille correspond, que l'ouverture est de &gt;= 8, et que la focale est "
-"entre 24 et 35 mm, le pré-réglage s'appliquera automatiquement ; de même le "
+"entre 24 et 35 mm, le pré-réglage s'appliquera automatiquement; de même le "
 "pré-réglage n'apparaitra dans la liste que si l'image correspond aux "
 "critères du filtre."
 
@@ -3909,7 +4087,7 @@ msgid ""
 "preset to be applied to all images from a specific camera leave all fields "
 "at default values except for the model field."
 msgstr ""
-"darktable trouve ces données dans les informations EXIF de votre image; si vous souhaitez "
+"darktable trouve ses données dans les informations EXIF de votre image; si vous souhaitez "
 "qu'un pré-réglage s'applique à toutes les images d'un appareil photo spécifique "
 "laissez tout les champs à leur valeur par défaut, observez le nom du modèle "
 "dans le panneau de métadonnées puis entrez ce nom dans le champ \"modèle\"."
@@ -3919,7 +4097,9 @@ msgid ""
 "Tip: The <emphasis>image information</emphasis> panel for your image "
 "displays your model name, use this to ensure you have the correct spelling "
 "(see <xref linkend=\"image_information\"/>)."
-msgstr ""
+msgstr "Conseil: Le panneau  <emphasis>image information</emphasis> affiche "
+"le nom de votre appareil, utilisez ces informations pour vérifier que vous avez"
+"correctement écrit le nom (voir <xref linkend=\"image_information\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2132(title)
 msgid "Managing Presets"
@@ -3930,32 +4110,37 @@ msgid ""
 "Both user created and pre-defined presets can be viewed and managed from "
 "within the presets menu (<xref linkend=\"presets\"/>) in the preferences "
 "dialog (see <xref linkend=\"preferences_chapter\"/>)."
-msgstr ""
+msgstr "Les pré-réglages de l'utilisateur et de darktable peuvent être "
+"visualités depuis l'onglet pré-réglage (voir <xref linkend=\"presets\"/>) "
+"des préférences globales (voir <xref linkend=\"preferences_chapter\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2140(title)
 msgid "Multiple instances"
-msgstr ""
+msgstr "Instances multiples"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2142(primary)
 msgid "multiple instances"
-msgstr ""
+msgstr "instances multiples"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2145(para)
 msgid ""
 "Many of darktable's modules can be applied multiple times. Each instance of "
 "that module behaves like any other module, taking its input from the module "
 "below in the pixelpipe delivering its output to the module above."
-msgstr ""
+msgstr "Beaucoup de modules de darktable peuvent être instanciés plusieurs fois. "
+"Chaque instance du module se comporte comme tout autre module, prenant comme entrée "
+"les donnée du module de dessous et délivrant ses données au module supérieur."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2148(title)
 msgid "Typical use cases"
-msgstr ""
+msgstr "Usages typiques"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2149(para)
 msgid ""
 "There are many occasions where it makes sense to have an operation act more "
 "than once in the pixelpipe. Here are a few use cases."
-msgstr ""
+msgstr "Il y a plusieurs situations où la multi-instanciation prend du sens."
+"Voici quelques exemples."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2151(para)
 msgid ""
@@ -3965,7 +4150,11 @@ msgid ""
 "of lightness based on pixel values. You might want to do two lightness "
 "corrections in your image at the same time - one for dark tones and another "
 "one for lighter tones."
-msgstr ""
+msgstr "La plupart des modules sont très souples et dépendent de paramètres "
+"pouvant produire des effets variés. Par exemple le module <emphasis>fill light</"
+"emphasis> (<xref linkend=\"fill_light\"/>) vous permet de modifier localement "
+"la luminosité en se basant sur la valeur des pixels. Vous pourriez avoir besoin "
+"d'utiliser ce module à plusieurs endroits sur votre image."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2155(para)
 msgid ""
@@ -3976,7 +4165,13 @@ msgid ""
 "first one only on luma by selecting blend mode <quote>lightness</quote> and "
 "use the second one just for chroma by selecting blend mode <quote>color</"
 "quote> (see <xref linkend=\"blending_operators\"/>)."
-msgstr ""
+msgstr "Vous pouvez aussi appliquer un module de dé-bruitage tel que "
+"<emphasis>réduction du bruit (profil)</emphasis> (<xref linkend=\"denoise_profiled\"/>) "
+"avec deux jeux de paramètres différents. Un pour dé-bruiter le cannal luma et un autre pour "
+"dé-bruiter le cannal chroma. Vous pouvez faire ceci en générant deux instances; une première "
+"pour le cannal luma en sélectionnat un opérateur de fusion <quote>luminance</quote> et "
+"une seconde pour le cannal chroma en utilisant l'opérateur de fusion <quote>couleur</"
+"quote> (see <xref linkend=\"blending_operators\"/>)."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2160(para)
 msgid ""
@@ -3989,30 +4184,37 @@ msgid ""
 "<emphasis>parametric masks</emphasis> (<xref linkend=\"parametric_mask\"/>) "
 "may be used to select those parts of an image where each of the module "
 "instances are applied."
-msgstr ""
+msgstr "Dans un cas encore plus élaboré vous pourriez avoir un module "
+"n'agissant que sur une partie de l'image. Par example vous pourriez "
+"vouloir appliquer une <emphasis>courbe de tonalité</emphasis> (<xref linkend="
+"\"tone_curve\"/>) à la totalité de votre image et une seconde instance "
+"seulement pour la peau. Tout le contrôle offert par les <emphasis>masques dessinés</emphasis> "
+"(<xref linkend=\"drawn_mask\"/>) et les <emphasis>masques paramétriques</emphasis> "
+"(<xref linkend=\"parametric_mask\"/>) peuvent servir à sélectionner une "
+"partie de l'image où chaque instance du module est appliquée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2166(para)
 msgid ""
 "Please be aware that of course each instance also adds to the workload of "
 "your pixelpipe. Generating too many instances - especially of the more "
 "demanding modules - will certainly cause some noticeable slow-down."
-msgstr ""
+msgstr "Soyez conscients que chaque instance alourdi le processus de traitement. "
+"Instancier une trop grande quantité de modules - surtout pour les plus lourds - "
+"provoquera certainement des ralentissemens notables."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2170(title)
 msgid "Managing instances"
-msgstr ""
+msgstr "Gérer les instances"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2176(entry)
-#, fuzzy
 msgid ""
 "When clicking on the <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"4%\" align="
 "\"center\"/> icon a drop-down menu will appear."
 msgstr ""
-"Paramétrez le module comme vous le souhaitez puis cliquez sur le bouton "
-"<inlinegraphic fileref=\"../images/darkroom_module_icon_presets.png\"/> et "
-"sélectionnez \"nouveau pré-réglage\". La boîte de dialogue suivante "
-"s'affiche alors pour configurer le pré-réglage:"
+"Lorsque vous cliquez sur l'icône <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_instances.png\" scalefit=\"1\" width=\"4%\" align="
+"\"center\"/> une liste déroulante apparait."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2187(para)
 msgid ""
@@ -4020,14 +4222,19 @@ msgid ""
 "any existing ones. All parameters are set to default values. The new "
 "instance gets its own complete set of GUI controls and a number appended to "
 "the base module name for distinction."
-msgstr ""
+msgstr "Sélectionnez  <quote>nouvelle instance</quote> pour générer une instance "
+"sous celle existante. Tout les paramètres de la nouvelle instance seront ceux par "
+"défaut du module. La nouvelle instances possède ses propres contrôleurs et un "
+"numéro pour différencier les instances."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2190(para)
 msgid ""
 "Selecting <quote>duplicate instance</quote> behaves in a similar way. The "
 "only difference: the new instance will inherit all parameter settings from "
 "its parent."
-msgstr ""
+msgstr "Sélectionner <quote>cloner l'instance</quote> se comporte de la même "
+"façon. La seule différence est que la nouvelle instance possèdera les mêmes "
+"paramètres que l'instance clonée."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2193(para)
 msgid ""
@@ -4037,21 +4244,27 @@ msgid ""
 "different instances of a module are applied by selecting <quote>move up</"
 "quote> or <quote>move down</quote> to shift the position of the instance "
 "among its peers."
-msgstr ""
+msgstr "darktalbe applique tout les modules dans un ordre défini suivant "
+"type. Par conséquent toutes les instances d'un module particulier se "
+"produiront au même moment dans le pixelpipe. Vous pouvez cependant choisir "
+"l'ordre relatif des instances d'une module en sélectionnant <quote>monter</"
+"quote> ou <quote>descendre</quote> pour ajuster la position de l'instance par "
+"rapport aux autres."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2198(para)
 msgid ""
 "To delete an instance just press <quote>delete</quote> from the drop-down "
 "menu."
-msgstr ""
+msgstr "Pour supprimer une instance sélectionnez <quote>supprimer</quote> dans la "
+"liste déroulante."
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2204(title)
 msgid "Blending"
-msgstr ""
+msgstr "Fusion"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2206(primary)
 msgid "blending"
-msgstr ""
+msgstr "fusion"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2211(para)
 msgid ""
