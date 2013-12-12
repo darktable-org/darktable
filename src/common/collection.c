@@ -644,24 +644,50 @@ dt_collection_deserialize(char *buf)
 {
   int num_rules = 0;
   char str[400], confname[200];
-  sprintf(str, "%%");
   int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
-  if(num_rules == 0) num_rules = 1;
-  dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
-  while(buf[0] != ':') buf++;
-  buf++;
-  for(int k=0; k<num_rules; k++)
+  if(num_rules == 0)
   {
-    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
-    dt_conf_set_int(confname, mode);
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
-    dt_conf_set_int(confname, item);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
-    dt_conf_set_string(confname, str);
-    while(buf[0] != '$' && buf[0] != '\0') buf++;
-    buf++;
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+    dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
+    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+    dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+  }
+  else
+  {
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
+    while(buf[0] != '\0' && buf[0] != ':') buf++;
+    if(buf[0] == ':') buf++;
+    for(int k=0; k<num_rules; k++)
+    {
+      int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      if(n == 3)
+      {
+        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        dt_conf_set_int(confname, mode);
+        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        dt_conf_set_int(confname, item);
+        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        dt_conf_set_string(confname, str);
+      }
+      else if(num_rules == 1)
+      {
+        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        dt_conf_set_string(confname, "%");
+        break;
+      }
+      else
+      {
+        dt_conf_set_int("plugins/lighttable/collect/num_rules", k);
+        break;
+      }
+      while(buf[0] != '$' && buf[0] != '\0') buf++;
+      if(buf[0] == '$') buf++;
+    }
   }
   dt_collection_update_query(darktable.collection);
 }
