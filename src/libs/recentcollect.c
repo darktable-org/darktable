@@ -99,39 +99,54 @@ void connect_key_accels(dt_lib_module_t *self)
 
 
 static void
-pretty_print(char *buf, char *out)
+pretty_print(char *buf, char *out, int outsize)
 {
+  memset(out, 0, outsize);
+
   if(!buf || buf[0] == '\0') return;
+
   int num_rules = 0;
   char str[400] = {0};
   int mode, item;
+  int c;
   sscanf(buf, "%d", &num_rules);
-  while(buf[0] != ':') buf++;
-  buf++;
+  while(buf[0] != '\0' && buf[0] != ':') buf++;
+  if(buf[0] == ':') buf++;
+
   for(int k=0; k<num_rules; k++)
   {
-    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
-    str[399] = '$';
+    int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
 
-    if(k > 0) switch(mode)
-      {
-        case DT_LIB_COLLECT_MODE_AND:
-          out += sprintf(out, _(" and "));
-          break;
-        case DT_LIB_COLLECT_MODE_OR:
-          out += sprintf(out, _(" or "));
-          break;
-        default: //case DT_LIB_COLLECT_MODE_AND_NOT:
-          out += sprintf(out, _(" but not "));
-          break;
-      }
-    int i = 0;
-    while(str[i] != '$') i++;
-    str[i] = '\0';
+    if(n == 3)
+    {
+      if(k > 0) switch(mode)
+        {
+          case DT_LIB_COLLECT_MODE_AND:
+            c = snprintf(out, outsize, _(" and "));
+            out += c;
+            outsize -= c;
+            break;
+          case DT_LIB_COLLECT_MODE_OR:
+            c = snprintf(out, outsize, _(" or "));
+            out += c;
+            outsize -= c;
+            break;
+          default: //case DT_LIB_COLLECT_MODE_AND_NOT:
+            c = snprintf(out, outsize, _(" but not "));
+            out += c;
+            outsize -= c;
+            break;
+        }
+      int i = 0;
+      while(str[i] != '\0' && str[i] != '$') i++;
+      if(str[i] == '$') str[i] = '\0';
 
-    out += sprintf(out, "%s %s", _(dt_lib_collect_string[item]), item == 0 ? dt_image_film_roll_name(str) : str);
+      c = snprintf(out, outsize, "%s %s", _(dt_lib_collect_string[item]), item == 0 ? dt_image_film_roll_name(str) : str);
+      out += c;
+      outsize -= c;
+    }
     while(buf[0] != '$' && buf[0] != '\0') buf++;
-    buf++;
+    if(buf[0] == '$') buf++;
   }
 }
 
@@ -177,16 +192,18 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
 
   // is the current position, i.e. the one to be stored with the old collection (pos0, pos1-to-be)
   uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
-  if(d->inited || curr_pos!=-1)
+  uint32_t new_pos = -1;
+
+  if(!d->inited)
+  {
+    new_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
+  }
+  else if(curr_pos != -1)
   {
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   }
-  else
-  {
-    curr_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
-  }
   d->inited = 1;
-  uint32_t new_pos = curr_pos;
+
 
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
@@ -238,27 +255,33 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
       g_free(line1);
     }
     dt_conf_set_string("plugins/lighttable/recentcollect/line0", buf);
-    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", new_pos);
+    dt_conf_set_int("plugins/lighttable/recentcollect/pos0", (new_pos != -1 ? new_pos : (curr_pos != -1 ? curr_pos : 0)));
   }
   // update button descriptions:
   for(int k=0; k<NUM_LINES; k++)
   {
-    char str[200] = {0};
+    char str[2048] = {0};
     char str_cut[200] = {0};
     char str_pretty[200] = {0};
 
     snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
-    gchar *buf = dt_conf_get_string(confname);
-    if(buf && buf[0] != '\0')
+    gchar *line2 = dt_conf_get_string(confname);
+    if(line2 && line2[0] != '\0')
     {
-      pretty_print(buf, str);
-      g_free(buf);
+      pretty_print(line2, str, 2048);
+      g_free(line2);
     }
     g_object_set(G_OBJECT(d->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
-    if (g_utf8_strlen(str, -1) > cut)
+    if (g_utf8_validate(str, -1, NULL) && g_utf8_strlen(str, -1) > cut)
     {
       g_utf8_strncpy(str_cut, str, cut);
+      snprintf(str_pretty, 200, "%s...", str_cut);
+      gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
+    }
+    else if (strlen(str) > cut)
+    {
+      strncpy(str_cut, str, cut);
       snprintf(str_pretty, 200, "%s...", str_cut);
       gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
     }
@@ -274,7 +297,7 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(d->item[k].button, FALSE);
     gtk_widget_set_visible(d->item[k].button, TRUE);
   }
-  dt_view_lighttable_set_position(darktable.view_manager, new_pos);
+  if((new_pos != -1) && (new_pos != curr_pos)) dt_view_lighttable_set_position(darktable.view_manager, new_pos);
 }
 
 void
