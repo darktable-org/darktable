@@ -22,6 +22,7 @@ The release team should empty this file after each release.
 - added a setting to automatically collapse modules to only have a single one expanded
 - better user experience for bauhaus sliders: the popup now has a blinking cursor to make possible text entry more discoverable
 - the text entry for bauhaus sliders and vimkeys' ":set" command can now evaluate mathematical expressions
+- additional logarithmic mode for editing the basecurve
 - many bug fixes and small improvements
 
 - a tool for measuring basecurves from a sample image
