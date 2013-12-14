@@ -208,7 +208,7 @@ static void  free_params_wrapper  (struct dt_imageio_module_storage_t *self, dt_
 
 static int   set_params_wrapper   (struct dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  return 1;
+  return 0;
 }
 
 static dt_imageio_module_storage_t ref_storage =
