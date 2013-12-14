@@ -1029,6 +1029,19 @@
 			<Vertical x="4984" width="8"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON Df">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="2" y="0" width="-50" height="0"/>
+		<Sensor black="0" white="16383"/>
+		<BlackAreas>
+			<Vertical x="4984" width="8"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D5100"  decoder_version="2">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
