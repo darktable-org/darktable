@@ -1070,10 +1070,10 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   // x/y offset
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->xoffset, 3);
+  g->scale3 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0,0.001, p->xoffset, 3);
   dt_bauhaus_slider_set_format(g->scale3, "%.3f");
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("x offset"));
-  g->scale4 = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1,0.001, p->yoffset, 3);
+  g->scale4 = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0,0.001, p->yoffset, 3);
   dt_bauhaus_slider_set_format(g->scale4, "%.3f");
   dt_bauhaus_widget_set_label(g->scale4, NULL, _("y offset"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
