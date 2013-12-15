@@ -24,6 +24,7 @@
 #include "common/mipmap_cache.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/selection.h"
 #include "libs/lib.h"
 #include "control/conf.h"
 #include "control/control.h"
