@@ -24,7 +24,6 @@
 #include "common/mipmap_cache.h"
 #include "common/debug.h"
 #include "common/history.h"
-#include "common/selection.h"
 #include "libs/lib.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -1119,10 +1118,6 @@ dt_view_image_expose(
     cairo_set_line_width(cr, 1.0);
     cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
     cairo_stroke(cr);
-
-    // we are on the single-image display at a time, in this case we want the selection to be updated to contain
-    // this single image.
-    dt_selection_select_single(darktable.selection, imgid);
   }
 
 
