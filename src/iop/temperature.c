@@ -480,12 +480,36 @@ void reload_defaults(dt_iop_module_t *module)
         tmp.coeffs[1] = 1.0f;
       }
       // remember daylight wb used for temperature/tint conversion,
-      // assuming it corresponds to CIE daylight
+      // assuming it corresponds to CIE daylight (D65)
       if(module->gui_data)
       {
         dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)module->gui_data;
         for(int c = 0; c < 3; c++)
           g->daylight_wb[c] = raw->color.pre_mul[c];
+
+        if(g->daylight_wb[0] == 1.0f &&
+           g->daylight_wb[1] == 1.0f &&
+           g->daylight_wb[2] == 1.0f)
+        {
+          // if we didn't find anything for daylight wb, look for a wb preset with appropriate name.
+          // we're normalising that to be D65
+          char makermodel[1024];
+          char *model = makermodel;
+          dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
+              module->dev->image_storage.exif_maker,
+              module->dev->image_storage.exif_model);
+          for(int i=0; i<wb_preset_count; i++)
+          {
+            if(!strcmp(wb_preset[i].make,  makermodel) &&
+               !strcmp(wb_preset[i].model, model) &&
+               !strncasecmp(wb_preset[i].name, "daylight", 8))
+            {
+              for(int k=0;k<3;k++)
+                g->daylight_wb[k] = wb_preset[i].channel[k];
+              break;
+            }
+          }
+        }
         float temp, tint, mul[3];
         for(int k=0; k<3; k++) mul[k] = g->daylight_wb[k]/tmp.coeffs[k];
         convert_rgb_to_k(mul, &temp, &tint);
