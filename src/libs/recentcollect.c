@@ -197,13 +197,13 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   if(!d->inited)
   {
     new_pos = dt_conf_get_int("plugins/lighttable/recentcollect/pos0");
+    d->inited = 1;
+    dt_view_lighttable_set_position(darktable.view_manager, new_pos);
   }
   else if(curr_pos != -1)
   {
     dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   }
-  d->inited = 1;
-
 
   int n = -1;
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
