@@ -614,6 +614,12 @@ end_query_cache:
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery, FALSE);
+        if (iir==1)
+        {
+          // we are on the single-image display at a time, in this case we want the selection to be updated to contain
+          // this single image.
+          dt_selection_select_single(darktable.selection, id);
+        }
 
         cairo_restore(cr);
       }
@@ -1037,6 +1043,12 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
         dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom, img_pointerx, img_pointery, FALSE);
         cairo_restore(cr);
+        if (zoom==1)
+        {
+          // we are on the single-image display at a time, in this case we want the selection to be updated to contain
+          // this single image.
+          dt_selection_select_single(darktable.selection, id);
+        }
       }
       else goto failure;
       cairo_translate(cr, wd, 0.0f);
