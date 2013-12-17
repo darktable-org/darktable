@@ -4451,6 +4451,17 @@ const wb_data wb_preset[] =
   { "PENTAX", "K-01", Flash, 0,               { 2.490966796875, 1, 1.4849853515625, 0 } },
   { "PENTAX", "K-01", WarmWhiteFluorescent, 0,        { 1.7689208984375, 1, 2.677734375, 0 } },
 
+  /* RICOH PENTAX K-3 Firmware version 1.00 */
+  { "RICOH", "PENTAX K-3", Daylight, 0,			{ 2.31250, 1, 1.48047, 0 } },
+  { "RICOH", "PENTAX K-3", Shade, 0,			{ 2.78516, 1, 1.16797, 0 } },
+  { "RICOH", "PENTAX K-3", Cloudy, 0,			{ 2.49219, 1, 1.35156, 0 } },
+  { "RICOH", "PENTAX K-3", Tungsten, 0,			{ 1.35938, 1, 2.74609, 0 } },
+  { "RICOH", "PENTAX K-3", DaylightFluorescent, 0,	{ 2.71094, 1, 1.51953, 0 } },
+  { "RICOH", "PENTAX K-3", DayWhiteFluorescent, 0,	{ 2.30469, 1, 1.70312, 0 } },
+  { "RICOH", "PENTAX K-3", WhiteFluorescent, 0,		{ 2.07031, 1, 2.03516, 0 } },
+  { "RICOH", "PENTAX K-3", WarmWhiteFluorescent, 0,	{ 1.74609, 1, 2.53125, 0 } },
+  { "RICOH", "PENTAX K-3", Flash, 0,			{ 2.56641, 1, 1.31641, 0 } },
+
   { "PENTAX", "K-5", Daylight, 0,		{ 2.1211, 1, 1.5781, 0 } },
   { "PENTAX", "K-5", Shade, 0,			{ 2.5312, 1, 1.1758, 0 } },
   { "PENTAX", "K-5", Cloudy, 0,			{ 2.2852, 1, 1.3477, 0 } },
