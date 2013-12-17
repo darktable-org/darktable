@@ -450,6 +450,7 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
       query = dt_util_dstrcat(query, "select id,folder from film_rolls where folder like '%s%%'", tree_path);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       g_free(query);
+      query = NULL;
 
       while (sqlite3_step(stmt) == SQLITE_ROW)
       {
