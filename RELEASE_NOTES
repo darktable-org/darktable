@@ -31,3 +31,8 @@ The release team should empty this file after each release.
 - updated usermanual
 
 - darktable now requires Gtk+ in version >= 2.24, Glib in version >= 2.30
+
+Known bugs
+==========
+- Ricoh Pentax K-3 PEFs aren't supported yet (DNGs work fine)
+- Nikon D5300 isn't supported yet
