@@ -432,6 +432,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
   if (entryNode == NULL)
   {
     g_free(pathname);
+    xmlFreeDoc(doc);
     return;
   }
 
