@@ -99,20 +99,13 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   const gchar * filename = g_path_get_basename( dirname );
 
   strcpy(dirname, filename);
-  gchar * end = g_strrstr(dirname,".");
+
+  dt_image_path_append_version(imgid, dirname, 4096);
+
+  gchar * end = g_strrstr(dirname,".")+1;
 
   if (end) *end = '\0';
 
-  // add sequence if needed
-
-  if(total > 1 && !g_strrstr(dirname, "$"))
-  {
-    sprintf(end, "_%04d", num);
-  }
-
-  // add extension for the exported file
-
-  g_strlcat(dirname, ".", 4096);
   g_strlcat(dirname, format->extension(fdata), 4096);
 
   // set exported filename
