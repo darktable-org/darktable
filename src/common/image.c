@@ -1171,6 +1171,14 @@ void dt_image_local_copy_set(const int32_t imgid)
 
   _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
 
+  // check that the src file is readable
+  if (!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
+  {
+    // to be enabled after 1.4
+    // dt_control_log(_("cannot create local copy when the original file is not accessible."));
+    return;
+  }
+
   if (!g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     GFile *src = g_file_new_for_path(srcpath);
@@ -1178,7 +1186,15 @@ void dt_image_local_copy_set(const int32_t imgid)
 
     // copy image to cache directory
     GError *gerror = NULL;
-    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+
+    if (!g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror))
+    {
+      // to be enabled after 1.4
+      // dt_control_log(_("cannot create local copy."));
+      g_object_unref(dest);
+      g_object_unref(src);
+      return;
+    }
 
     g_object_unref(dest);
     g_object_unref(src);
