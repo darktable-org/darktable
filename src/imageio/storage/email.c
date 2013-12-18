@@ -97,10 +97,27 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, 1024, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
-  gchar * end = g_strrstr( filename,".")+1;
-  g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
-  attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
+  strcpy(dirname, filename);
+  gchar * end = g_strrstr(dirname,".");
+
+  if (end) *end = '\0';
+
+  // add sequence if needed
+
+  if(total > 1 && !g_strrstr(dirname, "$"))
+  {
+    sprintf(end, "_%04d", num);
+  }
+
+  // add extension for the exported file
+
+  g_strlcat(dirname, ".", 4096);
+  g_strlcat(dirname, format->extension(fdata), 4096);
+
+  // set exported filename
+
+  attachment->file = g_build_filename( tmpdir, dirname, (char *)NULL );
 
   if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality) != 0)
   {
