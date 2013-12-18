@@ -369,6 +369,38 @@ int dt_init(int argc, char *argv[], const int init_gui)
   mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */
 #endif
 
+  // we have to have our share dir in XDG_DATA_DIRS,
+  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
+  {
+    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
+    gchar *new_xdg_data_dirs = NULL;
+    gboolean set_env = TRUE;
+    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
+    {
+      // check if DARKTABLE_SHAREDIR is already in there
+      gboolean found = FALSE;
+      gchar **tokens = g_strsplit(xdg_data_dirs, ":", 0);
+      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
+      for(char **iter = tokens; *iter != NULL; iter++)
+        if(!strcmp(DARKTABLE_SHAREDIR, *iter))
+        {
+          found = TRUE;
+          break;
+        }
+      g_strfreev(tokens);
+      if(found)
+        set_env = FALSE;
+      else
+        new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
+    }
+    else
+      new_xdg_data_dirs = g_strdup(DARKTABLE_SHAREDIR);
+
+    if(set_env)
+      g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
+    g_free(new_xdg_data_dirs);
+  }
+
   setlocale(LC_ALL, "");
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
