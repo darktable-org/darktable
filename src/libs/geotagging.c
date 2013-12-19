@@ -207,7 +207,9 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
 
     // allow +, -, :, 0 .. 9, left/right/home/end movement using arrow keys and del/backspace
     case GDK_KEY_plus:
+    case GDK_KEY_KP_Add:
     case GDK_KEY_minus:
+    case GDK_KEY_KP_Subtract:
     case GDK_KEY_colon:
     case GDK_KEY_0:
     case GDK_KEY_KP_0:
@@ -237,6 +239,7 @@ _lib_geotagging_offset_key_press(GtkWidget *entry, GdkEventKey *event, dt_lib_mo
     case GDK_KEY_End:
     case GDK_KEY_KP_End:
     case GDK_KEY_Delete:
+    case GDK_KEY_KP_Delete:
     case GDK_KEY_BackSpace:
       return FALSE;
 
