@@ -65,6 +65,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
 
   char dirname[DT_MAX_PATH_LEN];
   dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_path_append_version(imgid, dirname, DT_MAX_PATH_LEN);
   const gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
