@@ -104,6 +104,7 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
     {
       gui->pipe_hash = gui->formid = 0;
       g_list_free(gui->points);
+      gui->points = NULL;
     }
   }
 
