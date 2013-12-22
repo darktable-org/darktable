@@ -816,7 +816,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     struct stat statbuf;
     stat(path, &statbuf);
     struct tm result;
-    strftime(img->exif_datetime_taken, 20, "%Y-%m-%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
 
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
