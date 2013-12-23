@@ -1095,7 +1095,7 @@
   <dtconfig>
     <name>plugins/lighttable/export/format_name</name>
     <type>string</type>
-    <default>JPEG</default>
+    <default>jpeg</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
