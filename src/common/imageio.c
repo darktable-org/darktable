@@ -652,7 +652,7 @@ int dt_imageio_export_with_flags(
   }
 
   //  If a style is to be applied during export, add the iop params into the history
-  if (!thumbnail_export && format_params->style[0] != '\0')
+  if (!thumbnail_export && format_params->style[0] != '\0' && strcmp(format_params->style,_("none")))
   {
     GList *stls;
 
