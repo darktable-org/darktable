@@ -19,6 +19,20 @@
 #include "common/file_location.h"
 #include "lua/lua.h"
 
+/*
+ * LUA API VERSIONNING
+ * This API versionning follows sementic versionning as defined in
+ * http://semver.org
+ */
+
+/* incompatible API change */
+#define API_VERSION_MAJOR  1
+/* backward compatible API change */
+#define API_VERSION_MINOR  0
+/* bugfixes that should not change anything to the API */
+#define API_VERSION_PATCH  0
+/* suffix for unstable version */
+#define API_VERSION_SUFFIX ""
 
 int dt_lua_init_configuration(lua_State*L)
 {
@@ -54,6 +68,30 @@ int dt_lua_init_configuration(lua_State*L)
 
   lua_pushstring(L,"has_gui");
   lua_pushboolean(L,darktable.gui != NULL);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"api_version_major");
+  lua_pushnumber(L,API_VERSION_MAJOR);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"api_version_minor");
+  lua_pushnumber(L,API_VERSION_MINOR);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"api_version_patch");
+  lua_pushnumber(L,API_VERSION_PATCH);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"api_version_suffix");
+  lua_pushstring(L,API_VERSION_SUFFIX);
+  lua_settable(L,-3);
+
+  lua_pushstring(L,"api_version_string");
+  if (strcmp(API_VERSION_SUFFIX, "") == 0) {
+    lua_pushfstring(L,"%d.%d.%d",API_VERSION_MAJOR,API_VERSION_MINOR,API_VERSION_PATCH);
+  } else {
+    lua_pushfstring(L,"%d.%d.%d-%s",API_VERSION_MAJOR,API_VERSION_MINOR,API_VERSION_PATCH,API_VERSION_SUFFIX);
+  }
   lua_settable(L,-3);
 
   lua_pop(L,1); //remove the configuration table from the stack
