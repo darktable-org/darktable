@@ -358,8 +358,13 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
 static void
 style_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
-  dt_conf_set_string("plugins/lighttable/export/style", style);
+  if(gtk_combo_box_get_active(d->style) == 0)
+    dt_conf_set_string("plugins/lighttable/export/style", "");
+  else
+  {
+    gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
+    dt_conf_set_string("plugins/lighttable/export/style", style);
+  }
 }
 
 int
@@ -846,7 +851,10 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
-  _combo_box_set_active_text(d->style, fdata->style);
+  if (fdata->style[0] == '\0')
+    gtk_combo_box_set_active(d->style, 0);
+  else
+    _combo_box_set_active_text(d->style, fdata->style);
   buf += fsize;
   const void *sdata = buf;
 
