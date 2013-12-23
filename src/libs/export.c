@@ -358,13 +358,8 @@ intent_changed (GtkComboBox *widget, dt_lib_export_t *d)
 static void
 style_changed (GtkComboBox *widget, dt_lib_export_t *d)
 {
-  if(gtk_combo_box_get_active(d->style) == 0)
-    dt_conf_set_string("plugins/lighttable/export/style", "");
-  else
-  {
-    gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
-    dt_conf_set_string("plugins/lighttable/export/style", style);
-  }
+  gchar *style = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->style));
+  dt_conf_set_string("plugins/lighttable/export/style", style);
 }
 
 int
