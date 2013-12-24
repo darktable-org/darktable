@@ -1174,8 +1174,7 @@ void dt_image_local_copy_set(const int32_t imgid)
   // check that the src file is readable
   if (!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
   {
-    // to be enabled after 1.4
-    // dt_control_log(_("cannot create local copy when the original file is not accessible."));
+    dt_control_log(_("cannot create local copy when the original file is not accessible."));
     return;
   }
 
@@ -1189,8 +1188,7 @@ void dt_image_local_copy_set(const int32_t imgid)
 
     if (!g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror))
     {
-      // to be enabled after 1.4
-      // dt_control_log(_("cannot create local copy."));
+      dt_control_log(_("cannot create local copy."));
       g_object_unref(dest);
       g_object_unref(src);
       return;
