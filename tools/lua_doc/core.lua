@@ -116,10 +116,11 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__module_type"
 			or field == "__associated_object"
 			or field == "__gc"
+			or field == "__values"
 			)	then
 			-- nothing
 		else
-			print("undocumented type field "..field)
+			print("ERROR undocumented metafield "..field.." for type "..prev_name)
 		end
 	end
 	set_attribute(result,"reported_type","dt_type")
