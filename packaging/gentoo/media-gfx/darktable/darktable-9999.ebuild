@@ -13,13 +13,12 @@ HOMEPAGE="http://www.darktable.org/"
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS=""
-IUSE="colord flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde
-lua nls opencl openmp pax_kernel +rawspeed +slideshow web-services"
+IUSE="cmstest colord flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde
+lua nls opencl openmp pax_kernel +rawspeed +slideshow +squish web-services webp"
 
 CDEPEND="
 	dev-db/sqlite:3
-	>=dev-libs/glib-2.30:2
+	dev-libs/glib:2
 	dev-libs/libxml2:2
 	colord? ( x11-misc/colord )
 	flickr? ( media-libs/flickcurl )
@@ -32,7 +31,7 @@ CDEPEND="
 	lua? ( >=dev-lang/lua-5.2 )
 	media-gfx/exiv2[xmp]
 	media-libs/lcms:2
-	>=media-libs/lensfun-0.2.3
+	media-libs/lensfun
 	media-libs/libpng:0
 	media-libs/openexr
 	media-libs/tiff:0
@@ -45,6 +44,7 @@ CDEPEND="
 	)
 	virtual/jpeg
 	web-services? ( dev-libs/json-glib )
+	webp? ( >=media-libs/libwebp-0.3.0 )
 	x11-libs/cairo
 	x11-libs/gdk-pixbuf:2
 	x11-libs/gtk+:2
@@ -71,6 +71,7 @@ src_prepare() {
 
 src_configure() {
 	local mycmakeargs=(
+		$(cmake-utils_use_build cmstest CMSTEST)
 		$(cmake-utils_use_use colord COLORD)
 		$(cmake-utils_use_use flickr FLICKR)
 		$(cmake-utils_use_use geo GEO)
@@ -83,8 +84,10 @@ src_configure() {
 		$(cmake-utils_use_use opencl OPENCL)
 		$(cmake-utils_use_use openmp OPENMP)
 		$(cmake-utils_use !rawspeed DONT_USE_RAWSPEED)
+		$(cmake-utils_use_use squish SQUISH)
 		$(cmake-utils_use_build slideshow SLIDESHOW)
 		$(cmake-utils_use_use web-services GLIBJSON)
+		$(cmake-utils_use_use webp WEBP)
 		-DCUSTOM_CFLAGS=ON
 		-DINSTALL_IOP_EXPERIMENTAL=ON
 		-DINSTALL_IOP_LEGACY=ON
