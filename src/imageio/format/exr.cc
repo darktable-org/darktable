@@ -157,7 +157,7 @@ extern "C"
   const char*
     name ()
     {
-      return _("OpenEXR");
+      return _("OpenEXR (float)");
     }
 
   // TODO: some quality/compression stuff?

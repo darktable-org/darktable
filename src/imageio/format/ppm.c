@@ -107,7 +107,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("16-bit PPM");
+  return _("PPM (16-bit)");
 }
 
 // TODO: some quality/compression stuff?
