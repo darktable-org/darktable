@@ -390,7 +390,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("8/16-bit PNG");
+  return _("PNG (8/16-bit)");
 }
 
 static void

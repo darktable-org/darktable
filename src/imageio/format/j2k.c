@@ -576,7 +576,7 @@ extension(dt_imageio_module_data_t *data_tmp)
 const char*
 name ()
 {
-  return _("JPEG 2000");
+  return _("JPEG 2000 (12-bit)");
 }
 
 static void combobox_changed(GtkComboBox *widget, gpointer user_data)

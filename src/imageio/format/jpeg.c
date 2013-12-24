@@ -524,7 +524,7 @@ void cleanup(dt_imageio_module_format_t *self) {}
 const char*
 name ()
 {
-  return _("8-bit JPG");
+  return _("JPEG (8-bit)");
 }
 
 static void

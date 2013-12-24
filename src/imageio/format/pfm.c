@@ -101,7 +101,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("float PFM");
+  return _("PFM (float)");
 }
 
 void init(dt_imageio_module_format_t *self) {}
