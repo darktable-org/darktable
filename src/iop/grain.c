@@ -42,6 +42,8 @@
 #define GRAIN_SATURATION_STRENGTH_SCALE 0.25
 #define GRAIN_RGB_STRENGTH_SCALE 0.25
 
+#define GRAIN_SCALE_FACTOR 213.2
+
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
 
@@ -413,7 +415,7 @@ scale_callback (GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)self->params;
-  p->scale = dt_bauhaus_slider_get(slider)/53.3;
+  p->scale = dt_bauhaus_slider_get(slider)/GRAIN_SCALE_FACTOR;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -471,7 +473,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_grain_gui_data_t *g = (dt_iop_grain_gui_data_t *)self->gui_data;
   dt_iop_grain_params_t *p = (dt_iop_grain_params_t *)module->params;
 
-  dt_bauhaus_slider_set(g->scale1, p->scale*53.3);
+  dt_bauhaus_slider_set(g->scale1, p->scale*GRAIN_SCALE_FACTOR);
   dt_bauhaus_slider_set(g->scale2, p->strength);
 }
 
@@ -486,7 +488,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t)
   {
-    DT_GRAIN_CHANNEL_LIGHTNESS, 400.0/53.3, 25.0
+    DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0/GRAIN_SCALE_FACTOR, 25.0
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));
@@ -509,7 +511,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
   /* courseness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 3200.0, 20.0, p->scale*53.3, 0);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 20.0, 6400.0, 20.0, p->scale*GRAIN_SCALE_FACTOR, 0);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("coarseness"));
   dt_bauhaus_slider_set_format(g->scale1,"%.0fISO");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
