@@ -290,9 +290,9 @@ void gui_init (dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), (gpointer)webp_lossless);
   if(comp_type == webp_lossless) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
-  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1, 100, 1, 97, 0));
+  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));
   dtgtk_slider_set_label(gui->quality,_("quality"));
-  dtgtk_slider_set_default_value(gui->quality, 97);
+  dtgtk_slider_set_default_value(gui->quality, 95);
   dtgtk_slider_set_format_type(gui->quality, DARKTABLE_SLIDER_FORMAT_PERCENT);
   g_object_set(G_OBJECT(gui->quality), "tooltip-text", _("applies only to lossy setting"), (char *)NULL);
   if(quality > 0 && quality <= 100)
