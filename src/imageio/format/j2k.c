@@ -622,9 +622,9 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(J2K_CFMT));
   if(format_last == J2K_CFMT) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
-  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 1, 100, 1, 97, 0));
+  gui->quality = DTGTK_SLIDER(dtgtk_slider_new_with_range(DARKTABLE_SLIDER_BAR, 5, 100, 1, 95, 0));
   dtgtk_slider_set_label(gui->quality,_("quality"));
-  dtgtk_slider_set_default_value(gui->quality, 97);
+  dtgtk_slider_set_default_value(gui->quality, 95);
   if(quality_last > 0 && quality_last <= 100)
     dtgtk_slider_set_value(gui->quality, quality_last);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
