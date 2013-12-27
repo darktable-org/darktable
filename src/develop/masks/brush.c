@@ -25,7 +25,7 @@
 #include "common/debug.h"
 
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
-static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
+static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
   const int stepsize = 300000;
   const int reserve = 100000;
@@ -37,7 +37,7 @@ static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max
     *buffer = malloc(stepsize*sizeof(float));
     *buffer_count = 0;
     *buffer_max = stepsize;
-    return TRUE;
+    return (*buffer != NULL);
   }
 
   if(*buffer_count > *buffer_max)
@@ -50,7 +50,11 @@ static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
     *buffer = malloc(*buffer_max*sizeof(float));
-    if(*buffer == NULL) return FALSE;
+    if(*buffer == NULL)
+    {
+      free(oldbuffer);
+      return FALSE;
+    }
     memset(*buffer, 0, *buffer_max*sizeof(float));
     memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
     free(oldbuffer);
