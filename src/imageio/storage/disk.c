@@ -149,13 +149,20 @@ gui_reset (dt_imageio_module_storage_t *self)
   // global default can be annoying:
   // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
+
+  // this should prevent users from unintentional image overwrite
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 }
 
 int
 store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
+  disk_t *g = (disk_t *)self->gui_data;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
+
+  // since we're potentially called in parallel, we should uncheck button as early as possible
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
 
   char filename[DT_MAX_PATH_LEN]= {0};
   char dirname[DT_MAX_PATH_LEN]= {0};
@@ -312,6 +319,9 @@ set_params(dt_imageio_module_storage_t *self, const void *params, const int size
   disk_t *g = (disk_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+
+  // we really do not want user to unintentionally overwrite image
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
   return 0;
 }
 
