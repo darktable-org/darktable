@@ -22,7 +22,6 @@
 #include "config.h"
 #endif
 
-#include "common/calculator.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -145,9 +144,7 @@ static inline int dt_conf_get_int(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
-  const int val = new_value + 0.5;
+  const int val = atol(str);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -156,9 +153,7 @@ static inline int64_t dt_conf_get_int64(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
-  const int64_t val = new_value + 0.5;
+  const int64_t val = g_ascii_strtoll(str, NULL, 10);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -167,8 +162,7 @@ static inline float dt_conf_get_float(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  float val = dt_calculator_solve(1, str);
-  if(isnan(val)) val = 0.0;
+  const float val = g_ascii_strtod(str, NULL);
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
