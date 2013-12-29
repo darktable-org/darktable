@@ -333,6 +333,9 @@ static float parse_primary_expression(parser_state_t *self)
 
 float dt_calculator_solve(float x, const char *formula)
 {
+  if(formula == NULL || *formula == '\0')
+    return NAN;
+
   float result;
   parser_state_t *self = (parser_state_t*)malloc(sizeof(parser_state_t));
   self->p = formula;
