@@ -319,7 +319,7 @@ static char *_get_image_list(GList *l)
   char *buffer = malloc (size*8);
   int imgid;
   char num[8];
-  gboolean first=true;
+  gboolean first=TRUE;
 
   buffer[0]='\0';
 
