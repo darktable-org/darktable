@@ -302,6 +302,28 @@ return_label:
   return ret;
 }
 
+
+// most common modern raw files are handled by rawspeed, which accidentally
+// may go through LibRaw, since it may break history stacks because of different
+// blackpoint handling. in addition guarding LibRaw from these
+// extensions slightly reduces our security surface
+static gboolean
+_blacklisted_ext(const gchar *filename)
+{
+  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", NULL };
+  gboolean supported = TRUE;
+  char *ext = g_strrstr(filename, ".");
+  if(!ext) return FALSE;
+  ext++;
+  for(const char **i = extensions_blacklist; *i != NULL; i++)
+    if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))
+    {
+      supported = FALSE;
+      break;
+    }
+  return supported;
+}
+
 // we do not support non-Bayer raw images; make sure we skip those in order
 // to prevent LibRaw from crashing
 static gboolean 
@@ -338,6 +360,8 @@ dt_imageio_open_raw(
   const char  *filename,
   dt_mipmap_cache_allocator_t a)
 {
+  if(!_blacklisted_ext(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
 
