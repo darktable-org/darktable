@@ -493,7 +493,7 @@
   <dtconfig>
     <name>plugins/lighttable/filmstrip/height</name>
     <type>int</type>
-    <default>true</default>
+    <default>120</default>
     <shortdescription>height of filmstrip</shortdescription>
     <longdescription>height of the filmstrip in pixels</longdescription>
   </dtconfig>
