@@ -329,7 +329,7 @@ static char *_get_image_list(GList *l)
     snprintf(num,8,"%s%6d",first?"":",",imgid);
     strcat(buffer,num);
     l = g_list_next(l);
-    first=false;
+    first=FALSE;
   }
   return buffer;
 }
