@@ -1362,27 +1362,10 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
 
 void dt_masks_iop_update(struct dt_iop_module_t *module)
 {
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t*)module->blend_data;
+  if(!module) return;
+
   dt_iop_gui_update(module);
-  if (!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || (module->flags() & IOP_FLAGS_NO_MASKS) || !bd || !bd->blend_inited) return;
-
-  /* update masks state */
-  int nb = 0;
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop,module->blend_params->mask_id);
-  if (grp && (grp->type&DT_MASKS_GROUP)) nb = g_list_length(grp->points);
-  dt_bauhaus_combobox_clear(bd->masks_combo);
-  free(bd->masks_combo_ids);
-  bd->masks_combo_ids = NULL;
-  if (nb>0)
-  {
-    char txt[512];
-    snprintf(txt,512,ngettext("%d shape used", "%d shapes used", nb), nb);
-    dt_bauhaus_combobox_add(bd->masks_combo,txt);
-  }
-  else dt_bauhaus_combobox_add(bd->masks_combo,_("no mask used"));
-
-  dt_bauhaus_combobox_set(bd->masks_combo,0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+  dt_iop_gui_update_masks(module);
 }
 
 void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, dt_masks_form_t *form)

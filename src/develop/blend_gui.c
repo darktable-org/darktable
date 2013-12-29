@@ -623,6 +623,7 @@ _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *event, dt_iop_module_
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
     dt_masks_change_form_gui(form);
@@ -648,6 +649,7 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *event, dt_iop_modul
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
     dt_masks_change_form_gui(spot);
@@ -673,6 +675,7 @@ _blendop_masks_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_iop_modu
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE);
     dt_masks_change_form_gui(spot);
@@ -698,6 +701,7 @@ _blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt_iop_module
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //enable advanced input devices to get pressure readings and stuff like that
     dt_gui_enable_extended_input_devices();
     //we create the new form
@@ -725,6 +729,7 @@ _blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
     dt_masks_change_form_gui(spot);
