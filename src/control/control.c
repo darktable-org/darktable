@@ -63,61 +63,6 @@ static void * _control_worker_kicker(void *ptr);
 /* redraw mutex to synchronize redraws */
 static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
 
-void dt_ctl_settings_default(dt_control_t *c)
-{
-  dt_conf_set_string ("database", "library.db");
-
-  dt_conf_set_int  ("config_version", DT_CONFIG_VERSION);
-  dt_conf_set_bool ("write_sidecar_files", TRUE);
-  dt_conf_set_bool ("ask_before_delete", TRUE);
-  dt_conf_set_int  ("parallel_export", 1);
-  dt_conf_set_int  ("worker_threads", 2);
-  dt_conf_set_int  ("cache_memory", 536870912);
-  dt_conf_set_int  ("database_cache_quality", 89);
-
-  dt_conf_set_bool ("ui_last/fullscreen", FALSE);
-  dt_conf_set_bool ("ui_last/maximized", FALSE);
-  dt_conf_set_int  ("ui_last/view", DT_MODE_NONE);
-
-  dt_conf_set_int  ("ui_last/window_x",      0);
-  dt_conf_set_int  ("ui_last/window_y",      0);
-  dt_conf_set_int  ("ui_last/window_w",    900);
-  dt_conf_set_int  ("ui_last/window_h",    500);
-
-  dt_conf_set_int  ("ui_last/panel_left",   -1);
-  dt_conf_set_int  ("ui_last/panel_right",  -1);
-  dt_conf_set_int  ("ui_last/panel_top",     0);
-  dt_conf_set_int  ("ui_last/panel_bottom",  0);
-
-  dt_conf_set_int  ("ui_last/expander_library",     1<<DT_LIBRARY);
-  dt_conf_set_int  ("ui_last/expander_navigation", -1);
-  dt_conf_set_int  ("ui_last/expander_histogram",  -1);
-  dt_conf_set_int  ("ui_last/expander_history",    -1);
-
-  dt_conf_set_int  ("ui_last/initial_rating", DT_LIB_FILTER_STAR_1);
-
-  // import settings
-  dt_conf_set_string ("capture/camera/storage/basedirectory", "$(PICTURES_FOLDER)/Darktable");
-  dt_conf_set_string ("capture/camera/storage/subpath", "$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)");
-  dt_conf_set_string ("capture/camera/storage/namepattern", "$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)");
-  dt_conf_set_string ("capture/camera/import/jobcode", "noname");
-
-  dt_conf_set_int  ("plugins/collection/film_id",           1);
-  dt_conf_set_int  ("plugins/collection/filter_flags",      3);
-  dt_conf_set_int  ("plugins/collection/query_flags",       3);
-  dt_conf_set_int  ("plugins/collection/rating",            1);
-  dt_conf_set_int  ("plugins/lighttable/collect/num_rules", 0);
-  dt_conf_set_int  ("plugins/collection/sort",              0);
-  dt_conf_set_bool ("plugins/collection/descending",        0);
-
-  // reasonable thumbnail res:
-  dt_conf_set_int  ("plugins/lighttable/thumbnail_width", 1300);
-  dt_conf_set_int  ("plugins/lighttable/thumbnail_height", 1000);
-
-  // set export style to _("none") by default
-  dt_conf_set_string ("plugins/lighttable/export/style", "");
-}
-
 void dt_ctl_settings_init(dt_control_t *s)
 {
   // same thread as init
@@ -526,10 +471,6 @@ void dt_control_init(dt_control_t *s)
   s->progress = 200.0f;
 
   dt_conf_set_int("ui_last/view", DT_MODE_NONE);
-
-  // if config is old, replace with new defaults.
-  if(DT_CONFIG_VERSION > dt_conf_get_int("config_version"))
-    dt_ctl_settings_default(s);
 
   pthread_cond_init(&s->cond, NULL);
   dt_pthread_mutex_init(&s->cond_mutex, NULL);
