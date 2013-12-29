@@ -344,7 +344,7 @@ float dt_calculator_solve(float x, const char *formula)
   self->token = get_token(self);
 
 //   operators_t operator = -1;
-  if(self->token->type == T_OPERATOR)
+  if(self->token && self->token->type == T_OPERATOR)
   {
     switch(self->token->data.operator)
     {
