@@ -108,8 +108,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->overexposed.enabled = FALSE;
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
-  dev->overexposed.lower = dt_conf_get_int("darkroom/ui/overexposed/lower");
-  dev->overexposed.upper = dt_conf_get_int("darkroom/ui/overexposed/upper");
+  dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
+  dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
 
 }
 
@@ -149,8 +149,8 @@ void dt_dev_cleanup(dt_develop_t *dev)
   free(dev->histogram_pre_levels);
 
   dt_conf_set_int("darkroom/ui/overexposed/colorscheme", dev->overexposed.colorscheme);
-  dt_conf_set_int("darkroom/ui/overexposed/lower", dev->overexposed.lower);
-  dt_conf_set_int("darkroom/ui/overexposed/upper", dev->overexposed.upper);
+  dt_conf_set_float("darkroom/ui/overexposed/lower", dev->overexposed.lower);
+  dt_conf_set_float("darkroom/ui/overexposed/upper", dev->overexposed.upper);
 }
 
 void dt_dev_process_image(dt_develop_t *dev)
