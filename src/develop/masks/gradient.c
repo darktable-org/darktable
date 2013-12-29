@@ -110,7 +110,6 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
 static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, int type, uint32_t state,
     dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
-  if (which != 1) return 0;
   if (!gui) return 0;
   if (!gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -125,6 +124,15 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
     gui->posy = pzy*darktable.develop->preview_pipe->backbuf_height;
     gui->dx = gpt->points[0] - gui->posx;
     gui->dy = gpt->points[1] - gui->posy;
+    return 1;
+  }
+  else if (gui->creation && (which == 3))
+  {
+    darktable.develop->form_visible = NULL;
+    dt_masks_clear_form_gui(darktable.develop);
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    dt_masks_iop_update(module);
+    dt_control_queue_redraw_center();
     return 1;
   }
   else if (gui->creation)

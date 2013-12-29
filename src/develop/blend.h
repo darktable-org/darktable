@@ -395,6 +395,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module);
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module);
 void dt_iop_gui_update_blending(dt_iop_module_t *module);
 void dt_iop_gui_update_blendif(dt_iop_module_t *module);
+void dt_iop_gui_update_masks(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
 
 /** routine to translate from mode id to sequence in option list */

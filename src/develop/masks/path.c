@@ -1041,6 +1041,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_masks_free_form(form);
       darktable.develop->form_visible = NULL;
       dt_masks_clear_form_gui(darktable.develop);
+      dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(module);
       dt_control_queue_redraw_center();
       return 1;
     }
