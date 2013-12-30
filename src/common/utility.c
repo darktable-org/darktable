@@ -24,7 +24,6 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <dirent.h>
 #include "darktable.h"
 #endif
 
@@ -263,16 +262,15 @@ off_t dt_util_get_file_size(const char *filename)
 gboolean dt_util_is_dir_empty(const char *dirname)
 {
   int n = 0;
-  struct dirent *d;
-  DIR *dir = opendir(dirname);
+  GDir *dir = g_dir_open(dirname,0,NULL);
   if (dir == NULL) //Not a directory or doesn't exist
     return TRUE;
-  while ((d = readdir(dir)) != NULL) {
-    if(++n > 2)
+  while (g_dir_read_name(dir) != NULL) {
+    if(++n > 1)
       break;
   }
-  closedir(dir);
-  if (n <= 2) //Directory Empty
+  g_dir_close(dir);
+  if (n == 0) //Directory Empty
     return TRUE;
   else
     return FALSE;
