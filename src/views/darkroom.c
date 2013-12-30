@@ -1319,16 +1319,6 @@ void leave(dt_view_t *self)
   guint tagid = 0;
   dt_tag_new_from_gui("darktable|changed",&tagid);
   dt_tag_attach(tagid, dev->image_storage.id);
-
-  // set back histroy_end, if a specific point in the history is selected we do not want to loose the history above
-  GList *history = dev->history;
-  dev->history_end=0;
-  while (history)
-  {
-    dev->history_end++;
-    history = g_list_next(history);
-  }
-
   // commit image ops to db
   dt_dev_write_history(dev);
 
