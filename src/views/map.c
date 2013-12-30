@@ -268,8 +268,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   osm_gps_map_image_remove_all(map);
   if(lib->images)
   {
-    g_slist_foreach(lib->images, (GFunc) g_free, NULL);
-    g_slist_free(lib->images);
+    g_slist_free_full(lib->images, g_free);
     lib->images = NULL;
   }
 

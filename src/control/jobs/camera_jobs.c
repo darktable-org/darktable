@@ -158,10 +158,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   // free values
   if(values)
   {
-    for(guint i=0; i<g_list_length(values); i++)
-      g_free(g_list_nth_data(values,i));
-
-    g_list_free(values);
+    g_list_free_full(values, g_free);
   }
 
   return 0;
