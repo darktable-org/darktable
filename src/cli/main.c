@@ -265,6 +265,11 @@ int main(int argc, char *arg[])
   fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
   fdata->style[0] = '\0';
 
+  if(storage->initialize_store) {
+    GList *single_image= g_list_append(NULL,GINT_TO_POINTER(id));
+    storage->initialize_store(storage, sdata,format,fdata,&single_image, high_quality);
+    g_list_free(single_image);
+  }
   //TODO: add a callback to set the bpp without going through the config
 
   storage->store(storage,sdata, id, format, fdata, 1, 1, high_quality);

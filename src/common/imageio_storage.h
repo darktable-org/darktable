@@ -36,6 +36,7 @@ extern "C"
 	int supported    (struct dt_imageio_module_storage_t *self, struct dt_imageio_module_format_t *format);
 	int dimension    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
 	int recommended_dimension    (struct dt_imageio_module_storage_t *self, uint32_t *width, uint32_t *height);
+	void initialize_store (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, GList **images, const gboolean high_quality);
 #ifdef __cplusplus
 }
 #endif

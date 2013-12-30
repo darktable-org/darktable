@@ -1119,7 +1119,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   dt_control_export_t *settings = (dt_control_export_t*)t1->data;
   GList *t = t1->index;
-  const int total = g_list_length(t);
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
@@ -1145,6 +1144,14 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     g_free(t1->data);
     return 1;
   }
+  if(mstorage->initialize_store) {
+    /* get temporary format params */
+    dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+    mstorage->initialize_store(mstorage, sdata, mformat, fdata, &t, settings->high_quality);
+    mformat->set_params(mformat,fdata,mformat->params_size(mformat));
+    mformat->free_params(mformat,fdata);
+  }
+  const int total = g_list_length(t);
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
