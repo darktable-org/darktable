@@ -66,91 +66,6 @@ static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
-int dt_iop_load_preset_interpolated_iso(
-  dt_iop_module_t *module,     // module to set params (via add history item)
-  const dt_image_t *cimg,      // const image carrying all the exif data to filter by
-  void *output_params,         // this has to be module->params_size large and will contain the output
-  float *output_iso1,          // if != 0, will contain one iso value
-  float *output_iso2)          // if != 0, will contain the other iso value interpolated from.
-{
-  const void *op_params = NULL;
-
-  // we'd like to interpolate these:
-  float params1[module->params_size/4 + 1];
-  float params2[module->params_size/4 + 1];
-  float iso1 = -FLT_MAX, iso2 = FLT_MAX;
-
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select op_params, iso_min, iso_max "
-                              "from presets where operation = ?1 and op_version = ?2 and "
-                              "?3 like model and ?4 like maker and ?5 like lens and "
-                              // we interpolate that away:
-                              // "?6 between iso_min and iso_max and "
-                              "?6 between exposure_min and exposure_max and "
-                              "?7 between aperture_min and aperture_max and "
-                              "?8 between focal_length_min and focal_length_max and "
-                              "(isldr = 0 or isldr=?9) order by "
-                              "length(model), length(maker), length(lens)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, cimg->exif_model, strlen(cimg->exif_model), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, cimg->exif_maker, strlen(cimg->exif_maker), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, cimg->exif_lens,  strlen(cimg->exif_lens),  SQLITE_TRANSIENT);
-  // DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, cimg->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, cimg->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, cimg->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, cimg->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(cimg));
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    op_params  = sqlite3_column_blob(stmt, 0);
-    int op_length  = sqlite3_column_bytes(stmt, 0);
-    float iso_min = sqlite3_column_double(stmt, 1);
-    float iso_max = sqlite3_column_double(stmt, 2);
-    const float cur_iso = (iso_min + iso_max)*.5f;
-    if(op_params && (op_length == module->params_size))
-    {
-      // remember the preset and interpolate params later on
-      if(cur_iso > iso1 && cur_iso <= cimg->exif_iso)
-      {
-        iso1 = cur_iso;
-        memcpy(params1, op_params, op_length);
-      }
-      if(cur_iso < iso2 && cur_iso >= cimg->exif_iso)
-      {
-        iso2 = cur_iso;
-        memcpy(params2, op_params, op_length);
-      }
-    }
-  }
-  sqlite3_finalize(stmt);
-  if(iso1 == -FLT_MAX || iso2 == FLT_MAX)
-  {
-    // no presets found around, and we're not doing any extrapolation:
-    return 1;
-  }
-  if(iso1 == iso2)
-  {
-    memcpy(output_params, params1, module->params_size);
-  }
-  else
-  {
-    const float t = (cimg->exif_iso - iso1)/(iso2-iso1);
-    for(int k=0; k<module->params_size/4; k++)
-    {
-      ((float *)output_params)[k] = (1.0f-t)*params1[k] + t*params2[k];
-    }
-  }
-  if(output_iso1) *output_iso1 = iso1;
-  if(output_iso2) *output_iso2 = iso2;
-  return 0;
-}
-
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
   memset(module->default_blendop_params, 0, sizeof(dt_develop_blend_params_t));
@@ -1060,7 +975,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
   //first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,0);
   if (!module) return;
-  
+
   //we reflect the positions changes in the history stack too
   GList *history = g_list_first(module->dev->history);
   while(history)
@@ -1069,7 +984,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     if (hist->module->instance == base->instance) hist->multi_priority = hist->module->multi_priority;
     history = g_list_next(history);
   }
-  
+
   //what is the position of the module in the pipe ?
   GList *modules = g_list_first(module->dev->iop);
   int pos_module = 0;
@@ -1105,7 +1020,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     }
     else
       dt_iop_reload_defaults(module);
-    
+
     //we save the new instance creation but keep it disabled
     dt_dev_add_history_item(module->dev, module, FALSE);
 
