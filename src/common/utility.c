@@ -24,6 +24,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
 #include "darktable.h"
 #endif
 
@@ -257,6 +258,24 @@ off_t dt_util_get_file_size(const char *filename)
 #endif
 
   return -1;
+}
+
+gboolean dt_util_is_dir_empty(const char *dirname)
+{
+  int n = 0;
+  struct dirent *d;
+  DIR *dir = opendir(dirname);
+  if (dir == NULL) //Not a directory or doesn't exist
+    return TRUE;
+  while ((d = readdir(dir)) != NULL) {
+    if(++n > 2)
+      break;
+  }
+  closedir(dir);
+  if (n <= 2) //Directory Empty
+    return TRUE;
+  else
+    return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
