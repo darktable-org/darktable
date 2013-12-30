@@ -477,13 +477,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui">
-    <name>plugins/lighttable/display_focus</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>indicate focus regions</shortdescription>
-    <longdescription>in full screen preview in lighttable (`z'-mode), draw an overlay indicating image sharpness. red is very sharp, blue slightly less so.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="gui">
     <name>plugins/lighttable/filmstrip/visible</name>
     <type>bool</type>
     <default>true</default>
