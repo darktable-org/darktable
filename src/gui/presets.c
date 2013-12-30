@@ -81,6 +81,9 @@ void dt_gui_presets_init()
   // add the op_version field; fail silently if it's already there
   sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column op_version integer", NULL, NULL, NULL);
 
+  sqlite3_exec(dt_database_get(darktable.db),
+               "CREATE UNIQUE INDEX presets_idx ON presets(name,operation,op_version)", NULL, NULL, NULL);
+
   // pot. needed addition of blendop_version is done in control.c
 
   // remove auto generated presets from plugins, not the user included ones.
