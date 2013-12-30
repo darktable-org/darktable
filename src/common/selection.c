@@ -305,26 +305,31 @@ void dt_selection_select_unaltered(dt_selection_t *selection)
 
 void dt_selection_select_list(struct dt_selection_t *selection, GList * list)
 {
-  gchar *query = NULL;
   if(!list) return;
-
-  int imgid = GPOINTER_TO_INT(list->data);
-  selection->last_single_id = imgid;
-  query = dt_util_dstrcat(query,"insert or ignore into selected_images values (%d)",imgid);
-  list = g_list_next(list);
   while(list) {
+    int count = 1;
+    gchar *query = NULL;
+
     int imgid = GPOINTER_TO_INT(list->data);
     selection->last_single_id = imgid;
-    query = dt_util_dstrcat(query,",(%d)",imgid);
+    query = dt_util_dstrcat(query,"insert or ignore into selected_images values (%d)",imgid);
     list = g_list_next(list);
+    while(list && count < 400) {
+      int imgid = GPOINTER_TO_INT(list->data);
+      count++;
+      selection->last_single_id = imgid;
+      query = dt_util_dstrcat(query,",(%d)",imgid);
+      list = g_list_next(list);
+    }
+    char * result = NULL;
+
+    sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, &result);
+
+    g_free(query);
   }
 
-  sqlite3_exec(dt_database_get(darktable.db), query, NULL, NULL, NULL);
-
-  g_free(query);
-
-  /* update hint message */
-  dt_collection_hint_message(darktable.collection);
+    /* update hint message */
+    dt_collection_hint_message(darktable.collection);
 }
 
 
