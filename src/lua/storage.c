@@ -121,7 +121,62 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   return result;
 
 }
-extern void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
+static void initialize_store_wrapper (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, GList **images, const gboolean high_quality)
+{
+  gboolean has_lock = dt_lua_lock();
+  lua_State *L =darktable.lua_state.state;
+
+  lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
+  lua_getfield(L,-1,self->plugin_name);
+  lua_getfield(L,-1,"initialize_store");
+
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,3);
+    dt_lua_unlock(has_lock);
+    return;
+  }
+
+  luaA_push_typeid(L,self->parameter_lua_type,data);
+  luaA_push_typeid(L,format->parameter_lua_type,fdata);
+
+  GList* imgids =*images;
+  lua_newtable(L);
+  while(imgids) {
+    luaA_push(L,dt_lua_image_t,&(imgids->data));
+    luaL_ref(L,-2);
+    imgids = g_list_next(imgids);
+  }
+  lua_pushboolean(L,high_quality);
+
+  lua_storage_t *d = (lua_storage_t*) data;
+  if(!d->data_created) {
+    lua_pushlightuserdata(L,d);
+    lua_newtable(L);
+    lua_settable(L,LUA_REGISTRYINDEX);
+    d->data_created = true;
+  }
+  lua_pushlightuserdata(L,data);
+  lua_gettable(L,LUA_REGISTRYINDEX);
+
+  dt_lua_do_chunk(L,5,1);
+  if(!lua_isnoneornil(L,-1)) {
+    luaL_checktype(L,-1,LUA_TTABLE);
+    g_list_free(*images);
+    GList *new_images=NULL;
+    lua_pushnil(L);
+    while(lua_next(L,-2)){
+      dt_lua_image_t imgid;
+      luaA_to(L,dt_lua_image_t,&imgid,-1);
+      new_images = g_list_prepend(new_images,GINT_TO_POINTER(imgid));
+      lua_pop(L,1);
+    }
+    new_images = g_list_reverse(new_images);
+    *images = new_images;
+  }
+  lua_pop(L,3);
+  dt_lua_unlock(has_lock);
+}
+static void finalize_store_wrapper (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
   gboolean has_lock = dt_lua_lock();
   lua_State *L =darktable.lua_state.state;
@@ -228,6 +283,7 @@ static dt_imageio_module_storage_t ref_storage =
   .recommended_dimension = default_dimension_wrapper,
   .store = store_wrapper,
   .finalize_store = finalize_store_wrapper,
+  .initialize_store = initialize_store_wrapper,
   .params_size = params_size_wrapper,
   .get_params = get_params_wrapper,
   .free_params = free_params_wrapper,
@@ -240,7 +296,7 @@ static dt_imageio_module_storage_t ref_storage =
 
 static int register_storage(lua_State *L)
 {
-  lua_settop(L,5);
+  lua_settop(L,6);
   lua_getfield(L,LUA_REGISTRYINDEX,"dt_lua_storages");
   lua_newtable(L);
 
@@ -282,8 +338,19 @@ static int register_storage(lua_State *L)
     lua_pushvalue(L,5);
     lua_setfield(L,-2,"supported");
   }
-  lua_setfield(L,-2,plugin_name);
 
+  if(lua_isnil(L,6) )
+  {
+    storage->initialize_store = NULL;
+  }
+  else
+  {
+    luaL_checktype(L,6,LUA_TFUNCTION);
+    lua_pushvalue(L,6);
+    lua_setfield(L,-2,"initialize_store");
+  }
+
+  lua_setfield(L,-2,plugin_name);
 
   char tmp[1024];
   snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);

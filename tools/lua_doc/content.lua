@@ -98,6 +98,7 @@ tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",types.dt_imageio_module_storage,[[The storage object tested.]])
 tmp_node:add_parameter("format",types.dt_imageio_module_format,[[The format object to report about.]])
 tmp_node:add_return("boolean",[[True if the corresponding format is supported.]])
+tmp_node = darktable.register_storage:add_parameter("initialize","function",nil)
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
 darktable.films['#']:set_text([[Each film has a numeric entry in the database.]])

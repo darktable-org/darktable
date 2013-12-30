@@ -23,12 +23,15 @@
  * LUA API VERSIONNING
  * This API versionning follows sementic versionning as defined in
  * http://semver.org
+ * only stable releases are considered "released"
+   => no need to increase API version with every commit
+   however, beware of stable releases and API changes
  */
-
+// LAST RELEASED VERSION : 1.4 was 1.0.0
 /* incompatible API change */
 #define API_VERSION_MAJOR  1
 /* backward compatible API change */
-#define API_VERSION_MINOR  0
+#define API_VERSION_MINOR  1
 /* bugfixes that should not change anything to the API */
 #define API_VERSION_PATCH  0
 /* suffix for unstable version */
