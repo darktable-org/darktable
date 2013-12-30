@@ -470,7 +470,7 @@ void dt_film_remove_empty()
   {
     sqlite3_stmt *inner_stmt;
     raise_signal = TRUE;
-    gint id = sqlite3_column_int(stmt, 0);
+    const gint id = sqlite3_column_int(stmt, 0);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from film_rolls where id=?1", -1, &inner_stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(inner_stmt, 1, id);
