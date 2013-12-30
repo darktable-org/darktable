@@ -408,8 +408,7 @@ static void _gradient_slider_destroy(GtkObject *object)
 
   if(DTGTK_GRADIENT_SLIDER(object)->colors)
   {
-    g_list_foreach(DTGTK_GRADIENT_SLIDER(object)->colors, (GFunc)g_free, NULL);
-    g_list_free(DTGTK_GRADIENT_SLIDER(object)->colors);
+    g_list_free_full(DTGTK_GRADIENT_SLIDER(object)->colors, g_free);
     DTGTK_GRADIENT_SLIDER(object)->colors = NULL;
   }
 
@@ -658,8 +657,7 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
 
 void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider)
 {
-  g_list_foreach(gslider->colors, (GFunc)g_free, NULL);
-  g_list_free(gslider->colors);
+  g_list_free_full(gslider->colors, g_free);
   gslider->colors = NULL;
 }
 
