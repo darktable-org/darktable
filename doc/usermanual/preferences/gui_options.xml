@@ -76,6 +76,12 @@
 		</para>
         </sect4>
 
+	<sect4><title>indicate focus regions</title>
+		<para>If enabled an overlay indicating image sharpness is displayed in full screen preview in lighttable mode (<quote>z</quote>-option, see <xref linkend="lighttable_overview"/>).
+                Very sharp areas are indicated in red; slightly less sharp areas in blue (default off).
+		</para>
+        </sect4>
+
 	<sect4><title>enable filmstrip</title>
 		<para>Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
 		</para>
