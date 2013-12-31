@@ -127,7 +127,7 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
 
       if((style->description) && strlen (style->description))
       {
-        tooltip = g_strconcat("<b><i>", style->description, "</i></b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", style->description, "</b>\n", items_string, NULL);
       }
       else
       {
