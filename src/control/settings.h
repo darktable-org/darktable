@@ -24,53 +24,6 @@
 
 #include <inttypes.h>
 
-// thread-safe interface between core and gui.
-// also serves to store user settings.
-
-#define DT_CTL_GET_GLOBAL(x, attrib) \
-{\
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  x = darktable.control->global_settings.attrib; \
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
-
-#define DT_CTL_SET_GLOBAL(attrib, x) \
-{\
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  if(darktable.control->global_settings.attrib != x) { \
-    darktable.control->global_settings.attrib = x;     \
-    dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); \
-    if(!strcmp(#attrib,"lib_image_mouse_over_id"))			\
-      dt_control_signal_raise(darktable.signals,DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE); \
-  } else \
-    dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
-
-#define DT_CTL_GET_GLOBAL_STR(x, attrib, n) \
-{\
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  g_strlcpy(x, darktable.control->global_settings.attrib, n); \
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex)); }
-
-#define DT_CTL_SET_GLOBAL_STR(attrib, x, n) \
-{\
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex)); \
-  g_strlcpy(darktable.control->global_settings.attrib, x, n); \
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex))
-
-
-typedef enum dt_ctl_gui_mode_t
-{
-  DT_LIBRARY = 0,
-  DT_DEVELOP,
-#ifdef HAVE_GPHOTO2
-  DT_CAPTURE,
-#endif
-#ifdef HAVE_MAP
-  DT_MAP,
-#endif
-  DT_MODE_NONE
-}
-dt_ctl_gui_mode_t;
-
 typedef enum dt_dev_zoom_t
 {
   DT_ZOOM_FIT = 0,
@@ -80,14 +33,6 @@ typedef enum dt_dev_zoom_t
 }
 dt_dev_zoom_t;
 
-/** The modes of capture view
-  \note in the future there will be a scanning mode...
-*/
-typedef enum dt_capture_mode_t
-{
-  DT_CAPTURE_MODE_TETHERED=0          // Only one capture mode to start with...
-}
-dt_capture_mode_t;
 typedef char dt_dev_operation_t[20];
 
 #define DEV_NUM_OP_PARAMS 10
@@ -98,18 +43,6 @@ typedef union dt_dev_operation_params_t
   float   f[DEV_NUM_OP_PARAMS];
 }
 dt_dev_operation_params_t;
-
-typedef enum dt_dev_export_format_t
-{
-  DT_DEV_EXPORT_JPG    = 0,
-  DT_DEV_EXPORT_PNG    = 1,
-  DT_DEV_EXPORT_PPM16  = 2,
-  DT_DEV_EXPORT_PFM    = 3,
-  DT_DEV_EXPORT_TIFF8  = 4,
-  DT_DEV_EXPORT_TIFF16 = 5,
-  DT_DEV_EXPORT_EXR =6
-}
-dt_dev_export_format_t;
 
 typedef enum dt_lib_filter_t
 {
@@ -123,22 +56,6 @@ typedef enum dt_lib_filter_t
   DT_LIB_FILTER_REJECT = 7
 }
 dt_lib_filter_t;
-
-typedef struct dt_ctl_settings_t
-{
-  // TODO: remove most of these options, maybe the whole struct?
-  // global
-  int32_t version;
-  char dbname[512];
-
-  int32_t lib_image_mouse_over_id;
-
-  // synchronized navigation
-  float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
-  dt_dev_zoom_t dev_zoom;
-  int dev_closeup;
-}
-dt_ctl_settings_t;
 
 #endif
 

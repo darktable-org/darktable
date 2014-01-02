@@ -33,6 +33,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "views/capture.h"
 #include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
@@ -731,7 +732,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       else
       {
         dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+        dt_control_set_mouse_over_id(id);
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }
     }

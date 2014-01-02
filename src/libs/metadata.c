@@ -112,8 +112,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
 //   early_bark_out = FALSE; // FIXME: when barking out early we don't update on ctrl-a/ctrl-shift-a. but otherwise it's impossible to edit text
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_metadata_t *d  = (dt_lib_metadata_t *)self->data;
-  int imgsel = -1;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  int imgsel = dt_control_get_mouse_over_id();
   if(early_bark_out && imgsel == d->imgsel)
     return;
 

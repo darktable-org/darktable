@@ -457,8 +457,7 @@ expose_filemanager (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height,
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
-  int32_t mouse_over_id, mouse_over_group = -1;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  int32_t mouse_over_id = dt_control_get_mouse_over_id(), mouse_over_group = -1;
 
   /* fill background */
   cairo_set_source_rgb (cr, .2, .2, .2);
@@ -636,7 +635,7 @@ escape_image_loop:
   cairo_restore(cr);
 
   if(!lib->pan && (iir != 1 || mouse_over_id != -1))
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+    dt_control_set_mouse_over_id(mouse_over_id);
 
   // and now the group borders
   cairo_save(cr);
@@ -853,13 +852,13 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   /* query new collection count */
   lib->collection_count = dt_collection_get_count (darktable.collection);
 
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-  zoom   = dt_conf_get_int("plugins/lighttable/images_in_row");
-  zoom_x = lib->zoom_x;
-  zoom_y = lib->zoom_y;
-  pan    = lib->pan;
-  center = lib->center;
-  track  = lib->track;
+  mouse_over_id = dt_control_get_mouse_over_id();
+  zoom          = dt_conf_get_int("plugins/lighttable/images_in_row");
+  zoom_x        = lib->zoom_x;
+  zoom_y        = lib->zoom_y;
+  pan           = lib->pan;
+  center        = lib->center;
+  track         = lib->track;
 
   lib->images_in_row = zoom;
   lib->image_over = DT_VIEW_DESERT;
@@ -938,8 +937,8 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
   }
 
   // mouse left the area, but we leave mouse over as it was, especially during panning
-  // if(!pan && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
-  if(!pan && zoom != 1) DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  // if(!pan && pointerx > 0 && pointerx < width && pointery > 0 && pointery < height) dt_control_set_mouse_over_id(-1);
+  if(!pan && zoom != 1) dt_control_set_mouse_over_id(-1);
 
   // set scrollbar positions, clamp zoom positions
 
@@ -1038,7 +1037,7 @@ expose_zoomable (dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, in
         if((zoom == 1 && mouse_over_id < 0) || ((!pan || track) && seli == col && selj == row))
         {
           mouse_over_id = id;
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+          dt_control_set_mouse_over_id(mouse_over_id);
         }
 
         cairo_save(cr);
@@ -1136,7 +1135,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     {
       lib->full_preview_id = sqlite3_column_int(stmt, 0);
       lib->full_preview_rowid = sqlite3_column_int(stmt, 1);
-      DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->full_preview_id);
+      dt_control_set_mouse_over_id(lib->full_preview_id);
     }
 
     sqlite3_finalize(stmt);
@@ -1474,26 +1473,25 @@ void reset(dt_view_t *self)
   lib->offset = 0x7fffffff;
   lib->first_visible_zoomable    = -1;
   lib->first_visible_filemanager = 0;
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  dt_control_set_mouse_over_id(-1);
 }
 
 
 void mouse_enter(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  uint32_t id;
-  DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
+  uint32_t id = dt_control_get_mouse_over_id();
   if(id == -1)
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
+    dt_control_set_mouse_over_id(lib->last_mouse_over_id); // this seems to be needed to fix the strange events fluxbox emits
 }
 
 void mouse_leave(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  DT_CTL_GET_GLOBAL(lib->last_mouse_over_id, lib_image_mouse_over_id); // see mouse_enter (re: fluxbox)
+  lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
   if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
   {
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+    dt_control_set_mouse_over_id(-1);
     dt_control_queue_redraw_center();
   }
 }
@@ -1573,8 +1571,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     {
       case DT_VIEW_DESERT:
       {
-        int32_t id;
-        DT_CTL_GET_GLOBAL(id, lib_image_mouse_over_id);
+        int32_t id = dt_control_get_mouse_over_id();
 
         if ((lib->modifiers & (GDK_SHIFT_MASK|GDK_CONTROL_MASK)) == 0)
           dt_selection_select_single(darktable.selection, id);
@@ -1592,8 +1589,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_4:
       case DT_VIEW_STAR_5:
       {
-        int32_t mouse_over_id;
-        DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+        int32_t mouse_over_id = dt_control_get_mouse_over_id();
         const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
         dt_image_t *image = dt_image_cache_write_get(darktable.image_cache, cimg);
         if(image)
@@ -1613,8 +1609,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       }
       case DT_VIEW_GROUP:
       {
-        int32_t mouse_over_id;
-        DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+        int32_t mouse_over_id = dt_control_get_mouse_over_id();
         const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
         if(!image) return 0;
         int group_id = image->group_id;
@@ -1662,7 +1657,7 @@ int key_released(dt_view_t *self, guint key, guint state)
 
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+    dt_control_set_mouse_over_id(-1);
 
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT,   ( lib->full_preview & 1));
     dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT,  ( lib->full_preview & 2));
@@ -1692,8 +1687,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   if((key == accels->lighttable_preview.accel_key || key == accels->lighttable_preview_display_focus.accel_key)
       && (state == accels->lighttable_preview.accel_mods || state == accels->lighttable_preview_display_focus.accel_mods))
   {
-    int32_t mouse_over_id;
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1 )
     {
       // encode panel visibility into full_preview

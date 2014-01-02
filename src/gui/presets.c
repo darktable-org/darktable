@@ -65,29 +65,12 @@ typedef struct dt_gui_presets_edit_dialog_t
 }
 dt_gui_presets_edit_dialog_t;
 
+// this is also called for non-gui applications linking to libdarktable!
+// so beware, don't use any darktable.gui stuff here .. (or change this behaviour in darktable.c)
 void dt_gui_presets_init()
 {
-  // this is also called for non-gui applications linking to libdarktable!
-  // so beware, don't use any darktable.gui stuff here .. (or change this behaviour it in darktable.c)
-  // create table or fail if it is already there.
-  sqlite3_exec(dt_database_get(darktable.db), "create table presets "
-               "(name varchar, description varchar, operation varchar, op_version integer, op_params blob, enabled integer, "
-               "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256), "
-               "model varchar, maker varchar, lens varchar, "
-               "iso_min real, iso_max real, exposure_min real, exposure_max real, aperture_min real, aperture_max real, "
-               "focal_length_min real, focal_length_max real, "
-               "writeprotect integer, autoapply integer, filter integer, def integer, isldr integer)", NULL, NULL, NULL);
-
-  // add the op_version field; fail silently if it's already there
-  sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column op_version integer", NULL, NULL, NULL);
-
-  sqlite3_exec(dt_database_get(darktable.db),
-               "CREATE UNIQUE INDEX presets_idx ON presets(name,operation,op_version)", NULL, NULL, NULL);
-
-  // pot. needed addition of blendop_version is done in control.c
-
   // remove auto generated presets from plugins, not the user included ones.
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "delete from presets where writeprotect=1", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM presets WHERE writeprotect = 1", NULL, NULL, NULL);
 }
 
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version, const void *params, const int32_t params_size, const int32_t enabled)

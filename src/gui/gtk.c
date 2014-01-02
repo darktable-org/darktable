@@ -547,7 +547,7 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     gpointer p)
 {
   int view=GPOINTER_TO_INT(p);
-  dt_ctl_gui_mode_t mode=DT_MODE_NONE;
+  dt_control_gui_mode_t mode=DT_MODE_NONE;
   /* do some setup before switch view*/
   switch (view)
   {

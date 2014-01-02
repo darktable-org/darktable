@@ -379,11 +379,11 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
 
   dt_lib_snapshot_t *s = d->snapshot + 0;
-  DT_CTL_GET_GLOBAL (s->zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL (s->zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL (s->zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL (s->closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL (s->zoom_scale, dev_zoom_scale);
+  s->zoom_y = dt_control_get_dev_zoom_y();
+  s->zoom_x = dt_control_get_dev_zoom_x();
+  s->zoom = dt_control_get_dev_zoom();
+  s->closeup = dt_control_get_dev_closeup();
+  s->zoom_scale = dt_control_get_dev_zoom_scale();
 
   /* update slots used */
   if (d->num_snapshots != d->size)
@@ -423,11 +423,11 @@ static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer us
     /* setup snapshot */
     d->selected = which;
     dt_lib_snapshot_t *s = d->snapshot + (which-1);
-    DT_CTL_SET_GLOBAL(dev_zoom_y,     s->zoom_y);
-    DT_CTL_SET_GLOBAL(dev_zoom_x,     s->zoom_x);
-    DT_CTL_SET_GLOBAL(dev_zoom,       s->zoom);
-    DT_CTL_SET_GLOBAL(dev_closeup,    s->closeup);
-    DT_CTL_SET_GLOBAL(dev_zoom_scale, s->zoom_scale);
+    dt_control_set_dev_zoom_y(s->zoom_y);
+    dt_control_set_dev_zoom_x(s->zoom_x);
+    dt_control_set_dev_zoom(s->zoom);
+    dt_control_set_dev_closeup(s->closeup);
+    dt_control_set_dev_zoom_scale(s->zoom_scale);
 
     dt_dev_invalidate(darktable.develop);
 

@@ -33,7 +33,6 @@
 #include "gui/gtk.h"
 #include "gui/contrast.h"
 #include "gui/draw.h"
-#include "gui/legacy_presets.h"
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"
@@ -63,87 +62,6 @@ static void * _control_worker_kicker(void *ptr);
 /* redraw mutex to synchronize redraws */
 static dt_pthread_mutex_t _control_gdk_lock_threads_mutex;
 
-void dt_ctl_settings_init(dt_control_t *s)
-{
-  // same thread as init
-  s->gui_thread = pthread_self();
-  // init global defaults.
-  dt_pthread_mutex_init(&(s->global_mutex), NULL);
-  dt_pthread_mutex_init(&(s->image_mutex), NULL);
-
-  s->global_settings.version = DT_VERSION;
-
-  // TODO: move the mouse_over_id of lighttable to something general in
-  // control: gui-thread selected img or so?
-  s->global_settings.lib_image_mouse_over_id = -1;
-
-  // TODO: move these to darkroom settings blob:
-  s->global_settings.dev_closeup = 0;
-  s->global_settings.dev_zoom_x = 0;
-  s->global_settings.dev_zoom_y = 0;
-  s->global_settings.dev_zoom = DT_ZOOM_FIT;
-
-  memcpy(&(s->global_defaults), &(s->global_settings), sizeof(dt_ctl_settings_t));
-}
-
-// There are systems where absolute paths don't start with '/' (like Windows).
-// Since the bug which introduced absolute paths to the db was fixed before a
-// Windows build was available this shouldn't matter though.
-static void dt_control_sanitize_database()
-{
-  sqlite3_stmt *stmt;
-  sqlite3_stmt *innerstmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select id, filename from images where filename like '/%'",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update images set filename = ?1 where id = ?2", -1, &innerstmt, NULL);
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int id = sqlite3_column_int(stmt, 0);
-    const char* path = (const char*)sqlite3_column_text(stmt, 1);
-    gchar* filename = g_path_get_basename (path);
-    DT_DEBUG_SQLITE3_BIND_TEXT(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, id);
-    sqlite3_step(innerstmt);
-    sqlite3_reset(innerstmt);
-    sqlite3_clear_bindings(innerstmt);
-    g_free(filename);
-  }
-  sqlite3_finalize(stmt);
-  sqlite3_finalize(innerstmt);
-
-  // temporary stuff for some ops, need this for some reason with newer sqlite3:
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.color_labels_temp (imgid INTEGER PRIMARY KEY)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.collected_images (rowid INTEGER PRIMARY KEY AUTOINCREMENT, imgid INTEGER)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.tmp_selection (imgid INTEGER)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.tagq (tmpid INTEGER PRIMARY KEY, id INTEGER)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.taglist "
-                        "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT REPLACE, "
-                        "count INTEGER)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE memory.history (imgid integer, num integer, module integer, "
-                        "operation varchar(256) UNIQUE ON CONFLICT REPLACE, op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE MEMORY.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
-                        "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-                        "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))", NULL, NULL, NULL);
-
-  // create a table legacy_presets with all the presets from pre-auto-apply-cleanup darktable.
-  dt_legacy_presets_create();
-}
-
 int dt_control_load_config(dt_control_t *c)
 {
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -170,6 +88,7 @@ int dt_control_load_config(dt_control_t *c)
 
 int dt_control_write_config(dt_control_t *c)
 {
+  // TODO: move to gtk.c
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -182,15 +101,6 @@ int dt_control_write_config(dt_control_t *c)
   dt_conf_set_bool("ui_last/maximized",
                    (gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_MAXIMIZED));
 
-  sqlite3_stmt *stmt;
-  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update settings set settings = ?1 where rowid = 1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_settings),
-                             sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
   return 0;
 }
 
@@ -379,85 +289,13 @@ void dt_ctl_set_display_profile()
   g_free(profile_source);
 }
 
-void dt_control_create_database_schema()
-{
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table settings (settings blob)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table film_rolls "
-                        "(id integer primary key, datetime_accessed char(20), "
-//                        "folder varchar(1024), external_drive varchar(1024))",
-                        "folder varchar(1024))",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table images (id integer primary key autoincrement, group_id integer, film_id integer, "
-                        "width int, height int, filename varchar, maker varchar, model varchar, "
-                        "lens varchar, exposure real, aperture real, iso real, focal_length real, "
-                        "focus_distance real, datetime_taken char(20), flags integer, "
-                        "output_width integer, output_height integer, crop real, "
-                        "raw_parameters integer, raw_denoise_threshold real, "
-                        "raw_auto_bright_threshold real, raw_black real, raw_maximum real, "
-                        "caption varchar, description varchar, license varchar, sha1sum char(40), "
-                        "orientation integer ,histogram blob, lightmap blob, longitude double, "
-                        "latitude double, color_matrix blob, colorspace integer, version integer, max_version integer)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create index if not exists group_id_index on images (group_id)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table selected_images (imgid integer primary key)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table history (imgid integer, num integer, module integer, "
-                        "operation varchar(256), op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table mask (imgid integer, formid integer, form integer, name varchar(256), "
-                        "version integer, points blob, points_count integer, source blob)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create index if not exists imgid_index on history (imgid)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table tags (id integer primary key, name varchar, icon blob, "
-                        "description varchar, flags integer)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table tagxtag (id1 integer, id2 integer, count integer, "
-                        "primary key(id1, id2))", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table tagged_images (imgid integer, tagid integer, "
-                        "primary key(imgid, tagid))", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE TABLE styles (id INTEGER, name VARCHAR, description VARCHAR)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table style_items (styleid integer, num integer, module integer, "
-                        "operation varchar(256), op_params blob, enabled integer, "
-                        "blendop_params blob, blendop_version integer, multi_priority integer, multi_name varchar(256))", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table color_labels (imgid integer, color integer)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table meta_data (id integer,key integer,value varchar)",
-                        NULL, NULL, NULL);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
-  // quick hack to detect if the db is already used by another process
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db),
-                        "create table lock (id integer)",
-                        NULL, NULL, NULL);
-  // still necessary, it creates temporary tables and such
-  dt_control_sanitize_database();
-}
-
 void dt_control_init(dt_control_t *s)
 {
-  dt_ctl_settings_init(s);
-
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
+
+  // same thread as init
+  s->gui_thread = pthread_self();
 
   // initialize static mutex
   dt_pthread_mutex_init(&_control_gdk_lock_threads_mutex, NULL);
@@ -477,6 +315,8 @@ void dt_control_init(dt_control_t *s)
   dt_pthread_mutex_init(&s->queue_mutex, NULL);
   dt_pthread_mutex_init(&s->run_mutex, NULL);
   pthread_rwlock_init(&s->xprofile_lock, NULL);
+  dt_pthread_mutex_init(&(s->global_mutex), NULL);
+  dt_pthread_mutex_init(&(s->image_mutex), NULL);
 
   // start threads
   s->num_threads = CLAMP(dt_conf_get_int ("worker_threads"), 1, 8);
@@ -499,281 +339,11 @@ void dt_control_init(dt_control_t *s)
   }
   s->button_down = 0;
   s->button_down_which = 0;
-
-
-  // init database schema:
-  int rc;
-  sqlite3_stmt *stmt;
-
-  rc = sqlite3_prepare_v2(dt_database_get(darktable.db),
-                          "select settings from settings", -1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    dt_pthread_mutex_lock(&(darktable.control->global_mutex));
-    darktable.control->global_settings.version = -1;
-    const void *set = sqlite3_column_blob(stmt, 0);
-    int len = sqlite3_column_bytes(stmt, 0);
-    if(sizeof(dt_ctl_settings_t) == len)
-      memcpy(&(darktable.control->global_settings), set, len);
-    sqlite3_finalize(stmt);
-
-    if(darktable.control->global_settings.version != DT_VERSION)
-    {
-      fprintf(stderr,
-              "[load_config] wrong version %d (should be %d), substituting defaults.\n",
-              darktable.control->global_settings.version, DT_VERSION);
-      memcpy(&(darktable.control->global_settings),
-             &(darktable.control->global_defaults), sizeof(dt_ctl_settings_t));
-      dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
-      // drop all, restart. TODO: freeze this version or have update facility!
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table settings", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table film_rolls", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table images", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table selected_images", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table mipmaps", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table mipmap_timestamps", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table history", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table tags", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table tagxtag", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table tagged_images", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table styles", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table style_items", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table meta_data", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop index imgid_index", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop index group_id_index", NULL, NULL, NULL);
-      goto create_tables;
-    }
-    else
-    {
-      // silly check if old table is still present:
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "delete from color_labels where imgid=0", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "insert into color_labels values (0, 0)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "insert into color_labels values (0, 1)", NULL, NULL, NULL);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "select max(color) from color_labels where imgid=0", -1, &stmt, NULL);
-      int col = 0;
-      // still the primary key option set?
-      if(sqlite3_step(stmt) == SQLITE_ROW)
-        col = MAX(col, sqlite3_column_int(stmt, 0));
-      sqlite3_finalize(stmt);
-      if(col != 1) sqlite3_exec(dt_database_get(darktable.db),
-                                  "drop table color_labels", NULL, NULL, NULL);
-
-      // insert new tables, if not there (statement will just fail if so):
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table color_labels (imgid integer, color integer)",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create unique index color_labels_idx ON color_labels(imgid,color)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "CREATE INDEX images_film_id_index ON images(film_id)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "CREATE INDEX tagged_images_tagid_index ON tagged_images(tagid)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "CREATE INDEX film_rolls_folder_index ON film_rolls(folder)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table mipmaps", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "drop table mipmap_timestamps", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table styles (name varchar, description varchar)",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table style_items (styleid integer, num integer, "
-                   "module integer, operation varchar(256), op_params blob, "
-                   "enabled integer)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table mask (imgid integer, formid integer, form integer, name varchar(256), "
-                   "version integer, points blob, points_count integer)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table meta_data (id integer, key integer,value varchar)",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "CREATE INDEX metadata_index ON meta_data (id,key)", NULL, NULL, NULL);
-      // quick hack to detect if the db is already used by another process
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create table lock (id integer)",
-                   NULL, NULL, NULL);
-
-      // the Windows compiles of libsqlite3 don't support sqlite3_table_column_metadata.
-      // that's no big deal, the databases without the index are older than Windows support
-      // and since pathnames are different on Windows opening a db from other systems doesn't make sense anyway.
-#ifndef __WIN32__
-      // selected_images should have a primary key. add it if it's missing:
-      int is_in_primary_key = 0;
-      sqlite3_table_column_metadata(dt_database_get(darktable.db), NULL, "selected_images", "imgid", NULL, NULL, NULL, &is_in_primary_key, NULL);
-      if(is_in_primary_key == 0)
-      {
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "begin transaction",
-                     NULL, NULL, NULL);
-
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "create temporary table selected_images_backup(imgid integer)",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "insert into selected_images_backup select imgid from selected_images",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "drop table selected_images",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "create table selected_images (imgid integer primary key)",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "insert or ignore into selected_images select imgid from selected_images_backup",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "drop table selected_images_backup",
-                     NULL, NULL, NULL);
-        sqlite3_exec(dt_database_get(darktable.db),
-                     "commit",
-                     NULL, NULL, NULL);
-      }
-#endif
-
-      // add columns where needed. will just fail otherwise:
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table images add column orientation integer",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update images set orientation = -1 where orientation is NULL",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table images add column focus_distance real",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update images set focus_distance = -1 where focus_distance is NULL",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table images add column group_id integer",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update images set group_id = id where group_id is NULL",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table images add column histogram blob",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table images add column lightmap blob",
-                   NULL, NULL, NULL);
-      /*      sqlite3_exec(dt_database_get(darktable.db),
-                         "alter table film_rolls add column external_drive varchar(1024)",
-                         NULL, NULL, NULL);
-      */
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create index if not exists group_id_index on images (group_id)",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "create index if not exists imgid_index on history (imgid)",
-                   NULL, NULL, NULL);
-
-      // add column for blendops
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table history add column blendop_params blob",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table history add column blendop_version integer",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update history set blendop_version = 1 where blendop_version is NULL",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table style_items add column blendop_params blob",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table style_items add column blendop_version integer",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update style_items set blendop_version = 1 where "
-                   "blendop_version is NULL",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table presets add column blendop_params blob",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "alter table presets add column blendop_version integer",
-                   NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db),
-                   "update presets set blendop_version = 1 where blendop_version is NULL",
-                   NULL, NULL, NULL);
-
-      // add column for gps
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column longitude double", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column latitude double", NULL, NULL, NULL);
-
-      //add columns for multi instance
-      sqlite3_exec(dt_database_get(darktable.db), "alter table history add column multi_priority integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table history add column multi_name varchar(256)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update history set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update history set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table style_items add column multi_priority integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table style_items add column multi_name varchar(256)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update style_items set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update style_items set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column multi_priority integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table presets add column multi_name varchar(256)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_priority integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table legacy_presets add column multi_name varchar(256)", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_priority = 0 where multi_priority is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update legacy_presets set multi_name = ' ' where multi_name is NULL", NULL, NULL, NULL);
-
-      //add columns for masks clone source
-      sqlite3_exec(dt_database_get(darktable.db), "alter table mask add column source blob", NULL, NULL, NULL);
-
-      // and the color matrix
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column color_matrix blob", NULL, NULL, NULL);
-      // and the colorspace as specified in some image types
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column colorspace integer", NULL, NULL, NULL);
-
-
-      // add column for styles'id
-      sqlite3_exec(dt_database_get(darktable.db), "ALTER TABLE styles ADD COLUMN id INTEGER", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "UPDATE styles SET id=rowid WHERE id IS NULL", NULL, NULL, NULL);
-
-      // add the version and max_version columns
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column version integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "alter table images add column max_version integer", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update images set max_version=(select count(*)-1 from images i where i.filename=images.filename and i.film_id=images.film_id) where max_version is NULL", NULL, NULL, NULL);
-      sqlite3_exec(dt_database_get(darktable.db), "update images set version=(select count(*) from images i where i.filename=images.filename and i.film_id=images.film_id and i.id<images.id) where version is NULL", NULL, NULL, NULL);
-
-      dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
-    }
-    dt_control_sanitize_database();
-  }
-  else
-  {
-    // db not yet there, create it
-    sqlite3_finalize(stmt);
-create_tables:
-    dt_control_create_database_schema();
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "insert into settings (settings) values (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 1, &(darktable.control->global_defaults),
-                               sizeof(dt_ctl_settings_t), SQLITE_STATIC);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
+  s->mouse_over_id = -1;
+  s->dev_closeup = 0;
+  s->dev_zoom_x = 0;
+  s->dev_zoom_y = 0;
+  s->dev_zoom = DT_ZOOM_FIT;
 }
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
@@ -1465,9 +1035,9 @@ void dt_control_button_released(double x, double y, int which, uint32_t state)
   dt_view_manager_button_released(darktable.view_manager, x-tb, y-tb, which, state);
 }
 
-void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
+void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode)
 {
-  dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
+  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode == mode) return;
 
   darktable.control->button_down = 0;
@@ -1493,7 +1063,7 @@ void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode)
 
 void dt_ctl_switch_mode()
 {
-  dt_ctl_gui_mode_t mode = dt_conf_get_int("ui_last/view");
+  dt_control_gui_mode_t mode = dt_conf_get_int("ui_last/view");
   if(mode == DT_LIBRARY) mode = DT_DEVELOP;
   else mode = DT_LIBRARY;
   dt_ctl_switch_mode_to(mode);
@@ -1865,6 +1435,97 @@ void dt_control_backgroundjobs_set_cancellable(const struct dt_control_t *s, con
   if (s->proxy.backgroundjobs.module)
     s->proxy.backgroundjobs.set_cancellable(s->proxy.backgroundjobs.module, key, job);
 }
+
+int32_t dt_control_get_mouse_over_id()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  int32_t result = darktable.control->mouse_over_id;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_mouse_over_id(int32_t value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  if(darktable.control->mouse_over_id != value)
+  {
+    darktable.control->mouse_over_id = value;
+    dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  }
+  else
+    dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+float dt_control_get_dev_zoom_x()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  float result = darktable.control->dev_zoom_x;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_dev_zoom_x(float value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  darktable.control->dev_zoom_x = value;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+float dt_control_get_dev_zoom_y()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  float result = darktable.control->dev_zoom_y;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_dev_zoom_y(float value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  darktable.control->dev_zoom_y = value;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+float dt_control_get_dev_zoom_scale()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  float result = darktable.control->dev_zoom_scale;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_dev_zoom_scale(float value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  darktable.control->dev_zoom_scale = value;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+int dt_control_get_dev_closeup()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  int result = darktable.control->dev_closeup;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_dev_closeup(int value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  darktable.control->dev_closeup = value;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
+dt_dev_zoom_t dt_control_get_dev_zoom()
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  dt_dev_zoom_t result = darktable.control->dev_zoom;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+  return result;
+}
+void dt_control_set_dev_zoom(dt_dev_zoom_t value)
+{
+  dt_pthread_mutex_lock(&(darktable.control->global_mutex));
+  darktable.control->dev_zoom = value;
+  dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

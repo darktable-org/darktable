@@ -327,9 +327,9 @@ restart:
   // this locks dev->history_mutex.
   dt_dev_pixelpipe_change(dev->pipe, dev);
   // determine scale according to new dimensions
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  zoom = dt_control_get_dev_zoom();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom_y = dt_control_get_dev_zoom_y();
 
   scale = dt_dev_get_zoom_scale(dev, zoom, 1.0f, 0);
   dev->capwidth  = MIN(MIN(dev->width,  dev->pipe->processed_width *scale), darktable.thumbnail_width);
@@ -402,7 +402,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
       if(preview) zoom_scale *= ps;
       break;
     default: // DT_ZOOM_FREE
-      DT_CTL_GET_GLOBAL(zoom_scale, dev_zoom_scale);
+      zoom_scale = dt_control_get_dev_zoom_scale();
       if(preview) zoom_scale *= ps;
       break;
   }
@@ -1126,10 +1126,10 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
   dt_dev_zoom_t zoom;
   int closeup, procw = 0, proch = 0;
   float zoom2_x, zoom2_y;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom2_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom2_y, dev_zoom_y);
+  zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
+  zoom2_x = dt_control_get_dev_zoom_x();
+  zoom2_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
   // offset from center now (current zoom_{x,y} points there)

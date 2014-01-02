@@ -196,13 +196,10 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
     dt_pthread_mutex_unlock(mutex);
 
     // draw box where we are
-    dt_dev_zoom_t zoom;
-    int closeup;
-    float zoom_x, zoom_y;
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
+    float zoom_x = dt_control_get_dev_zoom_x();
+    float zoom_y = dt_control_get_dev_zoom_y();
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, closeup ? 2.0 : 1.0, 0);
     const float cur_scale = dt_dev_get_zoom_scale(dev, zoom,        closeup ? 2.0 : 1.0, 0);
     // avoid numerical instability for small resolutions:
@@ -312,13 +309,10 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
 {
   dt_lib_navigation_t *d = ( dt_lib_navigation_t *)self->data;
 
-  dt_dev_zoom_t zoom;
-  int closeup;
-  float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  float zoom_y = dt_control_get_dev_zoom_y();
 
   if(d->dragging && zoom != DT_ZOOM_FIT)
   {
@@ -330,8 +324,8 @@ void _lib_navigation_set_position(dt_lib_module_t *self, double x, double y, int
     zoom_x = fmaxf(-.5, fminf(((x-inset)/width  - .5f)/(iwd*fminf(wd/(float)iwd, ht/(float)iht)/(float)wd), .5));
     zoom_y = fmaxf(-.5, fminf(((y-inset)/height - .5f)/(iht*fminf(wd/(float)iwd, ht/(float)iht)/(float)ht), .5));
     dt_dev_check_zoom_bounds(darktable.develop, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-    DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-    DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+    dt_control_set_dev_zoom_x(zoom_x);
+    dt_control_set_dev_zoom_y(zoom_y);
 
     /* redraw myself */
     gtk_widget_queue_draw(self->widget);
@@ -361,10 +355,10 @@ static void _zoom_preset_change(int val)
   dt_dev_zoom_t zoom;
   int closeup, procw, proch;
   float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = 0;
   zoom_x = 0.0f; //+= (1.0/scale)*(x - .5f*dev->width )/procw;
@@ -391,11 +385,11 @@ static void _zoom_preset_change(int val)
   }
 
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
-  DT_CTL_SET_GLOBAL(dev_zoom, zoom);
-  DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  dt_control_set_dev_zoom_scale(scale);
+  dt_control_set_dev_zoom(zoom);
+  dt_control_set_dev_closeup(closeup);
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
   dt_dev_invalidate(dev);
 }
 

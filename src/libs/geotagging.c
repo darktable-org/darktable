@@ -288,7 +288,7 @@ _lib_geotagging_calculate_offset_callback(GtkWidget *widget, dt_lib_module_t *se
           if(sqlite3_step(stmt) == SQLITE_ROW)
             imgid = sqlite3_column_int(stmt, 0);
           else // no selection is used, use mouse over id
-            DT_CTL_GET_GLOBAL(imgid, lib_image_mouse_over_id);
+            imgid = dt_control_get_mouse_over_id();
           sqlite3_finalize(stmt);
 
           if(imgid > 0)
