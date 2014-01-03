@@ -164,8 +164,14 @@
 
     <para>
       In that case, the best thing to do is start darktable from a console with
+    </para>
+
+    <para>
 <programlisting>darktable -d opencl
 </programlisting>
+    </para>
+
+    <para>
       This will give additional debugging output about the initialization and use of OpenCL.
       First see if you find a line that starts with <quote>[opencl_init] FINALLY …</quote>
       This should tell you, if OpenCL support is available for you or not. If initialization
@@ -347,8 +353,14 @@
 
     <para>
       In order to get profiling info you start darktable from a terminal with
+    </para>
+
+    <para>
 <programlisting>darktable -d opencl -d perf
 </programlisting>
+    </para>
+
+    <para>
       After each reprocessing of pixelpipe - caused by module parameter change, zooming,
       panning, etc. - you will get the total time and the time spent in each of our OpenCL
       kernels. The most reliable value is the total time spent in pixelpipe. Please note that
@@ -531,6 +543,9 @@
       Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize
       your OpenCL device(s). Configuration parameter <quote>opencl_device_priority</quote> holds
       a string with the following structure:
+    </para>
+
+    <para>
 <programlisting>a,b,c.../k,l,m.../o,p,q.../x,y,z...
 </programlisting>
     </para>
@@ -569,8 +584,14 @@
 
     <para>
       darktable's default setting for opencl_device_priority is:
+    </para>
+
+    <para>
 <programlisting>*/!0,*/*/*
 </programlisting>
+    </para>
+
+    <para>
       Any detected OpenCL device is allowed to process our center view image. The first OpenCL
       device (0) is not allowed to process the preview pixelpipe. As a consequence, if there is
       only one GPU owned by your system, preview pixelpipe will always be processed on CPU,
@@ -590,6 +611,9 @@
       Here is an example. Let's assume we have a system with two devices, a fast Radeon HD7950
       and an older and slower GeForce GTS450. darktable (started with <quote>darktable -d
       opencl</quote>) will report the following devices:
+    </para>
+
+    <para>
 <programlisting>[opencl_init] successfully initialized.
 [opencl_init] here are the internal numbers and names of 
                           OpenCL devices available to darktable:
@@ -597,6 +621,9 @@
 [opencl_init]           1       'Tahiti'
 [opencl_init] FINALLY: opencl is AVAILABLE on this system.
 </programlisting>
+    </para>
+
+    <para>
       So the GeForce GTS 450 is detected as the first device; the Radeon HD7950 ('Tahiti') as
       the second one. This order will normally not change unless the hardware or driver
       configuration is modified. But it's better to use device names rather than numbers to be
@@ -606,8 +633,14 @@
     <para>
       As the GTS450 is slower than the HD7950, an optimized opencl_device_priority could look
       like:
+    </para>
+
+    <para>
 <programlisting>!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
 </programlisting>
+    </para>
+
+    <para>
       The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved
       to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). Completely the opposite for
       our preview pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be
@@ -641,8 +674,14 @@
 
     <para>
       If nothing else helps, the best option might be to start darktable with
+    </para>
+
+    <para>
 <programlisting>darktable --disable-opencl
 </programlisting>
+    </para>
+
+    <para>
       In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL
       discourage you; also darktable's CPU code is highly optimized for performance!
     </para>

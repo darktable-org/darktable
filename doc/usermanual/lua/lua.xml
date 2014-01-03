@@ -212,6 +212,7 @@
 
       </itemizedlist>
 
+      <para>
 <programlisting>dt = require "darktable"
 dt.register_storage("module_stitcher","mosaic generator",nil,
    function(storage,image_table)
@@ -230,6 +231,7 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
     end
 )
 </programlisting>
+      </para>
 
       <para>
         This script is an example of storage implemented in Lua. This is not complete nor
@@ -246,8 +248,10 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
         (again, the file might not exist):
       </para>
 
+      <para>
 <programlisting>require "mosaic"
 </programlisting>
+      </para>
 
       <para>
         A new entry <emphasis>mosaic generator</emphasis> will be added to the storage list.
@@ -281,6 +285,7 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
 
       </itemizedlist>
 
+      <para>
 <programlisting>dt = require "darktable"
 local buffer_count = 5
 
@@ -299,6 +304,7 @@ dt.register_event("shortcut",function()
 	bounce_buffer = dt.gui.selection(bounce_buffer)
 end,"switch selection with temporary buffer")
 </programlisting>
+      </para>
 
       <para>
         This script will add two new shortcuts <quote>save to buffer</quote> and <quote>restore
@@ -311,8 +317,10 @@ end,"switch selection with temporary buffer")
         <emphasis>~/.config/darktable/luarc</emphasis> (the file might need to be created):
       </para>
 
+      <para>
 <programlisting>require "save_selection"
 </programlisting>
+      </para>
 
       <para>
         Now these new options will appear under global-&gt;lua. and allow you to save and
@@ -363,11 +371,13 @@ end,"switch selection with temporary buffer")
         following example:
       </para>
 
+      <para>
 <programlisting>dt_debug = require "darktable.debug"
 dt_debug.debug.debug = true
 
 print(dt_debug.dump(_G,"Global environement")
 </programlisting>
+      </para>
 
       <para>
         The main function provided is <emphasis>darktable.debug.dump(object,name)</emphasis>.
@@ -393,8 +403,10 @@ print(dt_debug.dump(_G,"Global environement")
         When experimenting with Lua, darktable might crash with the following message:
       </para>
 
+      <para>
 <programlisting>PANIC: unprotected error in call to lua API (some message here)
 </programlisting>
+      </para>
 
       <para>
         This is always a bug in darktable's Lua API. Please open a bug report and attach the

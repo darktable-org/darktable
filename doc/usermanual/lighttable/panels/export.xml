@@ -297,6 +297,9 @@
         tools to delete embedded XMP tags. As an example you can use the program
         <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink>
         with:
+      </para>
+
+      <para>
 <programlisting>exiftool -XMP:all=   image.jpg
 </programlisting>
       </para>
