@@ -98,7 +98,22 @@ tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",types.dt_imageio_module_storage,[[The storage object tested.]])
 tmp_node:add_parameter("format",types.dt_imageio_module_format,[[The format object to report about.]])
 tmp_node:add_return("boolean",[[True if the corresponding format is supported.]])
-tmp_node = darktable.register_storage:add_parameter("initialize","function",nil)
+tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A function called before storage happens
+
+This function can change the list of exported functions]])
+tmp_node:set_attribute("optional",true)
+tmp_node:add_parameter("storage",types.dt_imageio_module_storage,[[The storage object tested.]])
+tmp_node:add_parameter("format",types.dt_imageio_module_format,[[The format object to report about.]])
+tmp_node:add_parameter("images","table of dt_lua_image_t",[[A table containing images to be exported.]])
+tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
+tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to all calls to store and the call to finalize in a given export series.]])
+tmp_node:add_return("table or nil",[[The modified table of images to export or nil
+
+If nil (or nothing) is returned, the original list of images will be exported
+
+If a table of images is returned, that table will be used instead. The table can be empty. The images parameter can be modified and returned]])
+tmp_node:add_version_info([[This parameter was added]])
+
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
 darktable.films['#']:set_text([[Each film has a numeric entry in the database.]])
