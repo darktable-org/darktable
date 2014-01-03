@@ -82,10 +82,12 @@
                       and libraries. In addition all these have to fit in terms of maker model and revision number. If anything does not fit, e.g. your graphics driver 
                       (loaded as a kernel module) does not match the version of your libOpenCL.so, OpenCL support is likely not available.</para>
 
-		<para>In that case, the best thing to do is start darktable from a console with
-		    <programlisting>
+		<para>In that case, the best thing to do is start darktable from a console with</para>
+		    <para><programlisting>
 darktable -d opencl
-		    </programlisting>
+		    </programlisting></para>
+
+                <para>
 		      This will give additional debugging output about the initialization and use of OpenCL. First see if you find a line that starts with <quote>[opencl_init] FINALLY …</quote> 
                       This should tell you, if OpenCL support is available for you or not. If initialization failed, look at the messages above for anything 
                       that reads like <quote>could not be detected</quote> or <quote>could not be created</quote>. Check if there is a hint about where it failed.</para>
@@ -163,10 +165,11 @@ darktable -d opencl
                  context mostly means the latency of darktable during interactive work, i.e. how long it takes to reprocess your pixelpipe. For a comfortable workflow it is essential to 
                  keep latency low.</para>
 
-                <para>In order to get profiling info you start darktable from a terminal with
-		    <programlisting>
+                <para>In order to get profiling info you start darktable from a terminal with</para>
+		    <para><programlisting>
 darktable -d opencl -d perf
-		    </programlisting>
+		    </programlisting></para>
+                 <para>
                  After each reprocessing of pixelpipe - caused by module parameter change, zooming, panning, etc. - you will get the total time and the time spent in each of our OpenCL 
                  kernels. The most reliable value is the total time spent in pixelpipe. Please note that the timings given for each individual module are unreliable when running the OpenCL 
                  pixelpipe asynchronously (see opencl_async_pixelpipe below).</para>
@@ -242,9 +245,9 @@ darktable -d opencl -d perf
 
                <para>Starting with darktable 1.2 there is a more flexible scheme to allocate and prioritize your OpenCL device(s). Configuration parameter <quote>opencl_device_priority</quote>
                      holds a string with the following structure:
-		    <programlisting>
+		    <para><programlisting>
 a,b,c.../k,l,m.../o,p,q.../x,y,z...
-		    </programlisting></para>
+		    </programlisting></para></para>
                     
                <para>Each letter represents one specific OpenCL device. There are four fields in the parameter string separated by a slash, each representing one type of pixelpipe.
                      <quote>a,b,c...</quote> defines the devices that are allowed to process the center image (full) pixelpipe. Likewise devices <quote>k,l,m...</quote> can process the preview pixelpipe, 
@@ -262,10 +265,11 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                <para>Sequence order within a group matters. darktable will read the list from left to right and whenever it tries to allocate an OpenCL device to a pixelpipe it will scan
                      the devices in that order, taking the first free device it finds.</para>
 
-               <para>darktable's default setting for opencl_device_priority is:
-		    <programlisting>
+               <para>darktable's default setting for opencl_device_priority is:</para>
+		    <para><programlisting>
 */!0,*/*/*
-		    </programlisting>
+		    </programlisting></para>
+               <para>
                      Any detected OpenCL device is allowed to process our center view image. The first OpenCL device (0) is not allowed to process the preview pixelpipe.
                      As a consequence, if there is only one GPU owned by your system, preview pixelpipe will always be processed on CPU, keeping your single GPU exclusively for the more 
                      demanding center image view. This is reasonable and identical to the old behavior. No restrictions apply to export and thumbnail pixelpipes.</para>
@@ -274,23 +278,23 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
                      have quite different levels of processing power, it makes sense to invest a few thoughts and optimize your priority list.</para>
 
                <para>Here is an example. Let's assume we have a system with two devices, a fast Radeon HD7950 and an older and slower
-                     GeForce GTS450. darktable (started with <quote>darktable -d opencl</quote>) will report the following devices:
-		    <programlisting>
+                     GeForce GTS450. darktable (started with <quote>darktable -d opencl</quote>) will report the following devices:</para>
+		    <para><programlisting>
 [opencl_init] successfully initialized.
 [opencl_init] here are the internal numbers and names of 
                           OpenCL devices available to darktable:
 [opencl_init]           0       'GeForce GTS 450'
 [opencl_init]           1       'Tahiti'
 [opencl_init] FINALLY: opencl is AVAILABLE on this system.
-		    </programlisting>
-                    So the GeForce GTS 450 is detected as the first device; the Radeon HD7950 ('Tahiti') as the second one. This order will normally not change unless the
+		    </programlisting></para>
+              <para>So the GeForce GTS 450 is detected as the first device; the Radeon HD7950 ('Tahiti') as the second one. This order will normally not change unless the
                     hardware or driver configuration is modified. But it's better to use device names rather than numbers to be on the safe side.</para>
 
-              <para>As the GTS450 is slower than the HD7950, an optimized opencl_device_priority could look like:
-		    <programlisting>
+              <para>As the GTS450 is slower than the HD7950, an optimized opencl_device_priority could look like:</para>
+		    <para><programlisting>
 !GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
-		    </programlisting>
-                    The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
+		    </programlisting></para>
+              <para>The GTS450 is explicitly excluded from doing the center image pixelpipe; this is reserved to <quote>all</quote> other devices (i.e. the HD7950/Tahiti). 
                     Completely the opposite for our preview
                     pixelpipe. Here the Tahiti is excluded, so that only the GTS450 will be allowed to do the work.</para>
 
@@ -305,11 +309,11 @@ a,b,c.../k,l,m.../o,p,q.../x,y,z...
 		<para>As we developers of darktable on our computers only have access to a small fraction of those variations, please understand that we might not be able to fix your specific problem.
 		There is not much we can do, if there is no way for us to reproduce.</para>
 
-		<para>If nothing else helps, the best option might be to start darktable with
-			<programlisting>
+		<para>If nothing else helps, the best option might be to start darktable with</para>
+			<para><programlisting>
 darktable --disable-opencl
-			</programlisting>
-		In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL discourage you; also darktable's CPU code is highly optimized for performance!</para>
+			</programlisting></para>
+		<para>In the end there is nothing in darktable which only runs on GPU. Don't let OpenCL discourage you; also darktable's CPU code is highly optimized for performance!</para>
 	</sect2>
 
         <indexterm class="endofrange" startref="ix.opencl"/>

@@ -139,10 +139,11 @@
                                         <para>
                                               If you don't want to distribute history stack data with your images, there are various tools to delete embedded XMP tags. As an example 
                                               you can use the program <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink> with:
-		    <programlisting>
-exiftool -XMP:all=   image.jpg
-		    </programlisting>
                                         </para>
+		    <para><programlisting>
+exiftool -XMP:all=   image.jpg
+		    </programlisting></para>
+
 				</sect4>
 
 				<sect4><title>max size</title>
