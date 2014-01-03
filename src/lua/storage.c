@@ -116,7 +116,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   lua_gettable(L,LUA_REGISTRYINDEX);
   dt_lua_do_chunk(L,8,1);
   int result = lua_toboolean(L,-1);
-  lua_pop(L,2);
+  lua_pop(L,3);
   dt_lua_unlock(has_lock);
   return result;
 
