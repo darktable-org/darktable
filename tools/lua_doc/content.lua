@@ -162,10 +162,15 @@ darktable.configuration.tmp_dir:set_text([[The name of the directory where darkt
 darktable.configuration.config_dir:set_text([[The name of the directory where darktable will find its global configuration objects (modules).]])
 darktable.configuration.cache_dir:set_text([[The name of the directory where darktable will store its mipmaps.]])
 darktable.configuration.api_version_major:set_text([[The major version number of the lua API.]])
+darktable.configuration.api_version_major:add_version_info([[field added]])
 darktable.configuration.api_version_minor:set_text([[The minor version number of the lua API.]])
+darktable.configuration.api_version_minor:add_version_info([[field added]])
 darktable.configuration.api_version_patch:set_text([[The patch version number of the lua API.]])
+darktable.configuration.api_version_patch:add_version_info([[field added]])
 darktable.configuration.api_version_suffix:set_text([[The version suffix of the lua API.]])
+darktable.configuration.api_version_suffix:add_version_info([[field added]])
 darktable.configuration.api_version_string:set_text([[The version description of the lua API. This is a string compatible with the semantic versionning convention]])
+darktable.configuration.api_version_string:add_version_info([[field added]])
 
 -----------------------------
 --  DARKTABLE.PREFERENCES  --
