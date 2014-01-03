@@ -1226,7 +1226,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality);
+          if(mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality) != 0)
+            dt_control_job_cancel(job);
         }
       }
 #ifdef _OPENMP
@@ -1234,7 +1235,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
-	if(fraction > 1.0) fraction = 1.0;
+        if(fraction > 1.0) fraction = 1.0;
         dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }
