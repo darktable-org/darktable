@@ -175,7 +175,7 @@ local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
 	local ret_node = create_documentation_node(mt,result,"reported_type")
-	set_attribute(result,"reported_type",ret_node)
+	set_attribute(result,"reported_type",tostring(ret_node))
 	M.remove_parent(ret_node,result)
 	document_type_from_obj(node,ret_node)
 	return result
@@ -605,6 +605,10 @@ meta_node.__index.debug_print = M.debug_print
 meta_node.__index.set_skiped = M.set_skiped
 meta_node.__index.add_version_info = M.add_version_info
 meta_node.__index.get_version_info = M.get_version_info
+meta_node.__index.get_name = M.get_name
+meta_node.__tostring = function(node)
+	return node_to_string(node)
+end
 
 --------------------------
 -- GENERATE DOCUMENTATION
