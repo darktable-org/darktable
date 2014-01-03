@@ -54,7 +54,7 @@ darktable = require "darktable"
 
 All functions and data are accessed through the darktable module.
 
-This documentation was generated with darktable version ]]..real_darktable.configuration.version..[[.]])
+This documentation for API version ]]..real_darktable.configuration.api_version_string..[[.]])
 ----------------------
 --  DARKTABLE       --
 ----------------------
