@@ -229,6 +229,10 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   sqlite3_finalize(stmt);
   sqlite3_finalize(innerstmt);
 
+  // We used to insert datetime_taken entries with '-' as date separators. Since that doesn't work well with the regular ':' when parsing
+  // or sorting we changed it to ':'. This takes care to change what we have as leftovers
+  _SQLITE3_EXEC(db->handle, "UPDATE images SET datetime_taken = REPLACE(datetime_taken, '-', ':') WHERE datetime_taken LIKE '%-%'", NULL, NULL, NULL);
+
 end:
   if(all_ok)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
