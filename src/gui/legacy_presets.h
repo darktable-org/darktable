@@ -125,11 +125,11 @@ static const char *sql_lines[] =
 };
 static const int num_sql_lines = 100;
 
-void dt_legacy_presets_create()
+void dt_legacy_presets_create(const struct dt_database_t *db)
 {
   // a bit stupid, deletes and re-inserts every time :(
   for(int i=0; i<num_sql_lines; i++)
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), sql_lines[i], NULL, NULL, NULL);
+    sqlite3_exec(dt_database_get(db), sql_lines[i], NULL, NULL, NULL);
 }
 
 #endif

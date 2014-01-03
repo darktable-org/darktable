@@ -302,6 +302,57 @@ return_label:
   return ret;
 }
 
+
+// most common modern raw files are handled by rawspeed, which accidentally
+// may go through LibRaw, since it may break history stacks because of different
+// blackpoint handling. in addition guarding LibRaw from these
+// extensions slightly reduces our security surface
+static gboolean
+_blacklisted_ext(const gchar *filename)
+{
+  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", NULL };
+  gboolean supported = TRUE;
+  char *ext = g_strrstr(filename, ".");
+  if(!ext) return FALSE;
+  ext++;
+  for(const char **i = extensions_blacklist; *i != NULL; i++)
+    if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))
+    {
+      supported = FALSE;
+      break;
+    }
+  return supported;
+}
+
+// we do not support non-Bayer raw images; make sure we skip those in order
+// to prevent LibRaw from crashing
+static gboolean 
+_blacklisted_raw(const gchar *maker, const gchar *model)
+{
+  typedef struct blacklist_t {
+    const gchar *maker;
+    const gchar *model;
+  } blacklist_t;
+
+  blacklist_t blacklist[] = { { "fujifilm",                        "x-pro1" },
+                              { "fujifilm",                        "x-e1"   },
+                              { "fujifilm",                        "x-e2"   },
+                              { "fujifilm",                        "x-m1"   },
+                              { NULL,                              NULL     } };
+
+  gboolean blacklisted = FALSE;
+
+  for(blacklist_t *i = blacklist; i->maker != NULL; i++)
+    if(!g_ascii_strncasecmp(maker, i->maker, strlen(i->maker)) &&
+       !g_ascii_strncasecmp(model, i->model, strlen(i->model)))
+    {
+      blacklisted = TRUE;
+      break;
+    }
+  return blacklisted;
+}
+
+
 // open a raw file, libraw path:
 dt_imageio_retval_t
 dt_imageio_open_raw(
@@ -309,8 +360,13 @@ dt_imageio_open_raw(
   const char  *filename,
   dt_mipmap_cache_allocator_t a)
 {
+  if(!_blacklisted_ext(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
+
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);
+
+  if(_blacklisted_raw(img->exif_maker, img->exif_model)) return DT_IMAGEIO_FILE_CORRUPTED;
+
   int ret;
   libraw_data_t *raw = libraw_init(0);
   libraw_processed_image_t *image = NULL;
@@ -645,7 +701,8 @@ int dt_imageio_export_with_flags(
       {
         m = (dt_iop_module_t *)modules->data;
 
-        if (strcmp(m->op, s->name) == 0)
+        //  since the name in the style is returned with a possible multi-name, just check the start of the name
+        if (strncmp(m->op, s->name, strlen(m->op)) == 0)
         {
           dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
 

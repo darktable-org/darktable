@@ -24,7 +24,7 @@
 #include "common/debug.h"
 
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
-static int _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
+static gboolean _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
   const int stepsize = 300000;
   const int reserve = 100000;
@@ -36,7 +36,7 @@ static int _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
     *buffer = malloc(stepsize*sizeof(float));
     *buffer_count = 0;
     *buffer_max = stepsize;
-    return TRUE;
+    return (*buffer != NULL);
   }
 
   if(*buffer_count > *buffer_max)
@@ -49,7 +49,11 @@ static int _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
     *buffer = malloc(*buffer_max*sizeof(float));
-    if(*buffer == NULL) return FALSE;
+    if(*buffer == NULL)
+    {
+      free(oldbuffer);
+      return FALSE;
+    }
     memset(*buffer, 0, *buffer_max*sizeof(float));
     memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
     free(oldbuffer);
@@ -213,7 +217,7 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
 }
 
 /** fill eventual gaps between 2 points with a line */
-static int _path_fill_gaps(int lastx, int lasty, int x, int y, int *points, int *pts_count)
+static int _path_fill_gaps(int lastx, int lasty, int x, int y, float *points, int *pts_count)
 {
   points[0] = x;
   points[1] = y;
@@ -423,13 +427,24 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   const int ss = hb*wb;
   if (ss < 10) return 0;
   *inter = malloc(sizeof(int)*nb_corners*8);
+  if(*inter == NULL) return 0;
 
   int *binter = malloc(sizeof(int)*ss);
+  if(binter == NULL) return 0;
   memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
-  int extra[10000];
+
+  float *extra = NULL;
+  int extra_max = 0;
   int extra_count = 0;
+  int extrap = 0;
+
+  if (!_path_buffer_grow(&extra, &extrap, &extra_max))
+  {
+    free(binter);
+    return 0;
+  }
 
   for (int ii=nb_corners*3; ii < border_count; ii++)
   {
@@ -440,6 +455,14 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
     if (inter_count >= nb_corners*4) break;
     //we want to be sure everything is continuous
     _path_fill_gaps(lastx,lasty,border[i*2],border[i*2+1],extra,&extra_count);
+
+    extrap = 2*extra_count;
+
+    if (!_path_buffer_grow(&extra, &extrap, &extra_max))
+    {
+      free(binter);
+      return 0;
+    }
 
     //we now search intersections for all the point in extra
     for (int j=extra_count-1; j>=0; j--)
@@ -499,6 +522,7 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
     }
   }
 
+  free(extra);
   free(binter);
 
   //and we return the number of self-intersection found
@@ -1017,6 +1041,8 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_masks_free_form(form);
       darktable.develop->form_visible = NULL;
       dt_masks_clear_form_gui(darktable.develop);
+      dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(module);
       dt_control_queue_redraw_center();
       return 1;
     }
@@ -1475,9 +1501,8 @@ static int dt_path_events_button_released(struct dt_iop_module_t *module,float p
 
 static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
-  int32_t zoom, closeup;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
   float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
   if (!gui) return 0;

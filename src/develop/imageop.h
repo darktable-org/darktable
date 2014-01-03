@@ -356,6 +356,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
 void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 
+void dt_iop_gui_update_header(dt_iop_module_t *module);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
@@ -371,8 +373,6 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
-/** fills the given params blob with the result of per-iso interpolation, searching the matching presets. returns 1 on failure. */
-int  dt_iop_load_preset_interpolated_iso(dt_iop_module_t *module, const dt_image_t *cimg, void *output_params, float *output_iso1, float *output_iso2);
 
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);

@@ -196,6 +196,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
   if(!g_module_symbol(module->module, "params_size",             (gpointer)&(module->params_size)))             goto error;
   if(!g_module_symbol(module->module, "get_params",             (gpointer)&(module->get_params)))             goto error;
   if(!g_module_symbol(module->module, "free_params",            (gpointer)&(module->free_params)))            goto error;
+  if(!g_module_symbol(module->module, "initialize_store",         (gpointer)&(module->initialize_store)))         module->initialize_store = NULL;
   if(!g_module_symbol(module->module, "finalize_store",         (gpointer)&(module->finalize_store)))         module->finalize_store = NULL;
   if(!g_module_symbol(module->module, "set_params",             (gpointer)&(module->set_params)))             goto error;
 

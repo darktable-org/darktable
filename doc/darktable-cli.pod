@@ -79,7 +79,7 @@ Enables verbose output.
 
 =item B<< --core <darktable options>  >>
 
-All command line parameters following <quote>--core</quote> are passed
+All command line parameters following B<--core> are passed
 to the darktable core and handled as standard parameters. See
 L<darktable(1)|darktable(1)> for a detailed description of the options.
 

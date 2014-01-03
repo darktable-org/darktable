@@ -121,7 +121,7 @@ void capture_view_switch_key_accel(void *p)
 {
   // dt_view_t *self=(dt_view_t*)p;
   // dt_capture_t *lib=(dt_capture_t*)self->data;
-  dt_ctl_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
+  dt_control_gui_mode_t oldmode = dt_conf_get_int("ui_last/view");
   if(oldmode==DT_CAPTURE)
     dt_ctl_switch_mode_to( DT_LIBRARY );
   else
@@ -515,7 +515,7 @@ void reset(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
   lib->mode=DT_CAPTURE_MODE_TETHERED;
-  //DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, -1);
+  //dt_control_set_mouse_over_id(-1);
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)

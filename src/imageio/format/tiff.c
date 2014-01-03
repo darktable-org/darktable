@@ -239,7 +239,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("8/16-bit TIFF");
+  return _("TIFF (8/16-bit)");
 }
 
 static void

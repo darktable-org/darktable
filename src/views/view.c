@@ -655,15 +655,13 @@ dt_view_get_image_to_act_on()
   //   in which case it affects the whole selection.
   // - if the mouse is outside the center view (or no image hovered over otherwise)
   //   it only affects the selection.
-  int32_t mouse_over_id = -1;
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+
   int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row 
             (darktable.view_manager->proxy.lighttable.view);
-  
+
   int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id
             (darktable.view_manager->proxy.lighttable.view);
-
-
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
   if(zoom == 1 || full_preview_id > 1)
   {
@@ -725,7 +723,7 @@ dt_view_image_expose(
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
   // this is a gui thread only thing. no mutex required:
-  imgsel = darktable.control->global_settings.lib_image_mouse_over_id;
+  imgsel = dt_control_get_mouse_over_id();//  darktable.control->global_settings.lib_image_mouse_over_id;
 
 #if DRAW_SELECTED == 1
   /* clear and reset statements */

@@ -20,6 +20,15 @@
 
 #include "views/view.h"
 
+/** The modes of capture view
+  \note in the future there will be a scanning mode...
+*/
+typedef enum dt_capture_mode_t
+{
+  DT_CAPTURE_MODE_TETHERED=0          // Only one capture mode to start with...
+}
+dt_capture_mode_t;
+
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

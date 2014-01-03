@@ -62,7 +62,7 @@ typedef struct parser_state_t
 
 static float read_number(parser_state_t *self)
 {
-  int integer = 0, fractional = 0, fractional_div = 1;
+  unsigned long int integer = 0, fractional = 0, fractional_div = 1;
   while(*self->p && *self->p >= '0' && *self->p <= '9')
   {
     integer = integer * 10 + (*self->p) - '0';
@@ -333,6 +333,9 @@ static float parse_primary_expression(parser_state_t *self)
 
 float dt_calculator_solve(float x, const char *formula)
 {
+  if(formula == NULL || *formula == '\0')
+    return NAN;
+
   float result;
   parser_state_t *self = (parser_state_t*)malloc(sizeof(parser_state_t));
   self->p = formula;
@@ -341,7 +344,7 @@ float dt_calculator_solve(float x, const char *formula)
   self->token = get_token(self);
 
 //   operators_t operator = -1;
-  if(self->token->type == T_OPERATOR)
+  if(self->token && self->token->type == T_OPERATOR)
   {
     switch(self->token->data.operator)
     {

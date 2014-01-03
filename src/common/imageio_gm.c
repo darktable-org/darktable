@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 Ulrich Pegelow.
+    copyright (c) 2012--2013 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,28 @@
 #include <magick/api.h>
 #include <assert.h>
 
+
+// we only support images with certain filename extensions via GraphicsMagick;
+// RAWs are excluded as GraphicsMagick would render them with third party 
+// libraries in reduced quality - slow and only 8-bit
+static gboolean 
+_supported_image(const gchar *filename)
+{
+  const char *extensions_whitelist[] = { "tif", "tiff", "gif", "jpc", "jp2", "bmp", "dcm", "jng", "miff", "mng", "pbm", "pnm", "ppm", "pgm", NULL };
+  gboolean supported = FALSE;
+  char *ext = g_strrstr(filename, ".");
+  if(!ext) return FALSE;
+  ext++;
+  for(const char **i = extensions_whitelist; *i != NULL; i++)
+    if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))
+    {
+      supported = TRUE;
+      break;
+    }
+  return supported;
+}
+
+
 dt_imageio_retval_t
 dt_imageio_open_gm(
   dt_image_t *img,
@@ -45,6 +67,7 @@ dt_imageio_open_gm(
   ImageInfo *image_info = NULL;
   uint32_t width, height, orientation;
 
+  if(!_supported_image(filename)) return DT_IMAGEIO_FILE_CORRUPTED;
 
   if(!img->exif_inited)
     (void) dt_exif_read(img, filename);

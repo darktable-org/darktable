@@ -49,6 +49,20 @@
 // A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
 #define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
 
+typedef enum dt_control_gui_mode_t
+{
+  DT_LIBRARY = 0,
+  DT_DEVELOP,
+#ifdef HAVE_GPHOTO2
+  DT_CAPTURE,
+#endif
+#ifdef HAVE_MAP
+  DT_MAP,
+#endif
+  DT_MODE_NONE
+}
+dt_control_gui_mode_t;
+
 typedef GdkCursorType dt_cursor_t;
 
 // called from gui
@@ -115,7 +129,7 @@ void dt_control_gdk_unlock();
 gboolean dt_control_gdk_haslock();
 
 void dt_ctl_switch_mode();
-void dt_ctl_switch_mode_to(dt_ctl_gui_mode_t mode);
+void dt_ctl_switch_mode_to(dt_control_gui_mode_t mode);
 
 struct dt_control_t;
 struct dt_job_t;
@@ -194,7 +208,7 @@ typedef struct dt_control_accels_t
   filmstrip_forward, filmstrip_back,
                      lighttable_up, lighttable_down, lighttable_right,
                      lighttable_left, lighttable_center, lighttable_preview,
-                     global_sideborders, global_header;
+                     lighttable_preview_display_focus, global_sideborders, global_header;
 
 } dt_control_accels_t;
 
@@ -232,6 +246,13 @@ typedef struct dt_control_t
   int button_down, button_down_which, button_type;
   double button_x, button_y;
   int history_start;
+  int32_t mouse_over_id;
+
+  // TODO: move these to some darkroom struct
+  // synchronized navigation
+  float dev_zoom_x, dev_zoom_y, dev_zoom_scale;
+  dt_dev_zoom_t dev_zoom;
+  int dev_closeup;
 
   // message log
   int  log_pos, log_ack;
@@ -241,7 +262,6 @@ typedef struct dt_control_t
   dt_pthread_mutex_t log_mutex;
 
   // gui settings
-  dt_ctl_settings_t global_settings, global_defaults;
   dt_pthread_mutex_t global_mutex, image_mutex;
   double last_expose_time;
   int key_accelerators_on;
@@ -288,7 +308,7 @@ typedef struct dt_control_t
 dt_control_t;
 
 void dt_control_init(dt_control_t *s);
-void dt_control_create_database_schema();
+
 // join all worker threads.
 void dt_control_shutdown(dt_control_t *s);
 void dt_control_cleanup(dt_control_t *s);
@@ -313,6 +333,26 @@ void *dt_control_work(void *ptr);
 void *dt_control_work_res(void *ptr);
 int32_t dt_control_get_threadid();
 int32_t dt_control_get_threadid_res();
+
+// thread-safe interface between core and gui.
+// is the locking really needed?
+int32_t dt_control_get_mouse_over_id();
+void dt_control_set_mouse_over_id(int32_t value);
+
+float dt_control_get_dev_zoom_x();
+void dt_control_set_dev_zoom_x(float value);
+
+float dt_control_get_dev_zoom_y();
+void dt_control_set_dev_zoom_y(float value);
+
+float dt_control_get_dev_zoom_scale();
+void dt_control_set_dev_zoom_scale(float value);
+
+int dt_control_get_dev_closeup();
+void dt_control_set_dev_closeup(int value);
+
+dt_dev_zoom_t dt_control_get_dev_zoom();
+void dt_control_set_dev_zoom(dt_dev_zoom_t value);
 
 static inline int32_t dt_ctl_get_num_procs()
 {

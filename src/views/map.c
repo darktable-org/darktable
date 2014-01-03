@@ -469,7 +469,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       if(lib->selected_image > 0)
       {
         // open the image in darkroom
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->selected_image);
+        dt_control_set_mouse_over_id(lib->selected_image);
         dt_ctl_switch_mode_to(DT_DEVELOP);
         return TRUE;
       }

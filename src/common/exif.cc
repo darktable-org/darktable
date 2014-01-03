@@ -816,7 +816,7 @@ int dt_exif_read(dt_image_t *img, const char* path)
     struct stat statbuf;
     stat(path, &statbuf);
     struct tm result;
-    strftime(img->exif_datetime_taken, 20, "%Y-%m-%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
 
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
@@ -2135,10 +2135,18 @@ int dt_exif_thumbnail(
   }
 }
 
+static void dt_exif_log_handler(int log_level, const char *message)
+{
+  if(log_level >= Exiv2::LogMsg::level())
+    fprintf(stderr, "[exiv2] %s\n", message);
+}
+
 void dt_exif_init()
 {
   // mute exiv2:
-  // Exiv2::LogMsg::setLevel(Exiv2::LogMsg::error);
+//   Exiv2::LogMsg::setLevel(Exiv2::LogMsg::mute);
+  // preface the exiv2 messages with "[exiv2] "
+  Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 
   Exiv2::XmpParser::initialize();
   // this has te stay with the old url (namespace already propagated outside dt)

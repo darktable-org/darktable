@@ -160,7 +160,7 @@ if(OPENEXR_FOUND)
   list(APPEND SOURCES "common/imageio_exr.cc")
 endif(OPENEXR_FOUND)
 
-find_package(WebP)
+find_package(WebP 0.3.0)
 if(WEBP_FOUND)
   include_directories(${WebP_INCLUDE_DIRS})
   list(APPEND LIBS ${WebP_LIBRARIES})
@@ -400,7 +400,9 @@ if(NOT CUSTOM_CFLAGS)
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+  if(NOT SOURCE_PACKAGE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+  endif(NOT SOURCE_PACKAGE)
 
   # gcc-4.8 build fails on unused local typedefs in gmacros.h:162
   # to be removed when glib will get fixed
@@ -654,6 +656,10 @@ endif(HAVE_OPENCL)
 # have a command line interface
 add_subdirectory(cli)
 
+# have a small test program that verifies your color management setup
+if(BUILD_CMSTEST)
+  add_subdirectory(cmstest)
+endif(BUILD_CMSTEST)
 
 #
 # build darktable executable

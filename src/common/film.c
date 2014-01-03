@@ -465,17 +465,21 @@ void dt_film_remove_empty()
   // remove all empty film rolls from db:
   gboolean raise_signal = FALSE;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select id from film_rolls as B where (select count(A.id) from images as A where A.film_id=B.id)=0", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id,folder FROM film_rolls AS B WHERE (SELECT COUNT(A.id) FROM images AS A WHERE A.film_id=B.id)=0", -1, &stmt, NULL);
   while (sqlite3_step(stmt) == SQLITE_ROW)
   {
     sqlite3_stmt *inner_stmt;
     raise_signal = TRUE;
-    gint id = sqlite3_column_int(stmt, 0);
+    const gint id = sqlite3_column_int(stmt, 0);
+    const gchar *folder = (const gchar *)sqlite3_column_text(stmt, 1);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "delete from film_rolls where id=?1", -1, &inner_stmt, NULL);
+                                "DELETE FROM film_rolls WHERE id=?1", -1, &inner_stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(inner_stmt, 1, id);
     sqlite3_step(inner_stmt);
     sqlite3_finalize(inner_stmt);
+
+    if (dt_util_is_dir_empty(folder))
+      rmdir(folder);
   }
   sqlite3_finalize(stmt);
   if(raise_signal)

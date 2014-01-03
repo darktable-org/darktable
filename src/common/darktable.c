@@ -337,7 +337,7 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
         dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
         if(open_image_in_dr)
         {
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+          dt_control_set_mouse_over_id(id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }
       }
@@ -368,6 +368,38 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #ifdef M_MMAP_THRESHOLD
   mallopt(M_MMAP_THRESHOLD,128*1024) ; /* use mmap() for large allocations */
 #endif
+
+  // we have to have our share dir in XDG_DATA_DIRS,
+  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
+  {
+    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
+    gchar *new_xdg_data_dirs = NULL;
+    gboolean set_env = TRUE;
+    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
+    {
+      // check if DARKTABLE_SHAREDIR is already in there
+      gboolean found = FALSE;
+      gchar **tokens = g_strsplit(xdg_data_dirs, ":", 0);
+      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
+      for(char **iter = tokens; *iter != NULL; iter++)
+        if(!strcmp(DARKTABLE_SHAREDIR, *iter))
+        {
+          found = TRUE;
+          break;
+        }
+      g_strfreev(tokens);
+      if(found)
+        set_env = FALSE;
+      else
+        new_xdg_data_dirs = g_strjoin(":", DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
+    }
+    else
+      new_xdg_data_dirs = g_strdup(DARKTABLE_SHAREDIR);
+
+    if(set_env)
+      g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
+    g_free(new_xdg_data_dirs);
+  }
 
   setlocale(LC_ALL, "");
   bindtextdomain (GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
@@ -408,7 +440,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2013 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n");
         return 1;
       }
       else if(!strcmp(argv[k], "--library"))
@@ -631,12 +663,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
-    // this is in memory, so schema can't exist yet.
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
-    {
-      dt_control_create_database_schema();
-      dt_gui_presets_init(); // also init preset db schema.
-    }
+      dt_gui_presets_init(); // init preset db schema.
     darktable.control->running = 0;
     darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
@@ -708,7 +736,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
-    g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
   }
   darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
   memset(darktable.imageio, 0, sizeof(dt_imageio_t));

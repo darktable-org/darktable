@@ -42,6 +42,7 @@ DT_MODULE(1)
 typedef struct disk_t
 {
   GtkEntry *entry;
+  GtkToggleButton *overwrite_btn;
 }
 disk_t;
 
@@ -50,6 +51,7 @@ typedef struct dt_imageio_disk_t
 {
   char filename[DT_MAX_PATH_LEN];
   dt_variables_params_t *vp;
+  gboolean overwrite;
 }
 dt_imageio_disk_t;
 
@@ -95,11 +97,14 @@ gui_init (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_hbox_new(FALSE, 5);
+  self->widget = gtk_vbox_new(FALSE, 5);
   GtkWidget *widget;
 
+  GtkWidget *hbox = gtk_hbox_new(FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (hbox),TRUE,FALSE,0);
+
   widget = gtk_entry_new();
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   gchar *dir = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
   if(dir)
   {
@@ -119,8 +124,12 @@ gui_init (dt_imageio_module_storage_t *self)
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, 18, 18);
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
+
+  d->overwrite_btn = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("overwrite")));
+  gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (d->overwrite_btn),TRUE,FALSE,0);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 
   g_free(tooltip_text);
 }
@@ -140,13 +149,20 @@ gui_reset (dt_imageio_module_storage_t *self)
   // global default can be annoying:
   // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
+
+  // this should prevent users from unintentional image overwrite
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 }
 
 int
 store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
+  disk_t *g = (disk_t *)self->gui_data;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
+
+  // since we're potentially called in parallel, we should uncheck button as early as possible
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
 
   char filename[DT_MAX_PATH_LEN]= {0};
   char dirname[DT_MAX_PATH_LEN]= {0};
@@ -218,18 +234,19 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     sprintf(c,".%s",ext);
 
     /* prevent overwrite of files */
-    int seq=1;
 failed:
-    if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
-    {
-      do
-      {
-        sprintf(c,"_%.2d.%s",seq,ext);
-        seq++;
-      }
-      while (g_file_test (filename,G_FILE_TEST_EXISTS));
+    if (!d->overwrite) {
+        int seq=1;
+        if (!fail && g_file_test (filename,G_FILE_TEST_EXISTS))
+        {
+          do
+          {
+            sprintf(c,"_%.2d.%s",seq,ext);
+            seq++;
+          }
+          while (g_file_test (filename,G_FILE_TEST_EXISTS));
+        }
     }
-
   } // end of critical block
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(fail) return 1;
@@ -282,6 +299,7 @@ get_params(dt_imageio_module_storage_t *self)
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
   g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+  d->overwrite = gtk_toggle_button_get_active(g->overwrite_btn);
   return d;
 }
 
@@ -301,6 +319,9 @@ set_params(dt_imageio_module_storage_t *self, const void *params, const int size
   disk_t *g = (disk_t *)self->gui_data;
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
+
+  // we really do not want user to unintentionally overwrite image
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
   return 0;
 }
 

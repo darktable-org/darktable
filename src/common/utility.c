@@ -259,6 +259,23 @@ off_t dt_util_get_file_size(const char *filename)
   return -1;
 }
 
+gboolean dt_util_is_dir_empty(const char *dirname)
+{
+  int n = 0;
+  GDir *dir = g_dir_open(dirname,0,NULL);
+  if (dir == NULL) //Not a directory or doesn't exist
+    return TRUE;
+  while (g_dir_read_name(dir) != NULL) {
+    if(++n > 1)
+      break;
+  }
+  g_dir_close(dir);
+  if (n == 0) //Directory Empty
+    return TRUE;
+  else
+    return FALSE;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

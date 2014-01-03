@@ -149,6 +149,10 @@ static void key_accel_changed(GtkAccelMap *object,
   dt_accel_path_view(path, 256, "lighttable", "preview");
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_preview);
+  dt_accel_path_view(path, 256, "lighttable", "preview with focus detection");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.lighttable_preview_display_focus);
+
 
   // Global
   dt_accel_path_global(path, 256, "toggle side borders");
@@ -520,9 +524,10 @@ void dt_gui_gtk_quit()
 
 }
 
-void quit()
+gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_control_quit();
+  return TRUE;
 }
 
 void dt_gui_store_last_preset(const char *name)
@@ -542,7 +547,7 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     gpointer p)
 {
   int view=GPOINTER_TO_INT(p);
-  dt_ctl_gui_mode_t mode=DT_MODE_NONE;
+  dt_control_gui_mode_t mode=DT_MODE_NONE;
   /* do some setup before switch view*/
   switch (view)
   {
@@ -1061,7 +1066,7 @@ void init_widgets()
   gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (dt_control_quit), NULL);
+                    G_CALLBACK (dt_gui_quit_callback), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect (G_OBJECT (widget), "key-release-event",

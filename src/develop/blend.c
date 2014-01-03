@@ -1915,6 +1915,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   const unsigned int mask_mode = d->mask_mode;
   const unsigned int xoffs = roi_out->x - roi_in->x;
   const unsigned int yoffs = roi_out->y - roi_in->y;
+  const int iwidth = roi_in->width;
 
   /* check if blend is disabled */
   if (!(mask_mode & DEVELOP_MASK_ENABLED)) return;
@@ -2021,6 +2022,24 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       break;
   }
 
+  /* get the clipped opacity value  0 - 1 */
+  const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
+
+  /* only true if mask_display was set by an _earlier_ module */
+  const int mask_display = piece->pipe->mask_display;
+
+  /* check if we only should blend lightness channel. will affect only Lab space */
+  const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
+
+  /* get channel max values depending on colorspace */
+  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+
+  /* correct bpp per pixel for raw
+     \TODO actually invest why channels per pixel is 4 in raw..
+  */
+  if(cst==iop_cs_RAW)
+    ch = 1;
+
   /* allocate space for blend mask */
   float *mask = dt_alloc_align(64, roi_out->width*roi_out->height*sizeof(float));
   if(!mask)
@@ -2029,35 +2048,10 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     return;
   }
 
-  /* apply masks if there's some */
-  dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
-  
-  if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+  if(mask_mode == DEVELOP_MASK_ENABLED)
   {
-#if 0
-    int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-    dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
-    dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
-    if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
-    {
-      // if we have a mask and this flag is set -> invert the mask
-      const int buffsize = roi_out->width*roi_out->height;
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-      #pragma omp parallel for default(none) shared(mask)
-#else
-      #pragma omp parallel for shared(mask)
-#endif
-#endif
-      for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
-    }
-  }
-  else
-  {
-    //we fill the buffer with 1.0f or 0.0f depending on mask_combine
-    const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
+    /* blend uniformly (no drawn or parametric mask) */
+
     const int buffsize = roi_out->width*roi_out->height;
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -2066,34 +2060,68 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     #pragma omp parallel for shared(mask)
 #endif
 #endif
-    for (int i=0; i<buffsize; i++) mask[i] = fill;
+    for (int i=0; i<buffsize; i++) mask[i] = opacity;
   }
+  else
+  {
+    /* we blend with a drawn and/or parametric mask */
+
+    /* get the drawn mask if there is one */
+    dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
+  
+    if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+    {
+#if 0
+      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
+      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+#else
+      dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
+#endif
+      if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      {
+        // if we have a mask and this flag is set -> invert the mask
+        const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+        #pragma omp parallel for default(none) shared(mask)
+#else
+        #pragma omp parallel for shared(mask)
+#endif
+#endif
+        for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
+      }
+    }
+    else if ((!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+    {
+      //no form defined but drawn mask active
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
+    }
+    else
+    {
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
+    }
 
   
-  if (!(blend_mode & DEVELOP_BLEND_MASK_FLAG))
-  {
-    /* get the clipped opacity value  0 - 1 */
-    const float opacity = fmin(fmax(0,(d->opacity/100.0f)),1.0f);
-    const int maskblur = fabs(d->radius) <= 0.1f ? 0 : 1;
-    const int gaussian = d->radius > 0.0f ? 1 : 0;
-    const float radius = fabs(d->radius);
-
-    /* get channel max values depending on colorspace */
-    const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
-
-    /* check if we only should blend lightness channel. will affect only Lab space */
-    const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
-
-    /* correct bpp per pixel for raw
-        \TODO actually invest why channels per pixel is 4 in raw..
-    */
-    if(cst==iop_cs_RAW)
-      ch = 1;
-
-    /* only true if mask_display was set by an _earlier_ module */
-    const int mask_display = piece->pipe->mask_display;
-    const int iwidth = roi_in->width;
-
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__) && !defined(__WIN32__)
     #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,d,stderr,ch)
@@ -2111,6 +2139,11 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
       float *m = (float *)mask + y * roi_out->width;
       _blend_make_mask(cst, d->blendif, d->blendif_parameters, d->mask_mode, d->mask_combine, opacity, in, out, m, stride);
     }
+
+
+    const int maskblur = fabs(d->radius) <= 0.1f ? 0 : 1;
+    const int gaussian = d->radius > 0.0f ? 1 : 0;
+    const float radius = fabs(d->radius);
 
     if(maskblur)
     {
@@ -2135,7 +2168,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
     }
 
 
-    /* check if mask should be suppressed (i.e. just set to global opacity value) */
+    /* check if mask should be suppressed temporarily (i.e. just set to global opacity value) */
     if(self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
     {
 #ifdef _OPENMP
@@ -2150,42 +2183,35 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
         mask[k] = opacity;
       }
     }
+  }
 
-
+  /* now apply blending with per-pixel opacity value as defined in mask */
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__WIN32__)
-    #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
+  #pragma omp parallel for default(none) shared(i,roi_out,o,mask,blend,stderr,ch)
 #else
-    #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
+  #pragma omp parallel for shared(i,roi_out,o,mask,blend,ch)
 #endif
 #endif
-    for (int y=0; y<roi_out->height; y++)
-    {
-      int iindex = ch * ((y + yoffs) * iwidth + xoffs);
-      int oindex = ch * y * roi_out->width;
-      int stride = ch * roi_out->width;
-      float *in = (float *)i + iindex;
-      float *out = (float *)o + oindex;
-      float *m = (float *)mask + y * roi_out->width;
-      blend(cst, in, out, m, stride, blendflag);
-
-      if(mask_display && cst != iop_cs_RAW)
-        for(int j=0; j<stride; j+=4)
-          out[j+3] = in[j+3];
-    }
-
-    /* check if _this_ module should expose mask. */
-    if(self->request_mask_display && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
-    {
-      piece->pipe->mask_display = 1;
-    }
-
-  }
-  else
+  for (int y=0; y<roi_out->height; y++)
   {
-    /* blending with mask */
-    dt_control_log("blending using masks is not yet implemented.");
+    int iindex = ch * ((y + yoffs) * iwidth + xoffs);
+    int oindex = ch * y * roi_out->width;
+    int stride = ch * roi_out->width;
+    float *in = (float *)i + iindex;
+    float *out = (float *)o + oindex;
+    float *m = (float *)mask + y * roi_out->width;
+    blend(cst, in, out, m, stride, blendflag);
 
+    if(mask_display && cst != iop_cs_RAW)
+      for(int j=0; j<stride; j+=4)
+        out[j+3] = in[j+3];
+  }
+
+  /* check if _this_ module should expose mask. */
+  if(self->request_mask_display && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
+  {
+    piece->pipe->mask_display = 1;
   }
 
   dt_free_align(mask);
@@ -2259,6 +2285,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const float radius = fabs(d->radius);
   const unsigned int mask_combine = d->mask_combine;
   const int offs[2] = { xoffs, yoffs };
+  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
   /* quick workaround for masks to be opencl compliant */
   /* the first mask creation may need to be compute by opencl too */
@@ -2269,19 +2296,57 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     goto error;
   }
 
-  /* apply masks if there's some */
-  dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
-  if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
+  if (dev_m == NULL) goto error;
+
+  dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+  if (dev_mask == NULL) goto error;
+
+  if(mask_mode == DEVELOP_MASK_ENABLED)
   {
-#if 0
-    int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-    dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
-    dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
-    if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+    /* blend uniformly (no drawn or parametric mask) */
+
+    /* set dev_mask with global opacity value */
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    /* we blend with a drawn and/or parametric mask */
+
+    /* apply masks if there's some */
+    dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
+    if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-      // if we have a mask and this flag is set -> invert the mask
+#if 0
+      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
+      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
+#else
+      dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
+#endif
+      if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
+      {
+        // if we have a mask and this flag is set -> invert the mask
+        const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+        #pragma omp parallel for default(none) shared(mask)
+#else
+        #pragma omp parallel for shared(mask)
+#endif
+#endif
+        for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
+      }
+    }
+    else if ((!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
+    {
+      //no form defined but drawn mask active
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
       const int buffsize = roi_out->width*roi_out->height;
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
@@ -2290,87 +2355,82 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
       #pragma omp parallel for shared(mask)
 #endif
 #endif
-      for (int i=0; i<buffsize; i++) mask[i] = 1.0f - mask[i];
-    }
-  }
-  else
-  {
-    //we fill the buffer with 1.0f or 0.0f depending on mask_combine
-    const float fill = (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-    const int buffsize = roi_out->width*roi_out->height;
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-    #pragma omp parallel for default(none) shared(mask)
-#else
-    #pragma omp parallel for shared(mask)
-#endif
-#endif
-    for (int i=0; i<buffsize; i++) mask[i] = fill;
-  }
-
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*4*DEVELOP_BLENDIF_SIZE, d->blendif_parameters);
-  if (dev_m == NULL) goto error;
-
-  dev_mask = dt_opencl_alloc_device(devid, width, height, sizeof(float));
-  if (dev_mask == NULL) goto error;
-
-  err = dt_opencl_write_host_to_device(devid, mask, dev_mask, width, height, sizeof(float));
-  if(err != CL_SUCCESS) goto error;
-
-  /* The following call to clFinish() works around a bug in some OpenCL drivers (namely AMD).
-     Without this synchronization point, reads to dev_in would often not return the correct value.
-     This depends on the module after which blending is called. One of the affected ones is sharpen.
-  */
-  dt_opencl_finish(devid);
-
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(unsigned), (void *)&blendif);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 9, sizeof(unsigned), (void *)&mask_mode);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 10, sizeof(unsigned), (void *)&mask_combine);
-  dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2*sizeof(int), (void *)&offs);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
-  if(err != CL_SUCCESS) goto error;
-
-  if(maskblur)
-  {
-    if(gaussian)
-    {
-      const float sigma = radius * roi_out->scale / piece ->iscale;
-      const float mmax[] = { 1.0f };
-      const float mmin[] = { 0.0f };
-
-      dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
-      if(g)
-      {
-        dt_gaussian_blur_cl(g, dev_mask, dev_mask);
-        dt_gaussian_free_cl(g);
-      }
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
     }
     else
     {
-      // potential further blend algorithm (bilateral grid?)
+      //we fill the buffer with 1.0f or 0.0f depending on mask_combine
+      const float fill = (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
+      const int buffsize = roi_out->width*roi_out->height;
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+      #pragma omp parallel for default(none) shared(mask)
+#else
+      #pragma omp parallel for shared(mask)
+#endif
+#endif
+      for (int i=0; i<buffsize; i++) mask[i] = fill;
+    }
+
+    /* write mask from host to device */
+    err = dt_opencl_write_host_to_device(devid, mask, dev_mask, width, height, sizeof(float));
+    if(err != CL_SUCCESS) goto error;
+
+    /* The following call to clFinish() works around a bug in some OpenCL drivers (namely AMD).
+       Without this synchronization point, reads to dev_in would often not return the correct value.
+       This depends on the module after which blending is called. One of the affected ones is sharpen.
+    */
+    dt_opencl_finish(devid);
+
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 3, sizeof(cl_mem), (void *)&dev_mask);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 4, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(unsigned), (void *)&blendif);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 9, sizeof(unsigned), (void *)&mask_mode);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 10, sizeof(unsigned), (void *)&mask_combine);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2*sizeof(int), (void *)&offs);
+    err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    if(maskblur)
+    {
+      if(gaussian)
+      {
+        const float sigma = radius * roi_out->scale / piece ->iscale;
+        const float mmax[] = { 1.0f };
+        const float mmin[] = { 0.0f };
+
+        dt_gaussian_cl_t *g = dt_gaussian_init_cl(devid, roi_out->width, roi_out->height, 1, mmax, mmin, sigma, 0);
+        if(g)
+        {
+          dt_gaussian_blur_cl(g, dev_mask, dev_mask);
+          dt_gaussian_free_cl(g);
+        }
+      }
+      else
+      {
+        // potential further blend algorithm (bilateral grid?)
+      }
+    }
+
+    /* check if mask should be suppressed temporarily */
+    if(self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
+    {
+      dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask);
+      dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
+      err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
+      if(err != CL_SUCCESS) goto error;
     }
   }
 
-  /* check if mask should be suppressed. */
-  if(self->suppress_mask && self->dev->gui_attached && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe) && (mask_mode & DEVELOP_MASK_BOTH))
-  {
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 0, sizeof(cl_mem), (void *)&dev_mask);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 1, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 2, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, kernel_set_mask, 3, sizeof(float), (void *)&opacity);
-    err = dt_opencl_enqueue_kernel_2d(devid, kernel_set_mask, sizes);
-    if(err != CL_SUCCESS) goto error;
-  }
-
+  /* now apply blending with per-pixel opacity value as defined in dev_mask */
   dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask);

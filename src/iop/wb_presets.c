@@ -4294,6 +4294,12 @@ const wb_data wb_preset[] =
   { "Panasonic", "DMC-GX1", "5500K", 0,		{ 2.611321, 1, 1.615094, 0 } },
   { "Panasonic", "DMC-GX1", "6500K", 0,		{ 2.860377, 1, 1.490566, 0 } },
 
+  { "Panasonic", "DMC-GX7", "Daylight", 0,	{ 2.539623, 1, 1.611321, 0 } },
+  { "Panasonic", "DMC-GX7", "Cloudy", 0,	{ 2.667925, 1, 1.509434, 0 } },
+  { "Panasonic", "DMC-GX7", "Shade", 0,		{ 2.879245, 1, 1.422642, 0 } },
+  { "Panasonic", "DMC-GX7", "Incandescent", 0,	{ 1.758491, 1, 2.320755, 0 } },
+  { "Panasonic", "DMC-GX7", "Flash", 0,		{ 2.607547, 1, 1.479245, 0 } },
+
   { "Panasonic", "DMC-L1", Daylight, 0,		{ 1.980989, 1, 1.444867, 0 } },
   { "Panasonic", "DMC-L1", Cloudy, 0,		{ 2.129278, 1, 1.300380, 0 } },
   { "Panasonic", "DMC-L1", Shade, 0,		{ 2.361217, 1, 1.167300, 0 } },
@@ -4444,6 +4450,17 @@ const wb_data wb_preset[] =
   { "PENTAX", "K-01", CoolWhiteFluorescent, 0,        { 2.114501953125, 1, 2.139892578125, 0 } },
   { "PENTAX", "K-01", Flash, 0,               { 2.490966796875, 1, 1.4849853515625, 0 } },
   { "PENTAX", "K-01", WarmWhiteFluorescent, 0,        { 1.7689208984375, 1, 2.677734375, 0 } },
+
+  /* RICOH PENTAX K-3 Firmware version 1.00 */
+  { "RICOH", "PENTAX K-3", Daylight, 0,			{ 2.31250, 1, 1.48047, 0 } },
+  { "RICOH", "PENTAX K-3", Shade, 0,			{ 2.78516, 1, 1.16797, 0 } },
+  { "RICOH", "PENTAX K-3", Cloudy, 0,			{ 2.49219, 1, 1.35156, 0 } },
+  { "RICOH", "PENTAX K-3", Tungsten, 0,			{ 1.35938, 1, 2.74609, 0 } },
+  { "RICOH", "PENTAX K-3", DaylightFluorescent, 0,	{ 2.71094, 1, 1.51953, 0 } },
+  { "RICOH", "PENTAX K-3", DayWhiteFluorescent, 0,	{ 2.30469, 1, 1.70312, 0 } },
+  { "RICOH", "PENTAX K-3", WhiteFluorescent, 0,		{ 2.07031, 1, 2.03516, 0 } },
+  { "RICOH", "PENTAX K-3", WarmWhiteFluorescent, 0,	{ 1.74609, 1, 2.53125, 0 } },
+  { "RICOH", "PENTAX K-3", Flash, 0,			{ 2.56641, 1, 1.31641, 0 } },
 
   { "PENTAX", "K-5", Daylight, 0,		{ 2.1211, 1, 1.5781, 0 } },
   { "PENTAX", "K-5", Shade, 0,			{ 2.5312, 1, 1.1758, 0 } },
@@ -5650,6 +5667,18 @@ const wb_data wb_preset[] =
   { "SONY", "NEX-C3", "5000K", 0,		{ 2.605469, 1, 1.589844, 0 } },
   { "SONY", "NEX-C3", "5500K", 0,		{ 2.753906, 1, 1.492188, 0 } },
   { "SONY", "NEX-C3", "6500K", 0,		{ 2.996094, 1, 1.351563, 0 } },
+
+  // firmware ILCE-7 (A7) Ver 1.0.1
+  { "SONY", "ILCE-7", Daylight, 0,		{ 2.39843750, 1, 1.46484375, 0 } },
+  { "SONY", "ILCE-7", Shade, 0,			{ 2.87109375, 1, 1.21093750, 0 } },
+  { "SONY", "ILCE-7", Cloudy, 0,		{ 2.59765625, 1, 1.34765625, 0 } },
+  { "SONY", "ILCE-7", Incandescent, 0,		{ 1.46484375, 1, 2.62109375, 0 } },
+  { "SONY", "ILCE-7", WarmWhiteFluorescent, 0,	{ 1.70312500, 1, 2.60546875, 0 } },
+  { "SONY", "ILCE-7", CoolWhiteFluorescent, 0,	{ 2.24609375, 1, 2.11718750, 0 } },
+  { "SONY", "ILCE-7", DayWhiteFluorescent, 0,	{ 2.29687500, 1, 1.58984375, 0 } },
+  { "SONY", "ILCE-7", DaylightFluorescent, 0,	{ 2.57812500, 1, 1.38281250, 0 } },
+  { "SONY", "ILCE-7", Flash, 0,			{ 2.64843750, 1, 1.32421875, 0 } },
+  { "SONY", "ILCE-7", "5500K", 0,		{ 2.21484375, 1, 1.40625000, 0 } },
 
   { "SONY", "SLT-A37", Daylight, 0,		{ 2.6641, 1, 1.5156, 0 } },
   { "SONY", "SLT-A37", Shade, 0,		{ 3.1836, 1, 1.2539, 0 } },
