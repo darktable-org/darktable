@@ -441,11 +441,6 @@ void dt_control_shutdown(dt_control_t *s)
   // gdk_threads_enter();
 }
 
-static void _free_element(gpointer data, gpointer user_data)
-{
-  g_free(data);
-}
-
 void dt_control_cleanup(dt_control_t *s)
 {
   // vacuum TODO: optional?
@@ -456,11 +451,9 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->log_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   pthread_rwlock_destroy(&s->xprofile_lock);
-//   g_slist_free_full(s->accelerator_list, g_free); // FIXME: requires glib >= 2.28
   if (s->accelerator_list)
   {
-    g_slist_foreach(s->accelerator_list, _free_element, NULL);
-    g_slist_free(s->accelerator_list);
+    g_slist_free_full(s->accelerator_list, g_free);
   }
 }
 
