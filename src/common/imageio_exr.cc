@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010--2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   }
 
   /* we only support 3 and 4 channels */
-  if (cnt < 3 && cnt > 4)
+  if (cnt < 3 || cnt > 4)
   {
     fprintf(stderr,"[exr_read] Warning, only files with 3 or 4 channels are supported.\n");
     return DT_IMAGEIO_FILE_CORRUPTED;
