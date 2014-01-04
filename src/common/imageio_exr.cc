@@ -53,6 +53,10 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   std::auto_ptr<Imf::TiledInputFile> fileTiled;
   std::auto_ptr<Imf::InputFile> file;
   const Imf::Header *header=NULL;
+  Imath::Box2i dw;
+  Imf::FrameBuffer frameBuffer;
+  uint32_t xstride, ystride;
+
 
   /* verify openexr image */
   if(!Imf::isOpenExrFile ((const char *)filename,isTiled))
@@ -105,13 +109,10 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   if(exif && exif->value().size > 6)
     dt_exif_read_from_blob(img, ((uint8_t*)(exif->value().data.get()))+6, exif->value().size-6);
 
-  /* Get image width and height */
-  Imath::Box2i dw = header->dataWindow();
-  uint32_t width = dw.max.x - dw.min.x + 1;
-  uint32_t height = dw.max.y - dw.min.y + 1;
-  img->width = width;
-  img->height = height;
-
+  /* Get image width and height from displayWindow */
+  dw = header->displayWindow();
+  img->width = dw.max.x - dw.min.x + 1;
+  img->height = dw.max.y - dw.min.y + 1;
 
   // Try to allocate image data
   float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
@@ -122,12 +123,13 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  /* check channels in image, currently we only support R,G,B */
-  Imf::FrameBuffer frameBuffer;
-  frameBuffer.insert ("R",Imf::Slice(Imf::FLOAT,(char *)(buf),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-  frameBuffer.insert ("G",Imf::Slice(Imf::FLOAT,(char *)(buf+1),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-  frameBuffer.insert ("B",Imf::Slice(Imf::FLOAT,(char *)(buf+2),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
-  frameBuffer.insert ("A",Imf::Slice(Imf::FLOAT,(char *)(buf+3),sizeof(float)*4,sizeof(float)*width*4,1,1,0.0));
+  /* setup framebuffer */
+  xstride = sizeof(float) * 4;
+  ystride = sizeof(float) * img->width * 4;
+  frameBuffer.insert ("R", Imf::Slice(Imf::FLOAT, (char *)(buf+0), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert ("G", Imf::Slice(Imf::FLOAT, (char *)(buf+1), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert ("B", Imf::Slice(Imf::FLOAT, (char *)(buf+2), xstride, ystride, 1, 1, 0.0));
+  frameBuffer.insert ("A", Imf::Slice(Imf::FLOAT, (char *)(buf+3), xstride, ystride, 1, 1, 0.0));
 
   if(isTiled)
   {
@@ -136,6 +138,8 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   }
   else
   {
+    /* read pixels from dataWindow */
+    dw = header->dataWindow();
     file->setFrameBuffer (frameBuffer);
     file->readPixels(dw.min.y,dw.max.y);
   }
