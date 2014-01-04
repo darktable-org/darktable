@@ -86,13 +86,18 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
 {
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
-  gui->pipe_hash = gui->formid = gpt->points_count = gpt->border_count = gpt->source_count = 0;
-  free(gpt->points);
-  gpt->points = NULL;
-  free(gpt->border);
-  gpt->border = NULL;
-  free(gpt->source);
-  gpt->source = NULL;
+  gui->pipe_hash = gui->formid = 0;
+
+  if(gpt)
+  {
+    gpt->points_count = gpt->border_count = gpt->source_count = 0;
+    free(gpt->points);
+    gpt->points = NULL;
+    free(gpt->border);
+    gpt->border = NULL;
+    free(gpt->source);
+    gpt->source = NULL;
+  }
 }
 
 void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui)
