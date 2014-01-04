@@ -61,14 +61,14 @@ dt_imageio_open_tiff(
           width, height, bpp, spp);
 
   // we only support 8-bit and 16-bit here. in case of other formats let's hope for GraphicsMagick to deal them
-  if(bpp != 8 && bpp != 16)
+  if(bpp != 8 && bpp != 16 && bpp != 32)
   {
     TIFFClose(image);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
-  /* we only support 1 or 3 samples per pixel */
-  if (spp != 1 && spp != 3)
+  /* we only support 1,3 or 4 samples per pixel */
+  if (spp != 1 && spp != 3 && spp != 4)
   {
     TIFFClose(image);
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -100,6 +100,7 @@ dt_imageio_open_tiff(
   int32_t scanlinesize = TIFFScanlineSize(image);
   tdata_t buf;
   buf = _TIFFmalloc(scanlinesize);
+  float *buf32 = (float *)buf;
   uint16_t *buf16 = (uint16_t *)buf;
   uint8_t *buf8 = (uint8_t *)buf;
   uint32_t row;
@@ -129,15 +130,15 @@ dt_imageio_open_tiff(
         mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf8[spp * i + 0] * (1.0/255.0);
         mipbuf[4 * idx + 3] = 0;
 
-        /* set bg to corresponding sample from scanline eg. spp == 3*/
-        if (spp == 3)
+        /* set bg to corresponding sample from scanline eg. spp != 1*/
+        if (spp != 1)
         {
           mipbuf[4 * idx + 1] = buf8[spp * i + 1] * (1.0/255.0);
           mipbuf[4 * idx + 2] = buf8[spp * i + 2] * (1.0/255.0);
         }
       }
     }
-    else
+    else if (bpp == 16)
     {
       /* read 16bpp data scanline */
       for (uint32_t i=0; i < width; i++)
@@ -156,7 +157,27 @@ dt_imageio_open_tiff(
         }
       }
     }
+    else if (bpp == 32)
+    {
+      /* read 32bpp data scanline */
+      for (uint32_t i=0; i < width; i++)
+      {
+        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+
+        /* set rgb to first sample from scanline eg. support spp == 1 */
+        mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf32[spp * i + 0];
+        mipbuf[4 * idx + 3] = 0;
+
+        /* set bg to corresponding sample from scanline eg. spp != 1*/
+        if (spp != 1)
+        {
+          mipbuf[4 * idx + 1] = buf32[spp * i + 1];
+          mipbuf[4 * idx + 2] = buf32[spp * i + 2];
+        }
+      }
+    }
   }
+
   _TIFFfree(buf);
   TIFFClose(image);
   return DT_IMAGEIO_OK;
