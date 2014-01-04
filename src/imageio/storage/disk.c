@@ -265,7 +265,7 @@ failed:
     fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
     // don't report that one to gui, as some formats (pfm, ppm, exr) just don't support
     // writing xmp via exiv2, so it might not be to worry.
-    return 1;
+//     return 1; // no need to cancel export just because of this
   }
 
   printf("[export_job] exported to `%s'\n", filename);
