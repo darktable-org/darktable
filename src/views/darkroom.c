@@ -152,10 +152,10 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   int wd, ht, stride, closeup;
   int32_t zoom;
   float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  zoom_y = dt_control_get_dev_zoom_y();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
   static float roi_hash_old = -1.0f;
@@ -277,14 +277,12 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
     cairo_save(cri);
 
-    int32_t zoom, closeup;
-    float zoom_x, zoom_y;
     float wd = dev->preview_pipe->backbuf_width;
     float ht = dev->preview_pipe->backbuf_height;
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    float zoom_y = dt_control_get_dev_zoom_y();
+    float zoom_x = dt_control_get_dev_zoom_x();
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
     float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
     cairo_translate(cri, width/2.0, height/2.0f);
@@ -351,14 +349,12 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   // execute module callback hook.
   if(dev->gui_module && dev->gui_module->request_color_pick)
   {
-    int32_t zoom, closeup;
-    float zoom_x, zoom_y;
     float wd = dev->preview_pipe->backbuf_width;
     float ht = dev->preview_pipe->backbuf_height;
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    float zoom_y = dt_control_get_dev_zoom_y();
+    float zoom_x = dt_control_get_dev_zoom_x();
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
     float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
     cairo_translate(cri, width/2.0, height/2.0f);
@@ -426,16 +422,15 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
 
 void reset(dt_view_t *self)
 {
-  DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-  DT_CTL_SET_GLOBAL(dev_closeup, 0);
+  dt_control_set_dev_zoom(DT_ZOOM_FIT);
+  dt_control_set_dev_zoom_x(0);
+  dt_control_set_dev_zoom_y(0);
+  dt_control_set_dev_closeup(0);
 }
 
 int try_enter(dt_view_t *self)
 {
-  int selected;
-  DT_CTL_GET_GLOBAL(selected, lib_image_mouse_over_id);
+  int selected = dt_control_get_mouse_over_id();
   if(selected < 0)
   {
     // try last selected
@@ -794,26 +789,26 @@ zoom_key_accel(GtkAccelGroup *accel_group,
   switch (GPOINTER_TO_INT(data))
   {
     case 1:
-      DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-      DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+      zoom = dt_control_get_dev_zoom();
+      closeup = dt_control_get_dev_closeup();
       if(zoom == DT_ZOOM_1) closeup ^= 1;
-      DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_1);
+      dt_control_set_dev_closeup(closeup);
+      dt_control_set_dev_zoom(DT_ZOOM_1);
       dt_dev_invalidate(dev);
       break;
     case 2:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FILL);
+      dt_control_set_dev_zoom(DT_ZOOM_FILL);
       dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FILL, 0, NULL, NULL);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_control_set_dev_zoom_x(zoom_x);
+      dt_control_set_dev_zoom_y(zoom_y);
+      dt_control_set_dev_closeup(0);
       dt_dev_invalidate(dev);
       break;
     case 3:
-      DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-      DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-      DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-      DT_CTL_SET_GLOBAL(dev_closeup, 0);
+      dt_control_set_dev_zoom(DT_ZOOM_FIT);
+      dt_control_set_dev_zoom_x(0);
+      dt_control_set_dev_zoom_y(0);
+      dt_control_set_dev_closeup(0);
       dt_dev_invalidate(dev);
       break;
     default:
@@ -1094,10 +1089,10 @@ void enter(dt_view_t *self)
 
   select_this_image(dev->image_storage.id);
 
-  DT_CTL_SET_GLOBAL(dev_zoom, DT_ZOOM_FIT);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, 0);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, 0);
-  DT_CTL_SET_GLOBAL(dev_closeup, 0);
+  dt_control_set_dev_zoom(DT_ZOOM_FIT);
+  dt_control_set_dev_zoom_x(0);
+  dt_control_set_dev_zoom_y(0);
+  dt_control_set_dev_closeup(0);
 
   // take a copy of the image struct for convenience.
 
@@ -1277,8 +1272,8 @@ void enter(dt_view_t *self)
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
 
   /* connect signal for filmstrip image activate */
   dt_control_signal_connect(darktable.signals,
@@ -1376,8 +1371,7 @@ void mouse_leave(dt_view_t *self)
 {
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
   dt_develop_t *dev = (dt_develop_t *)self->data;
-  int32_t mouse_over_id = dev->image_storage.id;
-  DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+  dt_control_set_mouse_over_id(dev->image_storage.id);
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
@@ -1390,12 +1384,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
   // if we are not hovering over a thumbnail in the filmstrip -> show metadata of opened image.
-  int32_t mouse_over_id = -1;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id == -1)
   {
     mouse_over_id = dev->image_storage.id;
-    DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, mouse_over_id);
+    dt_control_set_mouse_over_id(mouse_over_id);
   }
 
   dt_control_t *ctl = darktable.control;
@@ -1443,21 +1436,19 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   if(darktable.control->button_down && darktable.control->button_down_which == 1)
   {
     // depending on dev_zoom, adjust dev_zoom_x/y.
-    dt_dev_zoom_t zoom;
-    int closeup;
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
     const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
     float old_zoom_x, old_zoom_y;
-    DT_CTL_GET_GLOBAL(old_zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(old_zoom_y, dev_zoom_y);
+    old_zoom_x = dt_control_get_dev_zoom_x();
+    old_zoom_y = dt_control_get_dev_zoom_y();
     float zx = old_zoom_x - (1.0/scale)*(x - ctl->button_x - offx)/procw;
     float zy = old_zoom_y - (1.0/scale)*(y - ctl->button_y - offy)/proch;
     dt_dev_check_zoom_bounds(dev, &zx, &zy, zoom, closeup, NULL, NULL);
-    DT_CTL_SET_GLOBAL(dev_zoom_x, zx);
-    DT_CTL_SET_GLOBAL(dev_zoom_y, zy);
+    dt_control_set_dev_zoom_x(zx);
+    dt_control_set_dev_zoom_y(zy);
     ctl->button_x = x - offx;
     ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
@@ -1539,10 +1530,10 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     dt_dev_zoom_t zoom;
     int closeup, procw, proch;
     float zoom_x, zoom_y;
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-    DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-    DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+    zoom = dt_control_get_dev_zoom();
+    closeup = dt_control_get_dev_closeup();
+    zoom_x = dt_control_get_dev_zoom_x();
+    zoom_y = dt_control_get_dev_zoom_y();
     dt_dev_get_processed_size(dev, &procw, &proch);
     const float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 0);
     zoom_x += (1.0/scale)*(x - .5f*dev->width )/procw;
@@ -1559,10 +1550,10 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     }
     else zoom = DT_ZOOM_1;
     dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-    DT_CTL_SET_GLOBAL(dev_zoom, zoom);
-    DT_CTL_SET_GLOBAL(dev_closeup, closeup);
-    DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-    DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+    dt_control_set_dev_zoom(zoom);
+    dt_control_set_dev_closeup(closeup);
+    dt_control_set_dev_zoom_x(zoom_x);
+    dt_control_set_dev_zoom_y(zoom_y);
     dt_dev_invalidate(dev);
     return 1;
   }
@@ -1591,10 +1582,10 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_dev_zoom_t zoom;
   int closeup, procw, proch;
   float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom_y = dt_control_get_dev_zoom_y();
   dt_dev_get_processed_size(dev, &procw, &proch);
   float scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2.0 : 1.0, 0);
   const float fitscale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
@@ -1632,7 +1623,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     closeup = 1;  // enable closeup mode (pixel doubling)
   }
 
-  DT_CTL_SET_GLOBAL(dev_zoom_scale, scale);
+  dt_control_set_dev_zoom_scale(scale);
   if (fabsf(scale-1.0f) < 0.001f)       zoom = DT_ZOOM_1;
   if (fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
   if(zoom != DT_ZOOM_1)
@@ -1641,12 +1632,12 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     zoom_y -= mouse_off_y/(proch*scale);
   }
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  DT_CTL_SET_GLOBAL(dev_zoom, zoom);
-  DT_CTL_SET_GLOBAL(dev_closeup, closeup);
+  dt_control_set_dev_zoom(zoom);
+  dt_control_set_dev_closeup(closeup);
   if(zoom != DT_ZOOM_1)
   {
-    DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-    DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+    dt_control_set_dev_zoom_x(zoom_x);
+    dt_control_set_dev_zoom_y(zoom_y);
   }
   dt_dev_invalidate(dev);
 
@@ -1660,10 +1651,10 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
   dt_dev_zoom_t zoom;
   int closeup;
   float zoom_x, zoom_y;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
+  zoom = dt_control_get_dev_zoom();
+  closeup = dt_control_get_dev_closeup();
+  zoom_x = dt_control_get_dev_zoom_x();
+  zoom_y = dt_control_get_dev_zoom_y();
   if(which > 1)
   {
     if(up) zoom_x -= 0.02;
@@ -1675,8 +1666,8 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
     else   zoom_y += 0.02;
   }
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-  DT_CTL_SET_GLOBAL(dev_zoom_x, zoom_x);
-  DT_CTL_SET_GLOBAL(dev_zoom_y, zoom_y);
+  dt_control_set_dev_zoom_x(zoom_x);
+  dt_control_set_dev_zoom_y(zoom_y);
   dt_dev_invalidate(dev);
   dt_control_queue_redraw();
 }

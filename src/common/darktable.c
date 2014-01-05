@@ -337,7 +337,7 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
         dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
         if(open_image_in_dr)
         {
-          DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+          dt_control_set_mouse_over_id(id);
           dt_ctl_switch_mode_to(DT_DEVELOP);
         }
       }
@@ -440,7 +440,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2013 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n");
         return 1;
       }
       else if(!strcmp(argv[k], "--library"))
@@ -663,12 +663,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   }
   else
   {
-    // this is in memory, so schema can't exist yet.
     if(dbfilename_from_command && !strcmp(dbfilename_from_command, ":memory:"))
-    {
-      dt_control_create_database_schema();
-      dt_gui_presets_init(); // also init preset db schema.
-    }
+      dt_gui_presets_init(); // init preset db schema.
     darktable.control->running = 0;
     darktable.control->accelerators = NULL;
     dt_pthread_mutex_init(&darktable.control->run_mutex, NULL);
@@ -740,7 +736,6 @@ int dt_init(int argc, char *argv[], const int init_gui)
     dt_lib_init(darktable.lib);
 
     dt_control_load_config(darktable.control);
-    g_strlcpy(darktable.control->global_settings.dbname, filename, 512); // overwrite if relocated.
   }
   darktable.imageio = (dt_imageio_t *)malloc(sizeof(dt_imageio_t));
   memset(darktable.imageio, 0, sizeof(dt_imageio_t));

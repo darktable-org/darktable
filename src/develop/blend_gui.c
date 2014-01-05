@@ -1310,8 +1310,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   g_list_free(bd->masks_modes);
   g_list_free(bd->masks_combine);
   g_list_free(bd->masks_invert);
-  g_list_foreach(bd->blend_modes_all, (GFunc)g_free, NULL);
-  g_list_free(bd->blend_modes_all);
+  g_list_free_full(bd->blend_modes_all, g_free);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 

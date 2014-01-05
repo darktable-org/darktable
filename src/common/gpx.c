@@ -123,7 +123,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_assert(gpx != NULL);
 
   if (gpx->track)
-    g_list_foreach(gpx->track, (GFunc)g_free, NULL);
+    g_list_free_full(gpx->track, g_free);
 
   g_free(gpx);
 }

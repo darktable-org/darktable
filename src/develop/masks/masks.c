@@ -86,13 +86,18 @@ void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
 {
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *) g_list_nth_data(gui->points,index);
-  gui->pipe_hash = gui->formid = gpt->points_count = gpt->border_count = gpt->source_count = 0;
-  free(gpt->points);
-  gpt->points = NULL;
-  free(gpt->border);
-  gpt->border = NULL;
-  free(gpt->source);
-  gpt->source = NULL;
+  gui->pipe_hash = gui->formid = 0;
+
+  if(gpt)
+  {
+    gpt->points_count = gpt->border_count = gpt->source_count = 0;
+    free(gpt->points);
+    gpt->points = NULL;
+    free(gpt->border);
+    gpt->border = NULL;
+    free(gpt->source);
+    gpt->source = NULL;
+  }
 }
 
 void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui)
@@ -893,12 +898,10 @@ void dt_masks_events_post_expose (struct dt_iop_module_t *module, cairo_t *cr, i
   dt_dev_get_pointer_zoom_pos(dev, pointerx, pointery, &pzx, &pzy);
   pzx += 0.5f;
   pzy += 0.5f;
-  float zoom_x, zoom_y;
-  int32_t zoom, closeup;
-  DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-  DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  float zoom_y = dt_control_get_dev_zoom_y();
+  float zoom_x = dt_control_get_dev_zoom_x();
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
   cairo_save(cr);

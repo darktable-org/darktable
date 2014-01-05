@@ -1741,9 +1741,8 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
 
 static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
-  int32_t zoom, closeup;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
   float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
   if (!gui) return 0;
@@ -2027,8 +2026,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(gui->posx == 0 && gui->posy == 0)
       {
         float zoom_x, zoom_y;
-        DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-        DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+        zoom_y = dt_control_get_dev_zoom_y();
+        zoom_x = dt_control_get_dev_zoom_x();
         xpos = (.5f+zoom_x)*wd;
         ypos = (.5f+zoom_y)*ht;
       }

@@ -103,8 +103,7 @@ update (dt_lib_module_t *self, int which)
 
   if(which == 0) // tags of selected images
   {
-    int imgsel = -1;
-    DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+    int imgsel = dt_control_get_mouse_over_id();
     d->imgsel = imgsel;
     count = dt_tag_get_attached(imgsel,&tags);
   }
@@ -375,8 +374,7 @@ static void _lib_tagging_redraw_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d   = (dt_lib_tagging_t *)self->data;
-  int imgsel = -1;
-  DT_CTL_GET_GLOBAL(imgsel, lib_image_mouse_over_id);
+  int imgsel = dt_control_get_mouse_over_id();
   if(imgsel != d->imgsel) update (self, 0);
 }
 
@@ -586,7 +584,7 @@ _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint 
   // else => return
   if(zoom == 1 || dt_collection_get_selected_count(darktable.collection) == 0)
   {
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    mouse_over_id = dt_control_get_mouse_over_id();
     if(mouse_over_id < 0)
       return TRUE;
   }

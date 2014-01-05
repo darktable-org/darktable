@@ -563,8 +563,7 @@ void dt_tag_free_result(GList **result)
 {
   if( result && *result )
   {
-    g_list_foreach(*result, (GFunc)_free_result_item , NULL);
-    g_list_free(*result);
+    g_list_free_full(*result, (GDestroyNotify)_free_result_item);
   }
 }
 

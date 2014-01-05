@@ -43,7 +43,7 @@ dt_imageio_tiff_t;
 
 typedef struct dt_imageio_tiff_gui_t
 {
-  GtkToggleButton *b8, *b16;
+  GtkToggleButton *b8, *b16, *b32;
 }
 dt_imageio_tiff_gui_t;
 
@@ -70,8 +70,15 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
   // Create tiff image
   TIFF *tif=TIFFOpen(filename,"wb");
-  if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+  if (d->bpp == 8)
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+  else if (d->bpp == 16)
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+  else if (d->bpp == 32)
+  {
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+  }
   TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   if(profile!=NULL)
@@ -90,7 +97,39 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
   const uint8_t  *in8 =(const uint8_t  *)in_void;
   const uint16_t *in16=(const uint16_t *)in_void;
-  if(d->bpp == 16)
+  const float *inf = (const float *)in_void;
+
+  if (d->bpp == 32)
+  {
+    uint32_t rowsize = (d->width*3) * sizeof(float);
+    uint32_t stripesize = rowsize * DT_TIFFIO_STRIPE;
+    float *rowdata = (float *)malloc(stripesize);
+    float *wdata = rowdata;
+    uint32_t stripe = 0;
+
+    for (int y = 0; y < d->height; y++)
+    {
+      for (int x = 0; x < d->width; x++)
+      {
+        wdata[0] = inf[x * 4 + 0];
+        wdata[1] = inf[x * 4 + 1];
+        wdata[2] = inf[x * 4 + 2];
+        wdata += 3;
+      }
+
+      if (wdata - stripesize/sizeof(float) == rowdata)
+      {
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, rowsize * DT_TIFFIO_STRIPE);
+        wdata = rowdata;
+      }
+
+      inf += d->width * 4;
+    }
+
+    TIFFClose(tif);
+    free(rowdata);
+  }
+  else if (d->bpp == 16)
   {
     uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
     uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
@@ -191,8 +230,9 @@ get_params(dt_imageio_module_format_t *self)
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
   memset(d, 0, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  if(d->bpp < 12) d->bpp = 8;
-  else            d->bpp = 16;
+  if (d->bpp == 8) d->bpp = 8;
+  else if(d->bpp == 16) d->bpp = 16;
+  else d->bpp = 32;
   return d;
 }
 
@@ -208,8 +248,14 @@ set_params(dt_imageio_module_format_t *self, const void *params, const int size)
   if(size != self->params_size(self)) return 1;
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
   dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
-  if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
-  else            gtk_toggle_button_set_active(g->b16, TRUE);
+
+  if (d->bpp == 8)
+    gtk_toggle_button_set_active(g->b8, TRUE);
+  else if (d->bpp == 16)
+    gtk_toggle_button_set_active(g->b16, TRUE);
+  else
+    gtk_toggle_button_set_active(g->b32, TRUE);
+
   dt_conf_set_int("plugins/imageio/format/tiff/bpp", d->bpp);
   return 0;
 }
@@ -221,7 +267,16 @@ int bpp(dt_imageio_module_data_t *p)
 
 int levels(dt_imageio_module_data_t *p)
 {
-  return IMAGEIO_RGB | (((dt_imageio_tiff_t*)p)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
+  int ret = IMAGEIO_RGB;
+
+  if (((dt_imageio_tiff_t*)p)->bpp == 8)
+    ret |= IMAGEIO_INT8;
+  else if (((dt_imageio_tiff_t*)p)->bpp == 16)
+    ret |= IMAGEIO_INT16;
+  else if (((dt_imageio_tiff_t*)p)->bpp == 32)
+    ret |= IMAGEIO_FLOAT;
+
+  return ret;
 }
 
 const char*
@@ -239,7 +294,7 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("TIFF (8/16-bit)");
+  return _("TIFF (8/16/32-bit)");
 }
 
 static void
@@ -269,12 +324,19 @@ void gui_init (dt_imageio_module_format_t *self)
   gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(8));
-  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  if(bpp == 8) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+
   radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
   gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(16));
-  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  if(bpp == 16) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("32-bit"));
+  gui->b32 = GTK_TOGGLE_BUTTON(radiobutton);
+  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(32));
+  if(bpp == 32) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 }
 
 void gui_cleanup (dt_imageio_module_format_t *self)

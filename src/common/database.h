@@ -21,6 +21,8 @@
 
 #include <glib.h>
 
+struct dt_database_t;
+
 /** allocates and initializes database */
 struct dt_database_t *dt_database_init(char *alternative);
 /** closes down database and frees memory */

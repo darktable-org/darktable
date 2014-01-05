@@ -210,6 +210,9 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   // David Meier, Wolf Faust IT8, direct sunlight, well lit
   { "SONY SLT-A55V",                { 969696, 407043,  40268}, { 218201, 1182556, -285400}, { 21042, -342819, 1260223}, {762085, 793961, 670151}},
 
+  // Wolfgang Kuehnel, Wolf Faust IT8, strobe, well lit
+  { "SONY SLT-A77V",                {1165085, 503036,  24246}, { 137390, 1265869, -243912}, {-22995, -451843, 1282257}, {645264, 669464, 562073}},
+
   // Denis Cheremisov, CMP Digital Target 4, strobe, well lit
   { "SONY ILCE-7",                  { 913254, 376358,  21606}, { 120987, 1024490, -251312}, {  5142, -318573, 1100876}, {849228, 881241, 717255}},
 
@@ -220,7 +223,7 @@ static dt_profiled_colormatrix_t dt_profiled_colormatrices[] =
   { "SONY NEX-5N",                  { 913406, 394043,   3237}, { 206253, 1085022,  -19917}, {-69138, -377472, 1038483}, {800079, 824112, 674850}},
 
   // Thorsten Bronger, Wolf Faust IT8, direct sunlight, well lit
-  { "SONY NEX-7",                   {1057144, 441849,  -6378}, { 165604, 1224503, -218262}, { 36285, -367065, 1292053}, {752670, 779327, 631165 }},
+  { "SONY NEX-7",                   {1057144, 441849,  -6378}, { 165604, 1224503, -218262}, { 36285, -367065, 1292053}, {752670, 779327, 631165}},
 
   // Josef Wells, Wolf Faust IT8, strobe, well lit
   { "SONY DSC-RX100",               { 862366, 283417,  42526}, { 302124, 1254868, -333084}, { 84610, -236816, 1327515}, {681137, 699600, 590942}},

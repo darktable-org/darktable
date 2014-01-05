@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 -- 2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ dt_imageio_open_tiff(
   TIFF *image;
   uint32_t width, height, config;
   uint16_t spp, bpp;
+  uint32_t imagelength;
 
   if((image = TIFFOpen(filename, "rb")) == NULL) return DT_IMAGEIO_FILE_CORRUPTED;
 
@@ -53,9 +54,21 @@ dt_imageio_open_tiff(
   TIFFGetField(image, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(image, TIFFTAG_BITSPERSAMPLE, &bpp);
   TIFFGetField(image, TIFFTAG_SAMPLESPERPIXEL, &spp);
+  TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
+  TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
+
+  fprintf(stderr, "[tiff_open] %dx%d %dbpp, %d samples per pixel.\n",
+          width, height, bpp, spp);
 
   // we only support 8-bit and 16-bit here. in case of other formats let's hope for GraphicsMagick to deal them
-  if(bpp != 8 && bpp != 16)
+  if(bpp != 8 && bpp != 16 && bpp != 32)
+  {
+    TIFFClose(image);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
+  /* we only support 1,3 or 4 samples per pixel */
+  if (spp != 1 && spp != 3 && spp != 4)
   {
     TIFFClose(image);
     return DT_IMAGEIO_FILE_CORRUPTED;
@@ -84,44 +97,87 @@ dt_imageio_open_tiff(
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  uint32_t imagelength;
   int32_t scanlinesize = TIFFScanlineSize(image);
   tdata_t buf;
   buf = _TIFFmalloc(scanlinesize);
+  float *buf32 = (float *)buf;
   uint16_t *buf16 = (uint16_t *)buf;
   uint8_t *buf8 = (uint8_t *)buf;
   uint32_t row;
 
   const int ht2 = orientation & 4 ? img->width  : img->height; // pretend unrotated, rotate in write_pos
   const int wd2 = orientation & 4 ? img->height : img->width;
-  TIFFGetField(image, TIFFTAG_IMAGELENGTH, &imagelength);
-  TIFFGetField(image, TIFFTAG_PLANARCONFIG, &config);
-  if (config != PLANARCONFIG_CONTIG)
+
+  /* dont depend on planar config if spp == 1 */
+  if (spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    fprintf(stderr, "[tiff_open] warning: config other than contig found, trying anyways\n");
-    config = PLANARCONFIG_CONTIG;
+    fprintf(stderr, "[tiff_open] warning: planar config other than contig is not supported.\n");
+    assert(0);
   }
-  if (config == PLANARCONFIG_CONTIG)
+
+  for (row = 0; row < imagelength; row++)
   {
-    for (row = 0; row < imagelength; row++)
+    TIFFReadScanline(image, buf, row, 0);
+
+    if (bpp == 8)
     {
-      TIFFReadScanline(image, buf, row, 0);
-      if(bpp == 8) for(uint32_t i=0; i<width; i++)
-          for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf8[spp*i + k]*(1.0/255.0);
-      else for(uint32_t i=0; i<width; i++)
-          for(int k=0; k<3; k++) mipbuf[4*dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation) + k] = buf16[spp*i + k]*(1.0/65535.0);
-      // for(int k=0;k<3;k++) mipbuf[3*(width*row + i) + k] = ((buf16[mul*i + k]>>8)|((buf16[mul*i + k]<<8)&0xff00))*(1.0/65535.0);
+      /* read 8bpp data from scanline */
+      for (uint32_t i=0; i < width; i++)
+      {
+        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+
+        /* set rgb to first sample from scanline eg. support spp == 1 */
+        mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf8[spp * i + 0] * (1.0/255.0);
+        mipbuf[4 * idx + 3] = 0;
+
+        /* set bg to corresponding sample from scanline eg. spp != 1*/
+        if (spp != 1)
+        {
+          mipbuf[4 * idx + 1] = buf8[spp * i + 1] * (1.0/255.0);
+          mipbuf[4 * idx + 2] = buf8[spp * i + 2] * (1.0/255.0);
+        }
+      }
+    }
+    else if (bpp == 16)
+    {
+      /* read 16bpp data scanline */
+      for (uint32_t i=0; i < width; i++)
+      {
+        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+
+        /* set rgb to first sample from scanline eg. support spp == 1 */
+        mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf16[spp * i + 0] * (1.0/65535.0);
+        mipbuf[4 * idx + 3] = 0;
+
+        /* set bg to corresponding sample from scanline eg. spp == 3*/
+        if (spp == 3)
+        {
+          mipbuf[4 * idx + 1] = buf16[spp * i + 1] * (1.0/65535.0);
+          mipbuf[4 * idx + 2] = buf16[spp * i + 2] * (1.0/65535.0);
+        }
+      }
+    }
+    else if (bpp == 32)
+    {
+      /* read 32bpp data scanline */
+      for (uint32_t i=0; i < width; i++)
+      {
+        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+
+        /* set rgb to first sample from scanline eg. support spp == 1 */
+        mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf32[spp * i + 0];
+        mipbuf[4 * idx + 3] = 0;
+
+        /* set bg to corresponding sample from scanline eg. spp != 1*/
+        if (spp != 1)
+        {
+          mipbuf[4 * idx + 1] = buf32[spp * i + 1];
+          mipbuf[4 * idx + 2] = buf32[spp * i + 2];
+        }
+      }
     }
   }
-  else if (config == PLANARCONFIG_SEPARATE)
-  {
-    assert(0);
-    // uint16_t s, nsamples;
-    // TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &nsamples);
-    // for (s = 0; s < nsamples; s++)
-    //   for (row = 0; row < imagelength; row++)
-    //     TIFFReadScanline(image, buf, row, s);
-  }
+
   _TIFFfree(buf);
   TIFFClose(image);
   return DT_IMAGEIO_OK;

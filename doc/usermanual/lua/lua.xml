@@ -121,7 +121,7 @@
                <para>download: <ulink url="http://www.darktable.org/redmine/attachments/download/572/mosaic.lua">mosaic.lua</ulink></para>
             </listitem>
          </itemizedlist>
-<programlisting>dt = require "darktable"
+<para><programlisting>dt = require "darktable"
 dt.register_storage("module_stitcher","mosaic generator",nil,
    function(storage,image_table)
 	dt.print_error("Will try to stitch now")
@@ -138,12 +138,12 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
                            .."/tmp.png")
     end
 )
-</programlisting>
+</programlisting></para>
          <para>This script is an example of storage implemented in Lua. This is not complete nor polished but it shows how to implement a storage module in Lua.</para>
          <para>The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might not exist).</para>
          <para>Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (again, the file might not exist):</para>
-<programlisting>require "mosaic"
-</programlisting>
+<para><programlisting>require "mosaic"
+</programlisting></para>
          <para>A new entry <emphasis>mosaic generator</emphasis> will be added to the storage list. Using it will create a mosaic of selected images in a temporary directory.</para>
          <para>Thanks to hal_from_2001 for the idea an the original implementation.</para>
       </sect2>
@@ -162,7 +162,7 @@ dt.register_storage("module_stitcher","mosaic generator",nil,
                <para>download: <ulink url="http://www.darktable.org/redmine/attachments/download/636/save_selection.lua">save_selection.lua</ulink></para>
             </listitem>
          </itemizedlist>
-<programlisting>dt = require "darktable"
+<para><programlisting>dt = require "darktable"
 local buffer_count = 5
 
 for i=1,buffer_count do
@@ -179,12 +179,12 @@ local bounce_buffer = {}
 dt.register_event("shortcut",function()
 	bounce_buffer = dt.gui.selection(bounce_buffer)
 end,"switch selection with temporary buffer")
-</programlisting>
+</programlisting></para>
          <para>This script will add two new shortcuts <quote>save to buffer</quote> and <quote>restore from buffer</quote> to help manipulate selections.</para>
          <para>Save this script in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might need to be created) and
                add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (the file might need to be created):</para>
-<programlisting>require "save_selection"
-</programlisting>
+<para><programlisting>require "save_selection"
+</programlisting></para>
          <para>Now these new options will appear under global-&gt;lua. and allow you to save and restore the current selection to/from five different save bufffers.
                The third shortcut <quote>switch selection with temporary buffer</quote> exchanges the current selection with the content of a fast buffer.</para>
       </sect2>
@@ -207,11 +207,11 @@ end,"switch selection with temporary buffer")
          <sect2 id="lua_inspecting_internal_objects">
             <title>Inspecting internal objects</title>
             <para>darktable provides some debugging helpers which can be called from Lua as per the following example:</para>
-<programlisting>dt_debug = require "darktable.debug"
+<para><programlisting>dt_debug = require "darktable.debug"
 dt_debug.debug.debug = true
 
 print(dt_debug.dump(_G,"Global environement")
-</programlisting>
+</programlisting></para>
             <para>The main function provided is <emphasis>darktable.debug.dump(object,name)</emphasis>. This function returns a string that describes an object. The object can be anything and 
                   this function will use its knowledge of the darktable API to be smart about the type of objects.</para>
             <para>The boolean variable <emphasis>darktable.debug.debug</emphasis> is initialized to false. When this variable is set <quote>true</quote>, <emphasis>dt_debug.dump</emphasis>
@@ -221,8 +221,8 @@ print(dt_debug.dump(_G,"Global environement")
          <sect2 id="lua_debugging_unprotected_calls">
             <title>Debugging unprotected calls</title>
             <para>When experimenting with Lua, darktable might crash with the following message:</para>
-<programlisting>PANIC: unprotected error in call to lua API (some message here)
-</programlisting>
+<para><programlisting>PANIC: unprotected error in call to lua API (some message here)
+</programlisting></para>
             <para>This is always a bug in darktable's Lua API. Please open a bug report and attach the script that caused the crash.</para>
          </sect2>
    </sect1>

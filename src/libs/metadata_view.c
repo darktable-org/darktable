@@ -179,8 +179,7 @@ static void _metadata_update_value_end(GtkLabel *label, const char *value)
 static void _metadata_view_update_values(dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
-  int32_t mouse_over_id = -1;
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
   if (mouse_over_id == -1)
   {
@@ -370,8 +369,7 @@ fill_minuses:
 static void
 _jump_to()
 {
-  int32_t imgid = -1;
-  DT_CTL_GET_GLOBAL(imgid, lib_image_mouse_over_id);
+  int32_t imgid = dt_control_get_mouse_over_id();
   if(imgid == -1)
   {
     sqlite3_stmt *stmt;

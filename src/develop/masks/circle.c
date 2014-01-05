@@ -370,9 +370,8 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
   }
   else if (!gui->creation)
   {
-    int32_t zoom, closeup;
-    DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-    DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
     float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
     float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
     int in,inb,near,ins;
