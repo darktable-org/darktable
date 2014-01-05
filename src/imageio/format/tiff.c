@@ -319,7 +319,7 @@ void gui_init (dt_imageio_module_format_t *self)
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
   int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  self->widget = gtk_hbox_new(TRUE, 5);
+  self->widget = gtk_vbox_new(TRUE, 5);
   GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
   gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
@@ -332,7 +332,7 @@ void gui_init (dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(16));
   if(bpp == 16) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
 
-  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("32-bit"));
+  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("32-bit (float)"));
   gui->b32 = GTK_TOGGLE_BUTTON(radiobutton);
   gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(32));
