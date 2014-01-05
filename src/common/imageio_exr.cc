@@ -115,6 +115,7 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   img->height = dw.max.y - dw.min.y + 1;
 
   // Try to allocate image data
+  img->bpp = 4*sizeof(float);
   float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
   if(!buf)
   {
@@ -122,6 +123,9 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
     /// \todo open exr cleanup...
     return DT_IMAGEIO_CACHE_FULL;
   }
+
+  for (int i=0; i < img->width * img->height * 4; i++)
+    buf[i] = 0.0;
 
   /* setup framebuffer */
   xstride = sizeof(float) * 4;
