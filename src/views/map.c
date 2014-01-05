@@ -513,8 +513,10 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
 
   /* restore last zoom,location in map */
-  const float lon = dt_conf_get_float("plugins/map/longitude");
-  const float lat = dt_conf_get_float("plugins/map/latitude");
+  float lon = dt_conf_get_float("plugins/map/longitude");
+  lon = CLAMP(lon, -180, 180);
+  float lat = dt_conf_get_float("plugins/map/latitude");
+  lat = CLAMP(lat, -90, 90);
   const int zoom = dt_conf_get_int("plugins/map/zoom");
 
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
