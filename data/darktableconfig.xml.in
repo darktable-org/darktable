@@ -564,7 +564,7 @@
   <dtconfig>
     <name>plugins/lighttable/images_in_row</name>
     <type>int</type>
-    <default>7</default>
+    <default>5</default>
     <shortdescription>images per row</shortdescription>
     <longdescription/>
   </dtconfig>
