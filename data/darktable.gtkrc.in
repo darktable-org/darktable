@@ -6,7 +6,7 @@ style "clearlooks-default"
   GtkWindow::resize-grip-width = 0
   GtkScrollbar::slider_width = 16
   GtkScrollbar::stepper_size = 16
-  GtkScrolledWindow::scrollbar-spacing = 0
+  GtkScrolledWindow::scrollbar-spacing = 2
   GtkScrolledWindow::scrollbar-within-bevel = TRUE
   GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
   GtkScrolledWindow::draw_border = { 0, 0, 0, 0 }
@@ -214,6 +214,8 @@ style "clearlooks-plugin" = "clearlooks-default"
 
 style "clearlooks-scrollbar" = "clearlooks-defaults"
 {
+  bg[INSENSITIVE] = "#1a1a1a"
+
   xthickness = 0
   ythickness = 0
   GtkRange::stepper-size = 0
