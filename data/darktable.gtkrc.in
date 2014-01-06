@@ -24,6 +24,10 @@ style "clearlooks-default"
   GtkPaned::handle_size = 6
   GtkRange::slider_width = 11
   GtkRange::stepper_size = 11
+  GtkScrollbar::trough-border = 0
+  GtkScrollbar::has-forward-stepper = 1
+  GtkScrollbar::has-backward-stepper = 1
+  GtkScrollbar::arrow_scaling = 0.5
   GtkScrollbar::min_slider_length = 30
   GtkCheckButton::indicator_size = 12
   GtkMenuBar::internal-padding = 0
