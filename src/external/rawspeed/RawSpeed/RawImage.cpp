@@ -275,7 +275,7 @@ void RawImageData::startWorker(RawImageWorker::RawImageWorkerTask task, bool cro
 {
   int height = cropped ? dim.y : uncropped_dim.y;
 
-  int threads = getThreadCount(); 
+  int threads = getThreadCount();
   if (threads <= 1) {
     RawImageWorker worker(this, task, 0, height);
     worker.performTask();
@@ -401,10 +401,10 @@ RawImage& RawImage::operator=(const RawImage & p) {
   ++p_->dataRefCount;
   // If the RawImageData previously used by "this" is unused, delete it.
   if (--old->dataRefCount == 0) {
-      pthread_mutex_unlock(&(old->mymutex));
-      delete old;
+  	pthread_mutex_unlock(&(old->mymutex));
+  	delete old;
   } else {
-      pthread_mutex_unlock(&(old->mymutex));
+  	pthread_mutex_unlock(&(old->mymutex));
   }
   return *this;
 }
@@ -434,7 +434,7 @@ void RawImageWorker::startThread()
 }
 
 void RawImageWorker::waitForThread()
-{ 
+{
   void *status;
   pthread_join(threadid, &status);
 }

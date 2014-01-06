@@ -136,7 +136,7 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new ArwDecoder(root, mInput);
       }
-      if (!make.compare("PENTAX Corporation ")) {
+      if (!make.compare("PENTAX Corporation")) {
         mRootIFD = NULL;
         return new PefDecoder(root, mInput);
       }
