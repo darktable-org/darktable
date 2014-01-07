@@ -756,14 +756,8 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 
   if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
   {
-#ifndef __WIN32__
-    // some desktop environments like KDE set GTK2_RC_FILES, which apparently
-    // forcefully loads a GTK theme, despite an application's own gtk_rc_parse
-    // theme loading. Which makes GTK2_RC_FILES a poor approach for setting
-    // a default GTK theme
-    (void)unsetenv("GTK2_RC_FILES");
-#endif
-    gtk_rc_parse(gtkrc);
+    char *default_files[2] = {gtkrc, NULL};
+    gtk_rc_set_default_files(default_files);
   }
   else
     fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
