@@ -802,9 +802,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
 
-  if(g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-    gtk_rc_parse (gtkrc);
-
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
 
