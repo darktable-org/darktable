@@ -257,7 +257,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
   return;
 }
 
-static void _conf_print(char *key, char *val, FILE *f)
+static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
 {
   fprintf(f, "%s=%s\n", key, val);
 }
@@ -267,7 +267,18 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
   FILE *f = fopen(cf->filename, "wb");
   if(f)
   {
-    g_hash_table_foreach(cf->table, (GHFunc)_conf_print, f);
+    GList *keys = g_hash_table_get_keys(cf->table);
+    GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
+
+    while(sorted)
+    {
+      const gchar *key = (const gchar *)sorted->data;
+      const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+      dt_conf_print(key, val, f);
+      sorted = g_list_next(sorted);
+    }
+
+    g_list_free(keys);
     fclose(f);
   }
   g_hash_table_unref(cf->table);
