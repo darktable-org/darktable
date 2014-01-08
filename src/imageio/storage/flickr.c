@@ -616,7 +616,7 @@ int
 store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
-  gint result=1;
+  gint result = 0;
   dt_storage_flickr_params_t *p=(dt_storage_flickr_params_t *)sdata;
   flickcurl_upload_status *photo_status;
   gint tags=0;
@@ -669,7 +669,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   {
     fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
-    result = 0;
+    result = 1;
     goto cleanup;
   }
 
@@ -688,7 +688,9 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   if( !photo_status )
   {
-    result=0;
+    fprintf(stderr, "[imageio_storage_flickr] could not upload to flickr!\n");
+    dt_control_log(_("could not upload to flickr!"));
+    result = 1;
     goto cleanup;
   }
 
@@ -736,7 +738,7 @@ cleanup:
   if(desc)
     g_list_free_full(desc, &g_free);
 
-  if (result)
+  if (!result)
   {
     //this makes sense only if the export was successful
     dt_control_log(_("%d/%d exported to flickr webalbum"), num, total );
