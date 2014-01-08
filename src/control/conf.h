@@ -270,15 +270,17 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
 
-    while(sorted)
+    GList *iter = sorted;
+
+    while(iter)
     {
-      const gchar *key = (const gchar *)sorted->data;
+      const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
       dt_conf_print(key, val, f);
-      sorted = g_list_next(sorted);
+      iter = g_list_next(iter);
     }
 
-    g_list_free(keys);
+    g_list_free(sorted);
     fclose(f);
   }
   g_hash_table_unref(cf->table);
