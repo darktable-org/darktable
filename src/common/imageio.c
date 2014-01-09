@@ -402,9 +402,8 @@ dt_imageio_open_raw(
   raw->params.half_size = 0;
 
   ret = libraw_unpack(raw);
-  // img->black   = raw->color.black/65535.0;
-  // img->maximum = raw->color.maximum/65535.0;
-  // printf("black, max: %d %d %f %f\n", raw->color.black, raw->color.maximum, img->black, img->maximum);
+  img->raw_black_level = raw->color.black;
+  img->raw_white_point = raw->color.maximum;
   HANDLE_ERRORS(ret, 1);
   ret = libraw_dcraw_process(raw);
   // ret = libraw_dcraw_document_mode_processing(raw);
