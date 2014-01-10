@@ -146,9 +146,9 @@
 
     <para>
       darktable comes with two binaries: the standard GUI variant which is started by calling
-      <computeroutput>darktable</computeroutput>
+      <filename>darktable</filename>
       and a command line interface variant which is started by calling
-      <computeroutput>darktable-cli</computeroutput>
+      <filename>darktable-cli</filename>
       .
     </para>
 
@@ -156,7 +156,7 @@
 
       <title>
 
-        <computeroutput>darktable</computeroutput> binary</title>
+        <filename>darktable</filename> binary</title>
 
       <para>
         This binary starts darktable with its GUI and full functionality; it is the standard way
@@ -164,7 +164,7 @@
       </para>
 
       <para>
-        <computeroutput>darktable</computeroutput>
+        <filename>darktable</filename>
         is called with the following command line parameters:
       </para>
 
@@ -339,7 +339,7 @@
 
       <title>
 
-        <computeroutput>darktable-cli</computeroutput> binary</title>
+        <filename>darktable-cli</filename> binary</title>
 
       <indexterm>
         <primary>darktable-cli</primary>
@@ -351,7 +351,7 @@
       </para>
 
       <para>
-        <computeroutput>darktable-cli</computeroutput>
+        <filename>darktable-cli</filename>
         is called with the following command line parameters:
       </para>
 
