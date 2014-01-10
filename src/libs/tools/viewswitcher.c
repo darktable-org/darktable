@@ -230,6 +230,8 @@ static gboolean _lib_viewswitcher_button_press_callback(GtkWidget *w,GdkEventBut
     else if (which == DT_VIEW_MAP)
       dt_ctl_switch_mode_to(DT_MAP);
 #endif
+    else if (which == DT_VIEW_SLIDESHOW)
+      dt_ctl_switch_mode_to(DT_SLIDESHOW);
 
     return TRUE;
   }

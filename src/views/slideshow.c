@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2013 johannes hanika.
+
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -14,14 +15,23 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "views/view.h"
+#include "common/imageio.h"
+#include "common/imageio_module.h"
+#include "common/collection.h"
+#include "common/debug.h"
+
+#include <stdint.h>
 
 DT_MODULE(1)
 
 
 typedef struct dt_slideshow_t
 {
-  //
+  uint32_t random_state;
+  uint32_t scramble;
+  uint32_t use_random;
 }
 dt_slideshow_t;
 
@@ -47,21 +57,21 @@ write_image (dt_imageio_module_data_t *data, const char *filename, const void *i
 }
 
 static uint32_t
-next_random()
+next_random(dt_slideshow_t *d)
 {
-  uint32_t i = random_state ++;
+  uint32_t i = d->random_state ++;
   // van der corput for 32 bits. this guarantees every number will appear exactly once
   i = ((i & 0x0000ffff) << 16) | ( i >> 16);
   i = ((i & 0x00ff00ff) <<  8) | ((i & 0xff00ff00) >> 8);
   i = ((i & 0x0f0f0f0f) <<  4) | ((i & 0xf0f0f0f0) >> 4);
   i = ((i & 0x33333333) <<  2) | ((i & 0xcccccccc) >> 2);
   i = ((i & 0x55555555) <<  1) | ((i & 0xaaaaaaaa) >> 1);
-  return i ^ scramble;
+  return i ^ d->scramble;
 }
 
 // TODO: put this in a thread/job
 static int
-process_next_image()
+process_next_image(dt_slideshow_t *d, uint32_t width, uint32_t height)
 {
   static int counter = 0;
   dt_imageio_module_format_t buf;
@@ -79,12 +89,12 @@ process_next_image()
   // enumerated all images?
   if(++counter >= cnt) return 1;
   uint32_t ran = counter - 1;
-  if(use_random)
+  if(d->use_random)
   {
     // get random number up to next power of two greater than cnt:
     const uint32_t zeros = __builtin_clz(cnt);
     // pull radical inverses only in our desired range:
-    do ran = next_random() >> zeros;
+    do ran = next_random(d) >> zeros;
     while(ran >= cnt);
   }
   const int32_t rand = ran % cnt;
@@ -121,8 +131,8 @@ uint32_t view(dt_view_t *self)
 void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_slideshow_t));
-  dt_slideshow__t *lib = (dt_slideshow_t*)self->data;
-  memset(self->data, 0, sizeof(dt_slideshow_t));
+  dt_slideshow_t *lib = (dt_slideshow_t*)self->data;
+  memset(lib, 0, sizeof(dt_slideshow_t));
 }
 
 
@@ -133,10 +143,12 @@ void cleanup(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  fprintf(stderr, "[slideshow] enter\n");
 }
 
 void leave(dt_view_t *self)
 {
+  fprintf(stderr, "[slideshow] leave\n");
 }
 
 void reset(dt_view_t *self)
@@ -155,6 +167,9 @@ void mouse_leave(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  // FIXME: don't do it in gui thread please!
+  dt_slideshow_t *d= (dt_slideshow_t*)self->data;
+  process_next_image(d, width, height);
 }
 
 int scrolled(dt_view_t *self, double x, double y, int up, int state)
@@ -170,6 +185,7 @@ void mouse_moved(dt_view_t *self, double x, double y, int which)
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
 {
+  return 0;
 }
 
 

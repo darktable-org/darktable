@@ -63,6 +63,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
 #ifdef HAVE_MAP
     "map",
 #endif
+    "slideshow",
     NULL
   };
   char *module = modules[midx];
