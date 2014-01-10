@@ -1242,12 +1242,12 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     }
     gui->point_edited = -1;
   }
-  else if (which==3 && gui->point_selected>=0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (which==3 && gui->point_selected>=0)
   {
     //we remove the point (and the entire form if there is too few points)
     if (g_list_length(form->points) < 4)
     {
-      //if the form doesn't below to a group, we don't delete it
+      //if the form doesn't belong to a group, we don't delete it
       if (parentid<=0) return 1;
       
       dt_masks_clear_form_gui(darktable.develop);
@@ -1290,7 +1290,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
 
     return 1;
   }
-  else if (which==3 && gui->feather_selected>=0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (which==3 && gui->feather_selected>=0)
   {
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points,gui->feather_selected);
     if (point->state != DT_MASKS_POINT_STATE_NORMAL)

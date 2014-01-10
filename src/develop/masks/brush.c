@@ -1399,7 +1399,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     dt_control_queue_redraw_center();
     return 1;
   }
-  else if (gui->point_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (gui->point_selected>=0 && which == 3)
   {
     //we remove the point (and the entire form if there is too few points)
     if (g_list_length(form->points) < 2)
@@ -1446,7 +1446,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
 
     return 1;
   }
-  else if (gui->feather_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (gui->feather_selected>=0 && which == 3)
   {
     dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
     if (point->state != DT_MASKS_POINT_STATE_NORMAL)
