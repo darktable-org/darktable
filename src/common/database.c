@@ -203,6 +203,65 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   sqlite3_exec(db->handle, "ALTER TABLE presets ADD COLUMN blendop_version INTEGER", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "ALTER TABLE presets ADD COLUMN multi_priority INTEGER", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "ALTER TABLE presets ADD COLUMN multi_name VARCHAR(256)", NULL, NULL, NULL);
+  // the unique index only works if the db doesn't have any (name, operation, op_version) more than once. apparently there are dbs out there which do have that. :(
+  sqlite3_prepare_v2(db->handle, "SELECT p.rowid, p.name, p.operation, p.op_version FROM presets p INNER JOIN "
+                                 "(SELECT * FROM (SELECT rowid, name, operation, op_version, COUNT(*) AS count "
+                                 "FROM presets GROUP BY name, operation, op_version) WHERE count > 1) s "
+                                 "ON p.name = s.name AND p.operation = s.operation AND p.op_version = s.op_version", -1, &stmt, NULL);
+  char *last_name = NULL, *last_operation = NULL;
+  int last_op_version = 0;
+  int i = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int rowid = sqlite3_column_int(stmt, 0);
+    const char* name = (const char*)sqlite3_column_text(stmt, 1);
+    const char* operation = (const char*)sqlite3_column_text(stmt, 2);
+    int op_version = sqlite3_column_int(stmt, 3);
+
+    // is it still the same (name, operation, op_version) triple?
+    if(!last_name || strcmp(last_name, name) || !last_operation || strcmp(last_operation, operation) || last_op_version != op_version)
+    {
+      g_free(last_name);
+      g_free(last_operation);
+      last_name = g_strdup(name);
+      last_operation = g_strdup(operation);
+      last_op_version = op_version;
+      i = 0;
+    }
+
+    // find the next free ammended version of name
+    sqlite3_prepare_v2(db->handle, "SELECT name FROM presets  WHERE name = ?1 || ' (' || ?2 || ')' AND operation = ?3 AND op_version = ?4", -1, &innerstmt, NULL);
+    while(1)
+    {
+      sqlite3_bind_text(innerstmt, 1, name, -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(innerstmt, 2, i);
+      sqlite3_bind_text(innerstmt, 3, operation, -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(innerstmt, 4, op_version);
+      if(sqlite3_step(innerstmt) != SQLITE_ROW)
+        break;
+      sqlite3_reset(innerstmt);
+      sqlite3_clear_bindings(innerstmt);
+      i++;
+    }
+    sqlite3_finalize(innerstmt);
+
+    // rename preset
+    const char *query = "UPDATE presets SET name = name || ' (' || ?1 || ')' WHERE rowid = ?2";
+    sqlite3_prepare_v2(db->handle, query, -1, &innerstmt, NULL);
+    sqlite3_bind_int(innerstmt, 1, i);
+    sqlite3_bind_int(innerstmt, 2, rowid);
+    if(sqlite3_step(innerstmt) != SQLITE_DONE)
+    {
+      all_ok = FALSE;
+      failing_query = query;
+      goto end;
+    }
+    sqlite3_finalize(innerstmt);
+  }
+  sqlite3_finalize(stmt);
+  g_free(last_name);
+  g_free(last_operation);
+  // now we should be able to create the index
   _SQLITE3_EXEC(db->handle, "CREATE UNIQUE INDEX IF NOT EXISTS presets_idx ON presets (name, operation, op_version)", NULL, NULL, NULL);
   _SQLITE3_EXEC(db->handle, "UPDATE presets SET blendop_version = 1 WHERE blendop_version IS NULL", NULL, NULL, NULL);
   _SQLITE3_EXEC(db->handle, "UPDATE presets SET multi_priority = 0 WHERE multi_priority IS NULL", NULL, NULL, NULL);
@@ -212,15 +271,15 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   // There are systems where absolute paths don't start with '/' (like Windows).
   // Since the bug which introduced absolute paths to the db was fixed before a
   // Windows build was available this shouldn't matter though.
-  DT_DEBUG_SQLITE3_PREPARE_V2(db->handle, "SELECT id, filename FROM images WHERE filename LIKE '/%'", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(db->handle, "UPDATE images SET filename = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
+  sqlite3_prepare_v2(db->handle, "SELECT id, filename FROM images WHERE filename LIKE '/%'", -1, &stmt, NULL);
+  sqlite3_prepare_v2(db->handle, "UPDATE images SET filename = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int id           = sqlite3_column_int(stmt, 0);
     const char* path = (const char*)sqlite3_column_text(stmt, 1);
     gchar* filename  = g_path_get_basename (path);
-    DT_DEBUG_SQLITE3_BIND_TEXT(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(innerstmt, 2, id);
+    sqlite3_bind_text(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(innerstmt, 2, id);
     sqlite3_step(innerstmt);
     sqlite3_reset(innerstmt);
     sqlite3_clear_bindings(innerstmt);
@@ -239,6 +298,7 @@ end:
   else
   {
     fprintf(stderr, "[init] failing query: `%s'\n", failing_query);
+    fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
     sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
   }
 

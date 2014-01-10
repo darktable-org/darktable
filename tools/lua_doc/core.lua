@@ -37,6 +37,7 @@ local function create_empty_node(node,node_type,parent,prev_name)
 	result._luadoc_type = node_type
 	result._luadoc_order = {}
 	result._luadoc_attributes = {}
+	result._luadoc_version = {}
 	if parent and not parent._luadoc_type then 
 		error("parent should be a doc node, not a real node")
 	end
@@ -116,10 +117,11 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__module_type"
 			or field == "__associated_object"
 			or field == "__gc"
+			or field == "__values"
 			)	then
 			-- nothing
 		else
-			print("undocumented type field "..field)
+			print("ERROR undocumented metafield "..field.." for type "..prev_name)
 		end
 	end
 	set_attribute(result,"reported_type","dt_type")
@@ -173,7 +175,7 @@ local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
 	local ret_node = create_documentation_node(mt,result,"reported_type")
-	set_attribute(result,"reported_type",ret_node)
+	set_attribute(result,"reported_type",tostring(ret_node))
 	M.remove_parent(ret_node,result)
 	document_type_from_obj(node,ret_node)
 	return result
@@ -433,6 +435,20 @@ function M.set_text(node,text)
 end
 
 
+function M.add_version_info(node,version,text)
+	if not text then -- only two parameters
+		text = version
+		version ="undocumented_version" -- easy grep for the "undocumented" keyword"
+	end
+	if not node._luadoc_version[version] then
+		node._luadoc_version[version] = {}
+	end
+	table.insert(node._luadoc_version[version],text);
+end
+function M.get_version_info(node)
+	return node._luadoc_version
+end
+
 function M.set_alias(original,node)
 	for k,v in ipairs(node._luadoc_parents) do
 		v[1][v[2]] = original
@@ -587,6 +603,12 @@ meta_node.__index.set_main_parent = M.set_main_parent
 meta_node.__index.remove_parent = M.remove_parent
 meta_node.__index.debug_print = M.debug_print
 meta_node.__index.set_skiped = M.set_skiped
+meta_node.__index.add_version_info = M.add_version_info
+meta_node.__index.get_version_info = M.get_version_info
+meta_node.__index.get_name = M.get_name
+meta_node.__tostring = function(node)
+	return node_to_string(node)
+end
 
 --------------------------
 -- GENERATE DOCUMENTATION

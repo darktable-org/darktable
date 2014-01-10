@@ -6,7 +6,7 @@ style "clearlooks-default"
   GtkWindow::resize-grip-width = 0
   GtkScrollbar::slider_width = 16
   GtkScrollbar::stepper_size = 16
-  GtkScrolledWindow::scrollbar-spacing = 0
+  GtkScrolledWindow::scrollbar-spacing = 2
   GtkScrolledWindow::scrollbar-within-bevel = TRUE
   GtkScrolledWindow::shadow-type = GTK_SHADOW_NONE
   GtkScrolledWindow::draw_border = { 0, 0, 0, 0 }
@@ -24,6 +24,10 @@ style "clearlooks-default"
   GtkPaned::handle_size = 6
   GtkRange::slider_width = 11
   GtkRange::stepper_size = 11
+  GtkScrollbar::trough-border = 0
+  GtkScrollbar::has-forward-stepper = 1
+  GtkScrollbar::has-backward-stepper = 1
+  GtkScrollbar::arrow_scaling = 0.5
   GtkScrollbar::min_slider_length = 30
   GtkCheckButton::indicator_size = 12
   GtkMenuBar::internal-padding = 0
@@ -214,6 +218,8 @@ style "clearlooks-plugin" = "clearlooks-default"
 
 style "clearlooks-scrollbar" = "clearlooks-defaults"
 {
+  bg[INSENSITIVE] = "#1a1a1a"
+
   xthickness = 0
   ythickness = 0
   GtkRange::stepper-size = 0

@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-05 01:41+0100\n"
-"PO-Revision-Date: 2014-01-05 01:42+0100\n"
+"POT-Creation-Date: 2014-01-06 05:39+0100\n"
+"PO-Revision-Date: 2014-01-06 05:41+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -2555,8 +2555,8 @@ msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bit)"
 
 #: ../src/imageio/format/tiff.c:335
-msgid "32-bit"
-msgstr "32-bit"
+msgid "32-bit (float)"
+msgstr "32-bit (flyttal)"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -7990,7 +7990,7 @@ msgstr "ingen kamera ansluten som stödjer tjudrad fångst för användning..."
 #. Setup key accelerators in capture view...
 #. Film strip shortcuts
 #: ../src/views/capture.c:564 ../src/views/darkroom.c:1691
-#: ../src/views/map.c:563
+#: ../src/views/map.c:565
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
@@ -8186,12 +8186,12 @@ msgstr "förhandsvisning med fokusindikation"
 msgid "map"
 msgstr "karta"
 
-#: ../src/views/map.c:560
+#: ../src/views/map.c:562
 msgctxt "accel"
 msgid "undo"
 msgstr "ångra"
 
-#: ../src/views/map.c:561
+#: ../src/views/map.c:563
 msgctxt "accel"
 msgid "redo"
 msgstr "återställ"
@@ -8390,6 +8390,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "32-bit"
+#~ msgstr "32-bit"
 
 #~ msgid "8-bit JPG"
 #~ msgstr "8-bit JPG"

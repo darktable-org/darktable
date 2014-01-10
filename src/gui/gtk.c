@@ -755,15 +755,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
 
   if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-#ifdef __WIN32__
   {
-    gchar *str = g_strjoin("GTK2_RC_FILES=", gtkrc, NULL);
-    putenv(str);
-    g_free(str);
+    char *default_files[2] = {gtkrc, NULL};
+    gtk_rc_set_default_files(default_files);
   }
-#else
-    (void)setenv("GTK2_RC_FILES", gtkrc, 1);
-#endif
   else
     fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
 
@@ -800,9 +795,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->expanded_group_id = -1;
   gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
-
-  if(g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-    gtk_rc_parse (gtkrc);
 
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
@@ -1423,7 +1415,7 @@ static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolea
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget), left?GTK_CORNER_TOP_LEFT:GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_widget_set_size_request (widget,dt_conf_get_int("panel_width")-5-13, -1);
 
   /* create the scrolled viewport */

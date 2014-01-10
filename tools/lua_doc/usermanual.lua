@@ -30,9 +30,6 @@ local function get_reported_type(node,simple)
 		error("all types should have a reported type")
 	end
 	local rtype = doc.get_attribute(node,"reported_type")
-	if type(rtype) ~= "string" then
-		rtype = get_node_with_link(rtype,doc.get_name(rtype))
-	end
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
@@ -187,7 +184,7 @@ function M.get_doc()
 
 
 end
-
+error "add versionning, discuss with upeglow where to put it"
 
 
 return M;

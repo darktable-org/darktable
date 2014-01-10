@@ -400,7 +400,7 @@ gui_init (dt_lib_module_t *self)
   GtkListStore *liststore;
 
   // left side, current
-  box = GTK_BOX(gtk_vbox_new(FALSE, 0));
+  box = GTK_BOX(gtk_vbox_new(FALSE, 5));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_scrolled_window_new(NULL, NULL);
