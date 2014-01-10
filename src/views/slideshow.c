@@ -21,6 +21,7 @@
 #include "common/imageio_module.h"
 #include "common/collection.h"
 #include "common/debug.h"
+#include "control/control.h"
 
 #include <stdint.h>
 
@@ -32,6 +33,7 @@ typedef struct dt_slideshow_t
   uint32_t random_state;
   uint32_t scramble;
   uint32_t use_random;
+  uint32_t width, height;
 }
 dt_slideshow_t;
 
@@ -69,9 +71,9 @@ next_random(dt_slideshow_t *d)
   return i ^ d->scramble;
 }
 
-// TODO: put this in a thread/job
+// process image
 static int
-process_next_image(dt_slideshow_t *d, uint32_t width, uint32_t height)
+process_next_image(dt_slideshow_t *d)
 {
   static int counter = 0;
   dt_imageio_module_format_t buf;
@@ -79,8 +81,8 @@ process_next_image(dt_slideshow_t *d, uint32_t width, uint32_t height)
   buf.mime = mime;
   buf.bpp = bpp;
   buf.write_image = write_image;
-  dat.max_width  = width;
-  dat.max_height = height;
+  dat.max_width  = d->width;
+  dat.max_height = d->height;
   strcpy(dat.style, "none");
 
   // get random image id from sql
@@ -113,6 +115,20 @@ process_next_image(dt_slideshow_t *d, uint32_t width, uint32_t height)
     dt_imageio_export(id, "unused", &buf, &dat, TRUE);
   }
   return 0;
+}
+
+static int32_t process_job_run(dt_job_t *job)
+{
+  dt_slideshow_t *d = *(dt_slideshow_t **)job->param;
+  process_next_image(d);
+  return 0;
+}
+
+static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
+{
+  dt_control_job_init(job, "process slideshow image");
+  job->execute = process_job_run;
+  *((dt_slideshow_t **)job->param) = d;
 }
 
 
@@ -167,9 +183,8 @@ void mouse_leave(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-  // FIXME: don't do it in gui thread please!
-  dt_slideshow_t *d= (dt_slideshow_t*)self->data;
-  process_next_image(d, width, height);
+  // TODO: draw image from bg thread
+  cairo_paint(cr);
 }
 
 int scrolled(dt_view_t *self, double x, double y, int up, int state)
@@ -191,6 +206,10 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
+  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_job_t job;
+  process_job_init(&job, d);
+  dt_control_add_job(darktable.control, &job);
   return 0;
 }
 
