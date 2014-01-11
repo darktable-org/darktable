@@ -822,6 +822,14 @@ void dt_cleanup()
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
   }
+#ifdef USE_LUA
+  if(darktable.lua_state.state)
+  {
+    lua_close(darktable.lua_state.state);
+    luaA_close();
+    darktable.lua_state.state = NULL;
+  }
+#endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
   if(init_gui)
