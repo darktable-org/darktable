@@ -44,6 +44,12 @@ bpp (dt_imageio_module_data_t *data)
   return 8;
 }
 
+static int
+levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
 static const char*
 mime(dt_imageio_module_data_t *data)
 {
@@ -79,11 +85,12 @@ process_next_image(dt_slideshow_t *d)
   dt_imageio_module_format_t buf;
   dt_imageio_module_data_t dat;
   buf.mime = mime;
+  buf.levels = levels;
   buf.bpp = bpp;
   buf.write_image = write_image;
   dat.max_width  = d->width;
   dat.max_height = d->height;
-  strcpy(dat.style, "none");
+  dat.style[0] = '\0';
 
   // get random image id from sql
   int32_t id = 0;
