@@ -532,7 +532,32 @@
     <default>true</default>
     <shortdescription>draw borders around grouped images</shortdescription>
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
-</dtconfig>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/base_directory_pattern</name>
+    <type>string</type>
+    <default>$(PICTURES_FOLDER)/Darktable</default>
+    <shortdescription>base directory naming pattern</shortdescription>
+    <longdescription>part of full import part for a import session</longdescription>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/sub_directory_pattern</name>
+    <type>string</type>
+    <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
+    <shortdescription>sub directory naming pattern</shortdescription>
+    <longdescription>part of full import path for an import session</longdescription>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/filename_pattern</name>
+    <type>string</type>
+    <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
+    <shortdescription>file naming pattern</shortdescription>
+    <longdescription>file naming pattern used for a import session</longdescription>
+  </dtconfig>
+
   <dtconfig>
     <name>plugins/lighttable/layout</name>
     <type>int</type>
