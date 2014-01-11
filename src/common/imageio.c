@@ -620,14 +620,16 @@ int dt_imageio_export(
   dt_imageio_module_format_t *format,
   dt_imageio_module_data_t   *format_params,
   const gboolean              high_quality,
-  const gboolean              copy_metadata)
+  const gboolean              copy_metadata,
+  dt_imageio_module_storage_t *storage,
+  dt_imageio_module_data_t   *storage_params)
 {
   if (strcmp(format->mime(format_params),"x-copy")==0)
     /* This is a just a copy, skip process and just export */
     return format->write_image(format_params, filename, NULL, NULL, 0, imgid);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-                                        0, 0, high_quality, 0, NULL,copy_metadata);
+                                        0, 0, high_quality, 0, NULL,copy_metadata,storage,storage_params);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -641,7 +643,9 @@ int dt_imageio_export_with_flags(
   const gboolean              high_quality,
   const int32_t               thumbnail_export,
   const char                 *filter,
-  const gboolean              copy_metadata)
+  const gboolean              copy_metadata,
+  dt_imageio_module_storage_t *storage,
+  dt_imageio_module_data_t   *storage_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);

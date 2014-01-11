@@ -252,7 +252,7 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,TRUE) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,TRUE,self,sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
