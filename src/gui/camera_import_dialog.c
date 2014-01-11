@@ -81,12 +81,6 @@ typedef struct _camera_import_dialog_t
       GtkWidget *date_entry;
     } general;
 
-    /** Group of  backup settings */
-    struct
-    {
-      GtkWidget *enable,*foldername,*warn;
-    } backup;
-
     _camera_gconf_widget_t *basedirectory;
     _camera_gconf_widget_t *subdirectory;
     _camera_gconf_widget_t *namepattern;
@@ -116,17 +110,6 @@ _check_button_callback(GtkWidget *cb, gpointer user_data)
   {
     // Enable/disable the date entry widget
     gtk_widget_set_sensitive( cid->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.date_override)));
-  }
-  else if (cb==cid->settings.backup.enable)
-  {
-    dt_conf_set_bool ("plugins/capture/backup/enable", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
-    // Enable/disable the date entry widget
-    gtk_widget_set_sensitive( cid->settings.backup.warn, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
-    gtk_widget_set_sensitive( cid->settings.backup.foldername, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
-  }
-  else if (cb==cid->settings.backup.warn)
-  {
-    dt_conf_set_bool ("plugins/capture/backup/warning", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.backup.enable)));
   }
 }
 
@@ -367,38 +350,6 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_widget_set_size_request(data->settings.example,400,-1);
   gtk_misc_set_alignment(GTK_MISC(data->settings.example), 0.0, 0.0);
   gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.example,FALSE,FALSE,0);
-
-  // External backup
-  gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("external backup"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
-  l=gtk_label_new(_("external backup is an option to automatic do a backup of the imported image(s) to another physical location, when activated it does looks for specified backup foldername of mounted devices on your system... each found folder is used as basedirectory in the above storage structure and when a image are downloaded from camera it is replicated to found backup destinations."));
-  gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
-  gtk_widget_set_size_request(l,400,-1);
-  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
-
-  data->settings.backup.enable=gtk_check_button_new_with_label(_("enable backup"));
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.enable,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.enable,"tooltip-text",_("check this option to enable automatic backup of imported images"),(char *)NULL);
-
-  data->settings.backup.warn=gtk_check_button_new_with_label(_("warn if no backup destinations are present"));
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.warn,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.warn,"tooltip-text",_("check this option to get an interactive warning if no backupdestinations are present"),(char *)NULL);
-
-  data->settings.backup.foldername=(_camera_import_gconf_widget(data,_("backup foldername"),"plugins/capture/camera/backup/foldername"))->widget;
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.backup.foldername,FALSE,FALSE,0);
-  g_object_set(data->settings.backup.foldername,"tooltip-text",_("this is the name of folder that indicates a backup destination,\nif such a folder is found in any mounter media it is used as a backup destination."),(char *)NULL);
-
-  if( dt_conf_get_bool("plugins/capture/backup/enable") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.enable ), TRUE);
-  else
-  {
-    gtk_widget_set_sensitive( data->settings.backup.warn, FALSE);
-    gtk_widget_set_sensitive( data->settings.backup.foldername, FALSE);
-  }
-  if( dt_conf_get_bool("plugins/capture/backup/warn") ) gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( data->settings.backup.warn ), TRUE);
-
-  g_signal_connect (G_OBJECT (data->settings.backup.enable), "clicked",G_CALLBACK (_check_button_callback),data);
-  g_signal_connect (G_OBJECT(data->settings.backup.warn), "clicked",G_CALLBACK (_check_button_callback),data);
-
 
   // THE NOTEBOOK
   data->notebook=gtk_notebook_new();
