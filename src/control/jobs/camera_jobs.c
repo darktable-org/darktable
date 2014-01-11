@@ -200,68 +200,6 @@ int32_t dt_camera_get_previews_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile, const char *destinationfile)
-{
-  dt_control_job_init(job, "backup of imported image from camera");
-  job->execute = &dt_camera_import_backup_job_run;
-  dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
-  t->sourcefile=g_strdup(sourcefile);
-  t->destinationfile=g_strdup(destinationfile);
-}
-
-int32_t dt_camera_import_backup_job_run(dt_job_t *job)
-{
-  // copy sourcefile to each found destination
-  dt_camera_import_backup_t *t = (dt_camera_import_backup_t *)job->param;
-  GVolumeMonitor *vmgr= g_volume_monitor_get();
-  GList *mounts=g_volume_monitor_get_mounts(vmgr);
-  GMount *mount=NULL;
-  GFile *root=NULL;
-  if( mounts !=NULL )
-    do
-    {
-      mount=G_MOUNT(mounts->data);
-      if( ( root=g_mount_get_root( mount ) ) != NULL )
-      {
-        // Got the mount point lets check for backup folder
-        gchar *backuppath=NULL;
-        gchar *rootpath=g_file_get_path(root);
-        backuppath=g_build_path(G_DIR_SEPARATOR_S,rootpath,dt_conf_get_string("plugins/capture/backup/foldername"),(char *)NULL);
-        g_free(rootpath);
-
-        if( g_file_test(backuppath,G_FILE_TEST_EXISTS)==TRUE)
-        {
-          // Found a backup storage, lets copy file here..
-          gchar *destinationfile=g_build_filename(G_DIR_SEPARATOR_S,backuppath,t->destinationfile,(char *)NULL);
-          if( g_mkdir_with_parents(g_path_get_dirname(destinationfile),0755) >= 0 )
-          {
-            gchar *content;
-            gsize size;
-            if( g_file_get_contents(t->sourcefile,&content,&size,NULL) == TRUE )
-            {
-              GError *err=NULL;
-              if( g_file_set_contents(destinationfile,content,size,&err) != TRUE)
-              {
-                fprintf(stderr,"Failed to set content of file with reason: %s\n",err->message);
-                g_error_free(err);
-              }
-              g_free(content);
-            }
-          }
-          g_free(destinationfile);
-        }
-
-        g_free(backuppath);
-      }
-    }
-    while( (mounts=g_list_next(mounts)) !=NULL);
-
-  // Release volume manager
-  g_object_unref(vmgr);
-  return 0;
-}
-
-
 void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override)
 {
   dt_control_job_init(job, "import selected images from camera");
@@ -292,22 +230,6 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 
   dt_control_backgroundjobs_progress(darktable.control, t->bgj, t->fraction );
 
-  if( dt_conf_get_bool("plugins/capture/camera/import/backup/enable") == TRUE )
-  {
-    // Backup is enable, let's initialize a backup job of imported image...
-    char *base=dt_conf_get_string("plugins/capture/storage/basedirectory");
-    char *fixed_base=dt_util_fix_path(base);
-    dt_variables_expand( t->vp, fixed_base, FALSE );
-    g_free(base);
-    const char *sdpart=dt_variables_get_result(t->vp);
-    if( sdpart )
-    {
-      // Initialize a image backup job of file
-      dt_job_t j;
-      dt_camera_import_backup_job_init(&j, filename,filename+strlen(sdpart));
-      dt_control_add_job(darktable.control, &j);
-    }
-  }
   t->import_count++;
 }
 

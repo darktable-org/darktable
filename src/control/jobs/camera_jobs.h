@@ -81,15 +81,6 @@ dt_camera_import_t;
 int32_t dt_camera_import_job_run(dt_job_t *job);
 void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override);
 
-/** Camera image import backup job initiated upon import job for each image*/
-typedef struct dt_camera_import_backup_t
-{
-  gchar *sourcefile;
-  gchar *destinationfile;
-}
-dt_camera_import_backup_t;
-int32_t dt_camera_import_backup_job_run(dt_job_t *job);
-void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile,const char *destinationfile);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
