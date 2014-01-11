@@ -295,27 +295,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/capture/backup/enable</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if backup of imported images should be performed</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/backup/warn</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if user should be interactivly warned about non present backup destinations</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/backup/foldername</name>
-    <type>string</type>
-    <default>photos</default>
-    <shortdescription>the name of backup directory to search for on mounted medias</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>ui_last/colorpicker_mean</name>
     <type>int</type>
     <default>0</default>
