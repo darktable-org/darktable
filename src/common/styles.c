@@ -423,8 +423,11 @@ dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
   gboolean selected = FALSE;
 
-  /* write current history changes so nothing gets lost */
-  dt_dev_write_history(darktable.develop);
+  /* write current history changes so nothing gets lost, do that only in the darkroom as there is nothing to be
+     save when in the lighttable (and it would write over current history stack) */
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    dt_dev_write_history(darktable.develop);
 
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
