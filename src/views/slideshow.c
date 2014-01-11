@@ -34,6 +34,10 @@ typedef struct dt_slideshow_t
   uint32_t scramble;
   uint32_t use_random;
   uint32_t width, height;
+
+  // double buffer
+  uint32_t *buf1, *buf2;
+  uint32_t *front, *back;
 }
 dt_slideshow_t;
 
@@ -128,6 +132,9 @@ static int32_t process_job_run(dt_job_t *job)
 {
   dt_slideshow_t *d = *(dt_slideshow_t **)job->param;
   process_next_image(d);
+  // TODO: swap front/back buffers
+  // TODO: set some flag on d-> to signal change in buffers
+  // TODO: trigger re-expose
   return 0;
 }
 
@@ -166,11 +173,13 @@ void cleanup(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  // TODO: alloc screen-size double buffer
   fprintf(stderr, "[slideshow] enter\n");
 }
 
 void leave(dt_view_t *self)
 {
+  // TODO: free buffers
   fprintf(stderr, "[slideshow] leave\n");
 }
 
@@ -190,6 +199,7 @@ void mouse_leave(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
+  // TODO: pick up state changes and wait for frontbuffer lock
   // TODO: draw image from bg thread
   cairo_paint(cr);
 }
