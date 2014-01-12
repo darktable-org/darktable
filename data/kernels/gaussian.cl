@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 ulrich pegelow.
+    copyright (c) 2011-2014 ulrich pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -252,41 +252,43 @@ lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width
 
 
 float4
-overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect)
+overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect, const int4 unbound)
 {
   /* a contains underlying image; b contains mask */
 
   const float4 scale = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
-  const float4 min = (float4)(0.0f, -1.0f, -1.0f, 0.0f);
-  const float4 max = (float4)(1.0f, 1.0f, 1.0f, 1.0f);
   const float lmin = 0.0f;
-  const float lmax = 1.0f;       /* max + fabs(min) */
-  const float halfmax = 0.5f;    /* lmax / 2.0f */
-  const float doublemax = 2.0f;  /* lmax * 2.0f */
+  const float lmax = 1.0f;
+  const float halfmax = 0.5f;
+  const float doublemax = 2.0f;
 
   float4 a = in_a / scale;
   float4 b = in_b / scale;
 
-  float lb = clamp((b.x - halfmax) * sign(opacity) + halfmax, lmin, lmax);
+
   float opacity2 = opacity*opacity;
 
   while(opacity2 > 0.0f)
   {
-    float lref = a.x > 0.01f ? a.x : 0.01f;
-    float href = a.x < 0.99f ? a.x : 0.99f;
-    float la = clamp(a.x + fabs(min.x), lmin, lmax);
+    float la = unbound.x ? a.x : clamp(a.x, lmin, lmax);
+    float lb = (b.x - halfmax) * sign(opacity)*sign(lmax - la) + halfmax;
+    lb = unbound.w ? lb : clamp(lb, lmin, lmax);
+    float lref = copysign(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
+    float href = copysign(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
+
 
     float chunk = opacity2 > 1.0f ? 1.0f : opacity2;
     float optrans = chunk * transform;
     opacity2 -= 1.0f;
 
-    a.x = clamp(la * (1.0f - optrans) + (la > halfmax ? 
-                                            lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : 
-                                            doublemax * la * lb) * optrans, lmin, lmax) - fabs(min.x);
+    a.x = la * (1.0f - optrans) + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax-lb) : doublemax * la * lb) * optrans;
+    a.x = unbound.x ? a.x : clamp(a.x, lmin, lmax);
 
-    a.y = clamp(a.y * (1.0f - optrans) + (a.y + b.y) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.y, max.y);
+    a.y = a.y * (1.0f - optrans) + (a.y + b.y) * (a.x*lref * ccorrect + (1.0f - a.x)*href * (1.0f - ccorrect)) * optrans;
+    a.y = unbound.y ? a.y : clamp(a.y, -1.0f, 1.0f);
 
-    a.z = clamp(a.z * (1.0f - optrans) + (a.z + b.z) * (a.x/lref * ccorrect + (1.0f - a.x)/(1.0f - href) * (1.0f - ccorrect)) * optrans, min.z, max.z);
+    a.z = a.z * (1.0f - optrans) + (a.z + b.z) * (a.x*lref * ccorrect + (1.0f - a.x)*href * (1.0f - ccorrect)) * optrans;
+    a.z = unbound.z ? a.z : clamp(a.z, -1.0f, 1.0f);
 
   }
   /* output scaled back pixel */
@@ -294,11 +296,22 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
 }
 
 
+#define UNBOUND_L              1
+#define UNBOUND_A              2
+#define UNBOUND_B              4
+#define UNBOUND_SHADOWS_L      UNBOUND_L
+#define UNBOUND_SHADOWS_A      UNBOUND_A
+#define UNBOUND_SHADOWS_B      UNBOUND_B
+#define UNBOUND_HIGHLIGHTS_L   (UNBOUND_L << 3)   /* 8 */
+#define UNBOUND_HIGHLIGHTS_A   (UNBOUND_A << 3)   /* 16 */
+#define UNBOUND_HIGHLIGHTS_B   (UNBOUND_B << 3)   /* 32 */
+
 kernel void 
 shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out, 
                        unsigned int width, unsigned int height, 
                        const float shadows, const float highlights, const float compress,
-                       const float shadows_ccorrect, const float highlights_ccorrect)
+                       const float shadows_ccorrect, const float highlights_ccorrect, 
+                       const unsigned int flags, const int unbound_mask)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -309,20 +322,20 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
   float w = io.w;
   float4 m = (float4)0.0f;
   float xform;
-
-  const float4 Labmin = (float4)(0.0f, -128.0f, -128.0f, 0.0f);
-  const float4 Labmax = (float4)(100.0f, 128.0f, 128.0f, 1.0f);
+  int4 unbound;
 
   /* blurred, inverted and desaturaed mask in m */
   m.x = 100.0f - read_imagef(mask, sampleri, (int2)(x, y)).x;
 
   /* overlay highlights */
   xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
-  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect);
+  unbound = (int4)(flags & UNBOUND_HIGHLIGHTS_L, flags & UNBOUND_HIGHLIGHTS_A, flags & UNBOUND_HIGHLIGHTS_B, unbound_mask);
+  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect, unbound);
 
   /* overlay shadows */
   xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
-  io = overlay(io, m, shadows, xform, shadows_ccorrect);
+  unbound = (int4)(flags & UNBOUND_SHADOWS_L, flags & UNBOUND_SHADOWS_A, flags & UNBOUND_SHADOWS_B, unbound_mask);
+  io = overlay(io, m, shadows, xform, shadows_ccorrect, unbound);
 
   io.w = w;
   write_imagef(out, (int2)(x, y), io);

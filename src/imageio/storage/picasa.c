@@ -1437,7 +1437,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   dt_image_cache_read_release(darktable.image_cache, img);
 
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality,FALSE,self,sdata) != 0)
   {
     g_printerr("[picasa] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);

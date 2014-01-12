@@ -116,7 +116,7 @@ static int write_image(lua_State *L)
 
   dt_lua_unlock(false);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  gboolean result = dt_imageio_export(imgid,filename,format,fdata,high_quality);
+  gboolean result = dt_imageio_export(imgid,filename,format,fdata,high_quality,FALSE,NULL,NULL);
   dt_lua_lock();
   lua_pushboolean(L,result);
   format->free_params(format,fdata);

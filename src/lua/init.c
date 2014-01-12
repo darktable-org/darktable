@@ -40,9 +40,11 @@
 // closed on GC of the dt lib, usually when the lua interpreter closes
 static int dt_luacleanup(lua_State*L)
 {
+  /* TBSL : redo when DT is a lua lib
   const int init_gui = (darktable.gui != NULL);
   if(!init_gui)
     dt_cleanup();
+    */
   return 0;
 }
 

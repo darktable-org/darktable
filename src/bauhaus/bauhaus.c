@@ -570,7 +570,7 @@ static int
 guess_font_size()
 {
   const int def = 8;
-  const char *gtkrc_filename = getenv("GTK2_RC_FILES");
+  const char *gtkrc_filename = darktable.gui->gtkrc;
   if(!gtkrc_filename) return def;
   FILE *f = fopen(gtkrc_filename, "rb");
   if(!f) return def;

@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2012 ulrich pegelow.
+  copyright (c) 2012--2014 Ulrich Pegelow.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,13 +40,27 @@
 #include <inttypes.h>
 #include <xmmintrin.h>
 
+
+#define UNBOUND_L              1
+#define UNBOUND_A              2
+#define UNBOUND_B              4
+#define UNBOUND_SHADOWS_L      UNBOUND_L
+#define UNBOUND_SHADOWS_A      UNBOUND_A
+#define UNBOUND_SHADOWS_B      UNBOUND_B
+#define UNBOUND_HIGHLIGHTS_L   (UNBOUND_L << 3)   /* 8 */
+#define UNBOUND_HIGHLIGHTS_A   (UNBOUND_A << 3)   /* 16 */
+#define UNBOUND_HIGHLIGHTS_B   (UNBOUND_B << 3)   /* 32 */
+#define UNBOUND_GAUSSIAN       64
+#define UNBOUND_BILATERAL      128                /* not implemented yet */
+#define UNBOUND_DEFAULT        (UNBOUND_SHADOWS_L|UNBOUND_SHADOWS_A|UNBOUND_SHADOWS_B|UNBOUND_HIGHLIGHTS_L|UNBOUND_HIGHLIGHTS_A|UNBOUND_HIGHLIGHTS_B|UNBOUND_GAUSSIAN)
+
 #define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 #define CLAMP_RANGE(x,y,z) (CLAMP(x,y,z))
 #define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t
@@ -61,6 +75,21 @@ typedef struct dt_iop_shadhi_params1_t
 }
 dt_iop_shadhi_params1_t;
 
+/* legacy version 2 params */
+typedef struct dt_iop_shadhi_params2_t
+{
+  dt_gaussian_order_t order;
+  float radius;
+  float shadows;
+  float reserved1;
+  float highlights;
+  float reserved2;
+  float compress;
+  float shadows_ccorrect;
+  float highlights_ccorrect;
+}
+dt_iop_shadhi_params2_t;
+
 typedef struct dt_iop_shadhi_params_t
 {
   dt_gaussian_order_t order;
@@ -72,6 +101,7 @@ typedef struct dt_iop_shadhi_params_t
   float compress;
   float shadows_ccorrect;
   float highlights_ccorrect;
+  unsigned int flags;
 }
 dt_iop_shadhi_params_t;
 
@@ -92,6 +122,7 @@ typedef struct dt_iop_shadhi_data_t
   float compress;
   float shadows_ccorrect;
   float highlights_ccorrect;
+  unsigned int flags;
 }
 dt_iop_shadhi_data_t;
 
@@ -121,7 +152,7 @@ groups ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if (old_version == 1 && new_version == 3)
   {
     const dt_iop_shadhi_params1_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
@@ -129,14 +160,31 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->radius = old->radius;
     new->shadows = 0.5f*old->shadows;
     new->reserved1 = old->reserved1;
-    new->highlights = -0.5f*old->highlights;
     new->reserved2 = old->reserved2;
+    new->highlights = -0.5f*old->highlights;
+    new->flags = 0;
     new->compress = old->compress;
     new->shadows_ccorrect = 100.0f;
     new->highlights_ccorrect = 0.0f;
-
     return 0;
   }
+  else if (old_version == 2 && new_version == 3)
+  {
+    const dt_iop_shadhi_params2_t *old = old_params;
+    dt_iop_shadhi_params_t *new = new_params;
+    new->order = old->order;
+    new->radius = old->radius;
+    new->shadows = old->shadows;
+    new->reserved1 = old->reserved1;
+    new->reserved2 = old->reserved2;
+    new->highlights = old->highlights;
+    new->compress = old->compress;
+    new->shadows_ccorrect = old->shadows_ccorrect;
+    new->highlights_ccorrect = old->highlights_ccorrect;
+    new->flags = 0;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -205,12 +253,20 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float compress = fmin(fmax(0,(data->compress/100.0)), 0.99f);   // upper limit 0.99f to avoid division by zero later
   const float shadows_ccorrect = (fmin(fmax(0,(data->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(data->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
+  const unsigned int flags = data->flags;
+  const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
 
 
   if(!use_bilateral)
   {
-    const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-    const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
+    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    
+    if(unbound_mask)
+    {
+      for(int k=0; k<4; k++) Labmax[k] =  INFINITY;
+      for(int k=0; k<4; k++) Labmin[k] = -INFINITY;
+    }
 
     dt_gaussian_t *g = dt_gaussian_init(width, height, ch, Labmax, Labmin, sigma, order);
     if(!g) return;
@@ -249,84 +305,78 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float halfmax = lmax/2.0;
   const float doublemax = lmax*2.0;
 
-  float *temp = dt_alloc_align(64, roi_out->width*roi_out->height*ch*sizeof(float));
-  if(temp==NULL) return;
 
-  // overlay highlights
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, out, temp, roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(in, out) schedule(static)
 #endif
-  for(int j=0; j<roi_out->width*roi_out->height*4; j+=4)
+  for(int j=0; j<width*height*ch; j+=ch)
   {
     float ta[3], tb[3];
     _Lab_scale(&in[j], ta);
     _Lab_scale(&out[j], tb);
 
-    float lb = CLAMP_RANGE((tb[0] - halfmax) * sign(-highlights) + halfmax, lmin, lmax);
-    float opacity = highlights*highlights;
-    float xform = CLAMP_RANGE(1.0f - tb[0]/(1.0f-compress), 0.0f, 1.0f);
+    // overlay highlights
+    float highlights2 = highlights*highlights;
+    float highlights_xform = CLAMP_RANGE(1.0f - tb[0]/(1.0f-compress), 0.0f, 1.0f);
 
-    while(opacity > 0.0f)
+    while(highlights2 > 0.0f)
     {
-      float lref = ta[0] > 0.01f ? ta[0] : 0.01f;
-      float href = ta[0] < 0.99f ? ta[0] : 0.99f;
-      float la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      float lb = (tb[0] - halfmax) * sign(-highlights)*sign(lmax - la) + halfmax;
+      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
+      float lref = copysignf(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
+      float href = copysignf(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
 
+      float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
+      float optrans = chunk * highlights_xform;
+      highlights2 -= 1.0f;
 
-      float chunk = opacity > 1.0f ? 1.0f : opacity;
-      float optrans = chunk * xform;
-      opacity -= 1.0f;
+      ta[0] = la * (1.0 - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
 
-      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) +
-                           ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) -
-              fabs(min[0]);
+      ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * (1.0f - highlights_ccorrect) +
-                          (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[1], max[1]);
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]*lref * (1.0f - highlights_ccorrect) +
+                          (1.0f - ta[0])*href * highlights_ccorrect) * optrans;
 
-      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * (1.0f - highlights_ccorrect) +
-                          (1.0f - ta[0])/(1.0f - href) * highlights_ccorrect) * optrans, min[2], max[2]);
+      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
+
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]*lref * (1.0f - highlights_ccorrect) +
+                          (1.0f - ta[0])*href * highlights_ccorrect) * optrans;
+
+      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
 
     }
 
-    _Lab_rescale(ta, &temp[j]);
-  }
+    // overlay shadows
+    float shadows2 = shadows*shadows;
+    float shadows_xform = CLAMP_RANGE(tb[0]/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
 
-
-  // overlay shadows
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, out, temp, roi_out) schedule(static)
-#endif
-  for(int j=0; j<roi_out->width*roi_out->height*4; j+=4)
-  {
-    float ta[3], tb[3];
-    _Lab_scale(&temp[j], ta);
-    _Lab_scale(&out[j], tb);
-
-    float lb = CLAMP_RANGE((tb[0] - halfmax) * sign(shadows) + halfmax, lmin, lmax);
-    float opacity = shadows*shadows;
-    float xform = CLAMP_RANGE(tb[0]/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
-
-    while(opacity > 0.0f)
+    while(shadows2 > 0.0f)
     {
-      float lref = ta[0] > 0.01f ? ta[0] : 0.01f;
-      float href = ta[0] < 0.99f ? ta[0] : 0.99f;
-      float la = CLAMP_RANGE(ta[0]+fabs(min[0]), lmin, lmax);
+      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      float lb = (tb[0] - halfmax) * sign(shadows)*sign(lmax - la) + halfmax;
+      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
+      float lref = copysignf(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
+      float href = copysignf(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
 
 
-      float chunk = opacity > 1.0f ? 1.0f : opacity;
-      float optrans = chunk * xform;
-      opacity -= 1.0f;
+      float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
+      float optrans = chunk * shadows_xform;
+      shadows2 -= 1.0f;
 
-      ta[0] = CLAMP_RANGE( la * (1.0 - optrans) +
-                           ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans, lmin, lmax) -
-              fabs(min[0]);
+      ta[0] = la * (1.0 - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
 
-      ta[1] = CLAMP_RANGE(ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]/lref * shadows_ccorrect +
-                          (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[1], max[1]);
+      ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[2] = CLAMP_RANGE(ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]/lref * shadows_ccorrect +
-                          (1.0f - ta[0])/(1.0f - href) * (1.0f - shadows_ccorrect)) * optrans, min[2], max[2]);
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * (ta[0]*lref * shadows_ccorrect +
+                          (1.0f - ta[0])*href * (1.0f - shadows_ccorrect)) * optrans;
+
+      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
+
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * (ta[0]*lref * shadows_ccorrect +
+                          (1.0f - ta[0])*href * (1.0f - shadows_ccorrect)) * optrans;
+
+      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
 
     }
 
@@ -335,8 +385,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-
-  dt_free_align(temp);
 }
 
 
@@ -355,11 +403,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
-
-  const int   use_bilateral = d->radius < 0 ? 1 : 0;
-  const int   order = d->order;
+  const int use_bilateral = d->radius < 0 ? 1 : 0;
+  const int order = d->order;
   const float radius = fmaxf(0.1f, fabsf(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float shadows = 2.0*fmin(fmax(-1.0,(d->shadows/100.0f)), 1.0f);
@@ -367,6 +412,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float compress = fmin(fmax(0,(d->compress/100.0)), 0.99f);  // upper limit 0.99f to avoid division by zero later
   const float shadows_ccorrect = (fmin(fmax(0,(d->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(d->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
+  const unsigned int flags = d->flags;
+  const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
+
 
   size_t sizes[3];
 
@@ -375,6 +423,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   if(!use_bilateral)
   {
+    float Labmax[4] = { 100.0f, 128.0f, 128.0f, 1.0f };
+    float Labmin[4] = { 0.0f, -128.0f, -128.0f, 0.0f };
+    
+    if(unbound_mask)
+    {
+      for(int k=0; k<4; k++) Labmax[k] =  INFINITY;
+      for(int k=0; k<4; k++) Labmin[k] = -INFINITY;
+    }
+
     g = dt_gaussian_init_cl(devid, width, height, channels, Labmax, Labmin, sigma, order);
     if(!g) goto error;
     err = dt_gaussian_blur_cl(g, dev_in, dev_out);
@@ -414,6 +471,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 7, sizeof(float), (void *)&compress);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 8, sizeof(float), (void *)&shadows_ccorrect);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 9, sizeof(float), (void *)&highlights_ccorrect);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 10, sizeof(unsigned int), (void *)&flags);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 11, sizeof(int), (void *)&unbound_mask);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -553,6 +612,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->compress = p->compress;
   d->shadows_ccorrect = p->shadows_ccorrect;
   d->highlights_ccorrect = p->highlights_ccorrect;
+  d->flags = p->flags;
 
 #ifdef HAVE_OPENCL
   if(d->radius < 0.0f)
@@ -597,7 +657,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp = (dt_iop_shadhi_params_t)
   {
-    DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f, 50.0f
+    DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f, 50.0f, UNBOUND_DEFAULT
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_shadhi_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_shadhi_params_t));

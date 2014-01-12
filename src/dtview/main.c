@@ -285,7 +285,7 @@ process_next_image()
 
   if(id)
   {
-    dt_imageio_export(id, "unused", &buf, &dat, TRUE);
+    dt_imageio_export(id, "unused", &buf, &dat, TRUE,FALSE,NULL,NULL);
   }
   return 0;
 }

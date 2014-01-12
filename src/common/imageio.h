@@ -21,6 +21,7 @@
 #include <glib.h>
 #include <stdio.h>
 #include "common/image.h"
+#include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
 
 #include <inttypes.h>
@@ -58,7 +59,10 @@ dt_imageio_export(
   const char *filename,
   struct dt_imageio_module_format_t *format,
   struct dt_imageio_module_data_t *format_params,
-  const gboolean high_quality);
+  const gboolean high_quality,
+  const gboolean copy_metadata,
+  dt_imageio_module_storage_t *storage,
+  dt_imageio_module_data_t   *storage_params);
 
 int
 dt_imageio_export_with_flags(
@@ -70,7 +74,10 @@ dt_imageio_export_with_flags(
   const int32_t                      display_byteorder,
   const gboolean                     high_quality,
   const int32_t                      thumbnail_export,
-  const char                        *filter);
+  const char                        *filter,
+  const gboolean                     copy_metadata,
+  dt_imageio_module_storage_t       *storage,
+  dt_imageio_module_data_t          *storage_params);
 
 int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 

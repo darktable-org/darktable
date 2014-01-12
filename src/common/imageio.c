@@ -619,14 +619,17 @@ int dt_imageio_export(
   const char                 *filename,
   dt_imageio_module_format_t *format,
   dt_imageio_module_data_t   *format_params,
-  const gboolean              high_quality)
+  const gboolean              high_quality,
+  const gboolean              copy_metadata,
+  dt_imageio_module_storage_t *storage,
+  dt_imageio_module_data_t   *storage_params)
 {
   if (strcmp(format->mime(format_params),"x-copy")==0)
     /* This is a just a copy, skip process and just export */
     return format->write_image(format_params, filename, NULL, NULL, 0, imgid);
   else
     return dt_imageio_export_with_flags(imgid, filename, format, format_params,
-                                        0, 0, high_quality, 0, NULL);
+                                        0, 0, high_quality, 0, NULL,copy_metadata,storage,storage_params);
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
@@ -639,7 +642,10 @@ int dt_imageio_export_with_flags(
   const int32_t               display_byteorder,
   const gboolean              high_quality,
   const int32_t               thumbnail_export,
-  const char                 *filter)
+  const char                 *filter,
+  const gboolean              copy_metadata,
+  dt_imageio_module_storage_t *storage,
+  dt_imageio_module_data_t   *storage_params)
 {
   dt_develop_t dev;
   dt_dev_init(&dev, 0);
@@ -885,10 +891,16 @@ int dt_imageio_export_with_flags(
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   dt_free_align(moutbuf);
+  /* now write xmp into that container, if possible */
+  if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP)) {
+    dt_exif_xmp_attach(imgid, filename);
+    // no need to cancel the export if this fail
+  }
+
 
   if(!thumbnail_export)
   {
-    dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,imgid,filename);
+    dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,imgid,filename,format,format_params,storage,storage_params);
   }
   return res;
 }

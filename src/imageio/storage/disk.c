@@ -252,20 +252,11 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,TRUE,self,sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
-  }
-
-  /* now write xmp into that container, if possible */
-  if((format->flags(fdata) & FORMAT_FLAGS_SUPPORT_XMP) && dt_exif_xmp_attach(imgid, filename) != 0)
-  {
-    fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
-    // don't report that one to gui, as some formats (pfm, ppm, exr) just don't support
-    // writing xmp via exiv2, so it might not be to worry.
-//     return 1; // no need to cancel export just because of this
   }
 
   printf("[export_job] exported to `%s'\n", filename);

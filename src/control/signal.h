@@ -129,6 +129,10 @@ typedef enum dt_signal_t
     export won't happen until this function returns
     1 int : the imgid exported
     2 char* : the filename we exported to
+    3 dt_imageio_module_format_t* : the format used for export
+    4 dt_imageio_module_data_t* : the format's data
+    5 dt_imageio_module_storage_t* : the storage used for export (can be NULL) 
+    6 dt_imageio_module_data_t* : the storage's data (can be NULL) 
     no return
     */
   DT_SIGNAL_IMAGE_EXPORT_TMPFILE,
