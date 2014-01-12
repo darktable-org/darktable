@@ -21,6 +21,7 @@
 #include "common/imageio_module.h"
 #include "common/collection.h"
 #include "common/debug.h"
+#include "common/dtpthread.h"
 #include "control/control.h"
 #include "control/conf.h"
 
@@ -45,6 +46,7 @@ typedef struct dt_slideshow_t
   // processed sizes might differ from screen size
   uint32_t front_width, front_height;
   uint32_t back_width, back_height;
+  dt_pthread_mutex_t lock;
 
   // output profile before we overwrote it:
   gchar *oldprofile;
@@ -61,31 +63,36 @@ typedef struct dt_slideshow_format_t
 dt_slideshow_format_t;
 
 // callbacks for in-memory export
-  static int
+static int
 bpp (dt_imageio_module_data_t *data)
 {
   return 8;
 }
 
-  static int
+static int
 levels(dt_imageio_module_data_t *data)
 {
   return IMAGEIO_RGB | IMAGEIO_INT8;
 }
 
-  static const char*
+static const char*
 mime(dt_imageio_module_data_t *data)
 {
   return "memory";
 }
 
-  static int
+static int
 write_image (dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif, int exif_len, int imgid)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
-  memcpy(data->d->front, in, sizeof(uint32_t)*data->d->width*data->d->height);
-  data->d->front_width = datai->width;
-  data->d->front_height = datai->height;
+  dt_pthread_mutex_lock(&data->d->lock);
+  if(data->d->front)
+  { // might have been cleaned up when leaving slide show
+    memcpy(data->d->front, in, sizeof(uint32_t)*data->d->width*data->d->height);
+    data->d->front_width = datai->width;
+    data->d->front_height = datai->height;
+  }
+  dt_pthread_mutex_unlock(&data->d->lock);
   // trigger expose
   dt_control_queue_redraw_center();
   return 0;
@@ -122,8 +129,10 @@ process_next_image(dt_slideshow_t *d)
   // get random image id from sql
   int32_t id = 0;
   const int32_t cnt = dt_collection_get_count (darktable.collection);
+  dt_pthread_mutex_lock(&d->lock);
   d->counter += d->step;
   int32_t ran = d->counter;
+  dt_pthread_mutex_unlock(&d->lock);
   // enumerated all images?
   if(ran < 0 || ran >= cnt)
   {
@@ -191,11 +200,14 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_slideshow_t));
   dt_slideshow_t *lib = (dt_slideshow_t*)self->data;
   memset(lib, 0, sizeof(dt_slideshow_t));
+  dt_pthread_mutex_init(&lib->lock, 0);
 }
 
 
 void cleanup(dt_view_t *self)
 {
+  dt_slideshow_t *lib = (dt_slideshow_t*)self->data;
+  dt_pthread_mutex_destroy(&lib->lock);
   free(self->data);
 }
 
@@ -218,6 +230,7 @@ void enter(dt_view_t *self)
   GdkScreen *screen = gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui));
   if(!screen)
     screen = gdk_screen_get_default();
+  dt_pthread_mutex_lock(&d->lock);
   d->width = gdk_screen_get_width(screen);
   d->height = gdk_screen_get_height(screen);
   fprintf(stderr, "[slideshow] enter %dx%d\n", d->width, d->height);
@@ -229,6 +242,7 @@ void enter(dt_view_t *self)
   // restart from beginning
   d->counter = 0;
   d->step = 0;
+  dt_pthread_mutex_unlock(&d->lock);
 
   // start first job
   dt_job_t job;
@@ -243,9 +257,11 @@ void leave(dt_view_t *self)
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
   d->oldprofile = 0;
+  dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);
   d->buf1 = d->buf2 = d->front = d->back = 0;
+  dt_pthread_mutex_unlock(&d->lock);
 }
 
 void reset(dt_view_t *self)
@@ -266,17 +282,22 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 {
   // TODO: pick up state changes and wait for frontbuffer lock
   // TODO: draw image from bg thread
-
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+
+  dt_pthread_mutex_lock(&d->lock);
   cairo_paint(cr);
-  cairo_surface_t *surface = NULL;
-  const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, d->front_width);
-  surface = cairo_image_surface_create_for_data ((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width, d->front_height, stride);
-  cairo_set_source_surface (cr, surface, 0, 0);
-  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-  cairo_rectangle(cr, 0, 0, d->front_width, d->front_height);
-  cairo_fill(cr);
-  cairo_surface_destroy (surface);
+  if(d->front)
+  {
+    cairo_surface_t *surface = NULL;
+    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, d->front_width);
+    surface = cairo_image_surface_create_for_data ((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width, d->front_height, stride);
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    cairo_rectangle(cr, (width-d->front_width)*.5f, (height-d->front_height)*.5f, d->front_width, d->front_height);
+    cairo_fill(cr);
+    cairo_surface_destroy (surface);
+  }
+  dt_pthread_mutex_unlock(&d->lock);
 }
 
 int scrolled(dt_view_t *self, double x, double y, int up, int state)
