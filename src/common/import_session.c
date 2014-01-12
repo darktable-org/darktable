@@ -35,8 +35,8 @@ typedef struct dt_import_session_t
   dt_film_t *film;
   dt_variables_params_t *vp;
 
-  gchar *current_path;
-  gchar *current_filename;
+  const gchar *current_path;
+  const gchar *current_filename;
 
 }
 dt_import_session_t;
@@ -45,6 +45,9 @@ dt_import_session_t;
 static void
 _import_session_cleanup_filmroll(dt_import_session_t *self)
 {
+  if (self->film == NULL)
+    return;
+
   /* if current filmroll for session is empty, remove it */
   /* TODO: check if dt_film_remove actual removes directories */
   if (dt_film_is_empty(self->film->id))
@@ -68,21 +71,24 @@ _import_session_initialize_filmroll(dt_import_session_t *self, const char *path)
   /* recursively create directories, abort if failed */
   if (g_mkdir_with_parents(path, 0755) == -1)
   {
-    dt_control_log(_("failed to create session path %s."), path);
+    fprintf(stderr, "failed to create session path %s.\n", path);
     _import_session_cleanup_filmroll(self);
     return 1;
   }
 
   /* open one or initialize a filmroll for the session */
   self->film = (dt_film_t *)g_malloc(sizeof(dt_film_t));
-  dt_film_init(self->film);
+  memset(self->film, 0, sizeof(dt_film_t));
   film_id = dt_film_new(self->film, path);
   if (film_id == 0)
   {
-    dt_control_log(_("failed to open film roll for session."));
+    fprintf(stderr, "[import_session] Failed to initialize film roll.\n");
     _import_session_cleanup_filmroll(self);
     return 1;
   }
+
+  /* every thing is good lets setup current path */
+  self->current_path = path;
 
   return 0;
 }
@@ -104,7 +110,7 @@ _import_session_path_pattern()
 
   res = NULL;
   base = dt_conf_get_string("session/base_directory_pattern");
-  sub = dt_conf_get_string("session/sub_path_pattern");
+  sub = dt_conf_get_string("session/sub_directory_pattern");
 
   if (!sub || !base)
   {
@@ -167,6 +173,12 @@ dt_import_session_destroy(struct dt_import_session_t *self)
   g_free(self);
 }
 
+gboolean
+dt_import_session_ready(struct dt_import_session_t *self)
+{
+  return (self->film && self->film->id);
+}
+
 void
 dt_import_session_ref(struct dt_import_session_t *self)
 {
@@ -205,6 +217,30 @@ dt_import_session_set_name(struct dt_import_session_t *self, const char *name)
 }
 
 
+void
+dt_import_session_set_time(struct dt_import_session_t *self, time_t time)
+{
+  dt_variables_set_time(self->vp, time);
+}
+
+
+void
+dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename)
+{
+  self->vp->filename = filename;
+}
+
+
+int32_t
+dt_import_session_film_id(struct dt_import_session_t *self)
+{
+  if (self->film)
+    return self->film->id;
+
+  return -1;
+}
+
+
 const char *
 dt_import_session_name(struct dt_import_session_t *self)
 {
@@ -217,11 +253,11 @@ dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
 {
   char *pattern;
 
-  if (current)
+  if (current && self->current_filename != NULL)
     return self->current_filename;
 
   /* expand next filename */
-  g_free(self->current_filename);
+  g_free((void *)self->current_filename);
 
   pattern = _import_session_filename_pattern();
 
@@ -239,7 +275,7 @@ dt_import_session_path(struct dt_import_session_t *self, gboolean current)
   char *pattern;
   char *new_path;
 
-  if (current)
+  if (current && self->current_path != NULL)
     return self->current_path;
 
   /* check if expanded path differs from current */
@@ -248,11 +284,16 @@ dt_import_session_path(struct dt_import_session_t *self, gboolean current)
   new_path = g_strdup(dt_variables_get_result(self->vp));
   g_free(pattern);
 
-  if (strcmp(self->current_path, new_path) == 0)
+  /* did the session path change ? */
+  if (self->current_path && strcmp(self->current_path, new_path) == 0)
     return self->current_path;
 
   /* we need to initialize a new filmroll for the new path */
-  _import_session_initialize_filmroll(self, new_path);
+  if (_import_session_initialize_filmroll(self, new_path) != 0)
+  {
+    fprintf(stderr, "[import_session] Failed to get session path.\n");
+    return NULL;
+  }
 
   return self->current_path;
 }

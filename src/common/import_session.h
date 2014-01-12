@@ -24,6 +24,9 @@ struct dr_import_session_t;
 struct dt_import_session_t *dt_import_session_new();
 void dt_import_session_destroy(struct dt_import_session_t *self);
 
+/** \brief Verify that we use current film and import images into it */
+gboolean dt_import_session_ready(struct dt_import_session_t *self);
+
 /** \brief add reference to specified import session */
 void dt_import_session_ref(struct dt_import_session_t *self);
 /** \brief remove reference to specified import session */
@@ -34,6 +37,18 @@ void dt_import_session_import(struct dt_import_session_t *self);
 
 /** \brief set the job code of the specific import session */
 void dt_import_session_set_name(struct dt_import_session_t *self, const char *name);
+
+/** \brief override the time for specific import session
+    \remark This will override NOW timestamp with specified one used when expanding ${YEAR} and alike.
+*/
+void dt_import_session_set_time(struct dt_import_session_t *self, time_t time);
+
+/** \brief set the orginal filename
+    \remark This is used to expand $(FILE_X) variables. */
+void dt_import_session_set_filename(struct dt_import_session_t *self, const char *filename);
+
+/** \brief current film id for the import session */
+int32_t dt_import_session_film_id(struct dt_import_session_t *self);
 
 /** \brief get import session name */
 const char *dt_import_session_name(struct dt_import_session_t *self);
