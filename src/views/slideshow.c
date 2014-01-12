@@ -137,7 +137,7 @@ process_next_image(dt_slideshow_t *d)
   // enumerated all images?
   if(ran < 0 || ran >= cnt)
   {
-    dt_control_log(_("end of images %d %d. press any key to return to lighttable mode"), d->counter, d->step);
+    dt_control_log(_("end of images. press any key to return to lighttable mode"), d->counter, d->step);
   }
   if(d->use_random)
   {
@@ -293,12 +293,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_restore(cr); // pop view manager
     cairo_restore(cr); // pop control
     cairo_reset_clip(cr);
+    cairo_translate(cr, (d->width-d->front_width)*.5f, (d->height-d->front_height)*.5f);
     cairo_surface_t *surface = NULL;
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, d->front_width);
     surface = cairo_image_surface_create_for_data ((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width, d->front_height, stride);
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, (d->width-d->front_width)*.5f, (d->height-d->front_height)*.5f, d->front_width, d->front_height);
+    cairo_rectangle(cr, 0, 0, d->front_width, d->front_height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
     cairo_save(cr); // pretend we didn't already pop the stack
