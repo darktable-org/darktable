@@ -33,38 +33,57 @@ typedef struct dt_slideshow_t
   uint32_t random_state;
   uint32_t scramble;
   uint32_t use_random;
+  int32_t counter;
+  int32_t step;
   uint32_t width, height;
+
 
   // double buffer
   uint32_t *buf1, *buf2;
   uint32_t *front, *back;
+  // processed sizes might differ from screen size
+  uint32_t front_width, front_height;
+  uint32_t back_width, back_height;
 }
 dt_slideshow_t;
 
+typedef struct dt_slideshow_format_t
+{
+  int max_width, max_height;
+  int width, height;
+  char style[128];
+  dt_slideshow_t *d;
+}
+dt_slideshow_format_t;
+
 // callbacks for in-memory export
-static int
+  static int
 bpp (dt_imageio_module_data_t *data)
 {
   return 8;
 }
 
-static int
+  static int
 levels(dt_imageio_module_data_t *data)
 {
-  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+  return IMAGEIO_RGB | IMAGEIO_INT8;
 }
 
-static const char*
+  static const char*
 mime(dt_imageio_module_data_t *data)
 {
   return "memory";
 }
 
-static int
-write_image (dt_imageio_module_data_t *data, const char *filename, const void *in, void *exif, int exif_len, int imgid)
+  static int
+write_image (dt_imageio_module_data_t *datai, const char *filename, const void *in, void *exif, int exif_len, int imgid)
 {
-  // TODO: data->width data->height and in is the rgba buffer.
-  // TODO: copy it to something that goes into cairo in expose()
+  dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
+  memcpy(data->d->front, in, sizeof(uint32_t)*data->d->width*data->d->height);
+  data->d->front_width = datai->width;
+  data->d->front_height = datai->height;
+  // trigger expose
+  dt_control_queue_redraw_center();
   return 0;
 }
 
@@ -85,9 +104,8 @@ next_random(dt_slideshow_t *d)
 static int
 process_next_image(dt_slideshow_t *d)
 {
-  static int counter = 0;
   dt_imageio_module_format_t buf;
-  dt_imageio_module_data_t dat;
+  dt_slideshow_format_t dat;
   buf.mime = mime;
   buf.levels = levels;
   buf.bpp = bpp;
@@ -95,13 +113,18 @@ process_next_image(dt_slideshow_t *d)
   dat.max_width  = d->width;
   dat.max_height = d->height;
   dat.style[0] = '\0';
+  dat.d = d;
 
   // get random image id from sql
   int32_t id = 0;
-  const uint32_t cnt = dt_collection_get_count (darktable.collection);
+  const int32_t cnt = dt_collection_get_count (darktable.collection);
+  d->counter += d->step;
+  int32_t ran = d->counter;
   // enumerated all images?
-  if(++counter >= cnt) return 1;
-  uint32_t ran = counter - 1;
+  if(ran < 0 || ran >= cnt)
+  {
+    dt_control_log(_("end of images %d %d. press any key to return to lighttable mode"), d->counter, d->step);
+  }
   if(d->use_random)
   {
     // get random number up to next power of two greater than cnt:
@@ -121,10 +144,11 @@ process_next_image(dt_slideshow_t *d)
     id = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
+  // this is a little slow, might be worth to do an option:
+  const int high_quality = 1;
   if(id)
-  {
-    dt_imageio_export(id, "unused", &buf, &dat, TRUE);
-  }
+    // the flags are: ignore exif, display byteorder, high quality, thumbnail
+    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 1, high_quality, 0, 0, 0, 0, 0);
   return 0;
 }
 
@@ -173,9 +197,15 @@ void cleanup(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
-  // TODO: alloc screen-size double buffer
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE);
+  // TODO: also hide arrows
+
+  // alloc screen-size double buffer
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
-  GdkScreen *screen = 0;//gtk_widget_get_screen(self->widget);
+  GdkScreen *screen = gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui));
   if(!screen)
     screen = gdk_screen_get_default();
   d->width = gdk_screen_get_width(screen);
@@ -185,6 +215,15 @@ void enter(dt_view_t *self)
   d->buf2 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
   d->front = d->buf1;
   d->back = d->buf2;
+
+  // restart from beginning
+  d->counter = 0;
+  d->step = 0;
+
+  // start first job
+  dt_job_t job;
+  process_job_init(&job, d);
+  dt_control_add_job(darktable.control, &job);
 }
 
 void leave(dt_view_t *self)
@@ -213,7 +252,17 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 {
   // TODO: pick up state changes and wait for frontbuffer lock
   // TODO: draw image from bg thread
+
+  dt_slideshow_t *d = (dt_slideshow_t*)self->data;
   cairo_paint(cr);
+  cairo_surface_t *surface = NULL;
+  const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, d->front_width);
+  surface = cairo_image_surface_create_for_data ((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width, d->front_height, stride);
+  cairo_set_source_surface (cr, surface, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+  cairo_rectangle(cr, 0, 0, d->front_width, d->front_height);
+  cairo_fill(cr);
+  cairo_surface_destroy (surface);
 }
 
 int scrolled(dt_view_t *self, double x, double y, int up, int state)
@@ -236,6 +285,11 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 int button_pressed(dt_view_t *self, double x, double y, int which, int type, uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  if(which == 1)
+    d->step = 1;
+  else if(which == 3)
+    d->step = -1;
+  else return 1;
   dt_job_t job;
   process_job_init(&job, d);
   dt_control_add_job(darktable.control, &job);
@@ -249,6 +303,8 @@ int key_released(dt_view_t *self, guint key, guint state)
 
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
+  // go back to lt mode
+  dt_ctl_switch_mode_to(DT_LIBRARY);
   return 0;
 }
 

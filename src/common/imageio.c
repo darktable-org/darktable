@@ -820,35 +820,56 @@ int dt_imageio_export_with_flags(
   dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing" : "[dev_process_export] pixel pipeline processing", NULL);
 
   // downconversion to low-precision formats:
-  if(bpp == 8 && !display_byteorder)
+  if(bpp == 8)
   {
-    // ldr output: char
-    if(high_quality_processing)
+    if(display_byteorder)
     {
-      const float *const inbuf = (float *)outbuf;
-      for(int k=0; k<processed_width*processed_height; k++)
+      if(high_quality_processing)
       {
-        // convert in place, this is unfortunately very serial..
-        const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
-        const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
-        const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
-        outbuf[4*k+0] = r;
-        outbuf[4*k+1] = g;
-        outbuf[4*k+2] = b;
+        const float *const inbuf = (float *)outbuf;
+        for(int k=0; k<processed_width*processed_height; k++)
+        {
+          // convert in place, this is unfortunately very serial..
+          const uint8_t r = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
+          const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
+          const uint8_t b = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
+          outbuf[4*k+0] = r;
+          outbuf[4*k+1] = g;
+          outbuf[4*k+2] = b;
+        }
       }
+      // else processing output was 8-bit already, and no need to swap order
     }
-    else
+    else // need to flip 
     {
-      uint8_t *const buf8 = pipe.backbuf;
-#ifdef _OPENMP
-      #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
-#endif
-      // just flip byte order
-      for(int k=0; k<processed_width*processed_height; k++)
+      // ldr output: char
+      if(high_quality_processing)
       {
-        uint8_t tmp = buf8[4*k+0];
-        buf8[4*k+0] = buf8[4*k+2];
-        buf8[4*k+2] = tmp;
+        const float *const inbuf = (float *)outbuf;
+        for(int k=0; k<processed_width*processed_height; k++)
+        {
+          // convert in place, this is unfortunately very serial..
+          const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
+          const uint8_t g = CLAMP(inbuf[4*k+1]*0xff, 0, 0xff);
+          const uint8_t b = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
+          outbuf[4*k+0] = r;
+          outbuf[4*k+1] = g;
+          outbuf[4*k+2] = b;
+        }
+      }
+      else
+      { // !display_byteorder, need to swap:
+        uint8_t *const buf8 = pipe.backbuf;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
+#endif
+        // just flip byte order
+        for(int k=0; k<processed_width*processed_height; k++)
+        {
+          uint8_t tmp = buf8[4*k+0];
+          buf8[4*k+0] = buf8[4*k+2];
+          buf8[4*k+2] = tmp;
+        }
       }
     }
   }
