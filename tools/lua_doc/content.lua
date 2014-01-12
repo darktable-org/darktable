@@ -441,6 +441,7 @@ types.dt_imageio_module_storage.supports_format:add_parameter("storage",tostring
 types.dt_imageio_module_storage.supports_format:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format type to check.]])
 types.dt_imageio_module_storage.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
 
+types.dt_imageio_module_storage_data_email:set_text([[An object containing parameters to export to email.]])
 types.dt_imageio_module_storage_data_flickr:set_text([[An object containing parameters to export to flickr.]])
 types.dt_imageio_module_storage_data_facebook:set_text([[An object containing parameters to export to facebook.]])
 types.dt_imageio_module_storage_data_latex:set_text([[An object containing parameters to export to latex.]])
