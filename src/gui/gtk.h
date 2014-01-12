@@ -18,6 +18,8 @@
 #ifndef DT_GUI_GTK_H
 #define DT_GUI_GTK_H
 
+#include "common/darktable.h"
+
 #include <gtk/gtk.h>
 #include <stdint.h>
 
@@ -64,6 +66,9 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   double dpi;
+
+  // store which gtkrc we loaded:
+  char gtkrc[DT_MAX_PATH_LEN];
 }
 dt_gui_gtk_t;
 
