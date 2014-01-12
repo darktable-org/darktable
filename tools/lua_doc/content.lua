@@ -481,6 +481,8 @@ events["intermediate-export-image"]:set_text([[This event is called each time an
 events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 events["intermediate-export-image"].callback:add_parameter("image",tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
 events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
+events["intermediate-export-image"].callback:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format used to export the image.]]):add_version_info([[field added]])
+events["intermediate-export-image"].callback:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
 events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 
