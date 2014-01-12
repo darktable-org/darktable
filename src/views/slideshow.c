@@ -175,7 +175,7 @@ void enter(dt_view_t *self)
 {
   // TODO: alloc screen-size double buffer
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
-  GdkScreen *screen = gtk_widget_get_screen(self->widget);
+  GdkScreen *screen = 0;//gtk_widget_get_screen(self->widget);
   if(!screen)
     screen = gdk_screen_get_default();
   d->width = gdk_screen_get_width(screen);
@@ -190,8 +190,9 @@ void enter(dt_view_t *self)
 void leave(dt_view_t *self)
 {
   fprintf(stderr, "[slideshow] leave\n");
-  dt_free(d->buf1);
-  dt_free(d->buf2);
+  dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+  dt_free_align(d->buf1);
+  dt_free_align(d->buf2);
 }
 
 void reset(dt_view_t *self)
