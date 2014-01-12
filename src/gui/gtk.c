@@ -1356,6 +1356,24 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   }
 }
 
+void dt_ui_border_show(dt_ui_t *ui, gboolean show)
+{
+  if(show)
+  {
+    gtk_widget_show(darktable.gui->widgets.left_border);
+    gtk_widget_show(darktable.gui->widgets.right_border);
+    gtk_widget_show(darktable.gui->widgets.top_border);
+    gtk_widget_show(darktable.gui->widgets.bottom_border);
+  }
+  else
+  {
+    gtk_widget_hide(darktable.gui->widgets.left_border);
+    gtk_widget_hide(darktable.gui->widgets.right_border);
+    gtk_widget_hide(darktable.gui->widgets.top_border);
+    gtk_widget_hide(darktable.gui->widgets.bottom_border);
+  }
+}
+
 void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
 {
   //if(!GTK_IS_WIDGET(ui->panels[p])) return;
