@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/debug.h"
 #include "control/control.h"
+#include "control/conf.h"
 
 #include <stdint.h>
 
@@ -44,6 +45,9 @@ typedef struct dt_slideshow_t
   // processed sizes might differ from screen size
   uint32_t front_width, front_height;
   uint32_t back_width, back_height;
+
+  // output profile before we overwrote it:
+  gchar *oldprofile;
 }
 dt_slideshow_t;
 
@@ -197,14 +201,20 @@ void cleanup(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE);
   // TODO: also hide arrows
 
+  // use display profile:
+  d->oldprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
+  const gchar *overprofile = "X profile";
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", overprofile);
+
   // alloc screen-size double buffer
-  dt_slideshow_t *d = (dt_slideshow_t*)self->data;
   GdkScreen *screen = gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui));
   if(!screen)
     screen = gdk_screen_get_default();
@@ -230,8 +240,12 @@ void leave(dt_view_t *self)
 {
   fprintf(stderr, "[slideshow] leave\n");
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+  dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
+  g_free(d->oldprofile);
+  d->oldprofile = 0;
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);
+  d->buf1 = d->buf2 = d->front = d->back = 0;
 }
 
 void reset(dt_view_t *self)
