@@ -233,7 +233,6 @@ void enter(dt_view_t *self)
   dt_pthread_mutex_lock(&d->lock);
   d->width = gdk_screen_get_width(screen);
   d->height = gdk_screen_get_height(screen);
-  fprintf(stderr, "[slideshow] enter %dx%d\n", d->width, d->height);
   d->buf1 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
   d->buf2 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
   d->front = d->buf1;
@@ -252,7 +251,6 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
-  fprintf(stderr, "[slideshow] leave\n");
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
