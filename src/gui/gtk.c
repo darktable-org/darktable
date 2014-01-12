@@ -744,26 +744,26 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
+  /* lets zero mem */
+  memset(gui,0,sizeof(dt_gui_gtk_t));
+
   // unset gtk rc from kde:
-  char gtkrc[PATH_MAX], path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
+  char path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
   dt_loc_get_datadir(datadir, PATH_MAX);
   dt_loc_get_user_config_dir(configdir, PATH_MAX);
 
-  g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
+  g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
 
-  if (!g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-    g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
+  if (!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
+    g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
 
-  if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
+  if (g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
   {
-    char *default_files[2] = {gtkrc, NULL};
+    char *default_files[2] = {gui->gtkrc, NULL};
     gtk_rc_set_default_files(default_files);
   }
   else
     fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
-
-  /* lets zero mem */
-  memset(gui,0,sizeof(dt_gui_gtk_t));
 
 #if !GLIB_CHECK_VERSION(2, 32, 0)
   if (!g_thread_supported ()) g_thread_init(NULL);
