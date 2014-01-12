@@ -174,13 +174,24 @@ void cleanup(dt_view_t *self)
 void enter(dt_view_t *self)
 {
   // TODO: alloc screen-size double buffer
-  fprintf(stderr, "[slideshow] enter\n");
+  dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+  GdkScreen *screen = gtk_widget_get_screen(self->widget);
+  if(!screen)
+    screen = gdk_screen_get_default();
+  d->width = gdk_screen_get_width(screen);
+  d->height = gdk_screen_get_height(screen);
+  fprintf(stderr, "[slideshow] enter %dx%d\n", d->width, d->height);
+  d->buf1 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
+  d->buf2 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
+  d->front = d->buf1;
+  d->back = d->buf2;
 }
 
 void leave(dt_view_t *self)
 {
-  // TODO: free buffers
   fprintf(stderr, "[slideshow] leave\n");
+  dt_free(d->buf1);
+  dt_free(d->buf2);
 }
 
 void reset(dt_view_t *self)
