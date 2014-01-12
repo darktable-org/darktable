@@ -175,23 +175,11 @@ static int autotype_next(lua_State *L)
       lua_pushnil(L);
     }
   }
-  // stack at this point : {object,key} (key is nil if it was the last of __get)
-  if(luaL_getmetafield(L,-2,"__default_next")) {
-    lua_pushvalue(L,-3);
-    lua_pushvalue(L,-3);
-    lua_call(L,2,2);
-    if(!lua_isnil(L,-1)) {
-      lua_remove(L,-3);
-      // we have a next
-      return 2;
-    } else {
-      // we don't have a next, 
-      lua_remove(L,-3);
-      lua_remove(L,-3);
-      return 1;
-    }
-  } else {
+  // stack at this point : {object,key}
+  if(lua_isnil(L,-1)) {
     return 1;
+  } else {
+    return luaL_error(L,"invalid key to 'next'");
   }
 }
 
@@ -226,11 +214,8 @@ static int autotype_index(lua_State *L)
   if(lua_isnil(L,-1))
   {
     lua_pop(L,1);
-    if(!luaL_getmetafield(L,-3,"__default_index"))
-    {
-      luaL_getmetafield(L,-3,"__luaA_TypeName");
-      return luaL_error(L,"field \"%s\" not found for type %s\n",lua_tostring(L,-3),lua_tostring(L,-1));
-    }
+    luaL_getmetafield(L,-3,"__luaA_TypeName");
+    return luaL_error(L,"field \"%s\" not found for type %s\n",lua_tostring(L,-3),lua_tostring(L,-1));
   }
   lua_pushvalue(L,-4);
   lua_pushvalue(L,-4);
@@ -253,11 +238,8 @@ static int autotype_newindex(lua_State *L)
   if(lua_isnil(L,-1))
   {
     lua_pop(L,1);
-    if(!luaL_getmetafield(L,-4,"__default_newindex"))
-    {
-      luaL_getmetafield(L,-4,"__luaA_TypeName");
-      return luaL_error(L,"field \"%s\" can't be written for type %s\n",lua_tostring(L,-4),lua_tostring(L,-1));
-    }
+    luaL_getmetafield(L,-4,"__luaA_TypeName");
+    return luaL_error(L,"field \"%s\" can't be written for type %s\n",lua_tostring(L,-4),lua_tostring(L,-1));
   }
   lua_pushvalue(L,-5);
   lua_pushvalue(L,-5);
@@ -383,19 +365,6 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,
 
   lua_pop(L,1);
 
-}
-
-void dt_lua_register_type_callback_default_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
-{
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
-  lua_pushcfunction(L,index);
-  lua_setfield(L,-2,"__default_index");
-  lua_pushcfunction(L,newindex);
-  lua_setfield(L,-2,"__default_newindex");
-  if(next) {
-    lua_pushcfunction(L,next);
-    lua_setfield(L,-2,"__default_next");
-  }
 }
 
 
