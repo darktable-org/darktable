@@ -237,51 +237,17 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 
 const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
 {
-  const gchar *path, *file;
+  const gchar *file;
   dt_camera_import_t *t = (dt_camera_import_t *)data;
 
   /* update import session with orginal filename so that $(FILE_EXTENSION)
      and alikes can be expanded. */
   dt_import_session_set_filename(t->session, filename);
-
-  path = dt_import_session_path(t->session, FALSE);
+  dt_import_session_path(t->session, FALSE);
   file = dt_import_session_filename(t->session, FALSE);
 
-  // Start check if file exist if it does, increase sequence and check again til we know that file doesn't exists..
-  gchar *prev_filename;
-  gchar *fullfile;
-  prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S, path, file, (char *)NULL);
-  if (g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
-  {
-    do
-    {
-      fprintf(stderr, "File %s already exists\n", fullfile);
-      file = dt_import_session_filename(t->session, FALSE);
-      fullfile = g_build_path(G_DIR_SEPARATOR_S, path, file, (char *)NULL);
-
-      // if we expanded to same filename the variables are wrong and ${SEQUENCE}
-      // is probably missing...
-      if (strcmp(prev_filename, fullfile) == 0)
-      {
-        if (prev_filename != fullfile)
-          g_free(prev_filename);
-
-        g_free(fullfile);
-
-        dt_control_log(_("couldn't expand to a unique filename for session, please check your import session settings."));
-        return NULL;
-      }
-
-      g_free(prev_filename);
-      prev_filename = fullfile;
-    }
-    while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
-  }
-
-  if (prev_filename != fullfile)
-    g_free(prev_filename);
-
-  g_free(fullfile);
+  if (file == NULL)
+    return NULL;
 
   return g_strdup(file);
 }

@@ -251,6 +251,8 @@ dt_import_session_name(struct dt_import_session_t *self)
 const char *
 dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
 {
+  const char *path;
+  char *fname, *previous_fname;
   char *pattern;
 
   if (current && self->current_filename != NULL)
@@ -258,13 +260,45 @@ dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
 
   /* expand next filename */
   g_free((void *)self->current_filename);
-
   pattern = _import_session_filename_pattern();
-
   dt_variables_expand(self->vp, pattern, TRUE);
-  self->current_filename = g_strdup(dt_variables_get_result(self->vp));
 
+  /* verify that expanded path and filename yields a unique file */
+  path = dt_import_session_path(self, TRUE);
+  previous_fname = fname = g_build_path(G_DIR_SEPARATOR_S, path,
+                                        dt_variables_get_result(self->vp), (char *)NULL);
+  if (g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE)
+  {
+    fprintf(stderr, "[import_session] File %s exists.\n", fname);
+    do
+    {
+      /* file exists, yield a new filename */
+      dt_variables_expand(self->vp, pattern, TRUE);
+      fname = g_build_path(G_DIR_SEPARATOR_S, path,
+                           dt_variables_get_result(self->vp), (char *)NULL);
+
+      fprintf(stderr, "[import_session] Testing %s.\n", fname);
+      /* check if same filename was yielded as before */
+      if (strcmp(previous_fname ,fname) == 0)
+      {
+        g_free(previous_fname);
+        g_free(fname);
+        dt_control_log(_("couldn't expand to a unique filename for session, please check your import session settings."));
+        return NULL;
+      }
+
+      g_free(previous_fname);
+      previous_fname = fname;
+
+    } while (g_file_test(fname, G_FILE_TEST_EXISTS) == TRUE);
+  }
+
+  g_free(previous_fname);
   g_free(pattern);
+
+  self->current_filename = g_strdup(dt_variables_get_result(self->vp));
+  fprintf(stderr, "[import_session] Using filename %s.\n", self->current_filename);
+
   return self->current_filename;
 }
 
@@ -280,7 +314,7 @@ dt_import_session_path(struct dt_import_session_t *self, gboolean current)
 
   /* check if expanded path differs from current */
   pattern = _import_session_path_pattern();
-  dt_variables_expand(self->vp, pattern, TRUE);
+  dt_variables_expand(self->vp, pattern, FALSE);
   new_path = g_strdup(dt_variables_get_result(self->vp));
   g_free(pattern);
 
