@@ -18,6 +18,7 @@
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "common/utility.h"
+#include "common/import_session.h"
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
@@ -200,20 +201,21 @@ int32_t dt_camera_get_previews_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override)
+void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override)
 {
   dt_control_job_init(job, "import selected images from camera");
   job->execute = &dt_camera_import_job_run;
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
-  dt_variables_params_init(&t->vp);
+
+  /* intitialize import session for camera import job */
+  t->session = dt_import_session_new();
+  dt_import_session_set_name(t->session, jobcode);
   if(time_override != 0)
-    dt_variables_set_time(t->vp, time_override);
+    dt_import_session_set_time(t->session, time_override);
+
   t->fraction=0;
   t->images=g_list_copy(images);
   t->camera=camera;
-  t->vp->jobcode=g_strdup(jobcode);
-  t->path=g_strdup(path);
-  t->filename=g_strdup(filename);
   t->import_count=0;
 }
 
@@ -222,7 +224,7 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_image_import(t->film->id, filename, FALSE);
+  dt_image_import(dt_import_session_film_id(t->session), filename, FALSE);
   dt_control_queue_redraw_center();
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
@@ -235,33 +237,27 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
 
 const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
 {
+  const gchar *path, *file;
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  t->vp->filename=filename;
 
-  gchar* fixed_path = dt_util_fix_path(t->path);
-  g_free(t->path);
-  t->path = fixed_path;
-  dt_variables_expand( t->vp, t->path, FALSE );
-  gchar *storage = dt_variables_get_result(t->vp);
+  /* update import session with orginal filename so that $(FILE_EXTENSION)
+     and alikes can be expanded. */
+  dt_import_session_set_filename(t->session, filename);
 
-  dt_variables_expand( t->vp, t->filename, TRUE );
-  gchar *file = dt_variables_get_result(t->vp);
+  path = dt_import_session_path(t->session, FALSE);
+  file = dt_import_session_filename(t->session, FALSE);
 
   // Start check if file exist if it does, increase sequence and check again til we know that file doesn't exists..
   gchar *prev_filename;
   gchar *fullfile;
-  prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S,
-                                          storage, file,
-                                          (char *)NULL);
-
-  if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
+  prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S, path, file, (char *)NULL);
+  if (g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
   {
     do
     {
-      dt_variables_expand( t->vp, t->filename, TRUE );
-      g_free(file);
-      file = dt_variables_get_result(t->vp);
-      fullfile = g_build_path(G_DIR_SEPARATOR_S, storage, file, (char *)NULL);
+      fprintf(stderr, "File %s already exists\n", fullfile);
+      file = dt_import_session_filename(t->session, FALSE);
+      fullfile = g_build_path(G_DIR_SEPARATOR_S, path, file, (char *)NULL);
 
       // if we expanded to same filename the variables are wrong and ${SEQUENCE}
       // is probably missing...
@@ -271,10 +267,8 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
           g_free(prev_filename);
 
         g_free(fullfile);
-        g_free(storage);
 
-        dt_control_log(_("couldn't expand to a unique filename for import, please check your import settings."));
-
+        dt_control_log(_("couldn't expand to a unique filename for session, please check your import session settings."));
         return NULL;
       }
 
@@ -288,15 +282,14 @@ const char *_camera_import_request_image_filename(const dt_camera_t *camera,cons
     g_free(prev_filename);
 
   g_free(fullfile);
-  g_free(storage);
-  return file;
+
+  return g_strdup(file);
 }
 
-const char *_camera_import_request_image_path(const dt_camera_t *camera,void *data)
+const char *_camera_import_request_image_path(const dt_camera_t *camera, void *data)
 {
-  // :) yeap this is kind of stupid yes..
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  return t->film->dirname;
+  return dt_import_session_path(t->session, FALSE);
 }
 
 int32_t dt_camera_import_job_run(dt_job_t *job)
@@ -304,60 +297,36 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   dt_control_log(_("starting to import images from camera"));
 
-  // Setup a new filmroll to import images to....
-  t->film=(dt_film_t*)g_malloc(sizeof(dt_film_t));
-
-  dt_film_init(t->film);
-
-  gchar* fixed_path = dt_util_fix_path(t->path);
-  g_free(t->path);
-  t->path = fixed_path;
-  dt_variables_expand( t->vp, t->path, FALSE );
-  sprintf(t->film->dirname,"%s",dt_variables_get_result(t->vp));
-
-  dt_pthread_mutex_lock(&t->film->images_mutex);
-  t->film->ref++;
-  dt_pthread_mutex_unlock(&t->film->images_mutex);
-
-  // Create recursive directories, abort if no access
-  if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
+  if (!dt_import_session_ready(t->session))
   {
-    dt_control_log(_("failed to create import path `%s', import aborted."), t->film->dirname);
+    dt_control_log("Failed to import images from camera.");
     return 1;
   }
 
-  // Import path is ok, lets actually create the filmroll in database..
-  if(dt_film_new(t->film,t->film->dirname) > 0)
-  {
-    int total = g_list_length( t->images );
-    char message[512]= {0};
-    sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
-    t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
+  int total = g_list_length( t->images );
+  char message[512]= {0};
+  sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
+  t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
-    // Switch to new filmroll
-    dt_film_open(t->film->id);
-    dt_ctl_switch_mode_to(DT_LIBRARY);
+  // Switch to new filmroll
+  dt_film_open(dt_import_session_film_id(t->session));
+  dt_ctl_switch_mode_to(DT_LIBRARY);
 
-    // register listener
-    dt_camctl_listener_t listener= {0};
-    listener.data=t;
-    listener.image_downloaded=_camera_image_downloaded;
-    listener.request_image_path=_camera_import_request_image_path;
-    listener.request_image_filename=_camera_import_request_image_filename;
+  // register listener
+  dt_camctl_listener_t listener= {0};
+  listener.data=t;
+  listener.image_downloaded=_camera_image_downloaded;
+  listener.request_image_path=_camera_import_request_image_path;
+  listener.request_image_filename=_camera_import_request_image_filename;
 
-    //  start download of images
-    dt_camctl_register_listener(darktable.camctl,&listener);
-    dt_camctl_import(darktable.camctl,t->camera,t->images);
-    dt_camctl_unregister_listener(darktable.camctl,&listener);
-    dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
-    dt_variables_params_destroy(t->vp);
-  }
-  else
-    dt_control_log(_("failed to create filmroll for camera import, import aborted."));
+  // start download of images
+  dt_camctl_register_listener(darktable.camctl,&listener);
+  dt_camctl_import(darktable.camctl,t->camera,t->images);
+  dt_camctl_unregister_listener(darktable.camctl,&listener);
+  dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
 
-  dt_pthread_mutex_lock(&t->film->images_mutex);
-  t->film->ref--;
-  dt_pthread_mutex_unlock(&t->film->images_mutex);
+  dt_import_session_destroy(t->session);
+
   return 0;
 }
 

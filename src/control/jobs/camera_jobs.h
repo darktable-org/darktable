@@ -71,15 +71,12 @@ typedef struct dt_camera_import_t
   struct dt_camera_t *camera;
   const guint *bgj;
   double fraction;
-  dt_variables_params_t *vp;
-  dt_film_t *film;
-  gchar *path;
-  gchar *filename;
+  struct dt_import_session_t *session;
   uint32_t import_count;
 }
 dt_camera_import_t;
 int32_t dt_camera_import_job_run(dt_job_t *job);
-void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override);
+void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
