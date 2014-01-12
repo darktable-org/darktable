@@ -48,6 +48,7 @@ typedef struct dt_slideshow_t
   uint32_t front_width, front_height;
   uint32_t back_width, back_height;
   dt_pthread_mutex_t lock;
+  uint32_t working;
 
   // output profile before we overwrote it:
   gchar *oldprofile;
@@ -87,12 +88,13 @@ write_image (dt_imageio_module_data_t *datai, const char *filename, const void *
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
-  if(data->d->front)
+  if(data->d->back)
   { // might have been cleaned up when leaving slide show
-    memcpy(data->d->front, in, sizeof(uint32_t)*data->d->width*data->d->height);
-    data->d->front_width = datai->width;
-    data->d->front_height = datai->height;
+    memcpy(data->d->back, in, sizeof(uint32_t)*data->d->width*data->d->height);
+    data->d->back_width = datai->width;
+    data->d->back_height = datai->height;
   }
+  data->d->working = 0;
   dt_pthread_mutex_unlock(&data->d->lock);
   // trigger expose
   dt_control_queue_redraw_center();
@@ -170,14 +172,12 @@ static int32_t process_job_run(dt_job_t *job)
 {
   dt_slideshow_t *d = *(dt_slideshow_t **)job->param;
   process_next_image(d);
-  // TODO: swap front/back buffers
-  // TODO: set some flag on d-> to signal change in buffers
-  // TODO: trigger re-expose
   return 0;
 }
 
 static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
 {
+  d->working = 1;
   dt_control_job_init(job, "process slideshow image");
   job->execute = process_job_run;
   *((dt_slideshow_t **)job->param) = d;
@@ -293,6 +293,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_restore(cr); // pop view manager
     cairo_restore(cr); // pop control
     cairo_reset_clip(cr);
+    cairo_save(cr);
     cairo_translate(cr, (d->width-d->front_width)*.5f, (d->height-d->front_height)*.5f);
     cairo_surface_t *surface = NULL;
     const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, d->front_width);
@@ -302,6 +303,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_rectangle(cr, 0, 0, d->front_width, d->front_height);
     cairo_fill(cr);
     cairo_surface_destroy (surface);
+    cairo_restore(cr);
     cairo_save(cr); // pretend we didn't already pop the stack
     cairo_save(cr);
   }
@@ -333,9 +335,30 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
   else if(which == 3)
     d->step = -1;
   else return 1;
-  dt_job_t job;
-  process_job_init(&job, d);
-  dt_control_add_job(darktable.control, &job);
+
+  // XXX FIXME: defer all of this until the backbuf job has finished!
+  // swap buffers and kick off new job.
+  dt_pthread_mutex_lock(&d->lock);
+  if(d->working)
+  {
+    dt_control_log(_("busy"));
+  }
+  else
+  {
+    uint32_t *tmp = d->front;
+    d->front = d->back;
+    d->back = tmp;
+    d->front_width = d->back_width;
+    d->front_height = d->back_height;
+
+    // draw new front buf
+    dt_control_queue_redraw_center();
+
+    dt_job_t job;
+    process_job_init(&job, d);
+    dt_control_add_job(darktable.control, &job);
+  }
+  dt_pthread_mutex_unlock(&d->lock);
   return 0;
 }
 
