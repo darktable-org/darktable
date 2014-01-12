@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 - 2012 Henrik Andersson.
+    copyright (c) 2010 -- 2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +27,33 @@
 #include <stdio.h>
 #include <glib.h>
 
+/** Both import and capture jobs uses this */
+static const char *
+_camera_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
+{
+  const gchar *file;
+  struct dt_import_session_t *session;
+  session = (struct dt_import_session_t *)data;
+
+  /* update import session with orginal filename so that $(FILE_EXTENSION)
+     and alikes can be expanded. */
+  dt_import_session_set_filename(session, filename);
+  file = dt_import_session_filename(session, FALSE);
+
+  if (file == NULL)
+    return NULL;
+
+  return g_strdup(file);
+}
+
+/** Both import and capture jobs uses this */
+static const char *
+_camera_request_image_path(const dt_camera_t *camera, void *data)
+{
+  struct dt_import_session_t *session;
+  session = (struct dt_import_session_t *)data;
+  return dt_import_session_path(session, FALSE);
+}
 
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
 {
@@ -59,6 +86,18 @@ void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char
   t->film_id = filmid;
 }
 
+void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
+{
+  dt_job_t j;
+  dt_camera_capture_t *t;
+
+  t = (dt_camera_capture_t*)data;
+
+  /* create an import job of downloaded image */
+  dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->session), filename);
+  dt_control_add_job(darktable.control, &j);
+}
+
 int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
@@ -66,6 +105,15 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   char message[512]= {0};
   double fraction=0;
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
+
+  // register listener
+  dt_camctl_listener_t listener;
+  memset(&listener, 0, sizeof(dt_camctl_listener_t));
+  listener.data=t;
+  listener.image_downloaded=_camera_capture_image_downloaded;
+  listener.request_image_path=_camera_request_image_path;
+  listener.request_image_filename=_camera_request_image_filename;
+  dt_camctl_register_listener(darktable.camctl, &listener);
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
@@ -155,6 +203,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
 
+  dt_import_session_destroy(t->session);
 
   // free values
   if(values)
@@ -165,12 +214,15 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   return 0;
 }
 
-void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps)
+void dt_camera_capture_job_init(dt_job_t *job,const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps)
 {
   dt_control_job_init(job, "remote capture of image(s)");
   job->execute = &dt_camera_capture_job_run;
   dt_camera_capture_t *t = (dt_camera_capture_t *)job->param;
-  t->film_id=filmid;
+
+  t->session = dt_import_session_new();
+  dt_import_session_set_name(t->session, jobcode);
+
   t->delay=delay;
   t->count=count;
   t->brackets=brackets;
@@ -220,7 +272,7 @@ void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images
 }
 
 /** Listener interface for import job */
-void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
+void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
@@ -233,29 +285,6 @@ void _camera_image_downloaded(const dt_camera_t *camera,const char *filename,voi
   dt_control_backgroundjobs_progress(darktable.control, t->bgj, t->fraction );
 
   t->import_count++;
-}
-
-const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
-{
-  const gchar *file;
-  dt_camera_import_t *t = (dt_camera_import_t *)data;
-
-  /* update import session with orginal filename so that $(FILE_EXTENSION)
-     and alikes can be expanded. */
-  dt_import_session_set_filename(t->session, filename);
-  dt_import_session_path(t->session, FALSE);
-  file = dt_import_session_filename(t->session, FALSE);
-
-  if (file == NULL)
-    return NULL;
-
-  return g_strdup(file);
-}
-
-const char *_camera_import_request_image_path(const dt_camera_t *camera, void *data)
-{
-  dt_camera_import_t *t = (dt_camera_import_t *)data;
-  return dt_import_session_path(t->session, FALSE);
 }
 
 int32_t dt_camera_import_job_run(dt_job_t *job)
@@ -281,9 +310,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   // register listener
   dt_camctl_listener_t listener= {0};
   listener.data=t;
-  listener.image_downloaded=_camera_image_downloaded;
-  listener.request_image_path=_camera_import_request_image_path;
-  listener.request_image_filename=_camera_import_request_image_filename;
+  listener.image_downloaded=_camera_import_image_downloaded;
+  listener.request_image_path=_camera_request_image_path;
+  listener.request_image_filename=_camera_request_image_filename;
 
   // start download of images
   dt_camctl_register_listener(darktable.camctl,&listener);

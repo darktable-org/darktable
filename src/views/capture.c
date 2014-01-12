@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 henrik andersson.
+    copyright (c) 2010 -- 2014 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,9 +85,6 @@ dt_capture_t;
 /* signal handler for filmstrip image switching */
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data);
 
-static const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
-static const gchar *_capture_view_get_session_path(const dt_view_t *view);
-static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
 static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
@@ -133,23 +130,21 @@ gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
 
 void init(dt_view_t *self)
 {
+  dt_capture_t *lib;
+
   self->data = malloc(sizeof(dt_capture_t));
   memset(self->data,0,sizeof(dt_capture_t));
-  dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  // initialize capture data struct
-  const int i = dt_conf_get_int("plugins/capture/mode");
-  lib->mode = i;
+  lib = (dt_capture_t *)self->data;
 
-  // prefetch next few from first selected image on.
+  /* initialize capture data struct */
+  lib->mode = dt_conf_get_int("plugins/capture/mode");
+
+  /* prefetch next few from first selected image on. */
   dt_view_filmstrip_prefetch();
-
 
   /* setup the tethering view proxy */
   darktable.view_manager->proxy.tethering.view = self;
-  darktable.view_manager->proxy.tethering.get_film_id = _capture_view_get_film_id;
-  darktable.view_manager->proxy.tethering.get_session_filename = _capture_view_get_session_filename;
-  darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
   darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
@@ -160,14 +155,6 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-
-uint32_t _capture_view_get_film_id(const dt_view_t *view)
-{
-  g_assert( view != NULL );
-  dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  return dt_import_session_film_id(cv->session);
-}
 
 uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
