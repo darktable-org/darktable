@@ -27,9 +27,6 @@ typedef struct  dt_camera_import_dialog_param_t
 {
   dt_camera_t *camera;
   gchar *jobcode;
-  gchar *basedirectory;
-  gchar *subdirectory;
-  gchar *filenamepattern;
   time_t time_override;
   /** Filenames of selected images to import*/
   GList *result;
