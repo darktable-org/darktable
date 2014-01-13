@@ -32,13 +32,13 @@ static const char *
 _camera_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
 {
   const gchar *file;
-  struct dt_import_session_t *session;
-  session = (struct dt_import_session_t *)data;
+  struct dt_camera_shared_t *shared;
+  shared = (dt_camera_shared_t *)data;
 
   /* update import session with orginal filename so that $(FILE_EXTENSION)
      and alikes can be expanded. */
-  dt_import_session_set_filename(session, filename);
-  file = dt_import_session_filename(session, FALSE);
+  dt_import_session_set_filename(shared->session, filename);
+  file = dt_import_session_filename(shared->session, FALSE);
 
   if (file == NULL)
     return NULL;
@@ -50,9 +50,9 @@ _camera_request_image_filename(const dt_camera_t *camera,const char *filename,vo
 static const char *
 _camera_request_image_path(const dt_camera_t *camera, void *data)
 {
-  struct dt_import_session_t *session;
-  session = (struct dt_import_session_t *)data;
-  return dt_import_session_path(session, FALSE);
+  struct dt_camera_shared_t *shared;
+  shared = (struct dt_camera_shared_t *)data;
+  return dt_import_session_path(shared->session, FALSE);
 }
 
 int32_t dt_captured_image_import_job_run(dt_job_t *job)
@@ -94,7 +94,7 @@ void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *file
   t = (dt_camera_capture_t*)data;
 
   /* create an import job of downloaded image */
-  dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->session), filename);
+  dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
   dt_control_add_job(darktable.control, &j);
 }
 
@@ -107,13 +107,14 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
 
   // register listener
-  dt_camctl_listener_t listener;
-  memset(&listener, 0, sizeof(dt_camctl_listener_t));
-  listener.data=t;
-  listener.image_downloaded=_camera_capture_image_downloaded;
-  listener.request_image_path=_camera_request_image_path;
-  listener.request_image_filename=_camera_request_image_filename;
-  dt_camctl_register_listener(darktable.camctl, &listener);
+  dt_camctl_listener_t *listener;
+  listener = g_malloc(sizeof(dt_camctl_listener_t));
+  memset(listener, 0, sizeof(dt_camctl_listener_t));
+  listener->data=t;
+  listener->image_downloaded=_camera_capture_image_downloaded;
+  listener->request_image_path=_camera_request_image_path;
+  listener->request_image_filename=_camera_request_image_filename;
+  dt_camctl_register_listener(darktable.camctl, listener);
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");
@@ -203,13 +204,14 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
 
-  dt_import_session_destroy(t->session);
+  dt_import_session_destroy(t->shared.session);
 
   // free values
   if(values)
   {
     g_list_free_full(values, g_free);
   }
+  g_free(listener);
 
   return 0;
 }
@@ -220,8 +222,8 @@ void dt_camera_capture_job_init(dt_job_t *job,const char *jobcode, uint32_t dela
   job->execute = &dt_camera_capture_job_run;
   dt_camera_capture_t *t = (dt_camera_capture_t *)job->param;
 
-  t->session = dt_import_session_new();
-  dt_import_session_set_name(t->session, jobcode);
+  t->shared.session = dt_import_session_new();
+  dt_import_session_set_name(t->shared.session, jobcode);
 
   t->delay=delay;
   t->count=count;
@@ -260,10 +262,10 @@ void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
 
   /* intitialize import session for camera import job */
-  t->session = dt_import_session_new();
-  dt_import_session_set_name(t->session, jobcode);
+  t->shared.session = dt_import_session_new();
+  dt_import_session_set_name(t->shared.session, jobcode);
   if(time_override != 0)
-    dt_import_session_set_time(t->session, time_override);
+    dt_import_session_set_time(t->shared.session, time_override);
 
   t->fraction=0;
   t->images=g_list_copy(images);
@@ -276,7 +278,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_image_import(dt_import_session_film_id(t->session), filename, FALSE);
+  dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE);
   dt_control_queue_redraw_center();
   dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
 
@@ -292,7 +294,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camera_import_t *t = (dt_camera_import_t *)job->param;
   dt_control_log(_("starting to import images from camera"));
 
-  if (!dt_import_session_ready(t->session))
+  if (!dt_import_session_ready(t->shared.session))
   {
     dt_control_log("Failed to import images from camera.");
     return 1;
@@ -304,7 +306,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   // Switch to new filmroll
-  dt_film_open(dt_import_session_film_id(t->session));
+  dt_film_open(dt_import_session_film_id(t->shared.session));
   dt_ctl_switch_mode_to(DT_LIBRARY);
 
   // register listener
@@ -320,7 +322,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   dt_camctl_unregister_listener(darktable.camctl,&listener);
   dt_control_backgroundjobs_destroy(darktable.control, t->bgj);
 
-  dt_import_session_destroy(t->session);
+  dt_import_session_destroy(t->shared.session);
 
   return 0;
 }

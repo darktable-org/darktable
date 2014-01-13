@@ -23,6 +23,11 @@
 #include "common/variables.h"
 #include "control/control.h"
 
+typedef struct dt_camera_shared_t
+{
+  struct dt_import_session_t *session;
+} dt_camera_shared_t;
+
 /** Tethered image import job */
 typedef struct dt_captured_image_import_t
 {
@@ -36,7 +41,7 @@ void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const cha
 /** Camera capture job */
 typedef struct dt_camera_capture_t
 {
-  struct dt_import_session_t *session;
+  dt_camera_shared_t shared;
 
   /** delay between each capture, 0 no delay */
   uint32_t delay;
@@ -67,7 +72,7 @@ void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,st
 /** Camera import job */
 typedef struct dt_camera_import_t
 {
-  struct dt_import_session_t *session;
+  dt_camera_shared_t shared;
 
   GList *images;
   struct dt_camera_t *camera;
