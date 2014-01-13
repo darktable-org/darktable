@@ -261,6 +261,12 @@ dt_import_session_filename(struct dt_import_session_t *self, gboolean current)
   /* expand next filename */
   g_free((void *)self->current_filename);
   pattern = _import_session_filename_pattern();
+  if (pattern == NULL)
+  {
+    fprintf(stderr,"[import_session] Failed to get session filaname pattern.\n");
+    return NULL;
+  }
+
   dt_variables_expand(self->vp, pattern, TRUE);
 
   /* verify that expanded path and filename yields a unique file */
@@ -314,6 +320,12 @@ dt_import_session_path(struct dt_import_session_t *self, gboolean current)
 
   /* check if expanded path differs from current */
   pattern = _import_session_path_pattern();
+  if (pattern == NULL)
+  {
+    fprintf(stderr,"[import_session] Failed to get session path pattern.\n");
+    return NULL;
+  }
+
   dt_variables_expand(self->vp, pattern, FALSE);
   new_path = g_strdup(dt_variables_get_result(self->vp));
   g_free(pattern);
