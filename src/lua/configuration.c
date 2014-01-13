@@ -35,7 +35,7 @@
 /* bugfixes that should not change anything to the API */
 #define API_VERSION_PATCH  0
 /* suffix for unstable version */
-#define API_VERSION_SUFFIX ""
+#define API_VERSION_SUFFIX "-dev"
 
 int dt_lua_init_configuration(lua_State*L)
 {
