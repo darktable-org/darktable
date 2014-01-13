@@ -125,9 +125,7 @@ static int write_image(lua_State *L)
 
 void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* module, luaA_Type type_id)
 {
-  dt_lua_register_type_callback_list_typeid(L,type_id,format_index,NULL,format_fields_name);
-  lua_pushcfunction(L,write_image);
-  dt_lua_register_type_callback_stack_typeid(L,type_id,"write_image");
+  dt_lua_register_type_callback_inherit_typeid(L,type_id,luaA_type_find("dt_imageio_module_format_t"));
   luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
@@ -255,7 +253,7 @@ static int get_storage_params(lua_State *L)
 
 void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* module, luaA_Type type_id)
 {
-  dt_lua_register_type_callback_list_typeid(L,type_id,storage_index,NULL,storage_fields_name);
+  dt_lua_register_type_callback_inherit_typeid(L,type_id,luaA_type_find("dt_imageio_module_storage_t"));
   luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
@@ -278,6 +276,14 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
 
 int dt_lua_init_modules(lua_State *L)
 {
+
+  dt_lua_init_type(L,dt_imageio_module_format_t);
+  dt_lua_register_type_callback_list(L,dt_imageio_module_format_t,format_index,NULL,format_fields_name);
+  lua_pushcfunction(L,write_image);
+  dt_lua_register_type_callback_stack(L,dt_imageio_module_format_t,"write_image");
+
+  dt_lua_init_type(L,dt_imageio_module_storage_t);
+  dt_lua_register_type_callback_list(L,dt_imageio_module_storage_t,storage_index,NULL,storage_fields_name);
 
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");

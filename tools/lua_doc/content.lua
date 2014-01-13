@@ -30,24 +30,6 @@ end
 
 print("warning, avoid problems with picasa/facebook")
 types.dt_imageio_module_storage_data_email:set_text([[TBSL undocumented, force first]])
-local all_sons = {}
-for k,v in types:all_children() do
-	if k:sub(1,#"dt_imageio_module_storage") == "dt_imageio_module_storage" then
-		table.insert(all_sons,v)
-	end
-
-end
-doc.create_artificial_parent("dt_imageio_module_storage",types,all_sons);
-
-all_sons = {}
-for k,v in types:all_children() do
-	if k:sub(1,#"dt_imageio_module_format") == "dt_imageio_module_format" then
-		table.insert(all_sons,v)
-	end
-
-end
-doc.create_artificial_parent("dt_imageio_module_format",types,all_sons);
-
 
 ----------------------
 --  TOPLEVEL        --
@@ -83,7 +65,7 @@ darktable.register_storage:add_parameter("plugin_name","string",[[A Unique name 
 darktable.register_storage:add_parameter("name","string",[[A human readable name for the plugin.]])
 tmp_node = darktable.register_storage:add_parameter("store","function",[[This function is called once for each exported image. Images can be exported in parallel but the calls to this function will be serialized.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage object used for the export.]])
+tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage object used for the export.]])
 tmp_node:add_parameter("image",tostring(types.dt_lua_image_t),[[The exported image object.]])
 tmp_node:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format object used for the export.]])
 tmp_node:add_parameter("filename","string",[[The name of a temporary file where the processed image is stored.]])
@@ -93,21 +75,21 @@ tmp_node:add_parameter("high_quality","boolean",[[True if the export is high qua
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to all calls to store and the call to finalize in a given export series.]])
 tmp_node = darktable.register_storage:add_parameter("finalize","function",[[This function is called once all images are processed and all store calls are finished.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage object used for the export.]])
+tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage object used for the export.]])
 tmp_node:add_parameter("image_table","table",[[A table keyed by the exported image objects and valued with the corresponding temporary export filename.]])
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to store extra data. This table is common to all calls to store and the call to finalize in a given export series.]])
 tmp_node = darktable.register_storage:add_parameter("supported","function",[[A function called to check if a given image format is supported by the Lua storage; this is used to build the dropdown format list for the GUI.
 
 Nate that the parameters in the format are the ones currently set in the GUI; the user might change them before export.]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage object tested.]])
+tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage object tested.]])
 tmp_node:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format object to report about.]])
 tmp_node:add_return("boolean",[[True if the corresponding format is supported.]])
 tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A function called before storage happens
 
 This function can change the list of exported functions]])
 tmp_node:set_attribute("optional",true)
-tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage object tested.]])
+tmp_node:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage object tested.]])
 tmp_node:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format object to report about.]])
 tmp_node:add_parameter("images","table of dt_lua_image_t",[[A table containing images to be exported.]])
 tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
@@ -307,7 +289,7 @@ darktable.modules.storage:set_text([[Functions to get parameter objects for the 
 
 New values may appear in this table if new storages are registered using Lua.]])
 darktable.modules.storage.email:set_text([[Used to get a new email storage object.]])
-darktable.modules.storage.email:add_return(tostring(types.dt_imageio_module_storage),[[A new storage object describing the parameters to export with - initialised to the values contained in the GUI.]])
+darktable.modules.storage.email:add_return(tostring(types.dt_imageio_module_storage_t),[[A new storage object describing the parameters to export with - initialised to the values contained in the GUI.]])
 darktable.modules.storage.email:set_alias(darktable.modules.storage.latex)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.disk)
 darktable.modules.storage.email:set_alias(darktable.modules.storage.gallery)
@@ -394,19 +376,19 @@ types.dt_lua_image_t.get_group_members:add_return("table",[[A table of image obj
 darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
 types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
 
-types.dt_imageio_module_format:set_text([[A virtual type representing all format types.]])
-types.dt_imageio_module_format.plugin_name:set_text([[A unique name for the plugin.]])
-types.dt_imageio_module_format.name:set_text([[A human readable name for the plugin.]])
-types.dt_imageio_module_format.extension:set_text([[The typical filename extension for that format.]])
-types.dt_imageio_module_format.mime:set_text([[The mime type associated with the format.]])
-types.dt_imageio_module_format.max_width:set_text([[The max width allowed for the format (0 = unlimited).]])
-types.dt_imageio_module_format.max_height:set_text([[The max height allowed for the format (0 = unlimited).]])
-types.dt_imageio_module_format.write_image:set_text([[Exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
-types.dt_imageio_module_format.write_image:set_attribute("implicit_yield",true)
-types.dt_imageio_module_format.write_image:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format that will be used to export.]])
-types.dt_imageio_module_format.write_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image object to export.]])
-types.dt_imageio_module_format.write_image:add_parameter("filename","string",[[The filename to export to.]])
-types.dt_imageio_module_format.write_image:add_return("boolean",[[Returns true on success.]])
+types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
+types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])
+types.dt_imageio_module_format_t.name:set_text([[A human readable name for the plugin.]])
+types.dt_imageio_module_format_t.extension:set_text([[The typical filename extension for that format.]])
+types.dt_imageio_module_format_t.mime:set_text([[The mime type associated with the format.]])
+types.dt_imageio_module_format_t.max_width:set_text([[The max width allowed for the format (0 = unlimited).]])
+types.dt_imageio_module_format_t.max_height:set_text([[The max height allowed for the format (0 = unlimited).]])
+types.dt_imageio_module_format_t.write_image:set_text([[Exports an image to a file. This is a blocking operation that will not return until the image is exported.]])
+types.dt_imageio_module_format_t.write_image:set_attribute("implicit_yield",true)
+types.dt_imageio_module_format_t.write_image:add_parameter("format",tostring(types.dt_imageio_module_format_t),[[The format that will be used to export.]])
+types.dt_imageio_module_format_t.write_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image object to export.]])
+types.dt_imageio_module_format_t.write_image:add_parameter("filename","string",[[The filename to export to.]])
+types.dt_imageio_module_format_t.write_image:add_return("boolean",[[Returns true on success.]])
 
 types.dt_imageio_module_format_data_png:set_text([[Type object describing parameters to export to png.]])
 types.dt_imageio_module_format_data_png.bpp:set_text([[The bpp parameter to use when exporting.]])
@@ -429,17 +411,17 @@ types.dt_imageio_module_format_data_j2k.format:set_text([[The format to use can 
 types.dt_imageio_module_format_data_j2k.preset:set_text([[The preset to use can be one of "cinema2k_24", "cinema2k_48", "cinema4k_24".]])
 
 
-types.dt_imageio_module_storage:set_text([[A virtual type representing all storage types.]])
-types.dt_imageio_module_storage.plugin_name:set_text([[A unique name for the plugin.]])
-types.dt_imageio_module_storage.name:set_text([[A human readable name for the plugin.]])
-types.dt_imageio_module_storage.width:set_text([[The currently selected width for the plugin.]])
-types.dt_imageio_module_storage.height:set_text([[The currently selected height for the plugin.]])
-types.dt_imageio_module_storage.recommended_width:set_text([[The recommended width for the plugin.]])
-types.dt_imageio_module_storage.recommended_height:set_text([[The recommended height for the plugin.]])
-types.dt_imageio_module_storage.supports_format:set_text([[Checks if a format is supported by this storage.]])
-types.dt_imageio_module_storage.supports_format:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage type to check against.]])
-types.dt_imageio_module_storage.supports_format:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format type to check.]])
-types.dt_imageio_module_storage.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
+types.dt_imageio_module_storage_t:set_text([[A virtual type representing all storage types.]])
+types.dt_imageio_module_storage_t.plugin_name:set_text([[A unique name for the plugin.]])
+types.dt_imageio_module_storage_t.name:set_text([[A human readable name for the plugin.]])
+types.dt_imageio_module_storage_t.width:set_text([[The currently selected width for the plugin.]])
+types.dt_imageio_module_storage_t.height:set_text([[The currently selected height for the plugin.]])
+types.dt_imageio_module_storage_t.recommended_width:set_text([[The recommended width for the plugin.]])
+types.dt_imageio_module_storage_t.recommended_height:set_text([[The recommended height for the plugin.]])
+types.dt_imageio_module_storage_t.supports_format:set_text([[Checks if a format is supported by this storage.]])
+types.dt_imageio_module_storage_t.supports_format:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage type to check against.]])
+types.dt_imageio_module_storage_t.supports_format:add_parameter("format",tostring(types.dt_imageio_module_format_t),[[The format type to check.]])
+types.dt_imageio_module_storage_t.supports_format:add_return("boolean",[[True if the format is supported by the storage.]])
 
 types.dt_imageio_module_storage_data_email:set_text([[An object containing parameters to export to email.]])
 types.dt_imageio_module_storage_data_flickr:set_text([[An object containing parameters to export to flickr.]])
@@ -482,8 +464,8 @@ events["intermediate-export-image"]:set_text([[This event is called each time an
 events["intermediate-export-image"].callback:add_parameter("event","string",[[The name of the event that triggered the callback.]])
 events["intermediate-export-image"].callback:add_parameter("image",tostring(types.dt_lua_image_t),[[The image object that has been exported.]])
 events["intermediate-export-image"].callback:add_parameter("filename","string",[[The name of the file that is the result of the image being processed.]])
-events["intermediate-export-image"].callback:add_parameter("format",tostring(types.dt_imageio_module_format),[[The format used to export the image.]]):add_version_info([[field added]])
-events["intermediate-export-image"].callback:add_parameter("storage",tostring(types.dt_imageio_module_storage),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
+events["intermediate-export-image"].callback:add_parameter("format",tostring(types.dt_imageio_module_format_t),[[The format used to export the image.]]):add_version_info([[field added]])
+events["intermediate-export-image"].callback:add_parameter("storage",tostring(types.dt_imageio_module_storage_t),[[The storage used to export the image (can be nil).]]):add_version_info([[field added]])
 events["intermediate-export-image"].extra_registration_parameters:set_text([[This event has no extra registration parameters.]])
 
 

@@ -86,6 +86,10 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,
 #define dt_lua_register_type_callback_stack(L,type_name,name) \
   dt_lua_register_type_callback_stack_typeid(L,luaA_type_find(#type_name),name)
 void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,const char* name);
+// use an other type as a fallback (inheritence
+#define dt_lua_register_type_callback_inherit(L,type_name,parent_type_name) \
+  dt_lua_register_type_callback_inherit_typeid(L,luaA_type_find(#type_name),luaA_type_find(#parent_type_name)
+void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id);
 
 /**
   * similar to dt_lua_init_type but creates a type for int id

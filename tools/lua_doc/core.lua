@@ -107,6 +107,9 @@ local function document_type_sub(node,result,parent,prev_name)
 				set_attribute(result[k],"write",true)
 				set_attribute(result[k],"is_attribute",true)
 			end
+		elseif field == "__luaA_ParentMetatable" then
+				local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);
+				set_attribute(result,"parent",type_node)
 		elseif (field == "__index"
 			or field == "__newindex"
 			or field == "__luaA_TypeName"
@@ -141,6 +144,9 @@ local function document_type_from_obj(obj,type_doc)
 		end
 	end
 	type_doc._luadoc_in_obj_rec = false
+	if M.get_attribute(type_doc,"parent") then
+		document_type_from_obj(obj, M.get_attribute(type_doc,"parent"))
+	end
 end
 M.document_type_from_obj = document_type_from_obj
 

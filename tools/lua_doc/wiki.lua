@@ -75,7 +75,10 @@ local function print_content(node)
 		end
 	end
 	if concat ~="" then
-		result = result.."\t*Attributes* : "..concat.."\n"
+		result = result.."\t*Attributes* : "..concat.."\n\n"
+	end
+	if doc.get_attribute(node,"parent") then
+		result = result.."\t*Parent type* : "..tostring(doc.get_attribute(node,"parent")).."\n"
 	end
 
 	result = result.."\n"
