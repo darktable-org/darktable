@@ -96,14 +96,17 @@ void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *file
   /* create an import job of downloaded image */
   dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
   dt_control_add_job(darktable.control, &j);
+  t->total--;
 }
 
 int32_t dt_camera_capture_job_run(dt_job_t *job)
 {
   dt_camera_capture_t *t=(dt_camera_capture_t*)job->param;
-  int total = t->brackets ? t->count * t->brackets : t->count;
+  int total;
   char message[512]= {0};
   double fraction=0;
+
+  total = t->total = t->brackets ? t->count * t->brackets : t->count;
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
 
   // register listener
@@ -200,6 +203,14 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
       current_value = g_list_find(values,original_value);
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
+  }
+
+  /* wait for last image capture before exiting job */
+  /* TODO: this could definitly be done better... */
+  while(1) {
+    if (t->total <= 0)
+      break;
+    g_usleep(G_USEC_PER_SEC);
   }
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);

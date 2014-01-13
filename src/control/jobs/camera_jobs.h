@@ -42,6 +42,7 @@ void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const cha
 typedef struct dt_camera_capture_t
 {
   dt_camera_shared_t shared;
+  int32_t total;
 
   /** delay between each capture, 0 no delay */
   uint32_t delay;
