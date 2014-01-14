@@ -43,7 +43,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
-#include "capture.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,9 +69,6 @@ typedef struct dt_capture_t
   int32_t image_id;
 
   dt_view_image_over_t image_over;
-
-  /** The capture mode, for now only supports TETHERED */
-  dt_capture_mode_t mode;
 
   struct dt_import_session_t *session;
 
@@ -130,15 +126,8 @@ gboolean film_strip_key_accel(GtkAccelGroup *accel_group,
 
 void init(dt_view_t *self)
 {
-  dt_capture_t *lib;
-
   self->data = malloc(sizeof(dt_capture_t));
   memset(self->data,0,sizeof(dt_capture_t));
-
-  lib = (dt_capture_t *)self->data;
-
-  /* initialize capture data struct */
-  lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   /* prefetch next few from first selected image on. */
   dt_view_filmstrip_prefetch();
@@ -251,8 +240,6 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-
   const int32_t capwd = darktable.thumbnail_width;
   const int32_t capht = darktable.thumbnail_height;
   int32_t width  = MIN(width_i,  capwd);
@@ -262,19 +249,14 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
 
-
   if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
   if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
-  // Mode dependent expose of center view
+  // Expose tethering center view
   cairo_save(cri);
-  switch(lib->mode)
-  {
-    case DT_CAPTURE_MODE_TETHERED: // tethered mode
-    default:
-      _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
-      break;
-  }
+  
+  _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
+  
   cairo_restore(cri);
 
   // post expose to modules
@@ -294,13 +276,9 @@ int try_enter(dt_view_t *self)
 {
   /* verify that camera supports tethering and is available */
   if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
-  {
-    dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
     return 0;
-  }
 
   dt_control_log(_("no camera with tethering support available for use..."));
-
   return 1;
 }
 
@@ -313,8 +291,6 @@ static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
-
-  lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   /* connect signal for mipmap update for a redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
@@ -360,8 +336,6 @@ void leave(dt_view_t *self)
 
 void reset(dt_view_t *self)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-  lib->mode=DT_CAPTURE_MODE_TETHERED;
   //dt_control_set_mouse_over_id(-1);
 }
 

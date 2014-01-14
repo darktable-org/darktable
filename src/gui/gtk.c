@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika, henrik andersson
+    copyright (c) 2009--2014 johannes hanika, henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
-#   include "views/capture.h"
 #endif
 #include "common/collection.h"
 #include "common/image.h"
@@ -553,7 +552,6 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
   {
 #ifdef HAVE_GPHOTO2
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
-      dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
       mode = DT_CAPTURE;
       break;
 #endif

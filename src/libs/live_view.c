@@ -1,8 +1,8 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2012 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
+    copyright (c) 2014 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "views/capture.h"
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
