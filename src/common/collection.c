@@ -35,6 +35,16 @@
 #define ORDER_BY_QUERY "order by %s"
 #define LIMIT_QUERY "limit ?1, ?2"
 
+static const char* comparators[] =
+{
+  "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
+  "<=", // DT_COLLECTION_RATING_COMP_LEQ,
+  "=",  // DT_COLLECTION_RATING_COMP_EQ,
+  ">=", // DT_COLLECTION_RATING_COMP_GEQ,
+  ">",  // DT_COLLECTION_RATING_COMP_GT,
+  "!=", // DT_COLLECTION_RATING_COMP_NE,
+};
+
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 /* Counts the number of images in the current collection */
@@ -117,7 +127,9 @@ dt_collection_update (const dt_collection_t *collection)
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
 
-    if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
+    if (collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), comparators[collection->params.comparator], rating - 1);
+    else if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
@@ -188,6 +200,7 @@ dt_collection_reset(const dt_collection_t *collection)
   /* apply stored query parameters from previous darktable session */
   params->film_id      = dt_conf_get_int("plugins/collection/film_id");
   params->rating       = dt_conf_get_int("plugins/collection/rating");
+  params->comparator   = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
   params->sort         = dt_conf_get_int("plugins/collection/sort");
   params->descending   = dt_conf_get_bool("plugins/collection/descending");
@@ -262,6 +275,16 @@ dt_collection_get_rating (const dt_collection_t *collection)
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
   i = params->rating;
   return i;
+}
+
+void dt_collection_set_rating_comparator (const dt_collection_t *collection, const dt_collection_rating_comperator_t comparator)
+{
+  ((dt_collection_t*)collection)->params.comparator = comparator;
+}
+
+dt_collection_rating_comperator_t dt_collection_get_rating_comparator (const dt_collection_t *collection)
+{
+  return collection->params.comparator;
 }
 
 void
@@ -357,6 +380,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
     dt_conf_set_int ("plugins/collection/filter_flags",collection->params.filter_flags);
     dt_conf_set_int ("plugins/collection/film_id",collection->params.film_id);
     dt_conf_set_int ("plugins/collection/rating",collection->params.rating);
+    dt_conf_set_int ("plugins/collection/rating_comparator",collection->params.comparator);
     dt_conf_set_int ("plugins/collection/sort",collection->params.sort);
     dt_conf_set_bool ("plugins/collection/descending",collection->params.descending);
   }

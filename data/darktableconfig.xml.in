@@ -232,6 +232,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/collection/rating_comparator</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/collection/query_flags</name>
     <type>int</type>
     <default>3</default>

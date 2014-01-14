@@ -35,6 +35,7 @@
 #define COLLECTION_FILTER_EQUAL_RATING          4             // show only selected star filter
 #define COLLECTION_FILTER_ALTERED               8             // show only altered images
 #define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
+#define COLLECTION_FILTER_CUSTOM_COMPARE       32             // use the comparator defined in the comparator field to filter stars
 
 typedef enum dt_collection_filter_t
 {
@@ -82,6 +83,18 @@ typedef enum dt_collection_properties_t
 }
 dt_collection_properties_t;
 
+typedef enum dt_collection_rating_comperator_t
+{
+  DT_COLLECTION_RATING_COMP_LT  = 0,
+  DT_COLLECTION_RATING_COMP_LEQ = 1,
+  DT_COLLECTION_RATING_COMP_EQ  = 2,
+  DT_COLLECTION_RATING_COMP_GEQ = 3,
+  DT_COLLECTION_RATING_COMP_GT  = 4,
+  DT_COLLECTION_RATING_COMP_NE  = 5,
+  DT_COLLECTION_RATING_N_COMPS  = 6
+}
+dt_collection_rating_comperator_t;
+
 typedef struct dt_collection_params_t
 {
   /** flags for which query parts to use, see COLLECTION_QUERY_x defines... */
@@ -95,6 +108,7 @@ typedef struct dt_collection_params_t
 
   /** current  filter */
   uint32_t rating;
+  dt_collection_rating_comperator_t comparator;
 
   /** sorting **/
   dt_collection_sort_t sort;  // Has to be changed to a dt_collection_sort struct
@@ -145,6 +159,10 @@ void dt_collection_set_film_id (const dt_collection_t *collection, uint32_t film
 void dt_collection_set_rating (const dt_collection_t *collection, uint32_t rating);
 /** get the star level for filter. The value returned starts on 0 **/
 uint32_t dt_collection_get_rating (const dt_collection_t *collection);
+/** set the comparator for rating */
+void dt_collection_set_rating_comparator (const dt_collection_t *collection, const dt_collection_rating_comperator_t comparator);
+/** get the comparator for rating */
+dt_collection_rating_comperator_t dt_collection_get_rating_comparator (const dt_collection_t *collection);
 
 /** set the sort fields and flags used to show the collection **/
 void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t sort, gint reverse);
