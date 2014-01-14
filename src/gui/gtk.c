@@ -553,8 +553,6 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
   {
 #ifdef HAVE_GPHOTO2
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
-      // switching to capture view using "plugins/capture/current_filmroll" as session...
-      // and last used camera
       dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
       mode = DT_CAPTURE;
       break;
