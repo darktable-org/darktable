@@ -43,6 +43,8 @@ typedef struct dt_camera_capture_t
 {
   dt_camera_shared_t shared;
   int32_t total;
+  pthread_mutex_t mutex;
+  pthread_cond_t done;
 
   /** delay between each capture, 0 no delay */
   uint32_t delay;

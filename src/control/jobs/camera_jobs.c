@@ -96,7 +96,12 @@ void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *file
   /* create an import job of downloaded image */
   dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
   dt_control_add_job(darktable.control, &j);
-  t->total--;
+  if (--t->total == 0)
+  {
+    pthread_mutex_lock(&t->mutex);
+    pthread_cond_broadcast(&t->done);
+    pthread_mutex_unlock(&t->mutex);
+  }
 }
 
 int32_t dt_camera_capture_job_run(dt_job_t *job)
@@ -108,6 +113,9 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
 
   total = t->total = t->brackets ? t->count * t->brackets : t->count;
   snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
+
+  pthread_mutex_init(&t->mutex, NULL);
+  pthread_cond_init(&t->done, NULL);
 
   // register listener
   dt_camctl_listener_t *listener;
@@ -206,12 +214,11 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   }
 
   /* wait for last image capture before exiting job */
-  /* TODO: this could definitly be done better... */
-  while(1) {
-    if (t->total <= 0)
-      break;
-    g_usleep(G_USEC_PER_SEC);
-  }
+  pthread_mutex_lock(&t->mutex);
+  pthread_cond_wait(&t->done, &t->mutex);
+  pthread_mutex_unlock(&t->mutex);
+  pthread_mutex_destroy(&t->mutex);
+  pthread_cond_destroy(&t->done);
 
   dt_control_backgroundjobs_destroy(darktable.control, jid);
 
