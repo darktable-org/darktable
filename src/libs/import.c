@@ -33,7 +33,6 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "views/capture.h"
 #include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
@@ -163,8 +162,6 @@ static void _lib_import_tethered_callback(GtkToggleButton *button,gpointer data)
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
-  dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
-  dt_conf_set_int("plugins/capture/current_filmroll",-1);
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
