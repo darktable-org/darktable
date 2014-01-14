@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 - 2011 henrik andersson.
+    copyright (c) 2010 - 2014 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -221,57 +221,21 @@ static void _camera_error_callback(const dt_camera_t *camera,dt_camera_error_t e
   g_idle_add(_bailout_of_tethering,user_data);
 }
 
-/** listener callback from callback control to get target directory for captured image... */
-const char *_camera_tethered_request_image_path(const dt_camera_t *camera,void *data)
-{
-  // Fetch the directory for current filmroll in  capture view..
-  return dt_view_tethering_get_session_path(darktable.view_manager);
-}
-
-
-/** listener callback from callback control to get target filename for captured image... */
-const char *_camera_tethered_request_image_filename(const dt_camera_t *camera,const char *filename, void *data)
-{
-  // Fetch the directory for current filmroll in capture view..
-  return dt_view_tethering_get_session_filename(darktable.view_manager,filename );
-}
-
-/** Listener callback from camera control when image are downloaded from camera. */
-static void _camera_tethered_downloaded_callback(const dt_camera_t *camera,const char *filename,void *data)
-{
-  dt_job_t j;
-  int32_t filmid = dt_view_tethering_get_film_id(darktable.view_manager);
-  if (filmid)
-  {
-    dt_captured_image_import_job_init(&j,filmid,filename);
-    dt_control_add_job(darktable.control, &j);
-  }
-  else
-    g_warning("failed to get filmid from tethering view...");
-}
-
 static void
 _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  if (!dt_view_tethering_check_namepattern(darktable.view_manager) )
-  {
-    dt_control_log("The filename needs to contain $(SEQUENCE), shot aborted");
-    return;
-  }
+  const char *jobcode = NULL;
   dt_lib_camera_t *lib=(dt_lib_camera_t *)user_data;
   uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb1))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb1)):0;
   uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb2))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb2)):1;
   uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb3)):0;
   uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.tb3))==TRUE?(uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.sb4)):0;
   dt_job_t j;
-  int32_t filmid = dt_view_tethering_get_film_id(darktable.view_manager);
-  if (filmid)
-  {
-    dt_camera_capture_job_init(&j,filmid,delay,count,brackets,steps);
-    dt_control_add_job(darktable.control, &j);
-  }
-  else
-    g_warning("failed to get filmid from tethering view...");
+
+  /* create a capture background job */
+  jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
+  dt_camera_capture_job_init(&j, jobcode, delay, count, brackets, steps);
+  dt_control_add_job(darktable.control, &j);
 }
 
 
@@ -435,11 +399,8 @@ gui_init (dt_lib_module_t *self)
   memset(lib->data.listener,0,sizeof(dt_camctl_listener_t));
   lib->data.listener->data=lib;
   lib->data.listener->camera_error=_camera_error_callback;
-  lib->data.listener->image_downloaded=_camera_tethered_downloaded_callback;
   lib->data.listener->camera_property_value_changed=_camera_property_value_changed;
   lib->data.listener->camera_property_accessibility_changed=_camera_property_accessibility_changed;
-  lib->data.listener->request_image_path=_camera_tethered_request_image_path;
-  lib->data.listener->request_image_filename=_camera_tethered_request_image_filename;
 
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);

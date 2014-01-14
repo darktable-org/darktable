@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
+    copyright (c) 2010--2014 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,17 +81,11 @@ typedef struct _camera_import_dialog_t
       GtkWidget *date_entry;
     } general;
 
-    _camera_gconf_widget_t *basedirectory;
-    _camera_gconf_widget_t *subdirectory;
-    _camera_gconf_widget_t *namepattern;
-    GtkWidget *example;
-
   } settings;
 
   GtkListStore *store;
   dt_job_t *preview_job;
   dt_camera_import_dialog_param_t *params;
-  dt_variables_params_t *vp;
 }
 _camera_import_dialog_t;
 
@@ -141,29 +135,6 @@ _gcw_reset_callback (GtkDarktableButton *button, gpointer user_data)
   }
 }
 
-static void
-_update_example(_camera_import_dialog_t *dialog)
-{
-  // create path/filename and execute a expand..
-  gchar *path=g_build_path(G_DIR_SEPARATOR_S,dialog->settings.basedirectory->value,dialog->settings.subdirectory->value,"/",(char *)NULL);
-  gchar *fixed_path=dt_util_fix_path(path);
-  dt_variables_expand( dialog->vp, fixed_path, FALSE);
-
-  gchar *ep=g_strdup(dt_variables_get_result(dialog->vp));
-  dt_variables_expand( dialog->vp, dialog->settings.namepattern->value, TRUE);
-  gchar *ef=g_strdup(dt_variables_get_result(dialog->vp));
-
-  gchar *str=g_strdup_printf("%s\n%s",ep,ef);
-
-  // then set result set
-  gtk_label_set_text(GTK_LABEL(dialog->settings.example),str);
-  // Cleanup
-  g_free(path);
-  g_free(fixed_path);
-  g_free(ep);
-  g_free(ef);
-  g_free(str);
-}
 
 static void
 _entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer)
@@ -173,7 +144,6 @@ _entry_text_changed(_camera_gconf_widget_t *gcw,GtkEntryBuffer *entrybuffer)
     g_free(gcw->value);
   gcw->value=g_strdup(value);
 
-  _update_example(gcw->dialog);
 }
 
 static void
@@ -248,11 +218,6 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // List - setup store
   data->store = gtk_list_store_new (2,GDK_TYPE_PIXBUF,G_TYPE_STRING);
 
-  // Setup variables
-  dt_variables_params_init(&data->vp);
-  data->vp->jobcode=_("my jobcode");
-  data->vp->filename="DSC_0235.JPG";
-
   // IMPORT PAGE
   data->import.page=gtk_vbox_new(FALSE,5);
   gtk_container_set_border_width(GTK_CONTAINER(data->import.page),5);
@@ -322,35 +287,6 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_box_pack_start(GTK_BOX(data->settings.page),hbox,FALSE,FALSE,0);
 
 
-  // Storage structure
-  gtk_box_pack_start(GTK_BOX(data->settings.page),dtgtk_label_new(_("storage structure"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT),FALSE,FALSE,0);
-  GtkWidget *l=gtk_label_new(_("the following three settings describe the directory structure and file renaming for import storage and images; if you don't know how to use this, keep the default settings."));
-  gtk_label_set_line_wrap(GTK_LABEL(l),TRUE);
-  gtk_widget_set_size_request(l,400,-1);
-  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
-
-  data->settings.basedirectory=_camera_import_gconf_widget(data,_("storage directory"),"plugins/capture/storage/basedirectory");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.basedirectory->widget),FALSE,FALSE,0);
-
-  data->settings.subdirectory=_camera_import_gconf_widget(data,_("directory structure"),"plugins/capture/storage/subpath");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.subdirectory->widget),FALSE,FALSE,0);
-
-
-  data->settings.namepattern=_camera_import_gconf_widget(data,_("filename structure"),"plugins/capture/storage/namepattern");
-  gtk_box_pack_start(GTK_BOX(data->settings.page),GTK_WIDGET(data->settings.namepattern->widget),FALSE,FALSE,0);
-
-  // Add example
-  l=gtk_label_new(_("above settings expands to:"));
-  gtk_misc_set_alignment(GTK_MISC(l), 0.0, 0.0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),l,FALSE,FALSE,0);
-
-  data->settings.example=gtk_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(data->settings.example),TRUE);
-  gtk_widget_set_size_request(data->settings.example,400,-1);
-  gtk_misc_set_alignment(GTK_MISC(data->settings.example), 0.0, 0.0);
-  gtk_box_pack_start(GTK_BOX(data->settings.page),data->settings.example,FALSE,FALSE,0);
-
   // THE NOTEBOOK
   data->notebook=gtk_notebook_new();
   gtk_notebook_append_page(GTK_NOTEBOOK(data->notebook),data->import.page,gtk_label_new(_("images")));
@@ -359,7 +295,6 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
   // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
   //gtk_widget_set_size_request(content,400,400);
-  _update_example(data);
 }
 
 int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)
@@ -435,7 +370,6 @@ void _camera_import_dialog_free(_camera_import_dialog_t *data)
 {
   gtk_list_store_clear( data->store );
   g_object_unref( data->store );
-  g_free( data->vp );
 }
 
 static void _control_status(dt_camctl_status_t status,void *user_data)
@@ -556,40 +490,12 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
         while( (sp=g_list_next(sp)) );
       }
 
-      // Lets check jobcode, basedir etc..
-      data->params->jobcode = data->import.jobname->value;
-      data->params->basedirectory = data->settings.basedirectory->value;
-      data->params->subdirectory = data->settings.subdirectory->value;
-      data->params->filenamepattern = data->settings.namepattern->value;
-
       data->params->time_override = 0;
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)))
         data->params->time_override = parse_date_time(gtk_entry_get_text(GTK_ENTRY(data->settings.general.date_entry)));
 
       if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
         data->params->jobcode = dt_conf_get_string("plugins/capture/camera/import/jobcode");
-
-      if( data->params->basedirectory == NULL || strlen( data->params->basedirectory ) <= 0 )
-      {
-        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the basedirectory settings before importing"));
-        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
-        gtk_dialog_run (GTK_DIALOG (dialog));
-        all_good=FALSE;
-      }
-      else if( data->params->subdirectory == NULL || strlen( data->params->subdirectory ) <= 0 )
-      {
-        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the subdirectory settings before importing"));
-        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
-        gtk_dialog_run (GTK_DIALOG (dialog));
-        all_good=FALSE;
-      }
-      else if( data->params->filenamepattern == NULL || strlen( data->params->filenamepattern ) <= 0 )
-      {
-        GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please set the filenamepattern settings before importing"));
-        g_signal_connect_swapped (dialog, "response",G_CALLBACK (gtk_widget_destroy),dialog);
-        gtk_dialog_run (GTK_DIALOG (dialog));
-        all_good=FALSE;
-      }
       else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)) && data->params->time_override == 0)
       {
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please use YYYY-MM-DD format for date override"));
