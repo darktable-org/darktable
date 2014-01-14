@@ -464,47 +464,6 @@ function M.set_alias(original,node)
 	end
 end
 
-function M.create_artificial_parent(name,parent,child_table)
-	local result = create_empty_node(nil,"dt_type",parent,name);
-	set_attribute(result,"reported_type","virtual type")
-	-- add all members of the first child to the parent
-	for k,v in M.all_children(child_table[1]) do
-		result[k] = v
-		table.insert(v._luadoc_parents,{result,k})
-		M.set_main_parent(v,result)
-	end
-	-- now remove all members that are not common to all types
-	for k,v in M.all_children(result) do
-		for _,child in pairs(child_table) do
-			if child[k] == nil then
-				M.remove_parent(v,result)
-				result[k] = nil
-			end
-		end
-	end
-	-- last, make parents and childs share their data
-	for _,child in pairs(child_table) do
-		M.share_type_members(result,child)
-	end
-	parent[name] = result;
-	return result
-end
-
-function M.share_type_members(parent_type,child_type)
-	if parent_type == child_type then return end
-	if parent_type._luadoc_type ~= "dt_type" or child_type._luadoc_type ~= "dt_type" then
-		error("need to be called with types")
-	end
-	for k,v in M.all_children(parent_type) do
-		if child_type[k] then
-			M.remove_parent(child_type[k],child_type)
-			table.insert(v._luadoc_parents,{child_type , k})
-			child_type[k] = v
-		end
-	end
-end
-
-
 
 local function get_name_sub(node,ancestors)
 	if not node then return "" end
@@ -598,7 +557,6 @@ meta_node.__index.set_text = M.set_text
 meta_node.__index.add_parameter = M.add_parameter
 meta_node.__index.add_return = M.add_return
 meta_node.__index.set_real_name = M.set_real_name
-meta_node.__index.share_type_members = M.share_type_members
 meta_node.__index.all_children = M.all_children
 meta_node.__index.unskiped_children = M.unskiped_children
 meta_node.__index.set_attribute = set_attribute
