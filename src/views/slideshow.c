@@ -336,15 +336,17 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     d->step = -1;
   else return 1;
 
-  // XXX FIXME: defer all of this until the backbuf job has finished!
   // swap buffers and kick off new job.
   dt_pthread_mutex_lock(&d->lock);
   if(d->working)
   {
+    // TODO: this is stupid, defer the else branch and shut up!
     dt_control_log(_("busy"));
   }
   else
   {
+    // TODO: if step changed, don't just swap but kick off new job to
+    // TODO: be shown as soon as it finishes
     uint32_t *tmp = d->front;
     d->front = d->back;
     d->back = tmp;
