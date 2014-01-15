@@ -311,7 +311,6 @@ static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
   if(strncmp(key, d->match, strlen(d->match)) == 0)
   {
     dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
-    fprintf(stderr,"Key: '%s' value '%s'\n", key + strlen(d->match) + 1, val);
     nv->key = g_strdup(key + strlen(d->match) + 1);
     nv->value = g_strdup(val);
     d->result = g_slist_append(d->result, nv);
