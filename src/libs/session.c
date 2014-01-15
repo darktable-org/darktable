@@ -28,7 +28,7 @@
 
 DT_MODULE(1)
 
-typedef  struct dt_lib_capture_t
+typedef  struct dt_lib_session_t
 {
   /** Gui part of the module */
   struct
@@ -44,7 +44,7 @@ typedef  struct dt_lib_capture_t
 
   } data;
 }
-dt_lib_capture_t;
+dt_lib_session_t;
 
 const char*
 name ()
@@ -78,9 +78,9 @@ static void
 create_callback(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self=(dt_lib_module_t *)user_data;
-  dt_lib_capture_t *lib=self->data;
+  dt_lib_session_t *lib=self->data;
 
-  dt_conf_set_string("plugins/capture/jobcode", gtk_entry_get_text(lib->gui.entry1) );
+  dt_conf_set_string("plugins/session/jobcode", gtk_entry_get_text(lib->gui.entry1) );
   dt_view_tethering_set_job_code(darktable.view_manager, gtk_entry_get_text( lib->gui.entry1 ) );
 }
 
@@ -88,11 +88,11 @@ void
 gui_init (dt_lib_module_t *self)
 {
   self->widget = gtk_vbox_new(TRUE, 5);
-  self->data = malloc(sizeof(dt_lib_capture_t));
-  memset(self->data,0,sizeof(dt_lib_capture_t));
+  self->data = malloc(sizeof(dt_lib_session_t));
+  memset(self->data,0,sizeof(dt_lib_session_t));
 
   // Setup lib data
-  dt_lib_capture_t *lib=self->data;
+  dt_lib_session_t *lib=self->data;
 
   // Setup gui
   self->widget = gtk_vbox_new(FALSE, 5);
@@ -121,7 +121,7 @@ gui_init (dt_lib_module_t *self)
   g_signal_connect (G_OBJECT (lib->gui.button1), "clicked",
                     G_CALLBACK (create_callback), self);
 
-  gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/capture/jobcode") );
+  gtk_entry_set_text(lib->gui.entry1, dt_conf_get_string("plugins/session/jobcode") );
 
 }
 
@@ -129,7 +129,7 @@ void
 gui_cleanup (dt_lib_module_t *self)
 {
   // Setup lib data
-  dt_lib_capture_t *lib=self->data;
+  dt_lib_session_t *lib=self->data;
 
   dt_gui_key_accel_block_on_focus_disconnect (GTK_WIDGET (lib->gui.entry1));
   g_free(self->data);
