@@ -308,10 +308,11 @@ static inline int dt_conf_key_exists (const char *key)
 
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 {
-  if(!strcmp(key, d->match))
+  if(strncmp(key, d->match, strlen(d->match)) == 0)
   {
     dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
-    nv->key = g_strdup(key);
+    fprintf(stderr,"Key: '%s' value '%s'\n", key + strlen(d->match) + 1, val);
+    nv->key = g_strdup(key + strlen(d->match) + 1);
     nv->value = g_strdup(val);
     d->result = g_slist_append(d->result, nv);
   }
@@ -321,13 +322,12 @@ static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 static inline GSList *dt_conf_all_string_entries (const char *dir)
 {
   dt_pthread_mutex_lock (&darktable.conf->mutex);
-  GSList *result = NULL;
   dt_conf_dreggn_t d;
-  d.result = result;
+  d.result = NULL;
   d.match = dir;
   g_hash_table_foreach(darktable.conf->table, (GHFunc)_conf_add, &d);
   dt_pthread_mutex_unlock (&darktable.conf->mutex);
-  return result;
+  return d.result;
 }
 
 
