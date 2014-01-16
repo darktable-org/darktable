@@ -606,6 +606,10 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
   module->request_histogram = 0;
+  module->histogram_bins_count = 64;
+  module->histogram_step_raw = 3;
+  module->histogram_step_rgb = 4;
+  module->histogram_step_lab = 4;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
