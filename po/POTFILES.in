@@ -17,6 +17,7 @@ src/common/ratings.c
 src/common/styles.c
 src/common/variables.c
 src/control/control.c
+src/control/crawler.c
 src/control/jobs/camera_jobs.c
 src/control/jobs/control_jobs.c
 src/control/jobs/develop_jobs.c
@@ -115,7 +116,6 @@ src/iop/wb_presets.c
 src/iop/zonesystem.c
 src/libs/backgroundjobs.c
 src/libs/camera.c
-src/libs/capture.c
 src/libs/collect.c
 src/libs/collect.h
 src/libs/colorpicker.c
@@ -138,6 +138,7 @@ src/libs/modulelist.c
 src/libs/navigation.c
 src/libs/recentcollect.c
 src/libs/select.c
+src/libs/session.c
 src/libs/snapshots.c
 src/libs/styles.c
 src/libs/tagging.c
@@ -152,10 +153,10 @@ src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
 src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
-src/views/capture.c
 src/views/darkroom.c
 src/views/lighttable.c
 src/views/map.c
+src/views/tethering.c
 src/views/view.c
 src/develop/blend.c
 src/develop/masks/masks.c
