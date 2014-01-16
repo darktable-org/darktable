@@ -22,6 +22,8 @@
 #include "lua/image.h"
 #include "common/film.h"
 #include "common/debug.h"
+#include "common/grealpath.h"
+#include <errno.h>
 
 
 typedef enum
@@ -160,7 +162,27 @@ static int films_index(lua_State*L)
   return 1;
 }
 
+static int films_new(lua_State *L)
+{
+  const char * path = luaL_checkstring(L,-1);
+  char * expanded_path = dt_util_fix_path(path);
+  char * final_path = g_realpath(expanded_path);
+  free(expanded_path);
+  if(!final_path) {
+    return luaL_error(L,"Couldn't create film for directory '%s' : %s\n",path,strerror(errno));
+  }
 
+  dt_film_t my_film;
+  dt_film_init(&my_film);
+  int film_id = dt_film_new(&my_film,final_path);
+  free(final_path);
+  if(film_id) {
+    luaA_push(L,dt_lua_film_t,&film_id);
+    return 1;
+  } else {
+    return luaL_error(L,"Couldn't create film for directory %s\n",path);
+  }
+}
 ///////////////
 // toplevel and common
 ///////////////
@@ -183,6 +205,8 @@ int dt_lua_init_film(lua_State * L)
   lua_pop(L,1);
 
   dt_lua_register_type_callback_number_typeid(L,type_id,films_index,NULL,films_len);
+  lua_pushcfunction(L,films_new);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"new");
 
   return 0;
 }

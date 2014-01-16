@@ -95,6 +95,12 @@ tmp_node:add_version_info([[This parameter was added]])
 
 darktable.films:set_text([[A table containing all the film objects in the database.]])
 darktable.films['#']:set_text([[Each film has a numeric entry in the database.]])
+darktable.films.new:set_text([[Creates a new empty film]]..para()..
+[[ see ]]..tostring(darktable.database.import)..[[ to import a directory with all its images and to add images to a film]])
+darktable.films.new:add_parameter("directory","string",[[The directory that the new film will represent. The directory must exist]])
+darktable.films.new:add_return(tostring(types.dt_lua_film_t),"The newly created film, or the existing film if the directory is already imported")
+darktable.films.new:add_version_info([[The function was added]])
+
 ----------------------
 --  DARKTABLE.GUI   --
 ----------------------
