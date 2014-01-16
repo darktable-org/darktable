@@ -202,33 +202,38 @@
         </para></listitem>
 
         <listitem><para>
-          tested with: 1.3+265~gd7f3d1a
+          tested with: 1.5+133~g7ff07de
         </para></listitem>
 
         <listitem><para>
           download:
-          <ulink url="http://www.darktable.org/redmine/attachments/download/572/mosaic.lua">mosaic.lua</ulink>
+          <ulink url="http://www.darktable.org/redmine/attachments/download/834/mosaic.lua">mosaic.lua</ulink>
         </para></listitem>
 
       </itemizedlist>
 
       <para>
 <programlisting>dt = require "darktable"
-dt.register_storage("module_stitcher","mosaic generator",nil,
-   function(storage,image_table)
-	dt.print_error("Will try to stitch now")
-	command = "gm convert "
-	for _,v in pairs(image_table) do
-		command = command..v.." "
-	end
-	command = command.."-append -resize 15% "
-                           ..dt.configuration.tmp_dir.."/tmp.png"
-	dt.print_error("this is the command: "..command)
-	os.execute(command)
+dt.register_storage("module_stitcher","mosaic generator",
+   function(storage,image,format,filename,
+	    number,total,high_quality,extra_data)
+      dt.print(tostring(number).."/"..tostring(total))
+   end,
+   function(storage,image_table,extra_data)
+      dt.print_error("Will try to stitch now")
+      command = "gm convert "
+      for _,v in pairs(image_table) do
+        command = command..v.." "
+      end
+      command = command.."-append -resize 15% "
+        ..dt.configuration.tmp_dir.."/tmp.png"
+  
+      dt.print_error("this is the command: "..command)
+      os.execute(command)
 
-	dt.print("Stitching saved to "..dt.configuration.tmp_dir
-                           .."/tmp.png")
-    end
+      dt.print("Stitching saved to "..dt.configuration.tmp_dir
+               .."/tmp.png")
+   end
 )
 </programlisting>
       </para>
