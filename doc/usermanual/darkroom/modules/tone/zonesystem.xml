@@ -1,65 +1,99 @@
-<sect3 status="final" id="zone_system"><title>Zone system</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>zone system</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>zone system</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module is another way to change the lightness of your image, based on Ansel Adams' system.
-							It allows modification of a zone's lightness taking into account the effect on the adjacent zones.
-							It divides the lightness range into a user-defined number of zones.			
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="zone_system">
 
-	<sect4><title>Usage</title>
-		<para>The lightness is processed on the L channel from Lab. </para>
-		<para>The center view shows the image broken down in zones. </para>
-		<para>When hovering above a zone on the lightness scale, that zone is highlighted on the preview.
-			The number of zones can be changed by mouse-scrolling on the lightness scale.</para>
-		<para>Left click and drag a handle in the zonebar to modify the zonemapping, use right click to remove a controlpoint.</para> 
-			
-	</sect4>
-	
-	<sect4><title>Examples</title>
-		<para>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="4*"/>
-					<colspec colwidth="6*"/>
-					<tbody>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry><para>The original image.</para></entry>
-						</row>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry>
-								<para>Here, the darker and lighter zones were compressed to increase contrast, then the upper parts of 
-									darker zones were expanded to increase their visual impact.
-								</para>
-								<graphic fileref="darkroom/modules/images/zonesystem_ex2_settings.png" />
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</para>	
-	</sect4>
+  <title>Zone system</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>zone system</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>zone system</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is another way to change the lightness of your image, based on Ansel
+              Adams' system. It allows modification of a zone's lightness taking into account
+              the effect on the adjacent zones. It divides the lightness range into a
+              user-defined number of zones.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/zonesystem.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      The lightness is processed on the L channel from Lab.
+    </para>
+
+    <para>
+      The center view shows the image broken down in zones.
+    </para>
+
+    <para>
+      When hovering above a zone on the lightness scale, that zone is highlighted on the
+      preview. The number of zones can be changed by mouse-scrolling on the lightness scale.
+    </para>
+
+    <para>
+      Left click and drag a handle in the zonebar to modify the zonemapping, use right click to
+      remove a controlpoint.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/zonesystem_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The original image.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/zonesystem_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Here, the darker and lighter zones were compressed to increase contrast, then
+                the upper parts of darker zones were expanded to increase their visual impact.
+                <graphic fileref="darkroom/modules/images/zonesystem_ex2_settings.png" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect4>
+
 </sect3>

@@ -1,57 +1,102 @@
-<sect2 status="draft"><title>Color balance</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>color balance</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>color balance</primary>
-        </indexterm>
-	<sect3><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module offers a versatile tool for adjusting an image's color balance.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/colorbalance.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect3>
+<sect3 status="draft">
 
-	<sect3><title>Usage</title>
-		<para>For each of the three primary colors - red, green, and blue - there are three sliders <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> 
-                      to control dark tones, mid tones and high tones, respectively. Changing these parameters adds offsets to the individual
-                      RGB channels and influences the color balance of the image.</para>
+  <title>Color balance</title>
 
-                <para>Additional <quote>factor</quote> sliders act on all colors at once. Their effect is similar to the controls of the
-                      <emphasis>levels</emphasis> module (see <xref linkend="levels"/>).</para>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>color balance</secondary>
+  </indexterm>
 
-                <para>The way to best envision the module's way of working is if you consider <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote>
-                      as parameters influencing the properties of a tone curve which - in its original state - is a straight line going diagonally from 
-                      bottom left to top right.</para>
+  <indexterm>
+    <primary>color balance</primary>
+  </indexterm>
 
-                <para>The lift parameter adjusts the left axis intercept of the line - the intercept can be shifted from its default zero value to negative or 
-                      positive values. The gamma parameter modifies the line shape - the default shape is linear and can be turned into a convex curve with increased or into
-                      a concave curve with lowered gamma values. Finally, the gain parameter defines the steepness of the curve - by default the curve runs
-                      diagonally, higher values lead to a steeper curve and lower values to a flatter one.</para>
+  <sect4>
 
-                <para>Side note: although this module acts on RGB colors its location in pixelpipe puts it into the Lab color space. Accordingly the modules converts
-                      from Lab to RGB, does its color adjustments, and then converts back to Lab.</para>
+    <title>Overview</title>
 
-		<sect4><title>lift</title>
-			<para>Increases the value of dark colors with individual sliders for each RGB color and with a <quote>factor</quote> slider acting on all three colors at once.</para>
-		</sect4>
-		<sect4><title>gamma</title>
-			<para>Adjusts the mid tones with individual sliders for each RGB color and with a <quote>factor</quote> slider acting on all three colors at once.</para>
-		</sect4>	
-		<sect4><title>gain</title>
-			<para>Adjusts the high tones with individual sliders for each RGB color and with a <quote>factor</quote> slider acting on all three colors at once.</para>
-		</sect4>	
-	</sect3>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module offers a versatile tool for adjusting an image's color balance.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorbalance.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
 
-</sect2>
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      For each of the three primary colors - red, green, and blue - there are three sliders
+      <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> to control dark tones,
+      mid tones and high tones, respectively. Changing these parameters adds offsets to the
+      individual RGB channels and influences the color balance of the image.
+    </para>
+
+    <para>
+      Additional <quote>factor</quote> sliders act on all colors at once. Their effect is
+      similar to the controls of the <emphasis>levels</emphasis> module (see
+      <xref linkend="levels"/>).
+    </para>
+
+    <para>
+      The way to best envision the module's way of working is if you consider
+      <quote>lift</quote>, <quote>gamma</quote> and <quote>gain</quote> as parameters
+      influencing the properties of a tone curve which - in its original state - is a straight
+      line going diagonally from bottom left to top right.
+    </para>
+
+    <para>
+      The lift parameter adjusts the left axis intercept of the line - the intercept can be
+      shifted from its default zero value to negative or positive values. The gamma parameter
+      modifies the line shape - the default shape is linear and can be turned into a convex
+      curve with increased or into a concave curve with lowered gamma values. Finally, the gain
+      parameter defines the steepness of the curve - by default the curve runs diagonally,
+      higher values lead to a steeper curve and lower values to a flatter one.
+    </para>
+
+    <para>
+      Side note: although this module acts on RGB colors its location in pixelpipe puts it into
+      the Lab color space. Accordingly the modules converts from Lab to RGB, does its color
+      adjustments, and then converts back to Lab.
+    </para>
+
+    <sect5>
+      <title>lift</title>
+      <para>
+        Increases the value of dark colors with individual sliders for each RGB color and with a
+        <quote>factor</quote> slider acting on all three colors at once.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>gamma</title>
+      <para>
+        Adjusts the mid tones with individual sliders for each RGB color and with a
+        <quote>factor</quote> slider acting on all three colors at once.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>gain</title>
+      <para>
+        Adjusts the high tones with individual sliders for each RGB color and with a
+        <quote>factor</quote> slider acting on all three colors at once.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

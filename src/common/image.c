@@ -885,6 +885,8 @@ void dt_image_init(dt_image_t *img)
   img->exif_focus_distance = 0;
   img->latitude = NAN;
   img->longitude = NAN;
+  img->raw_black_level = 0;
+  img->raw_white_point = 16384; // 2^14
   img->d65_color_matrix[0] = NAN;
   img->profile = NULL;
   img->profile_size = 0;

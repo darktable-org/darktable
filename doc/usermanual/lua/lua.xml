@@ -1,168 +1,297 @@
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-
 <chapter status="draft" id="lua_chapter">
-	<chapterinfo>
-		<keywordset>
-			<keyword>scripting</keyword>
-			<keyword>lua</keyword>
-		</keywordset>
-	</chapterinfo>
-   <indexterm class="startofrange" id="ix.lua">
-      <primary>Lua</primary>
-   </indexterm>
-   <indexterm>
-      <primary>scripting</primary>
-   </indexterm>
-   <title>Scripting with Lua</title>
-   <para>darktable comes with a versatile scripting interface for functionality enhancement.</para>
-   <para>
-	<screenshot>
-		<screeninfo>Scipting with Lua</screeninfo>
-		<graphic fileref="images/lua_view.png" scalefit="1" width="80%"></graphic>
-	</screenshot>
-   </para>
 
-   <sect1 id="lua_usage"><title>Lua usage</title>
-   <para>Lua can be used to define actions which darktable should perform whenever a specified event is triggered.
-         One example might be calling an external application during file export in order to apply additional processing steps outside of darktable.
-   </para>
-   <para>darktable uses <ulink url="http://www.lua.org/"><emphasis>Lua</emphasis></ulink>, which is an
-         independent project founded in 1993, providing a powerful, fast, lightweight, embeddable scripting 
-         language. Lua is widely used by many open source applications, in commercial programs, and for games programming.
-   </para>
+  <chapterinfo>
+    <keywordset>
+      <keyword>scripting</keyword>
+      <keyword>lua</keyword>
+    </keywordset>
+  </chapterinfo>
 
-   <para>darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the scope of this usermanual. For a detailed introduction 
-         see the <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
-   </para>
+  <title>Scripting with Lua</title>
 
-      <sect2 id="lua_a_note_about_beta">
-         <title>A note about beta</title>
-         <para>darktable's Lua API is still in a beta phase of development. This has multiple implications you should be aware of when writing Lua code:</para>
-         <itemizedlist>
-            <listitem>
-               <para>The API might change without notice. In particular if we find out that the API is not practical.</para>
-            </listitem>
-            <listitem>
-               <para>The API is incomplete. If you find something missing please report on IRC, in the mailing list, or open a feature request.</para>
-            </listitem>
-            <listitem>
-               <para>darktable's Lua API is for lighttable functions. Our goal is to be able to do with Lua everything that can 
-                     be done in the lighttable, but anything that can only be done in darkroom mode is off-limit.</para>
-            </listitem>
-         </itemizedlist>
-      </sect2>
+  <indexterm>
+    <primary>Lua</primary>
+  </indexterm>
 
-      <sect2 id="lua_basic_principles">
-         <title>Basic principles</title>
-         <para>At startup, darktable will automatically run two Lua scripts:</para>
-         <itemizedlist>
-            <listitem>
-               <para>a script called <emphasis>luarc</emphasis> in <emphasis>$DARKTABLE/share/darktable</emphasis> 
-               </para>
-            </listitem>
-            <listitem>
-               <para>a script called <emphasis>luarc</emphasis> in the user's configuration directory</para>
-            </listitem>
-         </itemizedlist>
-         <para>$DARKTABLE is used here to represent your system's darktable installation directory.</para>
-         <para>This is the only time darktable will run Lua scripts by itself. Scripts can register callbacks to perform actions. See the corresponding section in <xref linkend="lua_api"/>.
-         </para>
-      </sect2>
+  <indexterm>
+    <primary>scripting</primary>
+  </indexterm>
 
-      <sect2 id="lua_handling_scripts">
-         <title>Handling scripts</title>
-         <para>darktable will look for Lua modules in the system provided Lua path, but it will also look into the following places:</para>
-         <itemizedlist>
-            <listitem>
-               <para>$(CONFIG_DIR)/lua/?.lua </para>
-            </listitem>
-            <listitem>
-               <para>$(USER_DIR)/lua/?.lua </para>
-            </listitem>
-         </itemizedlist>
-         <para>In other word, if you place a file called <emphasis>c.lua</emphasis> in the directory <emphasis>~/.config/darktable/lua/a/b/</emphasis> then <quote>@require "a.b.c"</quote>
-          will find your script. The normal way to install a script is to place it in <emphasis>~/.config/darktable/lua/</emphasis> then add a <quote>require</quote> line to the file 
-          <emphasis>~/.config/darktable/luarc</emphasis>.</para>
-      </sect2>
-      <sect2 id="lua_yielding">
-	      <title>Yielding from Lua code</title>
-	      <para>Lua employs a cooperative multitasking concept. Without further action a Lua thread (e.g. a routine that is triggered by a certain event) continues
-              to run till the end - effectively blocking other Lua threads from being executed in the meantime. This behavior can only be changed if the first Lua thread voluntarily 
-              and temporarily gives back control to the system, thus allowing other Lua threads to be run in parallel. This is accomplished by the <emphasis>yield()</emphasis> call.</para>
+  <para>
+    darktable comes with a versatile scripting interface for functionality enhancement.
+  </para>
 
-              <para>It is important to yield whenever you have some code that you expect to block other Lua code from being executed. In particular you should always yield
-              when calling an external program from Lua - especially if it is a long, time consuming task.</para>
-      </sect2>
-   </sect1>
+  <para>
+    <screenshot>
 
+      <screeninfo>Scipting with Lua</screeninfo>
+
+      <graphic fileref="images/lua_view.png" scalefit="1" width="80%"></graphic>
+
+    </screenshot>
+  </para>
+
+  <sect1 id="lua_usage">
+
+    <title>Lua usage</title>
+
+    <para>
+      Lua can be used to define actions which darktable should perform whenever a specified
+      event is triggered. One example might be calling an external application during file
+      export in order to apply additional processing steps outside of darktable.
+    </para>
+
+    <para>
+      darktable uses <ulink url="http://www.lua.org/"><emphasis>Lua</emphasis></ulink>, which is
+      an independent project founded in 1993, providing a powerful, fast, lightweight,
+      embeddable scripting language. Lua is widely used by many open source applications, in
+      commercial programs, and for games programming.
+    </para>
+
+    <para>
+      darktable uses Lua version 5.2. Describing the principles and syntax of Lua is beyond the
+      scope of this usermanual. For a detailed introduction see the
+      <ulink url="http://www.lua.org/manual/5.2/manual.html">Lua reference manual</ulink>.
+    </para>
+
+    <sect2 id="lua_a_note_about_beta">
+
+      <title>A note about beta</title>
+
+      <para>
+        darktable's Lua API is still in a beta phase of development. This has multiple
+        implications you should be aware of when writing Lua code:
+      </para>
+
+      <itemizedlist>
+
+        <listitem><para>
+          The API might change without notice. In particular if we find out that the API is not
+          practical.
+        </para></listitem>
+
+        <listitem><para>
+          The API is incomplete. If you find something missing please report on IRC, in the
+          mailing list, or open a feature request.
+        </para></listitem>
+
+        <listitem><para>
+          darktable's Lua API is for lighttable functions. Our goal is to be able to do with Lua
+          everything that can be done in the lighttable, but anything that can only be done in
+          darkroom mode is off-limit.
+        </para></listitem>
+
+      </itemizedlist>
+
+    </sect2>
+
+    <sect2 id="lua_basic_principles">
+
+      <title>Basic principles</title>
+
+      <para>
+        At startup, darktable will automatically run two Lua scripts:
+      </para>
+
+      <itemizedlist>
+
+        <listitem><para>
+          a script called <emphasis>luarc</emphasis> in
+          <emphasis>$DARKTABLE/share/darktable</emphasis>
+        </para></listitem>
+
+        <listitem><para>
+          a script called <emphasis>luarc</emphasis> in the user's configuration directory
+        </para></listitem>
+
+      </itemizedlist>
+
+      <para>
+        $DARKTABLE is used here to represent your system's darktable installation directory.
+      </para>
+
+      <para>
+        This is the only time darktable will run Lua scripts by itself. Scripts can register
+        callbacks to perform actions. See the corresponding section in
+        <xref linkend="lua_api"/>.
+      </para>
+
+    </sect2>
+
+    <sect2 id="lua_handling_scripts">
+
+      <title>Handling scripts</title>
+
+      <para>
+        darktable will look for Lua modules in the system provided Lua path, but it will also
+        look into the following places:
+      </para>
+
+      <itemizedlist>
+
+        <listitem><para>
+          $(CONFIG_DIR)/lua/?.lua
+        </para></listitem>
+
+        <listitem><para>
+          $(USER_DIR)/lua/?.lua
+        </para></listitem>
+
+      </itemizedlist>
+
+      <para>
+        In other word, if you place a file called <emphasis>c.lua</emphasis> in the directory
+        <emphasis>~/.config/darktable/lua/a/b/</emphasis> then <quote>@require "a.b.c"</quote>
+        will find your script. The normal way to install a script is to place it in
+        <emphasis>~/.config/darktable/lua/</emphasis> then add a <quote>require</quote> line to
+        the file <emphasis>~/.config/darktable/luarc</emphasis>.
+      </para>
+
+    </sect2>
+
+    <sect2 id="lua_yielding">
+
+      <title>Yielding from Lua code</title>
+
+      <para>
+        Lua employs a cooperative multitasking concept. Without further action a Lua thread
+        (e.g. a routine that is triggered by a certain event) continues to run till the end -
+        effectively blocking other Lua threads from being executed in the meantime. This
+        behavior can only be changed if the first Lua thread voluntarily and temporarily gives
+        back control to the system, thus allowing other Lua threads to be run in parallel. This
+        is accomplished by the <emphasis>yield()</emphasis> call.
+      </para>
+
+      <para>
+        It is important to yield whenever you have some code that you expect to block other Lua
+        code from being executed. In particular you should always yield when calling an external
+        program from Lua - especially if it is a long, time consuming task.
+      </para>
+
+    </sect2>
+
+  </sect1>
 
 <!-- Lua Api -->
-<xi:include href="lua_api.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="lua_api.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-   <sect1 status="draft" id="lua_scripts">
-      <title>Lua scripts</title>
-      <para>This section presents a list of scripts provided by beta testers of the Lua API. There is no guarentee whatsoever that they will work as the API is still in beta and might have changed since the script was uploaded.</para>
-      <sect2 id="mosaic_lua">
-         <title>Simple mosaic script</title>
-         
-         <itemizedlist>
-            <listitem>
-               <para>author: boucman </para>
-            </listitem>
-            <listitem>
-               <para>tested with: 1.3+265~gd7f3d1a </para>
-            </listitem>
-            <listitem>
-               <para>download: <ulink url="http://www.darktable.org/redmine/attachments/download/572/mosaic.lua">mosaic.lua</ulink></para>
-            </listitem>
-         </itemizedlist>
-<para><programlisting>dt = require "darktable"
-dt.register_storage("module_stitcher","mosaic generator",nil,
-   function(storage,image_table)
-	dt.print_error("Will try to stitch now")
-	command = "gm convert "
-	for _,v in pairs(image_table) do
-		command = command..v.." "
-	end
-	command = command.."-append -resize 15% "
-                           ..dt.configuration.tmp_dir.."/tmp.png"
-	dt.print_error("this is the command: "..command)
-	os.execute(command)
+  <sect1 status="draft" id="lua_scripts">
 
-	dt.print("Stitching saved to "..dt.configuration.tmp_dir
-                           .."/tmp.png")
-    end
+    <title>Lua scripts</title>
+
+    <para>
+      This section presents a list of scripts provided by beta testers of the Lua API. There is
+      no guarentee whatsoever that they will work as the API is still in beta and might have
+      changed since the script was uploaded.
+    </para>
+
+    <sect2 id="mosaic_lua">
+
+      <title>Simple mosaic script</title>
+
+      <itemizedlist>
+
+        <listitem><para>
+          author: boucman
+        </para></listitem>
+
+        <listitem><para>
+          tested with: 1.5+133~g7ff07de
+        </para></listitem>
+
+        <listitem><para>
+          download:
+          <ulink url="http://www.darktable.org/redmine/attachments/download/834/mosaic.lua">mosaic.lua</ulink>
+        </para></listitem>
+
+      </itemizedlist>
+
+      <para>
+<programlisting>dt = require "darktable"
+dt.register_storage("module_stitcher","mosaic generator",
+   function(storage,image,format,filename,
+	    number,total,high_quality,extra_data)
+      dt.print(tostring(number).."/"..tostring(total))
+   end,
+   function(storage,image_table,extra_data)
+      dt.print_error("Will try to stitch now")
+      command = "gm convert "
+      for _,v in pairs(image_table) do
+        command = command..v.." "
+      end
+      command = command.."-append -resize 15% "
+        ..dt.configuration.tmp_dir.."/tmp.png"
+  
+      dt.print_error("this is the command: "..command)
+      os.execute(command)
+
+      dt.print("Stitching saved to "..dt.configuration.tmp_dir
+               .."/tmp.png")
+   end
 )
-</programlisting></para>
-         <para>This script is an example of storage implemented in Lua. This is not complete nor polished but it shows how to implement a storage module in Lua.</para>
-         <para>The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might not exist).</para>
-         <para>Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (again, the file might not exist):</para>
-<para><programlisting>require "mosaic"
-</programlisting></para>
-         <para>A new entry <emphasis>mosaic generator</emphasis> will be added to the storage list. Using it will create a mosaic of selected images in a temporary directory.</para>
-         <para>Thanks to hal_from_2001 for the idea an the original implementation.</para>
-      </sect2>
+</programlisting>
+      </para>
 
-      <sect2 id="save_selection_lua">
-         <title>Selection manipulation shortcuts</title>
-         
-         <itemizedlist>
-            <listitem>
-               <para>author: boucman </para>
-            </listitem>
-            <listitem>
-               <para>tested with: 1.3+265~gd7f3d1a </para>
-            </listitem>
-            <listitem>
-               <para>download: <ulink url="http://www.darktable.org/redmine/attachments/download/636/save_selection.lua">save_selection.lua</ulink></para>
-            </listitem>
-         </itemizedlist>
-<para><programlisting>dt = require "darktable"
+      <para>
+        This script is an example of storage implemented in Lua. This is not complete nor
+        polished but it shows how to implement a storage module in Lua.
+      </para>
+
+      <para>
+        The script must be saved in <emphasis>~/.config/darktable/lua/</emphasis> (the directory
+        might not exist).
+      </para>
+
+      <para>
+        Add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis>
+        (again, the file might not exist):
+      </para>
+
+      <para>
+<programlisting>require "mosaic"
+</programlisting>
+      </para>
+
+      <para>
+        A new entry <emphasis>mosaic generator</emphasis> will be added to the storage list.
+        Using it will create a mosaic of selected images in a temporary directory.
+      </para>
+
+      <para>
+        Thanks to hal_from_2001 for the idea an the original implementation.
+      </para>
+
+    </sect2>
+
+    <sect2 id="save_selection_lua">
+
+      <title>Selection manipulation shortcuts</title>
+
+      <itemizedlist>
+
+        <listitem><para>
+          author: boucman
+        </para></listitem>
+
+        <listitem><para>
+          tested with: 1.3+265~gd7f3d1a
+        </para></listitem>
+
+        <listitem><para>
+          download:
+          <ulink url="http://www.darktable.org/redmine/attachments/download/636/save_selection.lua">save_selection.lua</ulink>
+        </para></listitem>
+
+      </itemizedlist>
+
+      <para>
+<programlisting>dt = require "darktable"
 local buffer_count = 5
 
 for i=1,buffer_count do
@@ -179,54 +308,118 @@ local bounce_buffer = {}
 dt.register_event("shortcut",function()
 	bounce_buffer = dt.gui.selection(bounce_buffer)
 end,"switch selection with temporary buffer")
-</programlisting></para>
-         <para>This script will add two new shortcuts <quote>save to buffer</quote> and <quote>restore from buffer</quote> to help manipulate selections.</para>
-         <para>Save this script in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might need to be created) and
-               add the following line in the file <emphasis>~/.config/darktable/luarc</emphasis> (the file might need to be created):</para>
-<para><programlisting>require "save_selection"
-</programlisting></para>
-         <para>Now these new options will appear under global-&gt;lua. and allow you to save and restore the current selection to/from five different save bufffers.
-               The third shortcut <quote>switch selection with temporary buffer</quote> exchanges the current selection with the content of a fast buffer.</para>
-      </sect2>
-   </sect1>
+</programlisting>
+      </para>
 
+      <para>
+        This script will add two new shortcuts <quote>save to buffer</quote> and <quote>restore
+        from buffer</quote> to help manipulate selections.
+      </para>
 
-   <sect1 status="draft" id="lua_debugging"><title>Lua debugging</title>
-         <sect2><title>Enable error logging</title>
-            <para>Start darktable with the command line <quote>darktable -d lua</quote> to enable Lua error logging.</para>
-            <itemizedlist>
-               <listitem>
-                  <para>messages printed from Lua using <emphasis>darktable.print_error</emphasis> will be visible on the standard out.</para>
-               </listitem>
-               <listitem>
-                  <para>for fatal Lua errors the whole traceback (and not just the error message) will be printed to the console.</para>
-               </listitem>
-            </itemizedlist>
-         </sect2>
+      <para>
+        Save this script in <emphasis>~/.config/darktable/lua/</emphasis> (the directory might
+        need to be created) and add the following line in the file
+        <emphasis>~/.config/darktable/luarc</emphasis> (the file might need to be created):
+      </para>
 
-         <sect2 id="lua_inspecting_internal_objects">
-            <title>Inspecting internal objects</title>
-            <para>darktable provides some debugging helpers which can be called from Lua as per the following example:</para>
-<para><programlisting>dt_debug = require "darktable.debug"
+      <para>
+<programlisting>require "save_selection"
+</programlisting>
+      </para>
+
+      <para>
+        Now these new options will appear under global-&gt;lua. and allow you to save and
+        restore the current selection to/from five different save bufffers. The third shortcut
+        <quote>switch selection with temporary buffer</quote> exchanges the current selection
+        with the content of a fast buffer.
+      </para>
+
+    </sect2>
+
+  </sect1>
+
+  <sect1 status="draft" id="lua_debugging">
+
+    <title>Lua debugging</title>
+
+    <sect2>
+
+      <title>Enable error logging</title>
+
+      <para>
+        Start darktable with the command line <quote>darktable -d lua</quote> to enable Lua
+        error logging.
+      </para>
+
+      <itemizedlist>
+
+        <listitem><para>
+          messages printed from Lua using <emphasis>darktable.print_error</emphasis> will be
+          visible on the standard out.
+        </para></listitem>
+
+        <listitem><para>
+          for fatal Lua errors the whole traceback (and not just the error message) will be
+          printed to the console.
+        </para></listitem>
+
+      </itemizedlist>
+
+    </sect2>
+
+    <sect2 id="lua_inspecting_internal_objects">
+
+      <title>Inspecting internal objects</title>
+
+      <para>
+        darktable provides some debugging helpers which can be called from Lua as per the
+        following example:
+      </para>
+
+      <para>
+<programlisting>dt_debug = require "darktable.debug"
 dt_debug.debug.debug = true
 
 print(dt_debug.dump(_G,"Global environement")
-</programlisting></para>
-            <para>The main function provided is <emphasis>darktable.debug.dump(object,name)</emphasis>. This function returns a string that describes an object. The object can be anything and 
-                  this function will use its knowledge of the darktable API to be smart about the type of objects.</para>
-            <para>The boolean variable <emphasis>darktable.debug.debug</emphasis> is initialized to false. When this variable is set <quote>true</quote>, <emphasis>dt_debug.dump</emphasis>
-                  will also dump metatables for objects. You usually only want to see those when debugging the internals of darktable's Lua API.</para>
-         </sect2>
+</programlisting>
+      </para>
 
-         <sect2 id="lua_debugging_unprotected_calls">
-            <title>Debugging unprotected calls</title>
-            <para>When experimenting with Lua, darktable might crash with the following message:</para>
-<para><programlisting>PANIC: unprotected error in call to lua API (some message here)
-</programlisting></para>
-            <para>This is always a bug in darktable's Lua API. Please open a bug report and attach the script that caused the crash.</para>
-         </sect2>
-   </sect1>
-   <indexterm class="endofrange" startref="ix.lua"/>
+      <para>
+        The main function provided is <emphasis>darktable.debug.dump(object,name)</emphasis>.
+        This function returns a string that describes an object. The object can be anything and
+        this function will use its knowledge of the darktable API to be smart about the type of
+        objects.
+      </para>
+
+      <para>
+        The boolean variable <emphasis>darktable.debug.debug</emphasis> is initialized to false.
+        When this variable is set <quote>true</quote>, <emphasis>dt_debug.dump</emphasis> will
+        also dump metatables for objects. You usually only want to see those when debugging the
+        internals of darktable's Lua API.
+      </para>
+
+    </sect2>
+
+    <sect2 id="lua_debugging_unprotected_calls">
+
+      <title>Debugging unprotected calls</title>
+
+      <para>
+        When experimenting with Lua, darktable might crash with the following message:
+      </para>
+
+      <para>
+<programlisting>PANIC: unprotected error in call to lua API (some message here)
+</programlisting>
+      </para>
+
+      <para>
+        This is always a bug in darktable's Lua API. Please open a bug report and attach the
+        script that caused the crash.
+      </para>
+
+    </sect2>
+
+  </sect1>
+
 </chapter>
-
-

@@ -1,44 +1,82 @@
-<sect2 status="final" id="tagging"><title>Tagging</title>
-        <indexterm>
-           <primary>lighttable panels</primary>
-           <secondary>tagging</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>tags</primary>
-        </indexterm>
-	<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-			<colspec colwidth="6*"/>
-			<colspec colwidth="4*"/>
-			<tbody>
-				<row>						
-					<entry>This panel is for managing tags on images.
-					Tags are stored in both, sidecar files (.xmp), and within the 
-					darktable database for a faster access.
-					The panel is divided into two parts: the upper part contains the tag(s) currently set for the image 
-					under mouse (if the mouse is over an image) or the selected image (if the mouse is outside the lighttable).
-					The lower part contains all available tags, which can be filtered in the upper text box.
-					</entry>
-					<entry>
-						<graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
-					</entry>
-				</row>
-			</tbody>
-		</tgroup>
-	</informaltable>
-		<sect4><title>attach</title>
-			<para>Attach the selected tag(s) from the list below to all selected images.
-			</para>
-		</sect4>
-		<sect4><title>detach</title>
-			<para>Detach selected tag(s) from the list above from all selected images.
-			</para>
-		</sect4>
-		<sect4><title>new</title>
-			<para>Create a new tag for the list.
-			</para>
-		</sect4>
-		<sect4><title>delete</title>
-			<para>Delete a tag from the list.
-			</para>
-		</sect4>
-</sect2>	
+<sect2 status="final" id="tagging">
+
+  <title>Tagging</title>
+
+  <indexterm>
+    <primary>lighttable panels</primary>
+    <secondary>tagging</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>tags</primary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            This panel is for managing tags on images. Tags are stored in both, sidecar files
+            (.xmp), and within the darktable database for a faster access. The panel is divided
+            into two parts: the upper part contains the tag(s) currently set for the image under
+            mouse (if the mouse is over an image) or the selected image (if the mouse is outside
+            the lighttable). The lower part contains all available tags, which can be filtered
+            in the upper text box.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+  <sect3>
+
+    <title>Usage</title>
+
+    <sect4>
+
+      <title>attach</title>
+
+      <para>
+        Attach the selected tag(s) from the list below to all selected images.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
+      <title>detach</title>
+
+      <para>
+        Detach selected tag(s) from the list above from all selected images.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
+      <title>new</title>
+
+      <para>
+        Create a new tag for the list.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
+      <title>delete</title>
+
+      <para>
+        Delete a tag from the list.
+      </para>
+
+    </sect4>
+
+  </sect3>
+
+</sect2>

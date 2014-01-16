@@ -3,162 +3,325 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="final" id="collect_images"><title>Collect images</title>
-    <indexterm>
-      <primary>lighttable panels</primary>
+<sect2 status="final" id="collect_images">
+
+  <title>Collect images</title>
+
+  <indexterm>
+    <primary>lighttable panels</primary>
     <secondary>collect images</secondary>
-    </indexterm>
-    <indexterm>
-      <primary>collect images</primary>
-    </indexterm>
-    <indexterm>
-      <primary>collections</primary>
-    </indexterm>
-    <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-        <colspec colwidth="6*"/>
-        <colspec colwidth="4*"/>
-        <tbody>
-          <row>						
-             <entry>The current view in lighttable is called a collection. With this panel you can manage the collection
-                    by filtering with different criteria.
-             </entry>
-             <entry>
-                    <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
-             </entry>
-          </row>
-        </tbody>
-        </tgroup>
-    </informaltable>
+  </indexterm>
 
-    <para>All images imported into darktable are kept in a database with various attributes describing each image.
-    A collection is defined by applying certain filtering rules to these attributes which leads to a subset of your images
-    being displayed in the lighttable view.
-    </para>
+  <indexterm>
+    <primary>collect images</primary>
+  </indexterm>
 
-    <para>The default collection is based on the film roll attribute - it displays all images of the last imported film roll or 
-    any other film roll chosen.
-    </para>
+  <indexterm>
+    <primary>collections</primary>
+  </indexterm>
 
-    <para>The left combobox lets you choose from the available attributes:
-      <informaltable frame="none" width="80%">
-         <tgroup cols="2" colsep="0" rowsep="0">
-         <colspec colwidth='1*'/>
-         <colspec colwidth='3*'/>
-         <tbody>
-            <row>
-               <entry>film roll</entry>
-               <entry><para>the film roll to which the image belongs</para></entry>
-            </row>
-            <row>
-               <entry>folders</entry>
-               <entry><para>the disk folder where the input image file is located</para></entry>
-            </row>
-            <row>
-               <entry>camera</entry>
-               <entry><para>the EXIF string describing the camera</para></entry>
-            </row>
-            <row>
-               <entry>tag</entry>
-               <entry><para>any tag that is attached to the image; if activated a hierarchical list of known tags is displayed for quick selection</para></entry>
-            </row>
-            <row>
-               <entry>date</entry>
-               <entry><para>the date when the photo was taken in the format <emphasis>YYYY:MM:DD</emphasis></para></entry>
-            </row>
-            <row>
-               <entry>time</entry>
-               <entry><para>the time (date and time of day) when the photo was taken in the format
-                      <emphasis>YYYY:MM:DD hh:mm:ss</emphasis></para></entry>
-            </row>
-            <row>
-               <entry>history</entry>
-               <entry><para>a boolean field stating if the image's history stack has been altered or not</para></entry>
-            </row>
-            <row>
-               <entry>color label</entry>
-               <entry><para>any color label that is attached to the image: <quote>red</quote>, <quote>yellow</quote>,
-                      <quote>green</quote>, <quote>blue</quote>, <quote>purple</quote></para></entry>
-            </row>
-            <row>
-               <entry>title</entry>
-               <entry><para>the title string as defined in the image's metadata</para></entry>
-            </row>
-            <row>
-               <entry>description</entry>
-               <entry><para>the description string as defined in the image's metadata</para></entry>
-            </row>
-            <row>
-               <entry>creator</entry>
-               <entry><para>the creator string as defined in the image's metadata</para></entry>
-            </row>
-            <row>
-               <entry>publisher</entry>
-               <entry><para>the publisher string as defined in the image's metadata</para></entry>
-            </row>
-            <row>
-               <entry>rights</entry>
-               <entry><para>the copyrights string as defined in the image's metadata</para></entry>
-            </row>
-            <row>
-               <entry>lens</entry>
-               <entry><para>the EXIF string describing the lens</para></entry>
-            </row>
-            <row>
-               <entry>ISO</entry>
-               <entry><para>the ISO value as derived from EXIF data</para></entry>
-            </row>
-            <row>
-               <entry>aperture</entry>
-               <entry><para>the aperture value as derived from EXIF data</para></entry>
-            </row>
-            <row>
-               <entry>filename</entry>
-               <entry><para>the filename of the physical input image</para></entry>
-            </row>
-         </tbody>
-         </tgroup>
-      </informaltable>
-    </para>
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            The current view in lighttable is called a collection. With this panel you can
+            manage the collection by filtering with different criteria.
+          </entry>
+          <entry>
+            <graphic fileref="lighttable/images/panel_collectimages.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
 
+  <para>
+    All images imported into darktable are kept in a database with various attributes describing
+    each image. A collection is defined by applying certain filtering rules to these attributes
+    which leads to a subset of your images being displayed in the lighttable view.
+  </para>
 
-    <para>In the text field right to the attribute you supply a pattern. The pattern is compared against
-    all image's database entries of the selected attribute. A match is detected if the pattern is a substring of
-    the image's attribute. You may use <quote>%</quote> as wildcard character.
-    The collection gets limited to those images where the query matches. 
-    Leaving the text field empty matches all images.
-    </para>
+  <para>
+    The default collection is based on the film roll attribute - it displays all images of the
+    last imported film roll or any other film roll chosen.
+  </para>
 
-    <para>Clicking on the triangle button right to the text field opens a drop-down menu with options to finetune your
-    collection by adding further rules:</para>
-    <sect4><title>clear this rule</title>
-        <para>Removes this rule - or resets to default if this is the only rule defined.
-        </para>
+  <sect3>
+
+    <title>Usage</title>
+
+    <sect4>
+
+      <title>image attributes</title>
+
+      <para>
+        The left combobox lets you choose from the available attributes:
+        <informaltable frame="none" width="80%">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth='1*'/>
+            <colspec colwidth='3*'/>
+            <tbody>
+              <row>
+                <entry>
+                  film roll
+                </entry>
+                <entry>
+                  <para>
+                    the film roll to which the image belongs
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  folders
+                </entry>
+                <entry>
+                  <para>
+                    the disk folder where the input image file is located
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  camera
+                </entry>
+                <entry>
+                  <para>
+                    the EXIF string describing the camera
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  tag
+                </entry>
+                <entry>
+                  <para>
+                    any tag that is attached to the image; if activated a hierarchical list of
+                    known tags is displayed for quick selection
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  date
+                </entry>
+                <entry>
+                  <para>
+                    the date when the photo was taken in the format
+                    <emphasis>YYYY:MM:DD</emphasis>
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  time
+                </entry>
+                <entry>
+                  <para>
+                    the time (date and time of day) when the photo was taken in the format
+                    <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  history
+                </entry>
+                <entry>
+                  <para>
+                    a boolean field stating if the image's history stack has been altered or not
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  color label
+                </entry>
+                <entry>
+                  <para>
+                    any color label that is attached to the image: <quote>red</quote>,
+                    <quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>,
+                    <quote>purple</quote>
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  title
+                </entry>
+                <entry>
+                  <para>
+                    the title string as defined in the image's metadata
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  description
+                </entry>
+                <entry>
+                  <para>
+                    the description string as defined in the image's metadata
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  creator
+                </entry>
+                <entry>
+                  <para>
+                    the creator string as defined in the image's metadata
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  publisher
+                </entry>
+                <entry>
+                  <para>
+                    the publisher string as defined in the image's metadata
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  rights
+                </entry>
+                <entry>
+                  <para>
+                    the copyrights string as defined in the image's metadata
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  lens
+                </entry>
+                <entry>
+                  <para>
+                    the EXIF string describing the lens
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  ISO
+                </entry>
+                <entry>
+                  <para>
+                    the ISO value as derived from EXIF data
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  aperture
+                </entry>
+                <entry>
+                  <para>
+                    the aperture value as derived from EXIF data
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  filename
+                </entry>
+                <entry>
+                  <para>
+                    the filename of the physical input image
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+
     </sect4>
-    <sect4><title>narrow down search</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>AND</emphasis> operation. An image
-        is only part of the collection if it additionally fulfills the added rule.
+
+    <sect4>
+
+      <title>search rules</title>
+
+      <para>
+        In the text field to the right of the attribute you supply a pattern. The pattern is
+        compared against all database entries of the selected attribute. A match is detected if
+        the pattern is a substring of the image's attribute. You may use <quote>%</quote> as
+        wildcard character. The collection gets limited to those images where the query matches.
+        Leaving the text field empty matches all images.
+      </para>
+
+      <para>
+        The table below the search rule will show all matching database entries of the query you
+        are currently working on. The table gets updated continuously as you type. You may
+        scroll through the list and select the data of your choice by double-clicking.
+      </para>
+
+      <para>
+        Clicking on the triangle button right to the text field opens a drop-down menu with
+        options to finetune your collection by adding further rules:
+      </para>
+
+      <sect5>
+        <title>clear this rule</title>
+        <para>
+          Removes this rule - or resets to default if this is the only rule defined.
         </para>
-    </sect4>
-    <sect4><title>add more images</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>OR</emphasis> operation. Images
-        that fulfill the new rule are added to the collection.
+      </sect5>
+
+      <sect5>
+        <title>narrow down search</title>
+        <para>
+          Adds a new rule which is combined with the previous rule(s) in a logical
+          <emphasis>AND</emphasis> operation. An image is only part of the collection if it
+          additionally fulfills the added rule.
         </para>
-    </sect4>
-    <sect4><title>exclude images</title>
-        <para>Adds a new rule which is combined with the previous ones in a logical <emphasis>EXCEPT</emphasis> operation.
-        Images which are selected by the new rule are exempted from the collection.
+      </sect5>
+
+      <sect5>
+        <title>add more images</title>
+        <para>
+          Adds a new rule which is combined with the previous rule(s) in a logical
+          <emphasis>OR</emphasis> operation. Images that fulfill the new rule are added to the
+          collection.
         </para>
+      </sect5>
+
+      <sect5>
+        <title>exclude images</title>
+        <para>
+          Adds a new rule which is combined with the previous rule(s) in a logical
+          <emphasis>EXCEPT</emphasis> operation. Images which are selected by the new rule are
+          exempted from the collection.
+        </para>
+      </sect5>
+
     </sect4>
 
-    <para>The logical operators defining the combination of rules are displayed right to the rule: <emphasis>AND</emphasis>
-    by the <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" /> symbol, 
-    <emphasis>OR</emphasis> by the <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" /> symbol,
-    and <emphasis>EXCEPT</emphasis> by the <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" /> symbol.
-    Clicking on either symbol gives a choice to change the logical operation.
-    </para>
+    <sect4>
 
-    <para>The table below the rules lists all matching database entries of the query you are currently working on. The table 
-    gets updated continuously as you type. You may scroll through the list and select the data of your choice by double-clicking.
-    </para>
+      <title>combining rules</title>
 
-</sect2>	
+      <para>
+        The logical operators defining the combination of rules are displayed to the right of
+        the rule: <emphasis>AND</emphasis> by the
+        <inlinegraphic fileref="&icon_lighttable_and;" scalefit="1" width="2%" align="center" />
+        symbol, <emphasis>OR</emphasis> by the
+        <inlinegraphic fileref="&icon_lighttable_or;" scalefit="1" width="2%" align="center" />
+        symbol, and <emphasis>EXCEPT</emphasis> by the
+        <inlinegraphic fileref="&icon_lighttable_except;" scalefit="1" width="2%" align="center" />
+        symbol. Clicking on either symbol gives a choice to change the logical operation.
+      </para>
+
+    </sect4>
+
+  </sect3>
+
+</sect2>

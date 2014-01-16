@@ -1,48 +1,83 @@
-<sect3 status="final" id="denoise_bilateral"><title>Denoise - bilateral</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>denoise - bilateral</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>denoise</primary>
-           <secondary>bilateral</secondary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module is used to denoise high ISO pictures.
-							It is flagged as a slow module due to its high resource consumption, both in terms of
-                                                        CPU cycles and in terms of memory usage.
-							Quite counter-intuitively, the greater the values for sliders, the lesser resources.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="denoise_bilateral">
 
-	<sect4><title>Usage</title>
-                <para>This module reduces noise in your image but preserves sharp edges. This is accomplished by averaging pixels with their neighbors, taking into account not only the geometric distance but
-                      also the distance on the range scale, i.e. differences in color intensities. As denoising is a resource hungry process, it slows down pixelpipe processing significantly; consider to activate 
-                      this module late in your workflow.
-		</para>
-		<sect5><title>radius</title>
-			<para>Set the spatial extent of the gaussian blur.</para>
-		</sect5>
-		<sect5><title>red</title>
-			<para>Blur intensity for red channel.</para>
-		</sect5>
-		<sect5><title>green</title>
-			<para>Blur intensity for green channel.</para>
-		</sect5>
-		<sect5><title>blue</title>
-			<para>Blur intensity for blue channel.</para>
-		</sect5>
-	</sect4>
+  <title>Denoise - bilateral</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>denoise - bilateral</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>denoise</primary>
+    <secondary>bilateral</secondary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is used to denoise high ISO pictures. It is flagged as a slow module
+              due to its high resource consumption, both in terms of CPU cycles and in terms of
+              memory usage. Quite counter-intuitively, the greater the values for sliders, the
+              lesser resources.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/denoise_bilateral.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      This module reduces noise in your image but preserves sharp edges. This is accomplished by
+      averaging pixels with their neighbors, taking into account not only the geometric distance
+      but also the distance on the range scale, i.e. differences in color intensities. As
+      denoising is a resource hungry process, it slows down pixelpipe processing significantly;
+      consider to activate this module late in your workflow.
+    </para>
+
+    <sect5>
+      <title>radius</title>
+      <para>
+        Set the spatial extent of the gaussian blur.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>red</title>
+      <para>
+        Blur intensity for red channel.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>green</title>
+      <para>
+        Blur intensity for green channel.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>blue</title>
+      <para>
+        Blur intensity for blue channel.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

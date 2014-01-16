@@ -1,68 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
+<sect2 status="final" id="local_copies">
 
-	<sect2 status="final" id="local_copies"><title>Local copies</title>
-                <indexterm>
-                   <primary>local copies</primary>
-                </indexterm>
-		<para>Quite commonly users have huge image collections which they store on an external storage medium like a RAID NAS. It is a
-                frequent wish to be able to develop some of the images during travelling using a notebook and later synchronize them again
-                with the external storage. Copying images manually from external storage to the notebook and back is prone to errors and 
-                cumbersome.
-                </para>
+  <title>Local copies</title>
 
-                <para>The local copies feature of darktable has been designed to support directly those use cases. With the help of this feature
-                you can create local copies of selected pictures on the local drive of your computer. This copy is then used when the
-                original image is not accessible. At a later point, when connected again with your external storage medium, you can 
-                synchronize back the XMP sidecar files, deleting the local copy of your input image. These operations can be found
-                in the <quote>selected images</quote> panel (see <xref linkend="selected_images"/>).
-                </para>
+  <indexterm>
+    <primary>local copies</primary>
+  </indexterm>
 
-                <para>For safety reasons, if local copies exist and the external storage is available the local XMP sidecars are automatically 
-                synchronized at start up.
-                </para>
+  <para>
+    Quite commonly users have huge image collections which they store on an external storage
+    medium like a RAID NAS. It is a frequent wish to be able to develop some of the images while
+    travelling using a notebook and later synchronize them to the external storage. Copying
+    images manually from external storage to the notebook and back is prone to errors and
+    cumbersome.
+  </para>
 
-                <para>The local copies are stored into the $HOME/.cache/darktable directory and named 
-                <quote>img-&lt;N&gt;-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, where:
-		<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='1*'/>
-				<colspec colwidth='3*'/>
-				<tbody>
-					<row>
-						<entry><emphasis>N</emphasis></entry><entry>is the image number in darktable</entry>
-					</row>
-					<row>
-						<entry><emphasis>SIGNATURE</emphasis></entry><entry>is a hash signature (SHA-1) of the full pathname</entry>
-					</row>
-					<row>
-						<entry><emphasis>EXT</emphasis></entry><entry>is the original filename extension</entry>
-					</row>
-				</tbody>
-				</tgroup>
-                </informaltable>
-                </para>
+  <para>
+    The local copies feature of darktable has been designed to directly support those use cases.
+    With the help of this feature you can create local copies of selected pictures on the local
+    drive of your computer. This copy is then used when the original image is not accessible. At
+    a later point, when connected again with your external storage medium, you can synchronize
+    back the XMP sidecar files, deleting the local copy of your input image. These operations
+    can be found in the <quote>selected images</quote> panel (see
+    <xref linkend="selected_images"/>).
+  </para>
 
-                <para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-			<colspec colwidth="6*"/>
-			<colspec colwidth="4*"/>
-			<tbody>
-				<row>	
-                                        <entry><para>A local copy is identified in the lighttable view with a white marker on the right of the thumbnail. 
-                                        In addition all local copies carry the <emphasis>darktable|local-copy</emphasis> tag for selecting them easily.</para>
-                                        </entry>
-					<entry>
-						<graphic fileref="lighttable/concepts/images/local_copies_1.png" scalefit="1" width="80%" align="center" />
-					</entry>
-				</row>
-			</tbody>
-			</tgroup>
-		</informaltable>
-                </para>
-	</sect2>
+  <para>
+    For safety reasons, if local copies exist and the external storage is available the local
+    XMP sidecars are automatically synchronized at start up.
+  </para>
 
+  <para>
+    The local copies are stored into the $HOME/.cache/darktable directory and named
+    <quote>img-&lt;N&gt;-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, where:
+    <informaltable frame="none" width="80%">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth='1*'/>
+        <colspec colwidth='3*'/>
+        <tbody>
+          <row>
+            <entry>
+              <emphasis>N</emphasis>
+            </entry>
+            <entry>
+              is the image number in darktable
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <emphasis>SIGNATURE</emphasis>
+            </entry>
+            <entry>
+              is a hash signature (SHA-1) of the full pathname
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <emphasis>EXT</emphasis>
+            </entry>
+            <entry>
+              is the original filename extension
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </para>
 
+  <para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                A local copy is identified in the lighttable view with a white marker on the
+                right of the thumbnail. In addition all local copies carry the
+                <emphasis>darktable|local-copy</emphasis> tag for selecting them easily.
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/local_copies_1.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </para>
+
+</sect2>
