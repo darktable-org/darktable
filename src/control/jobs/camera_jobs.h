@@ -28,16 +28,6 @@ typedef struct dt_camera_shared_t
   struct dt_import_session_t *session;
 } dt_camera_shared_t;
 
-/** Tethered image import job */
-typedef struct dt_captured_image_import_t
-{
-  uint32_t film_id;
-  const char *filename;
-}
-dt_captured_image_import_t;
-int32_t dt_captured_image_import_job_run(dt_job_t *job);
-void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const char *filename);
-
 /** Camera capture job */
 typedef struct dt_camera_capture_t
 {

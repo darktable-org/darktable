@@ -22,6 +22,7 @@
 #include "views/view.h"
 #include "control/conf.h"
 #include "control/jobs/camera_jobs.h"
+#include "control/jobs/image_jobs.h"
 #include "gui/gtk.h"
 
 #include <stdio.h>
@@ -55,37 +56,6 @@ _camera_request_image_path(const dt_camera_t *camera, void *data)
   return dt_import_session_path(shared->session, FALSE);
 }
 
-int32_t dt_captured_image_import_job_run(dt_job_t *job)
-{
-  dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
-
-  char message[512]= {0};
-  snprintf(message, 512, _("importing image %s"), t->filename);
-  const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
-
-  int id = dt_image_import(t->film_id, t->filename, TRUE);
-  if(id)
-  {
-    //dt_film_open(1);
-    dt_view_filmstrip_set_active_image(darktable.view_manager,id);
-    dt_control_queue_redraw();
-    //dt_ctl_switch_mode_to(DT_DEVELOP);
-  }
-
-  dt_control_backgroundjobs_progress(darktable.control, jid, 1.0);
-  dt_control_backgroundjobs_destroy(darktable.control, jid);
-  return 0;
-}
-
-void dt_captured_image_import_job_init(dt_job_t *job,uint32_t filmid, const char *filename)
-{
-  dt_control_job_init(job, "import tethered image");
-  job->execute = &dt_captured_image_import_job_run;
-  dt_captured_image_import_t *t = (dt_captured_image_import_t *)job->param;
-  t->filename = g_strdup(filename);
-  t->film_id = filmid;
-}
-
 void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *filename,void *data)
 {
   dt_job_t j;
@@ -94,7 +64,7 @@ void _camera_capture_image_downloaded(const dt_camera_t *camera,const char *file
   t = (dt_camera_capture_t*)data;
 
   /* create an import job of downloaded image */
-  dt_captured_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
+  dt_image_import_job_init(&j, dt_import_session_film_id(t->shared.session), filename);
   dt_control_add_job(darktable.control, &j);
   if (--t->total == 0)
   {

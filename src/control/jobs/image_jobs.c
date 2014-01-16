@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 -- 2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,42 @@ int32_t dt_image_load_job_run(dt_job_t *job)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   return 0;
 }
+
+int32_t dt_image_import_job_run(dt_job_t *job)
+{
+  int id;
+  char message[512];
+  dt_image_import_t *t;
+  const guint *jid;
+
+  t = (dt_image_import_t *)job->param;
+  message[0] = 0;
+
+  snprintf(message, 512, _("importing image %s"), t->filename);
+  jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
+
+  id = dt_image_import(t->film_id, t->filename, TRUE);
+  if(id)
+  {
+    dt_view_filmstrip_set_active_image(darktable.view_manager, id);
+    dt_control_queue_redraw();
+  }
+
+  dt_control_backgroundjobs_progress(darktable.control, jid, 1.0);
+  dt_control_backgroundjobs_destroy(darktable.control, jid);
+  return 0;
+}
+
+void dt_image_import_job_init(dt_job_t *job, uint32_t filmid, const char *filename)
+{
+  dt_image_import_t *t;
+  dt_control_job_init(job, "import image");
+  job->execute = &dt_image_import_job_run;
+  t = (dt_image_import_t *)job->param;
+  t->filename = g_strdup(filename);
+  t->film_id = filmid;
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
