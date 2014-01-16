@@ -58,7 +58,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     "lighttable",
     "darkroom",
 #ifdef HAVE_GPHOTO2
-    "capture",
+    "tethering",
 #endif
 #ifdef HAVE_MAP
     "map",
