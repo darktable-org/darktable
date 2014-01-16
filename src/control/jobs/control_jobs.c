@@ -80,8 +80,9 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[DT_MAX_PATH_LEN+4];
+    char dtfilename[DT_MAX_PATH_LEN+8];
     dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
     dt_exif_xmp_write(imgid, dtfilename);
