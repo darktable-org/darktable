@@ -54,6 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/dlopencl.c"
   "common/ratings.c"
   "control/control.c"
+  "control/crawler.c"
   "control/jobs/control_jobs.c"
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"

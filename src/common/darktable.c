@@ -51,6 +51,7 @@
 #include "views/view.h"
 #include "views/undo.h"
 #include "control/control.h"
+#include "control/crawler.h"
 #include "control/jobs/control_jobs.h"
 #include "control/signal.h"
 #include "control/conf.h"
@@ -631,6 +632,15 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
+  // Make sure that the database and xmp files are in sync before starting the fswatch.
+  // We need conf and db to be up and running for that which is the case here.
+  // FIXME: is this also useful in non-gui mode?
+  GList *changed_xmp_files = NULL;
+  if(init_gui && dt_conf_get_bool("run_crawler_on_start"))
+  {
+    changed_xmp_files = dt_control_crawler_run();
+  }
+
   // Initialize the filesystem watcher
   darktable.fswatch=dt_fswatch_new();
 
@@ -804,6 +814,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #ifdef USE_LUA
   dt_lua_init(darktable.lua_state.state,init_gui);
 #endif
+
+  // last but not least construct the popup that asks the user about images whose xmp files are newer than the db entry
+  if(init_gui && changed_xmp_files)
+  {
+    dt_control_crawler_show_image_list(changed_xmp_files);
+  }
+
   return 0;
 }
 
