@@ -19,7 +19,7 @@
 #ifndef _IMPORT_SESSION_H
 #define _IMPORT_SESSION_H
 
-struct dr_import_session_t;
+struct dt_import_session_t;
 
 struct dt_import_session_t *dt_import_session_new();
 void dt_import_session_destroy(struct dt_import_session_t *self);
