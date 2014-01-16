@@ -52,8 +52,8 @@ _import_session_cleanup_filmroll(dt_import_session_t *self)
   /* TODO: check if dt_film_remove actual removes directories */
   if (dt_film_is_empty(self->film->id))
     dt_film_remove(self->film->id);
-  else
-    dt_film_cleanup(self->film);
+
+  dt_film_cleanup(self->film);
 
   g_free(self->film);
   self->film = NULL;
