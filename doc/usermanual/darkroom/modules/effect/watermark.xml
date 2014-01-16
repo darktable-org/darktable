@@ -1,103 +1,381 @@
-<sect3 status="final" id="watermark"><title>Watermark</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>watermark</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>watermark</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>
-						<entry><para>The watermark module provides a way to render a vector-based overlay onto your image.
-                                                             Watermarks are standard SVG documents and can be designed using <ulink url="http://www.inkscape.org">
-                                                             <emphasis>Inkscape</emphasis></ulink>.</para>
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
+<sect3 status="final" id="watermark">
 
-                <para>The SVG processor of darktable also substitutes strings within the SVG document, which gives
-                the opportunity to include image dependent information in the watermark such as aperture,
-                exposure time and other metadata.
-                </para>
+  <title>Watermark</title>
 
-		<para>User-designed watermarks are placed into the directory $HOME/.config/darktable/watermarks.
-		Once in place, use the reload button at the right of the watermark file name to update the list
-		of available watermarks to use.
-		</para>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>watermark</secondary>
+  </indexterm>
 
-		<para>
-		  Here follows a list of available variable strings that is supported for substitution within
-		  the svg document.
-		  <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0"><tbody>
-		    <row> <entry>$(DARKTABLE.NAME)</entry><entry><para>The application name</para></entry></row>
-		    <row> <entry>$(DARKTABLE.VERSION)</entry><entry><para>The version of darktable</para></entry></row>
-		    <row> <entry>$(IMAGE.ID)</entry><entry><para>The unique image id within current library</para></entry></row>
-		    <row> <entry>$(IMAGE.FILENAME)</entry><entry><para>The image filename</para></entry></row>
-		    <row> <entry>$(IMAGE.EXIF)</entry><entry><para>The image exif string</para></entry></row>
-		    <row> <entry>$(EXIF.DATE)</entry><entry><para>The image date</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.SECOND)</entry><entry><para> Seconds from the image EXIF data</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.MINUTE)</entry><entry><para> Minutes from the image EXIF data</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.HOUR)</entry><entry><para> Hours from the image EXIF data (24h)</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.HOUR_AMPM)</entry><entry><para> Hours from the image EXIF data (12h, AM/PM)</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.DAY)</entry><entry><para> Day from the image EXIF data</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(EXIF.DATE.SHORT_MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(EXIF.DATE.LONG_MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(EXIF.DATE.SHORT_YEAR)</entry><entry><para> Abbreviated year from the image EXIF data (2013 is "13")</para></entry></row>
-		    <row> <entry>$(EXIF.DATE.LONG_YEAR)</entry><entry><para> Full year from the image EXIF data</para></entry></row>
-		    <row> <entry>$(DATE)</entry><entry><para> Current system date</para></entry></row>
-		    <row> <entry>$(DATE.SECOND)</entry><entry><para> Current system time seconds</para></entry></row>
-		    <row> <entry>$(DATE.MINUTE)</entry><entry><para> Current system time minutes</para></entry></row>
-		    <row> <entry>$(DATE.HOUR)</entry><entry><para> Current system time hours (24h)</para></entry></row>
-		    <row> <entry>$(DATE.HOUR_AMPM)</entry><entry><para> Current system time hours (12, AP/PM)</para></entry></row>
-		    <row> <entry>$(DATE.DAY)</entry><entry><para> Current system time day</para></entry></row>
-		    <row> <entry>$(DATE.MONTH)</entry><entry><para> Current system time month</para></entry></row>
-		    <row> <entry>$(DATE.SHORT_MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(DATE.LONG_MONTH)</entry><entry><para> </para></entry></row>
-		    <row> <entry>$(DATE.SHORT_YEAR)</entry><entry><para> Current system time year (abbreviated)</para></entry></row>
-		    <row> <entry>$(DATE.LONG_YEAR)</entry><entry><para> Current system time year</para></entry></row>
-		    <row> <entry>$(EXIF.MAKER)</entry><entry><para>The maker of camera model</para></entry></row>
-		    <row> <entry>$(EXIF.MODEL)</entry><entry><para>The camera model</para></entry></row>
-		    <row> <entry>$(EXIF.LENS)</entry><entry><para>The specific lens used</para></entry></row>
-		    <row> <entry>$(Xmp.dc.creator)</entry><entry><para>The creator string</para></entry></row>
-		    <row> <entry>$(Xmp.dc.publisher)</entry><entry><para>The publisher string</para></entry></row>
-		    <row> <entry>$(Xmp.dc.title)</entry><entry><para>The title of the image</para></entry></row>
-		    <row> <entry>$(Xmp.dc.description)</entry><entry><para>The description of the image</para></entry></row>
-		    <row> <entry>$(Xmp.dc.rights)</entry><entry><para>The rights assigned to the image</para></entry></row>
-		  </tbody></tgroup></informaltable>
-		</para>
+  <indexterm>
+    <primary>watermark</primary>
+  </indexterm>
 
-	</sect4>
+  <sect4>
 
-	<sect4><title>Usage</title>
-		<sect5><title>marker</title>
-			<para>Choose the watermark of interest. You can use the reload button next to the combobox to update the list
-				with all newly added watermarks.
-			</para>
-		</sect5>
-		<sect5><title>opacity</title>
-			<para>Set the opacity of the render of watermark.</para>
-		</sect5>
-		<sect5><title>scale</title>
-			<para>Scale the watermark pixel-independently.</para>
-		</sect5>
-		<sect5><title>alignment</title>
-			<para>Use these controls to align the watermark to any edge or center of the image.</para>
-		</sect5>
-		<sect5><title>x offset</title>
-			<para>Pixel-independent offset relative to the choice of alignment on x-axis.</para>
-		</sect5>
-		<sect5><title>y offset</title>
-			<para>Pixel-independent offset relative to the choice of alignment on y-axis.</para>
-		</sect5>
-	</sect4>
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              The watermark module provides a way to render a vector-based overlay onto your
+              image. Watermarks are standard SVG documents and can be designed using
+              <ulink url="http://www.inkscape.org"> <emphasis>Inkscape</emphasis></ulink>.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/watermark.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      The SVG processor of darktable also substitutes strings within the SVG document, which
+      gives the opportunity to include image dependent information in the watermark such as
+      aperture, exposure time and other metadata.
+    </para>
+
+    <para>
+      User-designed watermarks are placed into the directory $HOME/.config/darktable/watermarks.
+      Once in place, use the reload button at the right of the watermark file name to update the
+      list of available watermarks to use.
+    </para>
+
+    <para>
+      Here follows a list of available variable strings that is supported for substitution
+      within the svg document.
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <tbody>
+            <row>
+              <entry>
+                $(DARKTABLE.NAME)
+              </entry>
+              <entry>
+                The application name
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DARKTABLE.VERSION)
+              </entry>
+              <entry>
+                The version of darktable
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(IMAGE.ID)
+              </entry>
+              <entry>
+                The unique image id within current library
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(IMAGE.FILENAME)
+              </entry>
+              <entry>
+                The image filename
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(IMAGE.EXIF)
+              </entry>
+              <entry>
+                The image exif string
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE)
+              </entry>
+              <entry>
+                The image date
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.SECOND)
+              </entry>
+              <entry>
+                Seconds from the image EXIF data
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.MINUTE)
+              </entry>
+              <entry>
+                Minutes from the image EXIF data
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.HOUR)
+              </entry>
+              <entry>
+                Hours from the image EXIF data (24h)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.HOUR_AMPM)
+              </entry>
+              <entry>
+                Hours from the image EXIF data (12h, AM/PM)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.DAY)
+              </entry>
+              <entry>
+                Day from the image EXIF data
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.MONTH)
+              </entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.SHORT_MONTH)
+              </entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.LONG_MONTH)
+              </entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.SHORT_YEAR)
+              </entry>
+              <entry>
+                Abbreviated year from the image EXIF data (2013 is "13")
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.DATE.LONG_YEAR)
+              </entry>
+              <entry>
+                Full year from the image EXIF data
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE)
+              </entry>
+              <entry>
+                Current system date
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.SECOND)
+              </entry>
+              <entry>
+                Current system time seconds
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.MINUTE)
+              </entry>
+              <entry>
+                Current system time minutes
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.HOUR)
+              </entry>
+              <entry>
+                Current system time hours (24h)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.HOUR_AMPM)
+              </entry>
+              <entry>
+                Current system time hours (12, AP/PM)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.DAY)
+              </entry>
+              <entry>
+                Current system time day
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.MONTH)
+              </entry>
+              <entry>
+                Current system time month
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.SHORT_MONTH)
+              </entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.LONG_MONTH)
+              </entry>
+              <entry></entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.SHORT_YEAR)
+              </entry>
+              <entry>
+                Current system time year (abbreviated)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(DATE.LONG_YEAR)
+              </entry>
+              <entry>
+                Current system time year
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.MAKER)
+              </entry>
+              <entry>
+                The maker of camera model
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.MODEL)
+              </entry>
+              <entry>
+                The camera model
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(EXIF.LENS)
+              </entry>
+              <entry>
+                The specific lens used
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.dc.creator)
+              </entry>
+              <entry>
+                The creator string
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.dc.publisher)
+              </entry>
+              <entry>
+                The publisher string
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.dc.title)
+              </entry>
+              <entry>
+                The title of the image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.dc.description)
+              </entry>
+              <entry>
+                The description of the image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                $(Xmp.dc.rights)
+              </entry>
+              <entry>
+                The rights assigned to the image
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>marker</title>
+      <para>
+        Choose the watermark of interest. You can use the reload button next to the combobox to
+        update the list with all newly added watermarks.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>opacity</title>
+      <para>
+        Set the opacity of the render of watermark.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>scale</title>
+      <para>
+        Scale the watermark pixel-independently.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>alignment</title>
+      <para>
+        Use these controls to align the watermark to any edge or center of the image.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>x offset</title>
+      <para>
+        Pixel-independent offset relative to the choice of alignment on x-axis.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>y offset</title>
+      <para>
+        Pixel-independent offset relative to the choice of alignment on y-axis.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

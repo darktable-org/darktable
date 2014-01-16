@@ -1,30 +1,38 @@
-	<sect2 status="final" id="navigation"><title>Navigation</title>
-                <indexterm>
-                   <primary>darkroom panels</primary>
-                   <secondary>navigation</secondary>
-                </indexterm>
-                <indexterm>
-                   <primary>navigation</primary>
-                </indexterm>
-                <indexterm>
-                   <primary>zoom</primary>
-                </indexterm>
+<sect2 status="final" id="navigation">
 
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>The navigation panel displays a full preview of your image with a rectangle showing the
-                                                currently visible zoom area. Drag the rectangle around to pan the zoomed-in view. The current zoom scale
-                                                is displayed to the right of the preview image. Click on that figure for a quick access to some common
-                                                zoom levels.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
+  <title>Navigation</title>
+
+  <indexterm>
+    <primary>darkroom panels</primary>
+    <secondary>navigation</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>navigation</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>zoom</primary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            The navigation panel displays a full preview of your image with a rectangle showing
+            the currently visible zoom area. Drag the rectangle around to pan the zoomed-in
+            view. The current zoom scale is displayed to the right of the preview image. Click
+            on that figure for a quick access to some common zoom levels.
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_navigation.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+</sect2>

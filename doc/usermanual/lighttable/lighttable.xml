@@ -1,134 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
 <chapter status="final" id="lighttable_chapter">
-	<chapterinfo>
-		<keywordset>
-			<keyword>lighttable</keyword>
-			<keyword>view</keyword>
-		</keywordset>
-	</chapterinfo>
-        <indexterm class="startofrange" id="ix.lighttable_chapter">
-           <primary>lighttable view</primary>
-        </indexterm>
-	<title>Lighttable</title>
-	<para>The lighttable is where you manage all your images, ratings, export and much more.</para>
-        <para>
-              <screenshot>
-		<screeninfo>The lighttable view</screeninfo>
-		<graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
-              </screenshot>
-        </para>
 
-	<sect1 status="final" id="lighttable_overview"><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>
-						<entry>In the central view, your images are shown as thumbnails, surrounded by a frame. When the mouse is over
- 						an image, its rating and color labels are shown in the frame, along with an indicator 
-						<inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
-                                                of whether the image has already been altered in darkroom.
-						Also, when the mouse hovers over an image frame, image information (EXIF data, metadata) is shown in the 
-                                                <link linkend="image_information"><emphasis>image information</emphasis></link> panel in the bottom left.
-						</entry>
-						<entry>
-							<graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-				</tgroup>
-		</informaltable>
+  <chapterinfo>
+    <keywordset>
+      <keyword>lighttable</keyword>
+      <keyword>view</keyword>
+    </keywordset>
+  </chapterinfo>
 
-		<para>While the mouse is over an image frame, there are a number of actions you can perform on the image. Here
-		is a table of keyboard shortcuts and assigned actions.
-		<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth='1*'/>
-				<colspec colwidth='3*'/>
-				<tbody>
-					<row>
-						<entry><emphasis>0&nbsp;&ndash; 5</emphasis></entry>
-						<entry>set the rating of the image; if an image has 1 star and you hit the <emphasis>1</emphasis> key, the image will be unrated.
-							Pressing <emphasis>r</emphasis> rejects the image.
-                				</entry>
-					</row>
-					<row>
-						<entry><emphasis>F1&nbsp;&ndash; F5</emphasis></entry><entry>set a color label</entry>
-					</row>
-					<row>
-						<entry><emphasis>ctrl-c</emphasis></entry><entry>copy the history stack</entry>
-					</row>
-					<row>
-						<entry><emphasis>ctrl-v</emphasis></entry><entry>paste the copied history stack</entry>
-					</row>
-					<row>
-						<entry><emphasis>d</emphasis></entry><entry>open in darkroom view for developing</entry>
-					</row>
-					<row>
-						<entry><emphasis>z</emphasis></entry><entry>fully zoom into the image while the key is pressed</entry>
-					</row>
-				</tbody>
-				</tgroup>
-                </informaltable>
-		</para>
+  <title>Lighttable</title>
 
-		<para>At the bottom you have an option to choose between zoomable lighttable view or filemanager view of the thumbnails.
-		In zoomable lighttable view, scroll with your mouse wheel to zoom in and out.
-		Moving the mouse while <emphasis>pressing the left mouse button</emphasis> allows you to navigate through your collection.
-		In filemanager view, you can can change the number of images in each row, using the slider next to the filemanager option,
-                or by using <emphasis>ctrl-(mouse wheel)</emphasis>.
-		Use your mouse wheel to navigate through your collection.
-		</para>
+  <indexterm>
+    <primary>lighttable view</primary>
+  </indexterm>
 
-		<para>While in filemanager mode, you can scroll (not select) up and down through your collection using &uarr;/&darr;.
-		In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move left/right/up/down through your collection.
-		Pressing <emphasis>g</emphasis> goes to the top, <emphasis>shift-g</emphasis> to the bottom.
-		</para>
+  <para>
+    The lighttable is where you manage all your images, ratings, export and much more.
+  </para>
 
-		<para>To locate where you are in a collection, there are indicators at the extreme borders of the window: left/right for your position when
-                you are in filemanager mode, left/right and top/bottom for your vertical and your horizontal position, respectively, when you are in
-                zoomable lighttable view.
-                </para>
+  <para>
+    <screenshot>
 
-                <indexterm>
-                   <primary>focus detection</primary>
-                </indexterm>
-                <para>While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image under the mouse cursor is displayed. You can use this feature
-                for a quick inspection of image quality while rating and selecting images. If the corresponding option in <emphasis>gui options</emphasis> (see <xref linkend="gui_options"/>)
-                is enabled darktable automatically analyses images for focus regions. Areas of high sharpness are indicated by a red border - the higher the color intensity the better the
-                sharpness. In case that no area of high sharpness is detected darktable indicates areas of moderate sharpness with a blue border. For this tool to work the input image needs
-                to hold an embedded JPEG thumbnail which is the case for most RAW files. Sometimes pressing <emphasis>z</emphasis> may not reveal an immediate effect - in that case 
-                please click into the center area and press <emphasis>z</emphasis> again.
-                </para>
+      <screeninfo>The lighttable view</screeninfo>
 
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>
-						<entry>Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with indication of the areas in focus. 
-                                                Focus detection is based on an embedded JPEG thumbnail of the original RAW file independent of further processing steps within darktable.
-						</entry>
-						<entry>
-							<graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-				</tgroup>
-		</informaltable>
+      <graphic fileref="images/lighttable_view.png" scalefit="1" width="80%"></graphic>
 
+    </screenshot>
+  </para>
 
-        </sect1>
+  <sect1 status="final" id="lighttable_overview">
 
-        <!-- Lighttable concepts -->
-        <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <title>Overview</title>
 
-	<!-- Panels -->
-	<xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-        <indexterm class="endofrange" startref="ix.lighttable_chapter"/>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              In the central view, your images are shown as thumbnails, surrounded by a frame.
+              When the mouse is over an image, its rating and color labels are shown in the
+              frame, along with an indicator
+              <inlinegraphic  fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+              of whether the image has already been altered in darkroom. Also, when the mouse
+              hovers over an image frame, image information (EXIF data, metadata) is shown in
+              the <link linkend="image_information"><emphasis>image
+              information</emphasis></link> panel in the bottom left.
+            </entry>
+            <entry>
+              <graphic fileref="images/lighttable_thumb.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      While the mouse is over an image frame, there are a number of actions you can perform.
+      Here is a table of keyboard shortcuts and assigned actions.
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth='1*'/>
+          <colspec colwidth='3*'/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>0&nbsp;&ndash; 5</emphasis>
+              </entry>
+              <entry>
+                set the rating of the image; if an image has 1 star and you hit the
+                <emphasis>1</emphasis> key, the image will be unrated. Pressing
+                <emphasis>r</emphasis> rejects the image.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>F1&nbsp;&ndash; F5</emphasis>
+              </entry>
+              <entry>
+                set a color label
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-c</emphasis>
+              </entry>
+              <entry>
+                copy the history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>ctrl-v</emphasis>
+              </entry>
+              <entry>
+                paste the copied history stack
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>d</emphasis>
+              </entry>
+              <entry>
+                open in darkroom view for developing
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>z</emphasis>
+              </entry>
+              <entry>
+                fully zoom into the image while the key is pressed
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      At the bottom you have an option to choose between zoomable lighttable view or filemanager
+      view of the thumbnails. In zoomable lighttable view, scroll with your mouse wheel to zoom
+      in and out. Moving the mouse while <emphasis>pressing the left mouse button</emphasis>
+      allows you to navigate through your collection. In filemanager view, you can can change
+      the number of images in each row, using the slider next to the filemanager option, or by
+      using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to navigate through
+      your collection.
+    </para>
+
+    <para>
+      While in filemanager mode, you can scroll (not select) up and down through your collection
+      using &uarr;/&darr;. In zoomable lighttable &larr;/&rarr;/&uarr;/&darr; allow you to move
+      left/right/up/down through your collection. Pressing <emphasis>g</emphasis> goes to the
+      top, <emphasis>shift-g</emphasis> to the bottom.
+    </para>
+
+    <para>
+      To locate where you are in a collection, there are indicators at the extreme borders of
+      the window: left/right for your position when you are in filemanager mode, left/right and
+      top/bottom for your vertical and your horizontal position, respectively, when you are in
+      the zoomable lighttable view.
+    </para>
+
+    <indexterm>
+      <primary>focus detection</primary>
+    </indexterm>
+
+    <para>
+      While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
+      under the mouse cursor is displayed. You can use this feature for a quick inspection of
+      image quality while rating and selecting images. If the corresponding option in
+      <emphasis>gui options</emphasis> (see <xref linkend="gui_options"/>) is enabled darktable
+      automatically analyses images for focus regions. Areas of high sharpness are indicated by
+      a red border - the higher the color intensity the better the sharpness. In case that no
+      area of high sharpness is detected darktable indicates areas of moderate sharpness with a
+      blue border. For this tool to work the input image needs to hold an embedded JPEG
+      thumbnail which is the case for most RAW files. Sometimes pressing <emphasis>z</emphasis>
+      may not reveal an immediate effect - in that case please click into the center area and
+      press <emphasis>z</emphasis> again.
+    </para>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Fully zoomed-in image view while holding down the <emphasis>z</emphasis> key with
+              indication of the areas in focus. Focus detection is based on an embedded JPEG
+              thumbnail of the original RAW file independent of further processing steps within
+              darktable.
+            </entry>
+            <entry>
+              <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect1>
+
+<!-- Lighttable concepts -->
+
+  <xi:include href="concepts/concepts.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Panels -->
+
+  <xi:include href="panels/panels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </chapter>
-

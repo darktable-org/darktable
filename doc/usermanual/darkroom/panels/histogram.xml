@@ -1,36 +1,45 @@
-	<sect2 status="final" id="histogram"><title>Histogram</title>
-                <indexterm>
-                   <primary>darkroom panels</primary>
-                   <secondary>histogram</secondary>
-                </indexterm>
+<sect2 status="final" id="histogram">
 
-                <indexterm>
-                   <primary>histogram</primary>
-                </indexterm>
+  <title>Histogram</title>
 
+  <indexterm>
+    <primary>darkroom panels</primary>
+    <secondary>histogram</secondary>
+  </indexterm>
 
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-                                                <entry><para>This shows a histogram of the developed image's light levels. In its default state curves for
-                                                       all three RGB color channels are displayed. You can toggle the colored squares to enable or disable
-                                                       specific color channels. A curve button is also provided to toggle between linear view, logarithmic
-                                                       view and wavefront view.
-                                                       </para>
-                                                       <para>The histogram is directly linked to the <emphasis>exposure</emphasis> module described in <xref linkend="exposure"/>,
-                                                       and you can operate some of the exposure module's controls from the histogram. You can left-click
-                                                       towards the right hand side of the histogram and then drag right to increase or drag left to decrease
-                                                       the exposure. In a similar manner you can control the black level by clicking and dragging in the left
-                                                       hand side.
-                                                       </para>
-                                                </entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect2>
+  <indexterm>
+    <primary>histogram</primary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            <para>
+              This shows a histogram of the developed image's light levels. In its default state
+              curves for all three RGB color channels are displayed. You can toggle the colored
+              squares to enable or disable specific color channels. A curve button is also
+              provided to toggle between linear view, logarithmic view and wavefront view.
+            </para>
+
+            <para>
+              The histogram is directly linked to the <emphasis>exposure</emphasis> module
+              described in <xref linkend="exposure"/>, and you can operate some of the exposure
+              module's controls from the histogram. You can left-click towards the right hand
+              side of the histogram and then drag right to increase or drag left to decrease the
+              exposure. In a similar manner you can control the black level by clicking and
+              dragging in the left hand side.
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_histogram.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+</sect2>

@@ -21,7 +21,7 @@ local function sorted_pairs (t, f)
 end
 local function get_node_with_link(node,name)
 		 --return "\""..name.."\":"..page_name.."#"..doc.get_name(node)
-		 return '<link linkend="'..doc.get_name(node)..'">'..name..'</link>'
+		 return '<link linkend="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..name..'</link>'
 end
 
 local function get_reported_type(node,simple)
@@ -76,7 +76,14 @@ local function print_content(node)
 		end
 	end
 	if concat ~="" then
-		result = result.."<synopsis>Attributes: "..concat.."</synopsis>\n"
+		result = result..[[<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+<colspec colwidth="2*"/>
+<colspec colwidth="8*"/>
+<tbody><row>
+<entry>Attributes:</entry>
+<entry><synopsis>]]..concat..[[</synopsis></entry>
+</row></tbody>
+</tgroup></informaltable>]]
 	end
 
 	result = result.."\n"
@@ -137,12 +144,12 @@ parse_doc_node = function(node,parent,prev_name)
 		if(node:get_short_name() == "return") then
 			result = result ..'<varlistentry><term><emphasis>return</emphasis></term><listitem>\n'
 		else
-			result = result ..'<varlistentry><term id="'..doc.get_name(node)..'">'..doc.get_short_name(node).."</term><listitem>\n"
+			result = result ..'<varlistentry><term id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'">'..doc.get_short_name(node).."</term><listitem>\n"
 		end
 	elseif depth ~= 0 then
-		result = result..'<sect'..(depth+1)..' status="draft" '
+		result = result..'<sect'..(depth+1)..' status="final" '
 		if(doc.is_main_parent(node,parent,prev_name) ) then
-			result = result..'id="'..doc.get_name(node)..'"'
+			result = result..'id="'..doc.get_name(node):gsub("%.","_"):gsub("#","_hash_")..'"'
 		end
 		result = result..'>\n'
 		result = result..'<title>'..node_name..'</title>\n'
@@ -153,7 +160,7 @@ parse_doc_node = function(node,parent,prev_name)
 
 	end
 	if(not doc.is_main_parent(node,parent,prev_name) ) then
-		result = result .. "see "..get_node_with_link(node,doc.get_name(node)).."\n\n"
+		result = result .. "<para>see "..get_node_with_link(node,doc.get_name(node)).."</para>\n\n"
 	else
 		result = result .. print_content(node,parent)
 	end
@@ -171,12 +178,12 @@ M = {}
 M.page_name = page_name
 
 function M.get_doc()
-	 return [[<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+	 return [[<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-   <sect1 status="draft" id="lua_api"><title>Lua API</title>
+   <sect1 status="final" id="lua_api"><title>Lua API</title>
    <indexterm>
       <primary>Lua API</primary>
    </indexterm>

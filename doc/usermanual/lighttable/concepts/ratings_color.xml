@@ -1,93 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
+<sect2 status="final" id="star_ratings_and_color_labels">
 
-<sect2 status="final" id="star_ratings_and_color_labels"><title>Star ratings and color labels</title>
-    <indexterm>
-        <primary>star ratings</primary>
-    </indexterm>
-    <indexterm>
-        <primary>color labels</primary>
-    </indexterm>
-    <para>Star ratings and color labels help you to select and rank images according to your own criteria. An
-          image's star rating and its color labels are displayed in the thumbnail.</para>
+  <title>Star ratings and color labels</title>
 
-    <para>You can give a rating from zero to five stars to an image. The quality criteria which lead to a rating are
-          fully up to you. On import each image receives a standard rating which you can define in core options
-          (see <xref linkend="core_options"/>). You can later revise the rating at any time. As an extension to the
-          rating system you can also mark an image as <quote>rejected</quote> by pressing the 
-          <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/> icon.</para>
+  <indexterm>
+    <primary>star ratings</primary>
+  </indexterm>
 
-    <para>There are several ways to change a rating. With the mouse pointer over an image you can press a number key
-          <emphasis>0&nbsp;&ndash; 5</emphasis> to change the rating of a single image; this is probably the fastest
-          way when rating your images on first inspection of a film roll.</para>
+  <indexterm>
+    <primary>color labels</primary>
+  </indexterm>
 
-    <para>
-      <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+  <para>
+    Star ratings and color labels help you to select and rank images according to your own
+    criteria. An image's star rating and its color labels are displayed in the thumbnail.
+  </para>
+
+  <para>
+    You can give a rating from zero to five stars to an image. The quality criteria which lead
+    to a rating are fully up to you. On import each image receives a standard rating which you
+    can define in core options (see <xref linkend="core_options"/>). You can later revise the
+    rating at any time. As an extension to the rating system you can also mark an image as
+    <quote>rejected</quote> by pressing the
+    <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
+    icon.
+  </para>
+
+  <para>
+    There are several ways to change a rating. With the mouse pointer over an image you can
+    press a number key <emphasis>0&nbsp;&ndash; 5</emphasis> to change the rating of a single
+    image; this is probably the fastest way when rating your images on first inspection of a
+    film roll.
+  </para>
+
+  <para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
         <colspec colwidth="6*"/>
         <colspec colwidth="4*"/>
         <tbody>
-          <row>						
-             <entry>You can also directly click into the stars displayed in the thumbnails. For example you click the second star
-                    to get a rating of two stars etc. Clicking on the first star gives a one star rating, clicking on it a second time
-                    resets to zero stars.
-             </entry>
-             <entry>
-                    <graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
-             </entry>
+          <row>
+            <entry>
+              You can also directly click into the stars displayed in the thumbnails. For
+              example you click the second star to get a rating of two stars etc. Clicking on
+              the first star gives a one star rating, clicking on it a second time resets to
+              zero stars.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/star_rating_thumbs.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
-        </tgroup>
-      </informaltable>
-    </para>
+      </tgroup>
+    </informaltable>
+  </para>
 
-    <para>
-      <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+  <para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
         <colspec colwidth="6*"/>
         <colspec colwidth="4*"/>
         <tbody>
-          <row>						
-             <entry>In order to rate multiple images at once you select those images (see <xref linkend="select"/>) and then set the
-                    desired star rating in the bottom panel of the lighttable view.
-             </entry>
-             <entry>
-                    <graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
-             </entry>
+          <row>
+            <entry>
+              In order to rate multiple images at once you select those images (see
+              <xref linkend="select"/>) and then set the desired star rating in the bottom panel
+              of the lighttable view.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/star_rating_panel.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
-        </tgroup>
-      </informaltable>
-    </para>
+      </tgroup>
+    </informaltable>
+  </para>
 
+  <para>
+    Color labels are an option to mark images which can be used as an alternative or an
+    additional rating when using star ratings. Each image can carry any combination of color
+    labels in <quote>red</quote>, <quote>yellow</quote>, <quote>green</quote>,
+    <quote>blue</quote>, and <quote>purple</quote>.
+  </para>
 
-    <para>Color labels are an option to mark images which can be used as an alternative or in addition to star ratings. Each image 
-          can carry any combination of color labels in <quote>red</quote>, <quote>yellow</quote>, <quote>green</quote>, 
-          <quote>blue</quote>, and <quote>purple</quote>.</para>
+  <para>
+    The color labels of a single image can be set or unset with the mouse pointer over the
+    thumbnail by pressing the function keys <emphasis>F1&nbsp;&ndash; F5</emphasis> for the
+    labels in the order given above.
+  </para>
 
-    <para>The color labels of a single image can be set or unset with the mouse pointer over the thumbnail by pressing the function keys 
-          <emphasis>F1&nbsp;&ndash; F5</emphasis> for the labels in the order given above.</para>
-
-    <para>
-      <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
+  <para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
         <colspec colwidth="6*"/>
         <colspec colwidth="4*"/>
         <tbody>
-          <row>						
-             <entry>To toggle the color labels of multiple images you select the desired images (see <xref linkend="select"/>) and then press the
-                    corresponding color button in the bottom panel. In order to remove all labels from the selected images press the grey button.
-             </entry>
-             <entry>
-                    <graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />
-             </entry>
+          <row>
+            <entry>
+              To toggle the color labels of multiple images select the desired images (see
+              <xref linkend="select"/>) and then press the corresponding color button in the
+              bottom panel. In order to remove all labels from the selected images press the
+              grey button.
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/concepts/images/color_labels_panel.png" scalefit="1" width="80%" align="center" />
+            </entry>
           </row>
         </tbody>
-        </tgroup>
-      </informaltable>
-    </para>
+      </tgroup>
+    </informaltable>
+  </para>
 
 </sect2>
-
-

@@ -11,4 +11,6 @@
 
 <xsl:param name="use.id.as.filename" select="'1'"/>
 
+<xsl:param name="variablelist.as.blocks" select="1"></xsl:param>
+
 </xsl:stylesheet>

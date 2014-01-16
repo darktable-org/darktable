@@ -1,50 +1,74 @@
-<sect3 status="final" id="input_color_profile"><title>Input color profile</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>input color profile</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>input color profile</primary>
-        </indexterm>
-        <indexterm>
-           <primary>color management</primary>
-           <secondary>input color profile</secondary>
-        </indexterm>
-             
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module can be used to override darktable's automatic allocation of input color profile if there is an
-                                                       alternative that more closely matches your original image's color space.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="input_color_profile">
 
-	<sect4><title>Usage</title>
-		<sect5><title>profile</title>
-			<para>Choose the profile or color matrix to apply, darktable offers many widespread matrices along with an enhanced matrix for some camera models. The
-                              enhanced matrices were processed by the darktable team in order to provide a look closer to the manufacturer's.
-			</para>
-			<para>
-			      You can also supply your own input ICC profiles and put them into $DARKTABLE/share/darktable/color/in or
-                              $HOME/.config/darktable/color/in. $DARKTABLE is used here to represent darktable's installation directory and $HOME your home directory.
-                              One common source of ICC profiles is the software that is shipped with your camera; it often contains profiles specific to your camera model. 
-                              You may need to activate module <emphasis>unbreak input profile</emphasis> (see <xref linkend="unbreak_input_profile"/>) to use your extra profiles.
-			</para>
+  <title>Input color profile</title>
 
-			<para>If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it might already contain an embedded ICC profile which darktable will 
-                              use as a default. You can always overrule darktable and select a different profile or select <quote>embedded icc profile</quote> to restore 
-                              the default.
-			</para>
-		</sect5>
-	</sect4>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>input color profile</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>input color profile</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color management</primary>
+    <secondary>input color profile</secondary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module can be used to override darktable's automatic allocation of input
+              color profile if there is an alternative that more closely matches your original
+              image's color space.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/inputcolorprofile.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>profile</title>
+      <para>
+        Choose the profile or color matrix to apply, darktable offers many widespread matrices
+        along with an enhanced matrix for some camera models. The enhanced matrices were
+        processed by the darktable team in order to provide a look closer to the manufacturer's.
+      </para>
+      <para>
+        You can also supply your own input ICC profiles and put them into
+        $DARKTABLE/share/darktable/color/in or $HOME/.config/darktable/color/in. $DARKTABLE is
+        used here to represent darktable's installation directory and $HOME your home directory.
+        One common source of ICC profiles is the software that is shipped with your camera; it
+        often contains profiles specific to your camera model. You may need to activate module
+        <emphasis>unbreak input profile</emphasis> (see <xref linkend="unbreak_input_profile"/>)
+        to use your extra profiles.
+      </para>
+      <para>
+        If your input image is a low dynamic range file like JPEG, or a raw in DNG format, it
+        might already contain an embedded ICC profile which darktable will use as a default. You
+        can always overrule darktable and select a different profile or select <quote>embedded
+        icc profile</quote> to restore the default.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

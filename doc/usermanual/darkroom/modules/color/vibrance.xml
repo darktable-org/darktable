@@ -1,65 +1,56 @@
-<sect3 status="final" id="vibrance"><title>Vibrance</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>vibrance</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>vibrance</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>Vibrance is a widely used term in image processing but the mechanism
-						and end result differ from program to program. Vibrance in darktable  
-						saturates and brings down the lightness of the most saturated pixels
-                                                to make the colors more vivid.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/vibrance.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="vibrance">
 
-	<sect4><title>Usage</title>
-		<para>Vibrance only has one parameter which controls the amount applied.
-		</para>
-		<sect5><title>vibrance</title>
-			<para>The amount of vibrance to apply to the image.</para>
-		</sect5>
-	</sect4>
+  <title>Vibrance</title>
 
-<!--	
-	<sect4><title>Examples</title>
-		<para>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="4*"/>
-					<colspec colwidth="6*"/>
-					<tbody>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
-						</row>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry>
-								<para>EXAMPLE 2 DESCRIPTION
-								</para>
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</para>	
-	</sect4>
--->	
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>vibrance</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>vibrance</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Vibrance is a widely used term in image processing but the mechanism and end
+              result differ from program to program. Vibrance in darktable saturates and brings
+              down the lightness of the most saturated pixels to make the colors more vivid.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/vibrance.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      Vibrance only has one parameter which controls the amount applied.
+    </para>
+
+    <sect5>
+      <title>vibrance</title>
+      <para>
+        The amount of vibrance to apply to the image.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>
