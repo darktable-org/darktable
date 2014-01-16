@@ -553,7 +553,7 @@
     <type>string</type>
     <default>$(PICTURES_FOLDER)/Darktable</default>
     <shortdescription>base directory naming pattern</shortdescription>
-    <longdescription>part of full import path for a import session</longdescription>
+    <longdescription>part of full import path for an import session</longdescription>
   </dtconfig>
 
   <dtconfig prefs="session">
