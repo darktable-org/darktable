@@ -4,9 +4,22 @@ local function get_node_with_link(node,name)
 	return "\""..name.."\":"..page_name.."#"..node:get_name()
 end
 
-para = function() return "\n" end
-node_to_string = function(node) return get_node_with_link(node,node:get_name()) end
+para = function() return "\n\n" end
+node_to_string = function(node,name) 
+	if name then
+		return get_node_with_link(node,name)
+	else
+		return get_node_with_link(node,node:get_name())
+	end
+end
 
+code = function(text) 
+	return [[\n\n<pre><code class="lua">]]..text.."</pre></code>\n\n"
+end
+
+startlist = function() return "\n\n" end
+endlist = function() return "" end
+listel = function(text) return "\n* "..text end
 
 
 require "content"
@@ -171,7 +184,7 @@ function M.get_doc()
 
 
 This documentation was generated with darktable version ]]..real_darktable.configuration.version..[[.]])
-	return "{{toc}}\n\n"..parse_doc_node(doc.toplevel,nil,"")
+	return "{{>toc}}\n\n"..parse_doc_node(doc.toplevel,nil,"")
 end
 
 
