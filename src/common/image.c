@@ -205,19 +205,8 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, int len
   sqlite3_finalize(stmt);
 }
 
-void dt_image_path_append_version(int imgid, char *pathname, const int len)
+void dt_image_path_append_version_no_db(const int version, char *pathname, const int len)
 {
-  // get duplicate suffix
-  int version = 0;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select version from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    version = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
   // the "first" instance (version zero) does not get a version suffix
   if(version > 0)
   {
@@ -233,6 +222,22 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
     snprintf(c, pathname + len - c, "%s", c2);
     g_free(filename);
   }
+}
+
+void dt_image_path_append_version(int imgid, char *pathname, const int len)
+{
+  // get duplicate suffix
+  int version = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select version from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    version = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  dt_image_path_append_version_no_db(version, pathname, len);
 }
 
 void dt_image_print_exif(const dt_image_t *img, char *line, int len)
