@@ -1289,7 +1289,16 @@ void dt_image_write_sidecar_file(int imgid)
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, filename);
+    if(!dt_exif_xmp_write(imgid, filename))
+    {
+      // put the timestamp into db. this can't be done in exif.cc since that code gets called
+      // for the copy exporter, too
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
 }
 
