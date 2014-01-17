@@ -153,12 +153,12 @@ parse_doc_node = function(node,parent,prev_name)
 			tmp_node = doc.get_main_parent(tmp_node)
 		end
 		if(node:get_short_name() == "return") then
-			result = result .. tmp_string.."(#"..doc.get_name(node).."). _return_\n\n"
+			result = result .. tmp_string.."(#"..node_name.."). _return_\n\n"
 		else
-			result = result .. tmp_string.."(#"..doc.get_name(node).."). *"..node:get_short_name().."*\n\n"
+			result = result .. tmp_string.."(#"..node_name.."). *"..node:get_short_name().."*\n\n"
 		end
 	elseif depth ~= 0 then
-		result = result .. "h"..depth.."(#"..doc.get_name(node).."). "..prev_name.."\n\n"
+		result = result .. "h"..depth.."(#"..node_name.."). "..prev_name.."\n\n"
 	end
 	if(not doc.is_main_parent(node,parent,prev_name) ) then
 		result = result .. "see "..get_node_with_link(node,doc.get_name(node)).."\n\n"
