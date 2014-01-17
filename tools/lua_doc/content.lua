@@ -434,6 +434,10 @@ types.dt_lua_film_t:set_text([[A film in darktable; this represents a directory 
 types.dt_lua_film_t["#"]:set_text([[The different images within the film.]])
 types.dt_lua_film_t.id:set_text([[A unique numeric id used by this film.]])
 types.dt_lua_film_t.path:set_text([[The path represented by this film.]])
+types.dt_lua_film_t.delete:set_text([[Removes the film from the database.]])
+types.dt_lua_film_t.delete:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to remove.]])
+types.dt_lua_film_t.delete:add_parameter("force","Boolean",[[Force removal, even if the film is not empty.]]):set_attribute("optional",true)
+types.dt_lua_film_t.delete:add_version_info("function added")
 
 types.dt_style_t:set_text([[A style that can be applied to an image.]])
 types.dt_style_t.name:set_text([[The name of the style.]])

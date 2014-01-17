@@ -25,17 +25,20 @@
 #include "common/grealpath.h"
 #include <errno.h>
 
+static int film_delete(lua_State *L);
 
 typedef enum
 {
   PATH,
   ID,
+  DELETE,
   LAST_FILM_FIELD
 } film_fields;
 const char *film_fields_name[] =
 {
   "path",
   "id",
+  "delete",
   NULL
 };
 static int film_index(lua_State *L)
@@ -64,8 +67,24 @@ static int film_index(lua_State *L)
     case ID:
       lua_pushinteger(L,film_id);
       break;
+    case DELETE:
+      lua_pushcfunction(L,film_delete);
+      break;
   }
   return 1;
+}
+
+static int film_delete(lua_State *L)
+{
+  dt_lua_film_t film_id;
+  luaA_to(L,dt_lua_film_t,&film_id,1);
+  gboolean force = lua_toboolean(L,2);
+  if(force || dt_film_is_empty(film_id)) {
+    dt_film_remove(film_id);
+  } else {
+    return luaL_error(L,"Can't delete film, film is not empty");
+  }
+  return 0;
 }
 
 static int film_tostring(lua_State *L)
@@ -207,6 +226,8 @@ int dt_lua_init_film(lua_State * L)
   dt_lua_register_type_callback_number_typeid(L,type_id,films_index,NULL,films_len);
   lua_pushcfunction(L,films_new);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"new");
+  lua_pushcfunction(L,film_delete);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
 
   return 0;
 }
