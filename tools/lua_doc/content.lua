@@ -91,7 +91,6 @@ tmp_node = darktable.register_storage:add_parameter("initialize","function",[[A 
 tmp_node:set_attribute("optional",true)
 tmp_node:add_parameter("storage",my_tostring(types.dt_imageio_module_storage_t),[[The storage object tested.]])
 tmp_node:add_parameter("format",my_tostring(types.dt_imageio_module_format_t),[[The format object to report about.]])
-print("aaa "..my_tostring(types.dt_imageio_module_storage_t))
 tmp_node:add_parameter("images","table of "..my_tostring(types.dt_lua_image_t),[[A table containing images to be exported.]])
 tmp_node:add_parameter("high_quality","boolean",[[True if the export is high quality.]])
 tmp_node:add_parameter("extra_data","table",[[An empty Lua table to take extra data. This table is common to the initialize, store and finalize calls in an export serie.]])
