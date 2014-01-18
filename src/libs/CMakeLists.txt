@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session)
+set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -40,7 +40,6 @@ add_library(modulegroups MODULE "modulegroups.c")
 add_library(backgroundjobs MODULE "backgroundjobs.c")
 add_library(colorpicker MODULE "colorpicker.c")
 add_library(masks MODULE "masks.c")
-add_library(session MODULE "session.c")
 
 # tools
 add_library(viewswitcher MODULE "tools/viewswitcher.c")
@@ -69,11 +68,14 @@ if(APRIL_FOOLS)
 endif(APRIL_FOOLS)
 
 # check if gphoto2 found and add build of camera modules...
-if(GPHOTO2_FOUND)
-	add_library(camera MODULE "camera.c")
-	add_library(live_view MODULE "live_view.c")
-	set(MODULES ${MODULES} camera live_view)
-endif(GPHOTO2_FOUND)
+if(USE_CAMERA_SUPPORT)
+  if(GPHOTO2_FOUND)
+    add_library(camera MODULE "camera.c")
+    add_library(live_view MODULE "live_view.c")
+    add_library(session MODULE "session.c")
+    set(MODULES ${MODULES} camera live_view session)
+  endif(GPHOTO2_FOUND)
+endif(USE_CAMERA_SUPPORT)
 
 # the modules specific to map mode
 if(USE_GEO)
