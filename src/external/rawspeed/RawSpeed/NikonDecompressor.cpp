@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "NikonDecompressor.h"
+#include "BitPumpMSB.h"
+
 /*
     RawSpeed - RAW file decoder.
 
@@ -29,15 +31,8 @@ NikonDecompressor::NikonDecompressor(FileMap* file, RawImage img) :
   for (uint32 i = 0; i < 0x8000 ; i++) {
     curve[i]  = i;
   }
-  bits = 0;
 }
 
-NikonDecompressor::~NikonDecompressor(void) {
-  if (bits)
-    delete(bits);
-  bits = 0;
-
-}
 void NikonDecompressor::initTable(uint32 huffSelect) {
   HuffmanTable *dctbl1 = &huff[0];
   uint32 acc = 0;
@@ -104,7 +99,7 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
     curve[i] = top;
 
   uint32 x, y;
-  bits = new BitPumpMSB(mFile->getData(offset), size);
+  BitPumpMSB bits(mFile->getData(offset), size);
   uchar8 *draw = mRaw->getData();
   uint32 *dest;
   uint32 pitch = mRaw->pitch;
@@ -118,15 +113,15 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
       initTable(huffSelect + 1);
     }
     dest = (uint32*) & draw[y*pitch];  // Adjust destination
-    pUp1[y&1] += HuffDecodeNikon();
-    pUp2[y&1] += HuffDecodeNikon();
+    pUp1[y&1] += HuffDecodeNikon(bits);
+    pUp2[y&1] += HuffDecodeNikon(bits);
     pLeft1 = pUp1[y&1];
     pLeft2 = pUp2[y&1];
     dest[0] = curve[clampbits(pLeft1,15)] | ((uint32)curve[clampbits(pLeft2,15)] << 16);
     for (x = 1; x < cw; x++) {
-      bits->checkPos();
-      pLeft1 += HuffDecodeNikon();
-      pLeft2 += HuffDecodeNikon();
+      bits.checkPos();
+      pLeft1 += HuffDecodeNikon(bits);
+      pLeft2 += HuffDecodeNikon(bits);
       dest[x] = curve[clampbits(pLeft1,15)] | ((uint32)curve[clampbits(pLeft2,15)] << 16);
     }
   }
@@ -148,33 +143,33 @@ void NikonDecompressor::DecompressNikon(ByteStream *metadata, uint32 w, uint32 h
 *
 *--------------------------------------------------------------
 */
-int NikonDecompressor::HuffDecodeNikon() {
+int NikonDecompressor::HuffDecodeNikon(BitPumpMSB& bits) {
   int rv;
   int l, temp;
   int code, val ;
 
   HuffmanTable *dctbl1 = &huff[0];
 
-  bits->fill();
-  code = bits->peekBitsNoFill(14);
+  bits.fill();
+  code = bits.peekBitsNoFill(14);
   val = dctbl1->bigTable[code];
   if ((val&0xff) !=  0xff) {
-    bits->skipBitsNoFill(val&0xff);
+    bits.skipBitsNoFill(val&0xff);
     return val >> 8;
   }
 
   rv = 0;
-  code = bits->peekByteNoFill();
+  code = bits.peekByteNoFill();
   val = dctbl1->numbits[code];
   l = val & 15;
   if (l) {
-    bits->skipBitsNoFill(l);
+    bits.skipBitsNoFill(l);
     rv = val >> 4;
   }  else {
-    bits->skipBits(8);
+    bits.skipBits(8);
     l = 8;
     while (code > dctbl1->maxcode[l]) {
-      temp = bits->getBitNoFill();
+      temp = bits.getBitNoFill();
       code = (code << 1) | temp;
       l++;
     }
@@ -196,7 +191,7 @@ int NikonDecompressor::HuffDecodeNikon() {
   */
   uint32 len = rv & 15;
   uint32 shl = rv >> 4;
-  int diff = ((bits->getBits(len - shl) << 1) + 1) << shl >> 1;
+  int diff = ((bits.getBits(len - shl) << 1) + 1) << shl >> 1;
   if ((diff & (1 << (len - 1))) == 0)
     diff -= (1 << len) - !shl;
   return diff;
