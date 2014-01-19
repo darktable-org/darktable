@@ -1169,7 +1169,14 @@
   <dtconfig>
     <name>plugins/imageio/format/tiff/bpp</name>
     <type>int</type>
-    <default>16</default>
+    <default>8</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/tiff/compress</name>
+    <type>int</type>
+    <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
