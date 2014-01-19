@@ -2,8 +2,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< Updated upstream
 "POT-Creation-Date: 2014-01-18 17:34+0100\n"
 "PO-Revision-Date: 2014-01-18 17:39+0100\n"
+=======
+"POT-Creation-Date: 2014-01-05 14:18+0100\n"
+"PO-Revision-Date: 2013-12-31 10:46+0100\n"
+>>>>>>> Stashed changes
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -728,7 +733,11 @@ msgstr "erreur de chargement du dossier «%s»"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier «%s» possède un format inconnu !"
 
+<<<<<<< Updated upstream
 #: ../src/common/darktable.c:348 ../src/libs/import.c:711
+=======
+#: ../src/common/darktable.c:347 ../src/libs/import.c:716
+>>>>>>> Stashed changes
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
@@ -762,6 +771,7 @@ msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
+<<<<<<< Updated upstream
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:632
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1694
@@ -776,6 +786,22 @@ msgstr "activé(e)"
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
 #: ../src/iop/vignette.c:1117 ../src/libs/history.c:155
 #: ../src/libs/live_view.c:404
+=======
+#: ../src/common/history.c:269 ../src/common/history.c:270
+#: ../src/common/history.c:286 ../src/common/styles.c:629
+#: ../src/common/styles.c:631 ../src/develop/blend_gui.c:1694
+#: ../src/develop/develop.c:1145 ../src/libs/live_view.c:406
+msgid "on"
+msgstr "activé(e)"
+
+#: ../src/common/history.c:269 ../src/common/history.c:270
+#: ../src/common/history.c:286 ../src/common/styles.c:629
+#: ../src/common/styles.c:631 ../src/develop/blend_gui.c:1542
+#: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
+#: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
+#: ../src/iop/vignette.c:1117 ../src/libs/history.c:155
+#: ../src/libs/live_view.c:405
+>>>>>>> Stashed changes
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -867,7 +893,11 @@ msgid "style named '%s' successfully created"
 msgstr "le style «%s» a été créé"
 
 #. fail :(
+<<<<<<< Updated upstream
 #: ../src/common/styles.c:444 ../src/common/styles.c:463
+=======
+#: ../src/common/styles.c:441 ../src/common/styles.c:460
+>>>>>>> Stashed changes
 #: ../src/views/darkroom.c:454
 msgid "no image selected!"
 msgstr "aucune image sélectionnée"
@@ -896,11 +926,19 @@ msgstr "le style «%s» a été importé"
 msgid "none"
 msgstr "sans"
 
+<<<<<<< Updated upstream
 #: ../src/control/control.c:949 ../src/control/control.c:952
 msgid "working.."
 msgstr "en cours..."
 
 #: ../src/control/control.c:1035
+=======
+#: ../src/control/control.c:957 ../src/control/control.c:960
+msgid "working.."
+msgstr "en cours..."
+
+#: ../src/control/control.c:1043
+>>>>>>> Stashed changes
 #, c-format
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
@@ -940,23 +978,58 @@ msgstr[1] "capture de %d images"
 msgid "please set your camera to manual mode first!"
 msgstr "merci de régler le boîtier en mode manuel !"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/camera_jobs.c:271
+=======
+#: ../src/control/jobs/camera_jobs.c:289
+>>>>>>> Stashed changes
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importé(s) vers %s"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/camera_jobs.c:283
 msgid "starting to import images from camera"
 msgstr "début de l'importation d'images depuis le boîtier"
 
 #: ../src/control/jobs/camera_jobs.c:293
+=======
+#: ../src/control/jobs/camera_jobs.c:354
+msgid ""
+"couldn't expand to a unique filename for import, please check your import "
+"settings."
+msgstr ""
+"impossible d'affecter un nom unique lors de l'importation. vérifier les "
+"réglages d'importation."
+
+#: ../src/control/jobs/camera_jobs.c:383
+msgid "starting to import images from camera"
+msgstr "début de l'importation d'images depuis le boîtier"
+
+#: ../src/control/jobs/camera_jobs.c:403
+#, c-format
+msgid "failed to create import path `%s', import aborted."
+msgstr "échec de la création du chemin %s, abandon de l'importation des images"
+
+#: ../src/control/jobs/camera_jobs.c:412
+>>>>>>> Stashed changes
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/control_jobs.c:136
+=======
+#: ../src/control/jobs/camera_jobs.c:434
+msgid "failed to create filmroll for camera import, import aborted."
+msgstr ""
+"échec de la création de la pellicule lors de l'importation depuis le "
+"boîtier, abandon de l'importation"
+
+#: ../src/control/jobs/control_jobs.c:124
+>>>>>>> Stashed changes
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
@@ -1154,19 +1227,31 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exportation de %d image vers %s"
 msgstr[1] "exportation de %d images vers %s"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/control_jobs.c:1233 ../src/views/darkroom.c:467
+=======
+#: ../src/control/jobs/control_jobs.c:1221 ../src/views/darkroom.c:467
+>>>>>>> Stashed changes
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "image '%s\" non disponible actuellement"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/control_jobs.c:1314
+=======
+#: ../src/control/jobs/control_jobs.c:1302
+>>>>>>> Stashed changes
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "ajout du décalage horaire à %d image"
 msgstr[1] "ajout du décalage horaire à %d images"
 
+<<<<<<< Updated upstream
 #: ../src/control/jobs/control_jobs.c:1334
+=======
+#: ../src/control/jobs/control_jobs.c:1322
+>>>>>>> Stashed changes
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "décalage horaire ajouté à %d image(s)"
@@ -1365,7 +1450,11 @@ msgid "add brush"
 msgstr "ajouter un masque au pinceau"
 
 #. * generate a list of all available blend modes
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:376
+=======
+#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:377
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
@@ -1375,17 +1464,29 @@ msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normal écrêté"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:385
+=======
+#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:386
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "éclaircir"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:384
+=======
+#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:385
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "darken"
 msgstr "assombrir"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:381
+=======
+#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:382
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplier"
@@ -1405,17 +1506,29 @@ msgctxt "blendmode"
 msgid "subtract"
 msgstr "soustraire"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:390
+=======
+#: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:391
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "difference"
 msgstr "différence"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:382
+=======
+#: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:383
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "screen"
 msgstr "écran"
 
+<<<<<<< Updated upstream
 #: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:383
+=======
+#: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:384
+>>>>>>> Stashed changes
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "superposer"
@@ -1646,7 +1759,11 @@ msgid "move down"
 msgstr "descendre"
 
 #. delete
+<<<<<<< Updated upstream
 #: ../src/develop/imageop.c:1125 ../src/libs/image.c:146
+=======
+#: ../src/develop/imageop.c:1121 ../src/libs/image.c:146
+>>>>>>> Stashed changes
 #: ../src/libs/styles.c:396 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "supprimer"
@@ -1665,7 +1782,11 @@ msgstr "%s est désactivé"
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:176
 #: ../src/gui/presets.c:278 ../src/gui/presets.c:583
+<<<<<<< Updated upstream
 #: ../src/iop/temperature.c:770 ../src/libs/import.c:487 ../src/libs/lib.c:291
+=======
+#: ../src/iop/temperature.c:770 ../src/libs/import.c:492 ../src/libs/lib.c:291
+>>>>>>> Stashed changes
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:983
 msgid "preset"
 msgstr "pré-réglage"
@@ -1720,7 +1841,11 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 msgid "`%s' not a lightroom XMP!"
 msgstr "(%s) n'est pas un XMP de Lightroom !"
 
+<<<<<<< Updated upstream
 #: ../src/develop/lightroom.c:1420 ../src/libs/import.c:511
+=======
+#: ../src/develop/lightroom.c:1420 ../src/libs/import.c:516
+>>>>>>> Stashed changes
 msgid "tags"
 msgstr "mots-clés"
 
@@ -1862,11 +1987,19 @@ msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+<<<<<<< Updated upstream
 #: ../src/gui/camera_import_dialog.c:270 ../src/libs/import.c:398
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
 #: ../src/gui/camera_import_dialog.c:271 ../src/libs/import.c:399
+=======
+#: ../src/gui/camera_import_dialog.c:322 ../src/libs/import.c:403
+msgid "ignore JPEG files"
+msgstr "ignorer les fichiers JPEG"
+
+#: ../src/gui/camera_import_dialog.c:323 ../src/libs/import.c:404
+>>>>>>> Stashed changes
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -2119,46 +2252,77 @@ msgid "name"
 msgstr "nom"
 
 #. exif
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1349
+=======
+#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1348
+>>>>>>> Stashed changes
 #: ../src/gui/presets.c:399 ../src/libs/metadata_view.c:89
 msgid "model"
 msgstr "modèle"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1357
+=======
+#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1356
+>>>>>>> Stashed changes
 #: ../src/gui/presets.c:406 ../src/libs/metadata_view.c:90
 msgid "maker"
 msgstr "fabricant"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1365
+=======
+#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1364
+>>>>>>> Stashed changes
 #: ../src/gui/presets.c:413 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:91
 msgid "lens"
 msgstr "objectif"
 
 #. iso
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1371
 #: ../src/gui/presets.c:420 ../src/libs/camera.c:557 ../src/libs/collect.h:44
+=======
+#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1370
+#: ../src/gui/presets.c:420 ../src/libs/camera.c:597 ../src/libs/collect.h:44
+>>>>>>> Stashed changes
 #: ../src/libs/metadata_view.c:96
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
+=======
+#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1383
+>>>>>>> Stashed changes
 #: ../src/gui/presets.c:433 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1399
 #: ../src/gui/presets.c:448 ../src/libs/camera.c:509 ../src/libs/camera.c:518
+=======
+#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1398
+#: ../src/gui/presets.c:448 ../src/libs/camera.c:549 ../src/libs/camera.c:558
+>>>>>>> Stashed changes
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:92
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:481 ../src/gui/preferences.c:1414
 #: ../src/gui/presets.c:463 ../src/libs/camera.c:528
+=======
+#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1413
+#: ../src/gui/presets.c:463 ../src/libs/camera.c:568
+>>>>>>> Stashed changes
 #: ../src/libs/metadata_view.c:94
 msgid "focal length"
 msgstr "focale"
@@ -2204,13 +2368,21 @@ msgstr "exporter"
 msgid "press key combination to remap..."
 msgstr "entrer la nouvelle combinaison de touches"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1078 ../src/gui/presets.c:171
+=======
+#: ../src/gui/preferences.c:1077 ../src/gui/presets.c:171
+>>>>>>> Stashed changes
 #: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le pré-réglage «%s» ?"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1079 ../src/gui/presets.c:172
+=======
+#: ../src/gui/preferences.c:1078 ../src/gui/presets.c:172
+>>>>>>> Stashed changes
 #: ../src/libs/lib.c:316
 msgid "delete preset?"
 msgstr "supprimer ce pré-réglage ?"
@@ -2231,16 +2403,25 @@ msgstr ""
 "êtes-vous sûr de vouloir rétablir les réglages par défaut ? cela va effacer "
 "les modifications que vous avez faites."
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1304 ../src/gui/presets.c:347
+=======
+#: ../src/gui/preferences.c:1303 ../src/gui/presets.c:347
+>>>>>>> Stashed changes
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "éditer '%s' pour le module «%s»"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1331 ../src/gui/presets.c:378
+=======
+#: ../src/gui/preferences.c:1330 ../src/gui/presets.c:378
+>>>>>>> Stashed changes
 #: ../src/libs/lib.c:234
 msgid "description or further information"
 msgstr "description ou information complémentaire"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1333 ../src/gui/presets.c:380
 msgid "auto apply this preset to matching images"
 msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
@@ -2250,6 +2431,17 @@ msgid "only show this preset for matching images"
 msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
 
 #: ../src/gui/preferences.c:1336 ../src/gui/presets.c:383
+=======
+#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:380
+msgid "auto apply this preset to matching images"
+msgstr "appliquer automatiquement ce pré-réglage aux images correspondantes"
+
+#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:382
+msgid "only show this preset for matching images"
+msgstr "n'afficher ce pré-réglage qu'aux images correspondantes"
+
+#: ../src/gui/preferences.c:1335 ../src/gui/presets.c:383
+>>>>>>> Stashed changes
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -2257,21 +2449,34 @@ msgstr ""
 "soyez vigilants avec cette option, ce pourrait être la dernière fois que "
 "vous voyez votre pré-réglage"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1348 ../src/gui/presets.c:398
+=======
+#: ../src/gui/preferences.c:1347 ../src/gui/presets.c:398
+>>>>>>> Stashed changes
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "nom du modèle (use % as wildcard)"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1356 ../src/gui/presets.c:405
+=======
+#: ../src/gui/preferences.c:1355 ../src/gui/presets.c:405
+>>>>>>> Stashed changes
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "nom du fabricant (use % as wildcard)"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1364 ../src/gui/presets.c:412
+=======
+#: ../src/gui/preferences.c:1363 ../src/gui/presets.c:412
+>>>>>>> Stashed changes
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "nom de l'objectif (use % as wildcard)"
 
+<<<<<<< Updated upstream
 #: ../src/gui/preferences.c:1375 ../src/gui/presets.c:424
 msgid "minimum ISO value"
 msgstr "valeur d'ISO minimale"
@@ -2301,6 +2506,37 @@ msgid "minimum focal length"
 msgstr "longueur focale minimale"
 
 #: ../src/gui/preferences.c:1422 ../src/gui/presets.c:471
+=======
+#: ../src/gui/preferences.c:1374 ../src/gui/presets.c:424
+msgid "minimum ISO value"
+msgstr "valeur d'ISO minimale"
+
+#: ../src/gui/preferences.c:1378 ../src/gui/presets.c:428
+msgid "maximum ISO value"
+msgstr "valeur d'ISO maximale"
+
+#: ../src/gui/preferences.c:1388 ../src/gui/presets.c:438
+msgid "minimum exposure time"
+msgstr "temps d'exposition maximum"
+
+#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:439
+msgid "maximum exposure time"
+msgstr "temps d'exposition maximum"
+
+#: ../src/gui/preferences.c:1403 ../src/gui/presets.c:453
+msgid "minimum aperture value"
+msgstr "valeur d'ouverture minimale"
+
+#: ../src/gui/preferences.c:1404 ../src/gui/presets.c:454
+msgid "maximum aperture value"
+msgstr "valeur d'ouverture maximale"
+
+#: ../src/gui/preferences.c:1420 ../src/gui/presets.c:470
+msgid "minimum focal length"
+msgstr "longueur focale minimale"
+
+#: ../src/gui/preferences.c:1421 ../src/gui/presets.c:471
+>>>>>>> Stashed changes
 msgid "maximum focal length"
 msgstr "longueur focale maximale"
 
@@ -2495,12 +2731,23 @@ msgid "PPM (16-bit)"
 msgstr "PPM (16-bits)"
 
 #: ../src/imageio/format/tiff.c:297
+<<<<<<< Updated upstream
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bits)"
 
 #: ../src/imageio/format/tiff.c:335
 msgid "32-bit (float)"
 msgstr "32-bits (flottant)"
+=======
+#, fuzzy
+msgid "TIFF (8/16/32-bit)"
+msgstr "TIFF (8/16-bits)"
+>>>>>>> Stashed changes
+
+#: ../src/imageio/format/tiff.c:335
+#, fuzzy
+msgid "32-bit"
+msgstr "8-bits"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -3207,7 +3454,11 @@ msgstr "sélectionne la couleur du cadre"
 
 #. add import single image buttons
 #: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:814
+=======
+#: ../src/libs/import.c:819
+>>>>>>> Stashed changes
 msgid "image"
 msgstr "image"
 
@@ -6231,17 +6482,29 @@ msgstr "historique"
 msgid "description"
 msgstr "description"
 
+<<<<<<< Updated upstream
 #: ../src/libs/collect.h:40 ../src/libs/import.c:493
+=======
+#: ../src/libs/collect.h:40 ../src/libs/import.c:498
+>>>>>>> Stashed changes
 #: ../src/libs/metadata.c:359 ../src/libs/metadata_view.c:103
 msgid "creator"
 msgstr "auteur"
 
+<<<<<<< Updated upstream
 #: ../src/libs/collect.h:41 ../src/libs/import.c:499
+=======
+#: ../src/libs/collect.h:41 ../src/libs/import.c:504
+>>>>>>> Stashed changes
 #: ../src/libs/metadata.c:372
 msgid "publisher"
 msgstr "diffuseur"
 
+<<<<<<< Updated upstream
 #: ../src/libs/collect.h:42 ../src/libs/import.c:505
+=======
+#: ../src/libs/collect.h:42 ../src/libs/import.c:510
+>>>>>>> Stashed changes
 #: ../src/libs/metadata.c:385
 msgid "rights"
 msgstr "droits"
@@ -6316,7 +6579,11 @@ msgid "XMP sidecar files"
 msgstr "fichiers XMP"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:452
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:680 ../src/libs/styles.c:281
+=======
+#: ../src/libs/import.c:685 ../src/libs/styles.c:281
+>>>>>>> Stashed changes
 msgid "all files"
 msgstr "tous les fichiers"
 
@@ -6861,36 +7128,37 @@ msgctxt "accel"
 msgid "ungroup"
 msgstr "dégrouper"
 
-#: ../src/libs/import.c:85
+#: ../src/libs/import.c:86
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/import.c:106
+#: ../src/libs/import.c:107
 msgctxt "accel"
 msgid "scan for devices"
 msgstr "rechercher un appareil"
 
-#: ../src/libs/import.c:107
+#: ../src/libs/import.c:108
 msgctxt "accel"
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:108
+#: ../src/libs/import.c:109
 msgctxt "accel"
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
-#: ../src/libs/import.c:109
+#: ../src/libs/import.c:110
 msgctxt "accel"
 msgid "import image"
 msgstr "importer une image"
 
-#: ../src/libs/import.c:110
+#: ../src/libs/import.c:111
 msgctxt "accel"
 msgid "import folder"
 msgstr "importer un dossier"
 
 #. add the rescan button
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:187
 msgid "scan for devices"
 msgstr "rechercher un appareil"
@@ -6900,48 +7168,92 @@ msgid "scan for newly attached devices"
 msgstr "recherche des appareils branchés récemment"
 
 #: ../src/libs/import.c:217
+=======
+#: ../src/libs/import.c:192
+msgid "scan for devices"
+msgstr "rechercher un appareil"
+
+#: ../src/libs/import.c:195
+msgid "scan for newly attached devices"
+msgstr "recherche des appareils branchés récemment"
+
+#: ../src/libs/import.c:222
+>>>>>>> Stashed changes
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil \"%s\" connecté sur le port \"%s\""
 
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:226
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
 #: ../src/libs/import.c:231
+=======
+#: ../src/libs/import.c:231
+msgid "import from camera"
+msgstr "importer depuis le boîtier"
+
+#: ../src/libs/import.c:236
+>>>>>>> Stashed changes
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. No supported devices is detected lets notice user..
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:253
+=======
+#: ../src/libs/import.c:258
+>>>>>>> Stashed changes
 msgid "no supported devices found"
 msgstr "aucun appareil supporté n'a été détecté"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:372
+=======
+#: ../src/libs/import.c:377
+>>>>>>> Stashed changes
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:392
 msgid "import directories recursively"
 msgstr "importer les dossiers récursivement"
 
 #: ../src/libs/import.c:393
+=======
+#: ../src/libs/import.c:397
+msgid "import directories recursively"
+msgstr "importer les dossiers récursivement"
+
+#: ../src/libs/import.c:398
+>>>>>>> Stashed changes
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:407
 msgid "apply metadata on import"
 msgstr "appliquer des métadonnées lors de l'importation"
 
 #: ../src/libs/import.c:408
+=======
+#: ../src/libs/import.c:412
+msgid "apply metadata on import"
+msgstr "appliquer des métadonnées lors de l'importation"
+
+#: ../src/libs/import.c:413
+>>>>>>> Stashed changes
 msgid "apply some metadata to all newly imported images."
 msgstr ""
 "appliquer des métadonnées\n"
 "à toutes les images nouvellement importées"
 
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:435
 msgid "comma separated list of tags"
 msgstr "liste de mots-clés séparés par une virgule"
@@ -6963,15 +7275,46 @@ msgid "import film"
 msgstr "importer un dossier"
 
 #: ../src/libs/import.c:817
+=======
+#: ../src/libs/import.c:440
+msgid "comma separated list of tags"
+msgstr "liste de mots-clés séparés par une virgule"
+
+#: ../src/libs/import.c:655
+msgid "import image"
+msgstr "importer une image"
+
+#: ../src/libs/import.c:680
+msgid "supported images"
+msgstr "images supportées"
+
+#: ../src/libs/import.c:730
+msgid "file has unknown format!"
+msgstr "le fichier possède un format inconnu !"
+
+#: ../src/libs/import.c:748
+msgid "import film"
+msgstr "importer un dossier"
+
+#: ../src/libs/import.c:822
+>>>>>>> Stashed changes
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
+<<<<<<< Updated upstream
 #: ../src/libs/import.c:826
 msgid "folder"
 msgstr "dossier"
 
 #: ../src/libs/import.c:830
+=======
+#: ../src/libs/import.c:831
+msgid "folder"
+msgstr "dossier"
+
+#: ../src/libs/import.c:835
+>>>>>>> Stashed changes
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
@@ -8007,6 +8350,35 @@ msgstr "changer de vue"
 msgid "view toolbox"
 msgstr "afficher la boîte à outils"
 
+<<<<<<< Updated upstream
+=======
+#: ../src/views/capture.c:106
+msgid "tethering"
+msgstr "capture"
+
+#: ../src/views/capture.c:303
+#, c-format
+msgid "failed to create session path %s."
+msgstr "impossible de créer le chemin de session %s"
+
+#: ../src/views/capture.c:321
+#, c-format
+msgid "new session initiated '%s'"
+msgstr "nouvelle session initiée «%s»"
+
+#: ../src/views/capture.c:458
+msgid "no camera with tethering support available for use..."
+msgstr "aucun boîtier disponible pour la capture..."
+
+#. Setup key accelerators in capture view...
+#. Film strip shortcuts
+#: ../src/views/capture.c:564 ../src/views/darkroom.c:1691
+#: ../src/views/map.c:565
+msgctxt "accel"
+msgid "toggle film strip"
+msgstr "activer/désactiver le bandeau"
+
+>>>>>>> Stashed changes
 #: ../src/views/darkroom.c:83
 msgid "darkroom"
 msgstr "chambre noire"
