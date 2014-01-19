@@ -420,7 +420,7 @@ msgstr "Saturation"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:174(primary)
 msgid "command line parameters"
-msgstr ""
+msgstr "paramètres de ligne de commande"
 
 #: /home/victor/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:177(para)
 msgid ""
