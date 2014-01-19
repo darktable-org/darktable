@@ -147,7 +147,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   // global default can be annoying:
-  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)");
+  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 
   // this should prevent users from unintentional image overwrite
