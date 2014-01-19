@@ -24,6 +24,7 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/film.h"
+#include <errno.h>
 
 /***********************************************************************
   Creating the images global variable
@@ -62,17 +63,28 @@ static int import_images(lua_State *L)
     dt_film_t new_film;
     dt_film_init(&new_film);
     char* dirname =g_path_get_dirname(full_name);
-    result = dt_film_new(&new_film,dirname);
+    char * expanded_path = dt_util_fix_path(dirname);
+    g_free(dirname);
+    char * final_path = g_realpath(expanded_path);
+    g_free(expanded_path);
+    if(!final_path) {
+      g_free(full_name);
+      return luaL_error(L,"Error while importing : %s\n",strerror(errno));
+    }
+    result = dt_film_new(&new_film,final_path);
+    free(final_path);
     if(result == 0)
     {
-      g_free(full_name);
+      if (dt_film_is_empty(new_film.id))
+        dt_film_remove(new_film.id);
       dt_film_cleanup(&new_film);
-      free(dirname);
+      g_free(full_name);
       return luaL_error(L,"error while importing");
     }
 
     result =dt_image_import(new_film.id,full_name,TRUE);
-    free(dirname);
+    if (dt_film_is_empty(new_film.id))
+      dt_film_remove(new_film.id);
     dt_film_cleanup(&new_film);
     if(result == 0)
     {

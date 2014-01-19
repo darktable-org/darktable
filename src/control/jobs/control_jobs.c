@@ -75,19 +75,31 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1, &stmt, NULL);
   while(t)
   {
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[DT_MAX_PATH_LEN+4];
+    char dtfilename[DT_MAX_PATH_LEN+8];
     dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, dtfilename);
+    if(!dt_exif_xmp_write(imgid, dtfilename))
+    {
+      // put the timestamp into db. this can't be done in exif.cc since that code gets called
+      // for the copy exporter, too
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_reset(stmt);
+      sqlite3_clear_bindings(stmt);
+    }
     dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
+  sqlite3_finalize(stmt);
   return 0;
 }
 

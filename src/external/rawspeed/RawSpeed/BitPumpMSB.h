@@ -126,11 +126,10 @@ __inline uint32 peekByte() {
     return ret & 0xff;
   }
 
-  virtual ~BitPumpMSB(void);
 protected:
   void __inline init();
+  uchar8 current_buffer[16];
   const uchar8* buffer;
-  uchar8* current_buffer;
   const uint32 size;            // This if the end of buffer.
   uint32 mLeft;
   uint32 off;                  // Offset in bytes

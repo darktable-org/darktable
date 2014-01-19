@@ -1,39 +1,65 @@
-<sect3 status="final" id="highlight_reconstruction"><title>Highlight reconstruction</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>highlight reconstruction</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>highlight reconstruction</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module tries to reconstruct color information that is usually clipped 
-            					because of incomplete information in some of the channels.
-						If you do nothing, your clipped areas are often toned to the not clipped channel.
-						For example, if your green and blue channels are clipped, then your image will appear red in the clipped areas.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/highlightreconstruction.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="highlight_reconstruction">
 
-	<sect4><title>Usage</title>
-		<sect5><title>method</title>
-			<para>You can choose between two methods: clipping highlight or reconstructing in LCh.
-			      Clipping highlight analyses each pixel having at least one channel clipped. Then it sets all channels to the minimum value found among the channels.
-			      Reconstruct in LCh analyses each pixel having at least one channel clipped and transforms the information in LCh color space to linearly mix the channels.</para>
-		</sect5>
-		<sect5><title>clipping threshold</title>
-                       <para>Manually adjust the clipping threshold against magenta highlights. The default is usually satisfactory without any need for additional adjustments.</para>
-		</sect5>
-	</sect4>
+  <title>Highlight reconstruction</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>highlight reconstruction</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>highlight reconstruction</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module tries to reconstruct color information that is usually clipped because
+              of incomplete information in some of the channels. If you do nothing, your clipped
+              areas are often toned to the not clipped channel. For example, if your green and
+              blue channels are clipped, then your image will appear red in the clipped areas.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/highlightreconstruction.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>method</title>
+      <para>
+        You can choose between two methods: clipping highlight or reconstructing in LCh.
+        Clipping highlight analyses each pixel having at least one channel clipped. Then it sets
+        all channels to the minimum value found among the channels. Reconstruct in LCh analyses
+        each pixel having at least one channel clipped and transforms the information in LCh
+        color space to linearly mix the channels.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>clipping threshold</title>
+      <para>
+        Manually adjust the clipping threshold against magenta highlights. The default is
+        usually satisfactory without any need for additional adjustments.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

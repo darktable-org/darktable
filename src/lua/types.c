@@ -78,12 +78,12 @@ void to_charpath_length(lua_State* L, luaA_Type type_id, void* c_out, int index)
 
 int dt_lua_autotype_inext(lua_State *L)
 {
-  luaL_getmetafield(L,-2,"__len");
+  lua_getfield(L,lua_upvalueindex(1),"__len");
   lua_pushvalue(L,-3);
   lua_call(L,1,1);
   int length = lua_tonumber(L,-1);
   lua_pop(L,1);
-  int key;
+  int key = 0;
   if(length == 0) {
     lua_pop(L,1);
     lua_pushnil(L);
@@ -110,11 +110,22 @@ int dt_lua_autotype_inext(lua_State *L)
   }
 }
 
-
 static int autotype_next(lua_State *L)
 {
-  if(luaL_getmetafield(L,-2,"__len") )
-  {
+  /* CONVENTION
+     each block has the following stack on entry and exit
+    1 : the object
+    2 : the last entry ("next" convention)
+    each block should return according to "next" convention on success
+    each block should leave the key untouched if it doesn't know about it
+    each block should replace the key with "nil" if the key was the last entry it can handle
+
+    */
+      //printf("aaaaa %s %d\n",__FUNCTION__,__LINE__);
+  lua_getfield(L,lua_upvalueindex(1),"__len");
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,1);
+  } else {
     lua_pushvalue(L,-3);
     lua_call(L,1,1);
     int length = lua_tonumber(L,-1);
@@ -143,9 +154,9 @@ static int autotype_next(lua_State *L)
       return 2;
     }
   }
-  // stack at this point : {object,key} (key is nil if it was length)
+  // stack at this point : {object,key}
   int key_in_get = false;
-  luaL_getmetafield(L,-2,"__get");
+  lua_getfield(L,lua_upvalueindex(1),"__get");
   if(lua_isnil(L,-2)) {
       key_in_get = true;
   } else {
@@ -175,23 +186,25 @@ static int autotype_next(lua_State *L)
       lua_pushnil(L);
     }
   }
-  // stack at this point : {object,key} (key is nil if it was the last of __get)
-  if(luaL_getmetafield(L,-2,"__default_next")) {
-    lua_pushvalue(L,-3);
-    lua_pushvalue(L,-3);
-    lua_call(L,2,2);
-    if(!lua_isnil(L,-1)) {
-      lua_remove(L,-3);
-      // we have a next
-      return 2;
-    } else {
-      // we don't have a next, 
-      lua_remove(L,-3);
-      lua_remove(L,-3);
-      return 1;
-    }
-  } else {
+  // stack at this point : {object,key}
+  lua_getfield(L,lua_upvalueindex(1),"__luaA_ParentMetatable");
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,1);
+  } else{
+    // call parent's index, we can't do anything
+    lua_getfield(L,-1,"__next");
+    lua_insert(L,-4);
+    lua_pop(L,1);
+    int pos_get = lua_absindex(L,-3);
+    lua_call(L,2,LUA_MULTRET);
+    return lua_gettop(L)-pos_get +1;
+  }
+
+  // stack at this point : {object,key}
+  if(lua_isnil(L,-1)) {
     return 1;
+  } else {
+    return luaL_error(L,"invalid key to 'next'");
   }
 }
 
@@ -199,7 +212,7 @@ static int autotype_next(lua_State *L)
 
 int dt_lua_autotype_ipairs(lua_State *L)
 {
-  luaL_getmetafield(L,-1,"__inext");
+  lua_getfield(L,lua_upvalueindex(1),"__inext");
   lua_pushvalue(L,-2);
   lua_pushnil(L); // index set to null for reset
   return 3;
@@ -207,7 +220,7 @@ int dt_lua_autotype_ipairs(lua_State *L)
 
 static int autotype_pairs(lua_State *L)
 {
-  luaL_getmetafield(L,-1,"__next");
+  lua_getfield(L,lua_upvalueindex(1),"__next");
   lua_pushvalue(L,-2);
   lua_pushnil(L); // index set to null for reset
   return 3;
@@ -215,22 +228,38 @@ static int autotype_pairs(lua_State *L)
 
 static int autotype_index(lua_State *L)
 {
-  luaL_getmetafield(L,-2,"__get");
+  lua_getfield(L,lua_upvalueindex(1),"__get");
   int pos_get = lua_gettop(L); // points at __get
   lua_pushvalue(L,-2);
   lua_gettable(L,-2);
-  if(lua_isnil(L,-1) && lua_isnumber(L,-3) && luaL_getmetafield(L,-4,"__number_index"))
-  {
-    lua_remove(L,-2);
+  if(lua_isnil(L,-1) && lua_isnumber(L,-3)) {
+    lua_getfield(L,lua_upvalueindex(1),"__number_index");
+    if(lua_isnil(L,-1))
+    {
+      lua_pop(L,1);
+    }else {
+      lua_remove(L,-2);
+    }
+  }
+  if(lua_isnil(L,-1)) {
+    lua_getfield(L,lua_upvalueindex(1),"__luaA_ParentMetatable");
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+    } else{
+      // call parent's index, we can't do anything
+      lua_getfield(L,-1,"__index");
+      lua_insert(L,-6);
+      lua_pop(L,3);
+      pos_get = lua_absindex(L,-3);
+      lua_call(L,2,LUA_MULTRET);
+      return lua_gettop(L)-pos_get +1;
+    }
   }
   if(lua_isnil(L,-1))
   {
     lua_pop(L,1);
-    if(!luaL_getmetafield(L,-3,"__default_index"))
-    {
-      luaL_getmetafield(L,-3,"__luaA_TypeName");
-      return luaL_error(L,"field \"%s\" not found for type %s\n",lua_tostring(L,-3),lua_tostring(L,-1));
-    }
+    luaL_getmetafield(L,-3,"__luaA_TypeName");
+    return luaL_error(L,"field \"%s\" not found for type %s\n",lua_tostring(L,-3),lua_tostring(L,-1));
   }
   lua_pushvalue(L,-4);
   lua_pushvalue(L,-4);
@@ -242,22 +271,37 @@ static int autotype_index(lua_State *L)
 
 static int autotype_newindex(lua_State *L)
 {
-  luaL_getmetafield(L,-3,"__set");
+  lua_getfield(L,lua_upvalueindex(1),"__set");
   int pos_set = lua_gettop(L); // points at __get
   lua_pushvalue(L,-3);
   lua_gettable(L,-2);
-  if(lua_isnil(L,-1) && lua_isnumber(L,-4) && luaL_getmetafield(L,-5,"__number_newindex"))
-  {
-    lua_remove(L,-2);
+  if(lua_isnil(L,-1) && lua_isnumber(L,-4)) {
+    luaL_getmetafield(L,-5,"__number_newindex");
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+    } else  {
+      lua_remove(L,-2);
+    }
+  }
+  if(lua_isnil(L,-1)) {
+    lua_getfield(L,lua_upvalueindex(1),"__luaA_ParentMetatable");
+    if(lua_isnil(L,-1)) {
+      lua_pop(L,1);
+    } else{
+      // call parent's index, we can't do anything
+      lua_getfield(L,-1,"__newindex");
+      lua_insert(L,-7);
+      lua_pop(L,3);
+      pos_set = lua_absindex(L,-4);
+      lua_call(L,3,LUA_MULTRET);
+      return lua_gettop(L)-pos_set +1;
+    }
   }
   if(lua_isnil(L,-1))
   {
     lua_pop(L,1);
-    if(!luaL_getmetafield(L,-4,"__default_newindex"))
-    {
-      luaL_getmetafield(L,-4,"__luaA_TypeName");
-      return luaL_error(L,"field \"%s\" can't be written for type %s\n",lua_tostring(L,-4),lua_tostring(L,-1));
-    }
+    luaL_getmetafield(L,-4,"__luaA_TypeName");
+    return luaL_error(L,"field \"%s\" can't be written for type %s\n",lua_tostring(L,-4),lua_tostring(L,-1));
   }
   lua_pushvalue(L,-5);
   lua_pushvalue(L,-5);
@@ -366,36 +410,30 @@ void dt_lua_register_type_callback_list_typeid(lua_State* L,luaA_Type type_id,lu
 void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction length)
 {
   luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
-  lua_pushcfunction(L,index);
+
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,index,1);
   lua_setfield(L,-2,"__number_index");
-  lua_pushcfunction(L,newindex);
+
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,newindex,1);
   lua_setfield(L,-2,"__number_newindex");
+
   if(length) {
-	  lua_pushcfunction(L,length);
+    lua_pushvalue(L,-1);
+	  lua_pushcclosure(L,length,1);
 	  lua_setfield(L,-2,"__len");
 
-	  lua_pushcfunction(L,dt_lua_autotype_ipairs);
+    lua_pushvalue(L,-1);
+	  lua_pushcclosure(L,dt_lua_autotype_ipairs,1);
 	  lua_setfield(L,-2,"__ipairs");
 
-	  lua_pushcfunction(L,dt_lua_autotype_inext);
+    lua_pushvalue(L,-1);
 	  lua_setfield(L,-2,"__inext");
   }
 
   lua_pop(L,1);
 
-}
-
-void dt_lua_register_type_callback_default_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction next)
-{
-  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
-  lua_pushcfunction(L,index);
-  lua_setfield(L,-2,"__default_index");
-  lua_pushcfunction(L,newindex);
-  lua_setfield(L,-2,"__default_newindex");
-  if(next) {
-    lua_pushcfunction(L,next);
-    lua_setfield(L,-2,"__default_next");
-  }
 }
 
 
@@ -454,6 +492,13 @@ void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,c
   lua_pop(L,4);
 }
 
+void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getmetatable(L,luaA_type_name(parent_type_id)); // gets the metatable since it's supposed to exist
+  lua_setfield(L,-2,"__luaA_ParentMetatable");
+}
+
 static void init_metatable(lua_State* L, luaA_Type type_id)
 {
   luaL_newmetatable(L,luaA_type_name(type_id));
@@ -464,16 +509,20 @@ static void init_metatable(lua_State* L, luaA_Type type_id)
   lua_pushnumber(L,type_id);
   lua_setfield(L,-2,"__luaA_Type");
 
-  lua_pushcfunction(L,autotype_next);
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,autotype_next,1);
   lua_setfield(L,-2,"__next");
 
-  lua_pushcfunction(L,autotype_pairs);
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,autotype_pairs,1);
   lua_setfield(L,-2,"__pairs");
 
-  lua_pushcfunction(L,autotype_index);
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,autotype_index,1);
   lua_setfield(L,-2,"__index");
 
-  lua_pushcfunction(L,autotype_newindex);
+  lua_pushvalue(L,-1);
+  lua_pushcclosure(L,autotype_newindex,1);
   lua_setfield(L,-2,"__newindex");
 
   lua_newtable(L);

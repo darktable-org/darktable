@@ -1,69 +1,113 @@
-<sect3 status="final" id="demosaic"><title>Demosaic</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>demosaic</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>demosaic</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module allows you to control how the demosaic is processed.				
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="demosaic">
 
-	<sect4><title>Usage</title>
-                <para>Demosaic is an essential step of any raw image development process.</para>
+  <title>Demosaic</title>
 
-		<para>A detailed description would be beyond the scope of this manual. In a nutshell, the sensor 
-		      cells of a digital camera are only able to record different levels of lightness, not different color. In order 
-                      to get a color image, each cell is covered by a color filter, either in red, green or blue.
-                      Due to the color sensitivity of the human vision, there are two times more green cells than red or blue.
-                      Filters are arranged in a certain mosaic, called Bayer pattern. Therefore each pixel of your image originally 
-                      only has information about one color channel. Demosaic reconstructs the missing color channels 
-                      by interpolation with data of the neighboring pixels. For further reading see the Wikipedia article on the
-                      <ulink url="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.</para>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>demosaic</secondary>
+  </indexterm>
 
-		<para>As interpolation is prone to produce artifacts, various different demosaic algorithms have
-                      been developed in the past. Artifacts would typically be visible as moiré-like patterns when you strongly zoom into
-                      your image. Currently darktable supports PPG and AMAZE. Both algorithms produce high quality output with a low
-                      tendency to artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE is significantly
-                      slower, darktable uses PPG as a default.</para>
+  <indexterm>
+    <primary>demosaic</primary>
+  </indexterm>
 
-		<para>Some further parameters of this module can activate additional averaging and smoothing steps. They might help to reduce
-                      remaining artifacts in special cases.</para>
+  <sect4>
 
-		<para>Demosaic is always applied when exporting images. Demosaic is done on monitor display only when zoom is greater than 50% or 
-                      when the according preference setting <quote>demosaicing for zoomed out darkroom mode</quote> (see <xref linkend="core_options"/>) 
-                      is set accordingly. Else color channels are taken from neighboring pixels without an expensive interpolation.</para>
+    <title>Overview</title>
 
-                <sect5><title>method</title>
-			<para>Set the demosaic method. darktable currently supports PPG and AMAZE.</para>
-		</sect5>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module allows you to control how the demosaic is processed.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
 
-                <sect5><title>edge threshold</title>
-			<para>Set the threshold for an additional median pass. Defaults to <quote>0</quote> which disables median filtering.</para>
-		</sect5>	
-		<sect5><title>color smoothing</title>
-			<para>Activates a number of additional color smoothing passes. Defaults to <quote>off</quote>.</para>
-		</sect5>
-		<sect5><title>match greens</title>
-			<para>In some cameras the green filters have slightly varying properties. This parameter adds an 
-                              additional equalization step to suppress artifacts. Available options
-                              are <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and <quote>full and local average</quote>.</para>
-		</sect5>
+  </sect4>
 
-	</sect4>
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      Demosaic is an essential step of any raw image development process.
+    </para>
+
+    <para>
+      A detailed description would be beyond the scope of this manual. In a nutshell, the sensor
+      cells of a digital camera are only able to record different levels of lightness, not
+      different color. In order to get a color image, each cell is covered by a color filter,
+      either in red, green or blue. Due to the color sensitivity of the human vision, there are
+      two times more green cells than red or blue. Filters are arranged in a certain mosaic,
+      called Bayer pattern. Therefore each pixel of your image originally only has information
+      about one color channel. Demosaic reconstructs the missing color channels by interpolation
+      with data of the neighboring pixels. For further reading see the Wikipedia article on the
+      <ulink url="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.
+    </para>
+
+    <para>
+      As interpolation is prone to produce artifacts, various different demosaic algorithms have
+      been developed in the past. Artifacts would typically be visible as moiré-like patterns
+      when you strongly zoom into your image. Currently darktable supports PPG and AMAZE. Both
+      algorithms produce high quality output with a low tendency to artifacts. AMAZE is reported
+      to sometimes give slightly better results. However, as AMAZE is significantly slower,
+      darktable uses PPG as a default.
+    </para>
+
+    <para>
+      Some further parameters of this module can activate additional averaging and smoothing
+      steps. They might help to reduce remaining artifacts in special cases.
+    </para>
+
+    <para>
+      Demosaic is always applied when exporting images. Demosaic is done on monitor display only
+      when zoom is greater than 50% or when the according preference setting <quote>demosaicing
+      for zoomed out darkroom mode</quote> (see <xref linkend="core_options"/>) is set
+      accordingly. Else color channels are taken from neighboring pixels without an expensive
+      interpolation.
+    </para>
+
+    <sect5>
+      <title>method</title>
+      <para>
+        Set the demosaic method. darktable currently supports PPG and AMAZE.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>edge threshold</title>
+      <para>
+        Set the threshold for an additional median pass. Defaults to <quote>0</quote> which
+        disables median filtering.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>color smoothing</title>
+      <para>
+        Activates a number of additional color smoothing passes. Defaults to <quote>off</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>match greens</title>
+      <para>
+        In some cameras the green filters have slightly varying properties. This parameter adds
+        an additional equalization step to suppress artifacts. Available options are
+        <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and
+        <quote>full and local average</quote>.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>
-

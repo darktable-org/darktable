@@ -33,6 +33,9 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge,GList *
 /** load a dt file and applies to selected images */
 int dt_history_load_and_apply_on_selection(gchar *filename);
 
+/** load a dt file and applies to specified image */
+int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
+
 /** delete historystack of selected images */
 void dt_history_delete_on_selection();
 

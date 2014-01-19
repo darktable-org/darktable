@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011-2012 henrik andersson.
+    copyright (c) 2011-2014 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
@@ -58,7 +58,7 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     "lighttable",
     "darkroom",
 #ifdef HAVE_GPHOTO2
-    "capture",
+    "tethering",
 #endif
 #ifdef HAVE_MAP
     "map",
@@ -1382,13 +1382,6 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
 }
 
-int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_film_id(vm->proxy.tethering.view);
-
-  return -1;
-}
 
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
 {
@@ -1396,21 +1389,6 @@ int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
     return vm->proxy.tethering.get_selected_imgid(vm->proxy.tethering.view);
 
   return -1;
-}
-
-
-const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_session_path(vm->proxy.tethering.view);
-  return NULL;
-}
-
-const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_session_filename(vm->proxy.tethering.view, filename);
-  return NULL;
 }
 
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name)
@@ -1424,19 +1402,6 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   if (vm->proxy.tethering.view)
     return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
   return NULL;
-}
-
-void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern)
-{
-  if (vm->proxy.tethering.view)
-    vm->proxy.tethering.set_session_namepattern(vm->proxy.tethering.view, namepattern);
-}
-
-gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.check_namepattern(vm->proxy.tethering.view);
-  return FALSE;
 }
 
 #ifdef HAVE_MAP

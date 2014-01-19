@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2011 henrik andersson.
+    copyright (c) 2010 -- 2014 henrik andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "common/image_cache.h"
+#include "common/import_session.h"
 #include "common/darktable.h"
 #include "common/camera_control.h"
 #include "common/variables.h"
@@ -42,7 +43,6 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
-#include "capture.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,18 +70,7 @@ typedef struct dt_capture_t
 
   dt_view_image_over_t image_over;
 
-  /** The capture mode, for now only supports TETHERED */
-  dt_capture_mode_t mode;
-
-  dt_variables_params_t *vp;
-  gchar *basedirectory;
-  gchar *subdirectory;
-  gchar *filenamepattern;
-  gchar *path;
-
-  /** The jobcode name used for session initialization etc..*/
-  char *jobcode;
-  dt_film_t *film;
+  struct dt_import_session_t *session;
 
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
@@ -92,14 +81,9 @@ dt_capture_t;
 /* signal handler for filmstrip image switching */
 static void _view_capture_filmstrip_activate_callback(gpointer instance,gpointer user_data);
 
-static const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename);
-static const gchar *_capture_view_get_session_path(const dt_view_t *view);
-static uint32_t _capture_view_get_film_id(const dt_view_t *view);
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
 static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
-static void _capture_view_set_session_namepattern(const dt_view_t *view, const char *namepattern);
-static gboolean _capture_view_check_namepattern(const dt_view_t *view);
 
 const char *name(dt_view_t *self)
 {
@@ -144,33 +128,15 @@ void init(dt_view_t *self)
 {
   self->data = malloc(sizeof(dt_capture_t));
   memset(self->data,0,sizeof(dt_capture_t));
-  dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  // initialize capture data struct
-  const int i = dt_conf_get_int("plugins/capture/mode");
-  lib->mode = i;
-
-  // Setup variable expanding, shares configuration as camera import uses...
-  dt_variables_params_init(&lib->vp);
-  lib->basedirectory = dt_conf_get_string("plugins/capture/storage/basedirectory");
-  lib->subdirectory = dt_conf_get_string("plugins/capture/storage/subpath");
-  lib->filenamepattern = dt_conf_get_string("plugins/capture/storage/namepattern");
-
-  // prefetch next few from first selected image on.
+  /* prefetch next few from first selected image on. */
   dt_view_filmstrip_prefetch();
-
 
   /* setup the tethering view proxy */
   darktable.view_manager->proxy.tethering.view = self;
-  darktable.view_manager->proxy.tethering.get_film_id = _capture_view_get_film_id;
-  darktable.view_manager->proxy.tethering.get_session_filename = _capture_view_get_session_filename;
-  darktable.view_manager->proxy.tethering.get_session_path = _capture_view_get_session_path;
   darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
   darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
   darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
-  darktable.view_manager->proxy.tethering.set_session_namepattern = _capture_view_set_session_namepattern;
-  darktable.view_manager->proxy.tethering.check_namepattern = _capture_view_check_namepattern;
-
 }
 
 void cleanup(dt_view_t *self)
@@ -178,17 +144,6 @@ void cleanup(dt_view_t *self)
   free(self->data);
 }
 
-
-uint32_t _capture_view_get_film_id(const dt_view_t *view)
-{
-  g_assert( view != NULL );
-  dt_capture_t *cv=(dt_capture_t *)view->data;
-  if(cv->film)
-    return cv->film->id;
-  // else return first film roll.
-  /// @todo maybe return 0 and check error in caller...
-  return 1;
-}
 
 uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
@@ -202,152 +157,30 @@ const gchar *_capture_view_get_session_path(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
-  return cv->film->dirname;
+  return dt_import_session_path(cv->session, TRUE);
 }
 
 const gchar *_capture_view_get_session_filename(const dt_view_t *view,const char *filename)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  cv->vp->filename = filename;
-
-  gchar* fixed_path=dt_util_fix_path(cv->path);
-  g_free(cv->path);
-  cv->path = fixed_path;
-  dt_variables_expand( cv->vp, cv->path, FALSE );
-  gchar *storage = g_strdup(dt_variables_get_result(cv->vp));
-
-  dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-  gchar *file = g_strdup(dt_variables_get_result(cv->vp));
-
-  // Start check if file exist if it does, increase sequence and check again untill we know that file doesn't exists..
-  gchar *fullfile = g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
-
-  if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
-  {
-    do
-    {
-      g_free(fullfile);
-      g_free(file);
-      dt_variables_expand( cv->vp, cv->filenamepattern, TRUE );
-      file = g_strdup(dt_variables_get_result(cv->vp));
-      fullfile=g_build_path(G_DIR_SEPARATOR_S,storage,file,(char *)NULL);
-    }
-    while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
-  }
-
-  g_free(fullfile);
-  g_free(storage);
-
-  return file;
+  return dt_import_session_filename(cv->session, FALSE);
 }
 
 void _capture_view_set_jobcode(const dt_view_t *view, const char *name)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  /* take care of previous capture filmroll */
-  if( cv->film )
-  {
-    if( dt_film_is_empty(cv->film->id) )
-      dt_film_remove(cv->film->id );
-    else
-      dt_film_cleanup( cv->film );
-  }
-
-  /* lets initialize a new filmroll for the capture... */
-  cv->film = (dt_film_t*)malloc(sizeof(dt_film_t));
-  if(!cv->film) return;
-  dt_film_init(cv->film);
-
-  int current_filmroll = dt_conf_get_int("plugins/capture/current_filmroll");
-  if(current_filmroll >= 0)
-  {
-    /* open existing filmroll and import captured images into this roll */
-    cv->film->id = current_filmroll;
-    if (dt_film_open2 (cv->film) !=0)
-    {
-      /* failed to open the current filmroll, let's reset and create a new one */
-      dt_conf_set_int ("plugins/capture/current_filmroll",-1);
-    }
-    else
-      cv->path = g_strdup(cv->film->dirname);
-
-  }
-
-  if (dt_conf_get_int ("plugins/capture/current_filmroll") == -1)
-  {
-    if(cv->jobcode)
-      g_free(cv->jobcode);
-    cv->jobcode = g_strdup(name);
-
-    // Setup variables jobcode...
-    cv->vp->jobcode = cv->jobcode;
-
-    /* reset session sequence number */
-    dt_variables_reset_sequence (cv->vp);
-
-    // Construct the directory for filmroll...
-    gchar* path = g_build_path(G_DIR_SEPARATOR_S,cv->basedirectory,cv->subdirectory, (char *)NULL);
-    cv->path = dt_util_fix_path(path);
-    g_free(path);
-
-    dt_variables_expand( cv->vp, cv->path, FALSE );
-    sprintf(cv->film->dirname,"%s",dt_variables_get_result(cv->vp));
-
-    // Create recursive directories, abort if no access
-    if( g_mkdir_with_parents(cv->film->dirname,0755) == -1 )
-    {
-      dt_control_log(_("failed to create session path %s."), cv->film->dirname);
-      if(cv->film)
-      {
-        free( cv->film );
-        cv->film = NULL;
-      }
-      return;
-    }
-
-    if(dt_film_new(cv->film,cv->film->dirname) > 0)
-    {
-      // Switch to new filmroll
-      dt_film_open(cv->film->id);
-
-      /* store current filmroll */
-      dt_conf_set_int("plugins/capture/current_filmroll",cv->film->id);
-    }
-
-    dt_control_log(_("new session initiated '%s'"),cv->jobcode,cv->film->id);
-  }
-
-
+  dt_import_session_set_name(cv->session, name);
+  dt_film_open(dt_import_session_film_id(cv->session));
+  dt_control_log(_("new session initiated '%s'"), name);
 }
 
 const char *_capture_view_get_jobcode(const dt_view_t *view)
 {
   g_assert( view != NULL );
   dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  return cv->jobcode;
-}
-
-void _capture_view_set_session_namepattern(const dt_view_t *view, const char *namepattern)
-{
-  g_assert( view != NULL );
-  dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  g_free(cv->filenamepattern);
-
-  cv->filenamepattern = g_strdup(namepattern);
-}
-
-gboolean _capture_view_check_namepattern(const dt_view_t *view)
-{
-  g_assert( view != NULL );
-  dt_capture_t *cv=(dt_capture_t *)view->data;
-
-  return (strstr(cv->filenamepattern, "$(SEQUENCE)") != NULL);
+  return dt_import_session_name(cv->session);
 }
 
 void configure(dt_view_t *self, int wd, int ht)
@@ -407,8 +240,6 @@ void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
 
 void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, int32_t pointerx, int32_t pointery)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-
   const int32_t capwd = darktable.thumbnail_width;
   const int32_t capht = darktable.thumbnail_height;
   int32_t width  = MIN(width_i,  capwd);
@@ -418,19 +249,14 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   cairo_rectangle(cri, 0, 0, width_i, height_i);
   cairo_fill (cri);
 
-
   if(width_i  > capwd) cairo_translate(cri, -(capwd-width_i) *.5f, 0.0f);
   if(height_i > capht) cairo_translate(cri, 0.0f, -(capht-height_i)*.5f);
 
-  // Mode dependent expose of center view
+  // Expose tethering center view
   cairo_save(cri);
-  switch(lib->mode)
-  {
-    case DT_CAPTURE_MODE_TETHERED: // tethered mode
-    default:
-      _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
-      break;
-  }
+  
+  _expose_tethered_mode(self, cri, width, height, pointerx, pointery);
+  
   cairo_restore(cri);
 
   // post expose to modules
@@ -450,13 +276,9 @@ int try_enter(dt_view_t *self)
 {
   /* verify that camera supports tethering and is available */
   if (dt_camctl_can_enter_tether_mode(darktable.camctl,NULL) )
-  {
-    dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
     return 0;
-  }
 
   dt_control_log(_("no camera with tethering support available for use..."));
-
   return 1;
 }
 
@@ -469,8 +291,6 @@ static void _capture_mipamps_updated_signal_callback(gpointer instance, gpointer
 void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
-
-  lib->mode = dt_conf_get_int("plugins/capture/mode");
 
   /* connect signal for mipmap update for a redraw */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
@@ -487,9 +307,12 @@ void enter(dt_view_t *self)
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
 
 
-  // initialize a default session...
+  /* initialize a session */
+  lib->session = dt_import_session_new();
+
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
-  _capture_view_set_jobcode(self, tmp);
+  if (tmp != NULL)
+    _capture_view_set_jobcode(self, tmp);
   g_free(tmp);
 }
 
@@ -502,8 +325,8 @@ void leave(dt_view_t *self)
 {
   dt_capture_t *cv = (dt_capture_t *)self->data;
 
-  if( dt_film_is_empty(cv->film->id) != 0)
-    dt_film_remove(cv->film->id );
+  /* destroy session, will cleanup empty film roll */
+  dt_import_session_destroy(cv->session);
 
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals,
@@ -513,8 +336,6 @@ void leave(dt_view_t *self)
 
 void reset(dt_view_t *self)
 {
-  dt_capture_t *lib = (dt_capture_t *)self->data;
-  lib->mode=DT_CAPTURE_MODE_TETHERED;
   //dt_control_set_mouse_over_id(-1);
 }
 

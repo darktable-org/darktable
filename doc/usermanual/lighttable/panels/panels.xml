@@ -1,19 +1,37 @@
-<sect1 status="final" id="lighttable_panels"><title>Lighttable panels</title>
-    <!-- Left panel -->
-    <xi:include href="import.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<!--    <xi:include href="similar.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
-    <xi:include href="collect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="recent_collections.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-<!--    <xi:include href="keywords.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
-    <xi:include href="image_information.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+<sect1 status="final" id="lighttable_panels">
 
-    <!-- Right panel -->
-    <xi:include href="select.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="selected_images.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="styles.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="geotagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="metadata_editor.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>    
-    <xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-    <xi:include href="export.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <title>Lighttable panels</title>
+
+<!-- Left panel -->
+
+  <xi:include href="import.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- <xi:include href="similar.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+
+  <xi:include href="collect.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="recent_collections.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- <xi:include href="keywords.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/> -->
+
+  <xi:include href="image_information.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Right panel -->
+
+  <xi:include href="select.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="selected_images.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="styles.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="geotagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="metadata_editor.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="export.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>

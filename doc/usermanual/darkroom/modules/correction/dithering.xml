@@ -1,57 +1,90 @@
-<sect3 status="final" id="dithering"><title>Dithering</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>dithering</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>dithering</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module eliminates some of the typical banding artifacts which can occur, when darktable's
-                                                       internal 32-bit floating point data are transferred into a discrete 8-bit or 16-bit integer output format for
-                                                       display or file export.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="dithering">
 
-        <sect4>
-                <para>Banding is a problem which can arise, when an image is downsampled into a lower bit-depth. Downsampling happens regularly,
-                      when darktable displays or exports the results of a pixelpipe. In order to avoid banding, you may activate this modules.</para>  
+  <title>Dithering</title>
 
-                <para>If you export images with a reduced width/height and want best dithering results, please make sure that you de-activate option <quote>do high 
-                      quality resampling during export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>), else the final scaling step will 
-                      counteract dithering.</para>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>dithering</secondary>
+  </indexterm>
 
-                <para>Viewing from some distance an image dithered into a very low bit depth (like <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of 
-                      a homogeneous grayscale image. We try to mimic this impression in darktable when you look at zoomed-out images in the center 
-                      view, in the navigation window and for thumbnails. This is accomplished by dithering those images into a higher number of grayscale levels. 
-                      Note that as a consequence the histogram - which is derived from the navigation window - will show this increased number of levels and is no longer
-                      a full match of the output image.</para>
-        </sect4>
+  <indexterm>
+    <primary>dithering</primary>
+  </indexterm>
 
-	<sect4><title>Usage</title>
-		<sect5><title>method</title>
-			<para>This combobox sets the dithering method. Floyd-Steinberg error diffusion - with some typical output bit depths - and random noise 
-                        dithering are both supported. Floyd-Steinberg systematically distributes quantization errors over neighboring pixels, whereas random dithering just adds some
-                        level of randomness to break sharp tonal value bands. The default setting is <quote>floyd-steinberg auto</quote>, which automatically adapts
-                        to the desired output format.</para>
-		</sect5>
+  <sect4>
 
-		<sect5><title>damping</title>
-			<para>This slider is only displayed if you choose method <quote>random</quote>. It controls the level of added random noise expressed as a damping factor in a
-                              10*log<subscript>2</subscript> basis. A value of -80 is a good fit for 8-bit output formats and -160 for 16-bit ones.</para>
-		</sect5>
-  	</sect4>
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module eliminates some of the typical banding artifacts which can occur, when
+              darktable's internal 32-bit floating point data are transferred into a discrete
+              8-bit or 16-bit integer output format for display or file export.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/dithering.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      Banding is a problem which can arise, when an image is downsampled into a lower bit-depth.
+      Downsampling happens regularly, when darktable displays or exports the results of a
+      pixelpipe. In order to avoid banding, you may activate this modules.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      If you export images with a reduced width/height and want best dithering results, please
+      make sure that you de-activate option <quote>do high quality resampling during
+      export</quote> in <emphasis>core options</emphasis> (see <xref linkend="core_options"/>),
+      else the final scaling step will counteract dithering.
+    </para>
+
+    <para>
+      Viewing from some distance an image dithered into a very low bit depth (like
+      <quote>floyd-steinberg 1-bit b&amp;w</quote>) will give the impression of a homogeneous
+      grayscale image. We try to mimic this impression in darktable when you look at zoomed-out
+      images in the center view, in the navigation window and for thumbnails. This is
+      accomplished by dithering those images into a higher number of grayscale levels. Note that
+      as a consequence the histogram - which is derived from the navigation window - will show
+      this increased number of levels and is no longer a full match of the output image.
+    </para>
+
+    <sect5>
+      <title>method</title>
+      <para>
+        This combobox sets the dithering method. Floyd-Steinberg error diffusion - with some
+        typical output bit depths - and random noise dithering are both supported.
+        Floyd-Steinberg systematically distributes quantization errors over neighboring pixels,
+        whereas random dithering just adds some level of randomness to break sharp tonal value
+        bands. The default setting is <quote>floyd-steinberg auto</quote>, which automatically
+        adapts to the desired output format.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>damping</title>
+      <para>
+        This slider is only displayed if you choose method <quote>random</quote>. It controls
+        the level of added random noise expressed as a damping factor in a 10*log
+        <subscript>2</subscript>
+        basis. A value of -80 is a good fit for 8-bit output formats and -160 for 16-bit ones.
+      </para>
+    </sect5>
+
+  </sect4>
 
 </sect3>

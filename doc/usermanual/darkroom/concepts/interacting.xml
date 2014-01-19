@@ -1,127 +1,183 @@
-<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect2 status="final" id="interacting"><title>Interacting with modules</title>
+<sect2 status="final" id="interacting">
+
+  <title>Interacting with modules</title>
+
+  <indexterm>
+    <primary>module usage</primary>
+  </indexterm>
+
+  <para>
+    A module has an expander bar
+    <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>
+    . Clicking on the name of the module expands the module's GUI with all parameters.
+  </para>
+
+  <para>
+    In its default setting darktable will only expand one GUI at a time. If you click the
+    expander bar of another module, the previous GUI gets collapsed. If you want to see more
+    than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis>
+    - all previously expanded GUIs remain opened. The expander bar behavior on
+    <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively, is controlled
+    by a preference setting in gui options (see <xref linkend="gui_options"/>).
+  </para>
+
+  <para>
+    Expanding a module does <emphasis>not</emphasis> activate it. You need to click the
+    <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/>
+    icon to turn a module on or off.
+  </para>
+
+  <para>
+    Icon
+    <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" />
+    accesses the module's available presets or creates a new preset from your current settings
+    (see <xref linkend="module_presets"/>).
+  </para>
+
+  <para>
+    The
+    <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/>
+    icon is used to reset the module parameters to their default values.
+  </para>
+
+  <para>
+    Many of darktable's modules can have multiple instances, each with different settings. Click
+    on the
+    <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/>
+    icon to generate new instances and control existing ones (see
+    <xref linkend="multiple_instances"/>).
+  </para>
+
+  <para>
+    The most frequently used control elements of modules are sliders, comboboxes and curves.
+  </para>
+
+  <sect3>
+
+    <title>Sliders</title>
+
     <indexterm>
-       <primary>module usage</primary>
+      <primary>module usage</primary>
+      <secondary>sliders</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>sliders</primary>
     </indexterm>
 
     <para>
-          A module has an expander bar <inlinegraphic fileref="&img_module_expander;" scalefit="1" width="30%" align="center"/>.
-          Clicking on the name of the module expands the module's GUI with all parameters.
+      Sliders offer four different ways of interaction, depending on the level of control you
+      need.
     </para>
+
+    <orderedlist>
+
+      <listitem><para>
+        Triangular marker
+      </para>
+
+      <para>
+        Left-click the slider's triangular marker and drag it to the left or right.
+      </para></listitem>
+
+      <listitem><para>
+        Mouse wheel
+      </para>
+
+      <para>
+        Hover over any place on the slider with your mouse, then use your mouse wheel to adjust
+        the value step by step.
+      </para></listitem>
+
+      <listitem><para>
+        Right-click
+      </para>
+
+      <para>
+        When your mouse is over a slider right-click gives you a multi-functional pop-up below
+        the slider for fine control with your mouse or numerical entry using the keyboard.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                darktable's innovative input method: for both coarse and fine value adjustments
+                in a single control element combined with keyboard input.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>
+        A bent line extending from the triangular marker moves as you move your mouse. The
+        closer your mouse pointer is to the triangular marker the coarser the control; the
+        further away from the triangular marker the finer is your control. Left-click with your
+        mouse to accept the new value and go back to normal control.
+      </para>
+
+      <para>
+        Alternatively you can type in a new value using your keyboard and commit by hitting the
+        enter key. You may even supply the new value in the form of an arithmetic expressions
+        which darktable will calculate for you - the old value is referenced as
+        <quote>x</quote>.
+      </para></listitem>
+
+      <listitem><para>
+        Double-click
+      </para>
+
+      <para>
+        You can double-click on a parameter label to reset its value to default.
+      </para></listitem>
+
+    </orderedlist>
+
+  </sect3>
+
+  <sect3>
+
+    <title>Comboboxes</title>
+
+    <indexterm>
+      <primary>module usage</primary>
+      <secondary>comboboxes</secondary>
+    </indexterm>
+
+    <indexterm>
+      <primary>comboboxes</primary>
+    </indexterm>
+
     <para>
-          In its default setting darktable will
-          only expand one GUI at a time. If you click the expander bar of another module, the previous GUI gets collapsed.
-          If you want to see more than one GUI expanded, you may expand further modules with <emphasis>shift-click</emphasis> - all
-          previously expanded GUIs remain opened. The expander bar behavior on <emphasis>click</emphasis> and <emphasis>shift-click</emphasis>, respectively,
-          is controlled by a preference setting in gui options (see <xref linkend="gui_options"/>).
+      Clicking on a combobox will open a list of available options. Click on the item you want
+      to select. Sometimes the selection list opens close to the bottom or top of the screen and
+      only part of the items are visible; scroll with your mouse wheel to bring up the full
+      list.
     </para>
+
+  </sect3>
+
+  <sect3>
+
+    <title>Curves</title>
+
     <para>
-          Expanding a module does <emphasis>not</emphasis> activate it. You need to click the <inlinegraphic fileref="&icon_module_enable;" scalefit="1" width="2%"  align="center"/> 
-          icon to turn a module on or off.
+      Some modules are controlled by adjusting curves. More detail is given later in this
+      chapter when the respective modules are explained.
     </para>
-    <para>         
-          Icon <inlinegraphic fileref="&icon_module_presets;" scalefit="1" width="2%" align="center" /> accesses the
-          module's available presets or creates a new preset from your current settings (see <xref linkend="module_presets"/>).
-    </para>
-    <para> 
-          The <inlinegraphic fileref="&icon_module_reset;" scalefit="1" width="2%" align="center"/> icon is used to reset the module parameters to their default values.
-    </para>
-    <para>
-          Many of darktable's modules can have multiple instances, each with different settings. Click on the 
-          <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center"/> icon to generate new instances and control
-          existing ones (see <xref linkend="multiple_instances"/>).
-     </para>
 
+  </sect3>
 
-     <para>The most frequently used control elements of modules are sliders, comboboxes and curves.
-     </para>
-     <sect4><title>Sliders</title>
-     <indexterm>
-        <primary>module usage</primary>
-        <secondary>sliders</secondary>
-     </indexterm>
-
-     <indexterm>
-        <primary>sliders</primary>
-     </indexterm>
-
-
-     <para>Sliders offer four different ways of interaction, depending on the level of control you need.
-     </para>
-                  <orderedlist>
-			   <listitem>
-			     <para>Triangular marker</para>
-			     <para>Left-click the slider's triangular marker and drag it to the left or right.
-			     </para>
-			   </listitem>
-			   <listitem>
-			     <para>Mouse wheel</para>
-			     <para>Hover over any place on the slider with your mouse, then use your mouse wheel to adjust the value step by step.
-			     </para>
-			   </listitem>
-   			   <listitem>
-			     <para>Right-click</para>
-                             <para>When your mouse is over a slider right-click gives you a multi-functional pop-up below the slider for fine control
-                                   with your mouse or numerical entry using the keyboard.
-                             </para>
-	                     <informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>darktable's innovative input method: for both coarse and fine value adjustments in a single control element
-                                                       combined with keyboard input.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/darkroom_bauhaus.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-                                </tgroup>
-                           </informaltable>
-                             <para>A bent line extending from the
-                                   triangular marker moves as you move your mouse. The closer your mouse pointer is to the triangular marker the
-                                   coarser the control; the further away from the triangular marker the finer is your control. Left-click with your
-                                   mouse to accept the new value and go back to normal control.
-                             </para>
-                             <para>Alternatively you can type in a new value using your keyboard and commit by hitting the enter key. You may even
-                                   supply the new value in the form of an arithmetic expressions which darktable will calculate for you - the old value
-                                   is referenced as <quote>x</quote>.
-                             </para>
-			   </listitem>		
-   			   <listitem>
-			     <para>Double-click</para>
-			     <para>You can double-click on a parameter label to reset its value to default.
-			     </para>
-			   </listitem>		   
-		  </orderedlist>
-      </sect4>
-
-      <sect4><title>Comboboxes</title>
-           <indexterm>
-             <primary>module usage</primary>
-             <secondary>comboboxes</secondary>
-           </indexterm>
-
-           <indexterm>
-             <primary>comboboxes</primary>
-           </indexterm>
-
-
-             <para>Clicking on a combobox will open a list of available options. Click on the item you want to select. Sometimes the selection list opens close to the
-                   bottom or top of the screen and only part of the items are visible; scroll with your mouse wheel to bring up the full list.
-             </para>
-      </sect4>
-           
-      <sect4><title>Curves</title>
-             <para>Some modules are controlled by adjusting curves. More detail is given later in this chapter when the respective
-                 modules are explained.
-             </para>
-      </sect4>
 </sect2>
-	
-

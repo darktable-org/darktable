@@ -72,7 +72,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
 
   gchar* complete_name = g_build_filename( tmpdir, filename, (char *)NULL );
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality,FALSE,self,self_data) != 0)
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self),complete_name);
     g_free(complete_name);

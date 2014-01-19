@@ -57,11 +57,6 @@ void dt_film_cleanup(dt_film_t *film)
     g_dir_close(film->dir);
     film->dir = NULL;
   }
-  // if the film is empty => remove it again.
-  if(dt_film_is_empty(film->id))
-  {
-    dt_film_remove(film->id);
-  }
 }
 
 void dt_film_set_query(const int32_t id)
@@ -280,6 +275,11 @@ int dt_film_import(const char *dirname)
   /* bail out if we got troubles */
   if(film->id <= 0)
   {
+    // if the film is empty => remove it again.
+    if(dt_film_is_empty(film->id))
+    {
+      dt_film_remove(film->id);
+    }
     dt_film_cleanup(film);
     free(film);
     return 0;
@@ -409,6 +409,10 @@ void dt_film_import1(dt_film_t *film)
       /* cleanup previously imported filmroll*/
       if(cfr && cfr!=film)
       {
+        if(dt_film_is_empty(cfr->id))
+        {
+          dt_film_remove(cfr->id);
+        }
         dt_film_cleanup(cfr);
         g_free(cfr);
         cfr = NULL;

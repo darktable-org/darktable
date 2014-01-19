@@ -27,6 +27,8 @@
 <xsl:param name="section.autolabel.max.depth">3</xsl:param>
 <xsl:param name="section.label.includes.component.label" select="1"></xsl:param>
 
+<xsl:param name="variablelist.as.blocks" select="1"></xsl:param>
+
 <xsl:attribute-set name="formal.title.properties">
     <xsl:attribute name="font-size">
       <xsl:value-of select="$body.font.master * 1.0"/>

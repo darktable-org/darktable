@@ -1,40 +1,61 @@
-<sect3 status="final" id="monochrome"><title>Monochrome</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>monochrome</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>monochrome</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module is a quick way to convert an image into black and white and provides a variable
-                                                       color filter for that conversion.					
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="monochrome">
 
-	<sect4><title>Usage</title>
-		<para>The default central location of the filter has a neutral effect but dragging it to an alternate position applies
-                      a filter analogously to taking a b&amp;w photograph through a conventional color filter.
-		</para>
+  <title>Monochrome</title>
 
-                <para>As well as position you can change the filter size by scrolling with your mouse wheel. This makes the filter's range of hues
-                      more or less selective.
-                </para>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>monochrome</secondary>
+  </indexterm>
 
-                <para>Tip: First reduce the filter size to concentrate its effect and move it across the hue pallet to find the best filter value
-                      for your desired image rendition. Then expand the filter to include more hues and thus more natural tonality.
-                </para>
-	</sect4>
+  <indexterm>
+    <primary>monochrome</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is a quick way to convert an image into black and white and provides a
+              variable color filter for that conversion.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/monochrome.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      The default central location of the filter has a neutral effect but dragging it to an
+      alternate position applies a filter analogously to taking a b&amp;w photograph through a
+      conventional color filter.
+    </para>
+
+    <para>
+      As well as position you can change the filter size by scrolling with your mouse wheel.
+      This makes the filter's range of hues more or less selective.
+    </para>
+
+    <para>
+      Tip: First reduce the filter size to concentrate its effect and move it across the hue
+      pallet to find the best filter value for your desired image rendition. Then expand the
+      filter to include more hues and thus more natural tonality.
+    </para>
+
+  </sect4>
+
 </sect3>

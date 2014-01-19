@@ -112,7 +112,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   attachment->file = g_build_filename( tmpdir, dirname, (char *)NULL );
 
-  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality) != 0)
+  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality,FALSE,self,sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);

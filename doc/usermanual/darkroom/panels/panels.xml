@@ -1,27 +1,37 @@
-<sect1 status="final" id="darkroom_panels"><title>Darkroom panels</title>
+<sect1 status="final" id="darkroom_panels">
 
-        <indexterm class="startofrange" id="ix.darkroom_panels">
-           <primary>darkroom panels</primary>
-        </indexterm>
+  <title>Darkroom panels</title>
 
-	<para>This section contains documentation for panels that are specific to the
-	darkroom view.
-	</para>
+  <indexterm>
+    <primary>darkroom panels</primary>
+  </indexterm>
 
-	<!-- Left side -->
-	<xi:include href="navigation.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="snapshots.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="colorpicker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="maskmanager.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <para>
+    This section contains documentation for panels that are specific to the darkroom view.
+  </para>
 
-	<!-- Right side -->
-	<xi:include href="histogram.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="modulegroups.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+<!-- Left side -->
 
-        <!-- Bottom -->
-	<xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>        
+  <xi:include href="navigation.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-        <indexterm class="endofrange" startref="ix.darkroom_panels"/>
+  <xi:include href="snapshots.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="history.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="colorpicker.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="maskmanager.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Right side -->
+
+  <xi:include href="histogram.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="modulegroups.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Bottom -->
+
+  <xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>

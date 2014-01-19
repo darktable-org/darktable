@@ -4,6 +4,7 @@
     copyright (c) 2009--2010 johannes hanika
     copyright (c) 2011 Sergey Astanin
     copyright (c) 2012 Henrik Andersson
+    copyright (c) 2014 Ulrich Pegelow
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -33,22 +34,24 @@
 #include <assert.h>
 #include <xmmintrin.h>
 
-DT_MODULE(1)
+DT_MODULE(2)
 
-typedef struct dt_iop_colorcontrast_params_t
+typedef struct dt_iop_colorcontrast_params1_t
 {
-  // these are stored in db.
-  // make sure everything is in here does not
-  // depend on temporary memory (pointers etc)
-  // stored in self->params and self->default_params
-  // also, since this is stored in db, you should keep changes to this struct
-  // to a minimum. if you have to change this struct, it will break
-  // users data bases, and you should increment the version
-  // of DT_MODULE(VERSION) above!
   float a_steepness;
   float a_offset;
   float b_steepness;
   float b_offset;
+}
+dt_iop_colorcontrast_params1_t;
+
+typedef struct dt_iop_colorcontrast_params_t
+{
+  float a_steepness;
+  float a_offset;
+  float b_steepness;
+  float b_offset;
+  int unbound;
 }
 dt_iop_colorcontrast_params_t;
 
@@ -71,6 +74,7 @@ typedef struct dt_iop_colorcontrast_data_t
   float a_offset;
   float b_steepness;
   float b_offset;
+  int unbound;
 }
 dt_iop_colorcontrast_data_t;
 
@@ -80,25 +84,39 @@ typedef struct dt_iop_colorcontrast_global_data_t
 }
 dt_iop_colorcontrast_global_data_t;
 
-// this returns a translatable name
 const char *name()
 {
-  // make sure you put all your translatable strings into _() !
   return _("color contrast");
 }
 
-// some additional flags (self explanatory i think):
 int
 flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
-// where does it appear in the gui?
 int
 groups ()
 {
   return IOP_GROUP_COLOR;
+}
+
+int
+legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
+{
+  if (old_version == 1 && new_version == 2)
+  {
+    const dt_iop_colorcontrast_params1_t *old = old_params;
+    dt_iop_colorcontrast_params_t *new = new_params;
+
+    new->a_steepness = old->a_steepness;
+    new->a_offset = old->a_offset;
+    new->b_steepness = old->b_steepness;
+    new->b_offset = old->b_offset;
+    new->unbound = 0;
+    return 0;
+  }
+  return 1;
 }
 
 #if 0 // BAUHAUS doesn't support keyaccels yet...
@@ -121,22 +139,21 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #endif
 
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in);
-
-/** process, all real work is done here. */
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
+
   // get our data struct:
   dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
+
   // how many colors in our buffer?
   const int ch = piece->colors;
+
+  const int unbound = d->unbound;
+
   // iterate over all output pixels (same coordinates as input)
 #ifdef _OPENMP
-  // optional: parallelize it!
   #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out,d)
 #endif
   for(int j=0; j<roi_out->height; j++)
@@ -145,23 +162,31 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *in  = ((float *)i) + ch*roi_in->width *j;
     float *out = ((float *)o) + ch*roi_out->width*j;
 
-    const __m128 scale = _mm_set_ps(0.0f,d->b_steepness,d->a_steepness,1.0f);
+    const __m128 scale = _mm_set_ps(1.0f,d->b_steepness,d->a_steepness,1.0f);
     const __m128 offset = _mm_set_ps(0.0f,d->b_offset,d->a_offset,0.0f);
-    const __m128 min = _mm_set_ps(0.0f,-128.0f,-128.0f, -INFINITY);
-    const __m128 max = _mm_set_ps(0.0f, 128.0f, 128.0f,  INFINITY);
+    const __m128 min = _mm_set_ps(-INFINITY,-128.0f,-128.0f,-INFINITY);
+    const __m128 max = _mm_set_ps(INFINITY,128.0f,128.0f,INFINITY);
 
-
-    for(int i=0; i<roi_out->width; i++)
+    if (unbound)
     {
-      _mm_stream_ps(out,_mm_min_ps(max,_mm_max_ps(min,_mm_add_ps(offset,_mm_mul_ps(scale,_mm_load_ps(in))))));
-      in+=ch;
-      out+=ch;
+      for(int i=0; i<roi_out->width; i++)
+      {
+        _mm_stream_ps(out,_mm_add_ps(offset,_mm_mul_ps(scale,_mm_load_ps(in))));
+        in+=ch;
+        out+=ch;
+      }
+    }
+    else
+    {
+      for(int i=0; i<roi_out->width; i++)
+      {
+        _mm_stream_ps(out,_mm_min_ps(max,_mm_max_ps(min,_mm_add_ps(offset,_mm_mul_ps(scale,_mm_load_ps(in))))));
+        in+=ch;
+        out+=ch;
+      }
     }
   }
   _mm_sfence();
-
-  if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 }
 
 
@@ -177,8 +202,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_in->width;
   const int height = roi_in->height;
 
-  float scale[4] =  { 1.0f, data->a_steepness, data->b_steepness, 1.0f };
-  float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
+  const float scale[4] =  { 1.0f, data->a_steepness, data->b_steepness, 1.0f };
+  const float offset[4] = { 0.0f, data->a_offset, data->b_offset, 0.0f };
+  const int unbound = data->unbound;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
 
@@ -188,6 +214,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 3, sizeof(int), (void *)&height);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 4, 4*sizeof(float), (void *)&scale);
   dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 5, 4*sizeof(float), (void *)&offset);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_colorcontrast, 6, sizeof(int), (void *)&unbound);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_colorcontrast, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -217,14 +244,13 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-/** optional: if this exists, it will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
   // change default_enabled depending on type of image, or set new default_params even.
   // if this callback exists, it has to write default_params and default_enabled.
   dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)
   {
-    1.0, 0.0, 1.0, 0.0
+    1.0, 0.0, 1.0, 0.0, 1
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
@@ -245,7 +271,7 @@ void init(dt_iop_module_t *module)
   // init defaults:
   dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t)
   {
-    1.0, 0.0, 1.0, 0.0
+    1.0, 0.0, 1.0, 0.0, 1
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
@@ -270,6 +296,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   d->a_offset = p->a_offset;
   d->b_steepness = p->b_steepness;
   d->b_offset = p->b_offset;
+  d->unbound = p->unbound;
 }
 
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -354,12 +381,6 @@ void gui_cleanup  (dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-/** additional, optional callbacks to capture darkroom center events. */
-// void gui_post_expose(dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
-// int mouse_moved(dt_iop_module_t *self, double x, double y, double pressure, int which);
-// int button_pressed(dt_iop_module_t *self, double x, double y, double pressure, int which, int type, uint32_t state);
-// int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
-// int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

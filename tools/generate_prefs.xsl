@@ -100,7 +100,15 @@
 			<xsl:apply-templates select="." mode="tab_block"/>
 		</xsl:if>
 	</xsl:for-each>
-  <xsl:value-of select="$tab_end" />
+	<xsl:value-of select="$tab_end" />
+
+        <!-- session -->
+	<xsl:text>&#xA;static void&#xA;init_tab_session</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_notebook_append_page(GTK_NOTEBOOK(tab), alignment, gtk_label_new(_("session options")));&#xA;</xsl:text>
+
+	<xsl:for-each select="./dtconfiglist/dtconfig[@prefs='session']">
+	        <xsl:apply-templates select="." mode="tab_block"/>
+	</xsl:for-each>
+	<xsl:value-of select="$tab_end" />
 
 	<!-- closing credits -->
 	<xsl:text>&#xA;#endif&#xA;</xsl:text>

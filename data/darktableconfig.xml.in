@@ -16,6 +16,13 @@
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>run_crawler_on_start</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>look for updated xmp files on startup</shortdescription>
+    <longdescription>check file modification times of all xmp files on startup to check if any got updated in the meantime</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>panel_width</name>
     <type>int</type>
     <default>300</default>
@@ -232,6 +239,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/collection/rating_comparator</name>
+    <type>int</type>
+    <default>3</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/collection/query_flags</name>
     <type>int</type>
     <default>3</default>
@@ -292,27 +306,6 @@
     <type>string</type>
     <default>noname</default>
     <shortdescription>jobcode of import job</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/backup/enable</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if backup of imported images should be performed</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/backup/warn</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>flag if user should be interactivly warned about non present backup destinations</shortdescription>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/capture/backup/foldername</name>
-    <type>string</type>
-    <default>photos</default>
-    <shortdescription>the name of backup directory to search for on mounted medias</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -553,7 +546,32 @@
     <default>true</default>
     <shortdescription>draw borders around grouped images</shortdescription>
     <longdescription>draw borders around grouped images when grouping is turned off and the mouse hovers over one of the images of the group</longdescription>
-</dtconfig>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/base_directory_pattern</name>
+    <type>string</type>
+    <default>$(PICTURES_FOLDER)/Darktable</default>
+    <shortdescription>base directory naming pattern</shortdescription>
+    <longdescription>part of full import path for an import session</longdescription>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/sub_directory_pattern</name>
+    <type>string</type>
+    <default>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</default>
+    <shortdescription>sub directory naming pattern</shortdescription>
+    <longdescription>part of full import path for an import session</longdescription>
+  </dtconfig>
+
+  <dtconfig prefs="session">
+    <name>session/filename_pattern</name>
+    <type>string</type>
+    <default>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION)</default>
+    <shortdescription>file naming pattern</shortdescription>
+    <longdescription>file naming pattern used for a import session</longdescription>
+  </dtconfig>
+
   <dtconfig>
     <name>plugins/lighttable/layout</name>
     <type>int</type>
@@ -1116,7 +1134,7 @@
   <dtconfig>
     <name>plugins/imageio/storage/disk/file_directory</name>
     <type>string</type>
-    <default>$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)</default>
+    <default>$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
@@ -1151,7 +1169,14 @@
   <dtconfig>
     <name>plugins/imageio/format/tiff/bpp</name>
     <type>int</type>
-    <default>16</default>
+    <default>8</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/tiff/compress</name>
+    <type>int</type>
+    <default>2</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>

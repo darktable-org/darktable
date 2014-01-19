@@ -1,72 +1,82 @@
-<sect3 status="final" id="hotpixels"><title>Hotpixels</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>hotpixels</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>hotpixels</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module is able to automatically detect and eliminate hotpixels. Hotpixels are pixels which failed
-                                                       to record light level correctly. Detected hotpixels are replaced by an average value of their neighbors.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="hotpixels">
 
-	<sect4><title>Usage</title>
-		<para>You control the detection sensitivity with the threshold parameter and the level of elimination with the strength parameter.
-		</para>
-		<sect5><title>threshold</title>
-			<para>The threshold of the detection, i.e. how strong a pixel's value needs to deviate from its neighbors to be regarded as a hotpixel.</para>
-		</sect5>
-		<sect5><title>strength</title>
-			<para>The strength of blending hotpixels with their surrounding.</para>
-		</sect5>	
-		<sect5><title>detect by 3 neighbours</title>
-			<para>This will extend the detection of hotpixels, it will even regard a pixel as hot if a minimum of only three (instead of four) neighbor pixels deviate by more
-                              than the threshold level.</para>
-		</sect5>	
-		<sect5><title>mark fixed pixels</title>
-			<para>This options will mark the pixels that have been corrected. It also displays the count of detected and fixed pixels.</para>
-		</sect5>	
-	</sect4>
-<!--	
-	<sect4><title>Examples</title>
-		<para>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="4*"/>
-					<colspec colwidth="6*"/>
-					<tbody>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
-						</row>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry>
-								<para>EXAMPLE 2 DESCRIPTION
-								</para>
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</para>	
-	</sect4>
--->	
+  <title>Hotpixels</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>hotpixels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>hotpixels</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is able to automatically detect and eliminate hotpixels. Hotpixels are
+              pixels which failed to record light level correctly. Detected hotpixels are
+              replaced by an average value of their neighbors.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/hotpixels.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      You control the detection sensitivity with the threshold parameter and the level of
+      elimination with the strength parameter.
+    </para>
+
+    <sect5>
+      <title>threshold</title>
+      <para>
+        The threshold of the detection, i.e. how strong a pixel's value needs to deviate from
+        its neighbors to be regarded as a hotpixel.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>strength</title>
+      <para>
+        The strength of blending hotpixels with their surrounding.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>detect by 3 neighbours</title>
+      <para>
+        This will extend the detection of hotpixels, it will even regard a pixel as hot if a
+        minimum of only three (instead of four) neighbor pixels deviate by more than the
+        threshold level.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>mark fixed pixels</title>
+      <para>
+        This options will mark the pixels that have been corrected. It also displays the count
+        of detected and fixed pixels.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

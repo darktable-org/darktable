@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2013 Ulrich Pegelow
+    copyright (c) 2009--2014 Ulrich Pegelow
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,7 +214,7 @@ velvia (read_only image2d_t in, write_only image2d_t out, const int width, const
 
 __kernel void
 colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-               const float4 scale, const float4 offset)
+               const float4 scale, const float4 offset, const int unbound)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -224,8 +224,8 @@ colorcontrast (read_only image2d_t in, write_only image2d_t out, const int width
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   pixel.xyz = (pixel * scale + offset).xyz;
-  pixel.y = clamp(pixel.y, -128.0f, 128.0f);
-  pixel.z = clamp(pixel.z, -128.0f, 128.0f);
+  pixel.y = unbound ? pixel.y : clamp(pixel.y, -128.0f, 128.0f);
+  pixel.z = unbound ? pixel.z : clamp(pixel.z, -128.0f, 128.0f);
 
   write_imagef (out, (int2)(x, y), pixel); 
 }

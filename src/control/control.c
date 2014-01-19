@@ -394,14 +394,6 @@ void dt_control_quit()
     dt_ctl_switch_mode_to(DT_LIBRARY);
 #endif
 
-#ifdef USE_LUA
-  if(darktable.lua_state.state)
-  {
-    lua_close(darktable.lua_state.state);
-    luaA_close();
-    darktable.lua_state.state = NULL;
-  }
-#endif
   dt_gui_gtk_quit();
   // thread safe quit, 1st pass:
   dt_pthread_mutex_lock(&darktable.control->cond_mutex);
@@ -428,7 +420,7 @@ void dt_control_shutdown(dt_control_t *s)
   /* first wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
-  // gdk_threads_leave();
+   gdk_threads_leave();
   int k;
   for(k=0; k<s->num_threads; k++)
     // pthread_kill(s->thread[k], 9);
@@ -438,7 +430,7 @@ void dt_control_shutdown(dt_control_t *s)
     pthread_join(s->thread_res[k], NULL);
 
 
-  // gdk_threads_enter();
+   gdk_threads_enter();
 }
 
 void dt_control_cleanup(dt_control_t *s)

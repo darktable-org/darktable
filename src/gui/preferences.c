@@ -238,6 +238,7 @@ void dt_gui_preferences_show()
 //   init_tab_gui(notebook, &hardcoded_gui);
   init_tab_gui(_preferences_dialog, notebook, NULL);
   init_tab_core(_preferences_dialog, notebook, NULL);
+  init_tab_session(_preferences_dialog, notebook, NULL);
   init_tab_accels(notebook);
   init_tab_presets(notebook);
 #ifdef USE_LUA

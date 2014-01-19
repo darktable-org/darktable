@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 1
+#define CURRENT_DATABASE_VERSION 3
 
 typedef struct dt_database_t
 {
@@ -126,7 +126,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
                             "focus_distance REAL, datetime_taken CHAR(20), flags INTEGER, "
                             "output_width INTEGER, output_height INTEGER, crop REAL, "
                             "raw_parameters INTEGER, raw_denoise_threshold REAL, "
-                            "raw_auto_bright_threshold REAL, raw_black REAL, raw_maximum REAL, "
+                            "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
                             "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
                             "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
                             "latitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER)", NULL, NULL, NULL);
@@ -320,6 +320,41 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     // <do some magic to the db>
     new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or add fast paths
   }
+  else if(version == 1)
+  {
+    // 1 -> 2 added write_timestamp
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if(sqlite3_exec(db->handle, "ALTER TABLE images ADD COLUMN write_timestamp INTEGER", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't add `write_timestamp' column to database\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    if(sqlite3_exec(db->handle, "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE write_timestamp IS NULL", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't initialize `write_timestamp' with current point in time\n"); // let alone space
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 2;
+  }
+  else if(version == 2)
+  {
+    // 2 -> 3 reset raw_black and raw_maximum. in theory we should change the columns from REAL to INTEGER, but sqlite doesn't care about types so whatever
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    if(sqlite3_exec(db->handle, "UPDATE images SET raw_black = 0, raw_maximum = 16384", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't reset raw_black and raw_maximum\n"); // let alone space
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 3;
+  }
 // maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {
@@ -379,10 +414,10 @@ static void _create_schema(dt_database_t *db)
                         "focus_distance REAL, datetime_taken CHAR(20), flags INTEGER, "
                         "output_width INTEGER, output_height INTEGER, crop REAL, "
                         "raw_parameters INTEGER, raw_denoise_threshold REAL, "
-                        "raw_auto_bright_threshold REAL, raw_black REAL, raw_maximum REAL, "
+                        "raw_auto_bright_threshold REAL, raw_black INTEGER, raw_maximum INTEGER, "
                         "caption VARCHAR, description VARCHAR, license VARCHAR, sha1sum CHAR(40), "
                         "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, "
-                        "latitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER)", NULL, NULL, NULL);
+                        "latitude REAL, color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, write_timestamp INTEGER)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,

@@ -40,9 +40,6 @@ BitPumpMSB::BitPumpMSB(const uchar8* _buffer, uint32 _size) :
 
 __inline void BitPumpMSB::init() {
   mStuffed = 0;
-  current_buffer = (uchar8*)_aligned_malloc(16, 16);
-  if (!current_buffer)
-    ThrowRDE("BitPumpMSB::init(): Unable to allocate memory");
   memset(current_buffer,0,16);
   fill();
 }
@@ -120,12 +117,6 @@ void BitPumpMSB::setAbsoluteOffset(unsigned int offset) {
   mStuffed = 0;
   off = offset;
   fill();
-}
-
-
-
-BitPumpMSB::~BitPumpMSB(void) {
-	_aligned_free(current_buffer);
 }
 
 } // namespace RawSpeed

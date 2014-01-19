@@ -3,75 +3,78 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-<sect3 status="final" id="levels"><title>Levels</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>levels</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>levels</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>A tool for adjusting black, white, and mid-gray points. This module is especially useful if the histogram of 
-                                                       an image does not span the whole horizontal range, from pure black to pure white. 
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/levels.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="levels">
 
-	<sect4><title>Usage</title>
-		<para>The levels tool shows a histogram of the image, and displays three bars with handles. Dragging the handles modifies the tones in the image. 
-                Those bars control the black, middle gray and white points.
-                </para>
-                <para>You can move the black and white bars to match the left and right border of the histogram, which will make the output image span the full available 
-                tonal range. A previously flat looking image will get more contrast and pop.
-                </para>
-		<para>Moving the middle bar will modify the middle gray tones. Shifting it left will make the image look brighter, shifting
-		it right will make it darker. This is often referred to as a change of image gamma.
-		</para>
-                <para>There are three color pickers in black, gray, and white, available by pressing the respectively colored 
-                <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" /> icon. You can use them to sample the corresponding 
-                level directly from the image.
-                </para>
-                <para>The <quote>auto</quote> button autoadjusts the black and white point and puts the gray point exactly in the mean between them. 
-		</para>
-	</sect4>
-<!--	
-	<sect4><title>Examples</title>
-		<para>
-			<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-					<colspec colwidth="4*"/>
-					<colspec colwidth="6*"/>
-					<tbody>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex1.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry><para>This is the original image, use it as reference for the changes below...</para></entry>
-						</row>
-						<row>
-							<entry>
-								<graphic fileref="darkroom/modules/images/soften_ex2.png" scalefit="1" width="90%" align="center" />
-							</entry>						
-							<entry>
-								<para>EXAMPLE 2 DESCRIPTION
-								</para>
-							</entry>
-						</row>
-					</tbody>
-				</tgroup>
-			</informaltable>
-		</para>	
-	</sect4>
--->	
+  <title>Levels</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>levels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>levels</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              A tool for adjusting black, white, and mid-gray points. This module is especially
+              useful if the histogram of an image does not span the whole horizontal range, from
+              pure black to pure white.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/levels.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      The levels tool shows a histogram of the image, and displays three bars with handles.
+      Dragging the handles modifies the tones in the image. Those bars control the black, middle
+      gray and white points.
+    </para>
+
+    <para>
+      You can move the black and white bars to match the left and right border of the histogram,
+      which will make the output image span the full available tonal range. A previously flat
+      looking image will get more contrast and pop.
+    </para>
+
+    <para>
+      Moving the middle bar will modify the middle gray tones. Shifting it left will make the
+      image look brighter, shifting it right will make it darker. This is often referred to as a
+      change of image gamma.
+    </para>
+
+    <para>
+      There are three color pickers in black, gray, and white, available by pressing the
+      respectively colored
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      icon. You can use them to sample the corresponding level directly from the image.
+    </para>
+
+    <para>
+      The <quote>auto</quote> button autoadjusts the black and white point and puts the gray
+      point exactly in the mean between them.
+    </para>
+
+  </sect4>
+
 </sect3>

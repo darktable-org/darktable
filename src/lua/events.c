@@ -373,11 +373,21 @@ static void on_export_selection(gpointer instance,dt_control_image_enumerator_t 
 static void on_export_image_tmpfile(gpointer instance,
     int imgid,
     char *filename,
+    dt_imageio_module_format_t* format,
+    dt_imageio_module_data_t* fdata,
+    dt_imageio_module_storage_t* storage,
+    dt_imageio_module_data_t* sdata,
      gpointer user_data){
   gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&imgid);
   lua_pushstring(darktable.lua_state.state,filename);
-  run_event("intermediate-export-image",2);
+  luaA_push_typeid(darktable.lua_state.state,format->parameter_lua_type,fdata);
+  if(storage) {
+    luaA_push_typeid(darktable.lua_state.state,storage->parameter_lua_type,sdata);
+  } else {
+    lua_pushnil(darktable.lua_state.state);
+  }
+  run_event("intermediate-export-image",4);
   dt_lua_unlock(has_lock);
 }
 

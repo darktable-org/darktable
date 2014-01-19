@@ -3,236 +3,415 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
+<sect2 status="final" id="drawn_mask">
 
-<sect2 status="final" id="drawn_mask"><title>Drawn mask</title>
-       <indexterm>
-          <primary>masks</primary>
-          <secondary>drawn masks</secondary>
-       </indexterm>
-       <indexterm>
-          <primary>local adjustments</primary>
-       </indexterm>
-       <para>Almost all darktable modules have the option to narrow down their effect by a drawn mask and thus allowing local adjustments.</para>
+  <title>Drawn mask</title>
 
-       <sect3 status="final"><title>Overview</title>
-           <para>With the drawn mask feature you can construct a mask by drawing directly on the image base. Different drawing operators, called shapes,
-           are available and can be used alone or in combination. A flexible editing feature allows you to change single aspects of a shape, remove shapes
-           or import shapes already defined in other modules.</para>
+  <indexterm>
+    <primary>masks</primary>
+  </indexterm>
 
-           <para>Internally shapes are stored as vector graphics and rendered with the needed resolution during pixelpipe processing. Shapes are expressed in the
-           coordinate system of the original image and transformed with all distorting modules. This way a shape will always work on the same image area regardless
-           of warping or other modifications that may be applied.</para>
-       </sect3>
+  <indexterm>
+    <primary>masks</primary>
+    <secondary>drawn masks</secondary>
+  </indexterm>
 
-       <sect3 status="final"><title>Usage</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>To draw a shape you need to click on one of the shape symbols. You will automatically be moved into 
-                                                the edit mode in which you generate a new instance of the selected shape and afterwards change its properties.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
+  <indexterm>
+    <primary>local adjustments</primary>
+  </indexterm>
 
-           <para>You leave edit mode by clicking on the 
-           <inlinegraphic fileref="&shape_edit;" scalefit="1" width="2%" align="center"/> symbol. You can at any time go back to 
-           edit mode and do further adjustments by clicking the edit symbol again. In edit mode you can also remove a shape by right-clicking on it - the shape is
-           removed from the current mask but it's still in the list of defined shapes.</para>
+  <para>
+    Almost all darktable modules have the option to narrow down their effect by a drawn mask and
+    thus allowing local adjustments.
+  </para>
 
-           <para>If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit mode. Certain
-           actions like dragging a complete shape or changing its size are blocked. Only finetuning changes like dragging a node are allowed.</para>
+  <sect3 status="final">
 
+    <title>Overview</title>
 
-           <para>Currently five shapes are implemented.</para>
-           <indexterm>
-               <primary>mask shapes</primary>
-           </indexterm>
-           <indexterm>
-               <primary>shapes</primary>
-               <see>mask shapes</see>
-           </indexterm>
+    <para>
+      With the drawn mask feature you can construct a mask by drawing directly on the image
+      base. Different drawing operators, called shapes, are available and can be used alone or
+      in combination. A flexible editing feature allows you to change single aspects of a shape,
+      remove shapes or import shapes already defined in other modules.
+    </para>
 
-           <sect4><title>brush</title>
-               <indexterm>
-                  <primary>brush</primary>
-               </indexterm>
-               <indexterm>
-                  <primary>mask shapes</primary>
-                  <secondary>brush</secondary>
-               </indexterm>
-               <para>Clicking the <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/> symbol adds a brush stroke.</para> 
-               <para>Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse while keeping the button pressed. 
-               The brush stroke is finalized once you release the mouse button. Brush size, hardness and opacity can be changed by <emphasis>scrolling</emphasis>, 
-               <emphasis>shift+scrolling</emphasis>, and <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at any time on your way.</para> 
-               <para>If you have a graphic tablet with pen
-               pressure sensitivity, darktable can apply the recorded pen pressure to certain attributes of the brush stroke. See <xref linkend="gui_options"/> for more details.</para>
-               <para>Nodes and segments of a brush stroke can be modified individually. See the documentation on <emphasis>path</emphasis> below for more details.</para>
-               <para>Rendering a complex brush shape can consume a significant number of CPU cycles; consider to revert to the circle, ellipse or path shape if possible.</para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>A brush stroke with controls and activated mask display.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/masks_brush_ex1.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-           </sect4>
+    <para>
+      Internally shapes are stored as vector graphics and rendered with the needed resolution
+      during pixelpipe processing. Shapes are expressed in the coordinate system of the original
+      image and transformed with all distorting modules. This way a shape will always work on
+      the same image area regardless of warping or other modifications that may be applied.
+    </para>
 
-           <sect4><title>circle</title>
-               <indexterm>
-                  <primary>circle</primary>
-               </indexterm>
-               <indexterm>
-                  <primary>mask shapes</primary>
-                  <secondary>circle</secondary>
-               </indexterm>
-               <para>Clicking the <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/> symbol adds a circle shape.</para> 
-               <para>Click into the canvas to place the circle. Left-click and drag the circle to a different position if needed.
-               Use the scroll-wheel of your mouse while in the circle to change the diameter; scroll within the circle border to adjust the width 
-               of the gradual decay. With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle - this is best observed with the mask displayed by pressing 
-               the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>A circle shape with controls and activated mask display.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/masks_circle_ex1.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-           </sect4>
+  </sect3>
 
-           <sect4><title>ellipse</title>
-               <indexterm>
-                  <primary>ellipse</primary>
-               </indexterm>
-               <indexterm>
-                  <primary>mask shapes</primary>
-                  <secondary>ellipse</secondary>
-               </indexterm>
-               <para>Clicking the <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/> symbol adds an ellipse shape.</para> 
-               <para>The general principle is the same as for the circle shape. In addition you get four nodes on the ellipse
-               line. Click on the nodes to adjust the ellipse's eccentricity. <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.</para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>An ellipse shape with controls and activated mask display.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/masks_ellipse_ex1.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-           </sect4>
+  <sect3 status="final">
 
-           <sect4><title>path</title>
-               <indexterm>
-                  <primary>path</primary>
-               </indexterm>
-               <indexterm>
-                  <primary>mask shapes</primary>
-                  <secondary>path</secondary>
-               </indexterm>
-               <para>Clicking the <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/> symbol adds a shape defined by a user defined 
-               closed path.</para>
-               <para>Left-click into the canvas to define path nodes; terminate the path by <emphasis>right-clicking</emphasis>
-               after having set the last point. Per default nodes are connected by smooth lines. If you want a node to define a sharp corner, you can do so
-               by creating it with <emphasis>ctrl+click</emphasis>.</para>
-               <para>In the edit mode you can convert existing nodes from smooth to sharp corners and vice versa by <emphasis>ctrl-clicking</emphasis>
-               on them. You can insert additional nodes by <emphasis>ctrl-clicking</emphasis> on one of the line segments. Single nodes can be deleted by
-               <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer is over the desired node and the node is highlighted, or else you might
-               accidentally remove the whole path.</para>
-               <para>The size of the complete shape can be modified by scrolling - 
-               analogeous to the circle shape. The same holds true for the width of the border, i.e. the
-               area with a gradual opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If a node is selected by clicking on it,
-               a further control point appears - you can move it around to modify the curvature of the line. Dragging one of the control points on the border adjusts the border width just
-               in that part of the shape.</para>
-               <para>Consider to finetune a path in the restricted edit mode (see above), which allows you to adjust single nodes and segments without the risk of
-               accidentally shifting or resizing the whole shape.</para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>A path shape with controls and activated mask display.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/masks_path_ex1.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-           </sect4>
+    <title>Usage</title>
 
-           <sect4><title>gradient</title>
-               <indexterm>
-                  <primary>gradient</primary>
-               </indexterm>
-               <indexterm>
-                  <primary>mask shapes</primary>
-                  <secondary>gradient</secondary>
-               </indexterm>
-               <para>Clicking the <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/> symbol adds a gradient to the mask.
-               This does not generate a confined shape but produces a linear gradient extending the whole image.</para>
-               <para>Click into the canvas to define the position of the line where opacity is at 50%. The line has two anchor nodes which you can drag
-               to change the rotation of the gradient.</para>
-               <para>Scrolling close to the center line changes the steepness of the gradient. Dotted lines indicate the distance
-               beyond which the opacity is 100% and 0%, respectively. Between these dotted lines the opacity changes linearly. The gradient is best seen and modified
-               when the mask is displayed by pressing the <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/> button.</para>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>A gradient with controls and activated mask display.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/concepts/images/masks_gradient_ex1.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-           </sect4>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              To draw a shape you need to click on one of the shape symbols. You will
+              automatically be moved into the edit mode in which you generate a new instance of
+              the selected shape and afterwards change its properties.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/concepts/images/drawn_masks.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
 
-           <sect4><title>drawn mask</title>
-              <para>The number of shapes that are used in the current mask is displayed in the <quote>drawn mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
-              have already been defined in the context of the current image but are not yet used in the current mask. You can click on any of these items in order to add 
-              it to the current mask. The list also contains shapes once generated but no longer in use. This way you can even get back a deleted shape.</para>
+    <para>
+      You leave edit mode by clicking on the
+      <inlinegraphic fileref="&shape_edit;" scalefit="1" width="2%" align="center"/>
+      symbol. You can at any time go back to edit mode and do further adjustments by clicking
+      the edit symbol again. In edit mode you can also remove a shape by right-clicking on it -
+      the shape is removed from the current mask but it's still in the list of defined shapes.
+    </para>
 
-              <para>A polarity button ( <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/> and
-              <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/> , respectively) allows the user to toggle between the normal and the inverted state of the 
-              drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa. You need this feature when combining drawn and parametric masks
-              (see <xref linkend="combined_masks"/>).</para>
-           </sect4>
+    <para>
+      If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit
+      mode. Certain actions like dragging a complete shape or changing its size are blocked.
+      Only finetuning changes like dragging a node are allowed.
+    </para>
 
-           <para>More functionality to control the interaction of multiple shapes within a mask can be found in the mask manager panel (see <xref linkend="mask_manager"/>). 
-           Here you can give individual names to your shapes which will help you to keep track of your shapes. You can also select individual shapes for editing - a helpful
-           feature if your masks happens to contain several shapes with overlapping control elements.</para>
-      </sect3>
-		
+    <para>
+      Currently five shapes are implemented.
+    </para>
+
+    <indexterm>
+      <primary>mask shapes</primary>
+    </indexterm>
+
+    <indexterm>
+      <primary>shapes</primary>
+      <see>mask shapes</see>
+    </indexterm>
+
+    <sect4>
+
+      <title>brush</title>
+
+      <indexterm>
+        <primary>brush</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>mask shapes</primary>
+        <secondary>brush</secondary>
+      </indexterm>
+
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&shape_brush;" scalefit="1" width="2%" align="center"/>
+        symbol adds a brush stroke.
+      </para>
+
+      <para>
+        Start drawing by <emphasis>left-clicking</emphasis> into the canvas and moving the mouse
+        while keeping the button pressed. The brush stroke is finalized once you release the
+        mouse button. Brush size, hardness and opacity can be changed by
+        <emphasis>scrolling</emphasis>, <emphasis>shift+scrolling</emphasis>, and
+        <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
+        any time on your way.
+      </para>
+
+      <para>
+        If you have a graphic tablet with pen pressure sensitivity, darktable can apply the
+        recorded pen pressure to certain attributes of the brush stroke. See
+        <xref linkend="gui_options"/> for more details.
+      </para>
+
+      <para>
+        Nodes and segments of a brush stroke can be modified individually. See the documentation
+        on <emphasis>path</emphasis> below for more details.
+      </para>
+
+      <para>
+        Rendering a complex brush shape can consume a significant number of CPU cycles; consider
+        to revert to the circle, ellipse or path shape if possible.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                A brush stroke with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_brush_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4>
+
+      <title>circle</title>
+
+      <indexterm>
+        <primary>circle</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>mask shapes</primary>
+        <secondary>circle</secondary>
+      </indexterm>
+
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&shape_circle;" scalefit="1" width="2%" align="center"/>
+        symbol adds a circle shape.
+      </para>
+
+      <para>
+        Click into the canvas to place the circle. Left-click and drag the circle to a different
+        position if needed. Use the scroll-wheel of your mouse while in the circle to change the
+        diameter; scroll within the circle border to adjust the width of the gradual decay. With
+        <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the circle - this is best
+        observed with the mask displayed by pressing the
+        <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
+        button.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                A circle shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_circle_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4>
+
+      <title>ellipse</title>
+
+      <indexterm>
+        <primary>ellipse</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>mask shapes</primary>
+        <secondary>ellipse</secondary>
+      </indexterm>
+
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&shape_ellipse;" scalefit="1" width="2%" align="center"/>
+        symbol adds an ellipse shape.
+      </para>
+
+      <para>
+        The general principle is the same as for the circle shape. In addition you get four
+        nodes on the ellipse line. Click on the nodes to adjust the ellipse's eccentricity.
+        <emphasis>ctrl+click</emphasis> on them to rotate the ellipse.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                An ellipse shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_ellipse_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4>
+
+      <title>path</title>
+
+      <indexterm>
+        <primary>path</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>mask shapes</primary>
+        <secondary>path</secondary>
+      </indexterm>
+
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&shape_path;" scalefit="1" width="2%" align="center"/>
+        symbol adds a shape defined by a user defined closed path.
+      </para>
+
+      <para>
+        Left-click into the canvas to define path nodes; terminate the path by
+        <emphasis>right-clicking</emphasis> after having set the last point. Per default nodes
+        are connected by smooth lines. If you want a node to define a sharp corner, you can do
+        so by creating it with <emphasis>ctrl+click</emphasis>.
+      </para>
+
+      <para>
+        In the edit mode you can convert existing nodes from smooth to sharp corners and vice
+        versa by <emphasis>ctrl-clicking</emphasis> on them. You can insert additional nodes by
+        <emphasis>ctrl-clicking</emphasis> on one of the line segments. Single nodes can be
+        deleted by <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer
+        is over the desired node and the node is highlighted, or else you might accidentally
+        remove the whole path.
+      </para>
+
+      <para>
+        The size of the complete shape can be modified by scrolling - analogeous to the circle
+        shape. The same holds true for the width of the border, i.e. the area with a gradual
+        opacity decay. Single nodes as well as path segments can be moved by mouse dragging. If
+        a node is selected by clicking on it, a further control point appears - you can move it
+        around to modify the curvature of the line. Dragging one of the control points on the
+        border adjusts the border width just in that part of the shape.
+      </para>
+
+      <para>
+        Consider to finetune a path in the restricted edit mode (see above), which allows you to
+        adjust single nodes and segments without the risk of accidentally shifting or resizing
+        the whole shape.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                A path shape with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_path_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4>
+
+      <title>gradient</title>
+
+      <indexterm>
+        <primary>gradient</primary>
+      </indexterm>
+
+      <indexterm>
+        <primary>mask shapes</primary>
+        <secondary>gradient</secondary>
+      </indexterm>
+
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&shape_gradient;" scalefit="1" width="2%" align="center"/>
+        symbol adds a gradient to the mask. This does not generate a confined shape but produces
+        a linear gradient extending the whole image.
+      </para>
+
+      <para>
+        Click into the canvas to define the position of the line where opacity is at 50%. The
+        line has two anchor nodes which you can drag to change the rotation of the gradient.
+      </para>
+
+      <para>
+        Scrolling close to the center line changes the steepness of the gradient. Dotted lines
+        indicate the distance beyond which the opacity is 100% and 0%, respectively. Between
+        these dotted lines the opacity changes linearly. The gradient is best seen and modified
+        when the mask is displayed by pressing the
+        <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
+        button.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                A gradient with controls and activated mask display.
+              </entry>
+              <entry>
+                <graphic fileref="darkroom/concepts/images/masks_gradient_ex1.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4>
+
+      <title>drawn mask</title>
+
+      <para>
+        The number of shapes that are used in the current mask is displayed in the <quote>drawn
+        mask</quote> field. Clicking on that field opens a dropdown box with all shapes that
+        have already been defined in the context of the current image but are not yet used in
+        the current mask. You can click on any of these items in order to add it to the current
+        mask. The list also contains shapes once generated but no longer in use. This way you
+        can even get back a deleted shape.
+      </para>
+
+      <para>
+        A polarity button (
+        <inlinegraphic fileref="&icon_module_plus;" scalefit="1" width="2%" align="center"/>
+        and
+        <inlinegraphic fileref="&icon_module_minus;" scalefit="1" width="2%" align="center"/>
+        , respectively) allows the user to toggle between the normal and the inverted state of
+        the drawn mask, i.e. the opacity values get inverted - 100% becomes 0% and vice versa.
+        You need this feature when combining drawn and parametric masks (see
+        <xref linkend="combined_masks"/>).
+      </para>
+
+    </sect4>
+
+    <sect4>
+
+      <title>mask manager</title>
+
+      <para>
+        More functionality to control the interaction of multiple shapes within a mask can be
+        found in the mask manager panel (see <xref linkend="mask_manager"/>). Here you can give
+        individual names to your shapes which will help you to keep track of your shapes. You
+        can also select individual shapes for editing - a helpful feature if your masks happens
+        to contain several shapes with overlapping control elements.
+      </para>
+
+    </sect4>
+
+  </sect3>
+
 </sect2>
-

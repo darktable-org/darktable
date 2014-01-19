@@ -113,6 +113,9 @@ typedef struct dt_image_t
   double longitude;
   double latitude;
 
+  /* needed in exposure iop for Deflicker */
+  uint16_t raw_black_level;
+  uint16_t raw_white_point;
 }
 dt_image_t;
 
@@ -133,6 +136,8 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
 void dt_image_film_roll(const dt_image_t *img, char *pathname, int len);
+/** appends version numbering for duplicated images without querying the db. */
+void dt_image_path_append_version_no_db(const int version, char *pathname, const int len);
 /** appends version numbering for duplicated images. */
 void dt_image_path_append_version(int imgid, char *pathname, const int len);
 /** prints a one-line exif information string. */

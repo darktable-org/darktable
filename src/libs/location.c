@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <curl/curl.h>
-#include "views/capture.h"
 #include "common/darktable.h"
 #include "control/jobs.h"
 #include "control/control.h"

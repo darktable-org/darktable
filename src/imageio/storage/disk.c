@@ -147,7 +147,7 @@ gui_reset (dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   // global default can be annoying:
-  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/img_$(SEQUENCE)");
+  // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
 
   // this should prevent users from unintentional image overwrite
@@ -252,20 +252,11 @@ failed:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality,TRUE,self,sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
     return 1;
-  }
-
-  /* now write xmp into that container, if possible */
-  if((format->flags(fdata) & FORMAT_FLAGS_SUPPORT_XMP) && dt_exif_xmp_attach(imgid, filename) != 0)
-  {
-    fprintf(stderr, "[imageio_storage_disk] could not attach xmp data to file: `%s'!\n", filename);
-    // don't report that one to gui, as some formats (pfm, ppm, exr) just don't support
-    // writing xmp via exiv2, so it might not be to worry.
-//     return 1; // no need to cancel export just because of this
   }
 
   printf("[export_job] exported to `%s'\n", filename);

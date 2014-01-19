@@ -3,112 +3,207 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
-	<sect2 status="final" id="module_groups"><title>Module groups</title>
-                <indexterm>
-                   <primary>darkroom panels</primary>
-                   <secondary>module groups</secondary>
-                </indexterm>
+<sect2 status="final" id="module_groups">
 
-                <indexterm>
-                   <primary>module groups</primary>
-                </indexterm>
+  <title>Module groups</title>
 
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>
-						  <para>The module groups button bar gives you quick access to darktable's processing modules.</para>
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_modulegroups.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-		<para>
-		  Here follows a description of the module groups available:
-		</para>
-		<para>
-		  <informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
-		    <colspec colwidth="2*"/>
-		    <colspec colwidth="2*"/>
-		    <colspec colwidth="6*"/>
-		    <tbody>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Active</entry>
-                           <entry>Modules you have activated and are using on the current image.</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Favorites</entry>
-                           <entry>Modules you have marked as favorites using <emphasis>more modules</emphasis> (see <xref linkend="more_modules"/>).</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Basic</entry>
-                           <entry>Modules that are frequently used, such as exposure, temperature etc.
-                                  (see <xref linkend="basic_group"/>).</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Tone</entry>
-                           <entry>Modules for working with the image's tonal values, e.g. levels, tonemap etc. (see <xref linkend="tone_group"/>).</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Color</entry>
-                           <entry>Modules for processing colors, such as color correction, vibrance etc. (see <xref linkend="color_group"/>).</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Correction</entry>
-                           <entry>Modules making corrections to the image, e.g. denoise, CA correction etc. (see <xref linkend="correction_group"/>).</entry>
-                      </row>
-		      <row><entry><graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" /></entry>
-                           <entry>Effect</entry>
-                           <entry>Modules with a more artistic output, such as vignetting, softening etc. (see <xref linkend="effect_group"/>).</entry>
-                      </row>
-		    </tbody>
-		  </tgroup>
-		  </informaltable>
-		</para>
+  <indexterm>
+    <primary>darkroom panels</primary>
+    <secondary>module groups</secondary>
+  </indexterm>
 
-                <para>Clicking on one of the group symbols will show the modules in that group. If you once again click on the symbol, grouping will be de-activated and
-                      all non-hidden modules will be shown in one long list. This list shows the sequence in which modules are applied from bottom to top. As a general 
-                      principle darktable applies modules in a pre-defined sequence.
-                </para>
-                <para>For those who are interested here is some information about darktable's internals: The long list helps you to figure out in which color 
-                      space a specific module acts. In fact there are only three modules which convert from one color space to another:
-                      <link linkend="demosaic"><emphasis>demosaic</emphasis></link>, <link linkend="input_color_profile"><emphasis>input color profile</emphasis></link> and
-                      <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>.
-                </para>
+  <indexterm>
+    <primary>module groups</primary>
+  </indexterm>
 
-		<para>
-		  <informaltable frame="none" width="80%"><tgroup cols="3" colsep="0" rowsep="0">
-		    <colspec colwidth="3.5*"/>
-		    <colspec colwidth="0.5*"/>
-		    <colspec colwidth="6*"/>
-		    <tbody>
-		      <row><entry>up to <emphasis>demosaic</emphasis></entry>
-                           <entry></entry>
-                           <entry>Image is in raw data format with only latent colors. Each pixel carries lightness and color information for only one base color. Please mind that
-                                  some of the modules in this part can also act on non-RAW input images in RGB format.</entry>
-                      </row>
-		      <row><entry>between <emphasis>demosaic</emphasis> and <emphasis>input color profile</emphasis></entry>
-                           <entry></entry>
-                           <entry>Image is in RGB format within the color space of the specific camera or input file.</entry>
-                      </row>
-		      <row><entry>between <emphasis>input color profile</emphasis> and <emphasis>output color profile</emphasis></entry>
-                           <entry></entry>
-                           <entry>Image is in Lab format. This is a very huge universal color space which covers all colors visible to the human eye (and even more). As darktable processes images in
-                                  4x32-bit floating point buffers, we can handle the Lab color space without risking banding or tonal breaks.</entry>
-                      </row>
-		      <row><entry>after <emphasis>output color profile</emphasis></entry>
-                           <entry></entry>
-                           <entry>Image is in RGB format as defined by the selected display or output ICC profile.</entry>
-                      </row>
-		    </tbody>
-		  </tgroup>
-		  </informaltable>
-		</para>
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            <para>
+              The module groups button bar gives you quick access to darktable's processing
+              modules.
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_modulegroups.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
 
-	</sect2>
-	
+  <para>
+    Here follows a description of the module groups available:
+  </para>
+
+  <para>
+    <informaltable frame="none" width="80%">
+      <tgroup cols="3" colsep="0" rowsep="0">
+        <colspec colwidth="2*"/>
+        <colspec colwidth="2*"/>
+        <colspec colwidth="6*"/>
+        <tbody>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_active.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Active
+            </entry>
+            <entry>
+              Modules you have activated and are using on the current image.
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_favorites.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Favorites
+            </entry>
+            <entry>
+              Modules you have marked as favorites using <emphasis>more modules</emphasis> (see
+              <xref linkend="more_modules"/>).
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_basic.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Basic
+            </entry>
+            <entry>
+              Modules that are frequently used, such as exposure, temperature etc. (see
+              <xref linkend="basic_group"/>).
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_tone.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Tone
+            </entry>
+            <entry>
+              Modules for working with the image's tonal values, e.g. levels, tonemap etc. (see
+              <xref linkend="tone_group"/>).
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_color.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Color
+            </entry>
+            <entry>
+              Modules for processing colors, such as color correction, vibrance etc. (see
+              <xref linkend="color_group"/>).
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_correction.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Correction
+            </entry>
+            <entry>
+              Modules making corrections to the image, e.g. denoise, CA correction etc. (see
+              <xref linkend="correction_group"/>).
+            </entry>
+          </row>
+          <row>
+            <entry>
+              <graphic fileref="darkroom/images/darkroom_group_effect.png" scalefit="1" width="20%" align="center" />
+            </entry>
+            <entry>
+              Effect
+            </entry>
+            <entry>
+              Modules with a more artistic output, such as vignetting, softening etc. (see
+              <xref linkend="effect_group"/>).
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </para>
+
+  <para>
+    Clicking on one of the group symbols will show the modules in that group. If you once again
+    click on the symbol, grouping will be de-activated and all non-hidden modules will be shown
+    in one long list. This list shows the sequence in which modules are applied from bottom to
+    top. As a general principle darktable applies modules in a pre-defined sequence.
+  </para>
+
+  <para>
+    For those who are interested here is some information about darktable's internals: The long
+    list helps you to figure out in which color space a specific module acts. In fact there are
+    only three modules which convert from one color space to another:
+    <link linkend="demosaic"><emphasis>demosaic</emphasis></link>,
+    <link linkend="input_color_profile"><emphasis>input color profile</emphasis></link> and
+    <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>.
+  </para>
+
+  <para>
+    <informaltable frame="none" width="80%">
+      <tgroup cols="3" colsep="0" rowsep="0">
+        <colspec colwidth="3.5*"/>
+        <colspec colwidth="0.5*"/>
+        <colspec colwidth="6*"/>
+        <tbody>
+          <row>
+            <entry>
+              up to <emphasis>demosaic</emphasis>
+            </entry>
+            <entry></entry>
+            <entry>
+              Image is in raw data format with only latent colors. Each pixel carries lightness
+              and color information for only one base color. Please mind that some of the
+              modules in this part can also act on non-RAW input images in RGB format.
+            </entry>
+          </row>
+          <row>
+            <entry>
+              between <emphasis>demosaic</emphasis> and <emphasis>input color profile</emphasis>
+            </entry>
+            <entry></entry>
+            <entry>
+              Image is in RGB format within the color space of the specific camera or input
+              file.
+            </entry>
+          </row>
+          <row>
+            <entry>
+              between <emphasis>input color profile</emphasis> and <emphasis>output color
+              profile</emphasis>
+            </entry>
+            <entry></entry>
+            <entry>
+              Image is in Lab format. This is a very huge universal color space which covers all
+              colors visible to the human eye (and even more). As darktable processes images in
+              4x32-bit floating point buffers, we can handle the Lab color space without risking
+              banding or tonal breaks.
+            </entry>
+          </row>
+          <row>
+            <entry>
+              after <emphasis>output color profile</emphasis>
+            </entry>
+            <entry></entry>
+            <entry>
+              Image is in RGB format as defined by the selected display or output ICC profile.
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </para>
+
+</sect2>

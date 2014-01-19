@@ -102,33 +102,38 @@ dt_history_delete_on_selection()
   sqlite3_finalize(stmt);
 }
 
+int dt_history_load_and_apply(int imgid, gchar *filename, int history_only)
+{
+  int res = 0;
+  const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, imgid);
+  dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
+  if(img)
+  {
+    if(dt_exif_xmp_read(img, filename, history_only))
+      return 1;
+
+    /* if current image in develop reload history */
+    if(dt_dev_is_current_image(darktable.develop, imgid))
+      dt_dev_reload_history_items (darktable.develop);
+
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    dt_image_cache_read_release(darktable.image_cache, img);
+    dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  }
+  return res;
+}
+
 int
 dt_history_load_and_apply_on_selection (gchar *filename)
 {
-  int res=0;
+  int res = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
-    const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-    if(img)
-    {
-      if (dt_exif_xmp_read(img, filename, 1))
-      {
-        res=1;
-        break;
-      }
-
-      /* if current image in develop reload history */
-      if (dt_dev_is_current_image(darktable.develop, imgid))
-        dt_dev_reload_history_items (darktable.develop);
-
-      dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-      dt_image_cache_read_release(darktable.image_cache, img);
-      dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
-    }
+    if(dt_history_load_and_apply(imgid, filename, 1))
+      res = 1;
   }
   sqlite3_finalize(stmt);
   return res;
