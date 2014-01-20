@@ -960,8 +960,6 @@ dt_imageio_open(
     ret = dt_imageio_open_ldr(img, filename, a);
 #endif
 
-  img->flags &= ~DT_IMAGE_THUMBNAIL;
-
   return ret;
 }
 

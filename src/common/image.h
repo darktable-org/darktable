@@ -43,8 +43,11 @@ typedef enum
   DT_IMAGE_OKAY = 2,
   DT_IMAGE_NICE = 3,
   DT_IMAGE_EXCELLENT = 4,
-  // this refers to the state of the mipf buffer and its source.
-  DT_IMAGE_THUMBNAIL = 16,
+  // next field unused, but it used to be.
+  // old DB entries might have it set.
+  // To reuse : force to 0 in DB loading and force to 0 in DB saving
+  // Use it to store a state that doesn't need to go in DB
+  DT_IMAGE_THUMBNAIL_DEPRECATED = 16,
   // set during import if the image is low-dynamic range, i.e. doesn't need demosaic, wb, highlight clipping etc.
   DT_IMAGE_LDR = 32,
   // set during import if the image is raw data, i.e. it needs demosaicing.
