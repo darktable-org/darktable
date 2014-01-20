@@ -398,9 +398,9 @@ void gui_init (dt_imageio_module_format_t *self)
   GtkComboBoxText *compress_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->compress = GTK_COMBO_BOX(compress_combo);
   gtk_combo_box_text_append_text(compress_combo, _("uncompressed"));
-  gtk_combo_box_text_append_text(compress_combo, _("ZIP"));
-  gtk_combo_box_text_append_text(compress_combo, _("ZIP with predictor"));
-  gtk_combo_box_text_append_text(compress_combo, _("ZIP with predictor (float)"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor (float)"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(compress_combo), compress);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(compress_combo), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(compress_combo), "changed", G_CALLBACK(compress_combobox_changed), NULL);
