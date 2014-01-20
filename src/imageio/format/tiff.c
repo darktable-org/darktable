@@ -86,25 +86,32 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
   }
 
+  // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
+  // "A proprietary ZIP/Flate compression code (0x80b2) has been used by some"
+  // "software vendors. This code should be considered obsolete. We recommend"
+  // "that TIFF implentations recognize and read the obsolete code but only"
+  // "write the official compression code (0x0008)."
+  // http://www.awaresystems.be/imaging/tiff/tifftags/compression.html
+  // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
   if (d->compress == 1)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);   // Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   }
   else if (d->compress == 2)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);   // Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   }
   else if (d->compress == 3)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
     if (d->bpp == 32)
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, 3); // Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, 3);
     else
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, 2); // Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
   }
   else // (d->compress == 0)
@@ -391,9 +398,9 @@ void gui_init (dt_imageio_module_format_t *self)
   GtkComboBoxText *compress_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
   gui->compress = GTK_COMBO_BOX(compress_combo);
   gtk_combo_box_text_append_text(compress_combo, _("uncompressed"));
-  gtk_combo_box_text_append_text(compress_combo, _("deflate"));
-  gtk_combo_box_text_append_text(compress_combo, _("adobe deflate"));
-  gtk_combo_box_text_append_text(compress_combo, _("adobe deflate (float)"));
+  gtk_combo_box_text_append_text(compress_combo, _("ZIP"));
+  gtk_combo_box_text_append_text(compress_combo, _("ZIP with predictor"));
+  gtk_combo_box_text_append_text(compress_combo, _("ZIP with predictor (float)"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(compress_combo), compress);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(compress_combo), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(compress_combo), "changed", G_CALLBACK(compress_combobox_changed), NULL);
