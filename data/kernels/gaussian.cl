@@ -252,7 +252,8 @@ lowpass_mix(read_only image2d_t in, write_only image2d_t out, unsigned int width
 
 
 float4
-overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect, const int4 unbound)
+overlay(const float4 in_a, const float4 in_b, const float opacity, const float transform, const float ccorrect,
+        const int4 unbound, const float low_approximation)
 {
   /* a contains underlying image; b contains mask */
 
@@ -273,8 +274,8 @@ overlay(const float4 in_a, const float4 in_b, const float opacity, const float t
     float la = unbound.x ? a.x : clamp(a.x, lmin, lmax);
     float lb = (b.x - halfmax) * sign(opacity)*sign(lmax - la) + halfmax;
     lb = unbound.w ? lb : clamp(lb, lmin, lmax);
-    float lref = copysign(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
-    float href = copysign(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
+    float lref = copysign(fabs(la) > low_approximation ? 1.0f/fabs(la) : 1.0f/low_approximation, la);
+    float href = copysign(fabs(1.0f - la) > low_approximation ? 1.0f/fabs(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
 
 
     float chunk = opacity2 > 1.0f ? 1.0f : opacity2;
@@ -311,7 +312,7 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
                        unsigned int width, unsigned int height, 
                        const float shadows, const float highlights, const float compress,
                        const float shadows_ccorrect, const float highlights_ccorrect, 
-                       const unsigned int flags, const int unbound_mask)
+                       const unsigned int flags, const int unbound_mask, const float low_approximation)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -330,12 +331,12 @@ shadows_highlights_mix(read_only image2d_t in, read_only image2d_t mask, write_o
   /* overlay highlights */
   xform = clamp(1.0f - 0.01f * m.x/(1.0f-compress), 0.0f, 1.0f);
   unbound = (int4)(flags & UNBOUND_HIGHLIGHTS_L, flags & UNBOUND_HIGHLIGHTS_A, flags & UNBOUND_HIGHLIGHTS_B, unbound_mask);
-  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect, unbound);
+  io = overlay(io, m, -highlights, xform, 1.0f - highlights_ccorrect, unbound, low_approximation);
 
   /* overlay shadows */
   xform = clamp(0.01f * m.x/(1.0f-compress) - compress/(1.0f-compress), 0.0f, 1.0f);
   unbound = (int4)(flags & UNBOUND_SHADOWS_L, flags & UNBOUND_SHADOWS_A, flags & UNBOUND_SHADOWS_B, unbound_mask);
-  io = overlay(io, m, shadows, xform, shadows_ccorrect, unbound);
+  io = overlay(io, m, shadows, xform, shadows_ccorrect, unbound, low_approximation);
 
   io.w = w;
   write_imagef(out, (int2)(x, y), io);
