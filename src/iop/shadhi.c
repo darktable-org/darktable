@@ -60,7 +60,7 @@
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t
@@ -90,6 +90,21 @@ typedef struct dt_iop_shadhi_params2_t
 }
 dt_iop_shadhi_params2_t;
 
+typedef struct dt_iop_shadhi_params3_t
+{
+  dt_gaussian_order_t order;
+  float radius;
+  float shadows;
+  float reserved1;
+  float highlights;
+  float reserved2;
+  float compress;
+  float shadows_ccorrect;
+  float highlights_ccorrect;
+  unsigned int flags;
+}
+dt_iop_shadhi_params3_t;
+
 typedef struct dt_iop_shadhi_params_t
 {
   dt_gaussian_order_t order;
@@ -102,6 +117,7 @@ typedef struct dt_iop_shadhi_params_t
   float shadows_ccorrect;
   float highlights_ccorrect;
   unsigned int flags;
+  float low_approximation;
 }
 dt_iop_shadhi_params_t;
 
@@ -123,6 +139,7 @@ typedef struct dt_iop_shadhi_data_t
   float shadows_ccorrect;
   float highlights_ccorrect;
   unsigned int flags;
+  float low_approximation;
 }
 dt_iop_shadhi_data_t;
 
@@ -152,7 +169,7 @@ groups ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 3)
+  if (old_version == 1 && new_version == 4)
   {
     const dt_iop_shadhi_params1_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
@@ -166,9 +183,10 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->compress = old->compress;
     new->shadows_ccorrect = 100.0f;
     new->highlights_ccorrect = 0.0f;
+    new->low_approximation = 0.01f;
     return 0;
   }
-  else if (old_version == 2 && new_version == 3)
+  else if (old_version == 2 && new_version == 4)
   {
     const dt_iop_shadhi_params2_t *old = old_params;
     dt_iop_shadhi_params_t *new = new_params;
@@ -182,9 +200,26 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->shadows_ccorrect = old->shadows_ccorrect;
     new->highlights_ccorrect = old->highlights_ccorrect;
     new->flags = 0;
+    new->low_approximation = 0.01f;
     return 0;
   }
-
+  else if (old_version == 3 && new_version == 4)
+  {
+    const dt_iop_shadhi_params3_t *old = old_params;
+    dt_iop_shadhi_params_t *new = new_params;
+    new->order = old->order;
+    new->radius = old->radius;
+    new->shadows = old->shadows;
+    new->reserved1 = old->reserved1;
+    new->reserved2 = old->reserved2;
+    new->highlights = old->highlights;
+    new->compress = old->compress;
+    new->shadows_ccorrect = old->shadows_ccorrect;
+    new->highlights_ccorrect = old->highlights_ccorrect;
+    new->flags = old->flags;
+    new->low_approximation = 0.01f;
+    return 0;
+  }
   return 1;
 }
 
@@ -255,7 +290,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float highlights_ccorrect = (fmin(fmax(0,(data->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
   const unsigned int flags = data->flags;
   const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
-
+  const float low_approximation = data->low_approximation;
 
   if(!use_bilateral)
   {
@@ -324,8 +359,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights)*sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
-      float href = copysignf(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
+      float lref = copysignf(fabs(la) > low_approximation ? 1.0f/fabs(la) : 1.0f/low_approximation, la);
+      float href = copysignf(fabs(1.0f - la) > low_approximation ? 1.0f/fabs(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
 
       float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
       float optrans = chunk * highlights_xform;
@@ -356,8 +391,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows)*sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > 0.01f ? 1.0f/fabs(la) : 100.0f, la);
-      float href = copysignf(fabs(1.0f - la) > 0.01f ? 1.0f/fabs(1.0f - la) : 100.0f, 1.0f - la);
+      float lref = copysignf(fabs(la) > low_approximation ? 1.0f/fabs(la) : 1.0f/low_approximation, la);
+      float href = copysignf(fabs(1.0f - la) > low_approximation ? 1.0f/fabs(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
 
 
       float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
@@ -412,6 +447,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const float compress = fmin(fmax(0,(d->compress/100.0)), 0.99f);  // upper limit 0.99f to avoid division by zero later
   const float shadows_ccorrect = (fmin(fmax(0,(d->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
   const float highlights_ccorrect = (fmin(fmax(0,(d->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
+  const float low_approximation = d->low_approximation;
   const unsigned int flags = d->flags;
   const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
 
@@ -473,6 +509,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 9, sizeof(float), (void *)&highlights_ccorrect);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 10, sizeof(unsigned int), (void *)&flags);
   dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 11, sizeof(int), (void *)&unbound_mask);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_shadows_highlights_mix, 12, sizeof(float), (void *)&low_approximation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_shadows_highlights_mix, sizes);
   if(err != CL_SUCCESS) goto error;
 
@@ -613,6 +650,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->shadows_ccorrect = p->shadows_ccorrect;
   d->highlights_ccorrect = p->highlights_ccorrect;
   d->flags = p->flags;
+  d->low_approximation = p->low_approximation;
 
 #ifdef HAVE_OPENCL
   if(d->radius < 0.0f)
@@ -657,7 +695,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_shadhi_params_t tmp = (dt_iop_shadhi_params_t)
   {
-    DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f, 50.0f, UNBOUND_DEFAULT
+    DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f, 50.0f, UNBOUND_DEFAULT, 0.000001f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_shadhi_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_shadhi_params_t));
