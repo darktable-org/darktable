@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-18 17:34+0100\n"
-"PO-Revision-Date: 2014-01-18 17:39+0100\n"
+"POT-Creation-Date: 2014-01-22 00:15+0100\n"
+"PO-Revision-Date: 2014-01-22 00:19+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -19,7 +19,7 @@ msgstr "Options d'interface"
 
 #: ../build/src/preferences_gen.h:1199
 msgid "look for updated xmp files on startup"
-msgstr ""
+msgstr "vérifie les fichiers xmp modifiés au démarrage"
 
 #: ../build/src/preferences_gen.h:1208 ../build/src/preferences_gen.h:1251
 #: ../build/src/preferences_gen.h:1270 ../build/src/preferences_gen.h:1289
@@ -55,6 +55,8 @@ msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
+"récupère la date de modification de tous les fichiers xmp au démarrage pour "
+"vérifier ceux modifiés depuis la dernière session"
 
 #: ../build/src/preferences_gen.h:1218
 msgid "width of the side panels in pixels"
@@ -596,15 +598,15 @@ msgstr "options de session"
 
 #: ../build/src/preferences_gen.h:2191
 msgid "base directory naming pattern"
-msgstr ""
+msgstr "nommage du répertoire de base"
 
 #: ../build/src/preferences_gen.h:2203 ../build/src/preferences_gen.h:2222
 msgid "part of full import path for an import session"
-msgstr ""
+msgstr "partie du chemin complet pour la session d'importation"
 
 #: ../build/src/preferences_gen.h:2210
 msgid "sub directory naming pattern"
-msgstr ""
+msgstr "nommage du sous répertoire"
 
 #: ../build/src/preferences_gen.h:2229
 msgid "file naming pattern"
@@ -612,7 +614,7 @@ msgstr "nommage des fichiers"
 
 #: ../build/src/preferences_gen.h:2241
 msgid "file naming pattern used for a import session"
-msgstr ""
+msgstr "nommage des fichiers pour la session d'importation"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -911,7 +913,7 @@ msgstr "chemin"
 
 #: ../src/control/crawler.c:240
 msgid "xmp timestamp"
-msgstr ""
+msgstr "horodatage xmp"
 
 #: ../src/control/crawler.c:246
 msgid "database timestamp"
@@ -1647,7 +1649,7 @@ msgstr "descendre"
 
 #. delete
 #: ../src/develop/imageop.c:1125 ../src/libs/image.c:146
-#: ../src/libs/styles.c:396 ../src/libs/tagging.c:492
+#: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "supprimer"
 
@@ -1844,7 +1846,7 @@ msgstr ""
 "merci de patienter pendant la récupération des miniatures de votre boîtier..."
 
 #. jobcode
-#: ../src/gui/camera_import_dialog.c:232 ../src/libs/session.c:107
+#: ../src/gui/camera_import_dialog.c:232 ../src/libs/session.c:104
 msgid "jobcode"
 msgstr "code projet"
 
@@ -2196,7 +2198,7 @@ msgstr "importation"
 #. Export button
 #. export button
 #: ../src/gui/preferences.c:615 ../src/libs/export.c:668
-#: ../src/libs/styles.c:410
+#: ../src/libs/styles.c:408
 msgid "export"
 msgstr "exporter"
 
@@ -2482,11 +2484,11 @@ msgstr "PFM (flottant)"
 msgid "PNG (8/16-bit)"
 msgstr "PNG (8/16-bits)"
 
-#: ../src/imageio/format/png.c:420 ../src/imageio/format/tiff.c:323
+#: ../src/imageio/format/png.c:420
 msgid "8-bit"
 msgstr "8-bits"
 
-#: ../src/imageio/format/png.c:425 ../src/imageio/format/tiff.c:329
+#: ../src/imageio/format/png.c:425
 msgid "16-bit"
 msgstr "16-bits"
 
@@ -2494,13 +2496,37 @@ msgstr "16-bits"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bits)"
 
-#: ../src/imageio/format/tiff.c:297
+#: ../src/imageio/format/tiff.c:341
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bits)"
 
-#: ../src/imageio/format/tiff.c:335
-msgid "32-bit (float)"
-msgstr "32-bits (flottant)"
+#: ../src/imageio/format/tiff.c:386
+msgid "8 bit"
+msgstr "8 bits"
+
+#: ../src/imageio/format/tiff.c:387
+msgid "16 bit"
+msgstr "16 bits"
+
+#: ../src/imageio/format/tiff.c:388
+msgid "32 bit (float)"
+msgstr "32 bits (flottant)"
+
+#: ../src/imageio/format/tiff.c:400
+msgid "uncompressed"
+msgstr "non compressé"
+
+#: ../src/imageio/format/tiff.c:401
+msgid "deflate"
+msgstr "deflate"
+
+#: ../src/imageio/format/tiff.c:402
+msgid "deflate with predictor"
+msgstr "deflate avec prédiction"
+
+#: ../src/imageio/format/tiff.c:403
+msgid "deflate with predictor (float)"
+msgstr "deflate avec prédiction (flottant)"
 
 #: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
@@ -3073,7 +3099,7 @@ msgstr "détail"
 msgid "denoise (bilateral filter)"
 msgstr "réduction du bruit (bilatéral)"
 
-#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:196
+#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:231
 #: ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "radius"
@@ -3120,7 +3146,7 @@ msgstr ""
 "pour le bleu"
 
 #: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
-#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:712 ../src/iop/sharpen.c:572
+#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:750 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "rayon"
 
@@ -5127,15 +5153,15 @@ msgctxt "lowpass"
 msgid "brightness"
 msgstr "luminance"
 
-#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:703
+#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:741
 msgid "soften with"
 msgstr "adoucir avec"
 
-#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:704
+#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:742
 msgid "gaussian"
 msgstr "gaussien"
 
-#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:705
+#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:743
 msgid "bilateral filter"
 msgstr "filtre bilatéral"
 
@@ -5179,7 +5205,7 @@ msgid "how much to keep highlights"
 msgstr "conserver les hautes lumières"
 
 #. Highlights
-#: ../src/iop/monochrome.c:558 ../src/iop/shadhi.c:711
+#: ../src/iop/monochrome.c:558 ../src/iop/shadhi.c:749
 #: ../src/iop/splittoning.c:614
 msgid "highlights"
 msgstr "hautes lumières"
@@ -5280,69 +5306,69 @@ msgstr ""
 "récupérer la lumière moyenne\n"
 " d'une zone de l'image"
 
-#: ../src/iop/shadhi.c:138
+#: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
 msgstr "ombres et hautes lumières"
 
-#: ../src/iop/shadhi.c:194
+#: ../src/iop/shadhi.c:229
 msgctxt "accel"
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:195
+#: ../src/iop/shadhi.c:230
 msgctxt "accel"
 msgid "highlights"
 msgstr "hautes lumières"
 
-#: ../src/iop/shadhi.c:197 ../src/iop/splittoning.c:107
+#: ../src/iop/shadhi.c:232 ../src/iop/splittoning.c:107
 msgctxt "accel"
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:198
+#: ../src/iop/shadhi.c:233
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:199
+#: ../src/iop/shadhi.c:234
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "saturation des hautes lumières"
 
 #. Shadows
-#: ../src/iop/shadhi.c:710 ../src/iop/splittoning.c:611
+#: ../src/iop/shadhi.c:748 ../src/iop/splittoning.c:611
 msgid "shadows"
 msgstr "ombres"
 
-#: ../src/iop/shadhi.c:713 ../src/iop/splittoning.c:631
+#: ../src/iop/shadhi.c:751 ../src/iop/splittoning.c:631
 msgid "compress"
 msgstr "seuil"
 
-#: ../src/iop/shadhi.c:714
+#: ../src/iop/shadhi.c:752
 msgid "shadows color adjustment"
 msgstr "saturation des ombres"
 
-#: ../src/iop/shadhi.c:715
+#: ../src/iop/shadhi.c:753
 msgid "highlights color adjustment"
 msgstr "saturation des hautes lumières"
 
-#: ../src/iop/shadhi.c:731
+#: ../src/iop/shadhi.c:769
 msgid "correct shadows"
 msgstr "corrige les ombres"
 
-#: ../src/iop/shadhi.c:732
+#: ../src/iop/shadhi.c:770
 msgid "correct highlights"
 msgstr "corrige les hautes lumières"
 
-#: ../src/iop/shadhi.c:733 ../src/iop/tonemap.cc:315
+#: ../src/iop/shadhi.c:771 ../src/iop/tonemap.cc:315
 msgid "spatial extent"
 msgstr "rayon"
 
-#: ../src/iop/shadhi.c:734
+#: ../src/iop/shadhi.c:772
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filtre à utiliser pour adoucir. bilatéral évite les halos"
 
-#: ../src/iop/shadhi.c:735
+#: ../src/iop/shadhi.c:773
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -5350,11 +5376,11 @@ msgstr ""
 "pourcentage de luminance\n"
 "non affecté par la correction"
 
-#: ../src/iop/shadhi.c:736
+#: ../src/iop/shadhi.c:774
 msgid "adjust saturation of shadows"
 msgstr "ajuste la saturation des ombres"
 
-#: ../src/iop/shadhi.c:737
+#: ../src/iop/shadhi.c:775
 msgid "adjust saturation of highlights"
 msgstr "ajuste la saturation des hautes lumières"
 
@@ -7481,12 +7507,12 @@ msgstr ""
 "sélectionne les images intouchées\n"
 "dans la collection actuelle"
 
-#: ../src/libs/session.c:52
+#: ../src/libs/session.c:48
 msgid "session"
 msgstr "session"
 
 #. create
-#: ../src/libs/session.c:115 ../src/libs/styles.c:383
+#: ../src/libs/session.c:112 ../src/libs/styles.c:381
 msgid "create"
 msgstr "créer"
 
@@ -7538,7 +7564,7 @@ msgstr "sélectionner le style"
 msgid "darktable style files"
 msgstr "fichiers de style"
 
-#: ../src/libs/styles.c:352
+#: ../src/libs/styles.c:350
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -7546,46 +7572,46 @@ msgstr ""
 "styles disponibles, \n"
 "double-clic pour appliquer"
 
-#: ../src/libs/styles.c:358
+#: ../src/libs/styles.c:356
 msgid "enter style name"
 msgstr "entrez un style"
 
-#: ../src/libs/styles.c:371
+#: ../src/libs/styles.c:369
 msgid "create duplicate"
 msgstr "cloner l'image et appliquer le style"
 
-#: ../src/libs/styles.c:375
+#: ../src/libs/styles.c:373
 msgid "creates a duplicate of the image before applying style"
 msgstr "crée une image virtuelle avant d'appliquer le style"
 
-#: ../src/libs/styles.c:385
+#: ../src/libs/styles.c:383
 msgid "create styles from history stack of selected images"
 msgstr "créer des styles à partir des images sélectionnées"
 
 #. edit
-#: ../src/libs/styles.c:389
+#: ../src/libs/styles.c:387
 msgid "edit"
 msgstr "modifier"
 
-#: ../src/libs/styles.c:392
+#: ../src/libs/styles.c:390
 msgid "edit the selected style in list above"
 msgstr "modifie le style sélectionné dans la liste ci-dessus"
 
-#: ../src/libs/styles.c:399
+#: ../src/libs/styles.c:397
 msgid "deletes the selected style in list above"
 msgstr "supprime le style sélectionné dans la liste ci-dessus"
 
 #. import button
-#: ../src/libs/styles.c:403
+#: ../src/libs/styles.c:401
 msgctxt "styles"
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/styles.c:405
+#: ../src/libs/styles.c:403
 msgid "import style from a style file"
 msgstr "importe un style depuis un fichier"
 
-#: ../src/libs/styles.c:412
+#: ../src/libs/styles.c:410
 msgid "export the selected style into a style file"
 msgstr "exporte le style sélectionné dans un fichier"
 
