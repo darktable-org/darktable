@@ -93,6 +93,7 @@ typedef enum
   GROUP_LEADER,
   APPLY_STYLE,
   CREATE_STYLE,
+  PRESET_APPLIED,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -113,6 +114,7 @@ const char *image_fields_name[] =
   "group_leader",
   "apply_style",
   "create_style",
+  "preset_applied",
   NULL
 };
 static int image_index(lua_State *L)
@@ -291,6 +293,11 @@ static int image_index(lua_State *L)
     case CREATE_STYLE:
       {
         lua_pushcfunction(L,dt_lua_style_create_from_image);
+        break;
+      }
+    case PRESET_APPLIED:
+      {
+        lua_pushboolean(L,my_image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED);
         break;
       }
     default:
@@ -482,7 +489,10 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader","apply_style","create_style",NULL) ; // make these fields read-only
+  // make these fields read-only by setting a NULL new_index callback
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL,
+      "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader",
+      "apply_style","create_style","preset_applied",NULL) ;
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);
