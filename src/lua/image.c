@@ -506,6 +506,8 @@ int dt_lua_init_image(lua_State * L)
       "apply_style","create_style","reset",NULL) ;
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
+  lua_pushcfunction(L,dt_lua_delete_image);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"delete");
   lua_pushcfunction(L,group_with);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"group_with");
   lua_pushcfunction(L,make_group_leader);

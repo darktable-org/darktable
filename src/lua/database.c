@@ -39,6 +39,14 @@ int dt_lua_duplicate_image(lua_State *L)
   return 1;
 }
 
+int dt_lua_delete_image(lua_State *L)
+{
+  int imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_image_remove(imgid);
+  return 0;
+}
+
 static int import_images(lua_State *L)
 {
   char* full_name= g_realpath(luaL_checkstring(L,-1));
@@ -142,6 +150,8 @@ int dt_lua_init_database(lua_State * L)
   dt_lua_register_type_callback_number_typeid(L,type_id,database_index,NULL,database_len);
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcfunction(L,dt_lua_delete_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
   lua_pushcfunction(L,import_images);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
 

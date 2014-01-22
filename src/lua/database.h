@@ -21,6 +21,7 @@
 
 
 int dt_lua_duplicate_image(lua_State *L);
+int dt_lua_delete_image(lua_State *L);
 int dt_lua_init_database(lua_State * L);
 
 #endif
