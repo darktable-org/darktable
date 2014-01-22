@@ -14,7 +14,7 @@ node_to_string = function(node,name)
 end
 
 code = function(text) 
-	return [[\n\n<pre><code class="lua">]]..text.."</pre></code>\n\n"
+	return [[\n\n<pre><code class="lua">]]..text.."</code></pre>\n\n"
 end
 
 startlist = function() return "\n\n" end

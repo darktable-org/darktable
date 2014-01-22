@@ -366,6 +366,8 @@ types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.green)
 types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.yellow)
 types.dt_lua_image_t.red:set_alias(types.dt_lua_image_t.purple)
 types.dt_lua_image_t.preset_applied:set_text([[True if darktable has already applied it's automatic presets on the image]]):add_version_info("field added")
+types.dt_lua_image_t.reset:set_text([[Removes all processing from the image, reseting it back to its original state]]):add_version_info("field added")
+types.dt_lua_image_t.reset:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose history will be deleted]])
 
 types.dt_lua_image_t.group_with:set_text([[Puts the first image in the same group as the second image. If no second image is provided the image will be in its own group.]])
 types.dt_lua_image_t.group_with:add_parameter("image",my_tostring(types.dt_lua_image_t),[[The image whose group must be changed.]])

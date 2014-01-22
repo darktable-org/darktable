@@ -29,6 +29,7 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/grouping.h"
+#include "common/history.h"
 #include "metadata_gen.h"
 
 /***********************************************************************
@@ -75,6 +76,16 @@ void dt_lua_image_push(lua_State * L,int imgid)
   luaA_push(L,dt_lua_image_t,&imgid);
 }
 
+
+static int history_delete(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_history_delete_on_image(imgid);
+  return 0;
+}
+
+
 typedef enum
 {
   PATH,
@@ -94,6 +105,7 @@ typedef enum
   APPLY_STYLE,
   CREATE_STYLE,
   PRESET_APPLIED,
+  RESET,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -115,6 +127,7 @@ const char *image_fields_name[] =
   "apply_style",
   "create_style",
   "preset_applied",
+  "reset",
   NULL
 };
 static int image_index(lua_State *L)
@@ -298,6 +311,11 @@ static int image_index(lua_State *L)
     case PRESET_APPLIED:
       {
         lua_pushboolean(L,my_image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED);
+        break;
+      }
+    case RESET:
+      {
+        lua_pushcfunction(L,history_delete);
         break;
       }
     default:
@@ -492,7 +510,7 @@ int dt_lua_init_image(lua_State * L)
   // make these fields read-only by setting a NULL new_index callback
   dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL,
       "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader",
-      "apply_style","create_style","preset_applied",NULL) ;
+      "apply_style","create_style","preset_applied","reset",NULL) ;
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
   lua_pushcfunction(L,group_with);
