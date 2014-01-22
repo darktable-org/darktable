@@ -214,7 +214,7 @@ int dt_lua_autotype_ipairs(lua_State *L)
 {
   lua_getfield(L,lua_upvalueindex(1),"__inext");
   lua_pushvalue(L,-2);
-  lua_pushnil(L); // index set to null for reset
+  lua_pushinteger(L,0); // index set to 0 for reset
   return 3;
 }
 
@@ -429,6 +429,7 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,
 	  lua_setfield(L,-2,"__ipairs");
 
     lua_pushvalue(L,-1);
+    lua_pushcclosure(L,dt_lua_autotype_inext,1);
 	  lua_setfield(L,-2,"__inext");
   }
 
