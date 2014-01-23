@@ -47,6 +47,22 @@ int dt_lua_delete_image(lua_State *L)
   return 0;
 }
 
+int dt_lua_move_image(lua_State*L) 
+{
+  dt_lua_image_t imgid = -1;
+  dt_lua_film_t filmid = -1;
+  if(luaL_testudata(L,1,"dt_lua_image_t")) {
+    luaA_to(L,dt_lua_image_t,&imgid,1);
+    luaA_to(L,dt_lua_film_t,&filmid,2);
+  } else {
+    luaA_to(L,dt_lua_film_t,&filmid,1);
+    luaA_to(L,dt_lua_image_t,&imgid,2);
+  }
+  dt_image_move(imgid,filmid);
+  return 0;
+}
+
+
 static int import_images(lua_State *L)
 {
   char* full_name= g_realpath(luaL_checkstring(L,-1));
@@ -154,6 +170,8 @@ int dt_lua_init_database(lua_State * L)
   dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
   lua_pushcfunction(L,import_images);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+  lua_pushcfunction(L,dt_lua_move_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"move_image");
 
   return 0;
 }

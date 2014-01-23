@@ -20,6 +20,7 @@
 #include "lua/film.h"
 #include "lua/types.h"
 #include "lua/image.h"
+#include "lua/database.h"
 #include "common/film.h"
 #include "common/debug.h"
 #include "common/grealpath.h"
@@ -212,6 +213,8 @@ int dt_lua_init_film(lua_State * L)
   dt_lua_init_int_type(L,dt_lua_film_t);
   dt_lua_register_type_callback_list(L,dt_lua_film_t,film_index,NULL,film_fields_name);
   dt_lua_register_type_callback_number(L,dt_lua_film_t,film_getnum,NULL,film_len);
+  lua_pushcfunction(L,dt_lua_move_image);
+  dt_lua_register_type_callback_stack(L,dt_lua_film_t,"move_image");
   luaL_getmetatable(L,"dt_lua_film_t");
   lua_pushcfunction(L,film_tostring);
   lua_setfield(L,-2,"__tostring");

@@ -265,6 +265,12 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 
 ]])
 darktable.database.duplicate:add_return(my_tostring(types.dt_lua_image_t),[[The created image if an image is imported or the toplevel film object if a film was imported.]])
+darktable.database.move_image:set_text([[Physically moves an image (and all its duplicates) to another film.]]..para()..
+[[This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film]]..para()..
+[[Note that the parameter order is not relevant.]])
+darktable.database.move_image:add_version_info("function added")
+darktable.database.move_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image to move]])
+darktable.database.move_image:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to move to]])
 
 ------------------------
 --  DARKTABLE.MODULES --
