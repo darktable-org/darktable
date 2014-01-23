@@ -45,16 +45,24 @@ typedef struct dt_iop_color_profile_t
 }
 dt_iop_color_profile_t;
 
+typedef struct dt_iop_colorin_params1_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+}
+dt_iop_colorin_params1_t;
+
 typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
+  int normalize;
 }
 dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkWidget *cbox1, *cbox2;
+  GtkWidget *cbox1, *cbox2, *cbox3;
   GList *image_profiles, *global_profiles;
   int n_image_profiles;
 }
@@ -66,10 +74,14 @@ typedef struct dt_iop_colorin_data_t
 {
   cmsHPROFILE input;
   cmsHPROFILE Lab;
-  cmsHTRANSFORM *xform;
+  cmsHPROFILE linear_rgb;
+  cmsHTRANSFORM *xform_cam_Lab;
+  cmsHTRANSFORM *xform_cam_lrgb;
+  cmsHTRANSFORM *xform_lrgb_Lab;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
   float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
+  int normalize;
 }
 dt_iop_colorin_data_t;
 
