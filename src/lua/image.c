@@ -106,6 +106,7 @@ typedef enum
   CREATE_STYLE,
   RESET,
   MOVE,
+  COPY,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -128,6 +129,7 @@ const char *image_fields_name[] =
   "create_style",
   "reset",
   "move",
+  "copy",
   NULL
 };
 static int image_index(lua_State *L)
@@ -316,6 +318,11 @@ static int image_index(lua_State *L)
     case MOVE:
       {
         lua_pushcfunction(L,dt_lua_move_image);
+        break;
+      }
+    case COPY:
+      {
+        lua_pushcfunction(L,dt_lua_copy_image);
         break;
       }
     default:

@@ -215,6 +215,8 @@ int dt_lua_init_film(lua_State * L)
   dt_lua_register_type_callback_number(L,dt_lua_film_t,film_getnum,NULL,film_len);
   lua_pushcfunction(L,dt_lua_move_image);
   dt_lua_register_type_callback_stack(L,dt_lua_film_t,"move_image");
+  lua_pushcfunction(L,dt_lua_copy_image);
+  dt_lua_register_type_callback_stack(L,dt_lua_film_t,"copy_image");
   luaL_getmetatable(L,"dt_lua_film_t");
   lua_pushcfunction(L,film_tostring);
   lua_setfield(L,-2,"__tostring");
