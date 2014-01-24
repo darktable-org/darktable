@@ -295,6 +295,66 @@ dt_colorspaces_create_adobergb_profile(void)
   return hAdobeRGB;
 }
 
+// Create the ICC virtual profile for adobe rgb space
+cmsHPROFILE
+dt_colorspaces_create_betargb_profile(void)
+{
+  cmsHPROFILE  hBetaRGB;
+
+  cmsCIEXYZTRIPLE Colorants =
+  {
+    {0.6712537, 0.3032726, 0.0000000},
+    {0.1745834, 0.6637861, 0.0407010},
+    {0.1183829, 0.0329413, 0.7845090}
+  };
+
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
+
+  transferFunction = cmsBuildGamma(NULL, 2.2);
+
+  hBetaRGB = cmsCreateProfilePlaceholder(0);
+
+  cmsSetProfileVersion(hBetaRGB, 2.1);
+
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "Beta RGB (compatible)");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "Beta RGB");
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hBetaRGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hBetaRGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hBetaRGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hBetaRGB, cmsSigDeviceModelDescTag,    mlu3);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
+
+  cmsSetDeviceClass(hBetaRGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hBetaRGB, cmsSigRgbData);
+  cmsSetPCS(hBetaRGB, cmsSigXYZData);
+
+  cmsWriteTag(hBetaRGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hBetaRGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hBetaRGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hBetaRGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hBetaRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hBetaRGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsLinkTag(hBetaRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
+  cmsLinkTag(hBetaRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
+
+  return hBetaRGB;
+}
+
+
 static cmsToneCurve*
 build_linear_gamma(void)
 {

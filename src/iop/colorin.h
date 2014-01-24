@@ -26,6 +26,8 @@
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 100
 
+#define LUT_SAMPLES 0x10000
+
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
 {
@@ -35,6 +37,16 @@ typedef enum dt_iop_color_intent_t
   DT_INTENT_ABSOLUTE_COLORIMETRIC  = INTENT_ABSOLUTE_COLORIMETRIC  // 3
 }
 dt_iop_color_intent_t;
+
+typedef enum dt_iop_color_normalize_t
+{
+  DT_NORMALIZE_OFF,
+  DT_NORMALIZE_SRGB,
+  DT_NORMALIZE_ADOBE_RGB,
+  DT_NORMALIZE_LINEAR_RGB,
+  DT_NORMALIZE_BETA_RGB
+}
+dt_iop_color_normalize_t;
 
 typedef struct dt_iop_color_profile_t
 {
@@ -68,20 +80,26 @@ typedef struct dt_iop_colorin_gui_data_t
 }
 dt_iop_colorin_gui_data_t;
 
-#define LUT_SAMPLES 0x10000
+typedef struct dt_iop_colorin_global_data_t
+{
+  int kernel_colorin_unbound;
+  int kernel_colorin_clipping;
+}
+dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
 {
   cmsHPROFILE input;
   cmsHPROFILE Lab;
-  cmsHPROFILE linear_rgb;
+  cmsHPROFILE nrgb;
   cmsHTRANSFORM *xform_cam_Lab;
-  cmsHTRANSFORM *xform_cam_lrgb;
-  cmsHTRANSFORM *xform_lrgb_Lab;
+  cmsHTRANSFORM *xform_cam_nrgb;
+  cmsHTRANSFORM *xform_nrgb_Lab;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
+  float nmatrix[9];
+  float lmatrix[9];
   float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
-  int normalize;
 }
 dt_iop_colorin_data_t;
 
