@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-25 18:45+0100\n"
-"PO-Revision-Date: 2013-11-25 19:13+0100\n"
+"POT-Creation-Date: 2014-01-23 15:29+0100\n"
+"PO-Revision-Date: 2014-01-23 15:47+0100\n"
 "Last-Translator: Dimitrios Psychogios <jinxos@linux.com>\n"
 "Language-Team: \n"
 "Language: el_GR\n"
@@ -648,77 +648,77 @@ msgstr ""
 "αδυναμία ανάκτησης παραμέτρων από το πρόσθετο μορφοποίησης, η εξαγωγή "
 "ακυρώθηκε..."
 
-#: ../src/common/collection.c:517 ../src/develop/lightroom.c:974
+#: ../src/common/collection.c:541 ../src/develop/lightroom.c:981
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:440
 #: ../src/iop/channelmixer.c:452 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:734 ../src/libs/collect.c:1255
-#: ../src/libs/collect.c:1257
+#: ../src/iop/temperature.c:758 ../src/libs/collect.c:1256
+#: ../src/libs/collect.c:1258
 msgid "red"
 msgstr "κόκκινο"
 
-#: ../src/common/collection.c:518 ../src/develop/lightroom.c:976
-#: ../src/libs/collect.c:1261 ../src/libs/collect.c:1263
+#: ../src/common/collection.c:542 ../src/develop/lightroom.c:983
+#: ../src/libs/collect.c:1262 ../src/libs/collect.c:1264
 msgid "yellow"
 msgstr "κίτρινο"
 
-#: ../src/common/collection.c:519 ../src/develop/lightroom.c:978
+#: ../src/common/collection.c:543 ../src/develop/lightroom.c:985
 #: ../src/iop/bilateral.cc:350 ../src/iop/channelmixer.c:441
 #: ../src/iop/channelmixer.c:459 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:735 ../src/libs/collect.c:1267
-#: ../src/libs/collect.c:1269
+#: ../src/iop/temperature.c:759 ../src/libs/collect.c:1268
+#: ../src/libs/collect.c:1270
 msgid "green"
 msgstr "πράσινο"
 
-#: ../src/common/collection.c:520 ../src/develop/lightroom.c:980
+#: ../src/common/collection.c:544 ../src/develop/lightroom.c:987
 #: ../src/iop/bilateral.cc:351 ../src/iop/channelmixer.c:442
 #: ../src/iop/channelmixer.c:466 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:736 ../src/libs/collect.c:1273
-#: ../src/libs/collect.c:1275
+#: ../src/iop/temperature.c:760 ../src/libs/collect.c:1274
+#: ../src/libs/collect.c:1276
 msgid "blue"
 msgstr "μπλε"
 
-#: ../src/common/collection.c:521 ../src/libs/collect.c:1279
-#: ../src/libs/collect.c:1281
+#: ../src/common/collection.c:545 ../src/libs/collect.c:1280
+#: ../src/libs/collect.c:1282
 msgid "purple"
 msgstr "μωβ"
 
 #. history
-#: ../src/common/collection.c:528 ../src/libs/collect.c:1239
-#: ../src/libs/collect.c:1241
+#: ../src/common/collection.c:552 ../src/libs/collect.c:1240
+#: ../src/libs/collect.c:1242
 msgid "altered"
 msgstr "τροποποιημένες"
 
-#: ../src/common/collection.c:751
+#: ../src/common/collection.c:801
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
 msgstr[0] "έχει επιλεγεί %d εικόνα από τις %d της τρέχουσας συλλογής"
 msgstr[1] "έχουν επιλεγεί %d εικόνες από τις %d της τρέχουσας συλλογής"
 
-#: ../src/common/darktable.c:295
+#: ../src/common/darktable.c:296
 #, c-format
 msgid "found strange path `%s'"
 msgstr "άκυρη διαδρομή %s"
 
-#: ../src/common/darktable.c:313
+#: ../src/common/darktable.c:314
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "σφάλμα κατά την φόρτωση του καταλόγου %s"
 
-#: ../src/common/darktable.c:333
+#: ../src/common/darktable.c:334
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "o τύπος του αρχείου %s είναι άγνωστος!"
 
-#: ../src/common/darktable.c:347 ../src/libs/import.c:715
+#: ../src/common/darktable.c:348 ../src/libs/import.c:711
 #, c-format
 msgid "error loading file `%s'"
 msgstr "σφάλμα κατά την φόρτωση του αρχείου %s"
 
-#: ../src/common/darktable.c:505
+#: ../src/common/darktable.c:538
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ΣΦΑΛΜΑ : άκυρος φάκελος  προσωρινών αρχείων : %s\n"
@@ -734,33 +734,33 @@ msgid_plural "importing %d images"
 msgstr[0] "εισαγωγή %d εικόνας"
 msgstr[1] "εισαγωγή %d εικόνων"
 
-#: ../src/common/film.c:523
+#: ../src/common/film.c:531
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
 "δεν είναι δυνατή η αφαίρεση φιλμ που περιέχει τοπικά αντίγραφα, τα πρωτότυπα "
 "των οποίων δεν είναι προσβάσιμα."
 
-#: ../src/common/history.c:145
+#: ../src/common/history.c:150
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "πρέπει να κάνετε αντιγραφή ιστορικού από μια εικόνα προτού κάνετε επικόλληση "
 "σε μια άλλη"
 
-#: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:579
-#: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1690
-#: ../src/develop/develop.c:1145 ../src/libs/live_view.c:406
+#: ../src/common/history.c:274 ../src/common/history.c:275
+#: ../src/common/history.c:291 ../src/common/styles.c:632
+#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1694
+#: ../src/develop/develop.c:1145 ../src/libs/live_view.c:405
 msgid "on"
 msgstr "ενεργό"
 
-#: ../src/common/history.c:269 ../src/common/history.c:270
-#: ../src/common/history.c:286 ../src/common/styles.c:579
-#: ../src/common/styles.c:581 ../src/develop/blend_gui.c:1538
-#: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
+#: ../src/common/history.c:274 ../src/common/history.c:275
+#: ../src/common/history.c:291 ../src/common/styles.c:632
+#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
+#: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1120 ../src/libs/history.c:155
-#: ../src/libs/live_view.c:405
+#: ../src/iop/vignette.c:1117 ../src/libs/history.c:155
+#: ../src/libs/live_view.c:404
 msgid "off"
 msgstr "ανενεργό"
 
@@ -768,20 +768,30 @@ msgstr "ανενεργό"
 msgid "orphaned image"
 msgstr "ορφανή εικόνα"
 
-#: ../src/common/image.c:1210 ../src/control/jobs/control_jobs.c:347
+#: ../src/common/image.c:1184
+msgid "cannot create local copy when the original file is not accessible."
+msgstr ""
+"δεν είναι δυνατή η δημιουργία τοπικού αντίγραφου όταν το πρωτότυπο δεν είναι "
+"προσβάσιμο."
+
+#: ../src/common/image.c:1198
+msgid "cannot create local copy."
+msgstr "δεν ήταν δυνατή η δημιουργία τοπικού αντίγραφου."
+
+#: ../src/common/image.c:1232 ../src/control/jobs/control_jobs.c:406
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "δεν είναι δυνατή η αφαίρεση τοπικού αντίγραφου όταν το πρωτότυπο δεν είναι "
 "προσβάσιμο."
 
-#: ../src/common/image.c:1355
+#: ../src/common/image.c:1386
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
 msgstr[0] "έγινε συγχρονισμός %d τοπικού αντιγράφου"
 msgstr[1] "έγινε συγχρονισμός %d τοπικών αντιγράφων"
 
-#: ../src/common/imageio.c:608
+#: ../src/common/imageio.c:669
 msgid ""
 "failed to allocate memory for export, please lower the threads used for "
 "export or buy more memory."
@@ -789,12 +799,12 @@ msgstr ""
 "αδυναμία κατανομής μνήμης για την εξαγωγή, παρακαλώ μειώστε τα νήματα "
 "εξαγωγής ή προσθέστε μνήμη στο σύστημά σας."
 
-#: ../src/common/imageio.c:616 ../src/common/mipmap_cache.c:1163
+#: ../src/common/imageio.c:677 ../src/common/mipmap_cache.c:1163
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "η εικόνα %s δεν είναι διαθέσιμη!"
 
-#: ../src/common/imageio.c:632
+#: ../src/common/imageio.c:693
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "δεν βρέθηκε το στυλ %s για να εφαρμοστεί κατά την εξαγωγή."
@@ -822,43 +832,43 @@ msgstr[1] "εφαρμογή κατάταξης %d σε %d εικόνες"
 msgid "no images selected to apply rating"
 msgstr "δεν έχουν επιλεγεί εικόνες για εφαρμογή κατάταξης"
 
-#: ../src/common/styles.c:110
+#: ../src/common/styles.c:156
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "υπάρχει ήδη στυλ με όνομα %s"
 
 #. freed by _destroy_style_shortcut_callback
-#: ../src/common/styles.c:228 ../src/common/styles.c:232
-#: ../src/common/styles.c:302 ../src/common/styles.c:363
-#: ../src/common/styles.c:507 ../src/common/styles.c:1018
-#: ../src/common/styles.c:1042
+#: ../src/common/styles.c:274 ../src/common/styles.c:278
+#: ../src/common/styles.c:348 ../src/common/styles.c:409
+#: ../src/common/styles.c:560 ../src/common/styles.c:1071
+#: ../src/common/styles.c:1095
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
 msgstr "στυλ/εφαρμογή %s"
 
-#: ../src/common/styles.c:309 ../src/gui/styles_dialog.c:145
+#: ../src/common/styles.c:355 ../src/gui/styles_dialog.c:145
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "δημιουργήθηκε στυλ με όνομα %s"
 
 #. fail :(
-#: ../src/common/styles.c:391 ../src/common/styles.c:410
-#: ../src/views/darkroom.c:459
+#: ../src/common/styles.c:444 ../src/common/styles.c:463
+#: ../src/views/darkroom.c:454
 msgid "no image selected!"
 msgstr "δεν επιλέχθηκε εικόνα!"
 
-#: ../src/common/styles.c:665
+#: ../src/common/styles.c:718
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "αδυναμία αντικατάστασης αρχείου στυλ %s"
 
-#: ../src/common/styles.c:671
+#: ../src/common/styles.c:724
 #, c-format
 msgid "style file for %s exists"
 msgstr "το αρχείο στυλ %s υπάρχει"
 
-#: ../src/common/styles.c:909
+#: ../src/common/styles.c:962
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "το στυλ %s εισάχθηκε με επιτυχία"
@@ -866,134 +876,136 @@ msgstr "το στυλ %s εισάχθηκε με επιτυχία"
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1461
 #: ../src/iop/clipping.c:1703 ../src/iop/clipping.c:1721
 #: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783
-#: ../src/iop/lens.c:1770 ../src/libs/export.c:642 ../src/libs/live_view.c:324
-#: ../src/libs/live_view.c:336 ../src/libs/live_view.c:354
+#: ../src/iop/lens.c:1771 ../src/libs/export.c:642 ../src/libs/live_view.c:323
+#: ../src/libs/live_view.c:335 ../src/libs/live_view.c:353
 #, c-format
 msgid "none"
 msgstr "κανένα"
 
-#: ../src/control/control.c:1450 ../src/control/control.c:1453
+#: ../src/control/control.c:949 ../src/control/control.c:952
 msgid "working.."
 msgstr "εκτέλεση..."
 
-#: ../src/control/control.c:1536
+#: ../src/control/control.c:1035
 #, c-format
 msgid "switch to %s mode"
 msgstr "μετάβαση σε λειτουργία %s"
 
-#: ../src/control/jobs/camera_jobs.c:35
-#, c-format
-msgid "importing image %s"
-msgstr "εισαγωγή εικόνας %s"
+#: ../src/control/crawler.c:234
+msgid "path"
+msgstr "διαδρομή"
 
-#: ../src/control/jobs/camera_jobs.c:67
+#: ../src/control/crawler.c:240
+msgid "xmp timestamp"
+msgstr "χρονοσήμανση xmp"
+
+#: ../src/control/crawler.c:246
+msgid "database timestamp"
+msgstr "χρονοσήμανση βάσης"
+
+#: ../src/control/crawler.c:260
+msgid "updated xmp sidecar files found"
+msgstr "βρέθηκαν ανανεωμένα αρχεία xmp"
+
+#: ../src/control/crawler.c:262
+msgid "reload xmp files"
+msgstr "επαναφόρτωση αρχείων xmp"
+
+#: ../src/control/crawler.c:263
+msgid "overwrite xmp files"
+msgstr "αντικατάσταση αρχείων xmp"
+
+#: ../src/control/jobs/camera_jobs.c:85
 #, c-format
 msgid "capturing %d image"
 msgid_plural "capturing %d images"
 msgstr[0] "λήψη %d εικόνας"
 msgstr[1] "λήψη %d εικόνων"
 
-#: ../src/control/jobs/camera_jobs.c:100
+#: ../src/control/jobs/camera_jobs.c:131
 msgid "please set your camera to manual mode first!"
 msgstr "παρακαλούμε θέστε τη μηχανή σας σε χειροκίνητη λειτουργία πρώτα!"
 
-#: ../src/control/jobs/camera_jobs.c:292
+#: ../src/control/jobs/camera_jobs.c:271
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d εισάχθηκαν σε %s"
 
-#: ../src/control/jobs/camera_jobs.c:357
-msgid ""
-"couldn't expand to a unique filename for import, please check your import "
-"settings."
-msgstr ""
-"δεν ήταν δυνατή η επέκταση μοναδικού ονόματος αρχείου για εισαγωγή, παρακαλώ "
-"ελέγξτε τις ρυθμίσεις σας."
-
-#: ../src/control/jobs/camera_jobs.c:386
+#: ../src/control/jobs/camera_jobs.c:283
 msgid "starting to import images from camera"
 msgstr "έναρξη εισαγωγής εικόνων από μηχανή"
 
-#: ../src/control/jobs/camera_jobs.c:406
-#, c-format
-msgid "failed to create import path `%s', import aborted."
-msgstr "αδυναμία δημιουργίας φακέλου %s, η εισαγωγή ακυρώθηκε"
-
-#: ../src/control/jobs/camera_jobs.c:415
+#: ../src/control/jobs/camera_jobs.c:293
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
 msgstr[0] "εισαγωγή %d εικόνας από μηχανή"
 msgstr[1] "εισαγωγή %d εικόνων από μηχανή"
 
-#: ../src/control/jobs/camera_jobs.c:437
-msgid "failed to create filmroll for camera import, import aborted."
-msgstr "αδυναμία δημιουργίας φιλμ για εισαγωγή, η εισαγωγή ακυρώθηκε."
-
-#: ../src/control/jobs/control_jobs.c:124
+#: ../src/control/jobs/control_jobs.c:136
 #, c-format
 msgid "merging %d image"
 msgid_plural "merging %d images"
 msgstr[0] "συγχώνευση %d εικόνας"
 msgstr[1] "συγχώνευση %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:145
+#: ../src/control/jobs/control_jobs.c:157
 msgid "exposure bracketing only works on raw images"
 msgstr ""
 "η λειτουργία διαστημάτων έκθεσης (bracketing) εφαρμόζεται μόνο σε εικόνες raw"
 
-#: ../src/control/jobs/control_jobs.c:154
+#: ../src/control/jobs/control_jobs.c:166
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "σφάλμα λήψης του raw buffer από την εικόνα %s"
 
-#: ../src/control/jobs/control_jobs.c:173
+#: ../src/control/jobs/control_jobs.c:185
 msgid "images have to be of same size!"
 msgstr "οι εικόνες πρέπει να έχουν το ίδιο μέγεθος!"
 
-#: ../src/control/jobs/control_jobs.c:249
+#: ../src/control/jobs/control_jobs.c:261
 #, c-format
 msgid "wrote merged HDR `%s'"
 msgstr "εγγραφή συγχωνευμένου HDR %s"
 
-#: ../src/control/jobs/control_jobs.c:275
+#: ../src/control/jobs/control_jobs.c:287
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "δημιουργία %d διπλότυπου"
 msgstr[1] "δημιουργία %d διπλοτύπων"
 
-#: ../src/control/jobs/control_jobs.c:301
+#: ../src/control/jobs/control_jobs.c:313
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "αναστροφή %d εικόνας"
 msgstr[1] "αναστροφή %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:324
+#: ../src/control/jobs/control_jobs.c:383
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "αφαίρεση %d εικόνας"
 msgstr[1] "αφαίρεση %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:400
+#: ../src/control/jobs/control_jobs.c:455
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "διαγραφή %d εικόνας"
 msgstr[1] "διαγραφή %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:549
+#: ../src/control/jobs/control_jobs.c:596
 msgid "failed to parse GPX file"
 msgstr "αποτυχία φόρτωσης αρχείου GPX"
 
-#: ../src/control/jobs/control_jobs.c:616
+#: ../src/control/jobs/control_jobs.c:663
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "έγινε εφαρμογή θέσης GPX σε %d εικόνα(ες)"
 
-#: ../src/control/jobs/control_jobs.c:777
+#: ../src/control/jobs/control_jobs.c:824
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1001,11 +1013,11 @@ msgid_plural ""
 msgstr[0] "θέλετε σίγουρα να αφαιρέσετε %d επιλεγμένη εικόνα από τη συλλογή;"
 msgstr[1] "θέλετε σίγουρα να αφαιρέσετε %d επιλεγμένες εικόνες από τη συλλογή;"
 
-#: ../src/control/jobs/control_jobs.c:780
+#: ../src/control/jobs/control_jobs.c:827
 msgid "remove images?"
 msgstr "αφαίρεση εικόνων;"
 
-#: ../src/control/jobs/control_jobs.c:806
+#: ../src/control/jobs/control_jobs.c:853
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1013,24 +1025,24 @@ msgid_plural ""
 msgstr[0] "θέλετε σίγουρα να διαγράψετε %d επιλεγμένη εικόνα από το δίσκο;"
 msgstr[1] "θέλετε σίγουρα να διαγράψετε %d επιλεγμένες εικόνες από το δίσκο;"
 
-#: ../src/control/jobs/control_jobs.c:809
+#: ../src/control/jobs/control_jobs.c:856
 msgid "delete images?"
 msgstr "διαγραφή εικόνων;"
 
-#: ../src/control/jobs/control_jobs.c:842
+#: ../src/control/jobs/control_jobs.c:889
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "αδυναμία δημιουργίας φιλμ στο φάκελο προορισμού, ακύρωση μετακίνησης..."
 
-#: ../src/control/jobs/control_jobs.c:875
-#: ../src/control/jobs/control_jobs.c:932 ../src/imageio/storage/disk.c:68
-#: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/gallery.c:79
+#: ../src/control/jobs/control_jobs.c:922
+#: ../src/control/jobs/control_jobs.c:979 ../src/imageio/storage/disk.c:70
+#: ../src/imageio/storage/disk.c:126 ../src/imageio/storage/gallery.c:79
 #: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
 #: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "επιλογή καταλόγου"
 
-#: ../src/control/jobs/control_jobs.c:898
+#: ../src/control/jobs/control_jobs.c:945
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1045,174 +1057,179 @@ msgstr[1] ""
 "είστε σίγουροι ότι επιθυμείτε τη μετακίνηση %d επιλεγμένων εικόνων σε %s;\n"
 "(όλα τα μη επιλεγμένα διπλότυπα τους θα μετακινηθούν επίσης)"
 
-#: ../src/control/jobs/control_jobs.c:902
+#: ../src/control/jobs/control_jobs.c:949
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "μετακίνηση εικόνας;"
 msgstr[1] "μετακίνηση εικόνων;"
 
-#: ../src/control/jobs/control_jobs.c:955
+#: ../src/control/jobs/control_jobs.c:1002
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
 msgstr[0] "θέλετε σίγουρα να αντιγράψετε %d επιλεγμένη εικόνα στο %s;"
 msgstr[1] "θέλετε σίγουρα να αντιγράψετε %d επιλεγμένες εικόνες στο %s;"
 
-#: ../src/control/jobs/control_jobs.c:958
+#: ../src/control/jobs/control_jobs.c:1005
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "αντιγραφή εικόνας;"
 msgstr[1] "αντιγραφή εικόνων;"
 
-#: ../src/control/jobs/control_jobs.c:1023
+#: ../src/control/jobs/control_jobs.c:1070
 #, c-format
 msgid "moving %d image"
 msgstr "μετακίνηση %d εικόνας"
 
-#: ../src/control/jobs/control_jobs.c:1023
+#: ../src/control/jobs/control_jobs.c:1070
 #, c-format
 msgid "moving %d images"
 msgstr "μετακίνηση %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:1029
+#: ../src/control/jobs/control_jobs.c:1076
 #, c-format
 msgid "copying %d image"
 msgstr "αντιγραφή %d εικόνας"
 
-#: ../src/control/jobs/control_jobs.c:1029
+#: ../src/control/jobs/control_jobs.c:1076
 #, c-format
 msgid "copying %d images"
 msgstr "αντιγραφή %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:1044
+#: ../src/control/jobs/control_jobs.c:1091
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "δημιουργία τοπικού αντίγραφου %d εικόνας"
 msgstr[1] "δημιουργία τοπικών αντιγράφων %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:1046
+#: ../src/control/jobs/control_jobs.c:1093
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "αφαίρεση τοπικού αντίγραφου %d εικόνας"
 msgstr[1] "αφαίρεση τοπικών αντιγράφων %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:1109
+#: ../src/control/jobs/control_jobs.c:1155
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "αδυναμία ανάκτησης παραμέτρων από το πρόσθετο αποθήκευσης %s, η εξαγωγή "
 "ακυρώθηκε..."
 
-#: ../src/control/jobs/control_jobs.c:1113
+#: ../src/control/jobs/control_jobs.c:1167
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "εξαγωγή %d εικόνας"
 msgstr[1] "εξαγωγή %d εικόνων"
 
-#: ../src/control/jobs/control_jobs.c:1115
+#: ../src/control/jobs/control_jobs.c:1169
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "εξαγωγή %d εικόνας σε %s"
 msgstr[1] "εξαγωγή %d εικόνων σε %s"
 
-#: ../src/control/jobs/control_jobs.c:1179 ../src/views/darkroom.c:472
+#: ../src/control/jobs/control_jobs.c:1233 ../src/views/darkroom.c:467
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "η εικόνα %s δεν είναι διαθέσιμη"
 
-#: ../src/control/jobs/control_jobs.c:1259
+#: ../src/control/jobs/control_jobs.c:1314
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "προσθήκη χρονικής απόκλισης σε %d εικόνα"
 msgstr[1] "προσθήκη χρονικής απόκλισης σε %d εικόνες"
 
-#: ../src/control/jobs/control_jobs.c:1279
+#: ../src/control/jobs/control_jobs.c:1334
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "έγινε προσθήκη χρονικής απόκλισης σε %d εικόνα(ες)"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/control/jobs/image_jobs.c:61
+#, c-format
+msgid "importing image %s"
+msgstr "εισαγωγή εικόνας %s"
+
+#: ../src/develop/blend_gui.c:949
 msgid "sliders for L channel"
 msgstr "ολισθητές καναλιού L"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:949
 msgid "sliders for a channel"
 msgstr "ολισθητές καναλιού a"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:949
 msgid "sliders for b channel"
 msgstr "ολισθητές καναλιού b"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:949
 msgid "sliders for chroma channel (of LCh)"
 msgstr "ολισθητές καναλιού χρώματος (σε LCh)"
 
-#: ../src/develop/blend_gui.c:944
+#: ../src/develop/blend_gui.c:949
 msgid "sliders for hue channel (of LCh)"
 msgstr "ολισθητές καναλιού τόνων (σε LCh)"
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:945
+#: ../src/develop/blend_gui.c:950
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:951
 msgid "sliders for gray value"
 msgstr "ολισθητές τιμής γκρίζου"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:951
 msgid "sliders for red channel"
 msgstr "ολισθητές κόκκινου καναλιού"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:951
 msgid "sliders for green channel"
 msgstr "ολισθητές πράσινου καναλιού"
 
-#: ../src/develop/blend_gui.c:946
+#: ../src/develop/blend_gui.c:951
 msgid "sliders for blue channel"
 msgstr "ολισθητές μπλέ καναλιού"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:952
 msgid "sliders for hue channel (of HSL)"
 msgstr "ολισθητές καναλιού τόνων (σε HSL)"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:952
 msgid "sliders for chroma channel (of HSL)"
 msgstr "ολισθητές καναλιού χρώματος (σε HSL)"
 
-#: ../src/develop/blend_gui.c:947
+#: ../src/develop/blend_gui.c:952
 msgid "sliders for value channel (of HSL)"
 msgstr "ολισθητές καναλιού τιμής (σε HSL)"
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:955
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1224,7 +1241,7 @@ msgstr ""
 "* έκταση ορισμένη από τα κάτω σημεία: να μην γίνει μίξη\n"
 "* έκταση ανάμεσα σε διαδοχικά άνω/κάτω σημεία: σταδιακή μίξη "
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:957
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1236,251 +1253,250 @@ msgstr ""
 "* έκταση ορισμένη από τα κάτω σημεία: να μην γίνει μίξη\n"
 "* έκταση ανάμεσα σε διαδοχικά άνω/κάτω σημεία: σταδιακή μίξη"
 
-#: ../src/develop/blend_gui.c:1071 ../src/iop/colorzones.c:1041
-#: ../src/iop/tonecurve.c:515
+#: ../src/develop/blend_gui.c:1076 ../src/iop/colorzones.c:1041
+#: ../src/iop/tonecurve.c:620
 msgid "pick GUI color from image"
 msgstr "επιλογή χρώματος εφαρμογής από εικόνα"
 
-#: ../src/develop/blend_gui.c:1074
+#: ../src/develop/blend_gui.c:1079
 msgid "reset blend mask settings"
 msgstr "ακύρωση επιλογών μασκών μίξης"
 
-#: ../src/develop/blend_gui.c:1077
+#: ../src/develop/blend_gui.c:1082
 msgid "invert all channel's polarities"
 msgstr "αναστροφή πολικότητας σε όλα τα κανάλια"
 
-#: ../src/develop/blend_gui.c:1088 ../src/develop/blend_gui.c:1091
+#: ../src/develop/blend_gui.c:1093 ../src/develop/blend_gui.c:1096
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "εναλλαγή πολικότητας. φαίνεται καλύτερα με 'εμφάνιση μάσκας'"
 
-#: ../src/develop/blend_gui.c:1100
+#: ../src/develop/blend_gui.c:1105
 msgid "output"
 msgstr "έξοδος"
 
-#: ../src/develop/blend_gui.c:1111
+#: ../src/develop/blend_gui.c:1116
 msgid "input"
 msgstr "είσοδος"
 
-#: ../src/develop/blend_gui.c:1122 ../src/develop/blend_gui.c:1123
+#: ../src/develop/blend_gui.c:1127 ../src/develop/blend_gui.c:1128
 msgid "double click to reset"
 msgstr "διπλό κλικ για επαναφορά"
 
-#: ../src/develop/blend_gui.c:1183 ../src/develop/masks/masks.c:1378
+#: ../src/develop/blend_gui.c:1188
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d σχήμα σε χρήση"
 msgstr[1] "%d σχήματα σε χρήση"
 
-#: ../src/develop/blend_gui.c:1188 ../src/develop/blend_gui.c:1234
-#: ../src/develop/masks/masks.c:1381
+#: ../src/develop/blend_gui.c:1193 ../src/develop/blend_gui.c:1239
 msgid "no mask used"
 msgstr "δεν υπάρχει μάσκα"
 
-#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1536
-#: ../src/develop/blend_gui.c:1570 ../src/develop/blend_gui.c:1655
-#: ../src/develop/blend_gui.c:1664 ../src/develop/blend_gui.c:1685
-#: ../src/develop/blend_gui.c:1701
+#: ../src/develop/blend_gui.c:1238 ../src/develop/blend_gui.c:1540
+#: ../src/develop/blend_gui.c:1574 ../src/develop/blend_gui.c:1659
+#: ../src/develop/blend_gui.c:1668 ../src/develop/blend_gui.c:1689
+#: ../src/develop/blend_gui.c:1705
 msgid "blend"
 msgstr "μίξη"
 
-#: ../src/develop/blend_gui.c:1233 ../src/develop/blend_gui.c:1546
+#: ../src/develop/blend_gui.c:1238 ../src/develop/blend_gui.c:1550
 msgid "drawn mask"
 msgstr "σχεδιασμένη μάσκα"
 
-#: ../src/develop/blend_gui.c:1242
+#: ../src/develop/blend_gui.c:1247
 msgid "show and edit mask elements"
 msgstr "εμφάνιση και επεξεργασία στοιχείων μασκών"
 
-#: ../src/develop/blend_gui.c:1248
+#: ../src/develop/blend_gui.c:1253
 msgid "toggle polarity of drawn mask"
 msgstr "εναλλαγή πολικότητας σχεδιαζόμενης μάσκας"
 
-#: ../src/develop/blend_gui.c:1256 ../src/libs/masks.c:885
-#: ../src/libs/masks.c:921 ../src/libs/masks.c:1479
+#: ../src/develop/blend_gui.c:1261 ../src/libs/masks.c:908
+#: ../src/libs/masks.c:944 ../src/libs/masks.c:1499
 msgid "add gradient"
 msgstr "προσθήκη διαβάθμισης"
 
-#: ../src/develop/blend_gui.c:1263 ../src/iop/spots.c:558
-#: ../src/libs/masks.c:881 ../src/libs/masks.c:917 ../src/libs/masks.c:1486
+#: ../src/develop/blend_gui.c:1268 ../src/iop/spots.c:558
+#: ../src/libs/masks.c:904 ../src/libs/masks.c:940 ../src/libs/masks.c:1506
 msgid "add path"
 msgstr "προσθήκη διαδρομής"
 
-#: ../src/develop/blend_gui.c:1270 ../src/iop/spots.c:565
-#: ../src/libs/masks.c:877 ../src/libs/masks.c:913 ../src/libs/masks.c:1493
+#: ../src/develop/blend_gui.c:1275 ../src/iop/spots.c:565
+#: ../src/libs/masks.c:900 ../src/libs/masks.c:936 ../src/libs/masks.c:1513
 msgid "add ellipse"
 msgstr "προσθήκη έλλειψης"
 
-#: ../src/develop/blend_gui.c:1277 ../src/iop/spots.c:572
-#: ../src/libs/masks.c:873 ../src/libs/masks.c:909 ../src/libs/masks.c:1500
+#: ../src/develop/blend_gui.c:1282 ../src/iop/spots.c:572
+#: ../src/libs/masks.c:896 ../src/libs/masks.c:932 ../src/libs/masks.c:1520
 msgid "add circle"
 msgstr "προσθήκη κύκλου"
 
-#: ../src/develop/blend_gui.c:1284 ../src/libs/masks.c:905
-#: ../src/libs/masks.c:1507
+#: ../src/develop/blend_gui.c:1289 ../src/libs/masks.c:928
+#: ../src/libs/masks.c:1527
 msgid "add brush"
 msgstr "προσθήκη πινελιάς"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:377
+#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:376
 msgctxt "blendmode"
 msgid "normal"
 msgstr "κανονική"
 
-#: ../src/develop/blend_gui.c:1503
+#: ../src/develop/blend_gui.c:1507
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "κανονική με όριο"
 
-#: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:386
+#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:385
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "φωτισμός"
 
-#: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:384
 msgctxt "blendmode"
 msgid "darken"
 msgstr "σκίαση"
 
-#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:382
+#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:381
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "πολλαπλασιασμός"
 
-#: ../src/develop/blend_gui.c:1507
+#: ../src/develop/blend_gui.c:1511
 msgctxt "blendmode"
 msgid "average"
 msgstr "μέσος όρος"
 
-#: ../src/develop/blend_gui.c:1508
+#: ../src/develop/blend_gui.c:1512
 msgctxt "blendmode"
 msgid "addition"
 msgstr "πρόσθεση"
 
-#: ../src/develop/blend_gui.c:1509
+#: ../src/develop/blend_gui.c:1513
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "αφαίρεση"
 
-#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "difference"
 msgstr "διαφορά"
 
-#: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:382
 msgctxt "blendmode"
 msgid "screen"
 msgstr "οθόνη"
 
-#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:384
+#: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:383
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "επικάλυψη"
 
-#: ../src/develop/blend_gui.c:1513
+#: ../src/develop/blend_gui.c:1517
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "απαλό φως"
 
-#: ../src/develop/blend_gui.c:1514
+#: ../src/develop/blend_gui.c:1518
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "σκληρό φως"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1519
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "ζωηρό φως"
 
-#: ../src/develop/blend_gui.c:1516
+#: ../src/develop/blend_gui.c:1520
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "γραμμικό φως"
 
-#: ../src/develop/blend_gui.c:1517
+#: ../src/develop/blend_gui.c:1521
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "pinlight"
 
-#: ../src/develop/blend_gui.c:1518
+#: ../src/develop/blend_gui.c:1522
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "φωτισμός"
 
-#: ../src/develop/blend_gui.c:1519
+#: ../src/develop/blend_gui.c:1523
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/develop/blend_gui.c:1520
+#: ../src/develop/blend_gui.c:1524
 msgctxt "blendmode"
 msgid "hue"
 msgstr "απόχρωση"
 
-#: ../src/develop/blend_gui.c:1521
+#: ../src/develop/blend_gui.c:1525
 msgctxt "blendmode"
 msgid "color"
 msgstr "χρώμα"
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1526
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "ρύθμιση χρώματος"
 
-#: ../src/develop/blend_gui.c:1523
+#: ../src/develop/blend_gui.c:1527
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "φωτεινότητα Lab"
 
-#: ../src/develop/blend_gui.c:1524
+#: ../src/develop/blend_gui.c:1528
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "χρώμα Lab"
 
-#: ../src/develop/blend_gui.c:1525
+#: ../src/develop/blend_gui.c:1529
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "φωτεινότητα HSV"
 
-#: ../src/develop/blend_gui.c:1526
+#: ../src/develop/blend_gui.c:1530
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "χρώμα HSV"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1529
+#: ../src/develop/blend_gui.c:1533
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "διαφορά (παρωχημένο)"
 
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1534
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "αντίθετη (παρωχημένο)"
 
-#: ../src/develop/blend_gui.c:1531
+#: ../src/develop/blend_gui.c:1535
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "κανονική (παρωχημένο)"
 
-#: ../src/develop/blend_gui.c:1532
+#: ../src/develop/blend_gui.c:1536
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "απεριόριστη (παρωχημένο)"
 
-#: ../src/develop/blend_gui.c:1541
+#: ../src/develop/blend_gui.c:1545
 msgid "uniformly"
 msgstr "ομοιόμορφα"
 
-#: ../src/develop/blend_gui.c:1552
+#: ../src/develop/blend_gui.c:1556
 msgid "parametric mask"
 msgstr "παραμετρική μάσκα"
 
-#: ../src/develop/blend_gui.c:1558
+#: ../src/develop/blend_gui.c:1562
 msgid "drawn & parametric mask"
 msgstr "σχεδιασμένη και παραμετρική μάσκα"
 
-#: ../src/develop/blend_gui.c:1563
+#: ../src/develop/blend_gui.c:1567
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1488,83 +1504,83 @@ msgstr ""
 "ενεργοποίηση μίξης: ομοιόμορφα, με σχεδιασμένη ή παραμετρική μάσκα, ή "
 "συνδυασμό και των δύο μαζί"
 
-#: ../src/develop/blend_gui.c:1570
+#: ../src/develop/blend_gui.c:1574
 msgid "blend mode"
 msgstr "λειτουργία μίξης"
 
-#: ../src/develop/blend_gui.c:1571
+#: ../src/develop/blend_gui.c:1575
 msgid "choose blending mode"
 msgstr "επιλέξτε τρόπο μίξης"
 
-#: ../src/develop/blend_gui.c:1655 ../src/iop/watermark.c:1042
+#: ../src/develop/blend_gui.c:1659 ../src/iop/watermark.c:1042
 msgid "opacity"
 msgstr "αδιαφάνεια"
 
-#: ../src/develop/blend_gui.c:1658
+#: ../src/develop/blend_gui.c:1662
 msgid "set the opacity of the blending"
 msgstr "ορίστε την αδιαφάνεια μίξης"
 
-#: ../src/develop/blend_gui.c:1664
+#: ../src/develop/blend_gui.c:1668
 msgid "combine masks"
 msgstr "συνδυασμός μασκών"
 
-#: ../src/develop/blend_gui.c:1666
+#: ../src/develop/blend_gui.c:1670
 msgid "exclusive"
 msgstr "αποκλειστική"
 
-#: ../src/develop/blend_gui.c:1669
+#: ../src/develop/blend_gui.c:1673
 msgid "inclusive"
 msgstr "περιληπτική"
 
-#: ../src/develop/blend_gui.c:1672
+#: ../src/develop/blend_gui.c:1676
 msgid "exclusive & inverted"
 msgstr "αποκλειστική και ανάστροφη"
 
-#: ../src/develop/blend_gui.c:1675
+#: ../src/develop/blend_gui.c:1679
 msgid "inclusive & inverted"
 msgstr "περιληπτική και ανάστροφη"
 
-#: ../src/develop/blend_gui.c:1679
+#: ../src/develop/blend_gui.c:1683
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr ""
 "ο τρόπος συνδυασμού της μάσκας με τα διάφορα κανάλια της παραμετρικής μάσκας"
 
-#: ../src/develop/blend_gui.c:1685
+#: ../src/develop/blend_gui.c:1689
 msgid "invert mask"
 msgstr "αναστροφή μάσκας"
 
-#: ../src/develop/blend_gui.c:1694
+#: ../src/develop/blend_gui.c:1698
 msgid "apply mask in normal or inverted mode"
 msgstr "εφαρμογή μάσκας σε απλή ή ανάστροφη λειτουργία"
 
-#: ../src/develop/blend_gui.c:1701
+#: ../src/develop/blend_gui.c:1705
 msgid "mask blur"
 msgstr "θόλωση μάσκας"
 
-#: ../src/develop/blend_gui.c:1703
+#: ../src/develop/blend_gui.c:1707
 msgid "radius for gaussian blur of blend mask"
 msgstr "ακτίνα θόλωσης gaussian της μάσκας μίξης"
 
-#: ../src/develop/blend_gui.c:1709
+#: ../src/develop/blend_gui.c:1713
 msgid "display mask"
 msgstr "μάσκα προβολής"
 
-#: ../src/develop/blend_gui.c:1716
+#: ../src/develop/blend_gui.c:1720
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "προσωρινή απενεργοποίηση της μάσκας μίξης. Μόνο στο τρέχον πρόσθετο"
 
 #. printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
 #. printf("xoffs %d, yoffs %d, out %d, %d, in %d, %d\n", xoffs, yoffs, roi_out->width, roi_out->height, roi_in->width, roi_in->height);
-#: ../src/develop/blend.c:1929 ../src/develop/blend.c:2223
+#: ../src/develop/blend.c:1930 ../src/develop/blend.c:2249
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr ""
 "παράλειψη μίξης στο πρόσθετο %s: οι περιοχές ενδιαφέροντος (ROI) δεν "
 "ταιριάζουν"
 
-#: ../src/develop/blend.c:2028 ../src/develop/blend.c:2268
+#: ../src/develop/blend.c:2047 ../src/develop/blend.c:2295
 msgid "could not allocate buffer for blending"
 msgstr "αδυναμία διάθεσης μνήμης για μίξη."
 
@@ -1573,91 +1589,91 @@ msgstr "αδυναμία διάθεσης μνήμης για μίξη."
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: πρόσθετο %s σφάλμα έκδοσης: %d != %d"
 
-#: ../src/develop/imageop.c:296 ../src/develop/imageop.c:304
+#: ../src/develop/imageop.c:213 ../src/develop/imageop.c:221
 msgid "error creating GUI, see stderr"
 msgstr "σφάλμα κατά τη δημιουργία του περιβάλλοντος εργασίας, δείτε stderr"
 
 #. should never happen
-#: ../src/develop/imageop.c:379
+#: ../src/develop/imageop.c:296
 msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
 msgstr "σφάλμα δημιουργίας περιβ. εργασίας, δεν βρέθηκε: DT_SIMPLE_GUI_NONE"
 
-#: ../src/develop/imageop.c:1179
+#: ../src/develop/imageop.c:1103
 msgid "new instance"
 msgstr "νέα μονάδα"
 
-#: ../src/develop/imageop.c:1184
+#: ../src/develop/imageop.c:1108
 msgid "duplicate instance"
 msgstr "αντιγραφή μονάδας"
 
-#: ../src/develop/imageop.c:1189 ../src/libs/masks.c:1040
+#: ../src/develop/imageop.c:1113 ../src/libs/masks.c:1063
 msgid "move up"
 msgstr "μετακίνηση πάνω"
 
-#: ../src/develop/imageop.c:1195 ../src/libs/masks.c:1043
+#: ../src/develop/imageop.c:1119 ../src/libs/masks.c:1066
 msgid "move down"
 msgstr "μετακίνηση κάτω"
 
 #. delete
-#: ../src/develop/imageop.c:1201 ../src/libs/image.c:146
-#: ../src/libs/styles.c:396 ../src/libs/tagging.c:494
+#: ../src/develop/imageop.c:1125 ../src/libs/image.c:146
+#: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "διαγραφή"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
+#: ../src/develop/imageop.c:1147 ../src/develop/imageop.c:2029
 #, c-format
 msgid "%s is switched on"
 msgstr "%s είναι ενεργοποιημένο"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2089
+#: ../src/develop/imageop.c:1147 ../src/develop/imageop.c:2029
 #, c-format
 msgid "%s is switched off"
 msgstr "%s είναι απενεργοποιημένο"
 
-#: ../src/develop/imageop.c:1453 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1399 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
-#: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:197
-#: ../src/gui/presets.c:299 ../src/gui/presets.c:604
-#: ../src/iop/temperature.c:746 ../src/libs/import.c:491 ../src/libs/lib.c:291
+#: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:176
+#: ../src/gui/presets.c:278 ../src/gui/presets.c:583
+#: ../src/iop/temperature.c:770 ../src/libs/import.c:487 ../src/libs/lib.c:291
 #: ../src/libs/lib.c:320 ../src/libs/lib.c:983
 msgid "preset"
 msgstr "προεπιλογή"
 
-#: ../src/develop/imageop.c:1496
+#: ../src/develop/imageop.c:1442
 msgctxt "accel"
 msgid "fusion"
 msgstr "συγχώνευση"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1501
+#: ../src/develop/imageop.c:1447
 msgctxt "accel"
 msgid "show module"
 msgstr "εμφάνιση πρόσθετου"
 
-#: ../src/develop/imageop.c:1502
+#: ../src/develop/imageop.c:1448
 msgctxt "accel"
 msgid "enable module"
 msgstr "ενεργοποίηση πρόσθετου"
 
-#: ../src/develop/imageop.c:1505 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1451 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "επαναφορά παραμέτρων προσθέτων"
 
-#: ../src/develop/imageop.c:1507 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1453 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "εμφάνιση καταλόγου προεπιλογών"
 
-#: ../src/develop/imageop.c:2059
+#: ../src/develop/imageop.c:1999
 msgid "multiple instances actions"
 msgstr "ενέργειες πολλαπλών instance"
 
-#: ../src/develop/imageop.c:2068 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2008 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "επαναφορά παραμέτρων"
 
-#: ../src/develop/imageop.c:2077 ../src/gui/preferences.c:404
+#: ../src/develop/imageop.c:2017 ../src/gui/preferences.c:405
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "προεπιλογές"
@@ -1666,31 +1682,31 @@ msgstr "προεπιλογές"
 msgid "cannot find lightroom XMP!"
 msgstr "αδυναμία εύρεσης lightroom XMP!"
 
-#: ../src/develop/lightroom.c:434 ../src/develop/lightroom.c:456
-#: ../src/develop/lightroom.c:476 ../src/develop/lightroom.c:486
-#: ../src/develop/lightroom.c:507
+#: ../src/develop/lightroom.c:441 ../src/develop/lightroom.c:463
+#: ../src/develop/lightroom.c:483 ../src/develop/lightroom.c:493
+#: ../src/develop/lightroom.c:514
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "το %s δεν είναι αρχείο lightroom XMP!"
 
-#: ../src/develop/lightroom.c:1413 ../src/libs/import.c:515
+#: ../src/develop/lightroom.c:1420 ../src/libs/import.c:511
 msgid "tags"
 msgstr "ετικέτες"
 
-#: ../src/develop/lightroom.c:1422 ../src/libs/tools/filter.c:128
+#: ../src/develop/lightroom.c:1429 ../src/libs/tools/filter.c:149
 msgid "rating"
 msgstr "βαθμολόγηση"
 
-#: ../src/develop/lightroom.c:1431 ../src/libs/geotagging.c:45
+#: ../src/develop/lightroom.c:1438 ../src/libs/geotagging.c:45
 msgid "geotagging"
 msgstr "geotagging"
 
-#: ../src/develop/lightroom.c:1440 ../src/libs/collect.h:37
-#: ../src/libs/tools/filter.c:130
+#: ../src/develop/lightroom.c:1447 ../src/libs/collect.h:37
+#: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "χρωματική ετικέτα"
 
-#: ../src/develop/lightroom.c:1450
+#: ../src/develop/lightroom.c:1457
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -1704,7 +1720,7 @@ msgstr ""
 "ο ορισμός πλακιδίων απέτυχε για το πρόσθετο %s.  Το αποτέλεσμα ίσως είναι "
 "διαστρεβλωμένο."
 
-#: ../src/develop/pixelpipe_hb.c:2163
+#: ../src/develop/pixelpipe_hb.c:2169
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -1770,61 +1786,57 @@ msgstr "lua"
 msgid "deleting preset for obsolete module"
 msgstr "διαγραφή προεπιλογής παρωχημένου πρόσθετου"
 
-#: ../src/gui/camera_import_dialog.c:231
+#: ../src/gui/camera_import_dialog.c:184
 msgid "store value as default"
 msgstr "αποθήκευση τιμής ως προεπιλογή"
 
-#: ../src/gui/camera_import_dialog.c:238
+#: ../src/gui/camera_import_dialog.c:191
 msgid "reset value to default"
 msgstr "επαναφορά προεπιλεγμένης τιμής"
 
-#: ../src/gui/camera_import_dialog.c:262
+#: ../src/gui/camera_import_dialog.c:215
 msgid "import images from camera"
 msgstr "εισαγωγή εικόνων από μηχανή"
 
-#: ../src/gui/camera_import_dialog.c:262
+#: ../src/gui/camera_import_dialog.c:215
 msgid "cancel"
 msgstr "ακύρωση"
 
-#: ../src/gui/camera_import_dialog.c:262
+#: ../src/gui/camera_import_dialog.c:215
 msgctxt "camera import"
 msgid "import"
 msgstr "εισαγωγή"
 
-#: ../src/gui/camera_import_dialog.c:270
-msgid "my jobcode"
-msgstr "η εργασία μου"
-
 #. Top info
-#: ../src/gui/camera_import_dialog.c:278
+#: ../src/gui/camera_import_dialog.c:226
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr ""
 "παρακαλώ περιμένετε όσο γίνεται φόρτωση μικρογραφιών εικόνων από τη μηχανή..."
 
 #. jobcode
-#: ../src/gui/camera_import_dialog.c:284 ../src/libs/capture.c:130
+#: ../src/gui/camera_import_dialog.c:232 ../src/libs/session.c:104
 msgid "jobcode"
 msgstr "εργασία"
 
-#: ../src/gui/camera_import_dialog.c:296
+#: ../src/gui/camera_import_dialog.c:244
 msgid "thumbnail"
 msgstr "μικρογραφία"
 
-#: ../src/gui/camera_import_dialog.c:300
+#: ../src/gui/camera_import_dialog.c:248
 msgid "storage file"
 msgstr "αρχείο αποθήκευσης"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:319
+#: ../src/gui/camera_import_dialog.c:267
 msgid "general"
 msgstr "γενικά"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:322 ../src/libs/import.c:402
+#: ../src/gui/camera_import_dialog.c:270 ../src/libs/import.c:398
 msgid "ignore JPEG files"
 msgstr "αγνόηση αρχείων JPEG"
 
-#: ../src/gui/camera_import_dialog.c:323 ../src/libs/import.c:403
+#: ../src/gui/camera_import_dialog.c:271 ../src/libs/import.c:399
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -1832,11 +1844,11 @@ msgstr ""
 "να μην γίνεται φόρτωση αρχείων με επέκταση .jpg ή .jpeg. Αυτό μπορεί να "
 "είναι χρήσιμο αν υπάρχουν raw και τα αντίστοιχα JPEG σε ένα φάκελο"
 
-#: ../src/gui/camera_import_dialog.c:329
+#: ../src/gui/camera_import_dialog.c:277
 msgid "override today's date"
 msgstr "παράκαμψη σημερινής ημερομηνίας"
 
-#: ../src/gui/camera_import_dialog.c:331
+#: ../src/gui/camera_import_dialog.c:279
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -1848,199 +1860,100 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#. Storage structure
-#: ../src/gui/camera_import_dialog.c:343
-msgid "storage structure"
-msgstr "δομή αποθήκευσης"
-
-#: ../src/gui/camera_import_dialog.c:344
-msgid ""
-"the following three settings describe the directory structure and file "
-"renaming for import storage and images; if you don't know how to use this, "
-"keep the default settings."
-msgstr ""
-"οι επόμενες τρεις επιλογές περιγράφουν τη δομή καταλόγου και τη μετονομασία "
-"αρχείων κατά την εισαγωγή εικόνων.  Αν δεν γνωρίζετε τη χρήση τους, "
-"διατηρήστε τις προεπιλογές."
-
-#: ../src/gui/camera_import_dialog.c:350
-msgid "storage directory"
-msgstr "κατάλογος αποθήκευσης"
-
-#: ../src/gui/camera_import_dialog.c:353
-msgid "directory structure"
-msgstr "δομή καταλόγου αρχείων"
-
-#: ../src/gui/camera_import_dialog.c:357
-msgid "filename structure"
-msgstr "δομή ονόματος αρχείου"
-
-#. Add example
-#: ../src/gui/camera_import_dialog.c:361
-msgid "above settings expands to:"
-msgstr "οι παραπάνω ρυθμίσεις επεκτείνονται σε:"
-
-#. External backup
-#: ../src/gui/camera_import_dialog.c:372
-msgid "external backup"
-msgstr "εξωτερικό αντίγραφο ασφαλείας"
-
-#: ../src/gui/camera_import_dialog.c:373
-msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
-msgstr ""
-"η επιλογή εξωτερικών αντιγράφων ασφαλείας ενεργοποιεί τη λειτουργία "
-"αυτόματης αναπαραγωγής εικόνων σε όσους φακέλους έχουν οριστεί ως αντίγραφα "
-"ασφαλείας και είναι διαθέσιμοι τη στιγμή της εισαγωγής από τη μηχανή."
-
-#: ../src/gui/camera_import_dialog.c:379
-msgid "enable backup"
-msgstr "ενεργοποίηση αντίγραφου ασφαλείας"
-
-#: ../src/gui/camera_import_dialog.c:381
-msgid "check this option to enable automatic backup of imported images"
-msgstr ""
-"επιλέξτε για ενεργοποίηση αυτόματων αντιγράφων ασφαλείας των εισηγμένων "
-"εικόνων"
-
-#: ../src/gui/camera_import_dialog.c:383
-msgid "warn if no backup destinations are present"
-msgstr "προειδοποίηση μη ύπαρξης προορισμού αντιγράφων ασφαλείας"
-
-#: ../src/gui/camera_import_dialog.c:385
-msgid ""
-"check this option to get an interactive warning if no backupdestinations are "
-"present"
-msgstr ""
-"ενεργοποιείστε αυτή την επιλογή για να λαμβάνετε προειδοποίηση\n"
-"αν δεν είναι ενεργή καμία τοποθεσία αντιγράφων ασφαλείας"
-
-#: ../src/gui/camera_import_dialog.c:387
-msgid "backup foldername"
-msgstr "φάκελος αντίγραφου ασφαλείας"
-
-#: ../src/gui/camera_import_dialog.c:389
-msgid ""
-"this is the name of folder that indicates a backup destination,\n"
-"if such a folder is found in any mounter media it is used as a backup "
-"destination."
-msgstr ""
-"το όνομα του φακέλου που ορίζεται ως αντίγραφο ασφαλείας,\n"
-"αν βρεθεί παρόμοιος φάκελος σε οποιοδήποτε μέσο χρησιμοποιείται ως τοποθεσία "
-"αντιγράφου ασφαλείας."
-
-#: ../src/gui/camera_import_dialog.c:405
+#: ../src/gui/camera_import_dialog.c:292
 msgid "images"
 msgstr "εικόνες"
 
-#: ../src/gui/camera_import_dialog.c:406
+#: ../src/gui/camera_import_dialog.c:293
 msgid "settings"
 msgstr "ρυθμίσεις"
 
 #. Lets run dialog
-#: ../src/gui/camera_import_dialog.c:578
+#: ../src/gui/camera_import_dialog.c:463
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
 "επιλέξτε τις εικόνες από τη λίστα που θέλετε να κάνετε εισαγωγή σε νέο φιλμ"
 
-#: ../src/gui/camera_import_dialog.c:623
-msgid "please set the basedirectory settings before importing"
-msgstr "παρακαλώ ορίστε τον φάκελο βάσης στις ρυθμίσεις πριν κάνετε εισαγωγή"
-
-#: ../src/gui/camera_import_dialog.c:630
-msgid "please set the subdirectory settings before importing"
-msgstr "παρακαλώ ορίστε τις ρυθμίσεις υποφακέλων πρίν κάνετε εισαγωγή"
-
-#: ../src/gui/camera_import_dialog.c:637
-msgid "please set the filenamepattern settings before importing"
-msgstr ""
-"παρακαλώ ορίστε το υπόδειγμα ονόματος αρχείου στις ρυθμίσεις πριν κάνετε "
-"εισαγωγή"
-
-#: ../src/gui/camera_import_dialog.c:644
+#: ../src/gui/camera_import_dialog.c:501
 msgid "please use YYYY-MM-DD format for date override"
 msgstr ""
 "παρακαλούμε κάντε χρήση του προτύπου ΥΥΥΥ-MM-DD για τον ορισμό ημερομηνίας"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:901
+#: ../src/gui/gtk.c:894
 msgctxt "accel"
 msgid "capture view"
 msgstr "προβολή λήψης"
 
-#: ../src/gui/gtk.c:902
+#: ../src/gui/gtk.c:895
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "προβολή lighttable"
 
-#: ../src/gui/gtk.c:903
+#: ../src/gui/gtk.c:896
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "προβολή darkroom"
 
-#: ../src/gui/gtk.c:904
+#: ../src/gui/gtk.c:897
 msgctxt "accel"
 msgid "map view"
 msgstr "προβολή χάρτη"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:927
+#: ../src/gui/gtk.c:920
 msgctxt "accel"
 msgid "quit"
 msgstr "έξοδος"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:934
+#: ../src/gui/gtk.c:927
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "αύξηση φωτεινότητας"
 
-#: ../src/gui/gtk.c:936
+#: ../src/gui/gtk.c:929
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "μείωση φωτεινότητας"
 
-#: ../src/gui/gtk.c:938
+#: ../src/gui/gtk.c:931
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "αύξηση αντίθεσης"
 
-#: ../src/gui/gtk.c:940
+#: ../src/gui/gtk.c:933
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "μείωση αντίθεσης"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:961
+#: ../src/gui/gtk.c:954
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "εναλλαγή πλήρους οθόνης"
 
-#: ../src/gui/gtk.c:962
+#: ../src/gui/gtk.c:955
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "έξοδος από πλήρη οθόνη"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:974
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "εναλλαγή πλευρικών περιθωρίων"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:977
+#: ../src/gui/gtk.c:970
 msgctxt "accel"
 msgid "toggle header"
 msgstr "εναλλαγή κεφαλίδας"
 
 #. View-switch
-#: ../src/gui/gtk.c:981
+#: ../src/gui/gtk.c:974
 msgctxt "accel"
 msgid "switch view"
 msgstr "αλλαγή προβολής"
@@ -2167,120 +2080,120 @@ msgstr "προτιμήσεις darktable"
 msgid "close"
 msgstr "κλείσιμο"
 
-#: ../src/gui/preferences.c:417
+#: ../src/gui/preferences.c:418
 msgid "module"
 msgstr "μονάδα"
 
-#: ../src/gui/preferences.c:431
+#: ../src/gui/preferences.c:432
 msgid "name"
 msgstr "όνομα"
 
 #. exif
-#: ../src/gui/preferences.c:438 ../src/gui/preferences.c:1348
-#: ../src/gui/presets.c:420 ../src/libs/metadata_view.c:89
+#: ../src/gui/preferences.c:439 ../src/gui/preferences.c:1349
+#: ../src/gui/presets.c:399 ../src/libs/metadata_view.c:89
 msgid "model"
 msgstr "μοντέλο"
 
-#: ../src/gui/preferences.c:445 ../src/gui/preferences.c:1356
-#: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:90
+#: ../src/gui/preferences.c:446 ../src/gui/preferences.c:1357
+#: ../src/gui/presets.c:406 ../src/libs/metadata_view.c:90
 msgid "maker"
 msgstr "κατασκευαστής"
 
-#: ../src/gui/preferences.c:452 ../src/gui/preferences.c:1364
-#: ../src/gui/presets.c:434 ../src/libs/collect.h:43
+#: ../src/gui/preferences.c:453 ../src/gui/preferences.c:1365
+#: ../src/gui/presets.c:413 ../src/libs/collect.h:43
 #: ../src/libs/metadata_view.c:91
 msgid "lens"
 msgstr "φακός"
 
 #. iso
-#: ../src/gui/preferences.c:459 ../src/gui/preferences.c:1370
-#: ../src/gui/presets.c:441 ../src/libs/camera.c:597 ../src/libs/collect.h:44
+#: ../src/gui/preferences.c:460 ../src/gui/preferences.c:1371
+#: ../src/gui/presets.c:420 ../src/libs/camera.c:557 ../src/libs/collect.h:44
 #: ../src/libs/metadata_view.c:96
 msgid "ISO"
 msgstr "ISO"
 
 #. exposure
-#: ../src/gui/preferences.c:466 ../src/gui/preferences.c:1383
-#: ../src/gui/presets.c:454 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
+#: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
+#: ../src/gui/presets.c:433 ../src/iop/exposure.c:42 ../src/iop/exposure.c:406
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "έκθεση"
 
 #. aperture
-#: ../src/gui/preferences.c:473 ../src/gui/preferences.c:1398
-#: ../src/gui/presets.c:469 ../src/libs/camera.c:549 ../src/libs/camera.c:558
+#: ../src/gui/preferences.c:474 ../src/gui/preferences.c:1399
+#: ../src/gui/presets.c:448 ../src/libs/camera.c:509 ../src/libs/camera.c:518
 #: ../src/libs/collect.h:45 ../src/libs/metadata_view.c:92
 msgid "aperture"
 msgstr "διάφραγμα"
 
 #. focal length
-#: ../src/gui/preferences.c:480 ../src/gui/preferences.c:1413
-#: ../src/gui/presets.c:484 ../src/libs/camera.c:568
+#: ../src/gui/preferences.c:481 ../src/gui/preferences.c:1414
+#: ../src/gui/presets.c:463 ../src/libs/camera.c:528
 #: ../src/libs/metadata_view.c:94
 msgid "focal length"
 msgstr "εστιακό μήκος"
 
-#: ../src/gui/preferences.c:487 ../src/iop/borders.c:1077
+#: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
 #: ../src/iop/exposure.c:411 ../src/iop/levels.c:286
-#: ../src/iop/tonecurve.c:556
+#: ../src/iop/tonecurve.c:661
 msgid "auto"
 msgstr "αυτόματα"
 
-#: ../src/gui/preferences.c:537
+#: ../src/gui/preferences.c:538
 msgid "shortcuts"
 msgstr "συντομεύσεις"
 
-#: ../src/gui/preferences.c:552
+#: ../src/gui/preferences.c:553
 msgid "shortcut"
 msgstr "συντόμευση"
 
-#: ../src/gui/preferences.c:559
+#: ../src/gui/preferences.c:560
 msgid "binding"
 msgstr "ορισμός"
 
 #. Adding the restore defaults button
-#: ../src/gui/preferences.c:598
+#: ../src/gui/preferences.c:599
 msgctxt "preferences"
 msgid "default"
 msgstr "προεπιλογή"
 
 #. Adding the import/export buttons
-#: ../src/gui/preferences.c:607
+#: ../src/gui/preferences.c:608
 msgctxt "preferences"
 msgid "import"
 msgstr "εισαγωγή"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:614 ../src/libs/export.c:668
-#: ../src/libs/styles.c:410
+#: ../src/gui/preferences.c:615 ../src/libs/export.c:668
+#: ../src/libs/styles.c:408
 msgid "export"
 msgstr "εξαγωγή"
 
-#: ../src/gui/preferences.c:914
+#: ../src/gui/preferences.c:915
 msgid "press key combination to remap..."
 msgstr "πιέστε συνδυασμό πλήκτρων προς ανάθεση..."
 
-#: ../src/gui/preferences.c:1077 ../src/gui/presets.c:192
+#: ../src/gui/preferences.c:1078 ../src/gui/presets.c:171
 #: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "θέλετε πραγματικά να διαγράψετε το προκαθορισμένο %s;"
 
-#: ../src/gui/preferences.c:1078 ../src/gui/presets.c:193
+#: ../src/gui/preferences.c:1079 ../src/gui/presets.c:172
 #: ../src/libs/lib.c:316
 msgid "delete preset?"
 msgstr "αφαίρεση προκαθορισμένου;"
 
-#: ../src/gui/preferences.c:1114
+#: ../src/gui/preferences.c:1115
 msgid "select file to export"
 msgstr "επιλογή αρχείου για εξαγωγή"
 
-#: ../src/gui/preferences.c:1145
+#: ../src/gui/preferences.c:1146
 msgid "select file to import"
 msgstr "επιλογή αρχείου για εισαγωγή"
 
-#: ../src/gui/preferences.c:1195
+#: ../src/gui/preferences.c:1196
 msgid ""
 "are you sure you want to restore the default keybindings?  this will erase "
 "any modifications you have made."
@@ -2288,25 +2201,25 @@ msgstr ""
 "είστε σίγουροι για την επαναφορά όλων των ρυθμίσεων πλήκτρων; Η ενέργεια "
 "αυτή θα αναιρέσει όλες σας τις αλλαγές."
 
-#: ../src/gui/preferences.c:1303 ../src/gui/presets.c:368
+#: ../src/gui/preferences.c:1304 ../src/gui/presets.c:347
 #, c-format
 msgid "edit `%s' for module `%s'"
 msgstr "επεξεργασία %s για το πρόσθετο %s "
 
-#: ../src/gui/preferences.c:1330 ../src/gui/presets.c:399
+#: ../src/gui/preferences.c:1331 ../src/gui/presets.c:378
 #: ../src/libs/lib.c:234
 msgid "description or further information"
 msgstr "περιγραφή ή περισσότερες πληροφορίες"
 
-#: ../src/gui/preferences.c:1332 ../src/gui/presets.c:401
+#: ../src/gui/preferences.c:1333 ../src/gui/presets.c:380
 msgid "auto apply this preset to matching images"
 msgstr "αυτόματη εφαρμογή αυτής τη προεπιλογής σε εικόνες που ταιριάζουν"
 
-#: ../src/gui/preferences.c:1334 ../src/gui/presets.c:403
+#: ../src/gui/preferences.c:1335 ../src/gui/presets.c:382
 msgid "only show this preset for matching images"
 msgstr "εμφάνιση της προεπιλογή μόνο σε εικόνες που ταιριάζουν"
 
-#: ../src/gui/preferences.c:1335 ../src/gui/presets.c:404
+#: ../src/gui/preferences.c:1336 ../src/gui/presets.c:383
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
@@ -2314,75 +2227,75 @@ msgstr ""
 "προσοχή με αυτή την επιλογή! Μπορεί να είναι η τελευταία φορά που βλέπετε "
 "την προεπιλογή σας."
 
-#: ../src/gui/preferences.c:1347 ../src/gui/presets.c:419
+#: ../src/gui/preferences.c:1348 ../src/gui/presets.c:398
 #, no-c-format
 msgid "string to match model (use % as wildcard)"
 msgstr "λέξη αναζήτησης μοντέλου (κάντε χρήση του % ως μπαλαντέρ)"
 
-#: ../src/gui/preferences.c:1355 ../src/gui/presets.c:426
+#: ../src/gui/preferences.c:1356 ../src/gui/presets.c:405
 #, no-c-format
 msgid "string to match maker (use % as wildcard)"
 msgstr "λέξη αναζήτησης κατασκευαστή (κάντε χρήση του % ως μπαλαντέρ)"
 
-#: ../src/gui/preferences.c:1363 ../src/gui/presets.c:433
+#: ../src/gui/preferences.c:1364 ../src/gui/presets.c:412
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
 msgstr "λέξη αναζήτησης φακού (κάντε χρήση του % ως μπαλαντέρ)"
 
-#: ../src/gui/preferences.c:1374 ../src/gui/presets.c:445
+#: ../src/gui/preferences.c:1375 ../src/gui/presets.c:424
 msgid "minimum ISO value"
 msgstr "ελάχιστη τιμή ISO"
 
-#: ../src/gui/preferences.c:1378 ../src/gui/presets.c:449
+#: ../src/gui/preferences.c:1379 ../src/gui/presets.c:428
 msgid "maximum ISO value"
 msgstr "μέγιστη τιμή ISO"
 
-#: ../src/gui/preferences.c:1388 ../src/gui/presets.c:459
+#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:438
 msgid "minimum exposure time"
 msgstr "ελάχιστος χρόνος έκθεσης"
 
-#: ../src/gui/preferences.c:1389 ../src/gui/presets.c:460
+#: ../src/gui/preferences.c:1390 ../src/gui/presets.c:439
 msgid "maximum exposure time"
 msgstr "μέγιστος χρόνος έκθεσης"
 
-#: ../src/gui/preferences.c:1403 ../src/gui/presets.c:474
+#: ../src/gui/preferences.c:1404 ../src/gui/presets.c:453
 msgid "minimum aperture value"
 msgstr "ελάχιστη τιμή οπής"
 
-#: ../src/gui/preferences.c:1404 ../src/gui/presets.c:475
+#: ../src/gui/preferences.c:1405 ../src/gui/presets.c:454
 msgid "maximum aperture value"
 msgstr "μέγιστη τιμή οπής"
 
-#: ../src/gui/preferences.c:1420 ../src/gui/presets.c:491
+#: ../src/gui/preferences.c:1421 ../src/gui/presets.c:470
 msgid "minimum focal length"
 msgstr "ελάχιστο εστιακό μήκος"
 
-#: ../src/gui/preferences.c:1421 ../src/gui/presets.c:492
+#: ../src/gui/preferences.c:1422 ../src/gui/presets.c:471
 msgid "maximum focal length"
 msgstr "μέγιστο εστιακό μήκος"
 
-#: ../src/gui/presets.c:147 ../src/gui/presets.c:792 ../src/gui/presets.c:805
+#: ../src/gui/presets.c:126 ../src/gui/presets.c:771 ../src/gui/presets.c:784
 #: ../src/libs/lib.c:73
 msgid "(default)"
 msgstr "(προεπιλογή)"
 
 #. then show edit dialog
-#: ../src/gui/presets.c:223 ../src/gui/presets.c:597 ../src/gui/presets.c:604
-#: ../src/gui/presets.c:606 ../src/gui/presets.c:608 ../src/libs/lib.c:275
+#: ../src/gui/presets.c:202 ../src/gui/presets.c:576 ../src/gui/presets.c:583
+#: ../src/gui/presets.c:585 ../src/gui/presets.c:587 ../src/libs/lib.c:275
 #: ../src/libs/lib.c:283 ../src/libs/lib.c:291 ../src/libs/lib.c:293
 #: ../src/libs/lib.c:295
 msgid "new preset"
 msgstr "νέο προκαθορισμένο"
 
-#: ../src/gui/presets.c:231
+#: ../src/gui/presets.c:210
 msgid "please give preset a name"
 msgstr "παρακαλώ ονομάστε το προκαθορισμένο"
 
-#: ../src/gui/presets.c:233
+#: ../src/gui/presets.c:212
 msgid "unnamed preset"
 msgstr "ανώνυμο προκαθορισμένο"
 
-#: ../src/gui/presets.c:256 ../src/libs/lib.c:138
+#: ../src/gui/presets.c:235 ../src/libs/lib.c:138
 #, c-format
 msgid ""
 "preset `%s' already exists.\n"
@@ -2391,31 +2304,31 @@ msgstr ""
 "το προκαθορισμένο %s υπάρχει ήδη.\n"
 "να γίνει αντικατάσταση;"
 
-#: ../src/gui/presets.c:259 ../src/libs/lib.c:141
+#: ../src/gui/presets.c:238 ../src/libs/lib.c:141
 msgid "overwrite preset?"
 msgstr "αντικατάσταση προκαθορισμένου;"
 
-#: ../src/gui/presets.c:395 ../src/libs/lib.c:230
+#: ../src/gui/presets.c:374 ../src/libs/lib.c:230
 msgid "name of the preset"
 msgstr "όνομα προκαθορισμένου"
 
-#: ../src/gui/presets.c:815
+#: ../src/gui/presets.c:794
 msgid "disabled: wrong module version"
 msgstr "απενεργοποιημένο: λάθος έκδοση πρόσθετου"
 
-#: ../src/gui/presets.c:835 ../src/libs/lib.c:446
+#: ../src/gui/presets.c:814 ../src/libs/lib.c:446
 msgid "edit this preset.."
 msgstr "επεξεργασία προκαθορισμένου..."
 
-#: ../src/gui/presets.c:839 ../src/libs/lib.c:450
+#: ../src/gui/presets.c:818 ../src/libs/lib.c:450
 msgid "delete this preset"
 msgstr "διαγραφή προκαθορισμένου"
 
-#: ../src/gui/presets.c:845 ../src/libs/lib.c:457
+#: ../src/gui/presets.c:824 ../src/libs/lib.c:457
 msgid "store new preset.."
 msgstr "προσθήκη προκαθορισμένου..."
 
-#: ../src/gui/presets.c:852 ../src/libs/lib.c:464
+#: ../src/gui/presets.c:831 ../src/libs/lib.c:464
 msgid "update preset"
 msgstr "ενημέρωση προκαθορισμένου"
 
@@ -2476,7 +2389,7 @@ msgstr "επιλογή μερών"
 msgid "can't copy history out of unaltered image"
 msgstr "δεν είναι δυνατή η αντιγραφή ιστορικού από αναλλοίωτη εικόνα"
 
-#: ../src/imageio/format/copy.c:150 ../src/libs/copy_history.c:256
+#: ../src/imageio/format/copy.c:150 ../src/libs/copy_history.c:253
 #: ../src/libs/image.c:161
 msgid "copy"
 msgstr "αντιγραφή"
@@ -2490,12 +2403,12 @@ msgstr ""
 "οι καθολικές επιλογές παρακάτω δεν ισχύουν!"
 
 #: ../src/imageio/format/exr.cc:160
-msgid "OpenEXR"
-msgstr "OpenEXR"
+msgid "OpenEXR (float)"
+msgstr "OpenEXR (float)"
 
 #: ../src/imageio/format/j2k.c:579
-msgid "JPEG 2000"
-msgstr "JPEG 2000"
+msgid "JPEG 2000 (12-bit)"
+msgstr "JPEG 2000 (12-bit)"
 
 #: ../src/imageio/format/j2k.c:614
 msgid "jp2"
@@ -2506,7 +2419,7 @@ msgid "J2K"
 msgstr "J2K"
 
 #: ../src/imageio/format/j2k.c:626 ../src/imageio/format/jpeg.c:547
-#: ../src/libs/camera.c:617 ../src/imageio/format/webp.c:294
+#: ../src/libs/camera.c:577 ../src/imageio/format/webp.c:294
 msgid "quality"
 msgstr "ποιότητα"
 
@@ -2527,38 +2440,66 @@ msgid "Cinema4K, 24FPS"
 msgstr "Cinema4K, 24FPS"
 
 #: ../src/imageio/format/jpeg.c:527
-msgid "8-bit JPG"
-msgstr "8-bit JPG"
+msgid "JPEG (8-bit)"
+msgstr "JPEG (8-bit)"
 
 #: ../src/imageio/format/pfm.c:104
-msgid "float PFM"
-msgstr "float PFM"
+msgid "PFM (float)"
+msgstr "PFM (float)"
 
 #: ../src/imageio/format/png.c:393
-msgid "8/16-bit PNG"
-msgstr "8/16-bit PNG"
+msgid "PNG (8/16-bit)"
+msgstr "PNG (8/16-bit)"
 
-#: ../src/imageio/format/png.c:420 ../src/imageio/format/tiff.c:268
+#: ../src/imageio/format/png.c:420
 msgid "8-bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/png.c:425 ../src/imageio/format/tiff.c:273
+#: ../src/imageio/format/png.c:425
 msgid "16-bit"
 msgstr "16-bit"
 
 #: ../src/imageio/format/ppm.c:110
-msgid "16-bit PPM"
-msgstr "16-bit ppm"
+msgid "PPM (16-bit)"
+msgstr "PPM (16-bit)"
 
-#: ../src/imageio/format/tiff.c:242
-msgid "8/16-bit TIFF"
-msgstr "8/16-bit tiff"
+#: ../src/imageio/format/tiff.c:341
+msgid "TIFF (8/16/32-bit)"
+msgstr "TIFF (8/16/32-bit)"
 
-#: ../src/imageio/storage/disk.c:60
+#: ../src/imageio/format/tiff.c:386
+msgid "8 bit"
+msgstr "8 bit"
+
+#: ../src/imageio/format/tiff.c:387
+msgid "16 bit"
+msgstr "16 bit"
+
+#: ../src/imageio/format/tiff.c:388
+msgid "32 bit (float)"
+msgstr "32 bit (float)"
+
+#: ../src/imageio/format/tiff.c:400
+msgid "uncompressed"
+msgstr "ασυμπίεστο"
+
+#: ../src/imageio/format/tiff.c:401
+msgid "deflate"
+msgstr "αποσυμπίεση"
+
+#: ../src/imageio/format/tiff.c:402
+msgid "deflate with predictor"
+msgstr "αποσυμπίεση με πρόγνωση"
+
+#: ../src/imageio/format/tiff.c:403
+msgid "deflate with predictor (float)"
+msgstr "αποσυμπίεση με πρόγνωση (float)"
+
+#: ../src/imageio/storage/disk.c:62
 msgid "file on disk"
 msgstr "αρχείο στο δίσκο"
 
-#: ../src/imageio/storage/disk.c:113 ../src/imageio/storage/gallery.c:155
+#: ../src/imageio/storage/disk.c:118 ../src/imageio/storage/gallery.c:155
 #: ../src/imageio/storage/latex.c:155
 msgid ""
 "enter the path where to put exported images\n"
@@ -2567,27 +2508,31 @@ msgstr ""
 "διαδρομή φακέλου εξαγωγής\n"
 "μεταβλητές:"
 
-#: ../src/imageio/storage/disk.c:201 ../src/imageio/storage/gallery.c:253
+#: ../src/imageio/storage/disk.c:130 ../src/libs/copy_history.c:284
+msgid "overwrite"
+msgstr "αντικατάσταση"
+
+#: ../src/imageio/storage/disk.c:217 ../src/imageio/storage/gallery.c:254
 #: ../src/imageio/storage/latex.c:250
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "δεν ήταν δυνατή η δημιουργία του καταλόγου %s!"
 
-#: ../src/imageio/storage/disk.c:208
+#: ../src/imageio/storage/disk.c:224
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "αδυναμία εγγραφής στο φάκελο %s!"
 
-#: ../src/imageio/storage/disk.c:241 ../src/imageio/storage/email.c:108
+#: ../src/imageio/storage/disk.c:258 ../src/imageio/storage/email.c:118
 #: ../src/imageio/storage/facebook.c:1194 ../src/imageio/storage/flickr.c:671
-#: ../src/imageio/storage/gallery.c:326 ../src/imageio/storage/gallery.c:345
+#: ../src/imageio/storage/gallery.c:327 ../src/imageio/storage/gallery.c:346
 #: ../src/imageio/storage/picasa.c:1443
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "αδυναμία εξαγωγής στο αρχείο %s!"
 
-#: ../src/imageio/storage/disk.c:257 ../src/imageio/storage/email.c:116
-#: ../src/imageio/storage/gallery.c:355 ../src/imageio/storage/latex.c:339
+#: ../src/imageio/storage/disk.c:265 ../src/imageio/storage/email.c:126
+#: ../src/imageio/storage/gallery.c:356 ../src/imageio/storage/latex.c:339
 #, c-format
 msgid "%d/%d exported to `%s%s'"
 msgstr "έγινε εξαγωγή %d/%d στο %s%s"
@@ -2596,7 +2541,7 @@ msgstr "έγινε εξαγωγή %d/%d στο %s%s"
 msgid "send as email"
 msgstr "αποστολή ως e-mail"
 
-#: ../src/imageio/storage/email.c:167
+#: ../src/imageio/storage/email.c:177
 msgid "images exported from darktable"
 msgstr "ολοκληρώθηκε η εξαγωγή εικόνων από darktable"
 
@@ -2678,7 +2623,7 @@ msgstr "λεύκωμα Facebook"
 #: ../src/imageio/storage/facebook.c:1021 ../src/imageio/storage/flickr.c:480
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
 #: ../src/imageio/storage/picasa.c:1303 ../src/libs/collect.h:38
-#: ../src/libs/metadata.c:334 ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata.c:333 ../src/libs/metadata_view.c:102
 msgid "title"
 msgstr "τίτλος"
 
@@ -2753,11 +2698,11 @@ msgid "flickr webalbum"
 msgstr "συλλογή flickr"
 
 #: ../src/imageio/storage/flickr.c:332 ../src/imageio/storage/flickr.c:372
-#: ../src/imageio/storage/flickr.c:847 ../src/imageio/storage/flickr.c:853
+#: ../src/imageio/storage/flickr.c:849 ../src/imageio/storage/flickr.c:855
 msgid "not authenticated"
 msgstr "χωρίς ταυτοποίηση"
 
-#: ../src/imageio/storage/flickr.c:368 ../src/imageio/storage/flickr.c:843
+#: ../src/imageio/storage/flickr.c:368 ../src/imageio/storage/flickr.c:845
 msgid "authenticated"
 msgstr "ταυτοποιήθηκε"
 
@@ -2818,8 +2763,12 @@ msgstr "οικογένεια + φίλοι"
 msgid "everyone"
 msgstr "όλοι"
 
+#: ../src/imageio/storage/flickr.c:692
+msgid "could not upload to flickr!"
+msgstr "αδυναμία φόρτωσης στο flickr!"
+
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:742
+#: ../src/imageio/storage/flickr.c:744
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgstr "%d/%d εξαγωγές σε λεύκωμα flickr"
@@ -3076,13 +3025,13 @@ msgstr "βασική καμπύλη"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "τετμημένη: είσοδος, τεταγμένη: έξοδος. λειτουργεί σε κανάλια RGB"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1922
-#: ../src/iop/vignette.c:1126 ../src/iop/watermark.c:1045
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1923
+#: ../src/iop/vignette.c:1123 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "κλιμάκωση"
 
 #: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:125
-#: ../src/iop/tonecurve.c:242
+#: ../src/iop/tonecurve.c:304
 msgid "linear"
 msgstr "γραμμικό"
 
@@ -3102,7 +3051,7 @@ msgstr ""
 msgid "local contrast"
 msgstr "τοπική αντίθεση"
 
-#: ../src/iop/bilat.c:267 ../src/iop/grain.c:513
+#: ../src/iop/bilat.c:267 ../src/iop/grain.c:515
 msgid "coarseness"
 msgstr "τραχύτητα"
 
@@ -3118,7 +3067,7 @@ msgstr "λεπτομέρεια"
 msgid "denoise (bilateral filter)"
 msgstr "αφαίρεση θορύβου (διμερές φίλτρο)"
 
-#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:148
+#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:231
 #: ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "radius"
@@ -3159,7 +3108,7 @@ msgid "how much to blur blue"
 msgstr "ποσότητα θαμπώματος μπλε"
 
 #: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
-#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:652 ../src/iop/sharpen.c:572
+#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:750 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "ακτίνα"
 
@@ -3173,12 +3122,12 @@ msgctxt "accel"
 msgid "threshold"
 msgstr "όριο"
 
-#: ../src/iop/bloom.c:82 ../src/iop/grain.c:325 ../src/iop/hotpixels.c:85
+#: ../src/iop/bloom.c:82 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
 msgctxt "accel"
 msgid "strength"
 msgstr "ισχύς"
 
-#: ../src/iop/bloom.c:336 ../src/iop/soften.c:564 ../src/libs/camera.c:627
+#: ../src/iop/bloom.c:336 ../src/iop/soften.c:564 ../src/libs/camera.c:587
 msgid "size"
 msgstr "μέγεθος"
 
@@ -3195,7 +3144,7 @@ msgid "the threshold of light"
 msgstr "το όριο φωτός"
 
 #: ../src/iop/bloom.c:348 ../src/iop/denoiseprofile.c:1727
-#: ../src/iop/grain.c:522 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
+#: ../src/iop/grain.c:524 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "ισχύς"
@@ -3246,7 +3195,7 @@ msgstr "επιλέξτε χρώμα γραμμής περιθωρίου"
 
 #. add import single image buttons
 #: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
-#: ../src/libs/import.c:818
+#: ../src/libs/import.c:814
 msgid "image"
 msgstr "εικόνα"
 
@@ -3431,7 +3380,7 @@ msgstr "προορισμός"
 #. dt_bauhaus_slider_set_format(g->gslider1, "");
 #: ../src/iop/channelmixer.c:437 ../src/iop/colorize.c:456
 #: ../src/iop/colorzones.c:1032 ../src/iop/colorzones.c:1066
-#: ../src/iop/graduatednd.c:1064 ../src/iop/splittoning.c:573
+#: ../src/iop/graduatednd.c:1061 ../src/iop/splittoning.c:573
 msgid "hue"
 msgstr "απόχρωση"
 
@@ -3439,9 +3388,9 @@ msgstr "απόχρωση"
 #: ../src/iop/channelmixer.c:438 ../src/iop/colisa.c:384
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:470
 #: ../src/iop/colorzones.c:1031 ../src/iop/colorzones.c:1067
-#: ../src/iop/graduatednd.c:1079 ../src/iop/lowpass.c:606
+#: ../src/iop/graduatednd.c:1076 ../src/iop/lowpass.c:606
 #: ../src/iop/soften.c:572 ../src/iop/splittoning.c:585
-#: ../src/iop/vignette.c:1129
+#: ../src/iop/vignette.c:1126
 msgid "saturation"
 msgstr "κορεσμός"
 
@@ -3545,12 +3494,12 @@ msgid "correction applied"
 msgstr "εφαρμογή διόρθωσης"
 
 #: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1782
-#: ../src/libs/live_view.c:335
+#: ../src/libs/live_view.c:334
 msgid "flip"
 msgstr "κατοπτρισμός"
 
 #: ../src/iop/clipping.c:1706 ../src/iop/clipping.c:1786
-#: ../src/libs/live_view.c:339
+#: ../src/libs/live_view.c:338
 msgid "both"
 msgstr "και τα δύο"
 
@@ -3578,11 +3527,11 @@ msgstr "ορίστε την διόρθωση προοπτικής για την 
 msgid "automatic cropping"
 msgstr "αυτόματη περικοπή"
 
-#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:235
 msgid "no"
 msgstr "όχι"
 
-#: ../src/iop/clipping.c:1732 ../src/libs/metadata_view.c:236
+#: ../src/iop/clipping.c:1732 ../src/libs/metadata_view.c:235
 msgid "yes"
 msgstr "ναι"
 
@@ -3618,16 +3567,16 @@ msgstr "10:8 σε εκτύπωση"
 msgid "set the aspect ratio (w:h)"
 msgstr "επιβολή αναλογίας διαστάσεων (π:υ)"
 
-#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:322
 msgid "guides"
 msgstr "οδηγοί"
 
-#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:324
 msgid "grid"
 msgstr "πλέγμα"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1766 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1766 ../src/libs/live_view.c:325
 msgid "rules of thirds"
 msgstr "κανόνας τριών"
 
@@ -3640,65 +3589,65 @@ msgid "perspective"
 msgstr "προοπτική"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:326
 msgid "diagonal method"
 msgstr "διαγώνια μέθοδος"
 
-#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:327
 msgid "harmonious triangles"
 msgstr "αρμονικά τρίγωνα"
 
-#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:328
 msgid "golden mean"
 msgstr "χρυσή τομή"
 
-#: ../src/iop/clipping.c:1777 ../src/libs/live_view.c:330
+#: ../src/iop/clipping.c:1777 ../src/libs/live_view.c:329
 msgid "display guide lines to help compose your photograph"
 msgstr "εμφάνιση γραμμών οδηγών για ευκολότερη σύνθεση"
 
-#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:336
 msgid "horizontally"
 msgstr "οριζόντια"
 
-#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:337
 msgid "vertically"
 msgstr "κατακόρυφα"
 
-#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:340
+#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:339
 msgid "flip guides"
 msgstr "αναστροφή οδηγών"
 
-#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:343
 msgid "extra"
 msgstr "επιπλέον"
 
-#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:344
 msgid "golden sections"
 msgstr "χρυσοί τομείς"
 
-#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:345
 msgid "golden spiral sections"
 msgstr "τομείς χρυσής σπείρας"
 
-#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:347
+#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:346
 msgid "golden spiral"
 msgstr "χρυσή σπείρα"
 
-#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1776
-#: ../src/libs/live_view.c:348 ../src/libs/tools/filter.c:101
+#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1777
+#: ../src/libs/live_view.c:347 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "όλα"
 
-#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:349
+#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:348
 msgid "show some extra guides"
 msgstr "εμφάνιση επιπλέον οδηγών"
 
-#: ../src/iop/clipping.c:2826
+#: ../src/iop/clipping.c:2822
 msgctxt "accel"
 msgid "commit"
 msgstr "ενσωμάτωση"
 
-#: ../src/iop/clipping.c:2828
+#: ../src/iop/clipping.c:2824
 msgctxt "accel"
 msgid "angle"
 msgstr "γωνία"
@@ -3724,7 +3673,7 @@ msgctxt "accel"
 msgid "saturation"
 msgstr "κορεσμός"
 
-#: ../src/iop/colisa.c:383 ../src/iop/soften.c:580 ../src/iop/vignette.c:1128
+#: ../src/iop/colisa.c:383 ../src/iop/soften.c:580 ../src/iop/vignette.c:1125
 msgid "brightness"
 msgstr "φωτεινότητα"
 
@@ -3818,34 +3767,33 @@ msgstr "συντελεστής ωφέλειας πράσινου"
 msgid "factor of blue for gain"
 msgstr "συντελεστής ωφέλειας μπλέ"
 
-#. make sure you put all your translatable strings into _() !
-#: ../src/iop/colorcontrast.c:87
+#: ../src/iop/colorcontrast.c:89
 msgid "color contrast"
 msgstr "αντίθεση χρωμάτων"
 
-#: ../src/iop/colorcontrast.c:107
+#: ../src/iop/colorcontrast.c:125
 msgctxt "accel"
 msgid "green vs magenta"
 msgstr "πράσινο/πορφυρό"
 
-#: ../src/iop/colorcontrast.c:108
+#: ../src/iop/colorcontrast.c:126
 msgctxt "accel"
 msgid "blue vs yellow"
 msgstr "μπλέ/κίτρινο"
 
-#: ../src/iop/colorcontrast.c:332
+#: ../src/iop/colorcontrast.c:359
 msgid "green vs magenta"
 msgstr "πράσινο/πορφυρό"
 
-#: ../src/iop/colorcontrast.c:335
+#: ../src/iop/colorcontrast.c:362
 msgid "steepness of the a* curve in Lab"
 msgstr "ανηφορικότητα της καμπύλης a* σε σύστημα Lab"
 
-#: ../src/iop/colorcontrast.c:342
+#: ../src/iop/colorcontrast.c:369
 msgid "blue vs yellow"
 msgstr "μπλέ/κίτρινο"
 
-#: ../src/iop/colorcontrast.c:345
+#: ../src/iop/colorcontrast.c:372
 msgid "steepness of the b* curve in Lab"
 msgstr "ανηφορικότητα της καμπύλης b* σε σύστημα Lab"
 
@@ -4158,7 +4106,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "ανάκτηση"
 
-#: ../src/iop/colortransfer.c:123 ../src/libs/metadata.c:306
+#: ../src/iop/colortransfer.c:123 ../src/libs/metadata.c:305
 msgctxt "accel"
 msgid "apply"
 msgstr "εφαρμογή"
@@ -4185,7 +4133,7 @@ msgstr "ανάκτηση"
 msgid "analyze this image"
 msgstr "ανάλυση εικόνας"
 
-#: ../src/iop/colortransfer.c:683 ../src/libs/metadata.c:411
+#: ../src/iop/colortransfer.c:683 ../src/libs/metadata.c:410
 msgid "apply"
 msgstr "εφαρμογή"
 
@@ -4331,7 +4279,7 @@ msgstr "εύρεση αντιπαραβολής για ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "παρεισαγωγή από ISO %d και  %d"
 
-#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1931
+#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:1932
 msgid "mode"
 msgstr "λειτουργία"
 
@@ -4368,7 +4316,7 @@ msgstr "ακτίνα κηλίδων προς εύρεση. αυξήστε για
 msgid "finetune denoising strength"
 msgstr "ρύθμιση ισχύος καθαρισμού"
 
-#: ../src/iop/dither.c:97 ../src/iop/vignette.c:1134
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:1131
 msgid "dithering"
 msgstr "χρ. αντιπαράθεση"
 
@@ -4508,12 +4456,12 @@ msgstr "περιστροφή επιλεγμένων 90 μοίρες αριστε
 msgid "rotate 90 degrees CW"
 msgstr "περιστροφή επιλεγμένων 90 μοίρες δεξιά"
 
-#: ../src/iop/flip.c:454 ../src/libs/live_view.c:162
+#: ../src/iop/flip.c:454 ../src/libs/live_view.c:161
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "περιστροφή επιλεγμένων 90 μοίρες αριστερά"
 
-#: ../src/iop/flip.c:456 ../src/libs/live_view.c:163
+#: ../src/iop/flip.c:456 ../src/libs/live_view.c:162
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "περιστροφή επιλεγμένων 90 μοίρες δεξιά"
@@ -4621,19 +4569,19 @@ msgctxt "accel"
 msgid "compression"
 msgstr "συμπίεση"
 
-#: ../src/iop/graduatednd.c:1033
+#: ../src/iop/graduatednd.c:1030
 msgid "density"
 msgstr "πυκνότητα"
 
-#: ../src/iop/graduatednd.c:1034
+#: ../src/iop/graduatednd.c:1031
 msgid "the density in EV for the filter"
 msgstr "η πυκνότητα σε EV του φίλτρου"
 
-#: ../src/iop/graduatednd.c:1041
+#: ../src/iop/graduatednd.c:1038
 msgid "compression"
 msgstr "συμπίεση"
 
-#: ../src/iop/graduatednd.c:1043
+#: ../src/iop/graduatednd.c:1040
 #, no-c-format
 msgid ""
 "compression of graduation:\n"
@@ -4642,36 +4590,36 @@ msgstr ""
 "συμπίεση διαβάθμισης:\n"
 "0% = απαλό, 100% = σκληρό"
 
-#: ../src/iop/graduatednd.c:1049
+#: ../src/iop/graduatednd.c:1046
 msgid "rotation"
 msgstr "περιστροφή"
 
-#: ../src/iop/graduatednd.c:1051
+#: ../src/iop/graduatednd.c:1048
 msgid "rotation of filter -180 to 180 degrees"
 msgstr "περιστροφή φίλτρου -180 έως 180 μοίρες"
 
-#: ../src/iop/graduatednd.c:1071
+#: ../src/iop/graduatednd.c:1068
 msgid "select the hue tone of filter"
 msgstr "επιλέξτε τον τόνο του φίλτρου"
 
-#: ../src/iop/graduatednd.c:1082
+#: ../src/iop/graduatednd.c:1079
 msgid "select the saturation of filter"
 msgstr "επιλέξτε τον κορεσμό του φίλτρου"
 
-#: ../src/iop/grain.c:307
+#: ../src/iop/grain.c:309
 msgid "grain"
 msgstr "κόκκος"
 
-#: ../src/iop/grain.c:324
+#: ../src/iop/grain.c:326
 msgctxt "accel"
 msgid "coarseness"
 msgstr "τραχύτητα"
 
-#: ../src/iop/grain.c:516
+#: ../src/iop/grain.c:518
 msgid "the grain size (~ISO of the film)"
 msgstr "το μέγεθος κόκκου (~ISO του φίλμ)"
 
-#: ../src/iop/grain.c:525
+#: ../src/iop/grain.c:527
 msgid "the strength of applied grain"
 msgstr "η δύναμη του εφαρμοσμένου κόκκου"
 
@@ -4776,56 +4724,56 @@ msgstr "χρώμα υλικού φιλμ"
 msgid "pick color of film material from image"
 msgstr "επιλογή απόχρωσης φιλμ από εικόνα"
 
-#: ../src/iop/lens.c:48
+#: ../src/iop/lens.c:51
 msgid "lens correction"
 msgstr "διόρθωση φακού"
 
-#: ../src/iop/lens.c:71 ../src/iop/vignette.c:158 ../src/iop/watermark.c:164
+#: ../src/iop/lens.c:74 ../src/iop/vignette.c:158 ../src/iop/watermark.c:164
 msgctxt "accel"
 msgid "scale"
 msgstr "κλίμακα"
 
-#: ../src/iop/lens.c:72
+#: ../src/iop/lens.c:75
 msgctxt "accel"
 msgid "TCA R"
 msgstr "TCA R"
 
-#: ../src/iop/lens.c:73
+#: ../src/iop/lens.c:76
 msgctxt "accel"
 msgid "TCA B"
 msgstr "TCA B"
 
-#: ../src/iop/lens.c:75
+#: ../src/iop/lens.c:78
 msgctxt "accel"
 msgid "find camera"
 msgstr "εύρεση μηχανής"
 
-#: ../src/iop/lens.c:76
+#: ../src/iop/lens.c:79
 msgctxt "accel"
 msgid "find lens"
 msgstr "εύρεση φακού"
 
-#: ../src/iop/lens.c:77
+#: ../src/iop/lens.c:80
 msgctxt "accel"
 msgid "auto scale"
 msgstr "αυτόματη κλίμακα"
 
-#: ../src/iop/lens.c:78
+#: ../src/iop/lens.c:81
 msgctxt "accel"
 msgid "camera model"
 msgstr "μοντέλο μηχανής"
 
-#: ../src/iop/lens.c:79
+#: ../src/iop/lens.c:82
 msgctxt "accel"
 msgid "lens model"
 msgstr "μοντέλο φακού"
 
-#: ../src/iop/lens.c:80
+#: ../src/iop/lens.c:83
 msgctxt "accel"
 msgid "select corrections"
 msgstr "επιλογή διορθώσεων"
 
-#: ../src/iop/lens.c:1115
+#: ../src/iop/lens.c:1120
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4838,15 +4786,15 @@ msgstr ""
 "βάση:\t\t%s\n"
 "συντ. τομής:\t%.1f"
 
-#: ../src/iop/lens.c:1346
+#: ../src/iop/lens.c:1351
 msgid "camera/lens not found - please select manually"
 msgstr "μηχανή/φακός δεν βρέθηκαν - επιλέξτε χειρ."
 
-#: ../src/iop/lens.c:1348
+#: ../src/iop/lens.c:1353
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "αναζητήστε το συνδυασμό μηχανής/φακού σας στις παραπάνω λίστες"
 
-#: ../src/iop/lens.c:1393
+#: ../src/iop/lens.c:1398
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4865,147 +4813,147 @@ msgstr ""
 "τύπος:\t\t%s\n"
 "βάσεις:\t\t%s"
 
-#: ../src/iop/lens.c:1439
+#: ../src/iop/lens.c:1444
 msgid "mm"
 msgstr "χιλ."
 
-#: ../src/iop/lens.c:1440
+#: ../src/iop/lens.c:1445
 msgid "focal length (mm)"
 msgstr "εστιακό μήκος (χιλ.)"
 
-#: ../src/iop/lens.c:1467
+#: ../src/iop/lens.c:1472
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1468
+#: ../src/iop/lens.c:1473
 msgid "f-number (aperture)"
 msgstr "τιμή f (διάφραγμα)"
 
-#: ../src/iop/lens.c:1483
+#: ../src/iop/lens.c:1488
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1484
+#: ../src/iop/lens.c:1489
 msgid "distance to subject"
 msgstr "απόσταση ως αντικείμενο"
 
-#: ../src/iop/lens.c:1782
+#: ../src/iop/lens.c:1783
 msgid "distortion & TCA"
 msgstr "παραμόρφωση και TCA"
 
-#: ../src/iop/lens.c:1788
+#: ../src/iop/lens.c:1789
 msgid "distortion & vignetting"
 msgstr "παραμόρφωση και βινιέτα"
 
-#: ../src/iop/lens.c:1794
+#: ../src/iop/lens.c:1795
 msgid "TCA & vignetting"
 msgstr "TCA & Βινιέτα"
 
-#: ../src/iop/lens.c:1800
+#: ../src/iop/lens.c:1801
 msgid "only distortion"
 msgstr "μόνο παραμόρφωση"
 
-#: ../src/iop/lens.c:1806
+#: ../src/iop/lens.c:1807
 msgid "only TCA"
 msgstr "μόνο TCA"
 
-#: ../src/iop/lens.c:1812
+#: ../src/iop/lens.c:1813
 msgid "only vignetting"
 msgstr "μόνο βινιέτα"
 
-#: ../src/iop/lens.c:1835
+#: ../src/iop/lens.c:1836
 msgid "find camera"
 msgstr "εύρεση μηχανής"
 
-#: ../src/iop/lens.c:1852
+#: ../src/iop/lens.c:1853
 msgid "find lens"
 msgstr "εύρεση φακού"
 
-#: ../src/iop/lens.c:1885
+#: ../src/iop/lens.c:1886
 msgid "corrections"
 msgstr "διορθώσεις"
 
-#: ../src/iop/lens.c:1887
+#: ../src/iop/lens.c:1888
 msgid "which corrections to apply"
 msgstr "διορθώσεις προς εφαρμογή"
 
-#: ../src/iop/lens.c:1902
+#: ../src/iop/lens.c:1903
 msgid "geometry"
 msgstr "γεωμετρία"
 
-#: ../src/iop/lens.c:1904
+#: ../src/iop/lens.c:1905
 msgid "target geometry"
 msgstr "επιθυμητή γεωμετρία"
 
-#: ../src/iop/lens.c:1905
+#: ../src/iop/lens.c:1906
 msgid "rectilinear"
 msgstr "ευθυγραμμικός"
 
-#: ../src/iop/lens.c:1906
+#: ../src/iop/lens.c:1907
 msgid "fish-eye"
 msgstr "fish-eye"
 
-#: ../src/iop/lens.c:1907
+#: ../src/iop/lens.c:1908
 msgid "panoramic"
 msgstr "πανοραμικός"
 
-#: ../src/iop/lens.c:1908
+#: ../src/iop/lens.c:1909
 msgid "equirectangular"
 msgstr "ορθογώνιος"
 
-#: ../src/iop/lens.c:1910
+#: ../src/iop/lens.c:1911
 msgid "orthographic"
 msgstr "ορθογραφικός"
 
-#: ../src/iop/lens.c:1911
+#: ../src/iop/lens.c:1912
 msgid "stereographic"
 msgstr "στερογραφικός"
 
-#: ../src/iop/lens.c:1912
+#: ../src/iop/lens.c:1913
 msgid "equisolid angle"
 msgstr "equisolid angle"
 
-#: ../src/iop/lens.c:1913
+#: ../src/iop/lens.c:1914
 msgid "thoby fish-eye"
 msgstr "thoby fish-eye"
 
-#: ../src/iop/lens.c:1921
+#: ../src/iop/lens.c:1922
 msgid "auto scale"
 msgstr "αυτόματη κλίμακα"
 
-#: ../src/iop/lens.c:1933
+#: ../src/iop/lens.c:1934
 msgid "correct distortions or apply them"
 msgstr "εφαρμογή παραμόρφωσης ή διόρθωση"
 
-#: ../src/iop/lens.c:1934
+#: ../src/iop/lens.c:1935
 msgid "correct"
 msgstr "διόρθωση"
 
-#: ../src/iop/lens.c:1935
+#: ../src/iop/lens.c:1936
 msgid "distort"
 msgstr "παραμόρφωση"
 
-#: ../src/iop/lens.c:1942
+#: ../src/iop/lens.c:1943
 msgid "Transversal Chromatic Aberration red"
 msgstr "Transversal Chromatic Aberration red"
 
-#: ../src/iop/lens.c:1943
+#: ../src/iop/lens.c:1944
 msgid "TCA red"
 msgstr "κόκκινο TCA"
 
-#: ../src/iop/lens.c:1948
+#: ../src/iop/lens.c:1949
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Transversal Chromatic Aberration blue"
 
-#: ../src/iop/lens.c:1949
+#: ../src/iop/lens.c:1950
 msgid "TCA blue"
 msgstr "μπλε TCA"
 
-#: ../src/iop/lens.c:1956
+#: ../src/iop/lens.c:1957
 msgid "corrections done: "
 msgstr "εφαρμοσμένες διορθώσεις:"
 
-#: ../src/iop/lens.c:1957
+#: ../src/iop/lens.c:1958
 msgid "which corrections have actually been done"
 msgstr "ποιές διορθώσεις έχουν πραγματοποιηθεί"
 
@@ -5150,15 +5098,15 @@ msgctxt "lowpass"
 msgid "brightness"
 msgstr "φωτεινότητα"
 
-#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:643
+#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:741
 msgid "soften with"
 msgstr "απάλυνση με"
 
-#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:644
+#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:742
 msgid "gaussian"
 msgstr "gaussian"
 
-#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:645
+#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:743
 msgid "bilateral filter"
 msgstr "διμερές φίλτρο"
 
@@ -5199,7 +5147,7 @@ msgid "how much to keep highlights"
 msgstr "ποσότητα διατήρησης ανταυγειών"
 
 #. Highlights
-#: ../src/iop/monochrome.c:558 ../src/iop/shadhi.c:651
+#: ../src/iop/monochrome.c:558 ../src/iop/shadhi.c:749
 #: ../src/iop/splittoning.c:614
 msgid "highlights"
 msgstr "ανταύγειες"
@@ -5297,71 +5245,71 @@ msgstr "επιλογή κέντρου φωτός γεμίσματος"
 msgid "toggle tool for picking median lightness in image"
 msgstr "εναλλαγή εργαλείου επιλογής μέσης φωτεινότητας στην εικόνα"
 
-#: ../src/iop/shadhi.c:107
+#: ../src/iop/shadhi.c:155
 msgid "shadows and highlights"
 msgstr "σκιές και ανταύγειες"
 
-#: ../src/iop/shadhi.c:146
+#: ../src/iop/shadhi.c:229
 msgctxt "accel"
 msgid "shadows"
 msgstr "σκιές"
 
-#: ../src/iop/shadhi.c:147
+#: ../src/iop/shadhi.c:230
 msgctxt "accel"
 msgid "highlights"
 msgstr "ανταύγειες"
 
-#: ../src/iop/shadhi.c:149 ../src/iop/splittoning.c:107
+#: ../src/iop/shadhi.c:232 ../src/iop/splittoning.c:107
 msgctxt "accel"
 msgid "compress"
 msgstr "συμπίεση"
 
-#: ../src/iop/shadhi.c:150
+#: ../src/iop/shadhi.c:233
 msgctxt "accel"
 msgid "shadows color correction"
 msgstr "διόρθωση χρώματος σκιών"
 
-#: ../src/iop/shadhi.c:151
+#: ../src/iop/shadhi.c:234
 msgctxt "accel"
 msgid "highlights color correction"
 msgstr "διόρθωση χρώματος φωτεινών σημείων"
 
 #. Shadows
-#: ../src/iop/shadhi.c:650 ../src/iop/splittoning.c:611
+#: ../src/iop/shadhi.c:748 ../src/iop/splittoning.c:611
 msgid "shadows"
 msgstr "σκιές"
 
-#: ../src/iop/shadhi.c:653 ../src/iop/splittoning.c:631
+#: ../src/iop/shadhi.c:751 ../src/iop/splittoning.c:631
 msgid "compress"
 msgstr "συμπίεση"
 
-#: ../src/iop/shadhi.c:654
+#: ../src/iop/shadhi.c:752
 msgid "shadows color adjustment"
 msgstr "χρώμα σκιών"
 
-#: ../src/iop/shadhi.c:655
+#: ../src/iop/shadhi.c:753
 msgid "highlights color adjustment"
 msgstr "χρώμα φωτεινών σημείων"
 
-#: ../src/iop/shadhi.c:671
+#: ../src/iop/shadhi.c:769
 msgid "correct shadows"
 msgstr "επιδιόρθωση σκιών"
 
-#: ../src/iop/shadhi.c:672
+#: ../src/iop/shadhi.c:770
 msgid "correct highlights"
 msgstr "επιδιόρθωση φωτεινών σημείων"
 
-#: ../src/iop/shadhi.c:673 ../src/iop/tonemap.cc:315
+#: ../src/iop/shadhi.c:771 ../src/iop/tonemap.cc:315
 msgid "spatial extent"
 msgstr "χωρική έκταση"
 
-#: ../src/iop/shadhi.c:674
+#: ../src/iop/shadhi.c:772
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr ""
 "το φίλτρο που θα εφαρμοστεί για την εξομάλυνση.  το διμερές αποφεύγει τις "
 "αύρες"
 
-#: ../src/iop/shadhi.c:675
+#: ../src/iop/shadhi.c:773
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
@@ -5369,11 +5317,11 @@ msgstr ""
 "συμπίεση εφέ για σκιές/φωτεινά σημεία και\n"
 "διατήρηση μεσαίων τόνων"
 
-#: ../src/iop/shadhi.c:676
+#: ../src/iop/shadhi.c:774
 msgid "adjust saturation of shadows"
 msgstr "ρύθμιση κορεσμού σκιών"
 
-#: ../src/iop/shadhi.c:677
+#: ../src/iop/shadhi.c:775
 msgid "adjust saturation of highlights"
 msgstr "ρύθμιση κορεσμού φωτεινών σημείων"
 
@@ -5542,84 +5490,84 @@ msgstr "ισορροπία λευκού σημείου"
 msgid "passthrough"
 msgstr "διέλευση"
 
-#: ../src/iop/temperature.c:732
+#: ../src/iop/temperature.c:756
 msgid "tint"
 msgstr "χροιά"
 
-#: ../src/iop/temperature.c:733
+#: ../src/iop/temperature.c:757
 msgid "temperature"
 msgstr "θερμοκρασία"
 
-#: ../src/iop/temperature.c:748
+#: ../src/iop/temperature.c:772
 msgid "choose white balance preset from camera"
 msgstr "επιλογή προεπιλογής εξισορρόπηση λευκού από τη μηχανή"
 
-#: ../src/iop/temperature.c:751
+#: ../src/iop/temperature.c:775
 msgid "finetune"
 msgstr "λεπτ. ρύθμιση"
 
-#: ../src/iop/temperature.c:752
+#: ../src/iop/temperature.c:776
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:756
+#: ../src/iop/temperature.c:780
 msgid "fine tune white balance preset"
 msgstr "ρύθμιση προεπιλογής ισορροπίας λευκού"
 
-#: ../src/iop/tonecurve.c:47
+#: ../src/iop/tonecurve.c:48
 msgid "tone curve"
 msgstr "τονική καμπύλη"
 
-#: ../src/iop/tonecurve.c:236
+#: ../src/iop/tonecurve.c:300
 msgid "low contrast"
 msgstr "χαμηλή αντίθεση"
 
-#: ../src/iop/tonecurve.c:252
+#: ../src/iop/tonecurve.c:314
 msgid "med contrast"
 msgstr "μεσαία αντίθεση"
 
-#: ../src/iop/tonecurve.c:262
+#: ../src/iop/tonecurve.c:324
 msgid "high contrast"
 msgstr "υψηλή αντίθεση"
 
-#: ../src/iop/tonecurve.c:502
+#: ../src/iop/tonecurve.c:607
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:503
+#: ../src/iop/tonecurve.c:608
 msgid "tonecurve for L channel"
 msgstr "τονική καμπύλη καναλιού L"
 
-#: ../src/iop/tonecurve.c:504
+#: ../src/iop/tonecurve.c:609
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:505
+#: ../src/iop/tonecurve.c:610
 msgid "tonecurve for a channel"
 msgstr "τονική καμπύλη καναλιού a"
 
-#: ../src/iop/tonecurve.c:506
+#: ../src/iop/tonecurve.c:611
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:507
+#: ../src/iop/tonecurve.c:612
 msgid "tonecurve for b channel"
 msgstr "τονική καμπύλη καναλιού b"
 
-#: ../src/iop/tonecurve.c:534
+#: ../src/iop/tonecurve.c:639
 msgid "double click to reset curve"
 msgstr "διπλό κλικ για επαναφορά καμπύλης"
 
-#: ../src/iop/tonecurve.c:555
+#: ../src/iop/tonecurve.c:660
 msgid "scale chroma"
 msgstr "κλιμάκωση χρώματος"
 
-#: ../src/iop/tonecurve.c:557
+#: ../src/iop/tonecurve.c:662
 msgid "manual"
 msgstr "χειροκίνητο"
 
-#: ../src/iop/tonecurve.c:559
+#: ../src/iop/tonecurve.c:664
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
@@ -5714,67 +5662,67 @@ msgctxt "accel"
 msgid "dithering"
 msgstr "χρ. αντιπαράθεση"
 
-#: ../src/iop/vignette.c:1107
+#: ../src/iop/vignette.c:1104
 msgid "automatic ratio"
 msgstr "αυτόματη αναλογία"
 
-#: ../src/iop/vignette.c:1117
+#: ../src/iop/vignette.c:1114
 msgid "automatic"
 msgstr "αυτόματο"
 
-#: ../src/iop/vignette.c:1121
+#: ../src/iop/vignette.c:1118
 msgid "8-bit output"
 msgstr "εξαγωγή 8-bit"
 
-#: ../src/iop/vignette.c:1122
+#: ../src/iop/vignette.c:1119
 msgid "16-bit output"
 msgstr "εξαγωγή 16-bit"
 
-#: ../src/iop/vignette.c:1127
+#: ../src/iop/vignette.c:1124
 msgid "fall-off strength"
 msgstr "δύναμη απόπτωσης"
 
-#: ../src/iop/vignette.c:1130
+#: ../src/iop/vignette.c:1127
 msgid "horizontal center"
 msgstr "οριζόντιο κεντράρισμα"
 
-#: ../src/iop/vignette.c:1131
+#: ../src/iop/vignette.c:1128
 msgid "vertical center"
 msgstr "κάθετο κεντράρισμα"
 
-#: ../src/iop/vignette.c:1132
+#: ../src/iop/vignette.c:1129
 msgid "shape"
 msgstr "σχήμα"
 
-#: ../src/iop/vignette.c:1133
+#: ../src/iop/vignette.c:1130
 msgid "width/height ratio"
 msgstr "αναλογία πλάτους/μήκους"
 
-#: ../src/iop/vignette.c:1153
+#: ../src/iop/vignette.c:1150
 msgid "the radii scale of vignette for start of fall-off"
 msgstr "η κλίμακα ακτίνων της βινιέτας στην αρχή της απόπτωσης"
 
-#: ../src/iop/vignette.c:1154
+#: ../src/iop/vignette.c:1151
 msgid "the radii scale of vignette for end of fall-off"
 msgstr "η κλίμακα ακτίνων της βινιέτας στο τέλος της απόπτωσης"
 
-#: ../src/iop/vignette.c:1155
+#: ../src/iop/vignette.c:1152
 msgid "strength of effect on brightness"
 msgstr "επίδραση εφέ στη φωτεινότητα"
 
-#: ../src/iop/vignette.c:1156
+#: ../src/iop/vignette.c:1153
 msgid "strength of effect on saturation"
 msgstr "επίδραση εφέ στον κορεσμό"
 
-#: ../src/iop/vignette.c:1157
+#: ../src/iop/vignette.c:1154
 msgid "horizontal offset of center of the effect"
 msgstr "οριζόντια απόκλιση του κέντρου του εφέ"
 
-#: ../src/iop/vignette.c:1158
+#: ../src/iop/vignette.c:1155
 msgid "vertical offset of center of the effect"
 msgstr "κατακόρυφη απόκλιση του κέντρου του εφέ"
 
-#: ../src/iop/vignette.c:1159
+#: ../src/iop/vignette.c:1156
 msgid ""
 "shape factor\n"
 "0 produces a rectangle\n"
@@ -5786,15 +5734,15 @@ msgstr ""
 "1 παράγει κύκλο ή έλλειψη\n"
 "2 παράγει πολύγωνο"
 
-#: ../src/iop/vignette.c:1160
+#: ../src/iop/vignette.c:1157
 msgid "enable to have the ratio automatically follow the image size"
 msgstr "επιλέξτε για να την αυτόματη σύνδεση αναλογίας-μεγέθους εικόνας"
 
-#: ../src/iop/vignette.c:1161
+#: ../src/iop/vignette.c:1158
 msgid "width-to-height ratio"
 msgstr "αναλογία πλάτους/μήκους"
 
-#: ../src/iop/vignette.c:1162
+#: ../src/iop/vignette.c:1159
 msgid "add some level of random noise to prevent banding"
 msgstr "προσθήκη τυχαίου θορύβου για αποφυγή δημιουργίας λωρίδων"
 
@@ -5871,29 +5819,29 @@ msgstr "κλίμακα υδατογραφήματος"
 #. Probably same as above:
 #: ../src/iop/wb_presets.c:47
 msgid "direct sunlight"
-msgstr "Ηλιακό"
+msgstr "ηλιακό"
 
 #: ../src/iop/wb_presets.c:48
 msgid "cloudy"
-msgstr "Συννεφιά"
+msgstr "συννεφιά"
 
 #. "Shadows" should be switched to this:
 #: ../src/iop/wb_presets.c:50
 msgid "shade"
-msgstr "Σκιά"
+msgstr "σκιά"
 
 #: ../src/iop/wb_presets.c:51
 msgid "incandescent"
-msgstr "Πυρακτώσεως"
+msgstr "πυρακτώσεως"
 
 #: ../src/iop/wb_presets.c:52
 msgid "incandescent warm"
-msgstr "Πυρακτώσεως (θερμό)"
+msgstr "πυρακτώσεως (θερμό)"
 
 #. Same as "Incandescent":
 #: ../src/iop/wb_presets.c:54
 msgid "tungsten"
-msgstr "Tungsten"
+msgstr "tungsten"
 
 #: ../src/iop/wb_presets.c:55
 msgid "fluorescent"
@@ -5954,7 +5902,7 @@ msgstr "ηλιοβασίλεμα"
 msgid "underwater"
 msgstr "υποβρύχια"
 
-#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1156
+#: ../src/iop/wb_presets.c:73 ../src/views/darkroom.c:1172
 msgid "black & white"
 msgstr "ασπρόμαυρο"
 
@@ -5994,78 +5942,78 @@ msgstr ""
 msgid "background jobs"
 msgstr "εργασίες υποβάθρου"
 
-#: ../src/libs/camera.c:80
+#: ../src/libs/camera.c:79
 msgid "camera settings"
 msgstr "ρυθμίσεις μηχανής"
 
-#: ../src/libs/camera.c:107
+#: ../src/libs/camera.c:106
 msgctxt "accel"
 msgid "capture image(s)"
 msgstr "λήψη εικόνας(νων)"
 
-#: ../src/libs/camera.c:145
+#: ../src/libs/camera.c:144
 msgid "toggle view property in center view"
 msgstr "εναλλαγή  ιδιότητας εμφάνισης στην κεντρική προβολή"
 
-#: ../src/libs/camera.c:220
+#: ../src/libs/camera.c:219
 msgid "connection with camera lost, exiting tethering mode"
 msgstr ""
 "απώλεια σύνδεσης με τη μηχανή, έξοδος από λειτουργία εξαρτημένης απόκτησης"
 
-#: ../src/libs/camera.c:378
+#: ../src/libs/camera.c:341
 msgid "battery"
 msgstr "μπαταρία"
 
-#: ../src/libs/camera.c:378
+#: ../src/libs/camera.c:341
 msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:449
+#: ../src/libs/camera.c:409
 msgid "camera control"
 msgstr "έλεγχος μηχανής"
 
-#: ../src/libs/camera.c:453
+#: ../src/libs/camera.c:413
 msgid "modes"
 msgstr "λειτουργίες"
 
-#: ../src/libs/camera.c:454
+#: ../src/libs/camera.c:414
 msgid "timer (s)"
 msgstr "χρονιστές"
 
-#: ../src/libs/camera.c:455
+#: ../src/libs/camera.c:415
 msgid "count"
 msgstr "αριθμός"
 
-#: ../src/libs/camera.c:456
+#: ../src/libs/camera.c:416
 msgid "brackets"
 msgstr "διαστήματα"
 
-#: ../src/libs/camera.c:457
+#: ../src/libs/camera.c:417
 msgid "bkt. steps"
 msgstr "βήματα διαστημάτων"
 
-#: ../src/libs/camera.c:493
+#: ../src/libs/camera.c:453
 msgid "capture image(s)"
 msgstr "λήψη εικόνας(νων)"
 
-#: ../src/libs/camera.c:496
+#: ../src/libs/camera.c:456
 msgid "toggle delayed capture mode"
 msgstr "εναλλαγή λειτουργίας λήψης με καθυστέρηση"
 
-#: ../src/libs/camera.c:497
+#: ../src/libs/camera.c:457
 msgid "toggle sequenced capture mode"
 msgstr "εναλλαγή λειτουργίας διαδοχικής λήψης"
 
-#: ../src/libs/camera.c:498
+#: ../src/libs/camera.c:458
 msgid "toggle bracketed capture mode"
 msgstr "εναλλαγή λειτουργίας λήψης με διαστήματα"
 
-#: ../src/libs/camera.c:499
+#: ../src/libs/camera.c:459
 msgid "the count of seconds before actually doing a capture"
 msgstr "ο χρόνος σε δεύτερα πριν την απόκτηση εικόνας"
 
-#: ../src/libs/camera.c:500
+#: ../src/libs/camera.c:460
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -6075,7 +6023,7 @@ msgstr ""
 "χρησιμοποιείστε τη μαζί με τη λειτουργία χρονοκαθυστέρησης για τη δημιουργία "
 "σειρών stop-motion."
 
-#: ../src/libs/camera.c:501
+#: ../src/libs/camera.c:461
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
@@ -6083,7 +6031,7 @@ msgstr ""
 "ο αριθμός διαστημάτων σε κάθε πλευρά της κεντρικής έκθεσης, αριθμός εικόνων "
 "= (διαστήματα * 2) + 1."
 
-#: ../src/libs/camera.c:502
+#: ../src/libs/camera.c:462
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -6092,70 +6040,46 @@ msgstr ""
 "ο αριθμός βημάτων ανά διάστημα, τα βήματα ορίζονται στη μηχανή και είναι "
 "συνήθως 3 ανά στοπ"
 
-#: ../src/libs/camera.c:516
+#: ../src/libs/camera.c:476
 msgid "properties"
 msgstr "ιδιότητες"
 
-#: ../src/libs/camera.c:520
+#: ../src/libs/camera.c:480
 msgid "program"
 msgstr "πρόγραμμα"
 
-#: ../src/libs/camera.c:530 ../src/libs/camera.c:539
+#: ../src/libs/camera.c:490 ../src/libs/camera.c:499
 msgid "focus mode"
 msgstr "λειτουργία εστίασης"
 
-#: ../src/libs/camera.c:578
+#: ../src/libs/camera.c:538
 msgid "shutterspeed2"
-msgstr "shutterspeed2"
+msgstr "ταχύτητα διαφράγματος 2"
 
-#: ../src/libs/camera.c:587
+#: ../src/libs/camera.c:547
 msgid "shutterspeed"
 msgstr "ταχύτητα διαφράγματος"
 
-#: ../src/libs/camera.c:607
+#: ../src/libs/camera.c:567
 msgid "WB"
 msgstr "WB"
 
 #. user specified properties
-#: ../src/libs/camera.c:676
+#: ../src/libs/camera.c:636
 msgid "additional properties"
 msgstr "πρόσθετες ιδιότητες"
 
-#: ../src/libs/camera.c:680
+#: ../src/libs/camera.c:640
 msgid "label"
 msgstr "ετικέτα"
 
-#: ../src/libs/camera.c:686
+#: ../src/libs/camera.c:646
 msgid "property"
 msgstr "ιδιότητα"
 
-#: ../src/libs/camera.c:698
+#: ../src/libs/camera.c:658
 msgid "add user property"
 msgstr "προσθήκη ιδιότητας χρήστη"
-
-#: ../src/libs/capture.c:55
-msgid "session"
-msgstr "συνεδρία"
-
-#: ../src/libs/capture.c:138 ../src/libs/collect.h:46
-#: ../src/libs/metadata_view.c:83 ../src/libs/tools/filter.c:126
-msgid "filename"
-msgstr "όνομα αρχείου"
-
-#. create
-#: ../src/libs/capture.c:146 ../src/libs/styles.c:383
-msgid "create"
-msgstr "δημιουργία"
-
-#: ../src/libs/capture.c:169
-msgid ""
-"enter the pattern for retrieved images\n"
-"⚠\t$(SEQUENCE) is mandatory\n"
-"recognized variables:"
-msgstr ""
-"εισάγετε το πρότυπο για τις κεκτημένες εικόνες\n"
-"⚠\tτο πεδίο $(SEQUENCE) είναι υποχρεωτικό\n"
-"έγκυρες μεταβλητές:"
 
 #: ../src/libs/collect.c:116
 msgid "collect images"
@@ -6165,69 +6089,69 @@ msgstr "συλλογή εικόνων"
 msgid "search filmroll"
 msgstr "αναζήτηση φιλμ"
 
-#: ../src/libs/collect.c:503
+#: ../src/libs/collect.c:504
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "πρόβλημα επιλογής νέας διαδρομής για το φιλμ %s"
 
-#: ../src/libs/collect.c:542
+#: ../src/libs/collect.c:543
 msgid "search filmroll..."
 msgstr "αναζήτηση φιλμ..."
 
-#: ../src/libs/collect.c:548
+#: ../src/libs/collect.c:549
 msgid "sync..."
 msgstr "συγχρονισμός..."
 
-#: ../src/libs/collect.c:554
+#: ../src/libs/collect.c:555
 msgid "remove..."
 msgstr "αφαίρεση..."
 
-#: ../src/libs/collect.c:1056
+#: ../src/libs/collect.c:1057
 msgid "uncategorized"
 msgstr "μη κατηγοριοποιημένες"
 
-#: ../src/libs/collect.c:1245 ../src/libs/collect.c:1247
+#: ../src/libs/collect.c:1246 ../src/libs/collect.c:1248
 msgid "not altered"
 msgstr "αναλλοίωτες"
 
-#: ../src/libs/collect.c:1472
+#: ../src/libs/collect.c:1473
 msgid "local HDD"
 msgstr "τοπικός δίσκος"
 
-#: ../src/libs/collect.c:1557 ../src/libs/collect.c:1571
-#: ../src/libs/collect.c:1961
+#: ../src/libs/collect.c:1558 ../src/libs/collect.c:1572
+#: ../src/libs/collect.c:1962
 msgid "clear this rule"
 msgstr "καθαρισμός κανόνα"
 
-#: ../src/libs/collect.c:1562
+#: ../src/libs/collect.c:1563
 msgid "clear this rule or add new rules"
 msgstr "καθαρισμός κανόνα ή προσθήκη νέων"
 
-#: ../src/libs/collect.c:1967
+#: ../src/libs/collect.c:1968
 msgid "narrow down search"
 msgstr "περιορισμός αναζήτησης"
 
-#: ../src/libs/collect.c:1971
+#: ../src/libs/collect.c:1972
 msgid "add more images"
 msgstr "προσθήκη περισσότερων εικόνων"
 
-#: ../src/libs/collect.c:1975
+#: ../src/libs/collect.c:1976
 msgid "exclude images"
 msgstr "αποκλεισμός εικόνων"
 
-#: ../src/libs/collect.c:1981
+#: ../src/libs/collect.c:1982
 msgid "change to: and"
 msgstr "αλλαγή σε: και"
 
-#: ../src/libs/collect.c:1985
+#: ../src/libs/collect.c:1986
 msgid "change to: or"
 msgstr "αλλαγή σε: ή"
 
-#: ../src/libs/collect.c:1989
+#: ../src/libs/collect.c:1990
 msgid "change to: except"
 msgstr "αλλαγή σε: εκτός από"
 
-#: ../src/libs/collect.c:2036
+#: ../src/libs/collect.c:2037
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "πληκτρολογήστε το ερώτημά σας, κάνοντας χρήση του '%' ως μπαλαντέρ"
@@ -6252,7 +6176,7 @@ msgstr "ετικέτα"
 msgid "date"
 msgstr "ημερομηνία"
 
-#: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:127
+#: ../src/libs/collect.h:35 ../src/libs/tools/filter.c:148
 msgid "time"
 msgstr "χρόνος"
 
@@ -6260,24 +6184,29 @@ msgstr "χρόνος"
 msgid "history"
 msgstr "ιστορικό"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata.c:347
+#: ../src/libs/collect.h:39 ../src/libs/metadata.c:346
 msgid "description"
 msgstr "περιγραφή"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:497
-#: ../src/libs/metadata.c:360 ../src/libs/metadata_view.c:103
+#: ../src/libs/collect.h:40 ../src/libs/import.c:493
+#: ../src/libs/metadata.c:359 ../src/libs/metadata_view.c:103
 msgid "creator"
 msgstr "δημιουργός"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:503
-#: ../src/libs/metadata.c:373
+#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/metadata.c:372
 msgid "publisher"
 msgstr "εκδότης"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:509
-#: ../src/libs/metadata.c:386
+#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/metadata.c:385
 msgid "rights"
 msgstr "δικαιώματα"
+
+#: ../src/libs/collect.h:46 ../src/libs/metadata_view.c:83
+#: ../src/libs/tools/filter.c:147
+msgid "filename"
+msgstr "όνομα αρχείου"
 
 #: ../src/libs/colorpicker.c:36
 msgid "color picker"
@@ -6340,8 +6269,8 @@ msgstr "άνοιγμα αρχείου sidecar"
 msgid "XMP sidecar files"
 msgstr "αρχεία XMP sidecar"
 
-#: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:449
-#: ../src/libs/import.c:684 ../src/libs/styles.c:281
+#: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:452
+#: ../src/libs/import.c:680 ../src/libs/styles.c:281
 msgid "all files"
 msgstr "όλα τα αρχεία"
 
@@ -6350,7 +6279,7 @@ msgstr "όλα τα αρχεία"
 msgid "error loading file '%s'"
 msgstr "σφάλμα φόρτωσης αρχείου '%s'"
 
-#: ../src/libs/copy_history.c:258
+#: ../src/libs/copy_history.c:255
 msgid ""
 "copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
@@ -6358,11 +6287,11 @@ msgstr ""
 "αντιγραφή μέρους στοίβας ιστορικού της\n"
 "πρώτης επιλεγμένης εικόνας (ctrl-shift-c)"
 
-#: ../src/libs/copy_history.c:261
+#: ../src/libs/copy_history.c:258
 msgid "copy all"
 msgstr "αντ. όλων"
 
-#: ../src/libs/copy_history.c:263
+#: ../src/libs/copy_history.c:260
 msgid ""
 "copy history stack of\n"
 "first selected image (ctrl-c)"
@@ -6370,11 +6299,11 @@ msgstr ""
 "αντιγραφή στοίβας ιστορικού από\n"
 "την πρώτη επιλεγμένη εικόνα (ctrl-c)"
 
-#: ../src/libs/copy_history.c:266
+#: ../src/libs/copy_history.c:263
 msgid "discard"
 msgstr "απόρριψη"
 
-#: ../src/libs/copy_history.c:268
+#: ../src/libs/copy_history.c:265
 msgid ""
 "discard history stack of\n"
 "all selected images"
@@ -6382,11 +6311,11 @@ msgstr ""
 "απόρριψη στοίβας ιστορικού από\n"
 "όλες τις επιλεγμένες εικόνες"
 
-#: ../src/libs/copy_history.c:274
+#: ../src/libs/copy_history.c:271
 msgid "paste"
 msgstr "επικόλληση"
 
-#: ../src/libs/copy_history.c:275
+#: ../src/libs/copy_history.c:272
 msgid ""
 "paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
@@ -6394,11 +6323,11 @@ msgstr ""
 "επικόλληση μέρους στοίβας ιστορικού σε\n"
 "όλες τις επιλεγμένες εικόνες (ctrl-shift-v)"
 
-#: ../src/libs/copy_history.c:280
+#: ../src/libs/copy_history.c:277
 msgid "paste all"
 msgstr "επ. όλων"
 
-#: ../src/libs/copy_history.c:281
+#: ../src/libs/copy_history.c:278
 msgid ""
 "paste history stack to\n"
 "all selected images (ctrl-v)"
@@ -6406,23 +6335,19 @@ msgstr ""
 "επικόλληση στοίβας ιστορικού σε\n"
 "όλες τις επιλεγμένες εικόνες (ctrl-v)"
 
-#: ../src/libs/copy_history.c:286
+#: ../src/libs/copy_history.c:283
 msgid "append"
 msgstr "προσθήκη"
 
-#: ../src/libs/copy_history.c:287
-msgid "overwrite"
-msgstr "αντικατάσταση"
-
-#: ../src/libs/copy_history.c:288
+#: ../src/libs/copy_history.c:285
 msgid "how to handle existing history"
 msgstr "χειρισμός υπάρχοντος ιστορικού"
 
-#: ../src/libs/copy_history.c:295
+#: ../src/libs/copy_history.c:292
 msgid "load sidecar file"
 msgstr "φόρτωση XMP"
 
-#: ../src/libs/copy_history.c:297
+#: ../src/libs/copy_history.c:294
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
@@ -6430,45 +6355,45 @@ msgstr ""
 "άνοιγμα αρχείου xmp sidecar\n"
 "και εφαρμογή στις επιλεγμένες εικόνες"
 
-#: ../src/libs/copy_history.c:300
+#: ../src/libs/copy_history.c:297
 msgid "write sidecar files"
 msgstr "εγγραφή XMP"
 
-#: ../src/libs/copy_history.c:302
+#: ../src/libs/copy_history.c:299
 msgid "write history stack and tags to XMP sidecar files"
 msgstr "εγγραφή στοίβας ιστορικού και ετικετών σε αρχεία xmp sidecar"
 
-#: ../src/libs/copy_history.c:340
+#: ../src/libs/copy_history.c:337
 msgctxt "accel"
 msgid "copy all"
 msgstr "αντιγραφή όλων"
 
-#: ../src/libs/copy_history.c:341
+#: ../src/libs/copy_history.c:338
 msgctxt "accel"
 msgid "copy"
 msgstr "αντιγραφή"
 
-#: ../src/libs/copy_history.c:342
+#: ../src/libs/copy_history.c:339
 msgctxt "accel"
 msgid "discard"
 msgstr "απόρριψη"
 
-#: ../src/libs/copy_history.c:343
+#: ../src/libs/copy_history.c:340
 msgctxt "accel"
 msgid "paste all"
 msgstr "επικόλληση όλων"
 
-#: ../src/libs/copy_history.c:344
+#: ../src/libs/copy_history.c:341
 msgctxt "accel"
 msgid "paste"
 msgstr "επικόλληση"
 
-#: ../src/libs/copy_history.c:345
+#: ../src/libs/copy_history.c:342
 msgctxt "accel"
 msgid "load sidecar files"
 msgstr "φόρτωση αρχείων sidecar"
 
-#: ../src/libs/copy_history.c:346
+#: ../src/libs/copy_history.c:343
 msgctxt "accel"
 msgid "write sidecar files"
 msgstr "εγγραφή αρχείων sidecar"
@@ -6549,8 +6474,8 @@ msgid "export with current settings (ctrl-e)"
 msgstr "εξαγωγή με τρέχουσες ρυθμίσεις (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:875 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1689
+#: ../src/libs/export.c:878 ../src/libs/styles.c:69
+#: ../src/views/darkroom.c:1703
 msgctxt "accel"
 msgid "export"
 msgstr "εξαγωγή"
@@ -6581,7 +6506,7 @@ msgstr ""
 "rm <file>\t\t\tδιαγραφή <file>\n"
 "rmdir <dir>\t\t\tδιαγραφή κενού καταλόγου"
 
-#: ../src/libs/geotagging.c:382
+#: ../src/libs/geotagging.c:385
 msgid ""
 "enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
@@ -6589,19 +6514,19 @@ msgstr ""
 "εισάγετε την ώρα που εμφανίζεται στην επιλεγμένη εικόνα\n"
 "πρότυπο: hh:mm:ss"
 
-#: ../src/libs/geotagging.c:430
+#: ../src/libs/geotagging.c:433
 msgid "open GPX file"
 msgstr "άνοιγμα αρχείου GPX"
 
-#: ../src/libs/geotagging.c:444
+#: ../src/libs/geotagging.c:447
 msgid "GPS data exchange format"
 msgstr "αρχεία ανταλλαγής δεδομένων GPS"
 
-#: ../src/libs/geotagging.c:454
+#: ../src/libs/geotagging.c:457
 msgid "camera time zone"
 msgstr "ζώνη ώρας μηχανής"
 
-#: ../src/libs/geotagging.c:455
+#: ../src/libs/geotagging.c:458
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -6609,11 +6534,11 @@ msgstr ""
 "οι περισσότερες μηχανές δεν αποθηκεύουν τη ζώνη ώρας στα δεδομένα EXIF. "
 "δώστε τη σωστή ζώνη για να γίνει ορθή αντιστοίχηση με τα δεδομένα GPX"
 
-#: ../src/libs/geotagging.c:576
+#: ../src/libs/geotagging.c:579
 msgid "time offset"
 msgstr "χρ. μετατόπιση"
 
-#: ../src/libs/geotagging.c:586
+#: ../src/libs/geotagging.c:589
 msgid ""
 "time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
@@ -6621,20 +6546,20 @@ msgstr ""
 "πρότυπο χρονικού\n"
 "επιθέματος: [+-]?[[hh:]mm:]ss"
 
-#: ../src/libs/geotagging.c:596
+#: ../src/libs/geotagging.c:599
 msgid "calculate the time offset from an image"
 msgstr "υπολογισμός χρονικού επιθέματος από εικόνα"
 
-#: ../src/libs/geotagging.c:601
+#: ../src/libs/geotagging.c:604
 msgid "apply time offset to selected images"
 msgstr "εφαρμογή χρονικού επιθέματος στις επιλεγμένες εικόνες"
 
 #. gpx
-#: ../src/libs/geotagging.c:609
+#: ../src/libs/geotagging.c:612
 msgid "apply GPX track file"
 msgstr "εφαρμογή αρχείου GPX"
 
-#: ../src/libs/geotagging.c:610
+#: ../src/libs/geotagging.c:613
 msgid "parses a GPX file and updates location of selected images"
 msgstr "φόρτωση αρχείου GPX και ενημέρωση τοποθεσίας επιλεγμένων εικόνων"
 
@@ -6894,85 +6819,85 @@ msgid "import folder"
 msgstr "εισαγωγή φακέλου"
 
 #. add the rescan button
-#: ../src/libs/import.c:191
+#: ../src/libs/import.c:187
 msgid "scan for devices"
 msgstr "αναζήτηση για συσκευές"
 
-#: ../src/libs/import.c:194
+#: ../src/libs/import.c:190
 msgid "scan for newly attached devices"
 msgstr "ανίχνευση νέων συσκευών"
 
-#: ../src/libs/import.c:221
+#: ../src/libs/import.c:217
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "συσκευή '%s' συνδεδεμένη στη θύρα '%s'."
 
-#: ../src/libs/import.c:230
+#: ../src/libs/import.c:226
 msgid "import from camera"
 msgstr "εισαγωγή από μηχανή"
 
-#: ../src/libs/import.c:235
+#: ../src/libs/import.c:231
 msgid "tethered shoot"
 msgstr "εξαρτημένη λήψη"
 
 #. No supported devices is detected lets notice user..
-#: ../src/libs/import.c:257
+#: ../src/libs/import.c:253
 msgid "no supported devices found"
 msgstr "δεν βρέθηκαν συσκευές"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:376
+#: ../src/libs/import.c:372
 msgid "import options"
 msgstr "επιλογές εισαγωγής"
 
 #. recursive opening.
-#: ../src/libs/import.c:396
+#: ../src/libs/import.c:392
 msgid "import directories recursively"
 msgstr "αναδρομική εισαγωγή καταλόγων"
 
-#: ../src/libs/import.c:397
+#: ../src/libs/import.c:393
 msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "αναδρομική εισαγωγή υποφακέλων. Κάθε φάκελος δημιουργεί νέο φιλμ."
 
-#: ../src/libs/import.c:411
+#: ../src/libs/import.c:407
 msgid "apply metadata on import"
 msgstr "εφαρμογή μεταδεδομένων κατά την εισαγωγή"
 
-#: ../src/libs/import.c:412
+#: ../src/libs/import.c:408
 msgid "apply some metadata to all newly imported images."
 msgstr "εφαρμογή ορισμένων μεταδεδομένων σε όλες τις νεο-εισηγμένες εικόνες"
 
-#: ../src/libs/import.c:439
+#: ../src/libs/import.c:435
 msgid "comma separated list of tags"
 msgstr "κατάλογος ετικετών χωρισμένων με κόμμα"
 
-#: ../src/libs/import.c:654
+#: ../src/libs/import.c:650
 msgid "import image"
 msgstr "εισαγωγή εικόνας"
 
-#: ../src/libs/import.c:679
+#: ../src/libs/import.c:675
 msgid "supported images"
 msgstr "υποστηριζόμενοι τύποι αρχείων"
 
-#: ../src/libs/import.c:729
+#: ../src/libs/import.c:725
 msgid "file has unknown format!"
 msgstr "ο τύπος του αρχείου είναι άγνωστος!"
 
-#: ../src/libs/import.c:747
+#: ../src/libs/import.c:743
 msgid "import film"
 msgstr "εισαγωγή φιλμ"
 
-#: ../src/libs/import.c:821
+#: ../src/libs/import.c:817
 msgid "select one or more images to import"
 msgstr "επιλέξτε μία ή περισσότερες εικόνες προς εισαγωγή"
 
 #. adding the import folder button
-#: ../src/libs/import.c:830
+#: ../src/libs/import.c:826
 msgid "folder"
 msgstr "φάκελος"
 
-#: ../src/libs/import.c:834
+#: ../src/libs/import.c:830
 msgid "select a folder to import as film roll"
 msgstr "επιλέξτε φάκελο για εισαγωγή ως φιλμ"
 
@@ -6981,177 +6906,177 @@ msgstr "επιλέξτε φάκελο για εισαγωγή ως φιλμ"
 msgid "edit `%s'"
 msgstr "επεξεργασία '%s'"
 
-#: ../src/libs/live_view.c:134
+#: ../src/libs/live_view.c:133
 msgid "live view"
 msgstr "ζωντανή προβολή"
 
-#: ../src/libs/live_view.c:161
+#: ../src/libs/live_view.c:160
 msgctxt "accel"
 msgid "toggle live view"
 msgstr "απ/ενεργοποίηση ζωντανής προβολής"
 
-#: ../src/libs/live_view.c:164
+#: ../src/libs/live_view.c:163
 msgctxt "accel"
 msgid "flip horizontally"
 msgstr "αναστροφή οριζόντια"
 
-#: ../src/libs/live_view.c:165
+#: ../src/libs/live_view.c:164
 msgctxt "accel"
 msgid "move focus point in (big steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα μέσα (μεγάλα βήματα)"
 
-#: ../src/libs/live_view.c:166
+#: ../src/libs/live_view.c:165
 msgctxt "accel"
 msgid "move focus point in (small steps)"
+msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μικρά βήματα)"
+
+#: ../src/libs/live_view.c:166
+msgctxt "accel"
+msgid "move focus point out (small steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μικρά βήματα)"
 
 #: ../src/libs/live_view.c:167
 msgctxt "accel"
-msgid "move focus point out (small steps)"
-msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μικρά βήματα)"
-
-#: ../src/libs/live_view.c:168
-msgctxt "accel"
 msgid "move focus point out (big steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μεγάλα βήματα)"
 
-#: ../src/libs/live_view.c:285
+#: ../src/libs/live_view.c:284
 msgid "toggle live view"
 msgstr "απ/ενεργοποίηση ζωντανής προβολής"
 
-#: ../src/libs/live_view.c:286
+#: ../src/libs/live_view.c:285
 msgid "zoom live view"
 msgstr "μεγέθυνση ζωντανής προβολής"
 
-#: ../src/libs/live_view.c:287
+#: ../src/libs/live_view.c:286
 msgid "rotate 90 degrees ccw"
 msgstr "περιστροφή 90 μοίρες αριστερά"
 
-#: ../src/libs/live_view.c:288
+#: ../src/libs/live_view.c:287
 msgid "rotate 90 degrees cw"
 msgstr "περιστροφή 90 μοίρες δεξιά"
 
-#: ../src/libs/live_view.c:289
+#: ../src/libs/live_view.c:288
 msgid "flip live view horizontally"
 msgstr "οριζόντια αναστροφή ζωντανής προβολής"
 
-#: ../src/libs/live_view.c:310
+#: ../src/libs/live_view.c:309
 msgid "move focus point in (big steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα μέσα (μεγάλα βήματα)"
 
-#: ../src/libs/live_view.c:311
+#: ../src/libs/live_view.c:310
 msgid "move focus point in (small steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα μέσα (μικρά βήματα)"
 
-#: ../src/libs/live_view.c:312
+#: ../src/libs/live_view.c:311
 msgid "move focus point out (small steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μικρά βήματα)"
 
-#: ../src/libs/live_view.c:313
+#: ../src/libs/live_view.c:312
 msgid "move focus point out (big steps)"
 msgstr "μετακίνηση εστιακού σημείου προς τα έξω (μεγάλα βήματα)"
 
-#: ../src/libs/live_view.c:353
+#: ../src/libs/live_view.c:352
 msgid "overlay"
 msgstr "επικάλυψη"
 
-#: ../src/libs/live_view.c:355
+#: ../src/libs/live_view.c:354
 msgid "selected image"
 msgstr "επιλεγμένη εικόνα"
 
-#: ../src/libs/live_view.c:356 ../src/libs/tools/filter.c:129
+#: ../src/libs/live_view.c:355 ../src/libs/tools/filter.c:150
 msgid "id"
 msgstr "αναγνωριστικό"
 
-#: ../src/libs/live_view.c:357
+#: ../src/libs/live_view.c:356
 msgid "overlay another image over the live view"
 msgstr "υπέρθεση άλλης εικόνας πάνω από τη ζωντανή προβολή"
 
-#: ../src/libs/live_view.c:362 ../src/libs/metadata_view.c:82
+#: ../src/libs/live_view.c:361 ../src/libs/metadata_view.c:82
 msgid "image id"
 msgstr "αναγνωριστικό"
 
-#: ../src/libs/live_view.c:366
+#: ../src/libs/live_view.c:365
 msgid "enter image id of the overlay manually"
 msgstr "εισάγετε το αναγνωριστικό εικόνας επικάλυψης χειροκίνητα"
 
-#: ../src/libs/live_view.c:376
+#: ../src/libs/live_view.c:375
 msgid "overlay mode"
 msgstr "λειτουργία επικάλυψης"
 
-#: ../src/libs/live_view.c:378
+#: ../src/libs/live_view.c:377
 msgctxt "blendmode"
 msgid "xor"
 msgstr "xor"
 
-#: ../src/libs/live_view.c:379
+#: ../src/libs/live_view.c:378
 msgctxt "blendmode"
 msgid "add"
 msgstr "πρόσθεση"
 
-#: ../src/libs/live_view.c:380
+#: ../src/libs/live_view.c:379
 msgctxt "blendmode"
 msgid "saturate"
 msgstr "κορεσμός"
 
-#: ../src/libs/live_view.c:387
+#: ../src/libs/live_view.c:386
 msgctxt "blendmode"
 msgid "color dodge"
 msgstr "ξάνοιγμα χρώματος"
 
-#: ../src/libs/live_view.c:388
+#: ../src/libs/live_view.c:387
 msgctxt "blendmode"
 msgid "color burn"
 msgstr "κάψιμο χρώματος"
 
-#: ../src/libs/live_view.c:389
+#: ../src/libs/live_view.c:388
 msgctxt "blendmode"
 msgid "hard light"
 msgstr "σκληρό φως"
 
-#: ../src/libs/live_view.c:390
+#: ../src/libs/live_view.c:389
 msgctxt "blendmode"
 msgid "soft light"
 msgstr "απαλό φως"
 
-#: ../src/libs/live_view.c:392
+#: ../src/libs/live_view.c:391
 msgctxt "blendmode"
 msgid "exclusion"
 msgstr "εξαίρεση"
 
-#: ../src/libs/live_view.c:393
+#: ../src/libs/live_view.c:392
 msgctxt "blendmode"
 msgid "HSL hue"
 msgstr "απόχρωση HSL"
 
-#: ../src/libs/live_view.c:394
+#: ../src/libs/live_view.c:393
 msgctxt "blendmode"
 msgid "HSL saturation"
 msgstr "κορεσμός HSL"
 
-#: ../src/libs/live_view.c:395
+#: ../src/libs/live_view.c:394
 msgctxt "blendmode"
 msgid "HSL color"
 msgstr "χρώμα HSL"
 
-#: ../src/libs/live_view.c:396
+#: ../src/libs/live_view.c:395
 msgctxt "blendmode"
 msgid "HSL luminosity"
 msgstr "φωταύγεια HSL"
 
-#: ../src/libs/live_view.c:398
+#: ../src/libs/live_view.c:397
 msgid "mode of the overlay"
 msgstr "μορφή επικαλύμματος"
 
-#: ../src/libs/live_view.c:404
+#: ../src/libs/live_view.c:403
 msgid "split line"
 msgstr "διαχωριστική γραμμή"
 
-#: ../src/libs/live_view.c:407
+#: ../src/libs/live_view.c:406
 msgid "only draw part of the overlay"
 msgstr "μερική σχεδίαση επικάλυψης"
 
-#: ../src/libs/location.c:81
+#: ../src/libs/location.c:80
 msgid "find location"
 msgstr "εύρεση τοποθεσίας"
 
@@ -7184,77 +7109,77 @@ msgstr "μεταδεδομένα"
 msgid "<leave unchanged>"
 msgstr "<leave unchanged>"
 
-#: ../src/libs/metadata.c:305
+#: ../src/libs/metadata.c:304
 msgctxt "accel"
 msgid "clear"
 msgstr "καθαρισμός"
 
-#: ../src/libs/metadata.c:404
+#: ../src/libs/metadata.c:403
 msgid "clear"
 msgstr "καθαρισμός"
 
-#: ../src/libs/metadata.c:406
+#: ../src/libs/metadata.c:405
 msgid "remove metadata from selected images"
 msgstr "αφαίρεση μεταδεδομένων από τις επιλεγμένες εικόνες"
 
-#: ../src/libs/metadata.c:413
+#: ../src/libs/metadata.c:412
 msgid "write metadata for selected images"
 msgstr "εγγραφή μεταδεδομένων για τις επιλεγμένες εικόνες"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:454
+#: ../src/libs/metadata.c:453
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:454
+#: ../src/libs/metadata.c:453
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:455
+#: ../src/libs/metadata.c:454
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:455
+#: ../src/libs/metadata.c:454
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:456
+#: ../src/libs/metadata.c:455
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:456
+#: ../src/libs/metadata.c:455
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:457
+#: ../src/libs/metadata.c:456
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:457
+#: ../src/libs/metadata.c:456
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:458
+#: ../src/libs/metadata.c:457
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:458
+#: ../src/libs/metadata.c:457
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:459
+#: ../src/libs/metadata.c:458
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:459
+#: ../src/libs/metadata.c:458
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:460
+#: ../src/libs/metadata.c:459
 msgid "all rights reserved"
 msgstr "με επιφύλαξη παντός δικαιώματος"
 
-#: ../src/libs/metadata.c:460
+#: ../src/libs/metadata.c:459
 msgid "all rights reserved."
 msgstr "με επιφύλαξη παντός δικαιώματος."
 
@@ -7304,7 +7229,7 @@ msgstr "γεωγρ. μήκος"
 msgid "image information"
 msgstr "πληροφορίες εικόνας"
 
-#: ../src/libs/metadata_view.c:221
+#: ../src/libs/metadata_view.c:220
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -7313,7 +7238,7 @@ msgstr ""
 "διπλό κλικ για μετάβαση στο φιλμ\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:426
+#: ../src/libs/metadata_view.c:424
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "μετάβαση σε φιλμ"
@@ -7358,19 +7283,19 @@ msgstr "περισσότερα πρόσθετα"
 msgid "navigation"
 msgstr "πλοήγηση"
 
-#: ../src/libs/navigation.c:434
+#: ../src/libs/navigation.c:428
 msgid "small"
 msgstr "μικρό"
 
-#: ../src/libs/navigation.c:438
+#: ../src/libs/navigation.c:432
 msgid "fit to screen"
 msgstr "προσαρμογή στην οθόνη"
 
-#: ../src/libs/navigation.c:442
+#: ../src/libs/navigation.c:436
 msgid "100%"
 msgstr "100%"
 
-#: ../src/libs/navigation.c:446
+#: ../src/libs/navigation.c:440
 msgid "200%"
 msgstr "200%"
 
@@ -7383,18 +7308,18 @@ msgctxt "accel"
 msgid "jump back to previous collection"
 msgstr "επιλογή προηγούμενης συλλογής"
 
-#: ../src/libs/recentcollect.c:119
+#: ../src/libs/recentcollect.c:125
 #, c-format
 msgid " and "
 msgstr " και "
 
-#: ../src/libs/recentcollect.c:122
+#: ../src/libs/recentcollect.c:130
 #, c-format
 msgid " or "
 msgstr " ή "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:125
+#: ../src/libs/recentcollect.c:135
 #, c-format
 msgid " but not "
 msgstr " αλλά όχι"
@@ -7455,6 +7380,15 @@ msgstr ""
 "επιλογή ανέπαφων εικόνων στην\n"
 "τρέχουσα συλλογή"
 
+#: ../src/libs/session.c:48
+msgid "session"
+msgstr "συνεδρία"
+
+#. create
+#: ../src/libs/session.c:112 ../src/libs/styles.c:381
+msgid "create"
+msgstr "δημιουργία"
+
 #: ../src/libs/snapshots.c:81
 msgid "snapshots"
 msgstr "στιγμιότυπα"
@@ -7503,7 +7437,7 @@ msgstr "επιλογή στυλ"
 msgid "darktable style files"
 msgstr "αρχεία στυλ darktable"
 
-#: ../src/libs/styles.c:352
+#: ../src/libs/styles.c:350
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -7511,46 +7445,46 @@ msgstr ""
 "διαθέσιμα στυλ,\n"
 "διπλό κλικ για εφαρμογή"
 
-#: ../src/libs/styles.c:358
+#: ../src/libs/styles.c:356
 msgid "enter style name"
 msgstr "εισάγετε όνομα στυλ"
 
-#: ../src/libs/styles.c:371
+#: ../src/libs/styles.c:369
 msgid "create duplicate"
 msgstr "δημιουργία διπλοτύπου"
 
-#: ../src/libs/styles.c:375
+#: ../src/libs/styles.c:373
 msgid "creates a duplicate of the image before applying style"
 msgstr "δημιουργεί διπλότυπο της εικόνας πριν την εφαρμογή στυλ"
 
-#: ../src/libs/styles.c:385
+#: ../src/libs/styles.c:383
 msgid "create styles from history stack of selected images"
 msgstr "δημιουργία στυλ από τη στοίβα ιστορικού των επιλεγμένων εικόνων"
 
 #. edit
-#: ../src/libs/styles.c:389
+#: ../src/libs/styles.c:387
 msgid "edit"
 msgstr "επεξεργασία"
 
-#: ../src/libs/styles.c:392
+#: ../src/libs/styles.c:390
 msgid "edit the selected style in list above"
 msgstr "επεξεργασία επιλεγμένου στυλ από την παραπάνω λίστα"
 
-#: ../src/libs/styles.c:399
+#: ../src/libs/styles.c:397
 msgid "deletes the selected style in list above"
 msgstr "διαγράφει το επιλεγμένο στυλ από την παραπάνω λίστα"
 
 #. import button
-#: ../src/libs/styles.c:403
+#: ../src/libs/styles.c:401
 msgctxt "styles"
 msgid "import"
 msgstr "εισαγωγή"
 
-#: ../src/libs/styles.c:405
+#: ../src/libs/styles.c:403
 msgid "import style from a style file"
 msgstr "εισαγωγή στυλ από αρχείο"
 
-#: ../src/libs/styles.c:412
+#: ../src/libs/styles.c:410
 msgid "export the selected style into a style file"
 msgstr "εξαγωγή επιλεγμένου στυλ σε αρχείο"
 
@@ -7578,7 +7512,7 @@ msgctxt "accel"
 msgid "tag"
 msgstr "ετικέτα"
 
-#: ../src/libs/tagging.c:320
+#: ../src/libs/tagging.c:319
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -7593,11 +7527,11 @@ msgstr[1] ""
 "αφαίρεση της ετικέτας '%s';\n"
 "είναι προσαρτημένη σε %d εικόνες!"
 
-#: ../src/libs/tagging.c:323
+#: ../src/libs/tagging.c:322
 msgid "delete tag?"
 msgstr "διαγραφή ετικέτας;"
 
-#: ../src/libs/tagging.c:423
+#: ../src/libs/tagging.c:421
 msgid ""
 "attached tags,\n"
 "doubleclick to detach"
@@ -7605,27 +7539,27 @@ msgstr ""
 "προσαρτημένες ετικέτες,\n"
 "διπλό κλικ για απόσπαση"
 
-#: ../src/libs/tagging.c:430
+#: ../src/libs/tagging.c:428
 msgid "attach"
 msgstr "προσάρτηση"
 
-#: ../src/libs/tagging.c:432
+#: ../src/libs/tagging.c:430
 msgid "attach tag to all selected images"
 msgstr "προσάρτηση ετικέτας σε όλες τις επιλεγμένες εικόνες"
 
-#: ../src/libs/tagging.c:437
+#: ../src/libs/tagging.c:435
 msgid "detach"
 msgstr "απόσπαση"
 
-#: ../src/libs/tagging.c:439
+#: ../src/libs/tagging.c:437
 msgid "detach tag from all selected images"
 msgstr "απόσπαση ετικέτας από όλες τις επιλεγμένες εικόνες"
 
-#: ../src/libs/tagging.c:452
+#: ../src/libs/tagging.c:450
 msgid "enter tag name"
 msgstr "εισάγετε όνομα ετικέτας"
 
-#: ../src/libs/tagging.c:480
+#: ../src/libs/tagging.c:478
 msgid ""
 "related tags,\n"
 "doubleclick to attach"
@@ -7633,11 +7567,11 @@ msgstr ""
 "σχετικές ετικέτες,\n"
 "διπλό κλικ για προσάρτηση"
 
-#: ../src/libs/tagging.c:487
+#: ../src/libs/tagging.c:485
 msgid "new"
 msgstr "νέα"
 
-#: ../src/libs/tagging.c:489
+#: ../src/libs/tagging.c:487
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -7645,7 +7579,7 @@ msgstr ""
 "δημιουργία νέας ετικέτας με το\n"
 "όνομα που εισάγατε"
 
-#: ../src/libs/tagging.c:496
+#: ../src/libs/tagging.c:494
 msgid "delete selected tag"
 msgstr "διαγραφή επιλεγμένης ετικέτας"
 
@@ -7698,35 +7632,35 @@ msgstr ""
 msgid "clear all labels of selected images"
 msgstr "καθαρισμός όλων των ετικετών από τις επιλεγμένες εικόνες"
 
-#: ../src/libs/tools/darktable.c:47
+#: ../src/libs/tools/darktable.c:48
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/tools/darktable.c:170
+#: ../src/libs/tools/darktable.c:177
 msgid "organize and develop images from digital cameras"
 msgstr "οργανώστε και εμφανίστε εικόνες απο ψηφιακές μηχανές"
 
-#: ../src/libs/tools/darktable.c:175
+#: ../src/libs/tools/darktable.c:182
 msgid "* developers *"
 msgstr "* προγραμματιστές *"
 
-#: ../src/libs/tools/darktable.c:181
+#: ../src/libs/tools/darktable.c:188
 msgid "* ubuntu packaging, color management, video tutorials *"
 msgstr "* ubuntu packaging, color management, video tutorials *"
 
-#: ../src/libs/tools/darktable.c:184
+#: ../src/libs/tools/darktable.c:191
 msgid "* OpenCL pipeline: *"
 msgstr "* OpenCL pipeline: *"
 
-#: ../src/libs/tools/darktable.c:187
+#: ../src/libs/tools/darktable.c:194
 msgid "* networking, battle testing, translation expert *"
 msgstr "* networking, battle testing, translation expert *"
 
-#: ../src/libs/tools/darktable.c:190
+#: ../src/libs/tools/darktable.c:197
 msgid "* contributors *"
 msgstr "* συντελεστές *"
 
-#: ../src/libs/tools/darktable.c:236
+#: ../src/libs/tools/darktable.c:272
 msgid "translator-credits"
 msgstr "μεταφραστές"
 
@@ -7737,37 +7671,37 @@ msgstr "φιλμοταινία"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1797
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1812
 msgctxt "accel"
 msgid "rate 0"
 msgstr "διαβάθμιση 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1798
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1813
 msgctxt "accel"
 msgid "rate 1"
 msgstr "διαβάθμιση 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1799
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1814
 msgctxt "accel"
 msgid "rate 2"
 msgstr "διαβάθμιση 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1800
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1815
 msgctxt "accel"
 msgid "rate 3"
 msgstr "διαβάθμιση 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1801
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1816
 msgctxt "accel"
 msgid "rate 4"
 msgstr "διαβάθμιση 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1802
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1817
 msgctxt "accel"
 msgid "rate 5"
 msgstr "διαβάθμιση 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1803
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1818
 msgctxt "accel"
 msgid "rate reject"
 msgstr "διαβάθμιση προς απόρριψη"
@@ -7805,81 +7739,81 @@ msgstr "διπλότυπο εικόνας"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1818
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1833
 msgctxt "accel"
 msgid "color red"
 msgstr "χρώμα κόκκινο"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1819
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1834
 msgctxt "accel"
 msgid "color yellow"
 msgstr "χρώμα κίτρινο"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1820
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1835
 msgctxt "accel"
 msgid "color green"
 msgstr "χρώμα πράσινο"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1821
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1836
 msgctxt "accel"
 msgid "color blue"
 msgstr "χρώμα μπλε"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1822
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1837
 msgctxt "accel"
 msgid "color purple"
 msgstr "χρώμα μοβ"
 
 #. setup selection accelerators
 #. selection accels
-#: ../src/libs/tools/filmstrip.c:194 ../src/libs/tools/lighttable.c:147
+#: ../src/libs/tools/filmstrip.c:194 ../src/libs/tools/lighttable.c:148
 msgctxt "accel"
 msgid "select all"
 msgstr "επιλογή όλων"
 
-#: ../src/libs/tools/filmstrip.c:195 ../src/libs/tools/lighttable.c:149
+#: ../src/libs/tools/filmstrip.c:195 ../src/libs/tools/lighttable.c:150
 msgctxt "accel"
 msgid "select none"
 msgstr "επιλογή καμίας"
 
-#: ../src/libs/tools/filmstrip.c:196 ../src/libs/tools/lighttable.c:151
+#: ../src/libs/tools/filmstrip.c:196 ../src/libs/tools/lighttable.c:152
 msgctxt "accel"
 msgid "invert selection"
 msgstr "αναστροφή επιλογής"
 
-#: ../src/libs/tools/filmstrip.c:197 ../src/libs/tools/lighttable.c:153
+#: ../src/libs/tools/filmstrip.c:197 ../src/libs/tools/lighttable.c:154
 msgctxt "accel"
 msgid "select film roll"
 msgstr "επιλογή φιλμ"
 
-#: ../src/libs/tools/filmstrip.c:198 ../src/libs/tools/lighttable.c:154
+#: ../src/libs/tools/filmstrip.c:198 ../src/libs/tools/lighttable.c:155
 msgctxt "accel"
 msgid "select untouched"
 msgstr "επιλογή ανέπαφων"
 
-#: ../src/libs/tools/filter.c:53
+#: ../src/libs/tools/filter.c:68
 msgid "filter"
 msgstr "φίλτρο"
 
 #. list label
-#: ../src/libs/tools/filter.c:95
+#: ../src/libs/tools/filter.c:110
 msgid "view"
 msgstr "προβολή"
 
-#: ../src/libs/tools/filter.c:102
+#: ../src/libs/tools/filter.c:123
 msgid "unstarred only"
 msgstr "μόνο χωρίς αστέρι"
 
-#: ../src/libs/tools/filter.c:108
+#: ../src/libs/tools/filter.c:129
 msgid "rejected only"
 msgstr "μόνο προς αππόριψη"
 
-#: ../src/libs/tools/filter.c:109
+#: ../src/libs/tools/filter.c:130
 msgid "all except rejected"
 msgstr "όλες εκτός προς αππόριψη"
 
 #. sort by label
-#: ../src/libs/tools/filter.c:120
+#: ../src/libs/tools/filter.c:141
 msgid "sort by"
 msgstr "κατάταξη ανά"
 
@@ -7915,7 +7849,7 @@ msgstr "προτιμήσεις"
 msgid "hinter"
 msgstr "hinter"
 
-#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:128
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:129
 msgid "lighttable"
 msgstr "lighttable"
 
@@ -7924,22 +7858,22 @@ msgid "zoomable light table"
 msgstr "zoomable light table"
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:137
+#: ../src/libs/tools/lighttable.c:138
 msgctxt "accel"
 msgid "zoom max"
 msgstr "μέγιστη μεγέθυνση"
 
-#: ../src/libs/tools/lighttable.c:139
+#: ../src/libs/tools/lighttable.c:140
 msgctxt "accel"
 msgid "zoom in"
 msgstr "μεγέθυνση"
 
-#: ../src/libs/tools/lighttable.c:141
+#: ../src/libs/tools/lighttable.c:142
 msgctxt "accel"
 msgid "zoom out"
 msgstr "σμίκρυνση"
 
-#: ../src/libs/tools/lighttable.c:143
+#: ../src/libs/tools/lighttable.c:144
 msgctxt "accel"
 msgid "zoom min"
 msgstr "ελάχιστη μεγέθυνση"
@@ -7960,58 +7894,32 @@ msgstr "viewswitcher"
 msgid "view toolbox"
 msgstr "εμφάνιση εργαλειοθήκης"
 
-#: ../src/views/capture.c:106
-msgid "tethering"
-msgstr "tethering"
-
-#: ../src/views/capture.c:303
-#, c-format
-msgid "failed to create session path %s."
-msgstr "αδυναμία δημιουργίας διαδρομής συνεδρίας %s."
-
-#: ../src/views/capture.c:321
-#, c-format
-msgid "new session initiated '%s'"
-msgstr "έναρξη νέας συνεδρίας %s"
-
-#: ../src/views/capture.c:458
-msgid "no camera with tethering support available for use..."
-msgstr "δεν βρέθηκε μηχανή με υποστήριξη εξαρτημένης λειτουργίας..."
-
-#. Setup key accelerators in capture view...
-#. Film strip shortcuts
-#: ../src/views/capture.c:564 ../src/views/darkroom.c:1677
-#: ../src/views/map.c:564
-msgctxt "accel"
-msgid "toggle film strip"
-msgstr "εναλλαγή φιλμ"
-
 #: ../src/views/darkroom.c:83
 msgid "darkroom"
 msgstr "darkroom"
 
-#: ../src/views/darkroom.c:877
+#: ../src/views/darkroom.c:893
 msgid "no userdefined presets for favorite modules were found"
 msgstr "δεν έχουν οριστεί προεπιλογές αγαπημένων προσθέτων"
 
-#: ../src/views/darkroom.c:882
+#: ../src/views/darkroom.c:898
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "το στυλ %s εφαρμόστηκε στην τρέχουσα εικόνα"
 
-#: ../src/views/darkroom.c:940
+#: ../src/views/darkroom.c:956
 msgid "no styles have been created yet"
 msgstr "δεν έχουν οριστεί στυλ ακόμα"
 
-#: ../src/views/darkroom.c:1091
+#: ../src/views/darkroom.c:1107
 msgid "quick access to presets of your favorites"
 msgstr "γρήγορη πρόσβαση στις προεπιλογές αγαπημένων προσθέτων"
 
-#: ../src/views/darkroom.c:1103
+#: ../src/views/darkroom.c:1119
 msgid "quick access for applying any of your styles"
 msgstr "γρήγορη πρόσβαση επιλογής των στυλ σας"
 
-#: ../src/views/darkroom.c:1111
+#: ../src/views/darkroom.c:1127
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -8019,167 +7927,193 @@ msgstr ""
 "εναλλαγή ένδειξης υπό/υπέρθεσης\n"
 "δεξί κλικ για επιλογές"
 
-#: ../src/views/darkroom.c:1155
+#: ../src/views/darkroom.c:1171
 msgid "color scheme"
 msgstr "χρωματικός συνδυασμός"
 
-#: ../src/views/darkroom.c:1157
+#: ../src/views/darkroom.c:1173
 msgid "red & blue"
 msgstr "κόκκινο & μπλέ"
 
-#: ../src/views/darkroom.c:1158
+#: ../src/views/darkroom.c:1174
 msgid "purple & green"
 msgstr "μοβ & πράσινο"
 
-#: ../src/views/darkroom.c:1160
+#: ../src/views/darkroom.c:1176
 msgid "select colors to indicate over/under exposure"
 msgstr "επιλέξτε τα χρώματα ανάδειξης υπό/υπέρθεσης"
 
-#: ../src/views/darkroom.c:1170
+#: ../src/views/darkroom.c:1186
 msgid "lower threshold"
 msgstr "κατώτατο όριο"
 
-#: ../src/views/darkroom.c:1171
+#: ../src/views/darkroom.c:1187
 msgid "threshold of what shall be considered underexposed"
 msgstr "όριο ανίχνευσης ελλιπούς έκθεσης"
 
-#: ../src/views/darkroom.c:1180
+#: ../src/views/darkroom.c:1196
 msgid "upper threshold"
 msgstr "ανώτατο όριο"
 
-#: ../src/views/darkroom.c:1181
+#: ../src/views/darkroom.c:1197
 msgid "threshold of what shall be considered overexposed"
 msgstr "όριο ανίχνευσης υπέρθεσης"
 
+#. Film strip shortcuts
+#. Setup key accelerators in capture view...
+#: ../src/views/darkroom.c:1691 ../src/views/map.c:565
+#: ../src/views/tethering.c:385
+msgctxt "accel"
+msgid "toggle film strip"
+msgstr "εναλλαγή φιλμ"
+
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1681
+#: ../src/views/darkroom.c:1695
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "μεγέθυνση κοντινό"
 
-#: ../src/views/darkroom.c:1683
+#: ../src/views/darkroom.c:1697
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "μεγέθυνση γεμίσματος"
 
-#: ../src/views/darkroom.c:1685
+#: ../src/views/darkroom.c:1699
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "μεγέθυνση προσαρμογής"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1693
+#: ../src/views/darkroom.c:1707
 msgctxt "accel"
 msgid "image forward"
 msgstr "εικόνα εμπρός"
 
-#: ../src/views/darkroom.c:1695
+#: ../src/views/darkroom.c:1709
 msgctxt "accel"
 msgid "image back"
 msgstr "εικόνα πίσω"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1699
+#: ../src/views/darkroom.c:1713
 msgctxt "accel"
 msgid "overexposed"
 msgstr "υπέρθεση"
 
-#: ../src/views/lighttable.c:496
+#: ../src/views/lighttable.c:497
 msgid "there are no images in this collection"
 msgstr "δεν υπάρχουν εικόνες σε αυτή τη συλλογή"
 
-#: ../src/views/lighttable.c:498
+#: ../src/views/lighttable.c:499
 msgid "if you have not imported any images yet"
 msgstr "αν δεν εισάγατε κάποιες εικόνες ακόμα"
 
-#: ../src/views/lighttable.c:500
+#: ../src/views/lighttable.c:501
 msgid "you can do so in the import module"
 msgstr "μπορείτε να το επιτύχετε με το πρόσθετο εισαγωγής"
 
-#: ../src/views/lighttable.c:507
+#: ../src/views/lighttable.c:508
 msgid "try to relax the filter settings in the top panel"
 msgstr "χαλαρώστε τις ρυθμίσεις φίλτρων στο άνω πλαίσιο"
 
-#: ../src/views/lighttable.c:514
+#: ../src/views/lighttable.c:515
 msgid "or add images in the collection module in the left panel"
 msgstr "ή προσθέστε εικόνες στο πρόσθετο συλλογής στο αριστερό πλαίσιο"
 
-#: ../src/views/lighttable.c:1805
+#: ../src/views/lighttable.c:1820
 msgctxt "accel"
 msgid "expose statuses"
 msgstr "εμφάνιση καταστάσεων"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1808
+#: ../src/views/lighttable.c:1823
 msgctxt "accel"
 msgid "navigate up"
 msgstr "πλοήγηση πάνω"
 
-#: ../src/views/lighttable.c:1810
+#: ../src/views/lighttable.c:1825
 msgctxt "accel"
 msgid "navigate down"
 msgstr "πλοήγηση κάτω"
 
-#: ../src/views/lighttable.c:1812
+#: ../src/views/lighttable.c:1827
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "πλοήγηση σελίδα πάνω"
 
-#: ../src/views/lighttable.c:1814
+#: ../src/views/lighttable.c:1829
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "πλοήγηση σελίδα κάτω"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1825
+#: ../src/views/lighttable.c:1840
 msgctxt "accel"
 msgid "scroll up"
 msgstr "κύλιση πάνω"
 
-#: ../src/views/lighttable.c:1827
+#: ../src/views/lighttable.c:1842
 msgctxt "accel"
 msgid "scroll down"
 msgstr "κύλιση κάτω"
 
-#: ../src/views/lighttable.c:1829
+#: ../src/views/lighttable.c:1844
 msgctxt "accel"
 msgid "scroll left"
 msgstr "κύλιση αριστερά"
 
-#: ../src/views/lighttable.c:1831
+#: ../src/views/lighttable.c:1846
 msgctxt "accel"
 msgid "scroll right"
 msgstr "κύλιση δεξιά"
 
-#: ../src/views/lighttable.c:1833
+#: ../src/views/lighttable.c:1848
 msgctxt "accel"
 msgid "scroll center"
 msgstr "κύλιση κέντρο"
 
-#: ../src/views/lighttable.c:1835
+#: ../src/views/lighttable.c:1850
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "ευθυγράμμιση εικόνων στο πλέγμα"
 
 #. Preview key
-#: ../src/views/lighttable.c:1839
+#: ../src/views/lighttable.c:1854
 msgctxt "accel"
 msgid "preview"
 msgstr "προεπισκόπηση"
+
+#: ../src/views/lighttable.c:1855
+msgctxt "accel"
+msgid "preview with focus detection"
+msgstr "προεπισκόπηση με ανίχνευση εστίασης"
 
 #: ../src/views/map.c:95
 msgid "map"
 msgstr "χάρτης"
 
-#: ../src/views/map.c:561
+#: ../src/views/map.c:562
 msgctxt "accel"
 msgid "undo"
 msgstr "αναίρεση"
 
-#: ../src/views/map.c:562
+#: ../src/views/map.c:563
 msgctxt "accel"
 msgid "redo"
 msgstr "επανάληψη"
+
+#: ../src/views/tethering.c:90
+msgid "tethering"
+msgstr "tethering"
+
+#: ../src/views/tethering.c:176
+#, c-format
+msgid "new session initiated '%s'"
+msgstr "έναρξη νέας συνεδρίας %s"
+
+#: ../src/views/tethering.c:281
+msgid "no camera with tethering support available for use..."
+msgstr "δεν βρέθηκε μηχανή με υποστήριξη εξαρτημένης λειτουργίας..."
 
 #: ../src/develop/masks/masks.c:41
 msgid "ctrl+click to add a sharp node"
@@ -8227,41 +8161,41 @@ msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
 msgstr ""
 "κύλιση για ρύθμιση σκληρότητας, ctrl+κύλιση για ρύθμιση διαύγειας σχήματος"
 
-#: ../src/develop/masks/masks.c:157
+#: ../src/develop/masks/masks.c:163
 #, c-format
 msgid "circle #%d"
 msgstr "κύκλος #%d"
 
-#: ../src/develop/masks/masks.c:158
+#: ../src/develop/masks/masks.c:164
 #, c-format
 msgid "path #%d"
 msgstr "διαδρομή #%d"
 
-#: ../src/develop/masks/masks.c:159
+#: ../src/develop/masks/masks.c:165
 #, c-format
 msgid "gradient #%d"
 msgstr "διαβάθμιση #%d"
 
-#: ../src/develop/masks/masks.c:160
+#: ../src/develop/masks/masks.c:166
 #, c-format
 msgid "ellipse #%d"
 msgstr "έλλειψη #%d"
 
-#: ../src/develop/masks/masks.c:161
+#: ../src/develop/masks/masks.c:167
 #, c-format
 msgid "brush #%d"
 msgstr "πινέλο #%d"
 
-#: ../src/develop/masks/masks.c:210
+#: ../src/develop/masks/masks.c:216
 #, c-format
 msgid "copy of %s"
 msgstr "αντίγραφο του %s"
 
-#: ../src/develop/masks/masks.c:1243 ../src/libs/masks.c:925
+#: ../src/develop/masks/masks.c:1247 ../src/libs/masks.c:948
 msgid "add existing shape"
 msgstr "προσθήκη υπάρχοντος σχήματος"
 
-#: ../src/develop/masks/masks.c:1270
+#: ../src/develop/masks/masks.c:1274
 msgid "use same shapes as"
 msgstr "χρήση ίδιων σχημάτων με"
 
@@ -8269,52 +8203,52 @@ msgstr "χρήση ίδιων σχημάτων με"
 msgid "mask manager"
 msgstr "διαχειριστής μασκών"
 
-#: ../src/libs/masks.c:233
+#: ../src/libs/masks.c:256
 #, c-format
 msgid "group #%d"
 msgstr "ομάδα #%d"
 
-#: ../src/libs/masks.c:991
+#: ../src/libs/masks.c:1014
 msgid "delete this shape"
 msgstr "διαγραφή σχήματος"
 
-#: ../src/libs/masks.c:996
+#: ../src/libs/masks.c:1019
 msgid "duplicate this shape"
 msgstr "αντιγραφή σχήματος"
 
-#: ../src/libs/masks.c:1003
+#: ../src/libs/masks.c:1026
 msgid "remove from group"
 msgstr "αφαίρεση από την ομάδα"
 
-#: ../src/libs/masks.c:1011
+#: ../src/libs/masks.c:1034
 msgid "group the forms"
 msgstr "ομαδοποίηση φορμών"
 
-#: ../src/libs/masks.c:1020
+#: ../src/libs/masks.c:1043
 msgid "use inversed shape"
 msgstr "χρήση ανάστροφου σχήματος"
 
-#: ../src/libs/masks.c:1026
+#: ../src/libs/masks.c:1049
 msgid "mode : union"
 msgstr "λειτουργία : ένωση"
 
-#: ../src/libs/masks.c:1029
+#: ../src/libs/masks.c:1052
 msgid "mode : intersection"
 msgstr "λειτουργία : διατομή"
 
-#: ../src/libs/masks.c:1032
+#: ../src/libs/masks.c:1055
 msgid "mode : difference"
 msgstr "λειτουργία : διαφορά"
 
-#: ../src/libs/masks.c:1035
+#: ../src/libs/masks.c:1058
 msgid "mode : exclusion"
 msgstr "λειτουργία : αφαίρεση"
 
-#: ../src/libs/masks.c:1049
+#: ../src/libs/masks.c:1072
 msgid "cleanup unused shapes"
 msgstr "καθαρισμός μη χρησιμοποιημένων σχημάτων"
 
-#: ../src/libs/masks.c:1474
+#: ../src/libs/masks.c:1494
 msgid "created shapes"
 msgstr "δημιουργημένα σχήματα"
 
@@ -8323,8 +8257,8 @@ msgid "lua options"
 msgstr "επιλογές lua"
 
 #: ../src/imageio/format/webp.c:244
-msgid "WebP"
-msgstr "WebP"
+msgid "WebP (8-bit)"
+msgstr "WebP (8-bit)"
 
 #: ../src/imageio/format/webp.c:277
 msgid "compression type"
@@ -8373,6 +8307,131 @@ msgstr "φωτογραφία"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "γραφικό"
+
+#~ msgid ""
+#~ "couldn't expand to a unique filename for import, please check your import "
+#~ "settings."
+#~ msgstr ""
+#~ "δεν ήταν δυνατή η επέκταση μοναδικού ονόματος αρχείου για εισαγωγή, "
+#~ "παρακαλώ ελέγξτε τις ρυθμίσεις σας."
+
+#~ msgid "failed to create import path `%s', import aborted."
+#~ msgstr "αδυναμία δημιουργίας φακέλου %s, η εισαγωγή ακυρώθηκε"
+
+#~ msgid "failed to create filmroll for camera import, import aborted."
+#~ msgstr "αδυναμία δημιουργίας φιλμ για εισαγωγή, η εισαγωγή ακυρώθηκε."
+
+#~ msgid "my jobcode"
+#~ msgstr "η εργασία μου"
+
+#~ msgid "storage structure"
+#~ msgstr "δομή αποθήκευσης"
+
+#~ msgid ""
+#~ "the following three settings describe the directory structure and file "
+#~ "renaming for import storage and images; if you don't know how to use "
+#~ "this, keep the default settings."
+#~ msgstr ""
+#~ "οι επόμενες τρεις επιλογές περιγράφουν τη δομή καταλόγου και τη "
+#~ "μετονομασία αρχείων κατά την εισαγωγή εικόνων.  Αν δεν γνωρίζετε τη χρήση "
+#~ "τους, διατηρήστε τις προεπιλογές."
+
+#~ msgid "storage directory"
+#~ msgstr "κατάλογος αποθήκευσης"
+
+#~ msgid "directory structure"
+#~ msgstr "δομή καταλόγου αρχείων"
+
+#~ msgid "filename structure"
+#~ msgstr "δομή ονόματος αρχείου"
+
+#~ msgid "above settings expands to:"
+#~ msgstr "οι παραπάνω ρυθμίσεις επεκτείνονται σε:"
+
+#~ msgid "external backup"
+#~ msgstr "εξωτερικό αντίγραφο ασφαλείας"
+
+#~ msgid ""
+#~ "external backup is an option to automatic do a backup of the imported "
+#~ "image(s) to another physical location, when activated it does looks for "
+#~ "specified backup foldername of mounted devices on your system... each "
+#~ "found folder is used as basedirectory in the above storage structure and "
+#~ "when a image are downloaded from camera it is replicated to found backup "
+#~ "destinations."
+#~ msgstr ""
+#~ "η επιλογή εξωτερικών αντιγράφων ασφαλείας ενεργοποιεί τη λειτουργία "
+#~ "αυτόματης αναπαραγωγής εικόνων σε όσους φακέλους έχουν οριστεί ως "
+#~ "αντίγραφα ασφαλείας και είναι διαθέσιμοι τη στιγμή της εισαγωγής από τη "
+#~ "μηχανή."
+
+#~ msgid "enable backup"
+#~ msgstr "ενεργοποίηση αντίγραφου ασφαλείας"
+
+#~ msgid "check this option to enable automatic backup of imported images"
+#~ msgstr ""
+#~ "επιλέξτε για ενεργοποίηση αυτόματων αντιγράφων ασφαλείας των εισηγμένων "
+#~ "εικόνων"
+
+#~ msgid "warn if no backup destinations are present"
+#~ msgstr "προειδοποίηση μη ύπαρξης προορισμού αντιγράφων ασφαλείας"
+
+#~ msgid ""
+#~ "check this option to get an interactive warning if no backupdestinations "
+#~ "are present"
+#~ msgstr ""
+#~ "ενεργοποιείστε αυτή την επιλογή για να λαμβάνετε προειδοποίηση\n"
+#~ "αν δεν είναι ενεργή καμία τοποθεσία αντιγράφων ασφαλείας"
+
+#~ msgid "backup foldername"
+#~ msgstr "φάκελος αντίγραφου ασφαλείας"
+
+#~ msgid ""
+#~ "this is the name of folder that indicates a backup destination,\n"
+#~ "if such a folder is found in any mounter media it is used as a backup "
+#~ "destination."
+#~ msgstr ""
+#~ "το όνομα του φακέλου που ορίζεται ως αντίγραφο ασφαλείας,\n"
+#~ "αν βρεθεί παρόμοιος φάκελος σε οποιοδήποτε μέσο χρησιμοποιείται ως "
+#~ "τοποθεσία αντιγράφου ασφαλείας."
+
+#~ msgid "please set the basedirectory settings before importing"
+#~ msgstr ""
+#~ "παρακαλώ ορίστε τον φάκελο βάσης στις ρυθμίσεις πριν κάνετε εισαγωγή"
+
+#~ msgid "please set the subdirectory settings before importing"
+#~ msgstr "παρακαλώ ορίστε τις ρυθμίσεις υποφακέλων πρίν κάνετε εισαγωγή"
+
+#~ msgid "please set the filenamepattern settings before importing"
+#~ msgstr ""
+#~ "παρακαλώ ορίστε το υπόδειγμα ονόματος αρχείου στις ρυθμίσεις πριν κάνετε "
+#~ "εισαγωγή"
+
+#~ msgid "8-bit JPG"
+#~ msgstr "8-bit JPG"
+
+#~ msgid "float PFM"
+#~ msgstr "float PFM"
+
+#~ msgid "16-bit PPM"
+#~ msgstr "16-bit ppm"
+
+#~ msgid "8/16-bit TIFF"
+#~ msgstr "8/16-bit tiff"
+
+#~ msgid ""
+#~ "enter the pattern for retrieved images\n"
+#~ "⚠\t$(SEQUENCE) is mandatory\n"
+#~ "recognized variables:"
+#~ msgstr ""
+#~ "εισάγετε το πρότυπο για τις κεκτημένες εικόνες\n"
+#~ "⚠\tτο πεδίο $(SEQUENCE) είναι υποχρεωτικό\n"
+#~ "έγκυρες μεταβλητές:"
+
+#~ msgid "failed to create session path %s."
+#~ msgstr "αδυναμία δημιουργίας διαδρομής συνεδρίας %s."
+
+#~ msgid "WebP"
+#~ msgstr "WebP"
 
 #~ msgid ""
 #~ "step 1: a new window or tab of your browser should have been loaded. you "
