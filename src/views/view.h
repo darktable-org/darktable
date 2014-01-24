@@ -100,7 +100,8 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_4 = 4,
   DT_VIEW_STAR_5 = 5,
   DT_VIEW_REJECT = 6,
-  DT_VIEW_GROUP  = 7
+  DT_VIEW_GROUP  = 7,
+  DT_VIEW_AUDIO  = 8
 }
 dt_view_image_over_t;
 

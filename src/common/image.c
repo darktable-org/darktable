@@ -707,6 +707,19 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     dt_conf_set_int("ui_last/import_initial_rating", 1);
   }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
+  // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
+  char *extra_file = dt_image_get_audio_path_from_path(filename);
+  if(extra_file)
+  {
+    flags |= DT_IMAGE_HAS_WAV;
+    g_free(extra_file);
+  }
+  extra_file = dt_image_get_text_path_from_path(filename);
+  if(extra_file)
+  {
+    flags |= DT_IMAGE_HAS_TXT;
+    g_free(extra_file);
+  }
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into images (id, film_id, filename, caption, description, "
@@ -1446,6 +1459,74 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   g_free(datetime);
 }
 #endif
+
+char* dt_image_get_audio_path_from_path(const char* image_path)
+{
+  size_t len = strlen(image_path);
+  const char *c = image_path + len;
+  while((c > image_path) && (*c != '.')) c--;
+  len = c - image_path + 1;
+
+  char *result = g_strndup(image_path, len + 3);
+
+  result[len]   = 'w';
+  result[len+1] = 'a';
+  result[len+2] = 'v';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  result[len]   = 'W';
+  result[len+1] = 'A';
+  result[len+2] = 'V';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  g_free(result);
+  return NULL;
+}
+
+char* dt_image_get_audio_path(const int32_t imgid)
+{
+  gboolean from_cache = FALSE;
+  char image_path[DT_MAX_PATH_LEN];
+  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+
+  return dt_image_get_audio_path_from_path(image_path);
+}
+
+char* dt_image_get_text_path_from_path(const char* image_path)
+{
+  size_t len = strlen(image_path);
+  const char *c = image_path + len;
+  while((c > image_path) && (*c != '.')) c--;
+  len = c - image_path + 1;
+
+  char *result = g_strndup(image_path, len + 3);
+
+  result[len]   = 't';
+  result[len+1] = 'x';
+  result[len+2] = 't';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  result[len]   = 'T';
+  result[len+1] = 'X';
+  result[len+2] = 'T';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  g_free(result);
+  return NULL;
+}
+
+char* dt_image_get_text_path(const int32_t imgid)
+{
+  gboolean from_cache = FALSE;
+  char image_path[DT_MAX_PATH_LEN];
+  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+
+  return dt_image_get_text_path_from_path(image_path);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -61,7 +61,11 @@ typedef enum
   // legacy flag. is set for all new images. i hate to waste a bit on this :(
   DT_IMAGE_NO_LEGACY_PRESETS = 1024,
   // local copy status
-  DT_IMAGE_LOCAL_COPY = 2048
+  DT_IMAGE_LOCAL_COPY = 2048,
+  // image has an associated .txt file for overlay
+  DT_IMAGE_HAS_TXT = 4096,
+  // image has an associated wav file
+  DT_IMAGE_HAS_WAV = 8192
 }
 dt_image_flags_t;
 
@@ -349,6 +353,13 @@ void dt_image_synch_all_xmp(const gchar *pathname);
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);
 #endif
+
+/** helper function to get the audio file filename that is accompanying the image. g_free() after use */
+char* dt_image_get_audio_path(const int32_t imgid);
+char* dt_image_get_audio_path_from_path(const char* image_path);
+/** helper function to get the text file filename that is accompanying the image. g_free() after use */
+char* dt_image_get_text_path(const int32_t imgid);
+char* dt_image_get_text_path_from_path(const char* image_path);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

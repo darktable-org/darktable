@@ -104,6 +104,11 @@ typedef struct dt_library_t
 
   int32_t collection_count;
 
+  // stuff for the audio player
+  GPid audio_player_pid;     // the pid of the child process
+  int32_t audio_player_id;   // the imgid of the image the audio is played for
+  guint audio_player_event_source;
+
   /* prepared and reusable statements */
   struct
   {
@@ -123,6 +128,8 @@ dt_library_t;
 // needed for drag&drop
 static GtkTargetEntry target_list[] = { { "text/uri-list", GTK_TARGET_OTHER_APP, 0 } };
 static guint n_targets = G_N_ELEMENTS (target_list);
+
+static void _stop_audio(dt_library_t *lib);
 
 const char *name(dt_view_t *self)
 {
@@ -390,6 +397,7 @@ void init(dt_view_t *self)
   lib->last_mouse_over_id = -1;
   lib->full_res_thumb = 0;
   lib->full_res_thumb_id = -1;
+  lib->audio_player_id = -1;
 
   GtkStyle *style = gtk_rc_get_style_by_paths(gtk_settings_get_default(), "dt-stars", NULL, G_TYPE_NONE);
 
@@ -416,6 +424,8 @@ void cleanup(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
+  if(lib->audio_player_id != -1)
+    _stop_audio(lib);
   free(lib->full_res_thumb);
   free(self->data);
 }
@@ -1552,6 +1562,34 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 }
 
 
+static void _audio_child_watch(GPid pid, gint status, gpointer data)
+{
+  dt_library_t *lib = (dt_library_t*)data;
+  lib->audio_player_id = -1;
+  g_spawn_close_pid(pid);
+}
+
+static void _stop_audio(dt_library_t *lib)
+{
+  // make sure that the process didn't finish yet and that _audio_child_watch() hasn't run
+  if(lib->audio_player_id == -1) return;
+  // we don't want to trigger the callback due to a possible race condition
+  g_source_remove(lib->audio_player_event_source);
+#ifdef __WIN32__
+  // TODO: add Windows code to actually kill the process
+#else // __WIN32__
+  if(lib->audio_player_id != -1)
+  {
+    if(getpgid(0) != getpgid(lib->audio_player_pid))
+      kill(- lib->audio_player_pid, SIGKILL);
+    else
+      kill(lib->audio_player_pid, SIGKILL);
+  }
+#endif // __WIN32__
+  g_spawn_close_pid(lib->audio_player_pid);
+  lib->audio_player_id = -1;
+}
+
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -1633,6 +1671,48 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         else // expand the group
           darktable.gui->expanded_group_id = group_id;
         dt_collection_update_query(darktable.collection);
+        break;
+      }
+      case DT_VIEW_AUDIO:
+      {
+        int32_t mouse_over_id = dt_control_get_mouse_over_id();
+        gboolean start_audio = TRUE;
+        if(lib->audio_player_id != -1)
+        {
+          // don't start the audio for the image we just killed it for
+          if(lib->audio_player_id == mouse_over_id)
+            start_audio = FALSE;
+
+          _stop_audio(lib);
+        }
+
+        if(start_audio)
+        {
+          // if no audio is played at the moment -> play audio
+          char *player = dt_conf_get_string("plugins/lighttable/audio_player");
+          if(player && *player)
+          {
+            char *filename = dt_image_get_audio_path(mouse_over_id);
+            if(filename)
+            {
+              char *argv[] = {player, filename, NULL};
+              gboolean ret = g_spawn_async(NULL, argv, NULL,
+                                          G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL | G_SPAWN_STDERR_TO_DEV_NULL,
+                                          NULL, NULL, &lib->audio_player_pid, NULL);
+
+              if(ret)
+              {
+                lib->audio_player_id = mouse_over_id;
+                lib->audio_player_event_source = g_child_watch_add(lib->audio_player_pid, (GChildWatchFunc)_audio_child_watch, lib);
+              }
+              else
+                lib->audio_player_id = -1;
+
+              g_free(filename);
+            }
+          }
+        }
+
         break;
       }
       default:
