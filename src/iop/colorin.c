@@ -285,7 +285,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
 
-  if(cmat[0] != -666.0f)
+  if(cmat[0] != NAN)
   {
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
@@ -478,7 +478,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->xform_cam_nrgb[t] = NULL;
     d->xform_nrgb_Lab[t] = NULL;
   }
-  d->cmatrix[0] = d->nmatrix[0] = d->lmatrix[0] = -666.0f;
+  d->cmatrix[0] = d->nmatrix[0] = d->lmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
@@ -486,12 +486,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   char datadir[DT_MAX_PATH_LEN];
   char filename[DT_MAX_PATH_LEN];
   dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+
   if(!strcmp(p->iccprofile, "Lab"))
   {
     piece->enabled = 0;
     return;
   }
   piece->enabled = 1;
+
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
@@ -533,9 +535,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
-    cam_xyz[0] = -666.0f;
+    cam_xyz[0] = NAN;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(cam_xyz[0] == -666.0f) sprintf(p->iccprofile, "linear_rgb");
+    if(cam_xyz[0] == NAN) sprintf(p->iccprofile, "linear_rgb");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
@@ -565,86 +567,61 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
 
-  if(d->input)
+  if(!d->input && strcmp(p->iccprofile, "sRGB"))
   {
-    if(d->nrgb)
+    // use linear_rgb as fallback for missing non-sRGB profiles:
+    d->input = dt_colorspaces_create_linear_rgb_profile();
+  }
+
+  // final resort: sRGB
+  if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
+
+  // should never happen, but catch that case to avoid a crash
+  if(!d->input)
+  {
+    dt_control_log(_("input profile could not be generated!"));
+    piece->enabled = 0;
+    return;
+  }
+
+  // prepare transformation matrix or lcms2 transforms as fallback
+  if(d->nrgb)
+  {
+    // user wants us to clip to a given RGB profile
+    if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES)) 
     {
-      if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES)) 
+      piece->process_cl_ready = 0;
+      d->cmatrix[0] = NAN;
+      for(int t=0; t<num_threads; t++)
       {
-        piece->process_cl_ready = 0;
-        d->cmatrix[0] = -666.0f;
-        for(int t=0; t<num_threads; t++)
-        {
-          d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-          d->xform_cam_nrgb[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->nrgb, TYPE_RGB_FLT, p->intent, 0);
-          d->xform_nrgb_Lab[t] = cmsCreateTransform(d->nrgb, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-        }
-      }
-      else
-      {
-        float lutr[1], lutg[1], lutb[1];
-        float omat[9];
-        dt_colorspaces_get_matrix_from_output_profile (d->nrgb, omat, lutr, lutg, lutb, 1);
-        mat3mul (d->nmatrix, omat, d->cmatrix);
-        dt_colorspaces_get_matrix_from_input_profile (d->nrgb, d->lmatrix, lutr, lutg, lutb, 1);
+        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+        d->xform_cam_nrgb[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->nrgb, TYPE_RGB_FLT, p->intent, 0);
+        d->xform_nrgb_Lab[t] = cmsCreateTransform(d->nrgb, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
       }
     }
     else
     {
-      if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES)) 
-      {
-        piece->process_cl_ready = 0;
-        d->cmatrix[0] = -666.0f;
-        for(int t=0; t<num_threads; t++)
-          d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-      }
+      float lutr[1], lutg[1], lutb[1];
+      float omat[9];
+      dt_colorspaces_get_matrix_from_output_profile (d->nrgb, omat, lutr, lutg, lutb, 1);
+      mat3mul (d->nmatrix, omat, d->cmatrix);
+      dt_colorspaces_get_matrix_from_input_profile (d->nrgb, d->lmatrix, lutr, lutg, lutb, 1);
     }
   }
   else
   {
-    if(strcmp(p->iccprofile, "sRGB"))
+    // default mode: unbound processing
+    if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES)) 
     {
-      // use linear_rgb as fallback for missing profiles:
-      d->input = dt_colorspaces_create_linear_rgb_profile();
-    }
-    if(!d->input) d->input = dt_colorspaces_create_srgb_profile();
-
-    if(d->nrgb)
-    {
-      if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
-      {
-        piece->process_cl_ready = 0;
-        d->cmatrix[0] = -666.0f;
-        for(int t=0; t<num_threads; t++)
-        {
-          d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-          d->xform_cam_nrgb[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->nrgb, TYPE_RGB_FLT, p->intent, 0);
-          d->xform_nrgb_Lab[t] = cmsCreateTransform(d->nrgb, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-        }
-      }
-      else
-      {
-        float lutr[1], lutg[1], lutb[1];
-        float omat[9];
-        dt_colorspaces_get_matrix_from_output_profile (d->nrgb, omat, lutr, lutg, lutb, 1);
-        mat3mul (d->nmatrix, omat, d->cmatrix);
-        dt_colorspaces_get_matrix_from_input_profile (d->nrgb, d->lmatrix, lutr, lutg, lutb, 1);
-      }
-    }
-    else
-    {
-      if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
-      {
-        piece->process_cl_ready = 0;
-        d->cmatrix[0] = -666.0f;
-        for(int t=0; t<num_threads; t++)
-          d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-      }
+      piece->process_cl_ready = 0;
+      d->cmatrix[0] = NAN;
+      for(int t=0; t<num_threads; t++)
+        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
   }
 
-  // normalization transformations might not work, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb[0] && d->nmatrix[0] == -666.0f) || (!d->xform_nrgb_Lab[0] && d->lmatrix[0] == -666.0f)))
+  // we might have failed generating the clipping transformations, check that:
+  if(d->nrgb && ((!d->xform_cam_nrgb[0] && d->nmatrix[0] == NAN) || (!d->xform_nrgb_Lab[0] && d->lmatrix[0] == NAN)))
   {
     for(int t=0; t<dt_get_num_threads(); t++)
     {
@@ -658,7 +635,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform_cam_Lab[0] && d->cmatrix[0] == -666.0f)
+  if(!d->xform_cam_Lab[0] && d->cmatrix[0] == NAN)
   {
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
@@ -668,7 +645,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;
-      d->cmatrix[0] = -666.0f;
+      d->cmatrix[0] = NAN;
       for(int t=0; t<num_threads; t++) // WHY??? original code : d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
         d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
     }
@@ -879,9 +856,9 @@ static void update_profile_list(dt_iop_module_t *self)
   char makermodel[1024];
   dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
-  cam_xyz[0] = -666.0f;
+  cam_xyz[0] = NAN;
   dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-  if(cam_xyz[0] != -666.0f)
+  if(cam_xyz[0] != NAN)
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
