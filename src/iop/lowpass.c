@@ -45,7 +45,7 @@
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(2)
+DT_MODULE(3)
 
 
 /* legacy version 1 params */
@@ -58,7 +58,7 @@ typedef struct dt_iop_lowpass_params1_t
 }
 dt_iop_lowpass_params1_t;
 
-typedef struct dt_iop_lowpass_params_t
+typedef struct dt_iop_lowpass_params2_t
 {
   dt_gaussian_order_t order;
   float radius;
@@ -66,7 +66,19 @@ typedef struct dt_iop_lowpass_params_t
   float brightness;
   float saturation;
 }
+dt_iop_lowpass_params2_t;
+
+typedef struct dt_iop_lowpass_params_t
+{
+  dt_gaussian_order_t order;
+  float radius;
+  float contrast;
+  float brightness;
+  float saturation;
+  int unbound;
+}
 dt_iop_lowpass_params_t;
+
 
 typedef struct dt_iop_lowpass_gui_data_t
 {
@@ -86,6 +98,7 @@ typedef struct dt_iop_lowpass_data_t
   float contrast;
   float brightness;
   float saturation;
+  int unbound;
   float ctable[0x10000];        // precomputed look-up table for contrast curve
   float cunbounded_coeffs[3];   // approximation for extrapolation of contrast curve
   float ltable[0x10000];        // precomputed look-up table for brightness curve
@@ -119,7 +132,7 @@ groups ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 1 && new_version == 2)
+  if (old_version == 1 && new_version == 3)
   {
     const dt_iop_lowpass_params1_t *old = old_params;
     dt_iop_lowpass_params_t *new = new_params;
@@ -128,6 +141,20 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->contrast = old->contrast;
     new->saturation = old->saturation;
     new->brightness = 0.0f;
+    new->unbound = 0;
+
+    return 0;
+  }
+  if (old_version == 2 && new_version == 3)
+  {
+    const dt_iop_lowpass_params2_t *old = old_params;
+    dt_iop_lowpass_params_t *new = new_params;
+    new->order = old->order;
+    new->radius = old->radius;
+    new->contrast = old->contrast;
+    new->saturation = old->saturation;
+    new->brightness = old->brightness;
+    new->unbound = 0;
 
     return 0;
   }
@@ -167,14 +194,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
-
   const int   use_bilateral = d->radius < 0 ? 1 : 0;
   const float radius = fmax(0.1f, fabs(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float saturation = d->saturation;
   const int order = d->order;
+  const int unbound = d->unbound;
 
   size_t sizes[3];
 
@@ -185,6 +210,15 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   dt_gaussian_cl_t *g = NULL;
   dt_bilateral_cl_t *b = NULL;
+
+  float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
+
+  if(unbound)
+  {
+    for(int k=0; k<4; k++) Labmax[k] =  INFINITY;
+    for(int k=0; k<4; k++) Labmin[k] = -INFINITY;
+  }
 
   if(!use_bilateral)
   {
@@ -235,6 +269,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 6, sizeof(cl_mem), (void *)&dev_ccoeffs);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 7, sizeof(cl_mem), (void *)&dev_lm);
   dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 8, sizeof(cl_mem), (void *)&dev_lcoeffs);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_lowpass_mix, 9, sizeof(int), (void *)&unbound);
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lowpass_mix, sizes);
   if(err != CL_SUCCESS) goto error;
@@ -308,10 +343,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float radius = fmax(0.1f, fabs(data->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const int order = data->order;
+  const int unbound = data->unbound;
 
-  const float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
-  const float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
+  float Labmax[] = { 100.0f, 128.0f, 128.0f, 1.0f };
+  float Labmin[] = { 0.0f, -128.0f, -128.0f, 0.0f };
 
+  if(unbound)
+  {
+    for(int k=0; k<4; k++) Labmax[k] =  INFINITY;
+    for(int k=0; k<4; k++) Labmin[k] = -INFINITY;
+  }
 
   if(!use_bilateral)
   {
@@ -346,8 +387,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
                   dt_iop_eval_exp(data->cunbounded_coeffs, out[k*ch+0]/100.0f);
     out[k*ch+0] = (out[k*ch+0] < 100.0f) ? data->ltable[CLAMP((int)(out[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
                   dt_iop_eval_exp(data->lunbounded_coeffs, out[k*ch+0]/100.0f);
-    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labminf[1], Labmaxf[1]);
-    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labminf[2], Labmaxf[2]);
+    out[k*ch+1] = CLAMPF(out[k*ch+1]*data->saturation, Labminf[1], Labmaxf[1]); // will not clip in unbound case (see definition of Labmax/Labmin)
+    out[k*ch+2] = CLAMPF(out[k*ch+2]*data->saturation, Labminf[2], Labmaxf[2]); //                         - " -
     out[k*ch+3] = in[k*ch+3];
   }
 }
@@ -427,6 +468,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
   d->contrast = p->contrast;
   d->brightness = p->brightness;
   d->saturation = p->saturation;
+  d->unbound = p->unbound;
 
 #ifdef HAVE_OPENCL
   if(d->radius < 0.0f)
@@ -531,7 +573,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t)
   {
-    0, 10, 1, 0, 1
+    0, 10, 1, 0, 1, 1
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_lowpass_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lowpass_params_t));
@@ -551,7 +593,7 @@ void init_presets (dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(), &(dt_iop_lowpass_params_t)
   {
-    0, 50.0f, -1.0f, 0.0f, 0.0f
+    0, 50.0f, -1.0f, 0.0f, 0.0f, 1
   }, sizeof(dt_iop_lowpass_params_t), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
