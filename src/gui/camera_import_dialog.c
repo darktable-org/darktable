@@ -490,6 +490,10 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
         while( (sp=g_list_next(sp)) );
       }
 
+      /* get jobcode from import dialog */
+      data->params->jobcode = data->import.jobname->value;
+
+      /* get time override if used */
       data->params->time_override = 0;
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)))
         data->params->time_override = parse_date_time(gtk_entry_get_text(GTK_ENTRY(data->settings.general.date_entry)));
