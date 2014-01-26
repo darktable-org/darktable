@@ -33,6 +33,7 @@ DT_MODULE(1)
 typedef enum dt_slideshow_event_t
 {
   s_request_step,
+  s_request_step_back,
   s_image_loaded,
   s_blended,
 }
@@ -51,7 +52,6 @@ typedef struct dt_slideshow_t
   uint32_t random_state;
   uint32_t scramble;
   uint32_t use_random;
-  int32_t counter;
   int32_t step;
   uint32_t width, height;
 
@@ -62,6 +62,7 @@ typedef struct dt_slideshow_t
   // processed sizes might differ from screen size
   uint32_t front_width, front_height;
   uint32_t back_width, back_height;
+  int32_t front_num, back_num;
 
   // output profile before we overwrote it:
   gchar *oldprofile;
@@ -154,14 +155,13 @@ process_next_image(dt_slideshow_t *d)
   int32_t id = 0;
   const int32_t cnt = dt_collection_get_count (darktable.collection);
   dt_pthread_mutex_lock(&d->lock);
-  d->counter += d->step;
-  int32_t ran = d->counter;
+  d->back_num = d->front_num + d->step;
+  int32_t ran = d->back_num;
   dt_pthread_mutex_unlock(&d->lock);
-  // enumerated all images?
-  if(ran < 0 || ran >= cnt)
+  // enumerated all images? i.e. prefetching the one two after the limit, when viewing the one past the end.
+  if(ran == -2 || ran == cnt+1)
   {
     dt_control_log(_("end of images. press any key to return to lighttable mode"));
-    d->counter = ran; // avoid future messages
   }
   if(d->use_random)
   {
@@ -171,7 +171,8 @@ process_next_image(dt_slideshow_t *d)
     do ran = next_random(d) >> zeros;
     while(ran >= cnt);
   }
-  const int32_t rand = ran % cnt;
+  int32_t rand = ran % cnt;
+  while(rand < 0) rand += cnt;
   const gchar *query = dt_collection_get_query (darktable.collection);
   if(!query) return 1;
   sqlite3_stmt *stmt;
@@ -208,8 +209,11 @@ static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
 static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
-  if(event == s_request_step)
+
+  if(event == s_request_step || event == s_request_step_back)
   {
+    if(event == s_request_step) d->step = 1;
+    if(event == s_request_step_back) d->step = -1;
     // make sure we only enter busy if really flipping the bit
     if(d->state_waiting_for_user)
       dt_control_log_busy_enter();
@@ -229,23 +233,28 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     case s_waiting_for_user:
       if(d->state_waiting_for_user == 0)
       {
-        dt_control_log_busy_leave();
         d->state = s_blending;
         // swap buffers, start blending cycle
-        uint32_t *tmp = d->front;
-        d->front = d->back;
-        d->back = tmp;
-        d->front_width = d->back_width;
-        d->front_height = d->back_height;
-        // start over
-        d->state_waiting_for_user = 1;
+        if(d->front_num + d->step == d->back_num)
+        {
+          // if step changed, don't just swap but kick off new job
+          dt_control_log_busy_leave();
+          uint32_t *tmp = d->front;
+          d->front = d->back;
+          d->back = tmp;
+          d->front_width = d->back_width;
+          d->front_height = d->back_height;
+          int32_t tn = d->front_num;
+          d->front_num = d->back_num;
+          d->back_num = tn;
+          // start over
+          d->state_waiting_for_user = 1;
+        }
         // and execute the next case, too
       }
       else break;
 
     case s_blending:
-      // TODO: if step changed, don't just swap but kick off new job to
-
       // draw new front buf
       dt_control_queue_redraw_center();
 
@@ -331,7 +340,7 @@ void enter(dt_view_t *self)
   d->state_waiting_for_user = 1;
 
   // restart from beginning, will first increment counter by step and then prefetch
-  d->counter = -1;
+  d->front_num = d->back_num = -1;
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -418,12 +427,11 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   if(which == 1)
-    d->step = 1;
+    _step_state(d, s_request_step);
   else if(which == 3)
-    d->step = -1;
+    _step_state(d, s_request_step_back);
   else return 1;
 
-  _step_state(d, s_request_step);
   return 0;
 }
 
