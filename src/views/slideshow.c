@@ -340,7 +340,8 @@ void enter(dt_view_t *self)
   d->state_waiting_for_user = 1;
 
   // restart from beginning, will first increment counter by step and then prefetch
-  d->front_num = d->back_num = -1;
+  d->front_num = d->back_num = darktable.view_manager->proxy.lighttable.get_position(
+      darktable.view_manager->proxy.lighttable.view)-1;
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
