@@ -201,7 +201,6 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   {
     g_list_free_full(values, g_free);
   }
-  g_free(listener);
 
   return 0;
 }
