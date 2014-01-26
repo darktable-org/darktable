@@ -30,6 +30,21 @@
 
 DT_MODULE(1)
 
+typedef enum dt_slideshow_event_t
+{
+  s_request_step,
+  s_image_loaded,
+  s_blended,
+}
+dt_slideshow_event_t;
+
+typedef enum dt_slideshow_state_t
+{
+  s_prefetching,
+  s_waiting_for_user,
+  s_blending,
+}
+dt_slideshow_state_t;
 
 typedef struct dt_slideshow_t
 {
@@ -47,11 +62,14 @@ typedef struct dt_slideshow_t
   // processed sizes might differ from screen size
   uint32_t front_width, front_height;
   uint32_t back_width, back_height;
-  dt_pthread_mutex_t lock;
-  uint32_t working;
 
   // output profile before we overwrote it:
   gchar *oldprofile;
+
+  // state machine stuff for image transitions:
+  dt_pthread_mutex_t lock;
+  dt_slideshow_state_t state;       // global state cycle
+  uint32_t state_waiting_for_user;  // user input (needed to step the cycle at one point)
 }
 dt_slideshow_t;
 
@@ -63,6 +81,9 @@ typedef struct dt_slideshow_format_t
   dt_slideshow_t *d;
 }
 dt_slideshow_format_t;
+
+// fwd declare state machine mechanics:
+static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event);
 
 // callbacks for in-memory export
 static int
@@ -94,8 +115,8 @@ write_image (dt_imageio_module_data_t *datai, const char *filename, const void *
     data->d->back_width = datai->width;
     data->d->back_height = datai->height;
   }
-  data->d->working = 0;
   dt_pthread_mutex_unlock(&data->d->lock);
+  _step_state(data->d, s_image_loaded);
   // trigger expose
   dt_control_queue_redraw_center();
   return 0;
@@ -139,7 +160,8 @@ process_next_image(dt_slideshow_t *d)
   // enumerated all images?
   if(ran < 0 || ran >= cnt)
   {
-    dt_control_log(_("end of images. press any key to return to lighttable mode"), d->counter, d->step);
+    dt_control_log(_("end of images. press any key to return to lighttable mode"));
+    d->counter = ran; // avoid future messages
   }
   if(d->use_random)
   {
@@ -177,12 +199,75 @@ static int32_t process_job_run(dt_job_t *job)
 
 static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
 {
-  d->working = 1;
   dt_control_job_init(job, "process slideshow image");
   job->execute = process_job_run;
   *((dt_slideshow_t **)job->param) = d;
 }
 
+// state machine stepping
+static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
+{
+  dt_pthread_mutex_lock(&d->lock);
+  if(event == s_request_step)
+  {
+    // make sure we only enter busy if really flipping the bit
+    if(d->state_waiting_for_user)
+      dt_control_log_busy_enter();
+    d->state_waiting_for_user = 0;
+  }
+
+  switch(d->state)
+  {
+    case s_prefetching:
+      if(event == s_image_loaded)
+      {
+        d->state = s_waiting_for_user;
+        // and go to next case
+      }
+      else break;
+
+    case s_waiting_for_user:
+      if(d->state_waiting_for_user == 0)
+      {
+        dt_control_log_busy_leave();
+        d->state = s_blending;
+        // swap buffers, start blending cycle
+        uint32_t *tmp = d->front;
+        d->front = d->back;
+        d->back = tmp;
+        d->front_width = d->back_width;
+        d->front_height = d->back_height;
+        // start over
+        d->state_waiting_for_user = 1;
+        // and execute the next case, too
+      }
+      else break;
+
+    case s_blending:
+      // TODO: if step changed, don't just swap but kick off new job to
+
+      // draw new front buf
+      dt_control_queue_redraw_center();
+
+      // TODO: wait for that once there are fancy effects:
+      // if(event == s_blended)
+      {
+        // start bgjob
+        dt_job_t job;
+        process_job_init(&job, d);
+        dt_control_add_job(darktable.control, &job);
+        d->state = s_prefetching;
+      }
+      break;
+
+    default:
+      // uh. should never happen. sanitize:
+      d->state_waiting_for_user = 1;
+      d->state = s_image_loaded;
+      break;
+  }
+  dt_pthread_mutex_unlock(&d->lock);
+}
 
 // callbacks for a view module:
 
@@ -240,15 +325,18 @@ void enter(dt_view_t *self)
   d->front = d->buf1;
   d->back = d->buf2;
 
-  // restart from beginning
-  d->counter = 0;
-  d->step = 0;
+  // start in prefetching phase, do that by initing one state before
+  // and stepping through that at the very end of this function
+  d->state = s_blending;
+  d->state_waiting_for_user = 1;
+
+  // restart from beginning, will first increment counter by step and then prefetch
+  d->counter = -1;
+  d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
   // start first job
-  dt_job_t job;
-  process_job_init(&job, d);
-  dt_control_add_job(darktable.control, &job);
+  _step_state(d, s_request_step);
 }
 
 void leave(dt_view_t *self)
@@ -281,8 +369,7 @@ void mouse_leave(dt_view_t *self)
 
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
-  // TODO: pick up state changes and wait for frontbuffer lock
-  // TODO: draw image from bg thread
+  // draw front buffer.
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
 
   dt_pthread_mutex_lock(&d->lock);
@@ -336,31 +423,7 @@ int button_pressed(dt_view_t *self, double x, double y, int which, int type, uin
     d->step = -1;
   else return 1;
 
-  // swap buffers and kick off new job.
-  dt_pthread_mutex_lock(&d->lock);
-  if(d->working)
-  {
-    // TODO: this is stupid, defer the else branch and shut up!
-    dt_control_log(_("busy"));
-  }
-  else
-  {
-    // TODO: if step changed, don't just swap but kick off new job to
-    // TODO: be shown as soon as it finishes
-    uint32_t *tmp = d->front;
-    d->front = d->back;
-    d->back = tmp;
-    d->front_width = d->back_width;
-    d->front_height = d->back_height;
-
-    // draw new front buf
-    dt_control_queue_redraw_center();
-
-    dt_job_t job;
-    process_job_init(&job, d);
-    dt_control_add_job(darktable.control, &job);
-  }
-  dt_pthread_mutex_unlock(&d->lock);
+  _step_state(d, s_request_step);
   return 0;
 }
 
