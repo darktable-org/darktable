@@ -895,6 +895,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_register_global(NC_("accel", "lighttable view"), GDK_KEY_l, 0);
   dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
   dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
+  dt_accel_register_global(NC_("accel", "slideshow view"), GDK_KEY_s, 0);
 
   dt_accel_connect_global(
     "capture view",
