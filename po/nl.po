@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-01-26 15:57+0100\n"
-"PO-Revision-Date: 2014-01-26 16:04+0100\n"
+"PO-Revision-Date: 2014-01-26 16:38+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -417,7 +417,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1926
 msgid "write sidecar file for each image"
-msgstr "schrijf XMP bestand voor elke afbeelding"
+msgstr "schrijf voor elke afbeelding een xmp bestand "
 
 #: ../build/src/preferences_gen.h:1938
 msgid ""
@@ -497,7 +497,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2045
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "demosaicing voor de uitgezoomde ontwikkelen modus"
+msgstr "demosaicing in  uitgezoomde modus ontwikkelen"
 
 #: ../build/src/preferences_gen.h:2055
 msgctxt "preferences"
@@ -585,15 +585,15 @@ msgstr "de opslag voor wachtwoordopslag: geen, kwallet, gnome keyring "
 
 #: ../build/src/preferences_gen.h:2166
 msgid "look for updated xmp files on startup"
-msgstr "zoek bijgewerkte xmp bestanden bij het opstarten"
+msgstr "zoek bij het opstarten naar bijgewerkte xmp bestanden "
 
 #: ../build/src/preferences_gen.h:2178
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
-"controleer bestand tijdwijzigingen van alle xmp bestanden tijdens het "
-"opstarten op tussentijdse updates"
+"controleer  alle xmp bestanden, tijdens het opstarten, op eventuele "
+"tussentijdse tijdwijzigingen "
 
 #: ../build/src/preferences_gen.h:2185
 msgid "executable for playing audio files"
@@ -935,7 +935,7 @@ msgstr "bijgewerkt xmp bestand gevonden"
 
 #: ../src/control/crawler.c:279
 msgid "reload xmp files"
-msgstr "herlaad XMP bestanden"
+msgstr "herlaad xmp bestanden"
 
 #: ../src/control/crawler.c:280
 msgid "overwrite xmp files"
@@ -1716,7 +1716,7 @@ msgstr "ligthroom xmp niet gevonden!"
 #: ../src/develop/lightroom.c:514
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "`%s' is geen lightroom XMP!"
+msgstr "`%s' is geen lightroom xmp!"
 
 #: ../src/develop/lightroom.c:1420 ../src/libs/import.c:511
 msgid "tags"
@@ -4212,7 +4212,7 @@ msgstr "kies selectie criteria, dat is dan de abscis van de grafiek"
 
 #: ../src/iop/demosaic.c:107
 msgid "demosaic"
-msgstr "mozaïek wegwerken"
+msgstr "demosaic"
 
 #: ../src/iop/demosaic.c:124
 msgctxt "accel"
@@ -4276,7 +4276,7 @@ msgstr "vijf keer"
 
 #: ../src/iop/demosaic.c:1335
 msgid "how many color smoothing median steps after demosaicing"
-msgstr "how many color smoothing median steps after demosaicing"
+msgstr "aantal  stappen mediaan kleurafvlakking  na demosaicing"
 
 #: ../src/iop/demosaic.c:1339
 msgid "match greens"
@@ -6308,7 +6308,7 @@ msgstr "open xmp bestand"
 
 #: ../src/libs/copy_history.c:83
 msgid "XMP sidecar files"
-msgstr "XMP bestanden"
+msgstr "xmp bestanden"
 
 #: ../src/libs/copy_history.c:88 ../src/libs/geotagging.c:452
 #: ../src/libs/import.c:680 ../src/libs/styles.c:281
@@ -6383,23 +6383,23 @@ msgstr "hoe om te gaan met de bestaande geschiedenis"
 
 #: ../src/libs/copy_history.c:292
 msgid "load sidecar file"
-msgstr "laad XMP"
+msgstr "laad xmp bestand"
 
 #: ../src/libs/copy_history.c:294
 msgid ""
 "open an XMP sidecar file\n"
 "and apply it to selected images"
 msgstr ""
-"open XMP bestand en pas het toe\n"
+"open xmp bestand en pas het toe\n"
 "op geselecteerde afbeelding(en)"
 
 #: ../src/libs/copy_history.c:297
 msgid "write sidecar files"
-msgstr "schrijf XMP bestanden"
+msgstr "schrijf xmp bestanden"
 
 #: ../src/libs/copy_history.c:299
 msgid "write history stack and tags to XMP sidecar files"
-msgstr "bewerkingsstappen en labelingen opslaan in XMP bestanden"
+msgstr "bewerkingsstappen en labelingen opslaan in xmp bestanden"
 
 #: ../src/libs/copy_history.c:337
 msgctxt "accel"
@@ -6429,7 +6429,7 @@ msgstr "plakken"
 #: ../src/libs/copy_history.c:342
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "laad XMP bestand(en)"
+msgstr "laad xmp bestand(en)"
 
 #: ../src/libs/copy_history.c:343
 msgctxt "accel"
