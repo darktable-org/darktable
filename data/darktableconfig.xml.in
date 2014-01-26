@@ -1034,6 +1034,13 @@
     <shortdescription>always try to use LittleCMS 2</shortdescription>
     <longdescription>this is significantly slower than the default.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>plugins/slideshow/high_quality</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>do high quality processing for slideshow</shortdescription>
+    <longdescription>same option as for export, but applies to slideshow.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
