@@ -569,6 +569,9 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
       mode = DT_MAP;
       break;
 #endif
+    case DT_GUI_VIEW_SWITCH_TO_SLIDESHOW:
+      mode = DT_SLIDESHOW;
+      break;
   }
 
   /* try switch to mode */
@@ -913,6 +916,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     "map view",
     g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                    GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_MAP), NULL));
+  dt_accel_connect_global(
+    "slideshow view",
+    g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                   GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_SLIDESHOW), NULL));
 
   // register_keys for applying styles
   init_styles_key_accels();

@@ -29,6 +29,7 @@
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
 #define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 #define DT_GUI_VIEW_SWITCH_TO_MAP       4
+#define DT_GUI_VIEW_SWITCH_TO_SLIDESHOW 5
 
 typedef struct dt_gui_widgets_t
 {
