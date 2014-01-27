@@ -918,7 +918,7 @@ int dt_imageio_export_with_flags(
   }
 
 
-  if(!thumbnail_export)
+  if(!thumbnail_export && strcmp(format->mime(format_params), "memory"))
   {
     dt_control_signal_raise(darktable.signals,DT_SIGNAL_IMAGE_EXPORT_TMPFILE,imgid,filename,format,format_params,storage,storage_params);
   }
