@@ -74,7 +74,8 @@ osm_gps_map_source_get_repo_uri(OsmGpsMapSource_t source)
         case OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT:
             return "http://tile.xn--pnvkarte-m4a.de/tilegen/#Z/#X/#Y.png";
         case OSM_GPS_MAP_SOURCE_OSMC_TRAILS:
-            return "http://topo.geofabrik.de/trails/#Z/#X/#Y.png";
+            // Appears to be shut down
+            return NULL;
         case OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE:
             return "http://maps-for-free.com/layer/relief/z#Z/row#Y/#Z_#X-#Y.jpg";
         case OSM_GPS_MAP_SOURCE_GOOGLE_STREET:
