@@ -357,7 +357,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   }
   else
   {
-    mean = min = max = -1.0f;
+    mean = min = max = NAN;
   }
 
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;

@@ -26,6 +26,8 @@
 // max iccprofile file name length
 #define DT_IOP_COLOR_ICC_LEN 100
 
+#define LUT_SAMPLES 0x10000
+
 // constants fit to the ones from lcms.h:
 typedef enum dt_iop_color_intent_t
 {
@@ -36,6 +38,16 @@ typedef enum dt_iop_color_intent_t
 }
 dt_iop_color_intent_t;
 
+typedef enum dt_iop_color_normalize_t
+{
+  DT_NORMALIZE_OFF,
+  DT_NORMALIZE_SRGB,
+  DT_NORMALIZE_ADOBE_RGB,
+  DT_NORMALIZE_LINEAR_RGB,
+  DT_NORMALIZE_BETA_RGB
+}
+dt_iop_color_normalize_t;
+
 typedef struct dt_iop_color_profile_t
 {
   char filename[512]; // icc file name
@@ -45,30 +57,48 @@ typedef struct dt_iop_color_profile_t
 }
 dt_iop_color_profile_t;
 
+typedef struct dt_iop_colorin_params1_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+}
+dt_iop_colorin_params1_t;
+
 typedef struct dt_iop_colorin_params_t
 {
   char iccprofile[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
+  int normalize;
 }
 dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkWidget *cbox1, *cbox2;
+  GtkWidget *cbox1, *cbox2, *cbox3;
   GList *image_profiles, *global_profiles;
   int n_image_profiles;
 }
 dt_iop_colorin_gui_data_t;
 
-#define LUT_SAMPLES 0x10000
+typedef struct dt_iop_colorin_global_data_t
+{
+  int kernel_colorin_unbound;
+  int kernel_colorin_clipping;
+}
+dt_iop_colorin_global_data_t;
 
 typedef struct dt_iop_colorin_data_t
 {
   cmsHPROFILE input;
   cmsHPROFILE Lab;
-  cmsHTRANSFORM *xform;
+  cmsHPROFILE nrgb;
+  cmsHTRANSFORM *xform_cam_Lab;
+  cmsHTRANSFORM *xform_cam_nrgb;
+  cmsHTRANSFORM *xform_nrgb_Lab;
   float lut[3][LUT_SAMPLES];
   float cmatrix[9];
+  float nmatrix[9];
+  float lmatrix[9];
   float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
 }
 dt_iop_colorin_data_t;

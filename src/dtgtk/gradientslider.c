@@ -484,12 +484,11 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
 
   // do we have a picker value to draw?
-  gdouble *picker = gslider->picker;
-  if(picker[0] >= 0.0 && picker[0] <= 1.0)
+  if(!isnan(gslider->picker[0]))
   {
-    int vx_min=_scale_to_screen(widget, picker[1]);
-    int vx_max=_scale_to_screen(widget, picker[2]);
-    int vx_avg=_scale_to_screen(widget, picker[0]);
+    int vx_min=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[1], 0.0, 1.0));
+    int vx_max=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[2], 0.0, 1.0));
+    int vx_avg=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[0], 0.0, 1.0));
 
     cairo_set_source_rgba(cr,
                           style->fg[state].red/65535.0,
@@ -581,7 +580,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider->positions = positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->selected = positions == 1 ? 0 : -1;
   gslider->min = 0.0;
   gslider->max = 1.0;
@@ -603,7 +602,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkCol
   gslider->positions = positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->selected = positions == 1 ? 0 : -1;
   gslider->min = 0.0;
   gslider->max = 1.0;

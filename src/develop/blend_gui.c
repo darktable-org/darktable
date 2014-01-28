@@ -835,7 +835,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
   darktable.gui->reset = 1;
-  if(module->request_color_pick && raw_max[0] >= -0.001f)  // give a bit room for rounding errors
+  if(module->request_color_pick)  // give a bit room for rounding errors
   {
     _blendif_scale(data->csp, raw_mean, picker_mean);
     _blendif_scale(data->csp, raw_min, picker_min);
@@ -852,7 +852,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
   else
   {
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), -1.0f);
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), NAN);
     gtk_label_set_text(label, "");
   }
 

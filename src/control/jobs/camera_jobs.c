@@ -190,16 +190,17 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   pthread_mutex_destroy(&t->mutex);
   pthread_cond_destroy(&t->done);
 
+  /* cleanup */
   dt_control_backgroundjobs_destroy(darktable.control, jid);
-
   dt_import_session_destroy(t->shared.session);
+  dt_camctl_unregister_listener(darktable.camctl, listener);
+  g_free(listener);
 
   // free values
   if(values)
   {
     g_list_free_full(values, g_free);
   }
-  g_free(listener);
 
   return 0;
 }
