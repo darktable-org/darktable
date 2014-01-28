@@ -1090,7 +1090,7 @@ void gui_init(struct dt_iop_module_t *self)
                     (gpointer)self);
 
   g->cbox3 = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cbox3, NULL, _("clipping"));
+  dt_bauhaus_widget_set_label(g->cbox3, NULL, _("gamut clipping"));
 
   dt_bauhaus_combobox_add(g->cbox3, _("off"));
   dt_bauhaus_combobox_add(g->cbox3, _("sRGB"));
