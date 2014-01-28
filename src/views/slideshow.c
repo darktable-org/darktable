@@ -209,6 +209,14 @@ static void process_job_init(dt_job_t *job, dt_slideshow_t *d)
   *((dt_slideshow_t **)job->param) = d;
 }
 
+static gboolean auto_advance(gpointer user_data)
+{
+  dt_slideshow_t *d = (dt_slideshow_t *)user_data;
+  if(!d->auto_advance) return FALSE;
+  _step_state(d, s_request_step);
+  return FALSE;
+}
+
 // state machine stepping
 static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
@@ -253,6 +261,12 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
           d->back_num = tn;
           // start over
           d->state_waiting_for_user = 1;
+
+          // start new one-off timer from when flipping buffers.
+          // this will show images before processing-heavy shots a little
+          // longer, but at least not result in shorter viewing times just after these
+          if(d->auto_advance)
+            g_timeout_add_seconds(5, auto_advance, d);
         }
         // and execute the next case, too
       }
@@ -450,15 +464,6 @@ int key_released(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
-static gboolean auto_advance(gpointer user_data)
-{
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
-  if(!d->auto_advance) return FALSE;
-  _step_state(d, s_request_step);
-  return TRUE;
-}
-
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
@@ -470,7 +475,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     {
       d->auto_advance = 1;
       _step_state(d, s_request_step);
-      g_timeout_add_seconds(5, auto_advance, self);
     }
     else d->auto_advance = 0;
     return 0;
