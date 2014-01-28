@@ -316,7 +316,11 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
   size_t type_size= luaA_type_size(type_id);
   void* udata = lua_newuserdata(L,type_size);
-  memcpy(udata,cin,type_size);
+  if(cin) {
+    memcpy(udata,cin,type_size);
+  } else {
+    memset(udata,0,type_size);
+  }
   luaL_setmetatable(L,luaA_type_name(type_id));
   if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
   return 1;
