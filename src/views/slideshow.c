@@ -25,7 +25,9 @@
 #include "control/control.h"
 #include "control/conf.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 
+#include <gdk/gdkkeysyms.h>
 #include <stdint.h>
 
 DT_MODULE(1)
@@ -71,6 +73,8 @@ typedef struct dt_slideshow_t
   dt_pthread_mutex_t lock;
   dt_slideshow_state_t state;       // global state cycle
   uint32_t state_waiting_for_user;  // user input (needed to step the cycle at one point)
+
+  uint32_t auto_advance;
 }
 dt_slideshow_t;
 
@@ -339,9 +343,10 @@ void enter(dt_view_t *self)
   d->state = s_blending;
   d->state_waiting_for_user = 1;
 
+  d->auto_advance = 0;
+
   // restart from beginning, will first increment counter by step and then prefetch
-  d->front_num = d->back_num = darktable.view_manager->proxy.lighttable.get_position(
-      darktable.view_manager->proxy.lighttable.view)-1;
+  d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager);
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -353,6 +358,9 @@ void leave(dt_view_t *self)
 {
   dt_ui_border_show(darktable.gui->ui, TRUE);
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+  dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
+  // ugh. but will go away once module guis are persistent between views:
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", d->front_num);
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
   d->oldprofile = 0;
@@ -441,8 +449,31 @@ int key_released(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
+static gboolean auto_advance(gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  if(!d->auto_advance) return FALSE;
+  _step_state(d, s_request_step);
+  return TRUE;
+}
+
 int key_pressed(dt_view_t *self, guint key, guint state)
 {
+  dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+  dt_control_accels_t *accels = &darktable.control->accels;
+  if(key == accels->slideshow_start.accel_key &&
+     state == accels->slideshow_start.accel_mods)
+  {
+    if(!d->auto_advance)
+    {
+      d->auto_advance = 1;
+      _step_state(d, s_request_step);
+      g_timeout_add_seconds(5, auto_advance, self);
+    }
+    else d->auto_advance = 0;
+    return 0;
+  }
   // go back to lt mode
   dt_ctl_switch_mode_to(DT_LIBRARY);
   return 0;
@@ -454,6 +485,7 @@ void border_scrolled(dt_view_t *view, double x, double y, int which, int up)
 
 void init_key_accels(dt_view_t *self)
 {
+  dt_accel_register_view(self, NC_("accel", "start and stop"), GDK_KEY_space, 0);
 }
 
 void connect_key_accels(dt_view_t *self)

@@ -209,7 +209,8 @@ typedef struct dt_control_accels_t
   filmstrip_forward, filmstrip_back,
                      lighttable_up, lighttable_down, lighttable_right,
                      lighttable_left, lighttable_center, lighttable_preview,
-                     lighttable_preview_display_focus, global_sideborders, global_header;
+                     lighttable_preview_display_focus, global_sideborders, global_header,
+                     slideshow_start;
 
 } dt_control_accels_t;
 

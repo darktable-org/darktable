@@ -129,6 +129,10 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.filmstrip_back);
 
+  // slideshow
+  dt_accel_path_view(path, 256, "slideshow", "start and stop");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.slideshow_start);
   // Lighttable
   dt_accel_path_view(path, 256, "lighttable", "scroll up");
   gtk_accel_map_lookup_entry(path,
