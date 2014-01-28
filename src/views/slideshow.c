@@ -346,7 +346,7 @@ void enter(dt_view_t *self)
   d->auto_advance = 0;
 
   // restart from beginning, will first increment counter by step and then prefetch
-  d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager);
+  d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
