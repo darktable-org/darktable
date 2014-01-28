@@ -358,6 +358,7 @@ void leave(dt_view_t *self)
 {
   dt_ui_border_show(darktable.gui->ui, TRUE);
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
+  d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
   // ugh. but will go away once module guis are persistent between views:
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", d->front_num);
