@@ -36,6 +36,9 @@ cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void);
 /** create the ICC virtual profile for adobe rgb space. */
 cmsHPROFILE dt_colorspaces_create_adobergb_profile(void);
 
+/** create the ICC virtual profile for Beta RGB space. */
+cmsHPROFILE dt_colorspaces_create_betargb_profile(void);
+
 /** create a ICC virtual profile for XYZ. */
 cmsHPROFILE dt_colorspaces_create_xyz_profile(void);
 
