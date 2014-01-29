@@ -374,8 +374,6 @@ void leave(dt_view_t *self)
   dt_slideshow_t *d = (dt_slideshow_t*)self->data;
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
-  // ugh. but will go away once module guis are persistent between views:
-  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", d->front_num);
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
   d->oldprofile = 0;

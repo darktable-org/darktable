@@ -1414,6 +1414,9 @@ void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos)
 {
   if (vm->proxy.lighttable.view)
     vm->proxy.lighttable.set_position(vm->proxy.lighttable.view, pos);
+
+  // ugh. but will go away once module guis are persistent between views:
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", pos);
 }
 
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm)
