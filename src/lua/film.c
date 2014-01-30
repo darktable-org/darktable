@@ -224,7 +224,7 @@ int dt_lua_init_film(lua_State * L)
 
   /* film table */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"film_database");
+  luaA_Type type_id = dt_lua_init_singleton(L,"film_database",NULL);
   lua_setfield(L,-2,"films");
   lua_pop(L,1);
 

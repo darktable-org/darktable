@@ -550,7 +550,7 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
   return type_id;
 }
 
-luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
+luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name,void *data)
 {
   char tmp_name[1024];
   snprintf(tmp_name,sizeof(tmp_name),"dt_lua_singleton_%s",unique_name);
@@ -558,8 +558,12 @@ luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
   luaA_Type type_id = luaA_type_add(tmp_name,sizeof(void*));
   init_metatable(L,type_id);
 
-  void* udata = lua_newuserdata(L,sizeof(void*));
-  memset(udata,0,sizeof(void*));
+  void** udata = lua_newuserdata(L,sizeof(void*));
+  if(!data) {
+    memset(udata,0,sizeof(void*));
+  }else{
+    *udata = data;
+  }
 
   lua_pushvalue(L,-1);
   luaL_setmetatable(L,tmp_name);

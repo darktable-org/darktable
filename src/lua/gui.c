@@ -100,7 +100,7 @@ int dt_lua_init_gui(lua_State * L)
 
   /* images */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib");
+  luaA_Type type_id = dt_lua_init_singleton(L,"gui_lib",NULL);
   lua_setfield(L,-2,"gui");
   lua_pop(L,1);
 

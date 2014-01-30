@@ -27,7 +27,7 @@ void dt_lua_init_module_type(lua_State *L,const char* module_type_name)
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");
 
-  dt_lua_init_singleton(L,module_type_name);
+  dt_lua_init_singleton(L,module_type_name,NULL);
   lua_setfield(L,-2,module_type_name);
   lua_pop(L,1);
 

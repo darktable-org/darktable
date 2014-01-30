@@ -219,7 +219,7 @@ int dt_lua_init_tags(lua_State*L)
 
   /* tags */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table");
+  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table",NULL);
   lua_setfield(L,-2,"tags");
   lua_pop(L,1);
 

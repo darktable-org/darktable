@@ -299,7 +299,7 @@ int dt_lua_init_styles(lua_State * L)
 
   /* style table type */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id =  dt_lua_init_singleton(L,"style_table");
+  luaA_Type type_id =  dt_lua_init_singleton(L,"style_table",NULL);
   lua_setfield(L,-2,"styles");
   lua_pop(L,1);
 

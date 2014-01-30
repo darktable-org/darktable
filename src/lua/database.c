@@ -175,7 +175,7 @@ int dt_lua_init_database(lua_State * L)
 
   /* database type */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"image_database");
+  luaA_Type type_id = dt_lua_init_singleton(L,"image_database",NULL);
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
 

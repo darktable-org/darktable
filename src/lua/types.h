@@ -103,11 +103,11 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
 
 /**
  * similar to dt_lua_init_type but creates a singleton type
- * that is : a type who has only one instance (which is a null pointer)
+ * that is : a type who has only one instance (which is a void* pointer)
  * returns the associated luaA_Type so it can be decorated
  * push the single instance of the object on the stack
  */
-luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name);
+luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
 
 
 int dt_lua_init_types(lua_State *L);
