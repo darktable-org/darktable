@@ -729,7 +729,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
-    int ldr = dt_image_is_ldr(image) ? 1 : 2; // will match raw+hdr for 2, hdr might be just a converted high bit-depth raw, so we're on the safe side.
+    int ldr = dt_image_is_ldr(image) ? 1 : (dt_image_is_raw(image) ? 2 : 3); // 1: ldr, 2: raw, 3: hdr
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, ldr);
   }
   else

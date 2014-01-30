@@ -1383,6 +1383,9 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
 // need a write lock on *img (non-const) to write stars (and soon color labels).
 int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_only)
 {
+  // exclude pfm to avoid stupid errors on the console
+  const char *c = filename + strlen(filename) - 4;
+  if(c >= filename && !strcmp(c, ".pfm")) return 1;
   try
   {
     // read xmp sidecar
