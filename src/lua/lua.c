@@ -32,6 +32,10 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
 {
   /* table is in the stack at index 't' */
   printf("lua table at index %d at %s:%d\n",t,function,line);
+  if(lua_type(L,t) != LUA_TTABLE) {
+    printf("\tnot a table: %s\n",lua_typename(L,lua_type(L,t)));
+    return;
+  }
   lua_pushnil(L);  /* first key */
   while (lua_next(L, t-1) != 0)
   {
