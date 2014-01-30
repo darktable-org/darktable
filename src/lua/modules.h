@@ -28,6 +28,8 @@ int dt_lua_init_modules(lua_State *L);
 
 void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
 
+void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -132,17 +132,10 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
   lua_setfield(L,-2,"__associated_object");
   lua_pop(L,1); // pop the metatable
   // add to the table
-  dt_lua_push_darktable_lib(L);
-  dt_lua_goto_subtable(L,"modules");
-  dt_lua_goto_subtable(L,"storage");
-  lua_getmetatable(L,-1);
-  lua_getfield(L,-1,"__luaA_Type");
-  luaA_Type storage_table_type = luaL_checkint(L,-1);
   lua_pushlightuserdata(L,module);
   lua_pushcclosure(L,get_storage_params,1);
-  dt_lua_register_type_callback_stack_typeid(L,storage_table_type,module->plugin_name);
-  lua_pop(L,3);
-
+  dt_lua_register_module_entry(L,-1,"storage",module->plugin_name);
+  lua_pop(L,1);
 };
 
 int dt_lua_init_storage(lua_State *L)
