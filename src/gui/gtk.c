@@ -129,6 +129,10 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.filmstrip_back);
 
+  // slideshow
+  dt_accel_path_view(path, 256, "slideshow", "start and stop");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.slideshow_start);
   // Lighttable
   dt_accel_path_view(path, 256, "lighttable", "scroll up");
   gtk_accel_map_lookup_entry(path,
@@ -569,6 +573,9 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
       mode = DT_MAP;
       break;
 #endif
+    case DT_GUI_VIEW_SWITCH_TO_SLIDESHOW:
+      mode = DT_SLIDESHOW;
+      break;
   }
 
   /* try switch to mode */
@@ -895,6 +902,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_register_global(NC_("accel", "lighttable view"), GDK_KEY_l, 0);
   dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
   dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
+  dt_accel_register_global(NC_("accel", "slideshow view"), GDK_KEY_s, 0);
 
   dt_accel_connect_global(
     "capture view",
@@ -912,6 +920,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     "map view",
     g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                    GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_MAP), NULL));
+  dt_accel_connect_global(
+    "slideshow view",
+    g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                   GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_SLIDESHOW), NULL));
 
   // register_keys for applying styles
   init_styles_key_accels();
@@ -1353,6 +1365,24 @@ void dt_ui_restore_panels(dt_ui_t *ui)
       else
         gtk_widget_set_visible(ui->panels[k], 1);
     }
+  }
+}
+
+void dt_ui_border_show(dt_ui_t *ui, gboolean show)
+{
+  if(show)
+  {
+    gtk_widget_show(darktable.gui->widgets.left_border);
+    gtk_widget_show(darktable.gui->widgets.right_border);
+    gtk_widget_show(darktable.gui->widgets.top_border);
+    gtk_widget_show(darktable.gui->widgets.bottom_border);
+  }
+  else
+  {
+    gtk_widget_hide(darktable.gui->widgets.left_border);
+    gtk_widget_hide(darktable.gui->widgets.right_border);
+    gtk_widget_hide(darktable.gui->widgets.top_border);
+    gtk_widget_hide(darktable.gui->widgets.bottom_border);
   }
 }
 
