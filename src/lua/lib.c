@@ -30,6 +30,7 @@ typedef enum
   GET_POSITION,
   GET_VISIBLE,
   GET_CONTAINER,
+  GET_VIEWS,
   LAST_LIB_FIELD
 } lib_fields;
 static const char *lib_fields_name[] =
@@ -42,6 +43,7 @@ static const char *lib_fields_name[] =
   "position",
   "visible",
   "container",
+  "views",
   NULL
 };
 
@@ -82,6 +84,19 @@ static int lib_index(lua_State*L)
         luaA_push(L,dt_ui_container_t,&container);
         return 1;
       }
+    case GET_VIEWS:
+      {
+        int i;
+        lua_newtable(L);
+        for(i=0; i<  darktable.view_manager->num_views ; i++) {
+          if(darktable.view_manager->view[i].view(&darktable.view_manager->view[i]) & module->views()){
+            dt_lua_module_push_module(L,"view",(darktable.view_manager->view[i].module_name));
+            luaL_ref(L,-2);
+          }
+        }
+        return 1;
+      }
+
     default:
       return luaL_error(L,"should never happen %d",index);
   }

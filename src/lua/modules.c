@@ -46,6 +46,14 @@ void dt_lua_register_module_entry(lua_State *L, int index, const char* module_ty
   dt_lua_register_type_callback_stack_typeid(L,table_type,entry_name);
 }
 
+void dt_lua_module_push_module(lua_State *L, const char* module_type_name,const char* entry_name)
+{
+  dt_lua_push_darktable_lib(L);
+  dt_lua_goto_subtable(L,"modules");
+  dt_lua_goto_subtable(L,module_type_name);
+  lua_getfield(L,-1,entry_name);
+  lua_remove(L,-2);
+}
 int dt_lua_init_modules(lua_State *L)
 {
 

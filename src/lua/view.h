@@ -15,22 +15,20 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_MODULES_H
-#define DT_LUA_MODULES_H
+#ifndef DT_LUA_VIEW_H
+#define DT_LUA_VIEW_H
 #include <lua/lua.h>
-#include <common/imageio_module.h>
+#include "views/view.h"
 
 
-#define dt_lua_register_module_member(L,storage,struct_type,member,member_type) \
-  luaA_struct_member_typeid(L,storage->parameter_lua_type,#member,luaA_type_id(member_type),offsetof(struct_type,member))
 
-int dt_lua_init_modules(lua_State *L);
+#define dt_lua_register_view(L,index,type_name) \
+  dt_lua_register_view_typeid(L,index,luaA_type_find(#type_name))
+void dt_lua_register_view_typeid(lua_State* L, int index,luaA_Type type_id,const char* view_name);
 
-void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
 
-void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name);
 
-void dt_lua_module_push_module(lua_State *L, const char* module_type_name,const char* entry_name);
+int dt_lua_init_view(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

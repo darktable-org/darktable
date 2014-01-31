@@ -554,7 +554,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 #ifdef USE_LUA
   {
     char pseudo_type_name[1024];
-    snprintf(pseudo_type_name,1024,"module_%s",module->plugin_name);
+    snprintf(pseudo_type_name,1024,"lib_%s",module->plugin_name);
     luaA_Type my_type = dt_lua_init_singleton(darktable.lua_state.state,pseudo_type_name,module);
     module->parameter_lua_type = my_type;
     luaA_struct_typeid(darktable.lua_state.state,my_type);

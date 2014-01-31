@@ -223,6 +223,7 @@ if(USE_LUA)
       "lua/styles.c"
       "lua/tags.c"
       "lua/types.c"
+      "lua/view.c"
       )
     set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
   endif(USE_LUA)
