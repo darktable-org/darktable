@@ -736,6 +736,12 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
 
 }
+gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
+{
+  if(!module->expandable()) return true;
+  if(!module->expander) return true;
+  return gtk_widget_get_visible(module->widget);
+}
 
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
