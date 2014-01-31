@@ -213,6 +213,7 @@ if(USE_LUA)
       "lua/gui.c"
       "lua/image.c"
       "lua/init.c"
+      "lua/lib.c"
       "lua/lua.c"
       "lua/luastorage.c"
       "lua/modules.c"

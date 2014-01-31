@@ -34,6 +34,7 @@
 #include "lua/film.h"
 #include "lua/format.h"
 #include "lua/storage.h"
+#include "lua/lib.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/jobs.h"
@@ -57,6 +58,7 @@ static lua_CFunction early_init_funcs[] =
   dt_lua_init_modules,
   dt_lua_init_format,
   dt_lua_init_storage,
+  dt_lua_init_lib,
   NULL
 };
 

@@ -23,6 +23,11 @@
 #include "views/view.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
+#ifdef USE_LUA
+#include "lua/types.h"
+#include "lua/modules.h"
+#include "lua/lib.h"
+#endif
 
 struct dt_lib_module_t;
 struct dt_colorpicker_sample_t;
@@ -89,6 +94,8 @@ typedef struct dt_lib_module_t
       if not the module will always be shown without the expander. */
   int (*expandable) ();
 
+  /** constructor */
+  void (*init)            (struct dt_lib_module_t *self);
   /** callback methods for gui. */
   /** construct widget. */
   void (*gui_init)        (struct dt_lib_module_t *self);
@@ -118,6 +125,7 @@ typedef struct dt_lib_module_t
   GSList *accel_closures;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
+  luaA_Type parameter_lua_type;
 }
 dt_lib_module_t;
 

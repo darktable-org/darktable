@@ -104,6 +104,24 @@ int dt_lua_init_gui(lua_State * L)
   lua_setfield(L,-2,"gui");
   lua_pop(L,1);
 
+  luaA_enum(L,dt_ui_container_t);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_TOP,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_CENTER,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_LEFT_BOTTOM,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_TOP,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_CENTER,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_RIGHT_BOTTOM,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_LEFT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_CENTER,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_TOP_RIGHT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT,false);
+  luaA_enum_value(L,dt_ui_container_t,DT_UI_CONTAINER_PANEL_BOTTOM,false);
+
   lua_pushcfunction(L,selection_cb);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"selection");
   dt_lua_register_type_callback_typeid(L,type_id,hovered_cb,NULL,"hovered",NULL);

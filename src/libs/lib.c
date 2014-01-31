@@ -495,6 +495,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 //  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
+  module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -510,6 +511,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "views",                  (gpointer)&(module->views)))                  goto error;
   if(!g_module_symbol(module->module, "container",              (gpointer)&(module->container)))              goto error;
   if(!g_module_symbol(module->module, "expandable",             (gpointer)&(module->expandable)))             module->expandable = _lib_default_expandable;
+  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   module->init = NULL;
 
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
@@ -549,6 +551,21 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     dt_accel_register_lib(module,
                           NC_("accel", "show preset menu"), 0, 0);
   }
+#ifdef USE_LUA
+  {
+    char pseudo_type_name[1024];
+    snprintf(pseudo_type_name,1024,"module_%s",module->plugin_name);
+    luaA_Type my_type = dt_lua_init_singleton(darktable.lua_state.state,pseudo_type_name,module);
+    module->parameter_lua_type = my_type;
+    luaA_struct_typeid(darktable.lua_state.state,my_type);
+    dt_lua_register_lib_typeid(darktable.lua_state.state,-1,my_type,module->plugin_name);
+    lua_pop(darktable.lua_state.state,1);
+#endif
+    if(module->init) module->init(module);
+#ifdef USE_LUA
+    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
+  }
+#endif
 
   return 0;
 error:
