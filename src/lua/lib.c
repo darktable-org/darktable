@@ -71,6 +71,7 @@ static int lib_index(lua_State*L)
       } else {
         lua_pushboolean(L,dt_lib_gui_get_expanded(module));
       }
+      return 1;
     case GET_POSITION:
       lua_pushinteger(L,module->position());
       return 1;
