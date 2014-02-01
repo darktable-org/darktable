@@ -1163,6 +1163,24 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
+{
+  uint32_t additional_flags = 0;
+
+  if(group == DT_MODULEGROUP_NONE)
+    return TRUE;
+
+  /* add special group flag for module in active pipe */
+  if(module->enabled)
+    additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+  /* add special group flag for favorite */
+  if(module->state == dt_iop_state_FAVORITE)
+    additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+
+  return dt_dev_modulegroups_test(module->dev, group, module->groups()|additional_flags);
+}
+
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   char label[128];
@@ -1825,17 +1843,8 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      uint32_t additional_flags = 0;
 
-      /* add special group flag for module in active pipe */
-      if(module->enabled)
-        additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-      /* add special group flag for favorite */
-      if(module->state == dt_iop_state_FAVORITE)
-        additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-      if(m != module && (current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+      if(m != module && dt_iop_shown_in_group(m, current_group))
       {
         all_other_closed = all_other_closed && !m->expanded;
         dt_iop_gui_set_single_expanded(m, FALSE);
@@ -2702,7 +2711,12 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
     dt_iop_gui_set_state(module,dt_iop_state_ACTIVE);
   }
 
-  dt_dev_modulegroups_switch(darktable.develop,module);
+  uint32_t current_group = dt_dev_modulegroups_get(module->dev);
+  if(!dt_iop_shown_in_group(module, current_group))
+  {
+    dt_dev_modulegroups_switch(darktable.develop,module);
+  }
+
   dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
   dt_iop_request_focus(module);
   return TRUE;
