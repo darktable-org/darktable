@@ -73,6 +73,34 @@ local function get_reported_type(node,simple)
 	return rtype
 end
 
+local function print_attributes(node)
+	local concat=""
+	local result = ""
+	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
+		if not doc.get_attribute(doc.toplevel.attributes[k2],"skiped") then
+			if(type(v2) == "boolean") then
+				concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
+			elseif type(v2) == "string" then
+				result = result.."\t*"..get_node_with_link(doc.toplevel.attributes[k2],k2).." :* "..v2.."\n\n" 
+			elseif type(v2) == "table" and v2._luadoc_type then
+				result = result.."\t*"..get_node_with_link(doc.toplevel.attributes[k2],k2).." :* "..tostring(v2).."\n\n" 
+			elseif type(v2) == "table" then
+				result = result.."\t*"..get_node_with_link(doc.toplevel.attributes[k2],k2).." :*\n\n"
+				for k,v in pairs(v2) do
+					result = result.."* "..tostring(v).."\n"
+				end
+				result = result.."\n\n"
+			else
+				error("unhandle attribute type\n"..dump(v2,k2))
+			end
+		end
+	end
+	if concat ~="" then
+		result = result.."\t*Attributes* : "..concat.."\n\n"
+	end
+	return result
+
+end
 
 local function print_content(node)
 	local rtype = get_reported_type(node)
@@ -81,19 +109,7 @@ local function print_content(node)
 		result = result .."\t*type* : "..rtype.."\n\n"
 	end
 	result = result ..doc.get_text(node).."\n"
-	local concat=""
-	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
-		if not doc.get_attribute(doc.toplevel.attributes[k2],"skiped") then
-			concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
-		end
-	end
-	if concat ~="" then
-		result = result.."\t*Attributes* : "..concat.."\n\n"
-	end
-	if doc.get_attribute(node,"parent") then
-		result = result.."\t*Parent type* : "..tostring(doc.get_attribute(node,"parent")).."\n"
-	end
-
+	result = result ..print_attributes(node)
 	result = result.."\n"
 	local sig = doc.get_attribute(node,"signature")
 	if(sig) then
