@@ -341,12 +341,16 @@ void enter(dt_view_t *self)
   dt_conf_set_string("plugins/lighttable/export/iccprofile", overprofile);
 
   // alloc screen-size double buffer
-  GdkScreen *screen = gtk_widget_get_screen(dt_ui_main_window(darktable.gui->ui));
+  GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+  GdkScreen *screen = gtk_widget_get_screen(window);
   if(!screen)
     screen = gdk_screen_get_default();
+  int monitor = gdk_screen_get_monitor_at_window(screen, gtk_widget_get_window(window));
+  GdkRectangle rect;
+  gdk_screen_get_monitor_geometry(screen, monitor, &rect);
   dt_pthread_mutex_lock(&d->lock);
-  d->width = gdk_screen_get_width(screen);
-  d->height = gdk_screen_get_height(screen);
+  d->width = rect.width;
+  d->height = rect.height;
   d->buf1 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
   d->buf2 = dt_alloc_align(64, sizeof(uint32_t)*d->width*d->height);
   d->front = d->buf1;
