@@ -740,6 +740,11 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
 {
   if(!module->expandable()) return true;
   if(!module->expander) return true;
+  if(!module->widget) {
+    char var[1024];
+    snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+    return dt_conf_get_bool(var);
+  }
   return gtk_widget_get_visible(module->widget);
 }
 
@@ -958,14 +963,15 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   char key[512];
   g_snprintf(key,sizeof(key),"plugins/lighttable/%s/visible", module->plugin_name);
   dt_conf_set_bool(key, visible);
-  if (module->expander)
-    gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);
-  else if (module->widget)
-  {
-    if (visible)
-      gtk_widget_show_all(GTK_WIDGET(module->widget));
-    else
-      gtk_widget_hide(GTK_WIDGET(module->widget));
+  if(module->widget) {
+    if (module->expander){
+      gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);
+    }else {
+      if (visible)
+        gtk_widget_show_all(GTK_WIDGET(module->widget));
+      else
+        gtk_widget_hide(GTK_WIDGET(module->widget));
+    }
   }
 }
 
