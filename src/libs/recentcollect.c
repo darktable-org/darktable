@@ -273,11 +273,15 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     }
     g_object_set(G_OBJECT(d->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
-    if (g_utf8_validate(str, -1, NULL) && g_utf8_strlen(str, -1) > cut)
+    if (g_utf8_validate(str, -1, NULL))
     {
-      g_utf8_strncpy(str_cut, str, cut);
-      snprintf(str_pretty, 200, "%s...", str_cut);
-      gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
+      if (g_utf8_strlen(str, -1) > cut) {
+        g_utf8_strncpy(str_cut, str, cut);
+        snprintf(str_pretty, 200, "%s...", str_cut);
+        gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
+      } else {
+        gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
+      }
     }
     else if (strlen(str) > cut)
     {
