@@ -1335,7 +1335,8 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
   const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)beforeid);
   if(image)
   {
-    dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN);
+    gboolean from_cache = FALSE;
+    dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
     if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
     {
       dt_control_log(_("image `%s' is currently unavailable"), image->filename);
@@ -1367,9 +1368,9 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
 #endif
 
     // export before and after images
-    int size = 0, width = 800, height = 600;
+    int width = 800, height = 600;
     dt_imageio_module_data_t *fdata;
-    fdata = format->get_params(format, &size);
+    fdata = format->get_params(format);
     if(fdata == NULL)
       fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
 
@@ -1378,7 +1379,7 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
     fdata->style[0] = '\0';
 
     {
-      if (dt_imageio_export(beforeid, img_b, format, fdata, FALSE) != 0)
+      if (dt_imageio_export(beforeid, img_b, format, fdata, FALSE, FALSE, NULL, NULL) != 0) // TODO: Double check parameters
       {
         dt_control_log(_("failed to export %s"), img_b);
         fprintf(stderr, _("failed to export %s"), img_b);
@@ -1394,7 +1395,7 @@ int32_t dt_control_upload_style_job_run(dt_job_t *job)
     }
     
     {
-      if (dt_imageio_export(afterid, img_a, format, fdata, FALSE) != 0)
+      if (dt_imageio_export(afterid, img_a, format, fdata, FALSE, FALSE, NULL, NULL) != 0) // TODO: Double check parameters
       {
         dt_control_log(_("failed to export %s"), img_a);
         fprintf(stderr, _("failed to export %s"), img_a);

@@ -201,7 +201,7 @@ static gboolean _redraw_thumbnail(gpointer user_data)
   return FALSE;
 }
 
-static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
+static gboolean _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
     gpointer user_data)
 {
   int32_t imgid = *(int32_t*)user_data;
@@ -212,18 +212,20 @@ static void _expose_thumbnail(GtkWidget *widget, cairo_t *cr,
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT);
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
-  if (buf.buf)
-  {
-    dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
-    dt_view_image_expose(image_over, imgid, cr, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT, 6, 0, 0, FALSE);
-  }
-  else
+
+  if (!buf.buf)
   {
     // try to redraw thumbnail after 500ms if mipmap isn't present
     g_timeout_add(500, _redraw_thumbnail, widget);
   }
+
+  // draw it anyway
+  dt_view_image_over_t * image_over = (dt_view_image_over_t *)DT_VIEW_REJECT;
+  dt_view_image_expose(image_over, imgid, cr, _THUMBNAIL_WIDTH, _THUMBNAIL_HEIGHT, 6, 0, 0, FALSE);
+
   dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
   cairo_destroy(cr);
+  return TRUE;
 }
 
 void _gui_init (dt_gui_styles_upload_dialog_t *sd)

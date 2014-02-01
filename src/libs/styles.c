@@ -311,7 +311,9 @@ static void upload_clicked(GtkWidget *w,gpointer user_data)
   }
   sqlite3_finalize(stmt);
 
-  if (selected == 0)
+  if (name == NULL)
+    dt_control_log(_("no style selected!"));
+  else if (selected == 0)
     dt_control_log(_("no image selected!"));
   else if (selected > 1)
     dt_control_log(_("select only one image!"));
