@@ -44,7 +44,7 @@ dt_dev_pixelpipe_cache_t;
 /** constructs a new cache with given cache line count (entries) and float buffer entry size in bytes.
 	\param[out] returns 0 if fail to allocate mem cache.
 */
-int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size);
+int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size);
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache);
 
 struct dt_iop_roi_t;
