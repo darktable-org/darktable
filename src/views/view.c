@@ -106,7 +106,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   int retval = -1;
   memset(view, 0, sizeof(dt_view_t));
   view->data = NULL;
-  view->parameter_lua_type = LUAA_INVALID_TYPE;
+  view->lua_singleton_type = LUAA_INVALID_TYPE;
   view->vscroll_size = view->vscroll_viewport_size = 1.0;
   view->hscroll_size = view->hscroll_viewport_size = 1.0;
   view->vscroll_pos = view->hscroll_pos = 0.0;
@@ -159,7 +159,7 @@ int dt_view_load_module(dt_view_t *view, const char *module)
     char pseudo_type_name[1024];
     snprintf(pseudo_type_name,1024,"view_%s",view->module_name);
     luaA_Type my_type = dt_lua_init_singleton(darktable.lua_state.state,pseudo_type_name,view);
-    view->parameter_lua_type = my_type;
+    view->lua_singleton_type = my_type;
     luaA_struct_typeid(darktable.lua_state.state,my_type);
     dt_lua_register_view_typeid(darktable.lua_state.state,-1,my_type,view->module_name);
     lua_pop(darktable.lua_state.state,1);

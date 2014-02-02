@@ -1,6 +1,7 @@
 local page_name="/redmine/projects/darktable/wiki/LuaAPI"
 
 local function get_node_with_link(node,name)
+	if node:get_attribute("skiped") then return name end
 	return "\""..name.."\":"..page_name.."#"..node:get_name()
 end
 
@@ -77,7 +78,7 @@ local function print_attributes(node)
 	local concat=""
 	local result = ""
 	for k2,v2 in sorted_pairs(node._luadoc_attributes) do
-		if not doc.get_attribute(doc.toplevel.attributes[k2],"skiped") then
+		if not doc.get_attribute(doc.toplevel.attributes[k2],"internal_attr") then
 			if(type(v2) == "boolean") then
 				concat = concat..get_node_with_link(doc.toplevel.attributes[k2],k2).." "
 			elseif type(v2) == "string" then
@@ -90,6 +91,8 @@ local function print_attributes(node)
 					result = result.."* "..tostring(v).."\n"
 				end
 				result = result.."\n\n"
+			elseif type(v2) == "number" then
+				result = result.."\t*"..get_node_with_link(doc.toplevel.attributes[k2],k2).." :* "..tostring(v2).."\n\n" 
 			else
 				error("unhandle attribute type\n"..dump(v2,k2))
 			end
