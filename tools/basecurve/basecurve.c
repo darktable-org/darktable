@@ -124,6 +124,18 @@ static inline void mutate(CurveData *c, CurveData *t, float (*basecurve)[3])
   t->m_anchors[t->m_numAnchors-1].y = 1.0f;//basecurve[0xffff][1];
 }
 
+static inline float linearize_sRGB(float val)
+{
+  if(val < 0.04045f)
+  {
+    val /= 12.92f;
+  }
+  else
+  {
+    val = powf(((val + 0.055f)/1.055f), 2.4f);
+  }
+  return val;
+}
 
 int main(int argc, char *argv[])
 {
@@ -182,8 +194,7 @@ int main(int argc, char *argv[])
       {
         // un-gamma the jpg file:
         float rgb = jpg[3*(jpgwd*j + i) + k]/255.0f;
-        if(rgb < 0.04045f) rgb /= 12.92f;
-        else rgb = powf(((rgb + 0.055f)/1.055f), 2.4f);
+        rgb = linearize_sRGB(rgb);
         // grab the raw color at this position:
         const uint16_t raw = img[3*(wd*rj + ri) + k];
         // accum the histogram:
