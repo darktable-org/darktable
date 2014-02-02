@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-12-10 22:29+0100\n"
-"PO-Revision-Date: 2013-12-10 22:29+0100\n"
+"PO-Revision-Date: 2014-02-02 12:29+0100\n"
 "Last-Translator: Artur de Sousa Rocha <adsr@poczta.onet.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: \n"
@@ -590,6 +590,14 @@ msgstr "gnome keyring"
 #: ../build/src/preferences_gen.h:2078
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "mechanizm przechowywania haseł: brak,  kwallet, gnome keyring"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Wirtualny stół podświetlany i ciemnia"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organizuj i wywołuj zdjęcia z aparatów cyfrowych"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"

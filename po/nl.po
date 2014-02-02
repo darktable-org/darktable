@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-01-03 14:49+0100\n"
-"PO-Revision-Date: 2014-01-03 14:57+0100\n"
+"PO-Revision-Date: 2014-02-02 12:26+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -579,6 +579,14 @@ msgstr "gnome keyring"
 #: ../build/src/preferences_gen.h:2034
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "de opslag voor wachtwoordopslag: geen, kwallet, gnome keyring "
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtuele Lichttafel en Doka"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organiseer en ontwikkel beelden van digitale camera's"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"

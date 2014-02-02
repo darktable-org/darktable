@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 0.9\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-12-13 05:33+0400\n"
-"PO-Revision-Date: 2013-12-23 08:54+0300\n"
+"PO-Revision-Date: 2014-02-02 12:24+0100\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: русский <>\n"
 "Language: ru\n"
@@ -554,6 +554,14 @@ msgstr "GNOME Keyring"
 #: ../build/src/preferences_gen.h:2078
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "Механизм хранения паролей: не используется, KWallet, GNOME Keyring"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Программа для отсмотра и проявки цифровых негативов"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Организация, сортировка и проявка цифровых негативов"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"

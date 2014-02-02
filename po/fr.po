@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-01-22 00:15+0100\n"
-"PO-Revision-Date: 2014-01-22 00:19+0100\n"
+"PO-Revision-Date: 2014-02-02 12:27+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -615,6 +615,14 @@ msgstr "nommage des fichiers"
 #: ../build/src/preferences_gen.h:2241
 msgid "file naming pattern used for a import session"
 msgstr "nommage des fichiers pour la session d'importation"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Table lumineuse et chambre noire virtuelles"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organiser et développer les images d'un boîtier numérique"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
