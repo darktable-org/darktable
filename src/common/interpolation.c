@@ -1379,14 +1379,14 @@ dt_interpolation_resample(
       for (int iy=0; iy < vl; iy++)
       {
         // This is our input line
-        const float* i = (float*)((char*)in + in_stride*vindex[viidx++]);
+        const float* i = (float*)((char*)in + (size_t)in_stride*vindex[viidx++]);
 
         __m128 vhs = _mm_setzero_ps();
 
         for (int ix=0; ix< hl; ix++)
         {
           // Apply the precomputed filter kernel
-          int baseidx = hindex[hiidx++]*4;
+          size_t baseidx = (size_t)hindex[hiidx++]*4;
           float htap = hkernel[hkidx++];
           __m128 vhtap = _mm_set_ps1(htap);
           vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128*)&i[baseidx], vhtap));
@@ -1403,7 +1403,7 @@ dt_interpolation_resample(
       }
 
       // Output pixel is ready
-      float* o = (float*)((char*)out + oy*out_stride + ox*4*sizeof(float));
+      float* o = (float*)((char*)out + (size_t)oy*out_stride + (size_t)ox*4*sizeof(float));
       _mm_stream_ps(o, vs);
 
       // Reset vertical resampling context
