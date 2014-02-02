@@ -21,8 +21,10 @@
 #include "bauhaus/bauhaus.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/tiling.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
+#include "common/opencl.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -30,6 +32,10 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+
+#define BOX_ITERATIONS    8
+#define NUM_BUCKETS       4       /* OpenCL bucket chain size for tmp buffers; minimum 2 */
+#define BLOCKSIZE         2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
@@ -58,6 +64,16 @@ typedef struct dt_iop_bloom_data_t
   float strength;
 }
 dt_iop_bloom_data_t;
+
+typedef struct dt_iop_bloom_global_data_t
+{
+  int kernel_bloom_threshold;
+  int kernel_bloom_hblur;
+  int kernel_bloom_vblur;
+  int kernel_bloom_mix;
+}
+dt_iop_bloom_global_data_t;
+
 
 const char *name()
 {
@@ -105,11 +121,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   memset(blurlightness,0,(roi_out->width*roi_out->height*sizeof(float)));
   memcpy(out,in,roi_out->width*roi_out->height*ch*sizeof(float));
 
-  int rad = 256*(fmin(100.0,data->size+1)/100.0);
+  int rad = 256.0f*(fmin(100.0f,data->size+1.0f)/100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
-  const int radius = MIN(256, _r);
+  const int radius = MIN(256.0f, _r);
 
-  const float scale = 1.0 / exp2f ( -1.0*(fmin(100.0,data->strength+1)/100.0));
+  const float scale = 1.0f / exp2f ( -1.0f*(fmin(100.0f,data->strength+1.0f)/100.0f));
 
   /* get the thresholded lights into buffer */
 #ifdef _OPENMP
@@ -131,15 +147,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int hr = range/2;
 
   const int size = roi_out->width>roi_out->height?roi_out->width:roi_out->height;
-  float *scanline = malloc(size*sizeof(float));
 
-  for(int iteration=0; iteration<8; iteration++)
+  for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
-    int index=0;
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(blurlightness,roi_out) schedule(static)
+#endif
     for(int y=0; y<roi_out->height; y++)
     {
+      float scanline[size];
       float L=0;
       int hits = 0;
+      int index = y * roi_out->width;
       for(int x=-hr; x<roi_out->width; x++)
       {
         int op = x - hr-1;
@@ -160,15 +179,17 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for (int x=0; x<roi_out->width; x++)
         blurlightness[index+x]=scanline[x];
-
-      index+=roi_out->width;
     }
 
     /* vertical pass on blurlightness */
     const int opoffs = -(hr+1)*roi_out->width;
     const int npoffs = (hr)*roi_out->width;
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(blurlightness,roi_out) schedule(static)
+#endif
     for(int x=0; x < roi_out->width; x++)
     {
+      float scanline[size];
       float L=0;
       int hits=0;
       int index = -hr*roi_out->width+x;
@@ -199,7 +220,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
   /* screen blend lightness with original */
-
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data,blurlightness) schedule(static)
 #endif
@@ -207,7 +227,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
-    outp[0] = 100-(((100-inp[0])*(100- blurlightness[k]))/100); // Screen blend
+    outp[0] = 100.0f-(((100.0f-inp[0])*(100.0f- blurlightness[k]))/100.0f); // Screen blend
     outp[1] = inp[1];
     outp[2] = inp[2];
   }
@@ -215,10 +235,193 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(piece->pipe->mask_display)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
-  if(scanline)
-    free(scanline);
   if(blurlightness)
     free(blurlightness);
+}
+
+#ifdef HAVE_OPENCL
+static int bucket_next(unsigned int *state, unsigned int max)
+{
+  unsigned int current = *state;
+  unsigned int next = (current >= max - 1 ? 0 : current + 1);
+
+  *state = next;
+
+  return next;
+}
+
+int
+process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+{
+  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)self->data;
+
+  cl_int err = -999;
+  cl_mem dev_tmp[NUM_BUCKETS] = { NULL };
+  cl_mem dev_tmp1;
+  cl_mem dev_tmp2;
+  unsigned int state = 0;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  const float threshold = d->threshold;
+
+  const int rad = 256.0f*(fmin(100.0f,d->size+1.0f)/100.0f);
+  const float _r = ceilf(rad * roi_in->scale / piece->iscale);
+  const int radius = MIN(256.0f, _r);
+  const float scale = 1.0f / exp2f (-1.0f*(fmin(100.0f,d->strength+1.0f)/100.0f));
+
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+
+  // make sure blocksize is not too large
+  int blocksize = BLOCKSIZE;
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+      dt_opencl_get_kernel_work_group_size(devid, gd->kernel_bloom_hblur, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(blocksize > maxsizes[0] || blocksize > maxsizes[1] || blocksize > kernelworkgroupsize
+          || blocksize > workgroupsize || (blocksize+2*radius)*sizeof(float) > localmemsize)
+    {
+      if(blocksize == 1) break;
+      blocksize >>= 1;
+    }
+  }
+  else
+  {
+    blocksize = 1;   // slow but safe
+  }
+
+  const size_t bwidth = width % blocksize == 0 ? width : (width / blocksize + 1)*blocksize;
+  const size_t bheight = height % blocksize == 0 ? height : (height / blocksize + 1)*blocksize;
+
+  size_t sizes[3];
+  size_t local[3];
+
+  for(int i=0; i<NUM_BUCKETS; i++)
+  {
+    dev_tmp[i] = dt_opencl_alloc_device(devid, width, height, sizeof(float));
+    if(dev_tmp[i] == NULL) goto error;
+  }
+
+  /* gather light by threshold */
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
+  sizes[2] = 1;
+  dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 4, sizeof(float), (void *)&scale);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_threshold, 5, sizeof(float), (void *)&threshold);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_threshold, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  if(radius != 0)
+    for(int i=0; i < BOX_ITERATIONS; i++)
+    {
+      /* horizontal blur */
+      sizes[0] = bwidth;
+      sizes[1] = ROUNDUPHT(height);
+      sizes[2] = 1;
+      local[0] = blocksize;
+      local[1] = 1;
+      local[2] = 1;
+      dev_tmp2 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 0, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 1, sizeof(cl_mem), (void *)&dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 2, sizeof(int), (void *)&radius);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 3, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 4, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 5, sizeof(int), (void *)&blocksize);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_hblur, 6, (blocksize+2*radius)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_hblur, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+
+
+      /* vertical blur */
+      sizes[0] = ROUNDUPWD(width);
+      sizes[1] = bheight;
+      sizes[2] = 1;
+      local[0] = 1;
+      local[1] = blocksize;
+      local[2] = 1;
+      dev_tmp1 = dev_tmp[bucket_next(&state, NUM_BUCKETS)];
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 0, sizeof(cl_mem), (void *)&dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 2, sizeof(int), (void *)&radius);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 3, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 4, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 5, sizeof(int), (void *)&blocksize);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_vblur, 6, (blocksize+2*radius)*sizeof(float), NULL);
+      err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_bloom_vblur, sizes, local);
+      if(err != CL_SUCCESS) goto error;
+    }
+
+  /* mixing out and in -> out */
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUPHT(height);
+  sizes[2] = 1;
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 2, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 3, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_bloom_mix, 4, sizeof(int), (void *)&height);
+  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_bloom_mix, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+  for(int i=0; i<NUM_BUCKETS; i++) if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+  return TRUE;
+
+error:
+  for(int i=0; i<NUM_BUCKETS; i++) if(dev_tmp[i] != NULL) dt_opencl_release_mem_object(dev_tmp[i]);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_bloom] couldn't enqueue kernel! %d\n", err);
+  return FALSE;
+}
+#endif
+
+void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
+{
+  dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
+
+  const int rad = 256.0f*(fmin(100.0f,d->size+1.0f)/100.0f);
+  const float _r = ceilf(rad * roi_in->scale / piece->iscale);
+  const int radius = MIN(256.0f, _r);
+
+  tiling->factor = 2.0f + NUM_BUCKETS*0.25f;   // in + out + NUM_BUCKETS * 0.25 tmp
+  tiling->maxbuf = 1.0f;
+  tiling->overhead = 0;
+  tiling->overlap = 5*radius;                  // This is a guess. TODO: check if that's sufficiently large
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+  return;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 12; // bloom.cl, from programs.conf
+  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)malloc(sizeof(dt_iop_bloom_global_data_t));
+  module->data = gd;
+  gd->kernel_bloom_threshold = dt_opencl_create_kernel(program, "bloom_threshold");
+  gd->kernel_bloom_hblur = dt_opencl_create_kernel(program, "bloom_hblur");
+  gd->kernel_bloom_vblur = dt_opencl_create_kernel(program, "bloom_vblur");
+  gd->kernel_bloom_mix = dt_opencl_create_kernel(program, "bloom_mix");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_bloom_threshold);
+  dt_opencl_free_kernel(gd->kernel_bloom_hblur);
+  dt_opencl_free_kernel(gd->kernel_bloom_vblur);
+  dt_opencl_free_kernel(gd->kernel_bloom_mix);
+  free(module->data);
+  module->data = NULL;
 }
 
 static void
