@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-02 16:48+0100\n"
-"PO-Revision-Date: 2014-02-02 21:57+0100\n"
+"POT-Creation-Date: 2014-02-02 22:22+0100\n"
+"PO-Revision-Date: 2014-02-02 22:23+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -939,29 +939,37 @@ msgstr "bezig..."
 msgid "switch to %s mode"
 msgstr "schakel over op %s mode"
 
-#: ../src/control/crawler.c:251
+#: ../src/control/crawler.c:341 ../src/libs/select.c:36
+msgid "select"
+msgstr "selecteren"
+
+#: ../src/control/crawler.c:347
 msgid "path"
 msgstr "pad"
 
-#: ../src/control/crawler.c:257
+#: ../src/control/crawler.c:353
 msgid "xmp timestamp"
 msgstr "xmp tijdsaanduiding"
 
-#: ../src/control/crawler.c:263
+#: ../src/control/crawler.c:359
 msgid "database timestamp"
 msgstr "database tijdsaanduiding"
 
-#: ../src/control/crawler.c:277
+#: ../src/control/crawler.c:369
 msgid "updated xmp sidecar files found"
 msgstr "bijgewerkt xmp bestand gevonden"
 
-#: ../src/control/crawler.c:279
-msgid "reload xmp files"
+#: ../src/control/crawler.c:388 ../src/libs/select.c:96
+msgid "select all"
+msgstr "selecteer alles"
+
+#: ../src/control/crawler.c:395
+msgid "reload selected xmp files"
 msgstr "herlaad xmp bestanden"
 
-#: ../src/control/crawler.c:280
-msgid "overwrite xmp files"
-msgstr "overschrijven xmp bestanden"
+#: ../src/control/crawler.c:396
+msgid "overwrite selected xmp files"
+msgstr "overschrijf xmp bestanden"
 
 #: ../src/control/jobs/camera_jobs.c:85
 #, c-format
@@ -2912,7 +2920,7 @@ msgstr "ruisreductie"
 msgid "denoise (strong)"
 msgstr "ruisreductie (sterk)"
 
-#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:64
+#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:80
 msgid "bloom"
 msgstr "glans"
 
@@ -3159,44 +3167,44 @@ msgstr "onscherpte voor blauw"
 msgid "radius"
 msgstr "straal"
 
-#: ../src/iop/bloom.c:80 ../src/iop/soften.c:104
+#: ../src/iop/bloom.c:96 ../src/iop/soften.c:104
 msgctxt "accel"
 msgid "size"
 msgstr "afmeting"
 
-#: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
+#: ../src/iop/bloom.c:97 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
 msgctxt "accel"
 msgid "threshold"
 msgstr "drempel"
 
-#: ../src/iop/bloom.c:82 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
+#: ../src/iop/bloom.c:98 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
 msgctxt "accel"
 msgid "strength"
 msgstr "kracht"
 
-#: ../src/iop/bloom.c:336 ../src/iop/soften.c:564 ../src/libs/camera.c:587
+#: ../src/iop/bloom.c:539 ../src/iop/soften.c:564 ../src/libs/camera.c:587
 msgid "size"
 msgstr "afmeting"
 
-#: ../src/iop/bloom.c:337
+#: ../src/iop/bloom.c:540
 msgid "the size of bloom"
 msgstr "mate van glans"
 
-#: ../src/iop/bloom.c:342 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
+#: ../src/iop/bloom.c:545 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
 msgid "threshold"
 msgstr "drempel"
 
-#: ../src/iop/bloom.c:343
+#: ../src/iop/bloom.c:546
 msgid "the threshold of light"
 msgstr "drempel voor glans"
 
-#: ../src/iop/bloom.c:348 ../src/iop/denoiseprofile.c:1727
+#: ../src/iop/bloom.c:551 ../src/iop/denoiseprofile.c:1727
 #: ../src/iop/grain.c:524 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "kracht"
 
-#: ../src/iop/bloom.c:349
+#: ../src/iop/bloom.c:552
 msgid "the strength of bloom"
 msgstr "glanssterkte"
 
@@ -7421,14 +7429,6 @@ msgstr "of"
 #, c-format
 msgid " but not "
 msgstr "maar niet"
-
-#: ../src/libs/select.c:36
-msgid "select"
-msgstr "selecteren"
-
-#: ../src/libs/select.c:96
-msgid "select all"
-msgstr "selecteer alles"
 
 #: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
