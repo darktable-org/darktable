@@ -437,6 +437,7 @@ function M.set_text(node,text)
 	for k,v in ipairs(node._luadoc_parents) do
 		set_forced_next(v[1],v[2])
 	end
+	return node
 
 end
 
