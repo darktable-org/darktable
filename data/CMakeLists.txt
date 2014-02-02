@@ -48,9 +48,17 @@ install(DIRECTORY "lua" DESTINATION ${SHARE_INSTALL}/darktable/)
 install(FILES luarc DESTINATION ${SHARE_INSTALL}/darktable/)
 endif(USE_LUA)
 #
-# Install other system shares
+# Install (and generate when necessary) other system shares
 #
-install(FILES darktable.desktop DESTINATION ./share/applications)
+add_custom_command(
+		OUTPUT darktable.desktop
+		SOURCE darktable.desktop.in
+		COMMAND intltool-merge -d ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po
+)
+add_custom_target(darktable.desktop ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
 install(FILES darktable.appdata.xml DESTINATION ./share/appdata)
 
 #
