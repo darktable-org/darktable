@@ -1,9 +1,24 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2014-02-02 12:51+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#~ msgid ""
+#~ msgstr ""
+#~ "Project-Id-Version: darktable\n"
+#~ "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-01-28 14:02+0100\n"
-"PO-Revision-Date: 2014-01-28 14:18+0100\n"
+"PO-Revision-Date: 2014-02-02 12:25+0100\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -631,6 +646,14 @@ msgstr "Dateiverwaltung"
 #: ../build/src/preferences_gen.h:2285
 msgid "file naming pattern used for a import session"
 msgstr ""
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtueller Leuchttisch und Dunkelkammer"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organisiere und entwickle Bilder von Digitalkameras"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"

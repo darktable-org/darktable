@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2012-03-29 13:43+0300\n"
+"PO-Revision-Date: 2014-02-02 12:27+0100\n"
 "Last-Translator: Mikko Ruohola <mikko@ruohola.org>\n"
 "Language-Team: Finnish Translators <mikko@ruohola.org>\n"
 "Language: \n"
@@ -378,6 +378,14 @@ msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr ""
 "käytettävä salasanavarasto: 0 - ei mitään, 1 - gconf (älä käytä), 2 - "
 "kwaller, 3 - gnome keyring"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtuaalinen valopöytä ja pimiö"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Järjestele ja kehitä kuvia digitaalikameroista"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to api restrictions we currently cannot set the bpp to"

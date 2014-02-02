@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-27 17:02+0100\n"
-"PO-Revision-Date: 2013-11-28 20:45+0100\n"
+"PO-Revision-Date: 2014-02-02 12:28+0100\n"
 "Last-Translator: Milan Knizek <knizek@volny.cz>\n"
 "Language-Team: Czech <kde-i18n-doc@kde.org>\n"
 "Language: cs_CZ\n"
@@ -592,6 +592,14 @@ msgstr "klíčenka gnome"
 #: ../build/src/preferences_gen.h:2078
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "mechanismus ukládání hesel: nic, kwallet, gnome keyring"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtuální prosvětlovací pult a fotokomora"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Správa a vyvolávání snímků z digitálních fotoaparátů"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
