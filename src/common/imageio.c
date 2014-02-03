@@ -310,7 +310,7 @@ return_label:
 static gboolean
 _blacklisted_ext(const gchar *filename)
 {
-  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", "arw", NULL };
+  const char *extensions_blacklist[] = { "dng", "cr2", "nef", "nrw", "orf", "rw2", "pef", "srw", NULL };
   gboolean supported = TRUE;
   char *ext = g_strrstr(filename, ".");
   if(!ext) return FALSE;
@@ -342,6 +342,16 @@ _blacklisted_raw(const gchar *maker, const gchar *model)
 
   gboolean blacklisted = FALSE;
 
+  // do not blacklist old camera not supported by rawspeed
+  if (!g_ascii_strncasecmp(maker, "sony", 4))
+  {
+    if (!g_ascii_strncasecmp(model, "dslr-a100", 4))
+      return FALSE;
+    else
+      return TRUE;
+  }
+
+  // then check for specific maker/models
   for(blacklist_t *i = blacklist; i->maker != NULL; i++)
     if(!g_ascii_strncasecmp(maker, i->maker, strlen(i->maker)) &&
        !g_ascii_strncasecmp(model, i->model, strlen(i->model)))
