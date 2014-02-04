@@ -285,7 +285,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
 
-  if(cmat[0] != NAN)
+  if(!isnan(cmat[0]))
   {
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
@@ -537,7 +537,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     float cam_xyz[12];
     cam_xyz[0] = NAN;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(cam_xyz[0] == NAN) sprintf(p->iccprofile, "linear_rgb");
+    if(isnan(cam_xyz[0])) sprintf(p->iccprofile, "linear_rgb");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
@@ -621,7 +621,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
 
   // we might have failed generating the clipping transformations, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb[0] && d->nmatrix[0] == NAN) || (!d->xform_nrgb_Lab[0] && d->lmatrix[0] == NAN)))
+  if(d->nrgb && ((!d->xform_cam_nrgb[0] && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab[0] && isnan(d->lmatrix[0]))))
   {
     for(int t=0; t<dt_get_num_threads(); t++)
     {
@@ -635,7 +635,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform_cam_Lab[0] && d->cmatrix[0] == NAN)
+  if(!d->xform_cam_Lab[0] && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
@@ -858,7 +858,7 @@ static void update_profile_list(dt_iop_module_t *self)
   float cam_xyz[12];
   cam_xyz[0] = NAN;
   dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-  if(cam_xyz[0] != NAN)
+  if(!isnan(cam_xyz[0]))
   {
     prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
     g_strlcpy(prof->filename, "cmatrix", sizeof(prof->filename));
