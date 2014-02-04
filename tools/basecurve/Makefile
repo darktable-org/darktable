@@ -1,6 +1,10 @@
 PROGS = basecurve
 
-CFLAGS = -g -std=c99 -Wall
+ifeq ($(BUILD_TYPE),Release)
+CFLAGS += -O3
+endif
+
+CFLAGS += -g -std=c99 -Wall -pedantic
 
 all: $(PROGS)
 
