@@ -162,12 +162,12 @@ if(OPENEXR_FOUND)
   list(APPEND SOURCES "common/imageio_exr.cc")
 endif(OPENEXR_FOUND)
 
-if(USE_WEBP)
-  find_package(WebP 0.3.0 REQUIRED)
+find_package(WebP 0.3.0)
+if(WEBP_FOUND)
   include_directories(${WebP_INCLUDE_DIRS})
   list(APPEND LIBS ${WebP_LIBRARIES})
   add_definitions(${WebP_DEFINITIONS})
-endif(USE_WEBP)
+endif(WEBP_FOUND)
 
 # Find all the libs that don't require extra parameters
 foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
