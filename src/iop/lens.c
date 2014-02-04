@@ -629,7 +629,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   return;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
@@ -645,7 +645,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
                    d->target_geom, d->modify_flags, !d->inverse);
   float *buf = malloc(2*3*sizeof(float));
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -659,7 +659,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   if(!d->lens->Maker || d->crop <= 0.0f) return 0;
@@ -674,7 +674,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
                    d->target_geom, d->modify_flags, d->inverse);
   float *buf = malloc(2*3*sizeof(float));
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {

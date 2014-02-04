@@ -371,7 +371,7 @@ transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 
 
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
@@ -383,7 +383,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   float ma,mb,md,me,mg,mh;
   keystone_get_matrix(k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd,&ma,&mb,&md,&me,&mg,&mh);
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
     pi[0] = points[i];
@@ -413,7 +413,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
@@ -426,7 +426,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   float ma,mb,md,me,mg,mh;
   keystone_get_matrix(k_space,kxa,kxb,kxc,kxd,kya,kyb,kyc,kyd,&ma,&mb,&md,&me,&mg,&mh);
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     float pi[2], po[2];
     pi[0] = -d->enlarge_x + d->cix + points[i];

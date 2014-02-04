@@ -1440,16 +1440,16 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
   }
 }
 
-int dt_dev_distort_transform(dt_develop_t *dev, float *points, int points_count)
+int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
   return dt_dev_distort_transform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
 }
-int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, int points_count)
+int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
   return dt_dev_distort_backtransform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
 }
 
-int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count)
 {
   GList *modules = g_list_first(dev->iop);
   GList *pieces = g_list_first(pipe->nodes);
@@ -1468,7 +1468,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
   return 1;
 }
 
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count)
 {
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
