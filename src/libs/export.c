@@ -665,7 +665,7 @@ gui_init (dt_lib_module_t *self)
 
   // Export button
 
-  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(_("export")));
+  GtkButton *button = GTK_BUTTON(gtk_button_new_with_label(C_("export", "export")));
   d->export_button = button;
   g_object_set(G_OBJECT(button), "tooltip-text", _("export with current settings (ctrl-e)"), (char *)NULL);
   gtk_table_attach(GTK_TABLE(self->widget), GTK_WIDGET(button), 1, 2, 11, 12, GTK_EXPAND|GTK_FILL, 0, 0, 0);

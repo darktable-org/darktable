@@ -405,7 +405,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX (hbox2),importButton,TRUE,TRUE,0);
 
   // export button
-  GtkWidget *exportButton = gtk_button_new_with_label(_("export"));
+  GtkWidget *exportButton = gtk_button_new_with_label(C_("styles", "export"));
   d->export_button = exportButton;
   g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);

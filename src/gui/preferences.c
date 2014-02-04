@@ -612,7 +612,7 @@ static void init_tab_accels(GtkWidget *book)
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(update_accels_model), (gpointer)model);
 
-  button = gtk_button_new_with_label(_("export"));
+  button = gtk_button_new_with_label(C_("import", "export"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked",
                    G_CALLBACK(import_export), (gpointer)1);
