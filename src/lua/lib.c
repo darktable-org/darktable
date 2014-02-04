@@ -110,7 +110,9 @@ static int lib_newindex(lua_State*L)
   switch(index)
   {
     case GET_EXPANDED:
+      dt_lua_unlock(true);
       dt_lib_gui_set_expanded(module,lua_toboolean(L,3));
+      dt_lua_lock();
       return 0;
     case GET_VISIBLE:
       dt_lua_unlock(true);
@@ -147,8 +149,7 @@ int dt_lua_init_lib(lua_State *L)
   dt_lua_init_type(L,dt_lib_module_t);
   dt_lua_register_type_callback_list(L,dt_lib_module_t,lib_index,NULL,lib_fields_name);
   // add a writer to the read/write fields
-  dt_lua_register_type_callback(L,dt_lib_module_t,lib_index,lib_newindex,
-      "expanded","visible", NULL) ;
+  dt_lua_register_type_callback(L,dt_lib_module_t,lib_index,lib_newindex, "expanded","visible", NULL) ;
 
   dt_lua_init_module_type(L,"lib");
   return 0;

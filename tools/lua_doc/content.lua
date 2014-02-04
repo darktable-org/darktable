@@ -325,9 +325,11 @@ darktable.modules.storage.email:set_alias(darktable.modules.storage.picasa)
 darktable.modules.view:set_text([[The different views in darktable]])
 darktable.modules.view:add_version_info([[View objects added]])
 darktable.modules.view.map:set_text([[The map view]])
+
 darktable.modules.view.darkroom:set_text([[The darkroom view]])
 darktable.modules.view.lighttable:set_text([[The lighttable view]])
 darktable.modules.view.tethering:set_text([[The tethering view]])
+darktable.modules.view.slideshow:set_text([[The slideshow view]])
 
 for k, v in darktable.modules.lib:unskiped_children() do
 	local real_node = real_darktable.modules.lib[k]
@@ -633,6 +635,7 @@ invisible_attr(attributes.is_singleton)
 invisible_attr(attributes.optional)
 invisible_attr(attributes.skiped)
 invisible_attr(attributes.is_attribute)
+invisible_attr(attributes.internal_attr)
 attributes.write:set_text([[This object is a variable that can be written to.]])
 attributes.read:set_text([[This object is a variable that can be read.]])
 attributes.has_pairs:set_text([[This object can be used as an argument to the system function "pairs" and iterated upon.]])
