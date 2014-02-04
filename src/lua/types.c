@@ -504,6 +504,7 @@ void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id
   luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getmetatable(L,luaA_type_name(parent_type_id)); // gets the metatable since it's supposed to exist
   lua_setfield(L,-2,"__luaA_ParentMetatable");
+  lua_pop(L,1);
 }
 
 static void init_metatable(lua_State* L, luaA_Type type_id)
@@ -579,6 +580,34 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
   return type_id;
 }
 
+
+gboolean dt_lua_isa_typeid(lua_State *L, int index, luaA_Type type_id)
+{
+  if(!luaL_getmetafield(L,index,"__luaA_Type")) return false;
+  int obj_typeid = luaL_checkinteger(L,-1);
+  lua_pop(L,1);
+  return dt_lua_typeisa_typeid(L,obj_typeid,type_id);
+
+
+}
+
+gboolean dt_lua_typeisa_typeid(lua_State *L, luaA_Type obj_type, luaA_Type type_id)
+{
+  if(obj_type == type_id) return true;
+  luaL_getmetatable(L,luaA_type_name(obj_type));
+  lua_getfield(L,-1,"__luaA_ParentMetatable");
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,2);
+    return false;
+
+  }
+  lua_getfield(L,-1,"__luaA_Type");
+  int parent_typeid = luaL_checkinteger(L,-1);
+  lua_pop(L,3);
+  return dt_lua_typeisa_typeid(L,parent_typeid,type_id);
+
+}
+
 int dt_lua_init_types(lua_State *L)
 {
   luaA_conversion(char_20,push_char_array,to_char20);
@@ -602,6 +631,7 @@ int dt_lua_init_types(lua_State *L)
   luaA_conversion(int32_t,luaA_push_int, luaA_to_int);
   luaA_conversion_push(const int32_t,luaA_push_int);
   luaA_conversion_push(const_string,luaA_push_const_char_ptr);
+
   return 0;
 }
 

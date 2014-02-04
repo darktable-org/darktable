@@ -112,6 +112,11 @@ luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name);
 
 int dt_lua_init_types(lua_State *L);
 
+#define dt_lua_isa(L,index,type) \
+  dt_lua_isa_typeid(L,index,luaA_type_id(type))
+
+gboolean dt_lua_isa_typeid(lua_State*L,int index, luaA_Type type_id);
+gboolean dt_lua_typeisa_typeid(lua_State*L,luaA_Type obj_type, luaA_Type type_id);
 
 
 #endif

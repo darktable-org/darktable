@@ -91,12 +91,9 @@ static int get_format_params(lua_State *L)
 static int write_image(lua_State *L)
 {
   /* check that param 1 is a module_format_t */
+  luaL_argcheck(L,dt_lua_isa(L,-1,dt_imageio_module_format_t),-1,"dt_imageio_module_format_t expected");
+
   lua_getmetatable(L,1);
-  lua_getfield(L,-1,"__module_type");
-  if(strcmp(lua_tostring(L,-1),"format")) {
-    return luaL_argerror(L,1,"not a format description");
-  }
-  lua_pop(L,1);
   lua_getfield(L,-1,"__luaA_Type");
   luaA_Type format_type = luaL_checkint(L,-1);
   lua_pop(L,1);
@@ -129,8 +126,6 @@ void dt_lua_register_format_typeid(lua_State* L, dt_imageio_module_format_t* mod
   luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
-  lua_pushstring(L,"format");
-  lua_setfield(L,-2,"__module_type");
   lua_pop(L,1); // pop the metatable
   // add to the table
   dt_lua_push_darktable_lib(L);

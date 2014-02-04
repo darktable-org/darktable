@@ -48,19 +48,15 @@ static const char *storage_fields_name[] =
 
 static int support_format(lua_State *L)
 {
-  luaL_getmetafield(L,1,"__module_type");
-  const char* arg1_type = lua_tostring(L,-1);
-  luaL_argcheck(L,!strcmp(arg1_type,"storage"),1,NULL);
+  luaL_argcheck(L,dt_lua_isa(L,1,dt_imageio_module_storage_t),1,"dt_imageio_module_storage_t expected");
   luaL_getmetafield(L,1,"__associated_object");
   dt_imageio_module_storage_t * storage = lua_touserdata(L,-1);
-  lua_pop(L,2);
+  lua_pop(L,1);
 
-  luaL_getmetafield(L,2,"__module_type");
-  const char* arg2_type = lua_tostring(L,-1);
-  luaL_argcheck(L,!strcmp(arg2_type,"format"),2,NULL);
+  luaL_argcheck(L,dt_lua_isa(L,2,dt_imageio_module_format_t),2,"dt_imageio_module_format_t expected");
   luaL_getmetafield(L,2,"__associated_object");
   dt_imageio_module_format_t * format = lua_touserdata(L,-1);
-  lua_pop(L,2);
+  lua_pop(L,1);
 
   lua_pushboolean(L,storage->supported(storage,format));
   return 1;
@@ -134,8 +130,6 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
   luaL_getmetatable(L,luaA_type_name(type_id));
   lua_pushlightuserdata(L,module);
   lua_setfield(L,-2,"__associated_object");
-  lua_pushstring(L,"storage");
-  lua_setfield(L,-2,"__module_type");
   lua_pop(L,1); // pop the metatable
   // add to the table
   dt_lua_push_darktable_lib(L);
