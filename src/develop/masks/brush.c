@@ -2548,7 +2548,7 @@ static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, 
 
     if (x < 0 || x >= bw || y < 0 || y >= bh) continue;
 
-    float *buf = *buffer + y*bw + x;
+    float *buf = *buffer + (size_t)y*bw + x;
 
     *buf = fmaxf(*buf, op);
     if (x+dx >= 0 && x+dx < bw) buf[dpx] = fmaxf(buf[dpx], op);   //this one is to avoid gaps due to int rounding
@@ -2578,14 +2578,14 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   start = start2 = dt_get_wtime();
 
   //we allocate the output buffer
-  *buffer = malloc(width*height*sizeof(float));
+  *buffer = malloc((size_t)width*height*sizeof(float));
   if (*buffer == NULL)
   {
     free(points);
     free(border);
     return 0;
   }
-  memset(*buffer,0,width*height*sizeof(float));
+  memset(*buffer,0,(size_t)width*height*sizeof(float));
 
   int nb_corner = g_list_length(form->points);
 
