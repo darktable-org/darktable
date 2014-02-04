@@ -826,11 +826,11 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
 void dt_cleanup()
 {
-  dt_ctl_switch_mode_to(DT_MODE_NONE);
   const int init_gui = (darktable.gui != NULL);
 
   if(init_gui)
   {
+    dt_ctl_switch_mode_to(DT_MODE_NONE);
     dt_dbus_destroy(darktable.dbus);
 
     dt_control_write_config(darktable.control);
