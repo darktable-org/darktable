@@ -318,6 +318,7 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
   void* udata = lua_newuserdata(L,type_size);
   memcpy(udata,cin,type_size);
   luaL_setmetatable(L,luaA_type_name(type_id));
+  if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
   return 1;
 }
 
@@ -342,6 +343,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_pushinteger(L,singleton);
     lua_pushvalue(L,-2);
     lua_settable(L,-4);
+    if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
 
   }
   lua_remove(L,-2);//__values
@@ -557,6 +559,7 @@ luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
   lua_pushvalue(L,-1);
   luaL_setmetatable(L,tmp_name);
   lua_setfield(L,-3,"__singleton");
+  if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
   lua_remove(L,-2);
 
   return type_id;
