@@ -32,9 +32,9 @@ typedef struct dt_bilateral_cl_t
 {
   dt_bilateral_cl_global_t *global;
   int devid;
-  int size_x, size_y, size_z;
+  size_t size_x, size_y, size_z;
   int width, height;
-  int blocksizex, blocksizey;
+  size_t blocksizex, blocksizey;
   float sigma_s, sigma_r;
   cl_mem dev_grid;
   cl_mem dev_grid_tmp;
@@ -170,7 +170,7 @@ dt_bilateral_init_cl(
   b->dev_grid_tmp = NULL;
 
   // alloc grid buffer:
-  b->dev_grid = dt_opencl_alloc_device_buffer(b->devid, b->size_x*b->size_y*b->size_z*sizeof(float));
+  b->dev_grid = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x*b->size_y*b->size_z*sizeof(float));
   if(!b->dev_grid)
   {
     dt_bilateral_free_cl(b);
@@ -178,7 +178,7 @@ dt_bilateral_init_cl(
   }
 
   // alloc temporary grid buffer
-  b->dev_grid_tmp = dt_opencl_alloc_device_buffer(b->devid, b->size_x*b->size_y*b->size_z*sizeof(float));
+  b->dev_grid_tmp = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x*b->size_y*b->size_z*sizeof(float));
   if(!b->dev_grid_tmp)
   {
     dt_bilateral_free_cl(b);

@@ -1326,7 +1326,7 @@ int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, 
 }
 
 
-void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
+void* dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host)
 {
   if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
@@ -1470,7 +1470,7 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
 }
 
 
-void* dt_opencl_alloc_device_buffer(const int devid, const int size)
+void* dt_opencl_alloc_device_buffer(const int devid, const size_t size)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -1483,7 +1483,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
   return buf;
 }
 
-void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const int size, const int flags)
+void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
