@@ -626,7 +626,7 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   region[1] = box[3] - box[1] + 1;
   region[2] = 1;
 
-  size_t bufsize = region[0] * region[1];
+  size_t bufsize = (size_t)region[0] * region[1];
   float *buffer = dt_alloc_align(64, bufsize*4*sizeof(float));
   if(buffer == NULL) return;
 
@@ -682,8 +682,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
   const int bpp = get_output_bpp(module, pipe, piece, dev);
   *out_bpp = bpp;
-  const size_t bufsize = bpp*roi_out->width*roi_out->height;
-
+  const size_t bufsize = (size_t)bpp*roi_out->width*roi_out->height;
 
   // 1) if cached buffer is still available, return data
   dt_pthread_mutex_lock(&pipe->busy_mutex);
