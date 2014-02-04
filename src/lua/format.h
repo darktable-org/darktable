@@ -15,20 +15,26 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_MODULES_H
-#define DT_LUA_MODULES_H
+#ifndef DT_LUA_FORMAT_H
+#define DT_LUA_FORMAT_H
 #include <lua/lua.h>
 #include <common/imageio_module.h>
 
+// forward declaration
+struct dt_imageio_module_format_t;
 
-#define dt_lua_register_module_member(L,storage,struct_type,member,member_type) \
-  luaA_struct_member_typeid(L,storage->parameter_lua_type,#member,luaA_type_id(member_type),offsetof(struct_type,member))
 
-int dt_lua_init_modules(lua_State *L);
+/**
+helper for formats to declare their lua interface
+*/
+#define dt_lua_register_format(L,format,type_name) \
+  dt_lua_register_format_typeid(L,format,luaA_type_find(#type_name))
+void dt_lua_register_format_typeid(lua_State* L, struct dt_imageio_module_format_t* module,luaA_Type type_id);
 
-void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
+int dt_lua_init_format(lua_State *L);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
+

@@ -579,7 +579,7 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
   return type_id;
 }
 
-void dt_lua_initialize_types(lua_State *L)
+int dt_lua_init_types(lua_State *L)
 {
   luaA_conversion(char_20,push_char_array,to_char20);
   luaA_conversion_push(const char_20,push_char_array);
@@ -602,6 +602,7 @@ void dt_lua_initialize_types(lua_State *L)
   luaA_conversion(int32_t,luaA_push_int, luaA_to_int);
   luaA_conversion_push(const int32_t,luaA_push_int);
   luaA_conversion_push(const_string,luaA_push_const_char_ptr);
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

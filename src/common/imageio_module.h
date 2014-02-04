@@ -25,6 +25,8 @@
 #ifdef USE_LUA
 #include "lua/types.h"
 #include "lua/modules.h"
+#include "lua/format.h"
+#include "lua/storage.h"
 #endif
 
 

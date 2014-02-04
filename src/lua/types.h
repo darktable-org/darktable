@@ -110,7 +110,7 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
 luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name);
 
 
-void dt_lua_initialize_types(lua_State *L);
+int dt_lua_init_types(lua_State *L);
 
 
 
