@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-01 00:10+0100\n"
-"PO-Revision-Date: 2014-02-01 00:10+0100\n"
+"POT-Creation-Date: 2014-02-04 18:04+0100\n"
+"PO-Revision-Date: 2014-02-04 18:09+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -830,12 +830,24 @@ msgstr[0] "%d copie locale a été synchronisée"
 msgstr[1] "%d copies locales ont été synchronisées"
 
 #: ../src/common/imageio.c:669
+#, c-format
 msgid ""
-"failed to allocate memory for export, please lower the threads used for "
-"export or buy more memory."
+"failed to allocate memory for %s, please lower the threads used for export "
+"or buy more memory."
 msgstr ""
-"échec de l'allocation de mémoire durant l'exportation, merci de diminuer le "
-"nombre de fils utilisés pour l'exportation ou d'acheter de la mémoire."
+"échec de l'allocation de mémoire pour %s, merci de diminuer le nombre de "
+"fils utilisés pour l'exportation ou d'acheter de la mémoire."
+
+#: ../src/common/imageio.c:669
+msgid "thumbnail export"
+msgstr "la création des aperçus"
+
+#. Export button
+#. export button
+#: ../src/common/imageio.c:669 ../src/gui/preferences.c:615
+#: ../src/libs/export.c:668 ../src/libs/styles.c:408
+msgid "export"
+msgstr "exporter"
 
 #: ../src/common/imageio.c:677 ../src/common/mipmap_cache.c:1163
 #, c-format
@@ -929,29 +941,37 @@ msgstr "en cours..."
 msgid "switch to %s mode"
 msgstr "passer en mode %s"
 
-#: ../src/control/crawler.c:251
+#: ../src/control/crawler.c:341 ../src/libs/select.c:36
+msgid "select"
+msgstr "sélection"
+
+#: ../src/control/crawler.c:347
 msgid "path"
 msgstr "chemin"
 
-#: ../src/control/crawler.c:257
+#: ../src/control/crawler.c:353
 msgid "xmp timestamp"
 msgstr "horodatage xmp"
 
-#: ../src/control/crawler.c:263
+#: ../src/control/crawler.c:359
 msgid "database timestamp"
 msgstr "horodatage base de données"
 
-#: ../src/control/crawler.c:277
+#: ../src/control/crawler.c:369
 msgid "updated xmp sidecar files found"
 msgstr "versions modifiées de fichier xmp trouvées"
 
-#: ../src/control/crawler.c:279
-msgid "reload xmp files"
-msgstr "relire fichiers xmp"
+#: ../src/control/crawler.c:388 ../src/libs/select.c:96
+msgid "select all"
+msgstr "tout"
 
-#: ../src/control/crawler.c:280
-msgid "overwrite xmp files"
-msgstr "écraser les fichiers xmp"
+#: ../src/control/crawler.c:395
+msgid "reload selected xmp files"
+msgstr "relire fichiers xmp selectionnés"
+
+#: ../src/control/crawler.c:396
+msgid "overwrite selected xmp files"
+msgstr "écraser les fichiers xmp selectionnés"
 
 #: ../src/control/jobs/camera_jobs.c:85
 #, c-format
@@ -2222,13 +2242,6 @@ msgctxt "preferences"
 msgid "import"
 msgstr "importation"
 
-#. Export button
-#. export button
-#: ../src/gui/preferences.c:615 ../src/libs/export.c:668
-#: ../src/libs/styles.c:408
-msgid "export"
-msgstr "exporter"
-
 #: ../src/gui/preferences.c:915
 msgid "press key combination to remap..."
 msgstr "entrer la nouvelle combinaison de touches"
@@ -2924,7 +2937,7 @@ msgstr "réduction du bruit"
 msgid "denoise (strong)"
 msgstr "réduction du bruit (forte)"
 
-#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:64
+#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:80
 msgid "bloom"
 msgstr "lumière d'arrière-plan"
 
@@ -3177,44 +3190,44 @@ msgstr ""
 msgid "radius"
 msgstr "rayon"
 
-#: ../src/iop/bloom.c:80 ../src/iop/soften.c:104
+#: ../src/iop/bloom.c:96 ../src/iop/soften.c:104
 msgctxt "accel"
 msgid "size"
 msgstr "taille"
 
-#: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
+#: ../src/iop/bloom.c:97 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
 msgctxt "accel"
 msgid "threshold"
 msgstr "seuil"
 
-#: ../src/iop/bloom.c:82 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
+#: ../src/iop/bloom.c:98 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
 msgctxt "accel"
 msgid "strength"
 msgstr "force"
 
-#: ../src/iop/bloom.c:336 ../src/iop/soften.c:564 ../src/libs/camera.c:587
+#: ../src/iop/bloom.c:539 ../src/iop/soften.c:564 ../src/libs/camera.c:587
 msgid "size"
 msgstr "taille"
 
-#: ../src/iop/bloom.c:337
+#: ../src/iop/bloom.c:540
 msgid "the size of bloom"
 msgstr "taille de la lumière d'arrière-plan"
 
-#: ../src/iop/bloom.c:342 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
+#: ../src/iop/bloom.c:545 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
 msgid "threshold"
 msgstr "seuil"
 
-#: ../src/iop/bloom.c:343
+#: ../src/iop/bloom.c:546
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:348 ../src/iop/denoiseprofile.c:1727
+#: ../src/iop/bloom.c:551 ../src/iop/denoiseprofile.c:1727
 #: ../src/iop/grain.c:524 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "force"
 
-#: ../src/iop/bloom.c:349
+#: ../src/iop/bloom.c:552
 msgid "the strength of bloom"
 msgstr "force de la lumière d'arrière-plan"
 
@@ -7496,14 +7509,6 @@ msgstr "ou"
 msgid " but not "
 msgstr "mais sans"
 
-#: ../src/libs/select.c:36
-msgid "select"
-msgstr "sélection"
-
-#: ../src/libs/select.c:96
-msgid "select all"
-msgstr "tout"
-
 #: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
 msgstr ""
@@ -8292,15 +8297,16 @@ msgstr "refaire"
 #: ../src/views/slideshow.c:168
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
+"fin des images, appuyez sur une touche pour revenir à la table lumineuse"
 
 #: ../src/views/slideshow.c:303
 msgid "slideshow"
 msgstr "diaporama"
 
-#: ../src/views/slideshow.c:491
+#: ../src/views/slideshow.c:495
 msgctxt "accel"
 msgid "start and stop"
-msgstr ""
+msgstr "marche et arrêt"
 
 #: ../src/views/tethering.c:90
 msgid "tethering"
