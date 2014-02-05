@@ -162,7 +162,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)module->params;
   dt_bauhaus_slider_set(g->black, p->black);
-  dt_bauhaus_slider_set(g->exposure, p->exposure);
+  dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
@@ -239,7 +239,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   darktable.gui->reset = 1;
-  dt_bauhaus_slider_set(g->exposure, p->exposure);
+  dt_bauhaus_slider_set_soft(g->exposure, p->exposure);
   darktable.gui->reset = 0;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -400,10 +400,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->black,"%.4f");
   dt_bauhaus_widget_set_label(g->black, NULL, _("black"));
 
-  g->exposure = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .02, p->exposure, 3);
+  g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   g_object_set(G_OBJECT(g->exposure), "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->exposure,"%.2fEV");
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
 
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->black), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->vbox2), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);

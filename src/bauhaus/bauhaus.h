@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 johannes hanika.
+    copyright (c) 2012--2014 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,6 +63,8 @@ typedef struct dt_bauhaus_slider_data_t
   float step;     // step width (not normalized)
   float defpos;   // default value (normalized)
   float min, max; // min and max range
+  float soft_min, soft_max;
+  float hard_min, hard_max;
   float scale;    // step width for loupe mode
   int   digits;   // how many decimals to round to
 
@@ -231,12 +234,14 @@ GtkWidget* dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, 
 
 // outside doesn't see the real type, we cast it internally.
 void dt_bauhaus_slider_set(GtkWidget *w, float pos);
+void dt_bauhaus_slider_set_soft(GtkWidget *w, float pos);
 float dt_bauhaus_slider_get(GtkWidget *w);
 float dt_bauhaus_slider_get_step(GtkWidget *widget);
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
 void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g, float b);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
+void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 
 // combobox:
 GtkWidget* dt_bauhaus_combobox_new(dt_iop_module_t *self);

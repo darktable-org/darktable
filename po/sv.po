@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-02-04 15:51+0100\n"
-"PO-Revision-Date: 2014-02-04 16:22+0100\n"
+"PO-Revision-Date: 2014-02-04 21:04+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -6821,7 +6821,7 @@ msgstr "avgruppera"
 
 #: ../src/libs/import.c:85
 msgid "import"
-msgstr "importera"
+msgstr "import"
 
 #: ../src/libs/import.c:106
 msgctxt "accel"
