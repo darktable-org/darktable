@@ -25,23 +25,29 @@
 
 typedef struct dt_iop_exposure_params_t
 {
-  float black, exposure, gain;
+  float black, exposure;
+  gboolean deflicker;
+  float deflicker_percentile, deflicker_level;
 }
 dt_iop_exposure_params_t;
 
 typedef struct dt_iop_exposure_gui_data_t
 {
-  GtkVBox *vbox1, *vbox2;
   GtkCheckButton *autoexp;
   GtkWidget* black;
   GtkWidget* exposure;
   GtkWidget* autoexpp;
+  GtkCheckButton *deflicker;
+  GtkWidget* deflicker_percentile;
+  GtkWidget* deflicker_level;
 }
 dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
 {
-  float black, exposure, gain;
+  float black, exposure;
+  gboolean deflicker;
+  float deflicker_percentile, deflicker_level;
 }
 dt_iop_exposure_data_t;
 
@@ -54,6 +60,8 @@ dt_iop_exposure_global_data_t;
 void init(dt_iop_module_t *module);
 void cleanup(dt_iop_module_t *module);
 
+static void deflicker_process (dt_iop_module_t *self);
+
 void gui_update    (struct dt_iop_module_t *self);
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
 void init_pipe     (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece);
@@ -63,7 +71,12 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 void gui_init     (struct dt_iop_module_t *self);
 void gui_cleanup  (struct dt_iop_module_t *self);
 
+int legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version);
+
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out);
+
+static void deflicker_callback (GtkToggleButton *button, gpointer user_data);
+static void deflicker_params_callback (GtkWidget* slider, gpointer user_data);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
