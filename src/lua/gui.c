@@ -108,7 +108,7 @@ static int current_view_cb(lua_State *L)
     dt_ctl_switch_mode_to(i);
   }
   const dt_view_t* current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  dt_lua_module_push_module(L,"view",current_view->module_name);
+  dt_lua_module_push_entry(L,"view",current_view->module_name);
   return 1;
 }
 

@@ -22,9 +22,8 @@
 
 
 
-#define dt_lua_register_view(L,index,type_name) \
-  dt_lua_register_view_typeid(L,index,luaA_type_find(#type_name))
-void dt_lua_register_view_typeid(lua_State* L, int index,luaA_Type type_id,const char* view_name);
+struct dt_view_t;
+void dt_lua_register_view(lua_State* L,struct dt_view_t* self);
 
 
 

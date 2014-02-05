@@ -91,7 +91,7 @@ static int lib_index(lua_State*L)
         lua_newtable(L);
         for(i=0; i<  darktable.view_manager->num_views ; i++) {
           if(darktable.view_manager->view[i].view(&darktable.view_manager->view[i]) & module->views()){
-            dt_lua_module_push_module(L,"view",(darktable.view_manager->view[i].module_name));
+            dt_lua_module_push_entry(L,"view",(darktable.view_manager->view[i].module_name));
             luaL_ref(L,-2);
           }
         }
@@ -131,16 +131,15 @@ static int lib_tostring(lua_State* L)
   return 1;
 }
 
-void dt_lua_register_lib_typeid(lua_State* L, int index,luaA_Type type_id,const char* lib_name)
+void dt_lua_register_lib(lua_State* L,dt_lib_module_t* module)
 {
-  dt_lua_register_type_callback_inherit_typeid(L,type_id,luaA_type_find("dt_lib_module_t"));
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  dt_lua_register_module_entry_new(L,"lib",module->plugin_name,module);
+  int my_type = dt_lua_module_get_entry_typeid(L,"lib",module->plugin_name);
+  dt_lua_register_type_callback_inherit_typeid(L,my_type,luaA_type_find("dt_lib_module_t"));
+  luaL_getmetatable(L,luaA_type_name(my_type));
   lua_pushcfunction(L,lib_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
-
-  dt_lua_register_module_entry(L,index,"lib",lib_name);
-
 };
 
 int dt_lua_init_lib(lua_State *L)

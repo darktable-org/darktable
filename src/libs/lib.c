@@ -495,7 +495,6 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
 //  char name[1024];
   module->dt = &darktable;
   module->widget = NULL;
-  module->parameter_lua_type = LUAA_INVALID_TYPE;
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
@@ -552,20 +551,9 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
                           NC_("accel", "show preset menu"), 0, 0);
   }
 #ifdef USE_LUA
-  {
-    char pseudo_type_name[1024];
-    snprintf(pseudo_type_name,1024,"lib_%s",module->plugin_name);
-    luaA_Type my_type = dt_lua_init_singleton(darktable.lua_state.state,pseudo_type_name,module);
-    module->parameter_lua_type = my_type;
-    luaA_struct_typeid(darktable.lua_state.state,my_type);
-    dt_lua_register_lib_typeid(darktable.lua_state.state,-1,my_type,module->plugin_name);
-    lua_pop(darktable.lua_state.state,1);
+  dt_lua_register_lib(darktable.lua_state.state,module);
 #endif
-    if(module->init) module->init(module);
-#ifdef USE_LUA
-    dt_lua_register_type_callback_type_typeid(darktable.lua_state.state,my_type,NULL,NULL,my_type);
-  }
-#endif
+  if(module->init) module->init(module);
 
   return 0;
 error:

@@ -94,7 +94,6 @@ typedef struct dt_view_t
   void (*connect_key_accels)(struct dt_view_t *self);
 
   GSList *accel_closures;
-  luaA_Type lua_singleton_type;
 }
 dt_view_t;
 

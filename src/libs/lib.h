@@ -125,7 +125,6 @@ typedef struct dt_lib_module_t
   GSList *accel_closures;
   GtkWidget *reset_button;
   GtkWidget *presets_button;
-  luaA_Type parameter_lua_type;
 }
 dt_lib_module_t;
 

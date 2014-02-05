@@ -21,10 +21,9 @@
 #include "libs/lib.h"
 
 
+struct dt_lib_module_t;
 
-#define dt_lua_register_lib(L,index,type_name) \
-  dt_lua_register_lib_typeid(L,index,luaA_type_find(#type_name))
-void dt_lua_register_lib_typeid(lua_State* L, int index,luaA_Type type_id,const char* lib_name);
+void dt_lua_register_lib(lua_State* L,struct dt_lib_module_t* self);
 
 
 

@@ -66,18 +66,17 @@ static int view_tostring(lua_State* L)
   lua_pushstring(L,module->module_name);
   return 1;
 }
-void dt_lua_register_view_typeid(lua_State* L, int index,luaA_Type type_id,const char* view_name)
+
+void dt_lua_register_view(lua_State* L,dt_view_t* module)
 {
-  dt_lua_register_type_callback_inherit_typeid(L,type_id,luaA_type_find("dt_view_t"));
-  luaL_getmetatable(L,luaA_type_name(type_id));
+  dt_lua_register_module_entry_new(L,"view",module->module_name,module);
+  int my_type = dt_lua_module_get_entry_typeid(L,"view",module->module_name);
+  dt_lua_register_type_callback_inherit_typeid(L,my_type,luaA_type_find("dt_view_t"));
+  luaL_getmetatable(L,luaA_type_name(my_type));
   lua_pushcfunction(L,view_tostring);
   lua_setfield(L,-2,"__tostring");
   lua_pop(L,1);
-
-  dt_lua_register_module_entry(L,index,"view",view_name);
-
 };
-
 int dt_lua_init_view(lua_State *L)
 {
 

@@ -30,7 +30,10 @@ void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
 
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name);
 
-void dt_lua_module_push_module(lua_State *L, const char* module_type_name,const char* entry_name);
+void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name,const char* entry_name,void *entry);
+
+void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const char* entry_name);
+luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_name,const char* entry_name);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -33,6 +33,21 @@ void dt_lua_init_module_type(lua_State *L,const char* module_type_name)
 
 }
 
+void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name,const char* entry_name,void *entry)
+{
+  char tmp_string[1024];
+  sprintf(tmp_string,"module_%s_%s",module_type_name,entry_name);
+  dt_lua_init_singleton(L,tmp_string,entry);
+  dt_lua_push_darktable_lib(L);
+  dt_lua_goto_subtable(L,"modules");
+  dt_lua_goto_subtable(L,module_type_name);
+  lua_getmetatable(L,-1);
+  lua_getfield(L,-1,"__luaA_Type");
+  luaA_Type table_type = luaL_checkint(L,-1);
+  lua_pop(L,3);
+  dt_lua_register_type_callback_stack_typeid(L,table_type,entry_name);
+}
+
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name)
 {
   dt_lua_push_darktable_lib(L);
@@ -46,7 +61,7 @@ void dt_lua_register_module_entry(lua_State *L, int index, const char* module_ty
   dt_lua_register_type_callback_stack_typeid(L,table_type,entry_name);
 }
 
-void dt_lua_module_push_module(lua_State *L, const char* module_type_name,const char* entry_name)
+void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const char* entry_name)
 {
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");
@@ -54,6 +69,19 @@ void dt_lua_module_push_module(lua_State *L, const char* module_type_name,const 
   lua_getfield(L,-1,entry_name);
   lua_remove(L,-2);
 }
+
+
+luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_name,const char* entry_name)
+{
+  dt_lua_module_push_entry(L,module_type_name,entry_name);
+  lua_getmetatable(L,-1);
+  lua_getfield(L,-1,"__luaA_Type");
+  luaA_Type entry_type = luaL_checkint(L,-1);
+  lua_pop(L,3);
+  return entry_type;
+
+}
+
 int dt_lua_init_modules(lua_State *L)
 {
 

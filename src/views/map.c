@@ -320,7 +320,8 @@ void init(dt_view_t *self)
 
   g_free(geo_query);
 #ifdef USE_LUA
-  dt_lua_register_type_callback_list_typeid(darktable.lua_state.state,self->lua_singleton_type,map_index,map_newindex,map_fields_name);
+  int my_typeid = dt_lua_module_get_entry_typeid(darktable.lua_state.state,"view",self->module_name);
+  dt_lua_register_type_callback_list_typeid(darktable.lua_state.state,my_typeid,map_index,map_newindex,map_fields_name);
 
 #endif //USE_LUA
 }
