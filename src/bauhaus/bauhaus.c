@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2012 johannes hanika.
+    copyright (c) 2012--2014 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -800,6 +801,14 @@ void dt_bauhaus_slider_set_default(GtkWidget *widget, float def)
   d->defpos = (def-d->min)/(d->max-d->min);
 }
 
+void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  d->hard_min = hard_min;
+  d->hard_max = hard_max;
+}
+
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
@@ -885,8 +894,8 @@ dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, 
   w->type = DT_BAUHAUS_SLIDER;
   dt_bauhaus_widget_init(w, self);
   dt_bauhaus_slider_data_t *d = &w->data.slider;
-  d->min = min;
-  d->max = max;
+  d->min = d->soft_min = d->hard_min = min;
+  d->max = d->soft_max = d->hard_max = max;
   d->step = step;
   // normalize default:
   d->defpos = (defval-min)/(max-min);
@@ -1869,6 +1878,8 @@ dt_bauhaus_slider_reset(GtkWidget *widget)
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
 
+  d->min = d->soft_min;
+  d->max = d->soft_max;
   dt_bauhaus_slider_set_normalized(w, d->defpos);
 
   return;
@@ -1881,6 +1892,19 @@ dt_bauhaus_slider_set_format(GtkWidget *widget, const char *format)
   if(w->type != DT_BAUHAUS_SLIDER) return;
   dt_bauhaus_slider_data_t *d = &w->data.slider;
   g_strlcpy(d->format, format, sizeof(d->format));
+}
+
+void
+dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
+  if(w->type != DT_BAUHAUS_SLIDER) return;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  float rpos = CLAMP(pos, d->hard_min, d->hard_max);
+  d->min = MIN(d->min, rpos);
+  d->max = MAX(d->max, rpos);
+  rpos = (rpos - d->min) / (d->max - d->min);
+  dt_bauhaus_slider_set_normalized(w, rpos);
 }
 
 static void
@@ -1957,7 +1981,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         float old_value = dt_bauhaus_slider_get(GTK_WIDGET(darktable.bauhaus->current));
         float new_value = dt_calculator_solve(old_value, darktable.bauhaus->keys);
         if(isfinite(new_value))
-          dt_bauhaus_slider_set(GTK_WIDGET(darktable.bauhaus->current), new_value);
+          dt_bauhaus_slider_set_soft(GTK_WIDGET(darktable.bauhaus->current), new_value);
         darktable.bauhaus->keys_cnt = 0;
         memset(darktable.bauhaus->keys, 0, 64);
         dt_bauhaus_hide_popup();
@@ -2068,7 +2092,7 @@ dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton *event, gpointe
     {
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 0;
-      dt_bauhaus_slider_set_normalized(w, d->defpos);
+      dt_bauhaus_slider_reset(GTK_WIDGET(w));
     }
     else
     {
@@ -2153,7 +2177,7 @@ void dt_bauhaus_vimkey_exec(const char *input)
       new_value = dt_calculator_solve(old_value, value);
       fprintf(stderr, " = %f\n", new_value);
       if(isfinite(new_value))
-        dt_bauhaus_slider_set(GTK_WIDGET(w), new_value);
+        dt_bauhaus_slider_set_soft(GTK_WIDGET(w), new_value);
       break;
     case DT_BAUHAUS_COMBOBOX:
       // TODO: what about text as entry?
