@@ -326,7 +326,8 @@ print_usage(
   fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes] [target module]\n", name);
   fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
   fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
-  fprintf(stderr, "plot the results with `gnuplot plot'\n");
+  fprintf(stderr, "target module can be 0 for basecurve, or 1 for tonecurve\n");
+  fprintf(stderr, "plot the results with `gnuplot plot.(basecurve|tonecurve) depending on target module'\n");
 }
 
 int
