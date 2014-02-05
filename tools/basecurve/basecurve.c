@@ -167,7 +167,7 @@ enum module_type
   MODULE_MAX
 };
 
-void
+static void
 build_channel_basecurve(
   int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
   int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
@@ -198,7 +198,7 @@ build_channel_basecurve(
   }
 }
 
-void
+static void
 build_tonecurve(
   int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
   int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
@@ -240,7 +240,8 @@ build_tonecurve(
   }
 }
 
-void fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int num_nodes, float* curve, int* cnt)
+static void
+fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int num_nodes, float* curve, int* cnt)
 {
   // now do the fitting:
   CurveData curr, tent;
@@ -298,16 +299,24 @@ void fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample
   }
 }
 
-int main(int argc, char *argv[])
+static void
+print_usage()
+{
+  fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes] [target module]\n", argv[0]);
+  fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
+  fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
+  fprintf(stderr, "plot the results with `gnuplot plot'\n");
+}
+
+int
+main(int argc, char *argv[])
 {
   if(argc < 3)
   {
-    fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes]\n", argv[0]);
-    fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
-    fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
-    fprintf(stderr, "plot the results with `gnuplot plot'\n");
+    print_usage();
     exit(1);
   }
+
   FILE *fb = fopen("basecurve.dat", "wb");
   FILE *ff = fopen("fit.dat", "wb");
   if(!fb || !ff)
