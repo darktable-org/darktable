@@ -300,69 +300,132 @@ fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int
 }
 
 static void
-print_usage()
+print_usage(
+  const char* name)
 {
-  fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes] [target module]\n", argv[0]);
+  fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes] [target module]\n", name);
   fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
   fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
   fprintf(stderr, "plot the results with `gnuplot plot'\n");
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, char** argv)
 {
-  if(argc < 3)
-  {
-    print_usage();
-    exit(1);
-  }
+  int ret = 1;
 
-  FILE *fb = fopen("basecurve.dat", "wb");
-  FILE *ff = fopen("fit.dat", "wb");
-  if(!fb || !ff)
-  {
-    fprintf(stderr, "could not open `basecurve.dat' or `fit.dat'\n");
-    exit(1);
-  }
+  // raw related vars
+  int raw_width = -1;
+  int raw_height = -1;
+  int raw_offx = -1;
+  int raw_offy = -1;
+  uint16_t *raw_buff = NULL;
+
+  // jpeg related vars
+  int jpeg_width = -1;
+  int jpeg_height = -1;
+  uint8_t *jpeg_raw = NULL;
+
+  // file output for basecurve and fit data
+  FILE* fb = NULL;
+  FILE* ff = NULL;
+
+  // curve related vars
+  int ncurves = -1;
+  float* curve = NULL;
+  int* cnt = NULL;
+  CurveData fit;
+  int accepts = -1;
+  float sqerr = -1.f;
+  CurveSample csample = {0};
+  const int res = 0x10000;
+
+  // program options
   int num_nodes = 8;
   enum module_type module = MODULE_BASECURVE;
 
-  if(argc > 3)
-    num_nodes = atol(argv[3]);
-  if (argc > 4)
-    module = atol(argv[4]);
-
-  if(num_nodes > 20) num_nodes = 20; // basecurve doesn't support more than that.
-  module = (module < 0) ? 0 : (module > MODULE_MAX) ? MODULE_MAX : module;
-  int wd, ht, jpgwd, jpght;
-  uint16_t *img = read_ppm16(argv[1], &wd, &ht);
-  if(!img) exit(1);
-  // swap silly byte order
-  for(int k=0;k<3*wd*ht;k++) img[k] = ((img[k]&0xff) << 8) | (img[k] >> 8);
-  uint8_t *jpg = read_ppm8(argv[2], &jpgwd, &jpght);
-  if(!jpg) exit(1);
-
-  int ncurves = module == MODULE_BASECURVE ? 3 : 1;
-  float* curve = calloc(1, 0x10000*sizeof(float)*ncurves);
-  if (!curve) {
-    fprintf(stderr, "error: failed allocating tonal curve\n");
-    exit(1);
+  if(argc < 3)
+  {
+    print_usage(argv[0]);
+    goto exit;
   }
 
-  int* cnt = calloc(1, 0x10000*sizeof(int)*ncurves);
+  fb = fopen("basecurve.dat", "wb");
+  if (!fb)
+  {
+    fprintf(stderr, "error: could not open `basecurve.dat'\n");
+    goto exit;
+  }
+
+  ff = fopen("fit.dat", "wb");
+  if (!ff)
+  {
+    fprintf(stderr, "error: could not open `fit.dat'\n");
+    goto exit;
+  }
+
+  if(argc > 3)
+  {
+    num_nodes = atol(argv[3]);
+  }
+
+  if (argc > 4)
+  {
+    module = atol(argv[4]);
+  }
+
+  if(num_nodes > 20)
+  {
+    // basecurve doesn't support more than that.
+    num_nodes = 20;
+  }
+
+  // module can be one of basecurve or tonecurve
+  module = (module < 0) ? 0 : (module > MODULE_MAX) ? MODULE_MAX : module;
+
+  raw_buff = read_ppm16(argv[1], &raw_width, &raw_height);
+  if(!raw_buff)
+  {
+    fprintf(stderr, "error: failed reading the RAW file data\n");
+    goto exit;
+  }
+
+  // swap to host byte, PPM16 are BE
+  static const union { uint8_t u8[4]; uint32_t u32;} byte_order __attribute__((aligned(4))) = { .u8 = {1,2,3,4} };
+  if (byte_order.u32 != 0x01020304)
+  {
+    for (int k=0; k<3*raw_width*raw_height; k++)
+    {
+      raw_buff[k] = ((raw_buff[k]&0xff) << 8) | (raw_buff[k] >> 8);
+    }
+  }
+
+  jpeg_raw = read_ppm8(argv[2], &jpeg_width, &jpeg_height);
+  if(!jpeg_raw)
+  {
+    fprintf(stderr, "error: failed reading JPEG file\n");
+    goto exit;
+  }
+
+  ncurves = module == MODULE_BASECURVE ? 3 : 1;
+  curve = calloc(1, 0x10000*sizeof(float)*ncurves);
+  if (!curve) {
+    fprintf(stderr, "error: failed allocating curve\n");
+    goto exit;
+  }
+
+  cnt = calloc(1, 0x10000*sizeof(int)*ncurves);
   if (!cnt) {
     fprintf(stderr, "error: failed allocating histogram\n");
-    exit(1);
+    goto exit;
   }
 
-  int offx = (wd - jpgwd)/2;
-  int offy = (ht - jpght)/2;
-  if(offx < 0 || offy < 0)
+  raw_offx = (raw_width - jpeg_width)/2;
+  raw_offy = (raw_height - jpeg_height)/2;
+  if(raw_offx < 0 || raw_offy < 0)
   {
-    fprintf(stderr, "jpeg is higher resolution than the raw? (%dx%d vs %dx%d)\n", jpgwd, jpght, wd, ht);
-    fclose(fb);
-    fclose(ff);
-    exit(1);
+    fprintf(stderr, "error: jpeg has a higher resolution than the raw ? (%dx%d vs %dx%d)\n", jpeg_width, jpeg_height, raw_width, raw_height);
+    goto exit;
   }
 
   float* curve_to_approximate = NULL;
@@ -372,7 +435,7 @@ main(int argc, char *argv[])
   {
     for (int ch=0; ch<3; ch++)
     {
-      build_channel_basecurve(jpgwd, jpght, jpg, offx, offy, wd, img, ch, curve+ch*0x10000, cnt+ch*0x10000);
+      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*0x10000, cnt+ch*0x10000);
     }
 
     // output the histograms:
@@ -394,7 +457,7 @@ main(int argc, char *argv[])
   }
   else if (module == MODULE_TONECURVE)
   {
-    build_tonecurve(jpgwd, jpght, jpg, offx, offy, wd, img, 1, curve, cnt);
+    build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, cnt);
 
     // output the histogram
     fprintf(fb, "# tonecurve-L cnt-L\n");
@@ -408,14 +471,12 @@ main(int argc, char *argv[])
     cnt_for_approximation = cnt;
   }
 
-  free(img);
-  free(jpg);
+  free(raw_buff);
+  raw_buff = NULL;
 
-  CurveData fit;
-  int accepts;
-  float sqerr;
-  CurveSample csample;
-  const int res = 0x10000;
+  free(jpeg_raw);
+  jpeg_raw = NULL;
+
   csample.m_samplingRes = res;
   csample.m_outputRes = 0x10000;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*0x10000);
@@ -466,12 +527,32 @@ main(int argc, char *argv[])
     fprintf(stdout, "# still WIP, a dump of best fit curve in is fit.dat\n");
   }
 
-  fclose(fb);
-  fclose(ff);
+exit:
+  if (fb)
+  {
+    fclose(fb);
+    fb = NULL;
+  }
+  if (ff)
+  {
+    fclose(ff);
+    ff = NULL;
+  }
+  if (csample.m_Samples)
+  {
+    free(csample.m_Samples);
+    csample.m_Samples = NULL;
+  }
+  if (curve)
+  {
+    free(curve);
+    curve = NULL;
+  }
+  if (cnt)
+  {
+    free(cnt);
+    cnt = NULL;
+  }
 
-  free(csample.m_Samples);
-  free(curve);
-  free(cnt);
-
-  return 0;
+  return ret;
 }
