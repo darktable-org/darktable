@@ -538,10 +538,11 @@ main(int argc, char** argv)
   else if (module == MODULE_TONECURVE)
   {
     fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
-    fprintf(ff, "# ");
+    fprintf(ff, "# in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
+      "{\"put a name here\", {{{");
     for(int k=0;k<fit.m_numAnchors;k++)
-      fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"\n");
-    fprintf(ff, "# {%d}\n", fit.m_numAnchors);
+      fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"");
+    fprintf(ff, "}, {{0., 0.}, {1., 1.}}, {{0., 0.}, {1., 1.}}}, {%d, 2, 2}, {2, 2, 2}, 1, 0, 0}},\n", fit.m_numAnchors);
     CurveDataSample(&fit, &csample);
     for(int k=0; k<0x10000; k++)
       fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
