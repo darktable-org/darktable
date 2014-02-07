@@ -429,6 +429,13 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
 
   entryNode = xmlDocGetRootElement(doc);
 
+  if (entryNode == NULL)
+  {
+    g_free(pathname);
+    xmlFreeDoc(doc);
+    return;
+  }
+
   if (xmlStrcmp(entryNode->name, (const xmlChar *)"xmpmeta"))
   {
     if (!iauto) dt_control_log(_("`%s' not a lightroom XMP!"), pathname);

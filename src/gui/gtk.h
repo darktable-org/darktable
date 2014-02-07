@@ -18,6 +18,8 @@
 #ifndef DT_GUI_GTK_H
 #define DT_GUI_GTK_H
 
+#include "common/darktable.h"
+
 #include <gtk/gtk.h>
 #include <stdint.h>
 
@@ -27,6 +29,7 @@
 #define DT_GUI_VIEW_SWITCH_TO_LIBRARY   2
 #define DT_GUI_VIEW_SWITCH_TO_DARKROOM  3
 #define DT_GUI_VIEW_SWITCH_TO_MAP       4
+#define DT_GUI_VIEW_SWITCH_TO_SLIDESHOW 5
 
 typedef struct dt_gui_widgets_t
 {
@@ -64,6 +67,9 @@ typedef struct dt_gui_gtk_t
   int32_t expanded_group_id;
 
   double dpi;
+
+  // store which gtkrc we loaded:
+  char gtkrc[DT_MAX_PATH_LEN];
 }
 dt_gui_gtk_t;
 
@@ -177,6 +183,8 @@ void dt_ui_container_focus_widget(struct dt_ui_t *ui, const dt_ui_container_t c,
 void dt_ui_container_clear(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui,const dt_ui_panel_t, gboolean show);
+/** show or hide outermost borders with expand arrows */
+void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief toggle view of panels eg. collaps/expands to previous view state */

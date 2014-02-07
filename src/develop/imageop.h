@@ -176,6 +176,14 @@ typedef struct dt_iop_module_t
   int32_t request_color_pick;
   /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
   int32_t request_histogram;
+  /** count of histogram bins. 64 by default. gui mode only. */
+  int32_t histogram_bins_count;
+  /** histogram step for iop_cs_RAW */
+  int32_t histogram_step_raw;
+  /** histogram step for iop_cs_rgb. */
+  int32_t histogram_step_rgb;
+  /** histogram step for iop_cs_Lab. */
+  int32_t histogram_step_lab;
   /** set to 1 if you want the mask to be transferred into alpha channel during next eval. gui mode only. */
   int32_t request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
@@ -188,7 +196,7 @@ typedef struct dt_iop_module_t
   float picked_color[3], picked_color_min[3], picked_color_max[3];
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[3], picked_output_color_min[3], picked_output_color_max[3];
-  /** pointer to pre-module histogram data; if available: 64 bins with 4 channels each */
+  /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   float *histogram;
   /** maximum levels in histogram, one per channel */
   float histogram_max[4];
@@ -356,6 +364,8 @@ void dt_iop_gui_update_expanded(dt_iop_module_t *module);
 /** change module state */
 void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state);
 
+void dt_iop_gui_update_header(dt_iop_module_t *module);
+
 /** commits params and updates piece hash. */
 void dt_iop_commit_params(dt_iop_module_t *module, struct dt_iop_params_t *params, struct dt_develop_blend_params_t * blendop_params, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
@@ -371,8 +381,6 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 void dt_iop_load_default_params(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
-/** fills the given params blob with the result of per-iso interpolation, searching the matching presets. returns 1 on failure. */
-int  dt_iop_load_preset_interpolated_iso(dt_iop_module_t *module, const dt_image_t *cimg, void *output_params, float *output_iso1, float *output_iso2);
 
 /** let plugins have breakpoints: */
 int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe);

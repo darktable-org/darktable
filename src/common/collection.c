@@ -35,6 +35,16 @@
 #define ORDER_BY_QUERY "order by %s"
 #define LIMIT_QUERY "limit ?1, ?2"
 
+static const char* comparators[] =
+{
+  "<",  // DT_COLLECTION_RATING_COMP_LT = 0,
+  "<=", // DT_COLLECTION_RATING_COMP_LEQ,
+  "=",  // DT_COLLECTION_RATING_COMP_EQ,
+  ">=", // DT_COLLECTION_RATING_COMP_GEQ,
+  ">",  // DT_COLLECTION_RATING_COMP_GT,
+  "!=", // DT_COLLECTION_RATING_COMP_NE,
+};
+
 /* Stores the collection query, returns 1 if changed.. */
 static int _dt_collection_store (const dt_collection_t *collection, gchar *query);
 /* Counts the number of images in the current collection */
@@ -117,7 +127,9 @@ dt_collection_update (const dt_collection_t *collection)
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d", (need_operator)?"and":((need_operator=1)?"":""), DT_IMAGE_REMOVE, DT_IMAGE_REMOVE);
 
-    if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
+    if (collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), comparators[collection->params.comparator], rating - 1);
+    else if (collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d and (flags & 7) != 6", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
     else if (collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", (need_operator)?"and":((need_operator=1)?"":""), rating - 1);
@@ -188,6 +200,7 @@ dt_collection_reset(const dt_collection_t *collection)
   /* apply stored query parameters from previous darktable session */
   params->film_id      = dt_conf_get_int("plugins/collection/film_id");
   params->rating       = dt_conf_get_int("plugins/collection/rating");
+  params->comparator   = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
   params->sort         = dt_conf_get_int("plugins/collection/sort");
   params->descending   = dt_conf_get_bool("plugins/collection/descending");
@@ -262,6 +275,16 @@ dt_collection_get_rating (const dt_collection_t *collection)
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
   i = params->rating;
   return i;
+}
+
+void dt_collection_set_rating_comparator (const dt_collection_t *collection, const dt_collection_rating_comperator_t comparator)
+{
+  ((dt_collection_t*)collection)->params.comparator = comparator;
+}
+
+dt_collection_rating_comperator_t dt_collection_get_rating_comparator (const dt_collection_t *collection)
+{
+  return collection->params.comparator;
 }
 
 void
@@ -357,6 +380,7 @@ _dt_collection_store (const dt_collection_t *collection, gchar *query)
     dt_conf_set_int ("plugins/collection/filter_flags",collection->params.filter_flags);
     dt_conf_set_int ("plugins/collection/film_id",collection->params.film_id);
     dt_conf_set_int ("plugins/collection/rating",collection->params.rating);
+    dt_conf_set_int ("plugins/collection/rating_comparator",collection->params.comparator);
     dt_conf_set_int ("plugins/collection/sort",collection->params.sort);
     dt_conf_set_bool ("plugins/collection/descending",collection->params.descending);
   }
@@ -644,24 +668,50 @@ dt_collection_deserialize(char *buf)
 {
   int num_rules = 0;
   char str[400], confname[200];
-  sprintf(str, "%%");
   int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
-  if(num_rules == 0) num_rules = 1;
-  dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
-  while(buf[0] != ':') buf++;
-  buf++;
-  for(int k=0; k<num_rules; k++)
+  if(num_rules == 0)
   {
-    sscanf(buf, "%d:%d:%[^$]", &mode, &item, str);
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
-    dt_conf_set_int(confname, mode);
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
-    dt_conf_set_int(confname, item);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
-    dt_conf_set_string(confname, str);
-    while(buf[0] != '$' && buf[0] != '\0') buf++;
-    buf++;
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", 1);
+    dt_conf_set_int("plugins/lighttable/collect/mode0", 0);
+    dt_conf_set_int("plugins/lighttable/collect/item0", 0);
+    dt_conf_set_string("plugins/lighttable/collect/string0", "%");
+  }
+  else
+  {
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
+    while(buf[0] != '\0' && buf[0] != ':') buf++;
+    if(buf[0] == ':') buf++;
+    for(int k=0; k<num_rules; k++)
+    {
+      int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      if(n == 3)
+      {
+        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        dt_conf_set_int(confname, mode);
+        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        dt_conf_set_int(confname, item);
+        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        dt_conf_set_string(confname, str);
+      }
+      else if(num_rules == 1)
+      {
+        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        dt_conf_set_int(confname, 0);
+        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        dt_conf_set_string(confname, "%");
+        break;
+      }
+      else
+      {
+        dt_conf_set_int("plugins/lighttable/collect/num_rules", k);
+        break;
+      }
+      while(buf[0] != '$' && buf[0] != '\0') buf++;
+      if(buf[0] == '$') buf++;
+    }
   }
   dt_collection_update_query(darktable.collection);
 }

@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika, henrik andersson
+    copyright (c) 2009--2014 johannes hanika, henrik andersson
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "common/darktable.h"
 #ifdef HAVE_GPHOTO2
 #   include "common/camera_control.h"
-#   include "views/capture.h"
 #endif
 #include "common/collection.h"
 #include "common/image.h"
@@ -130,6 +129,10 @@ static void key_accel_changed(GtkAccelMap *object,
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.filmstrip_back);
 
+  // slideshow
+  dt_accel_path_view(path, 256, "slideshow", "start and stop");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.slideshow_start);
   // Lighttable
   dt_accel_path_view(path, 256, "lighttable", "scroll up");
   gtk_accel_map_lookup_entry(path,
@@ -149,6 +152,10 @@ static void key_accel_changed(GtkAccelMap *object,
   dt_accel_path_view(path, 256, "lighttable", "preview");
   gtk_accel_map_lookup_entry(path,
                              &darktable.control->accels.lighttable_preview);
+  dt_accel_path_view(path, 256, "lighttable", "preview with focus detection");
+  gtk_accel_map_lookup_entry(path,
+                             &darktable.control->accels.lighttable_preview_display_focus);
+
 
   // Global
   dt_accel_path_global(path, 256, "toggle side borders");
@@ -520,9 +527,10 @@ void dt_gui_gtk_quit()
 
 }
 
-void quit()
+gboolean dt_gui_quit_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   dt_control_quit();
+  return TRUE;
 }
 
 void dt_gui_store_last_preset(const char *name)
@@ -542,15 +550,12 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
     gpointer p)
 {
   int view=GPOINTER_TO_INT(p);
-  dt_ctl_gui_mode_t mode=DT_MODE_NONE;
+  dt_control_gui_mode_t mode=DT_MODE_NONE;
   /* do some setup before switch view*/
   switch (view)
   {
 #ifdef HAVE_GPHOTO2
     case DT_GUI_VIEW_SWITCH_TO_TETHERING:
-      // switching to capture view using "plugins/capture/current_filmroll" as session...
-      // and last used camera
-      dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
       mode = DT_CAPTURE;
       break;
 #endif
@@ -568,6 +573,9 @@ static gboolean _gui_switch_view_key_accel_callback(GtkAccelGroup *accel_group,
       mode = DT_MAP;
       break;
 #endif
+    case DT_GUI_VIEW_SWITCH_TO_SLIDESHOW:
+      mode = DT_SLIDESHOW;
+      break;
   }
 
   /* try switch to mode */
@@ -739,31 +747,26 @@ center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 int
 dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
 {
+  /* lets zero mem */
+  memset(gui,0,sizeof(dt_gui_gtk_t));
+
   // unset gtk rc from kde:
-  char gtkrc[PATH_MAX], path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
+  char path[PATH_MAX], datadir[PATH_MAX], configdir[PATH_MAX];
   dt_loc_get_datadir(datadir, PATH_MAX);
   dt_loc_get_user_config_dir(configdir, PATH_MAX);
 
-  g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
+  g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.gtkrc", configdir);
 
-  if (!g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-    g_snprintf(gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
+  if (!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
+    g_snprintf(gui->gtkrc, PATH_MAX, "%s/darktable.gtkrc", datadir);
 
-  if (g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-#ifdef __WIN32__
+  if (g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
   {
-    gchar *str = g_strjoin("GTK2_RC_FILES=", gtkrc, NULL);
-    putenv(str);
-    g_free(str);
+    char *default_files[2] = {gui->gtkrc, NULL};
+    gtk_rc_set_default_files(default_files);
   }
-#else
-    (void)setenv("GTK2_RC_FILES", gtkrc, 1);
-#endif
   else
     fprintf(stderr, "[gtk_init] could not find darktable.gtkrc");
-
-  /* lets zero mem */
-  memset(gui,0,sizeof(dt_gui_gtk_t));
 
 #if !GLIB_CHECK_VERSION(2, 32, 0)
   if (!g_thread_supported ()) g_thread_init(NULL);
@@ -795,9 +798,6 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   gui->expanded_group_id = -1;
   gui->presets_popup_menu = NULL;
   gui->last_preset = NULL;
-
-  if(g_file_test(gtkrc, G_FILE_TEST_EXISTS))
-    gtk_rc_parse (gtkrc);
 
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
@@ -902,6 +902,7 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
   dt_accel_register_global(NC_("accel", "lighttable view"), GDK_KEY_l, 0);
   dt_accel_register_global(NC_("accel", "darkroom view"), GDK_KEY_d, 0);
   dt_accel_register_global(NC_("accel", "map view"), GDK_KEY_m, 0);
+  dt_accel_register_global(NC_("accel", "slideshow view"), GDK_KEY_s, 0);
 
   dt_accel_connect_global(
     "capture view",
@@ -919,6 +920,10 @@ dt_gui_gtk_init(dt_gui_gtk_t *gui, int argc, char *argv[])
     "map view",
     g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
                    GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_MAP), NULL));
+  dt_accel_connect_global(
+    "slideshow view",
+    g_cclosure_new(G_CALLBACK(_gui_switch_view_key_accel_callback),
+                   GINT_TO_POINTER(DT_GUI_VIEW_SWITCH_TO_SLIDESHOW), NULL));
 
   // register_keys for applying styles
   init_styles_key_accels();
@@ -1061,7 +1066,7 @@ void init_widgets()
   gtk_window_set_title(GTK_WINDOW(widget), "Darktable");
 
   g_signal_connect (G_OBJECT (widget), "delete_event",
-                    G_CALLBACK (dt_control_quit), NULL);
+                    G_CALLBACK (dt_gui_quit_callback), NULL);
   g_signal_connect (G_OBJECT (widget), "key-press-event",
                     G_CALLBACK (key_pressed_override), NULL);
   g_signal_connect (G_OBJECT (widget), "key-release-event",
@@ -1363,6 +1368,24 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   }
 }
 
+void dt_ui_border_show(dt_ui_t *ui, gboolean show)
+{
+  if(show)
+  {
+    gtk_widget_show(darktable.gui->widgets.left_border);
+    gtk_widget_show(darktable.gui->widgets.right_border);
+    gtk_widget_show(darktable.gui->widgets.top_border);
+    gtk_widget_show(darktable.gui->widgets.bottom_border);
+  }
+  else
+  {
+    gtk_widget_hide(darktable.gui->widgets.left_border);
+    gtk_widget_hide(darktable.gui->widgets.right_border);
+    gtk_widget_hide(darktable.gui->widgets.top_border);
+    gtk_widget_hide(darktable.gui->widgets.bottom_border);
+  }
+}
+
 void dt_ui_panel_show(dt_ui_t *ui,const dt_ui_panel_t p, gboolean show)
 {
   //if(!GTK_IS_WIDGET(ui->panels[p])) return;
@@ -1418,7 +1441,7 @@ static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolea
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget), left?GTK_CORNER_TOP_LEFT:GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_widget_set_size_request (widget,dt_conf_get_int("panel_width")-5-13, -1);
 
   /* create the scrolled viewport */

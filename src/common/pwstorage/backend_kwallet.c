@@ -211,12 +211,14 @@ static gboolean init_kwallet(backend_kwallet_context_t *context)
                                          NULL,
                                          &error);
 
+  if(!ret)
+    return FALSE;
   GVariant *child = g_variant_get_child_value(ret, 0);
   gboolean is_enabled = g_variant_get_boolean(child);
   g_variant_unref(child);
   g_variant_unref(ret);
 
-  if (check_error(error) || !is_enabled)
+  if(check_error(error) || !is_enabled)
     return FALSE;
 
   // Get the wallet name.

@@ -79,18 +79,28 @@ if(can_build_usermanual)
 
 	#
 	# First pass generate one big docbook xml
-	# all document generation should depend and use this file
+	# all generation of original language documents should depend on and use this file
+        # all translated usermanuals should depend on the profiled xml file
 	#
 	string(REGEX REPLACE "/" "\\\\/" binary_path ${CMAKE_CURRENT_BINARY_DIR})
 	add_custom_command(
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
-		COMMAND xsltproc --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp xsl/darktable_profile.xsl darktable.xml
-		COMMAND cat ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.tmp | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml
+		COMMAND xsltproc --xinclude --output ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml xsl/darktable_profile.xsl darktable.xml
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		DEPENDS darktable.xml ${XML_FILES}
+		COMMENT "Generating the profiled docbook xml file" VERBATIM
+	)
+	add_custom_target(darktable_profile_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml)
+	add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		COMMAND cat ${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		DEPENDS darktable_profile.xml ${XML_FILES}
 		COMMENT "Generating the main docbook xml file" VERBATIM
 	)
 	add_custom_target(darktable_single_xml DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml)
+
+
 
 #	#
 #	# add target for final xml file
@@ -252,11 +262,13 @@ if(can_build_usermanual)
 			set(pofile "po/${language}.po")
 			set(pdffile "${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-${language}.pdf")
 			set(fofile "${CMAKE_CURRENT_BINARY_DIR}/darktable-usermanual-${language}.fo")
-			set(xmlfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml")
+			set(xmlfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_profile.xml")
 			set(xmllangfile "${CMAKE_CURRENT_BINARY_DIR}/darktable_single-${language}.xml")
+			set(xmllangtmp "${CMAKE_CURRENT_BINARY_DIR}/darktable_single-${language}.tmp")
 			add_custom_command(
 				OUTPUT ${pdffile}
-				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangfile}
+				COMMAND xml2po -e -p ${pofile} -l ${language} ${xmlfile} > ${xmllangtmp}
+		                COMMAND cat ${xmllangtmp} | sed "s/fileref=\"\\([^>]*\\)\\(\\/images\\/\\)\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1\\/\\3.jpg\"/g ; s/fileref=\"images\\/\\([^>]*\\)\\(.png\\)\"/fileref=\"${binary_path}\\/media\\/images\\/\\1.jpg\"/g" > ${xmllangfile}
 				COMMAND xsltproc --output ${fofile} xsl/darktable_fo.xsl ${xmllangfile}
 				COMMAND fop -c fopconfig.xml ${fofile} -pdf ${pdffile}
 				DEPENDS ${pofile} ${CMAKE_CURRENT_BINARY_DIR}/darktable_single.xml
@@ -265,7 +277,7 @@ if(can_build_usermanual)
 			)
 			add_custom_target(darktable-usermanual-${language} DEPENDS ${pdffile})
 			add_dependencies(usermanual darktable-usermanual-${language})
-			add_dependencies(darktable-usermanual-${language} target_media_images darktable_single_xml )
+			add_dependencies(darktable-usermanual-${language} target_media_images darktable_profile_xml )
 			install(FILES ${pdffile} DESTINATION ./share/doc/darktable/usermanual OPTIONAL)
 		endforeach(language)
 	endif()

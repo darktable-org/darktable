@@ -25,7 +25,7 @@
 #include "common/debug.h"
 
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
-static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
+static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
   const int stepsize = 300000;
   const int reserve = 100000;
@@ -37,7 +37,7 @@ static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max
     *buffer = malloc(stepsize*sizeof(float));
     *buffer_count = 0;
     *buffer_max = stepsize;
-    return TRUE;
+    return (*buffer != NULL);
   }
 
   if(*buffer_count > *buffer_max)
@@ -50,7 +50,11 @@ static int _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max
     float *oldbuffer = *buffer;
     *buffer_max += stepsize;
     *buffer = malloc(*buffer_max*sizeof(float));
-    if(*buffer == NULL) return FALSE;
+    if(*buffer == NULL)
+    {
+      free(oldbuffer);
+      return FALSE;
+    }
     memset(*buffer, 0, *buffer_max*sizeof(float));
     memcpy(*buffer, oldbuffer, *buffer_count*sizeof(float));
     free(oldbuffer);
@@ -1381,7 +1385,21 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
     gui->point_edited = -1;
   }
-    else if (gui->point_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (gui->creation && which == 3)
+  {
+    free(gui->guipoints);
+    free(gui->guipoints_payload);
+    gui->guipoints = NULL;
+    gui->guipoints_payload = NULL;
+    gui->guipoints_count = 0;
+    darktable.develop->form_visible = NULL;
+    dt_masks_clear_form_gui(darktable.develop);
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_FULL);
+    dt_masks_iop_update(module);
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+  else if (gui->point_selected>=0 && which == 3)
   {
     //we remove the point (and the entire form if there is too few points)
     if (g_list_length(form->points) < 2)
@@ -1428,7 +1446,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
 
     return 1;
   }
-  else if (gui->feather_selected>=0 && which == 3 && gui->edit_mode == DT_MASKS_EDIT_FULL)
+  else if (gui->feather_selected>=0 && which == 3)
   {
     dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points,gui->feather_selected);
     if (point->state != DT_MASKS_POINT_STATE_NORMAL)
@@ -1495,7 +1513,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   if (form->type & DT_MASKS_CLONE) masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"),1.0f);
   else masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"),1.0f);
 
-  if (gui->creation)
+  if (gui->creation && which == 1)
   {
     dt_iop_module_t *crea_module = gui->creation_module;
 
@@ -1723,9 +1741,8 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
 
 static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which, dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,int index)
 {
-  int32_t zoom, closeup;
-  DT_CTL_GET_GLOBAL(zoom, dev_zoom);
-  DT_CTL_GET_GLOBAL(closeup, dev_closeup);
+  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  int closeup = dt_control_get_dev_closeup();
   float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, closeup ? 2 : 1, 1);
   float as = 0.005f/zoom_scale*darktable.develop->preview_pipe->backbuf_width;
   if (!gui) return 0;
@@ -2009,8 +2026,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       if(gui->posx == 0 && gui->posy == 0)
       {
         float zoom_x, zoom_y;
-        DT_CTL_GET_GLOBAL(zoom_y, dev_zoom_y);
-        DT_CTL_GET_GLOBAL(zoom_x, dev_zoom_x);
+        zoom_y = dt_control_get_dev_zoom_y();
+        zoom_x = dt_control_get_dev_zoom_x();
         xpos = (.5f+zoom_x)*wd;
         ypos = (.5f+zoom_y)*ht;
       }

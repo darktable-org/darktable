@@ -1,76 +1,102 @@
-<sect1 status="final" id="presets"><title>Presets</title>
-        <indexterm>
-           <primary>preferences and settings</primary>
-           <secondary>presets</secondary>
-        </indexterm>
-        <indexterm>
-            <primary>presets</primary>
-        </indexterm>
+<sect1 status="final" id="presets">
 
-	<para>This menu gives you an overview of the presets that are defined for darktable's modules. In this dialog you can 
-              select whether a certain user defined preset shall be auto-applied to matching images.
-        </para>
+  <title>Presets</title>
 
-        <para>darktable already comes with a set of pre-defined presets for several modules. In addition you can define your own presets
-	        from within each module in darkroom mode (see <xref linkend="module_presets"/>). 
-	</para>
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>presets</secondary>
+  </indexterm>
 
-        <para>Pre-defined presets are shown with a lock symbol. Their auto-apply properties can not be changed.
-        </para>
+  <indexterm>
+    <primary>presets</primary>
+  </indexterm>
 
-	<para>Double clicking on a user-defined preset will open a menu.</para>
+  <para>
+    This menu gives you an overview of the presets that are defined for darktable's modules. In
+    this dialog you can select whether a certain user defined preset shall be auto-applied to
+    matching images.
+  </para>
 
-        <para>
-	      <graphic fileref="preferences/images/presets.png" scalefit="1" width="60%" align="center" />
-        </para>
+  <para>
+    darktable already comes with a set of pre-defined presets for several modules. In addition
+    you can define your own presets from within each module in darkroom mode (see
+    <xref linkend="module_presets"/>).
+  </para>
 
+  <para>
+    Pre-defined presets are shown with a lock symbol. Their auto-apply properties can not be
+    changed.
+  </para>
 
-	  <sect4><title>auto apply this preset to matching images</title>
-		<para>activate this checkbutton to automatically apply the preset on newly imported images; a set of
-                      fields is displayed where you can define patterns to be matched against EXIF data.
-		</para>
-	  </sect4>
+  <para>
+    Double clicking on a user-defined preset will open a menu.
+  </para>
 
-	  <sect4><title>only show this preset for matching images</title>
-		<para>activate this checkbutton to hide the preset in darkroom mode if it does not match the defined patterns.
-		</para>
-	  </sect4>
+  <para>
+    <graphic fileref="preferences/images/presets.png" scalefit="1" width="60%" align="center" />
+  </para>
 
-	  <sect4><title>model</title>
-		<para>a pattern to be matched against the EXIF field that describes your camera model; use "%" as wildcard.
-		</para>
-	  </sect4>
+  <bridgehead renderas="sect4">auto apply this preset to matching images</bridgehead>
 
-	  <sect4><title>maker</title>
-		<para>a pattern to be matched against the EXIF field that describes the maker of your camera; use "%" as wildcard.
-		</para>
-	  </sect4>
+  <para>
+    activate this checkbutton to automatically apply the preset on newly imported images; a set
+    of fields is displayed where you can define patterns to be matched against EXIF data.
+  </para>
 
-	  <sect4><title>lens</title>
-		<para>a pattern to be matched against the EXIF field that describes your lens; use "%" as wildcard.
-		</para>
-	  </sect4>
+  <bridgehead renderas="sect4">only show this preset for matching images</bridgehead>
 
-	  <sect4><title>iso</title>
-		<para>only apply the preset if the ISO value of your image lies within the given range.
-		</para>
-	  </sect4>
+  <para>
+    activate this checkbutton to hide the preset in darkroom mode if it does not match the
+    defined patterns.
+  </para>
 
-	  <sect4><title>exposure</title>
-		<para>only apply the preset if the exposure time of your image lies within the given range; set "+" as the upper value
-                      to match arbitrarily long exposures.
-		</para>
-	  </sect4>
+  <bridgehead renderas="sect4">model</bridgehead>
 
-	  <sect4><title>aperture</title>
-		<para>only apply the preset if the aperture of your image lies within the given range; set "f/0" as the lower value to match arbitrarily
-                      open apertures; set "f/+" as the upper value to match arbitrarily closed apertures.
-		</para>
-	  </sect4>
+  <para>
+    a pattern to be matched against the EXIF field that describes your camera model; use "%" as
+    wildcard.
+  </para>
 
-	  <sect4><title>focal length</title>
-		<para>only apply the preset if the focal length of your image lies within the given range (from 0 to 1000).
-		</para>
-	  </sect4>
+  <bridgehead renderas="sect4">maker</bridgehead>
+
+  <para>
+    a pattern to be matched against the EXIF field that describes the maker of your camera; use
+    "%" as wildcard.
+  </para>
+
+  <bridgehead renderas="sect4">lens</bridgehead>
+
+  <para>
+    a pattern to be matched against the EXIF field that describes your lens; use "%" as
+    wildcard.
+  </para>
+
+  <bridgehead renderas="sect4">iso</bridgehead>
+
+  <para>
+    only apply the preset if the ISO value of your image lies within the given range.
+  </para>
+
+  <bridgehead renderas="sect4">exposure</bridgehead>
+
+  <para>
+    only apply the preset if the exposure time of your image lies within the given range; set
+    "+" as the upper value to match arbitrarily long exposures.
+  </para>
+
+  <bridgehead renderas="sect4">aperture</bridgehead>
+
+  <para>
+    only apply the preset if the aperture of your image lies within the given range; set "f/0"
+    as the lower value to match arbitrarily open apertures; set "f/+" as the upper value to
+    match arbitrarily closed apertures.
+  </para>
+
+  <bridgehead renderas="sect4">focal length</bridgehead>
+
+  <para>
+    only apply the preset if the focal length of your image lies within the given range (from 0
+    to 1000).
+  </para>
 
 </sect1>

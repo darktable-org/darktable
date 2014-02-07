@@ -67,7 +67,7 @@ dt_imageio_dng_convert_rational(float f, int32_t *num, int32_t *den)
     f = - f;
   }
   float mult = 1.0f;
-  while(f*mult - (int)(f*mult) > 0.0001f) mult++;
+  while(f*mult - (int)(f*mult+0.00005f) > 0.0001f) mult++;
   *den = mult;
   *num = (int)(*den * f);
   *num *= sign;

@@ -1,61 +1,106 @@
-<sect3 status="final" id="exposure"><title>Exposure</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>exposure</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>exposure</primary>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module is used to tweak the exposure.
-							It is directly linked to the histogram panel. Indeed, if you correct exposure graphically, using the <emphasis>histogram
-                                                        </emphasis> (see <xref linkend="histogram"/>),
-							you automatically activate the exposure module. The histogram simply acts as a view for the exposure module.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
+<sect3 status="final" id="exposure">
 
-                <para>You can activate multiple instances of this module each with different parameters acting on different parts of the image which you select by
-                      a drawn mask (see <xref linkend="multiple_instances"/> and <xref linkend="drawn_mask"/>). The histogram is always linked
-                      to the lowest instance in pixelpipe.
-                </para>
-	</sect4>
+  <title>Exposure</title>
 
-	<sect4><title>Usage</title>
-                <para>This module is responsible for one of the most basic steps in each raw image development. An exposure adjustment value allows you - within certain limits - to
-                      correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
-		</para>
-		<para>Positive exposure corrections will make the image brighter. As a side effect noise level gets higher. Depending on the basic noise level of your
-                      camera and the ISO value of your image, positive exposure compensations with up to 1EV or 2EV still give reasonable results.
-		</para>
-		<para>Negative exposure corrections will make the image darker. Given the nature of digital images this can not correct for blown out highlights (see
-                      also <xref linkend="highlight_reconstruction"/>).
-		</para>
-		<para>A black level adjustment is a basic tool to increase contrast and pop of an image. The value defines at what threshold dark gray values are
-                      cut off to pure black. Use with care as the clipped values can not be recovered in other modules further down the pixelpipe. Please also have a look
-                      at the <emphasis>tone curve</emphasis> module (see <xref linkend="tone_curve"/>) and the <emphasis>levels</emphasis> module (see <xref linkend="levels"/>)
-                      which can produce similar results with less side effects as they come later in pixelpipe.
-		</para>
-		<sect5><title>black</title>
-			<para>Adjust the black level.</para>
-		</sect5>
-		<sect5><title>exposure</title>
-			<para>Adjust the exposure correction [EV].</para>
-		</sect5>
-		<sect5><title>auto</title>
-			<para>Calculate a correct exposition for the rectangular view appearing in the centre of the image. You can draw your own selection using your mouse.
-                              An adjustment slider right to the auto exposure checkbox lets you define what percentage of bright values are to be clipped out in the calculation.
-                        </para>
-		</sect5>
-	</sect4>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>exposure</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>exposure</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is used to tweak the exposure. It is directly linked to the histogram
+              panel. Indeed, if you correct exposure graphically, using the <emphasis>histogram
+              </emphasis> (see <xref linkend="histogram"/>), you automatically activate the
+              exposure module. The histogram simply acts as a view for the exposure module.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      You can activate multiple instances of this module each with different parameters acting
+      on different parts of the image which you select by a drawn mask (see
+      <xref linkend="multiple_instances"/> and <xref linkend="drawn_mask"/>). The histogram is
+      always linked to the lowest instance in pixelpipe.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      This module is responsible for one of the most basic steps in each raw image development.
+      An exposure adjustment value allows you - within certain limits - to correct for under- or
+      overexposure. A shift by 1EV is equivalent to a change of exposure time by a factor of 2.
+    </para>
+
+    <para>
+      Positive exposure corrections will make the image brighter. As a side effect noise level
+      gets higher. Depending on the basic noise level of your camera and the ISO value of your
+      image, positive exposure compensations with up to 1EV or 2EV still give reasonable
+      results.
+    </para>
+
+    <para>
+      Negative exposure corrections will make the image darker. Given the nature of digital
+      images this can not correct for blown out highlights (see also
+      <xref linkend="highlight_reconstruction"/>).
+    </para>
+
+    <para>
+      A black level adjustment is a basic tool to increase contrast and pop of an image. The
+      value defines at what threshold dark gray values are cut off to pure black. Use with care
+      as the clipped values can not be recovered in other modules further down the pixelpipe.
+      Please also have a look at the <emphasis>tone curve</emphasis> module (see
+      <xref linkend="tone_curve"/>) and the <emphasis>levels</emphasis> module (see
+      <xref linkend="levels"/>) which can produce similar results with less side effects as they
+      come later in pixelpipe.
+    </para>
+
+    <sect5>
+      <title>black</title>
+      <para>
+        Adjust the black level.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure</title>
+      <para>
+        Adjust the exposure correction [EV].
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>auto</title>
+      <para>
+        Calculate a correct exposition for the rectangular view appearing in the centre of the
+        image. You can draw your own selection using your mouse. An adjustment slider right to
+        the auto exposure checkbox lets you define what percentage of bright values are to be
+        clipped out in the calculation.
+      </para>
+    </sect5>
+
+  </sect4>
+
 </sect3>

@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#include "common/calculator.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 
@@ -144,7 +145,13 @@ static inline int dt_conf_get_int(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  const int val = atol(str);
+  float new_value = dt_calculator_solve(1, str);
+  if(isnan(new_value)) new_value = 0.0;
+  int val;
+  if (new_value > 0)
+    val = new_value + 0.5;
+  else
+    val = new_value - 0.5;
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -153,7 +160,13 @@ static inline int64_t dt_conf_get_int64(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  const int64_t val = g_ascii_strtoll(str, NULL, 10);
+  float new_value = dt_calculator_solve(1, str);
+  if(isnan(new_value)) new_value = 0.0;
+  int64_t val;
+  if (new_value > 0)
+    val = new_value + 0.5;
+  else
+    val = new_value - 0.5;
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -162,7 +175,8 @@ static inline float dt_conf_get_float(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  const float val = g_ascii_strtod(str, NULL);
+  float val = dt_calculator_solve(1, str);
+  if(isnan(val)) val = 0.0;
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -251,7 +265,7 @@ static inline void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *ove
   return;
 }
 
-static void _conf_print(char *key, char *val, FILE *f)
+static void dt_conf_print(const gchar *key, const gchar *val, FILE *f)
 {
   fprintf(f, "%s=%s\n", key, val);
 }
@@ -261,7 +275,20 @@ static inline void dt_conf_cleanup(dt_conf_t *cf)
   FILE *f = fopen(cf->filename, "wb");
   if(f)
   {
-    g_hash_table_foreach(cf->table, (GHFunc)_conf_print, f);
+    GList *keys = g_hash_table_get_keys(cf->table);
+    GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
+
+    GList *iter = sorted;
+
+    while(iter)
+    {
+      const gchar *key = (const gchar *)iter->data;
+      const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
+      dt_conf_print(key, val, f);
+      iter = g_list_next(iter);
+    }
+
+    g_list_free(sorted);
     fclose(f);
   }
   g_hash_table_unref(cf->table);
@@ -281,10 +308,10 @@ static inline int dt_conf_key_exists (const char *key)
 
 static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 {
-  if(!strcmp(key, d->match))
+  if(strncmp(key, d->match, strlen(d->match)) == 0)
   {
     dt_conf_string_entry_t *nv = (dt_conf_string_entry_t*)g_malloc (sizeof(dt_conf_string_entry_t));
-    nv->key = g_strdup(key);
+    nv->key = g_strdup(key + strlen(d->match) + 1);
     nv->value = g_strdup(val);
     d->result = g_slist_append(d->result, nv);
   }
@@ -294,13 +321,12 @@ static void _conf_add(char *key, char *val, dt_conf_dreggn_t *d)
 static inline GSList *dt_conf_all_string_entries (const char *dir)
 {
   dt_pthread_mutex_lock (&darktable.conf->mutex);
-  GSList *result = NULL;
   dt_conf_dreggn_t d;
-  d.result = result;
+  d.result = NULL;
   d.match = dir;
   g_hash_table_foreach(darktable.conf->table, (GHFunc)_conf_add, &d);
   dt_pthread_mutex_unlock (&darktable.conf->mutex);
-  return result;
+  return d.result;
 }
 
 

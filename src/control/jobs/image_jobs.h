@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 -- 2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,16 @@ dt_image_load_t;
 
 int32_t dt_image_load_job_run(dt_job_t *job);
 void dt_image_load_job_init(dt_job_t *job, int32_t imgid, dt_mipmap_size_t mip);
+
+typedef struct dt_image_import_t
+{
+  uint32_t film_id;
+  const char *filename;
+}
+dt_image_import_t;
+int32_t dt_image_import_job_run(dt_job_t *job);
+void dt_image_import_job_init(dt_job_t *job, uint32_t filmid, const char *filename);
+
 
 
 #endif

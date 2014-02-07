@@ -851,7 +851,10 @@ set_params (dt_lib_module_t *self, const void *params, int size)
   if(size != strlen(fname) + strlen(sname) + 2 + 2*sizeof(int32_t) + fsize + ssize + 3*sizeof(int32_t) + strlen(iccprofile) + 1) return 1;
 
   const dt_imageio_module_data_t *fdata = (const dt_imageio_module_data_t *)buf;
-  _combo_box_set_active_text(d->style, fdata->style);
+  if (fdata->style[0] == '\0')
+    gtk_combo_box_set_active(d->style, 0);
+  else
+    _combo_box_set_active_text(d->style, fdata->style);
   buf += fsize;
   const void *sdata = buf;
 

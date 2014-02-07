@@ -24,6 +24,7 @@
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/film.h"
+#include <errno.h>
 
 /***********************************************************************
   Creating the images global variable
@@ -37,6 +38,46 @@ int dt_lua_duplicate_image(lua_State *L)
   luaA_push(L,dt_lua_image_t,&imgid);
   return 1;
 }
+
+int dt_lua_delete_image(lua_State *L)
+{
+  int imgid;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_image_remove(imgid);
+  return 0;
+}
+
+int dt_lua_move_image(lua_State*L) 
+{
+  dt_lua_image_t imgid = -1;
+  dt_lua_film_t filmid = -1;
+  if(luaL_testudata(L,1,"dt_lua_image_t")) {
+    luaA_to(L,dt_lua_image_t,&imgid,1);
+    luaA_to(L,dt_lua_film_t,&filmid,2);
+  } else {
+    luaA_to(L,dt_lua_film_t,&filmid,1);
+    luaA_to(L,dt_lua_image_t,&imgid,2);
+  }
+  dt_image_move(imgid,filmid);
+  return 0;
+}
+
+int dt_lua_copy_image(lua_State*L) 
+{
+  dt_lua_image_t imgid = -1;
+  dt_lua_film_t filmid = -1;
+  if(luaL_testudata(L,1,"dt_lua_image_t")) {
+    luaA_to(L,dt_lua_image_t,&imgid,1);
+    luaA_to(L,dt_lua_film_t,&filmid,2);
+  } else {
+    luaA_to(L,dt_lua_film_t,&filmid,1);
+    luaA_to(L,dt_lua_image_t,&imgid,2);
+  }
+  dt_lua_image_t new_image =dt_image_copy(imgid,filmid);
+  luaA_push(L,dt_lua_image_t,&new_image);
+  return 1;
+}
+
 
 static int import_images(lua_State *L)
 {
@@ -62,17 +103,28 @@ static int import_images(lua_State *L)
     dt_film_t new_film;
     dt_film_init(&new_film);
     char* dirname =g_path_get_dirname(full_name);
-    result = dt_film_new(&new_film,dirname);
+    char * expanded_path = dt_util_fix_path(dirname);
+    g_free(dirname);
+    char * final_path = g_realpath(expanded_path);
+    g_free(expanded_path);
+    if(!final_path) {
+      g_free(full_name);
+      return luaL_error(L,"Error while importing : %s\n",strerror(errno));
+    }
+    result = dt_film_new(&new_film,final_path);
+    free(final_path);
     if(result == 0)
     {
-      g_free(full_name);
+      if (dt_film_is_empty(new_film.id))
+        dt_film_remove(new_film.id);
       dt_film_cleanup(&new_film);
-      free(dirname);
+      g_free(full_name);
       return luaL_error(L,"error while importing");
     }
 
     result =dt_image_import(new_film.id,full_name,TRUE);
-    free(dirname);
+    if (dt_film_is_empty(new_film.id))
+      dt_film_remove(new_film.id);
     dt_film_cleanup(&new_film);
     if(result == 0)
     {
@@ -130,8 +182,14 @@ int dt_lua_init_database(lua_State * L)
   dt_lua_register_type_callback_number_typeid(L,type_id,database_index,NULL,database_len);
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"duplicate");
+  lua_pushcfunction(L,dt_lua_delete_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"delete");
   lua_pushcfunction(L,import_images);
   dt_lua_register_type_callback_stack_typeid(L,type_id,"import");
+  lua_pushcfunction(L,dt_lua_move_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"move_image");
+  lua_pushcfunction(L,dt_lua_copy_image);
+  dt_lua_register_type_callback_stack_typeid(L,type_id,"copy_image");
 
   return 0;
 }

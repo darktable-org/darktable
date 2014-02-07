@@ -75,19 +75,31 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
   int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1, &stmt, NULL);
   while(t)
   {
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[DT_MAX_PATH_LEN+4];
+    char dtfilename[DT_MAX_PATH_LEN+8];
     dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
     char *c = dtfilename + strlen(dtfilename);
     sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, dtfilename);
+    if(!dt_exif_xmp_write(imgid, dtfilename))
+    {
+      // put the timestamp into db. this can't be done in exif.cc since that code gets called
+      // for the copy exporter, too
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_reset(stmt);
+      sqlite3_clear_bindings(stmt);
+    }
     dt_image_cache_read_release(darktable.image_cache, img);
     t = g_list_delete_link(t, t);
   }
+  sqlite3_finalize(stmt);
   return 0;
 }
 
@@ -313,11 +325,58 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   return 0;
 }
 
+static char *_get_image_list(GList *l)
+{
+  const int size = g_list_length(l);
+  char *buffer = malloc (size*8);
+  int imgid;
+  char num[8];
+  gboolean first=TRUE;
+
+  buffer[0]='\0';
+
+  while(l)
+  {
+    imgid = GPOINTER_TO_INT(l->data);
+    snprintf(num,8,"%s%6d",first?"":",",imgid);
+    strcat(buffer,num);
+    l = g_list_next(l);
+    first=FALSE;
+  }
+  return buffer;
+}
+
+static void _set_remove_flag(char *imgs)
+{
+  sqlite3_stmt *stmt = NULL;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET flags = (flags|?1) WHERE id IN (?2)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_REMOVE);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static GList *_get_full_pathname(char *imgs)
+{
+  sqlite3_stmt *stmt = NULL;
+  GList *list = NULL;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT DISTINCT folder || '/' || filename FROM images, film_rolls WHERE images.film_id = film_rolls.id AND images.id IN (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+  return list;
+}
+
 int32_t dt_control_remove_images_job_run(dt_job_t *job)
 {
   int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
+  char *imgs = _get_image_list(t);
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
@@ -326,10 +385,10 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   sqlite3_stmt *stmt = NULL;
 
   // check that we can safely remove the image
-  char query[1024];
   gboolean remove_ok = TRUE;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM images WHERE id IN (SELECT imgid FROM selected_images) AND flags&?1=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM images WHERE id IN (?2) AND flags&?1=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, DT_IMAGE_LOCAL_COPY);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, imgs, -1, SQLITE_STATIC);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -346,24 +405,19 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
     dt_control_backgroundjobs_destroy(darktable.control, jid);
+    free(imgs);
     return 0;
   }
 
   // update remove status
-  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+  _set_remove_flag(imgs);
 
   dt_collection_update(darktable.collection);
 
   // We need a list of files to regenerate .xmp files if there are duplicates
-  GList *list = NULL;
+  GList *list = _get_full_pathname(imgs);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
-  }
-  sqlite3_finalize(stmt);
+  free(imgs);
 
   while(t)
   {
@@ -394,6 +448,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   int imgid = -1;
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   GList *t = t1->index;
+  char *imgs = _get_image_list(t);
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
@@ -402,22 +457,14 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
   sqlite3_stmt *stmt;
 
-  char query[1024];
-  sprintf(query, "update images set flags = (flags | %d) where id in (select imgid from selected_images)",DT_IMAGE_REMOVE);
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
+  _set_remove_flag(imgs);
 
   dt_collection_update(darktable.collection);
 
   // We need a list of files to regenerate .xmp files if there are duplicates
-  GList *list = NULL;
+  GList *list = _get_full_pathname(imgs);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select distinct folder || '/' || filename from images, film_rolls where images.film_id = film_rolls.id and images.id in (select imgid from selected_images)", -1, &stmt, NULL);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
-  }
-  sqlite3_finalize(stmt);
+  free(imgs);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select count(id) from images where filename in (select filename from images where id = ?1) and film_id in (select film_id from images where id = ?1)", -1, &stmt, NULL);
   while(t)
@@ -1084,7 +1131,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   dt_control_image_enumerator_t *t1 = (dt_control_image_enumerator_t *)job->param;
   dt_control_export_t *settings = (dt_control_export_t*)t1->data;
   GList *t = t1->index;
-  const int total = g_list_length(t);
   dt_imageio_module_format_t  *mformat  = dt_imageio_get_format_by_index(settings->format_index);
   g_assert(mformat);
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage_by_index(settings->storage_index);
@@ -1110,6 +1156,14 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     g_free(t1->data);
     return 1;
   }
+  if(mstorage->initialize_store) {
+    /* get temporary format params */
+    dt_imageio_module_data_t *fdata = mformat->get_params(mformat);
+    mstorage->initialize_store(mstorage, sdata, mformat, fdata, &t, settings->high_quality);
+    mformat->set_params(mformat,fdata,mformat->params_size(mformat));
+    mformat->free_params(mformat,fdata);
+  }
+  const int total = g_list_length(t);
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
   snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
@@ -1184,7 +1238,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
         else
         {
           dt_image_cache_read_release(darktable.image_cache, image);
-          mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality);
+          if(mstorage->store(mstorage,sdata, imgid, mformat, fdata, num, total, settings->high_quality) != 0)
+            dt_control_job_cancel(job);
         }
       }
 #ifdef _OPENMP
@@ -1192,7 +1247,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 #endif
       {
         fraction+=1.0/total;
-	if(fraction > 1.0) fraction = 1.0;
+        if(fraction > 1.0) fraction = 1.0;
         dt_control_backgroundjobs_progress(control, jid, fraction);
       }
     }

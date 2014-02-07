@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2010--2014 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
@@ -39,10 +40,11 @@ enum dt_view_type_flags_t
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
   DT_VIEW_TETHERING = 4,
-  DT_VIEW_MAP = 8
+  DT_VIEW_MAP = 8,
+  DT_VIEW_SLIDESHOW = 16,
 };
 
-#define DT_VIEW_ALL (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP)
+#define DT_VIEW_ALL (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW)
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -99,7 +101,8 @@ typedef enum dt_view_image_over_t
   DT_VIEW_STAR_4 = 4,
   DT_VIEW_STAR_5 = 5,
   DT_VIEW_REJECT = 6,
-  DT_VIEW_GROUP  = 7
+  DT_VIEW_GROUP  = 7,
+  DT_VIEW_AUDIO  = 8
 }
 dt_view_image_over_t;
 
@@ -215,14 +218,9 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_view_t *view;
-      uint32_t (*get_film_id)(const dt_view_t *view);
-      const char *(*get_session_filename)(const dt_view_t *view, const char *filename);
-      const char *(*get_session_path)(const dt_view_t *view);
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
       uint32_t (*get_selected_imgid)(const dt_view_t *view);
-      void (*set_session_namepattern)(const dt_view_t *view, const char *namepattern);
-      gboolean (*check_namepattern)(const dt_view_t *view);
     } tethering;
 
     /* more module window proxy */
@@ -293,21 +291,12 @@ void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hsize, float hwins
 /*
  * Tethering View PROXY
  */
-/** get the current filmroll id for tethering session */
-int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm);
 /** get the current selected image id for tethering session */
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm);
-/** get the current session path for tethering session */
-const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm);
-/** get the current session filename for tethering session */
-const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename);
 /** set the current jobcode for tethering session */
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name);
 /** get the current jobcode for tethering session */
 const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm);
-
-void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern);
-gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm);
 
 /** update the collection module */
 void dt_view_collection_update(const dt_view_manager_t *vm);

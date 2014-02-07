@@ -623,6 +623,7 @@ _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *event, dt_iop_module_
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
     dt_masks_change_form_gui(form);
@@ -648,6 +649,7 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *event, dt_iop_modul
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
     dt_masks_change_form_gui(spot);
@@ -673,6 +675,7 @@ _blendop_masks_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_iop_modu
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE);
     dt_masks_change_form_gui(spot);
@@ -698,6 +701,7 @@ _blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt_iop_module
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //enable advanced input devices to get pressure readings and stuff like that
     dt_gui_enable_extended_input_devices();
     //we create the new form
@@ -725,6 +729,7 @@ _blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
     self->request_color_pick = 0;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
     //we create the new form
     dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
     dt_masks_change_form_gui(spot);
@@ -830,7 +835,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
   darktable.gui->reset = 1;
-  if(module->request_color_pick && raw_max[0] >= -0.001f)  // give a bit room for rounding errors
+  if(module->request_color_pick)  // give a bit room for rounding errors
   {
     _blendif_scale(data->csp, raw_mean, picker_mean);
     _blendif_scale(data->csp, raw_min, picker_min);
@@ -847,7 +852,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
   else
   {
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), -1.0f);
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), NAN);
     gtk_label_set_text(label, "");
   }
 
@@ -1305,8 +1310,7 @@ void dt_iop_gui_cleanup_blending(dt_iop_module_t *module)
   g_list_free(bd->masks_modes);
   g_list_free(bd->masks_combine);
   g_list_free(bd->masks_invert);
-  g_list_foreach(bd->blend_modes_all, (GFunc)g_free, NULL);
-  g_list_free(bd->blend_modes_all);
+  g_list_free_full(bd->blend_modes_all, g_free);
 
   memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));
 

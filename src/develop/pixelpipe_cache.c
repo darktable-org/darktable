@@ -31,7 +31,7 @@
 //   ping, pong, and priority buffer (focused plugin)
 // - drop read by the time another is requested (with priority, drop that, or alternating ping and pong?)
 
-int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, int size)
+int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size)
 {
   cache->entries = entries;
   cache->data = (void **)malloc(sizeof(void *)*entries);

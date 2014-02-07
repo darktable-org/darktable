@@ -3,49 +3,65 @@
 		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
 		%darktable_dtd;
 		]>
+<sect2 status="final" id="history">
 
-	<sect2 status="final" id="history"><title>History stack</title>
-                <indexterm>
-                   <primary>darkroom panels</primary>
-                   <secondary>history stack</secondary>
-                </indexterm>
+  <title>History stack</title>
 
-                <indexterm>
-                   <primary>history stack</primary>
-                </indexterm>
+  <indexterm>
+    <primary>darkroom panels</primary>
+    <secondary>history stack</secondary>
+  </indexterm>
 
+  <indexterm>
+    <primary>history stack</primary>
+  </indexterm>
 
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>
-						<para>The history stack lists every change of state (activate/de-activated) for all modules.
-            					Here you can <emphasis>select</emphasis> a point in stack to return to that point of development history.
-            					If you then activate a new module or change a module parameter, all modules above the current point will be discarded.
-                                                </para>
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-                <para><emphasis>Caution: activating any module action using key accelerators will discard all modules above 
-                the currently selected one. It is easy to lose all development work on an image this way!</emphasis>
-		</para>
-		<para>
-            	Hitting <quote>compress history stack</quote> generates the shortest history stack that produces the
-            	current image, i.e. suppressing all de-activated modules. This also will discard all modules above
-                the currently selected one.
-		</para>
-		<para>The button to the right <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" /> 
-                lets you create a new style for applying your history stack to other images.
-                Use the first line of the popup dialog window to name your style and the second to add a 
-                searchable description. You are prompted for which of the current history stack modules to include in the style.</para> 
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            <para>
+              The history stack lists every change of state (activate/de-activated) for all
+              modules. Here you can <emphasis>select</emphasis> a point in stack to return to
+              that point of development history. If you then activate a new module or change a
+              module parameter, all modules above the current point will be discarded.
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="darkroom/images/panel_history.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
 
-                <para>Once created styles are then managed and applied to other images in the lighttable's <emphasis>styles</emphasis> panel
-                (see <xref linkend="styles"/>).</para>
-	</sect2>
+  <para>
+    <emphasis>Caution: activating any module action using key accelerators will discard all
+    modules above the currently selected one. It is easy to lose all development work on an
+    image this way!</emphasis>
+  </para>
+
+  <para>
+    Hitting <quote>compress history stack</quote> generates the shortest history stack that
+    produces the current image, i.e. suppressing all de-activated modules. This also will
+    discard all modules above the currently selected one.
+  </para>
+
+  <para>
+    The button to the right
+    <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" />
+    lets you create a new style for applying your history stack to other images. Use the first
+    line of the popup dialog window to name your style and the second to add a searchable
+    description. You are prompted for which of the current history stack modules to include in
+    the style.
+  </para>
+
+  <para>
+    Once created styles are then managed and applied to other images in the lighttable's
+    <emphasis>styles</emphasis> panel (see <xref linkend="styles"/>).
+  </para>
+
+</sect2>

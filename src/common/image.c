@@ -205,19 +205,8 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, int len
   sqlite3_finalize(stmt);
 }
 
-void dt_image_path_append_version(int imgid, char *pathname, const int len)
+void dt_image_path_append_version_no_db(const int version, char *pathname, const int len)
 {
-  // get duplicate suffix
-  int version = 0;
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select version from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-    version = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
   // the "first" instance (version zero) does not get a version suffix
   if(version > 0)
   {
@@ -233,6 +222,22 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
     snprintf(c, pathname + len - c, "%s", c2);
     g_free(filename);
   }
+}
+
+void dt_image_path_append_version(int imgid, char *pathname, const int len)
+{
+  // get duplicate suffix
+  int version = 0;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "select version from images where id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    version = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  dt_image_path_append_version_no_db(version, pathname, len);
 }
 
 void dt_image_print_exif(const dt_image_t *img, char *line, int len)
@@ -294,7 +299,8 @@ void dt_image_set_flip(const int32_t imgid, const int32_t orientation)
 void dt_image_flip(const int32_t imgid, const int32_t cw)
 {
   // this is light table only:
-  if(darktable.develop->image_storage.id == imgid) return;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(darktable.develop->image_storage.id == imgid && cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM) return;
   int32_t orientation = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -701,6 +707,19 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
     dt_conf_set_int("ui_last/import_initial_rating", 1);
   }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
+  // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
+  char *extra_file = dt_image_get_audio_path_from_path(filename);
+  if(extra_file)
+  {
+    flags |= DT_IMAGE_HAS_WAV;
+    g_free(extra_file);
+  }
+  extra_file = dt_image_get_text_path_from_path(filename);
+  if(extra_file)
+  {
+    flags |= DT_IMAGE_HAS_TXT;
+    g_free(extra_file);
+  }
   // insert dummy image entry in database
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into images (id, film_id, filename, caption, description, "
@@ -879,6 +898,8 @@ void dt_image_init(dt_image_t *img)
   img->exif_focus_distance = 0;
   img->latitude = NAN;
   img->longitude = NAN;
+  img->raw_black_level = 0;
+  img->raw_white_point = 16384; // 2^14
   img->d65_color_matrix[0] = NAN;
   img->profile = NULL;
   img->profile_size = 0;
@@ -1170,6 +1191,13 @@ void dt_image_local_copy_set(const int32_t imgid)
 
   _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
 
+  // check that the src file is readable
+  if (!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
+  {
+    dt_control_log(_("cannot create local copy when the original file is not accessible."));
+    return;
+  }
+
   if (!g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
     GFile *src = g_file_new_for_path(srcpath);
@@ -1177,7 +1205,14 @@ void dt_image_local_copy_set(const int32_t imgid)
 
     // copy image to cache directory
     GError *gerror = NULL;
-    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+
+    if (!g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror))
+    {
+      dt_control_log(_("cannot create local copy."));
+      g_object_unref(dest);
+      g_object_unref(src);
+      return;
+    }
 
     g_object_unref(dest);
     g_object_unref(src);
@@ -1269,7 +1304,16 @@ void dt_image_write_sidecar_file(int imgid)
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
     char *c = filename + strlen(filename);
     sprintf(c, ".xmp");
-    dt_exif_xmp_write(imgid, filename);
+    if(!dt_exif_xmp_write(imgid, filename))
+    {
+      // put the timestamp into db. this can't be done in exif.cc since that code gets called
+      // for the copy exporter, too
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET write_timestamp = STRFTIME('%s', 'now') WHERE id = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
   }
 }
 
@@ -1415,6 +1459,74 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   g_free(datetime);
 }
 #endif
+
+char* dt_image_get_audio_path_from_path(const char* image_path)
+{
+  size_t len = strlen(image_path);
+  const char *c = image_path + len;
+  while((c > image_path) && (*c != '.')) c--;
+  len = c - image_path + 1;
+
+  char *result = g_strndup(image_path, len + 3);
+
+  result[len]   = 'w';
+  result[len+1] = 'a';
+  result[len+2] = 'v';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  result[len]   = 'W';
+  result[len+1] = 'A';
+  result[len+2] = 'V';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  g_free(result);
+  return NULL;
+}
+
+char* dt_image_get_audio_path(const int32_t imgid)
+{
+  gboolean from_cache = FALSE;
+  char image_path[DT_MAX_PATH_LEN];
+  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+
+  return dt_image_get_audio_path_from_path(image_path);
+}
+
+char* dt_image_get_text_path_from_path(const char* image_path)
+{
+  size_t len = strlen(image_path);
+  const char *c = image_path + len;
+  while((c > image_path) && (*c != '.')) c--;
+  len = c - image_path + 1;
+
+  char *result = g_strndup(image_path, len + 3);
+
+  result[len]   = 't';
+  result[len+1] = 'x';
+  result[len+2] = 't';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  result[len]   = 'T';
+  result[len+1] = 'X';
+  result[len+2] = 'T';
+  if(g_file_test(result, G_FILE_TEST_EXISTS))
+    return result;
+
+  g_free(result);
+  return NULL;
+}
+
+char* dt_image_get_text_path(const int32_t imgid)
+{
+  gboolean from_cache = FALSE;
+  char image_path[DT_MAX_PATH_LEN];
+  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+
+  return dt_image_get_text_path_from_path(image_path);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

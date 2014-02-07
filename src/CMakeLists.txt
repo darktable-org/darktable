@@ -38,6 +38,7 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_tiff.c"
   "common/imageio_gm.c"
   "common/imageio_rawspeed.cc"
+  "common/import_session.c"
   "common/interpolation.c"
   "common/metadata.c"
   "common/mipmap_cache.c"
@@ -53,6 +54,7 @@ FILE(GLOB SOURCE_FILES
   "common/dlopencl.c"
   "common/ratings.c"
   "control/control.c"
+  "control/crawler.c"
   "control/jobs/control_jobs.c"
   "control/jobs/develop_jobs.c"
   "control/jobs/film_jobs.c"
@@ -160,7 +162,7 @@ if(OPENEXR_FOUND)
   list(APPEND SOURCES "common/imageio_exr.cc")
 endif(OPENEXR_FOUND)
 
-find_package(WebP)
+find_package(WebP 0.3.0)
 if(WEBP_FOUND)
   include_directories(${WebP_INCLUDE_DIRS})
   list(APPEND LIBS ${WebP_LIBRARIES})
@@ -400,7 +402,9 @@ if(NOT CUSTOM_CFLAGS)
 if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+  if(NOT SOURCE_PACKAGE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+  endif(NOT SOURCE_PACKAGE)
 
   # gcc-4.8 build fails on unused local typedefs in gmacros.h:162
   # to be removed when glib will get fixed

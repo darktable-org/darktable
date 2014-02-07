@@ -40,6 +40,10 @@ int32_t dt_film_import1_run(dt_job_t *job)
   dt_pthread_mutex_unlock(&t->film->images_mutex);
   if(t->film->ref <= 0)
   {
+    if(dt_film_is_empty(t->film->id))
+    {
+      dt_film_remove(t->film->id);
+    }
     dt_film_cleanup(t->film);
     free(t->film);
   }

@@ -40,6 +40,7 @@
       .col_1 {background-color: #afadad;}
       .b_right  { border-right: 2px solid #cfcece; }
       .b_bottom { border-bottom: 2px solid #cfcece; }
+      .p_bottom { padding-bottom: 5px; }
       .tt {
         font-family: Monospace;
         font-size: 14px;
@@ -68,13 +69,12 @@
         <xsl:for-each select="dtconfiglist/dtconfig">
           <xsl:sort select="name" order="ascending" data-type="text" />
           <xsl:text disable-output-escaping='yes'>&#xA;&lt;tr class="col_</xsl:text><xsl:value-of select="position() mod 2" /><xsl:text disable-output-escaping='yes'>"&gt;&#xA;</xsl:text>
-            <td class="b_right tt"><xsl:value-of select="name" /></td>
+            <td class="b_right b_bottom p_bottom tt" rowspan="2"><xsl:value-of select="name" /></td>
             <xsl:apply-templates select="type" />
             <td class="tt"><xsl:value-of select="default" /></td>
             <td><xsl:value-of select="shortdescription" /></td>
           <xsl:text disable-output-escaping='yes'>&#xA;&lt;/tr&gt;</xsl:text>
           <xsl:text disable-output-escaping='yes'>&#xA;&lt;tr class="col_</xsl:text><xsl:value-of select="position() mod 2" /><xsl:text disable-output-escaping='yes'>"&gt;&#xA;</xsl:text>
-            <td class="b_right b_bottom">&#160;</td>
             <td colspan="3" class="second_row b_bottom"><xsl:value-of select="longdescription" /></td>
           <xsl:text disable-output-escaping='yes'>&#xA;&lt;/tr&gt;</xsl:text>
         </xsl:for-each>

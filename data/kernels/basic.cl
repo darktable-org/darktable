@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2013 johannes hanika.
+    copyright (c) 2014 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,6 +147,34 @@ lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
 }
 
 float
+lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const float *a)
+{
+  // in case the tone curve is marked as linear, return the fast
+  // path to linear unbounded (does not clip x at 1)
+  if(a[0] >= 0.0f)
+  {
+    const float ar = 1.0f/a[0];
+    const float al = 1.0f - 1.0f/a[3];
+    if(x < ar && x >= al)
+    {
+      // lut lookup
+      const int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
+      const int2 p = (int2)((xi & 0xff), (xi >> 8));
+      return read_imagef(lut, sampleri, p).x;
+    }
+    else
+    {
+      // two-sided extrapolation (with inverted x-axis for left side)
+      const float xx = (x >= ar) ? x : 1.0f - x;
+      global const float *aa = (x >= ar) ? a : a + 3;
+      return aa[1] * native_powr(xx*aa[0], aa[2]);
+    }
+  }
+  else return x;
+}
+
+
+float
 lookup(read_only image2d_t lut, const float x)
 {
   int xi = clamp(x*65535.0f, 0.0f, 65535.0f);
@@ -173,12 +202,12 @@ basecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
 
 
 
-/* kernel for the plugin colorin */
+/* kernel for the plugin colorin: unbound processing */
 kernel void
-colorin (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-         global float *mat, read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
-         const int map_blues,
-         global float *a)
+colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                 global float *cmat, global float *lmat, 
+                 read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+                 const int map_blues, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -213,18 +242,77 @@ colorin (read_only image2d_t in, write_only image2d_t out, const int width, cons
   for(int j=0;j<3;j++)
   {
     XYZ[j] = 0.0f;
-    for(int i=0;i<3;i++) XYZ[j] += mat[3*j+i] * cam[i];
+    for(int i=0;i<3;i++) XYZ[j] += cmat[3*j+i] * cam[i];
   }
   float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
   pixel.xyz = XYZ_to_Lab(xyz).xyz;
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-/* kernel for the tonecurve plugin version 2 */
+/* kernel for the plugin colorin: with clipping */
+kernel void
+colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                  global float *cmat, global float *lmat, 
+                  read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
+                  const int map_blues, global float *a)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float cam[3], RGB[3], XYZ[3];
+  cam[0] = lookup_unbounded(lutr, pixel.x, a);
+  cam[1] = lookup_unbounded(lutg, pixel.y, a+3);
+  cam[2] = lookup_unbounded(lutb, pixel.z, a+6);
+
+
+  const float YY = cam[0]+cam[1]+cam[2];
+  if(map_blues && YY > 0.0f)
+  {
+    // manual gamut mapping. these values cause trouble when converting back from Lab to sRGB:
+    const float zz = cam[2]/YY;
+    // lower amount and higher bound_z make the effect smaller.
+    // the effect is weakened the darker input values are, saturating at bound_Y
+    const float bound_z = 0.5f, bound_Y = 0.8f;
+    const float amount = 0.11f;
+    if (zz > bound_z)
+    {
+      const float t = (zz - bound_z)/(1.0f-bound_z) * fmin(1.0f, YY/bound_Y);
+      cam[1] += t*amount;
+      cam[2] -= t*amount;
+    }
+  }
+  // convert camera to RGB using the first color matrix
+  for(int j=0;j<3;j++)
+  {
+    RGB[j] = 0.0f;
+    for(int i=0;i<3;i++) RGB[j] += cmat[3*j+i] * cam[i];
+  }
+
+  // clamp at this stage
+  for(int i=0; i<3; i++) RGB[i] = clamp(RGB[i], 0.0f, 1.0f);
+
+  // convert clipped RGB to XYZ
+  for(int j=0;j<3;j++)
+  {
+    XYZ[j] = 0.0f;
+    for(int i=0;i<3;i++) XYZ[j] += lmat[3*j+i] * RGB[i];
+  }
+
+  float4 xyz = (float4)(XYZ[0], XYZ[1], XYZ[2], 0.0f);
+  pixel.xyz = XYZ_to_Lab(xyz).xyz;
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+/* kernel for the tonecurve plugin. */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
-           const int autoscale_ab, global float *a)
+           const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
+           const float low_approximation)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -234,13 +322,21 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
-  const float L = lookup_unbounded(table_L, L_in, a);
-  if (autoscale_ab == 0)
+  const float L = lookup_unbounded(table_L, L_in, coeffs_L);
+  if (autoscale_ab == 0 && unbound_ab == 0)
   {
     const float a_in = (pixel.y + 128.0f) / 256.0f;
     const float b_in = (pixel.z + 128.0f) / 256.0f;
     pixel.y = lookup(table_a, a_in);
     pixel.z = lookup(table_b, b_in);
+  }
+  if (autoscale_ab == 0 && unbound_ab == 1)
+  {
+    const float a_in = (pixel.y + 128.0f) / 256.0f;
+    const float b_in = (pixel.z + 128.0f) / 256.0f;
+    // use lut or two-sided extrapolation
+    pixel.y = lookup_unbounded_twosided(table_a, a_in, coeffs_ab);
+    pixel.z = lookup_unbounded_twosided(table_b, b_in, coeffs_ab + 6);
   }
   else if(pixel.x > 0.01f)
   {
@@ -249,8 +345,8 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   }
   else
   {
-    pixel.y *= L/0.01f;
-    pixel.z *= L/0.01f;
+    pixel.y *= low_approximation;
+    pixel.z *= low_approximation;
   }
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);

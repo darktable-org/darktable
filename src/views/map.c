@@ -268,8 +268,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   osm_gps_map_image_remove_all(map);
   if(lib->images)
   {
-    g_slist_foreach(lib->images, (GFunc) g_free, NULL);
-    g_slist_free(lib->images);
+    g_slist_free_full(lib->images, g_free);
     lib->images = NULL;
   }
 
@@ -469,7 +468,7 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       if(lib->selected_image > 0)
       {
         // open the image in darkroom
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, lib->selected_image);
+        dt_control_set_mouse_over_id(lib->selected_image);
         dt_ctl_switch_mode_to(DT_DEVELOP);
         return TRUE;
       }
@@ -514,8 +513,10 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
 
   /* restore last zoom,location in map */
-  const float lon = dt_conf_get_float("plugins/map/longitude");
-  const float lat = dt_conf_get_float("plugins/map/latitude");
+  float lon = dt_conf_get_float("plugins/map/longitude");
+  lon = CLAMP(lon, -180, 180);
+  float lat = dt_conf_get_float("plugins/map/latitude");
+  lat = CLAMP(lat, -90, 90);
   const int zoom = dt_conf_get_int("plugins/map/zoom");
 
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);

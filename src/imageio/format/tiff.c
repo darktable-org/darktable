@@ -37,13 +37,15 @@ typedef struct dt_imageio_tiff_t
   int width, height;
   char style[128];
   int bpp;
+  int compress;
   TIFF *handle;
 }
 dt_imageio_tiff_t;
 
 typedef struct dt_imageio_tiff_gui_t
 {
-  GtkToggleButton *b8, *b16;
+  GtkComboBox *bpp;
+  GtkComboBox *compress;
 }
 dt_imageio_tiff_gui_t;
 
@@ -68,11 +70,55 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     dt_colorspaces_cleanup_profile(out_profile);
   }
 
-  // Create tiff image
-  TIFF *tif=TIFFOpen(filename,"wb");
-  if(d->bpp == 8) TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  else            TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+  // Create little endian tiff image
+  TIFF *tif=TIFFOpen(filename,"wl");
+  if (d->bpp == 16)
+  {
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
+  }
+  else if (d->bpp == 32)
+  {
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+  }
+  else // (d->bpp == 8)
+  {
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+  }
+
+  // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
+  // "A proprietary ZIP/Flate compression code (0x80b2) has been used by some"
+  // "software vendors. This code should be considered obsolete. We recommend"
+  // "that TIFF implentations recognize and read the obsolete code but only"
+  // "write the official compression code (0x0008)."
+  // http://www.awaresystems.be/imaging/tiff/tifftags/compression.html
+  // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
+  if (d->compress == 1)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  }
+  else if (d->compress == 2)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  }
+  else if (d->compress == 3)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    if (d->bpp == 32)
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, 3);
+    else
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+  }
+  else // (d->compress == 0)
+  {
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+  }
+
   TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
   if(profile!=NULL)
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile);
@@ -80,17 +126,47 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);		// Reference www.awaresystems.be/imaging/tiff/tifftags/predictor.html
   TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
   TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
   TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
 
   const uint8_t  *in8 =(const uint8_t  *)in_void;
   const uint16_t *in16=(const uint16_t *)in_void;
-  if(d->bpp == 16)
+  const float *inf = (const float *)in_void;
+
+  if (d->bpp == 32)
+  {
+    uint32_t rowsize = (d->width*3) * sizeof(float);
+    uint32_t stripesize = rowsize * DT_TIFFIO_STRIPE;
+    float *rowdata = (float *)malloc(stripesize);
+    float *wdata = rowdata;
+    uint32_t stripe = 0;
+
+    for (int y = 0; y < d->height; y++)
+    {
+      for (int x = 0; x < d->width; x++)
+      {
+        wdata[0] = inf[x * 4 + 0];
+        wdata[1] = inf[x * 4 + 1];
+        wdata[2] = inf[x * 4 + 2];
+        wdata += 3;
+      }
+
+      if (wdata - stripesize/sizeof(float) == rowdata)
+      {
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, rowsize * DT_TIFFIO_STRIPE);
+        wdata = rowdata;
+      }
+
+      inf += d->width * 4;
+    }
+
+    TIFFClose(tif);
+    free(rowdata);
+  }
+  else if (d->bpp == 16)
   {
     uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
     uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
@@ -163,7 +239,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 #if 0
 int dt_imageio_tiff_read_header(const char *filename, dt_imageio_tiff_t *tiff)
 {
-  tiff->handle = TIFFOpen(filename, "rb");
+  tiff->handle = TIFFOpen(filename, "rl");
   if( tiff->handle )
   {
     TIFFGetField(tiff->handle, TIFFTAG_IMAGEWIDTH, &tiff->width);
@@ -191,8 +267,10 @@ get_params(dt_imageio_module_format_t *self)
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)malloc(sizeof(dt_imageio_tiff_t));
   memset(d, 0, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  if(d->bpp < 12) d->bpp = 8;
-  else            d->bpp = 16;
+  if (d->bpp == 16) d->bpp = 16;
+  else if(d->bpp == 32) d->bpp = 32;
+  else d->bpp = 8;
+  d->compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
   return d;
 }
 
@@ -208,9 +286,16 @@ set_params(dt_imageio_module_format_t *self, const void *params, const int size)
   if(size != self->params_size(self)) return 1;
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)params;
   dt_imageio_tiff_gui_t *g = (dt_imageio_tiff_gui_t *)self->gui_data;
-  if(d->bpp < 12) gtk_toggle_button_set_active(g->b8, TRUE);
-  else            gtk_toggle_button_set_active(g->b16, TRUE);
-  dt_conf_set_int("plugins/imageio/format/tiff/bpp", d->bpp);
+
+  if (d->bpp == 16)
+    gtk_combo_box_set_active(g->bpp, 1);
+  else if (d->bpp == 32)
+    gtk_combo_box_set_active(g->bpp, 2);
+  else // (d->bpp == 8)
+    gtk_combo_box_set_active(g->bpp, 0);
+
+  gtk_combo_box_set_active(g->compress, d->compress);
+
   return 0;
 }
 
@@ -219,9 +304,23 @@ int bpp(dt_imageio_module_data_t *p)
   return ((dt_imageio_tiff_t*)p)->bpp;
 }
 
+int compress(dt_imageio_module_data_t *p)
+{
+  return ((dt_imageio_tiff_t*)p)->compress;
+}
+
 int levels(dt_imageio_module_data_t *p)
 {
-  return IMAGEIO_RGB | (((dt_imageio_tiff_t*)p)->bpp == 8 ? IMAGEIO_INT8 : IMAGEIO_INT16);
+  int ret = IMAGEIO_RGB;
+
+  if (((dt_imageio_tiff_t*)p)->bpp == 8)
+    ret |= IMAGEIO_INT8;
+  else if (((dt_imageio_tiff_t*)p)->bpp == 16)
+    ret |= IMAGEIO_INT16;
+  else if (((dt_imageio_tiff_t*)p)->bpp == 32)
+    ret |= IMAGEIO_FLOAT;
+
+  return ret;
 }
 
 const char*
@@ -239,15 +338,27 @@ extension(dt_imageio_module_data_t *data)
 const char*
 name ()
 {
-  return _("8/16-bit TIFF");
+  return _("TIFF (8/16/32-bit)");
 }
 
 static void
-radiobutton_changed (GtkRadioButton *radiobutton, gpointer user_data)
+bpp_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
-  int bpp = GPOINTER_TO_INT(user_data);
-  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radiobutton)))
-    dt_conf_set_int("plugins/imageio/format/tiff/bpp", bpp);
+  int bpp = gtk_combo_box_get_active(widget);
+
+  if (bpp == 1)
+    dt_conf_set_int("plugins/imageio/format/tiff/bpp", 16);
+  else if (bpp == 2)
+    dt_conf_set_int("plugins/imageio/format/tiff/bpp", 32);
+  else // (bpp == 0)
+    dt_conf_set_int("plugins/imageio/format/tiff/bpp", 8);
+}
+
+static void
+compress_combobox_changed(GtkComboBox *widget, gpointer user_data)
+{
+  int compress = gtk_combo_box_get_active(widget);
+  dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
 }
 
 void init(dt_imageio_module_format_t *self)
@@ -263,18 +374,36 @@ void gui_init (dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
+
   int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
-  self->widget = gtk_hbox_new(TRUE, 5);
-  GtkWidget *radiobutton = gtk_radio_button_new_with_label(NULL, _("8-bit"));
-  gui->b8 = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(8));
-  if(bpp < 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
-  radiobutton = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radiobutton), _("16-bit"));
-  gui->b16 = GTK_TOGGLE_BUTTON(radiobutton);
-  gtk_box_pack_start(GTK_BOX(self->widget), radiobutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(radiobutton), "toggled", G_CALLBACK(radiobutton_changed), GINT_TO_POINTER(16));
-  if(bpp >= 12) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radiobutton), TRUE);
+  
+  int compress = dt_conf_get_int("plugins/imageio/format/tiff/compress");
+
+  self->widget = gtk_vbox_new(TRUE, 5);
+
+  GtkComboBoxText *bpp_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gui->bpp = GTK_COMBO_BOX(bpp_combo);
+  gtk_combo_box_text_append_text(bpp_combo, _("8 bit"));
+  gtk_combo_box_text_append_text(bpp_combo, _("16 bit"));
+  gtk_combo_box_text_append_text(bpp_combo, _("32 bit (float)"));
+  if (bpp == 16)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 1);
+  else if (bpp == 32)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 2);
+  else // (bpp == 8)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(bpp_combo), 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(bpp_combo), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(bpp_combo), "changed", G_CALLBACK(bpp_combobox_changed), NULL);
+
+  GtkComboBoxText *compress_combo = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+  gui->compress = GTK_COMBO_BOX(compress_combo);
+  gtk_combo_box_text_append_text(compress_combo, _("uncompressed"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor"));
+  gtk_combo_box_text_append_text(compress_combo, _("deflate with predictor (float)"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(compress_combo), compress);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(compress_combo), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(compress_combo), "changed", G_CALLBACK(compress_combobox_changed), NULL);
 }
 
 void gui_cleanup (dt_imageio_module_format_t *self)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    copyright (c) 2010 -- 2014 Henrik Andersson.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,20 +23,19 @@
 #include "common/variables.h"
 #include "control/control.h"
 
-
-/** Tethered image import job */
-typedef struct dt_captured_image_import_t
+typedef struct dt_camera_shared_t
 {
-  uint32_t film_id;
-  const char *filename;
-}
-dt_captured_image_import_t;
-int32_t dt_captured_image_import_job_run(dt_job_t *job);
-void dt_captured_image_import_job_init(dt_job_t *job, uint32_t filmid, const char *filename);
+  struct dt_import_session_t *session;
+} dt_camera_shared_t;
 
 /** Camera capture job */
 typedef struct dt_camera_capture_t
 {
+  dt_camera_shared_t shared;
+  int32_t total;
+  pthread_mutex_t mutex;
+  pthread_cond_t done;
+
   /** delay between each capture, 0 no delay */
   uint32_t delay;
   /** count of images to capture, 0==1 */
@@ -47,11 +46,10 @@ typedef struct dt_camera_capture_t
   /** steps for each bracket, only used ig bracket capture*/
   uint32_t steps;
 
-  uint32_t film_id;
 }
 dt_camera_capture_t;
 int32_t dt_camera_capture_job_run(dt_job_t *job);
-void dt_camera_capture_job_init(dt_job_t *job,uint32_t filmid, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps);
+void dt_camera_capture_job_init(dt_job_t *job, const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets, uint32_t steps);
 
 /** camera get previews job. */
 typedef struct dt_camera_get_previews_t
@@ -67,29 +65,18 @@ void dt_camera_get_previews_job_init(dt_job_t *job,struct dt_camera_t *camera,st
 /** Camera import job */
 typedef struct dt_camera_import_t
 {
+  dt_camera_shared_t shared;
+
   GList *images;
   struct dt_camera_t *camera;
   const guint *bgj;
   double fraction;
-  dt_variables_params_t *vp;
-  dt_film_t *film;
-  gchar *path;
-  gchar *filename;
   uint32_t import_count;
 }
 dt_camera_import_t;
 int32_t dt_camera_import_job_run(dt_job_t *job);
-void dt_camera_import_job_init(dt_job_t *job,char *jobcode, char *path,char *filename,GList *images, struct dt_camera_t *camera, time_t time_override);
+void dt_camera_import_job_init(dt_job_t *job, const char *jobcode, GList *images, struct dt_camera_t *camera, time_t time_override);
 
-/** Camera image import backup job initiated upon import job for each image*/
-typedef struct dt_camera_import_backup_t
-{
-  gchar *sourcefile;
-  gchar *destinationfile;
-}
-dt_camera_import_backup_t;
-int32_t dt_camera_import_backup_job_run(dt_job_t *job);
-void dt_camera_import_backup_job_init(dt_job_t *job,const char *sourcefile,const char *destinationfile);
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

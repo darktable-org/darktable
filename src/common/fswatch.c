@@ -170,6 +170,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
   dt_print(DT_DEBUG_FSWATCH,"[fswatch_destroy] Destroying context %p\n", fswatch);
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   dt_pthread_mutex_destroy(&ctx->mutex);
+//FIXME: g_list_free_full maybe?
   GList *item=g_list_first(fswatch->items);
   while(item)
   {

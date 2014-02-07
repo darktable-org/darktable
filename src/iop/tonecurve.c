@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    copyright (c) 2009--2014 johannes hanika.
+    copyright (c) 2014 Ulrich Pegelow.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +35,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET 1
 #define DT_GUI_CURVE_INFL .3f
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
@@ -63,9 +64,9 @@ flags ()
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 3)
+  if(old_version == 1 && new_version == 4)
   {
-    dt_iop_tonecurve_1_params_t *o = (dt_iop_tonecurve_1_params_t *)old_params;
+    dt_iop_tonecurve_params1_t *o = (dt_iop_tonecurve_params1_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
 
     // start with a fresh copy of default parameters
@@ -86,7 +87,8 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
       { 2, 3, 3 },
       { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
       1,
-      0
+      0,
+      1
     };
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].x = o->tonecurve_x[k];
     for (int k=0; k<6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
@@ -94,8 +96,28 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     n->tonecurve_type[ch_L] = CUBIC_SPLINE;
     n->tonecurve_autoscale_ab = 1;
     n->tonecurve_preset = o->tonecurve_preset;
+    n->tonecurve_unbound_ab = 0;
     return 0;
   }
+  else if(old_version == 2 && new_version == 4)
+  {
+    // version 2 never really materialized so there should be no legacy history stacks of that version around
+    return 1;
+  }
+  else if(old_version == 3 && new_version == 4)
+  {
+    dt_iop_tonecurve_params3_t *o = (dt_iop_tonecurve_params3_t *)old_params;
+    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
+
+    memcpy(n->tonecurve, o->tonecurve, sizeof(n->tonecurve));
+    memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(n->tonecurve_nodes));
+    memcpy(n->tonecurve_type, o->tonecurve_type, sizeof(n->tonecurve_type));
+    n->tonecurve_autoscale_ab = o->tonecurve_autoscale_ab;
+    n->tonecurve_preset = o->tonecurve_preset;
+    n->tonecurve_unbound_ab = 0;
+    return 0;
+  }
+
   return 1;
 }
 
@@ -105,23 +127,36 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
-  cl_mem dev_L, dev_a, dev_b = NULL;
-  cl_mem dev_coeffs = NULL;
+  cl_mem dev_L = NULL;
+  cl_mem dev_a = NULL;
+  cl_mem dev_b = NULL;
+  cl_mem dev_coeffs_L = NULL;
+  cl_mem dev_coeffs_ab = NULL;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int autoscale_ab = d->autoscale_ab;
+  const int unbound_ab = d->unbound_ab;
+  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+
+  dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
+  if (dev_L == NULL) goto error;
+
+  dev_a = dt_opencl_copy_host_to_device(devid, d->table[ch_a], 256, 256, sizeof(float));
+  if (dev_a == NULL) goto error;
+
+  dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));
+  if (dev_b == NULL) goto error;
+
+  dev_coeffs_L = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs_L);
+  if (dev_coeffs_L == NULL) goto error;
+
+  dev_coeffs_ab = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*12, d->unbounded_coeffs_ab);
+  if (dev_coeffs_ab == NULL) goto error;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
-  dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
-  dev_a = dt_opencl_copy_host_to_device(devid, d->table[ch_a], 256, 256, sizeof(float));
-  dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));
-  if (dev_L == NULL || dev_a == NULL || dev_b == NULL) goto error;
-
-  dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*3, d->unbounded_coeffs);
-  if (dev_coeffs == NULL) goto error;
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 2, sizeof(int), (void *)&width);
@@ -130,21 +165,26 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 5, sizeof(cl_mem), (void *)&dev_a);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 6, sizeof(cl_mem), (void *)&dev_b);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7, sizeof(int), (void *)&autoscale_ab);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8, sizeof(cl_mem), (void *)&dev_coeffs);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8, sizeof(int), (void *)&unbound_ab);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 9, sizeof(cl_mem), (void *)&dev_coeffs_L);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 10, sizeof(cl_mem), (void *)&dev_coeffs_ab);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 11, sizeof(float), (void *)&low_approximation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
 
   if(err != CL_SUCCESS) goto error;
   dt_opencl_release_mem_object(dev_L);
   dt_opencl_release_mem_object(dev_a);
   dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs);
+  dt_opencl_release_mem_object(dev_coeffs_L);
+  dt_opencl_release_mem_object(dev_coeffs_ab);
   return TRUE;
 
 error:
   if (dev_L != NULL) dt_opencl_release_mem_object(dev_L);
   if (dev_a != NULL) dt_opencl_release_mem_object(dev_a);
   if (dev_b != NULL) dt_opencl_release_mem_object(dev_b);
-  if (dev_coeffs != NULL) dt_opencl_release_mem_object(dev_coeffs);
+  if (dev_coeffs_L != NULL) dt_opencl_release_mem_object(dev_coeffs_L);
+  if (dev_coeffs_ab != NULL) dt_opencl_release_mem_object(dev_coeffs_ab);
   dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -154,30 +194,54 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-  const float xm = 1.0f/d->unbounded_coeffs[0];
+
+  const float xm_L = 1.0f/d->unbounded_coeffs_L[0];
+  const float xm_ar = 1.0f/d->unbounded_coeffs_ab[0];
+  const float xm_al = 1.0f - 1.0f/d->unbounded_coeffs_ab[3];
+  const float xm_br = 1.0f/d->unbounded_coeffs_ab[6];
+  const float xm_bl = 1.0f - 1.0f/d->unbounded_coeffs_ab[9];
+  const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int autoscale_ab = d->autoscale_ab;
+  const int unbound_ab = d->unbound_ab;
+
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
+  #pragma omp parallel for default(none) shared(i, o, d) schedule(static)
 #endif
-  for(int k=0; k<roi_out->height; k++)
+  for(int k=0; k<height; k++)
   {
-    float *in = ((float *)i) + k*ch*roi_out->width;
-    float *out = ((float *)o) + k*ch*roi_out->width;
+    float *in = ((float *)i) + k*ch*width;
+    float *out = ((float *)o) + k*ch*width;
 
-    const float low_approximation = d->table[0][(int)(0.01f * 0xfffful)];
-
-    for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
+    for (int j=0; j<width; j++,in+=ch,out+=ch)
     {
       const float L_in = in[0]/100.0f;
 
-      out[0] = (L_in < xm) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
-               dt_iop_eval_exp(d->unbounded_coeffs, L_in);
+      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
+                dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if (d->autoscale_ab == 0)
+      if (autoscale_ab == 0 && unbound_ab == 0)
       {
+        // old style handling of a/b curves: only lut lookup with clamping
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
         out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
         out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
+      }
+      if (autoscale_ab == 0 && unbound_ab == 1)
+      {
+        // new style handling of a/b curves: lut lookup with two-sided extrapolation;
+        // mind the x-axis reversal for the left-handed side
+        const float a_in = (in[1] + 128.0f) / 256.0f;
+        const float b_in = (in[2] + 128.0f) / 256.0f;
+        out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
+                ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
+                 d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
+        out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
+                ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
+                 d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
       }
       // in Lab: correct compressed Luminance for saturation:
       else if(L_in > 0.01f)
@@ -187,7 +251,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
       else
       {
-        out[0] = in[0] * low_approximation;
         out[1] = in[1] * low_approximation;
         out[2] = in[2] * low_approximation;
       }
@@ -209,6 +272,7 @@ void init_presets (dt_iop_module_so_t *self)
   p.tonecurve_type[ch_b] = CUBIC_SPLINE;
   p.tonecurve_preset = 0;
   p.tonecurve_autoscale_ab = 1;
+  p.tonecurve_unbound_ab = 1;
 
   float linear_L[6] = {0.0, 0.08, 0.4, 0.6, 0.92, 1.0};
   float linear_ab[7] = {0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0};
@@ -234,8 +298,6 @@ void init_presets (dt_iop_module_so_t *self)
   p.tonecurve[ch_L][4].y = 0.773852;
   p.tonecurve[ch_L][5].y = 1.000000;
   dt_gui_presets_add_generic(_("low contrast"), self->op, self->version(), &p, sizeof(p), 1);
-
-
 
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].y = linear_L[k];
@@ -290,16 +352,57 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   for(int k=0; k<0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k]*256.0f - 128.0f;
 
   d->autoscale_ab = p->tonecurve_autoscale_ab;
+  d->unbound_ab = p->tonecurve_unbound_ab;
 
-  // now the extrapolation stuff (for L curve only):
-  const float xm = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L]-1].x;
-  const float x[4] = {0.7f*xm, 0.8f*xm, 0.9f*xm, 1.0f*xm};
-  const float y[4] = {d->table[ch_L][CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
-                      d->table[ch_L][CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
-                      d->table[ch_L][CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
-                      d->table[ch_L][CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
-                     };
-  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
+  // extrapolation for L-curve (right hand side only):
+  const float xm_L = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L]-1].x;
+  const float x_L[4] = {0.7f*xm_L, 0.8f*xm_L, 0.9f*xm_L, 1.0f*xm_L};
+  const float y_L[4] = {d->table[ch_L][CLAMP((int)(x_L[0]*0x10000ul), 0, 0xffff)],
+                        d->table[ch_L][CLAMP((int)(x_L[1]*0x10000ul), 0, 0xffff)],
+                        d->table[ch_L][CLAMP((int)(x_L[2]*0x10000ul), 0, 0xffff)],
+                        d->table[ch_L][CLAMP((int)(x_L[3]*0x10000ul), 0, 0xffff)]
+                       };
+  dt_iop_estimate_exp(x_L, y_L, 4, d->unbounded_coeffs_L);
+
+  // extrapolation for a-curve right side:
+  const float xm_ar = p->tonecurve[ch_a][p->tonecurve_nodes[ch_a]-1].x;
+  const float x_ar[4] = {0.7f*xm_ar, 0.8f*xm_ar, 0.9f*xm_ar, 1.0f*xm_ar};
+  const float y_ar[4] = {d->table[ch_a][CLAMP((int)(x_ar[0]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)(x_ar[1]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)(x_ar[2]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)(x_ar[3]*0x10000ul), 0, 0xffff)]
+                        };
+  dt_iop_estimate_exp(x_ar, y_ar, 4, d->unbounded_coeffs_ab);
+
+  // extrapolation for a-curve left side (we need to mirror the x-axis):
+  const float xm_al = 1.0f - p->tonecurve[ch_a][0].x;
+  const float x_al[4] = {0.7f*xm_al, 0.8f*xm_al, 0.9f*xm_al, 1.0f*xm_al};
+  const float y_al[4] = {d->table[ch_a][CLAMP((int)((1.0f-x_al[0])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)((1.0f-x_al[1])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)((1.0f-x_al[2])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_a][CLAMP((int)((1.0f-x_al[3])*0x10000ul), 0, 0xffff)]
+                        };
+  dt_iop_estimate_exp(x_al, y_al, 4, d->unbounded_coeffs_ab+3);
+
+  // extrapolation for b-curve right side:
+  const float xm_br = p->tonecurve[ch_b][p->tonecurve_nodes[ch_b]-1].x;
+  const float x_br[4] = {0.7f*xm_br, 0.8f*xm_br, 0.9f*xm_br, 1.0f*xm_br};
+  const float y_br[4] = {d->table[ch_b][CLAMP((int)(x_br[0]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)(x_br[1]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)(x_br[2]*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)(x_br[3]*0x10000ul), 0, 0xffff)]
+                        };
+  dt_iop_estimate_exp(x_br, y_br, 4, d->unbounded_coeffs_ab+6);
+
+  // extrapolation for b-curve left side (we need to mirror the x-axis):
+  const float xm_bl = 1.0f - p->tonecurve[ch_b][0].x;
+  const float x_bl[4] = {0.7f*xm_bl, 0.8f*xm_bl, 0.9f*xm_bl, 1.0f*xm_bl};
+  const float y_bl[4] = {d->table[ch_b][CLAMP((int)((1.0f-x_bl[0])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)((1.0f-x_bl[1])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)((1.0f-x_bl[2])*0x10000ul), 0, 0xffff)],
+                         d->table[ch_b][CLAMP((int)((1.0f-x_bl[3])*0x10000ul), 0, 0xffff)]
+                        };
+  dt_iop_estimate_exp(x_bl, y_bl, 4, d->unbounded_coeffs_ab+9);
 }
 
 void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -309,6 +412,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
   d->autoscale_ab = 1;
+  d->unbound_ab = 1;
   for(int ch=0; ch<ch_max; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, default_params->tonecurve_type[ch]);
@@ -367,8 +471,9 @@ void init(dt_iop_module_t *module)
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE},
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    1,							// autoscale_ab
-    0
+    1,              // autoscale_ab
+    0,
+    1               // unbound_ab
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));

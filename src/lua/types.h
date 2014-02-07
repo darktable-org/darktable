@@ -52,8 +52,8 @@ typedef const char * const_string; // string that has no push function
  * __luaA_Type : int, the associated luaA_Type
  * __pairs : will retun (__next,obj,nil)
  * __next : will iteratethrough the __get table of obj
- * __index : will look into the __get table to find a callback, then for a __default_index in its metatable then raise an error
- * __newindex : will look into the __set table to find a callback, then for a __default_newindex in its metatable then raise an error
+ * __index : will look into the __get table to find a callback, then  raise an error
+ * __newindex : will look into the __set table to find a callback, then raise an error
  * __get : empty table, contains getters, similar API to __index
  * __set : empty table, contains setters, similar API to __newindex
 
@@ -82,14 +82,14 @@ void dt_lua_register_type_callback_type_typeid(lua_State* L,luaA_Type type_id,lu
 #define dt_lua_register_type_callback_number(L,type_name,index,newindex,length) \
   dt_lua_register_type_callback_number_typeid(L,luaA_type_find(#type_name),index,newindex,length)
 void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction length);
-/// register a special handler for unhandled entries
-#define dt_lua_register_type_callback_default(L,type_name,index,newindex,next) \
-  dt_lua_register_type_callback_default_typeid(L,#type_name,index,newindex,next)
-void dt_lua_register_type_callback_default_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,lua_CFunction next);
 /// pop the top of the stack, register it as a const returned for the entry
 #define dt_lua_register_type_callback_stack(L,type_name,name) \
   dt_lua_register_type_callback_stack_typeid(L,luaA_type_find(#type_name),name)
 void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,const char* name);
+// use an other type as a fallback (inheritence
+#define dt_lua_register_type_callback_inherit(L,type_name,parent_type_name) \
+  dt_lua_register_type_callback_inherit_typeid(L,luaA_type_find(#type_name),luaA_type_find(#parent_type_name)
+void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id);
 
 /**
   * similar to dt_lua_init_type but creates a type for int id

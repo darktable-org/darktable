@@ -313,7 +313,7 @@ color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const int num_pas
           SWAPmed(4,2);
           SWAPmed(6,4);
           SWAPmed(4,2);
-          outp[c] = CLAMPS(med[4] + outp[1], 0.0f, 1.0f);
+          outp[c] = fmaxf(med[4] + outp[1], 0.0f);
         }
       }
     }

@@ -116,7 +116,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_mingw64.cmake \
       -DINSTALL_IOP_EXPERIMENTAL=Off \
       -DINSTALL_IOP_LEGACY=Off \
       -DUSE_OPENCL=Off \
-      -DDONT_USE_INTERNAL_LUA=Off \
+      -DDONT_USE_INTERNAL_LUA=On \
       .. \
 && make -j $MAKE_TASKS
 
@@ -155,6 +155,8 @@ KNOWN ISSUES:
   might change soonish, no idea if it would work in the end though.
 - Importing directories didn't work in my tests (freezes), single images imported
   fine though, I could edit them and export them.
+- Lua support doesn't compile right now since it uses select() on a file which is not
+  supported on Windows.
 
 Have fun with this, report back your findings and understand that we don't intend
 to officially support a Windows version, let alone provide binaries for download.

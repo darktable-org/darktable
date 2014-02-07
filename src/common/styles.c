@@ -422,6 +422,13 @@ void
 dt_styles_apply_to_selection(const char *name,gboolean duplicate)
 {
   gboolean selected = FALSE;
+
+  /* write current history changes so nothing gets lost, do that only in the darkroom as there is nothing to be
+     save when in the lighttable (and it would write over current history stack) */
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t*)cv) == DT_VIEW_DARKROOM)
+    dt_dev_write_history(darktable.develop);
+
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
@@ -597,7 +604,7 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         // is used to compare against the internal module name.
         const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
 
-        if (!multi_name || strlen(multi_name))
+        if (!multi_name || (strlen(multi_name)==0))
           g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
         else
           g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), multi_name);

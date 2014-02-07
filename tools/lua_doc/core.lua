@@ -37,6 +37,7 @@ local function create_empty_node(node,node_type,parent,prev_name)
 	result._luadoc_type = node_type
 	result._luadoc_order = {}
 	result._luadoc_attributes = {}
+	result._luadoc_version = {}
 	if parent and not parent._luadoc_type then 
 		error("parent should be a doc node, not a real node")
 	end
@@ -106,6 +107,9 @@ local function document_type_sub(node,result,parent,prev_name)
 				set_attribute(result[k],"write",true)
 				set_attribute(result[k],"is_attribute",true)
 			end
+		elseif field == "__luaA_ParentMetatable" then
+				local type_node = create_documentation_node(value,toplevel.types,value.__luaA_TypeName);
+				set_attribute(result,"parent",type_node)
 		elseif (field == "__index"
 			or field == "__newindex"
 			or field == "__luaA_TypeName"
@@ -116,10 +120,11 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__module_type"
 			or field == "__associated_object"
 			or field == "__gc"
+			or field == "__values"
 			)	then
 			-- nothing
 		else
-			print("undocumented type field "..field)
+			print("ERROR undocumented metafield "..field.." for type "..prev_name)
 		end
 	end
 	set_attribute(result,"reported_type","dt_type")
@@ -139,6 +144,9 @@ local function document_type_from_obj(obj,type_doc)
 		end
 	end
 	type_doc._luadoc_in_obj_rec = false
+	if M.get_attribute(type_doc,"parent") then
+		document_type_from_obj(obj, M.get_attribute(type_doc,"parent"))
+	end
 end
 M.document_type_from_obj = document_type_from_obj
 
@@ -173,7 +181,7 @@ local function document_dt_userdata(node,parent,prev_name)
 	local result = create_empty_node(node,"dt_userdata",parent,prev_name);
 	local mt = getmetatable(node)
 	local ret_node = create_documentation_node(mt,result,"reported_type")
-	set_attribute(result,"reported_type",ret_node)
+	set_attribute(result,"reported_type",tostring(ret_node))
 	M.remove_parent(ret_node,result)
 	document_type_from_obj(node,ret_node)
 	return result
@@ -433,6 +441,20 @@ function M.set_text(node,text)
 end
 
 
+function M.add_version_info(node,version,text)
+	if not text then -- only two parameters
+		text = version
+		version ="undocumented_version" -- easy grep for the "undocumented" keyword"
+	end
+	if not node._luadoc_version[version] then
+		node._luadoc_version[version] = {}
+	end
+	table.insert(node._luadoc_version[version],text);
+end
+function M.get_version_info(node)
+	return node._luadoc_version
+end
+
 function M.set_alias(original,node)
 	for k,v in ipairs(node._luadoc_parents) do
 		v[1][v[2]] = original
@@ -441,47 +463,6 @@ function M.set_alias(original,node)
 		set_forced_next(v[1],v[2])
 	end
 end
-
-function M.create_artificial_parent(name,parent,child_table)
-	local result = create_empty_node(nil,"dt_type",parent,name);
-	set_attribute(result,"reported_type","virtual type")
-	-- add all members of the first child to the parent
-	for k,v in M.all_children(child_table[1]) do
-		result[k] = v
-		table.insert(v._luadoc_parents,{result,k})
-		M.set_main_parent(v,result)
-	end
-	-- now remove all members that are not common to all types
-	for k,v in M.all_children(result) do
-		for _,child in pairs(child_table) do
-			if child[k] == nil then
-				M.remove_parent(v,result)
-				result[k] = nil
-			end
-		end
-	end
-	-- last, make parents and childs share their data
-	for _,child in pairs(child_table) do
-		M.share_type_members(result,child)
-	end
-	parent[name] = result;
-	return result
-end
-
-function M.share_type_members(parent_type,child_type)
-	if parent_type == child_type then return end
-	if parent_type._luadoc_type ~= "dt_type" or child_type._luadoc_type ~= "dt_type" then
-		error("need to be called with types")
-	end
-	for k,v in M.all_children(parent_type) do
-		if child_type[k] then
-			M.remove_parent(child_type[k],child_type)
-			table.insert(v._luadoc_parents,{child_type , k})
-			child_type[k] = v
-		end
-	end
-end
-
 
 
 local function get_name_sub(node,ancestors)
@@ -576,7 +557,6 @@ meta_node.__index.set_text = M.set_text
 meta_node.__index.add_parameter = M.add_parameter
 meta_node.__index.add_return = M.add_return
 meta_node.__index.set_real_name = M.set_real_name
-meta_node.__index.share_type_members = M.share_type_members
 meta_node.__index.all_children = M.all_children
 meta_node.__index.unskiped_children = M.unskiped_children
 meta_node.__index.set_attribute = set_attribute
@@ -587,6 +567,12 @@ meta_node.__index.set_main_parent = M.set_main_parent
 meta_node.__index.remove_parent = M.remove_parent
 meta_node.__index.debug_print = M.debug_print
 meta_node.__index.set_skiped = M.set_skiped
+meta_node.__index.add_version_info = M.add_version_info
+meta_node.__index.get_version_info = M.get_version_info
+meta_node.__index.get_name = M.get_name
+meta_node.__tostring = function(node)
+	return node_to_string(node)
+end
 
 --------------------------
 -- GENERATE DOCUMENTATION

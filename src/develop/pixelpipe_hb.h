@@ -108,7 +108,7 @@ typedef struct dt_dev_pixelpipe_t
   dt_dev_pixelpipe_change_t changed;
   // backbuffer (output)
   uint8_t *backbuf;
-  int backbuf_size;
+  size_t backbuf_size;
   int backbuf_width, backbuf_height;
   uint64_t backbuf_hash;
   dt_pthread_mutex_t backbuf_mutex, busy_mutex;
@@ -149,7 +149,7 @@ int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int
 // inits all but the pixel caches, so you can't actually process an image (just get dimensions and distortions)
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height);
 // inits the pixelpipe with given cacheline size and number of entries.
-int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, int32_t size, int32_t entries);
+int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t entries);
 // constructs a new input gegl_buffer from given RGB float array.
 void dt_dev_pixelpipe_set_input(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev, float *input, int width, int height, float iscale);
 

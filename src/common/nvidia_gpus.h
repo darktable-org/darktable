@@ -145,6 +145,7 @@ static const char *nvidia_gpus[] =
   "GeForce 9800 GTX","1.1",
   "GeForce 9600 GSO","1.1",
   "GeForce 9500 GT","1.1",
+  "GeForce 9400 GT","1.1",
   "GeForce 8800 GTS","1.1",
   "GeForce 8800 GTS 512", "1.1",
   "GeForce 8800 GT","1.1",

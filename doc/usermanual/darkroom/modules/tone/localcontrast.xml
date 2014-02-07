@@ -1,68 +1,105 @@
-<sect3 status="final" id="local_contrast"><title>Local contrast</title>
-        <indexterm>
-           <primary>modules</primary>
-           <secondary>local contrast</secondary>
-        </indexterm>
-        <indexterm>
-           <primary>local contrast</primary>
-           <seealso>equalizer</seealso>
-        </indexterm>
-	<sect4><title>Overview</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>This module allows enhancing local contrast. It uses the unnormalized bilateral filter, and works on the L channel from Lab.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+<sect3 status="final" id="local_contrast">
 
-	<sect4><title>Usage</title>
-		<para>Local contrast boosts details of your image, much like the <emphasis>equalizer</emphasis> does (see <xref linkend="equalizer"/>). However, it is easier to
-                      use as it does not require you to work on different frequency bands.
-                </para>
-		<sect5><title>coarseness</title>
-			<para>Make the details you want to adjust finer or coarser.
-			</para>
-		</sect5>
-		<sect5><title>contrast</title>
-			<para>How strongly the algorithm distinguishes between brightness levels.
-                        Increasing the value results in a more contrasty look.
-			</para>
-		</sect5>
-		<sect5><title>detail</title>
-			<para>Add or remove detail. Higher values will increase local contrast.</para>
-		</sect5>			
-	</sect4>
+  <title>Local contrast</title>
 
-	<sect4><title>Example</title>
-		<informaltable frame="none"><tgroup cols="2" colsep="0" rowsep="0">
-				<colspec colwidth="6*"/>
-				<colspec colwidth="4*"/>
-				<tbody>
-					<row>						
-						<entry>Before
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-					<row>						
-						<entry>After, a little overdone to demonstrate the effect. Use this sparingly, to avoid a cheap, overprocessed look.
-						</entry>
-						<entry>
-							<graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-	</sect4>
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>local contrast</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>local contrast</primary>
+    <seealso>equalizer</seealso>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module allows enhancing local contrast. It uses the unnormalized bilateral
+              filter, and works on the L channel from Lab.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      Local contrast boosts details of your image, much like the <emphasis>equalizer</emphasis>
+      does (see <xref linkend="equalizer"/>). However, it is easier to use as it does not
+      require you to work on different frequency bands.
+    </para>
+
+    <sect5>
+      <title>coarseness</title>
+      <para>
+        Make the details you want to adjust finer or coarser.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>contrast</title>
+      <para>
+        How strongly the algorithm distinguishes between brightness levels. Increasing the value
+        results in a more contrasty look.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>detail</title>
+      <para>
+        Add or remove detail. Higher values will increase local contrast.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Example</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Before
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast_before.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+          <row>
+            <entry>
+              After, a little overdone to demonstrate the effect. Use this sparingly, to avoid a
+              cheap, overprocessed look.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/localcontrast_after.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
 </sect3>

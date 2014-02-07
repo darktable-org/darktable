@@ -214,7 +214,7 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
   cas(s6, s4);
   cas(s4, s2);
 
-  o.x = clamp(s4 + o.y, 0.0f, 1.0f);
+  o.x = fmax(s4 + o.y, 0.0f);
 
 
   // 3x3 median for B
@@ -248,7 +248,7 @@ color_smoothing(__read_only image2d_t in, __write_only image2d_t out, const int 
   cas(s6, s4);
   cas(s4, s2);
 
-  o.z = clamp(s4 + o.y, 0.0f, 1.0f);
+  o.z = fmax(s4 + o.y, 0.0f);
 
   write_imagef(out, (int2) (x, y), o);
 }

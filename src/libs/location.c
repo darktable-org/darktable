@@ -16,7 +16,6 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <curl/curl.h>
-#include "views/capture.h"
 #include "common/darktable.h"
 #include "control/jobs.h"
 #include "control/control.h"
@@ -260,11 +259,6 @@ static void _lib_location_search_finish(gpointer user_data)
 
 }
 
-static void _free_element(gpointer data, gpointer user_data)
-{
-  g_free(data);
-}
-
 static gboolean _lib_location_search(gpointer user_data)
 {
   GMarkupParseContext *ctx = NULL;
@@ -290,9 +284,7 @@ static gboolean _lib_location_search(gpointer user_data)
 
   if (lib->places)
   {
-    //g_list_free_full(lib->places, g_free);
-    g_list_foreach(lib->places, _free_element, NULL);
-    g_list_free(lib->places);
+    g_list_free_full(lib->places, g_free);
   }
   lib->places = NULL;
 

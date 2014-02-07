@@ -1,10 +1,17 @@
-<sect1 status="final" id="tethering_panels"><title>Tethering panels</title>
-	<para>This section contains documentation for panels that are specific to the
-	tethering view.
-	</para>
+<sect1 status="final" id="tethering_panels">
 
-	<!-- Right side -->
-	<xi:include href="session.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="liveview.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	<xi:include href="camera_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+  <title>Tethering panels</title>
+
+  <para>
+    This section contains documentation for panels that are specific to the tethering view.
+  </para>
+
+<!-- Right side -->
+
+  <xi:include href="session.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="liveview.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="camera_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>

@@ -127,7 +127,7 @@ static void _gui_styles_update_view( dt_lib_styles_t *d)
 
       if((style->description) && strlen (style->description))
       {
-        tooltip = g_strconcat("<b><i>", style->description, "</i></b>\n", items_string, NULL);
+        tooltip = g_strconcat("<b>", g_markup_escape_text(style->description,strlen(style->description)), "</b>\n", items_string, NULL);
       }
       else
       {
@@ -267,7 +267,7 @@ static void import_clicked (GtkWidget *w,gpointer user_data)
                            GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                            (char *)NULL);
 
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(filechooser),g_get_home_dir());
 
   GtkFileFilter *filter;
@@ -284,14 +284,12 @@ static void import_clicked (GtkWidget *w,gpointer user_data)
 
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT )
   {
-    char *filename;
-    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    dt_styles_import_from_file(filename);
-    //
+    GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
+    g_slist_foreach(filenames, (GFunc)dt_styles_import_from_file, NULL);
+    g_slist_free_full(filenames, g_free);
+
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
     _gui_styles_update_view(d);
-    //
-    g_free (filename);
   }
   gtk_widget_destroy (filechooser);
 }

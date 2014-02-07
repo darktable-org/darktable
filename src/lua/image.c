@@ -29,6 +29,7 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/grouping.h"
+#include "common/history.h"
 #include "metadata_gen.h"
 
 /***********************************************************************
@@ -75,6 +76,16 @@ void dt_lua_image_push(lua_State * L,int imgid)
   luaA_push(L,dt_lua_image_t,&imgid);
 }
 
+
+static int history_delete(lua_State *L)
+{
+  dt_lua_image_t imgid = -1;
+  luaA_to(L,dt_lua_image_t,&imgid,-1);
+  dt_history_delete_on_image(imgid);
+  return 0;
+}
+
+
 typedef enum
 {
   PATH,
@@ -93,6 +104,9 @@ typedef enum
   GROUP_LEADER,
   APPLY_STYLE,
   CREATE_STYLE,
+  RESET,
+  MOVE,
+  COPY,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -113,6 +127,9 @@ const char *image_fields_name[] =
   "group_leader",
   "apply_style",
   "create_style",
+  "reset",
+  "move",
+  "copy",
   NULL
 };
 static int image_index(lua_State *L)
@@ -291,6 +308,21 @@ static int image_index(lua_State *L)
     case CREATE_STYLE:
       {
         lua_pushcfunction(L,dt_lua_style_create_from_image);
+        break;
+      }
+    case RESET:
+      {
+        lua_pushcfunction(L,history_delete);
+        break;
+      }
+    case MOVE:
+      {
+        lua_pushcfunction(L,dt_lua_move_image);
+        break;
+      }
+    case COPY:
+      {
+        lua_pushcfunction(L,dt_lua_copy_image);
         break;
       }
     default:
@@ -482,9 +514,14 @@ int dt_lua_init_image(lua_State * L)
   dt_lua_register_type_callback_list(L,dt_lua_image_t,image_index,image_newindex,image_fields_name);
   dt_lua_register_type_callback_type(L,dt_lua_image_t,image_index,image_newindex,dt_image_t);
   dt_lua_register_type_callback_list(L,dt_lua_image_t,colorlabel_index,colorlabel_newindex,dt_colorlabels_name);
-  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL, "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader","apply_style","create_style",NULL) ; // make these fields read-only
+  // make these fields read-only by setting a NULL new_index callback
+  dt_lua_register_type_callback(L,dt_lua_image_t,image_index,NULL,
+      "path", "duplicate_index", "is_ldr", "is_hdr", "is_raw", "id","film","group_leader",
+      "apply_style","create_style","reset","move",NULL) ;
   lua_pushcfunction(L,dt_lua_duplicate_image);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"duplicate");
+  lua_pushcfunction(L,dt_lua_delete_image);
+  dt_lua_register_type_callback_stack(L,dt_lua_image_t,"delete");
   lua_pushcfunction(L,group_with);
   dt_lua_register_type_callback_stack(L,dt_lua_image_t,"group_with");
   lua_pushcfunction(L,make_group_leader);

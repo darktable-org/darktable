@@ -97,12 +97,22 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, 1024, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
-  gchar * end = g_strrstr( filename,".")+1;
-  g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
-  attachment->file = g_build_filename( tmpdir, filename, (char *)NULL );
+  strcpy(dirname, filename);
 
-  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality) != 0)
+  dt_image_path_append_version(imgid, dirname, 4096);
+
+  gchar * end = g_strrstr(dirname,".")+1;
+
+  if (end) *end = '\0';
+
+  g_strlcat(dirname, format->extension(fdata), 4096);
+
+  // set exported filename
+
+  attachment->file = g_build_filename( tmpdir, dirname, (char *)NULL );
+
+  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality,FALSE,self,sdata) != 0)
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);

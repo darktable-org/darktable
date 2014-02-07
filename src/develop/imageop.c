@@ -64,90 +64,7 @@ static dt_develop_blend_params_t _default_blendop_params= {DEVELOP_MASK_DISABLED
   }
 };
 
-int dt_iop_load_preset_interpolated_iso(
-  dt_iop_module_t *module,     // module to set params (via add history item)
-  const dt_image_t *cimg,      // const image carrying all the exif data to filter by
-  void *output_params,         // this has to be module->params_size large and will contain the output
-  float *output_iso1,          // if != 0, will contain one iso value
-  float *output_iso2)          // if != 0, will contain the other iso value interpolated from.
-{
-  const void *op_params = NULL;
-
-  // we'd like to interpolate these:
-  float params1[module->params_size/4 + 1];
-  float params2[module->params_size/4 + 1];
-  float iso1 = -FLT_MAX, iso2 = FLT_MAX;
-
-  sqlite3_stmt *stmt;
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "select op_params, iso_min, iso_max "
-                              "from presets where operation = ?1 and op_version = ?2 and "
-                              "?3 like model and ?4 like maker and ?5 like lens and "
-                              // we interpolate that away:
-                              // "?6 between iso_min and iso_max and "
-                              "?6 between exposure_min and exposure_max and "
-                              "?7 between aperture_min and aperture_max and "
-                              "?8 between focal_length_min and focal_length_max and "
-                              "(isldr = 0 or isldr=?9) order by "
-                              "length(model), length(maker), length(lens)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, strlen(module->op), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, cimg->exif_model, strlen(cimg->exif_model), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, cimg->exif_maker, strlen(cimg->exif_maker), SQLITE_TRANSIENT);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 5, cimg->exif_lens,  strlen(cimg->exif_lens),  SQLITE_TRANSIENT);
-  // DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, cimg->exif_iso)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, fmaxf(0.0f, fminf(1000000, cimg->exif_exposure)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, cimg->exif_aperture)));
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, cimg->exif_focal_length)));
-  // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(cimg));
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    op_params  = sqlite3_column_blob(stmt, 0);
-    int op_length  = sqlite3_column_bytes(stmt, 0);
-    float iso_min = sqlite3_column_double(stmt, 1);
-    float iso_max = sqlite3_column_double(stmt, 2);
-    const float cur_iso = (iso_min + iso_max)*.5f;
-    if(op_params && (op_length == module->params_size))
-    {
-      // remember the preset and interpolate params later on
-      if(cur_iso > iso1 && cur_iso <= cimg->exif_iso)
-      {
-        iso1 = cur_iso;
-        memcpy(params1, op_params, op_length);
-      }
-      if(cur_iso < iso2 && cur_iso >= cimg->exif_iso)
-      {
-        iso2 = cur_iso;
-        memcpy(params2, op_params, op_length);
-      }
-    }
-  }
-  sqlite3_finalize(stmt);
-  if(iso1 == -FLT_MAX || iso2 == FLT_MAX)
-  {
-    // no presets found around, and we're not doing any extrapolation:
-    return 1;
-  }
-  if(iso1 == iso2)
-  {
-    memcpy(output_params, params1, module->params_size);
-  }
-  else
-  {
-    const float t = (cimg->exif_iso - iso1)/(iso2-iso1);
-    for(int k=0; k<module->params_size/4; k++)
-    {
-      ((float *)output_params)[k] = (1.0f-t)*params1[k] + t*params2[k];
-    }
-  }
-  if(output_iso1) *output_iso1 = iso1;
-  if(output_iso2) *output_iso2 = iso2;
-  return 0;
-}
+static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module);
 
 void dt_iop_load_default_params(dt_iop_module_t *module)
 {
@@ -689,6 +606,10 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
   module->request_histogram = 0;
+  module->histogram_bins_count = 64;
+  module->histogram_step_raw = 3;
+  module->histogram_step_rgb = 4;
+  module->histogram_step_lab = 4;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
@@ -1052,10 +973,13 @@ dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
 static void
 dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
+  // make sure the duplicated module appears in the history
+  dt_dev_add_history_item(base->dev, base, FALSE);
+
   //first we create the new module
   dt_iop_module_t *module = dt_dev_module_duplicate(base->dev,base,0);
   if (!module) return;
-  
+
   //we reflect the positions changes in the history stack too
   GList *history = g_list_first(module->dev->history);
   while(history)
@@ -1064,7 +988,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     if (hist->module->instance == base->instance) hist->multi_priority = hist->module->multi_priority;
     history = g_list_next(history);
   }
-  
+
   //what is the position of the module in the pipe ?
   GList *modules = g_list_first(module->dev->iop);
   int pos_module = 0;
@@ -1100,7 +1024,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
     }
     else
       dt_iop_reload_defaults(module);
-    
+
     //we save the new instance creation but keep it disabled
     dt_dev_add_history_item(module->dev, module, FALSE);
 
@@ -1239,11 +1163,27 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
+{
+  char label[128];
+  // if multi_name is emptry or "0"
+  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
+    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+  else
+    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+  gtk_widget_set_name(lab, "panel_label");
+  gtk_label_set_markup(GTK_LABEL(lab),label);
+}
+
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
   /* get the enable button spacer and button */
   GtkWidget *eb = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),0);
   GtkWidget *ebs = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),1);
+  GtkWidget *lab = g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(module->header)),5);
+
+  // set panel name to display correct multi-instance
+  _iop_panel_label (lab, module);
 
   if (module->hide_enable_button)
   {
@@ -1257,6 +1197,12 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
   }
 }
+
+void dt_iop_gui_update_header(dt_iop_module_t *module)
+{
+  _iop_gui_update_header(module);
+}
+
 
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
@@ -1554,7 +1500,7 @@ GList *dt_iop_load_modules(dt_develop_t *dev)
   {
     module = (dt_iop_module_t *)it->data;
     module->instance = dev->iop_instance++;
-    snprintf(module->multi_name,128," ");
+    module->multi_name[0] = '\0';
     it = g_list_next(it);
   }
   return res;
@@ -2037,14 +1983,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
 
   /* add module label */
-  char label[128];
-  if(module->multi_name && strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
-  else
-    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   hw[idx] = gtk_label_new("");
-  gtk_widget_set_name(hw[idx], "panel_label");
-  gtk_label_set_markup(GTK_LABEL(hw[idx++]),label);
+  _iop_panel_label (hw[idx++], module);
 
   /* add multi instances menu button */
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE)

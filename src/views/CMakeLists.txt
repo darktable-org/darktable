@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
-set(MODULES darkroom lighttable)
+set(MODULES darkroom lighttable slideshow)
 
 add_library(darkroom MODULE "darkroom.c")
 add_library(lighttable MODULE "lighttable.c")
+add_library(slideshow MODULE "slideshow.c")
 
 if(USE_GEO)
     add_library(map MODULE "map.c")
@@ -13,9 +14,8 @@ endif(USE_GEO)
 
 
 if(GPHOTO2_FOUND)
-    add_library(views_capture MODULE "capture.c")
-    set_target_properties(views_capture PROPERTIES OUTPUT_NAME capture)
-    set(MODULES ${MODULES} views_capture)
+    add_library(tethering MODULE "tethering.c")
+    set(MODULES ${MODULES} tethering)
 endif(GPHOTO2_FOUND)
 
 foreach(module ${MODULES})

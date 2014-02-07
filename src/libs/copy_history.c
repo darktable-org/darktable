@@ -128,9 +128,7 @@ get_selected_image (void)
   else
   {
     /* no selection is used, use mouse over id */
-    int32_t mouse_over_id=0;
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
-    imgid = mouse_over_id;
+    imgid = dt_control_get_mouse_over_id();
   }
   sqlite3_finalize(stmt);
 
@@ -200,8 +198,7 @@ paste_button_clicked (GtkWidget *widget, gpointer user_data)
   if (dt_history_copy_and_paste_on_selection (d->imageid, (mode==0)?TRUE:FALSE, d->dg.selops)!=0)
   {
     /* no selection is used, use mouse over id */
-    int32_t mouse_over_id=0;
-    DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
+    int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(mouse_over_id <= 0) return;
 
     dt_history_copy_and_paste_on_image(d->imageid,mouse_over_id,(mode==0)?TRUE:FALSE,d->dg.selops);

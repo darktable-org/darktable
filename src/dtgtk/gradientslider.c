@@ -408,8 +408,7 @@ static void _gradient_slider_destroy(GtkObject *object)
 
   if(DTGTK_GRADIENT_SLIDER(object)->colors)
   {
-    g_list_foreach(DTGTK_GRADIENT_SLIDER(object)->colors, (GFunc)g_free, NULL);
-    g_list_free(DTGTK_GRADIENT_SLIDER(object)->colors);
+    g_list_free_full(DTGTK_GRADIENT_SLIDER(object)->colors, g_free);
     DTGTK_GRADIENT_SLIDER(object)->colors = NULL;
   }
 
@@ -485,12 +484,11 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
 
 
   // do we have a picker value to draw?
-  gdouble *picker = gslider->picker;
-  if(picker[0] >= 0.0 && picker[0] <= 1.0)
+  if(!isnan(gslider->picker[0]))
   {
-    int vx_min=_scale_to_screen(widget, picker[1]);
-    int vx_max=_scale_to_screen(widget, picker[2]);
-    int vx_avg=_scale_to_screen(widget, picker[0]);
+    int vx_min=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[1], 0.0, 1.0));
+    int vx_max=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[2], 0.0, 1.0));
+    int vx_avg=_scale_to_screen(widget, CLAMP_RANGE(gslider->picker[0], 0.0, 1.0));
 
     cairo_set_source_rgba(cr,
                           style->fg[state].red/65535.0,
@@ -582,7 +580,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new(gint positions)
   gslider->positions = positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->selected = positions == 1 ? 0 : -1;
   gslider->min = 0.0;
   gslider->max = 1.0;
@@ -604,7 +602,7 @@ GtkWidget* dtgtk_gradient_slider_multivalue_new_with_color(GdkColor start,GdkCol
   gslider->positions = positions;
   gslider->is_resettable = FALSE;
   gslider->is_entered = FALSE;
-  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = -1.0;
+  gslider->picker[0] = gslider->picker[1] = gslider->picker[2] = NAN;
   gslider->selected = positions == 1 ? 0 : -1;
   gslider->min = 0.0;
   gslider->max = 1.0;
@@ -658,8 +656,7 @@ void dtgtk_gradient_slider_multivalue_set_stop(GtkDarktableGradientSlider *gslid
 
 void dtgtk_gradient_slider_multivalue_clear_stops(GtkDarktableGradientSlider *gslider)
 {
-  g_list_foreach(gslider->colors, (GFunc)g_free, NULL);
-  g_list_free(gslider->colors);
+  g_list_free_full(gslider->colors, g_free);
   gslider->colors = NULL;
 }
 

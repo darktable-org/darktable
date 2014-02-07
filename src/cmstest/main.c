@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <glib-object.h>
 #include <lcms2.h>
 
 #ifdef HAVE_X11
@@ -121,6 +122,12 @@ int main(int argc, char *arg[])
 #else // HAVE_COLORD
   printf("this executable was built without colord support\n");
 #endif // HAVE_COLORD
+
+#ifdef USE_COLORDGTK
+  printf("darktable itself was built with colord support enabled\n");
+#else
+  printf("darktable itself was built without colord support\n");
+#endif // USE_COLORDGTK
 
 #if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
@@ -227,7 +234,7 @@ int main(int argc, char *arg[])
       {
         if(cd_profile_connect_sync(profile, NULL, NULL))
         {
-          CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_NONE, NULL, NULL);
+          CdIcc *icc = cd_profile_load_icc(profile, CD_ICC_LOAD_FLAGS_FALLBACK_MD5, NULL, NULL);
           if(icc)
           {
             monitor->colord_filename = g_strdup(cd_icc_get_filename(icc));
@@ -303,7 +310,7 @@ int main(int argc, char *arg[])
     printf("\n%s", monitor_name);
     if(message)
       printf("\t%s", message);
-    printf("\n\tX atom\t%s\n\t\t%s\n", x_atom_name, x_atom_description);
+    printf("\n\tX atom\t%s\t%ld bytes\n\t\t%s\n", x_atom_name, monitor->x_atom_length, x_atom_description);
 #ifdef HAVE_COLORD
     printf("\tcolord\t%s\n\t\t%s\n", colord_filename, colord_description);
 #endif

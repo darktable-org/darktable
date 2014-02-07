@@ -1,7 +1,7 @@
 <!ELEMENT dtconfiglist (dtconfig)*>
 <!ELEMENT dtconfig (name,type,default,capability?,shortdescription?,longdescription?)>
 <!ATTLIST dtconfig
-	prefs (core|gui) #IMPLIED
+	prefs (core|gui|session) #IMPLIED
         capability CDATA #IMPLIED
 >
 <!ELEMENT name (#PCDATA)>

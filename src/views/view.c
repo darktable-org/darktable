@@ -1,7 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011-2012 henrik andersson.
+    copyright (c) 2011-2014 henrik andersson.
     copyright (c) 2012 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
@@ -58,11 +58,12 @@ void dt_view_manager_init(dt_view_manager_t *vm)
     "lighttable",
     "darkroom",
 #ifdef HAVE_GPHOTO2
-    "capture",
+    "tethering",
 #endif
 #ifdef HAVE_MAP
     "map",
 #endif
+    "slideshow",
     NULL
   };
   char *module = modules[midx];
@@ -634,6 +635,33 @@ dt_view_draw_altered(cairo_t *cr, const float x, const float y, const float r)
 }
 
 static inline void
+dt_view_draw_audio(cairo_t *cr, const float x, const float y, const float r)
+{
+  const float d = 2.0*r;
+
+  cairo_save(cr);
+
+  cairo_translate(cr, x-(d/2.0), y-(d/2.0));
+  cairo_scale(cr, d, d);
+
+  cairo_rectangle(cr, 0.05, 0.4, 0.2, 0.2);
+  cairo_move_to(cr, 0.25, 0.6);
+  cairo_line_to(cr, 0.45, 0.77);
+  cairo_line_to(cr, 0.45, 0.23);
+  cairo_line_to(cr, 0.25, 0.4);
+
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, 0.2, 0.5, 0.45, -(35.0/180.0)*M_PI, (35.0/180.0)*M_PI);
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, 0.2, 0.5, 0.6, -(35.0/180.0)*M_PI, (35.0/180.0)*M_PI);
+  cairo_new_sub_path(cr);
+  cairo_arc(cr, 0.2, 0.5, 0.75, -(35.0/180.0)*M_PI, (35.0/180.0)*M_PI);
+
+  cairo_restore(cr);
+  cairo_stroke(cr);
+}
+
+static inline void
 dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
 {
   const float d = 2.0*M_PI*0.1f;
@@ -655,15 +683,13 @@ dt_view_get_image_to_act_on()
   //   in which case it affects the whole selection.
   // - if the mouse is outside the center view (or no image hovered over otherwise)
   //   it only affects the selection.
-  int32_t mouse_over_id = -1;
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+
   int zoom = darktable.view_manager->proxy.lighttable.get_images_in_row 
             (darktable.view_manager->proxy.lighttable.view);
-  
+
   int full_preview_id = darktable.view_manager->proxy.lighttable.get_full_preview_id
             (darktable.view_manager->proxy.lighttable.view);
-
-
-  DT_CTL_GET_GLOBAL(mouse_over_id, lib_image_mouse_over_id);
 
   if(zoom == 1 || full_preview_id > 1)
   {
@@ -707,6 +733,7 @@ dt_view_image_expose(
 #define DRAW_GROUPING 1
 #define DRAW_SELECTED 1
 #define DRAW_HISTORY 1
+#define DRAW_AUDIO 1
 
 #if DRAW_THUMB == 1
   // this function is not thread-safe (gui-thread only), so we
@@ -725,7 +752,7 @@ dt_view_image_expose(
   float bgcol = 0.4, fontcol = 0.425, bordercol = 0.1, outlinecol = 0.2;
   int selected = 0, altered = 0, imgsel = -1, is_grouped = 0;
   // this is a gui thread only thing. no mutex required:
-  imgsel = darktable.control->global_settings.lib_image_mouse_over_id;
+  imgsel = dt_control_get_mouse_over_id();//  darktable.control->global_settings.lib_image_mouse_over_id;
 
 #if DRAW_SELECTED == 1
   /* clear and reset statements */
@@ -981,6 +1008,25 @@ dt_view_image_expose(
       cairo_set_source_rgb(cr, outlinecol, outlinecol, outlinecol);
       cairo_set_line_width(cr, 1.5);
 
+#if DRAW_AUDIO == 1
+      if(img && (img->flags & DT_IMAGE_HAS_WAV))
+      {
+        // align to right
+        float s = (r1+r2)*.5;
+        if(zoom != 1)
+        {
+          x = width*0.9 - s*5;
+          y = height*0.1;
+        }
+        else x = (.04+8*0.04-1.9*.04)*fscale;
+        dt_view_draw_audio(cr, x, y, s);
+        // mouse is over the audio icon
+        if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s)
+          *image_over = DT_VIEW_AUDIO;
+      }
+#endif
+
+
 #if DRAW_GROUPING == 1
       DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.get_grouped);
       DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.get_grouped);
@@ -999,7 +1045,7 @@ dt_view_image_expose(
       {
         // draw grouping icon and border if the current group is expanded
         // align to the right, left of altered
-        float s = (r1+r2)*.75;
+        float s = (r1+r2)*.6;
         float _x, _y;
         if(zoom != 1)
         {
@@ -1008,7 +1054,7 @@ dt_view_image_expose(
         }
         else
         {
-          _x = (.04+7*0.04-1.1*.04)*fscale;
+          _x = (.04+8*0.04-1.1*.04)*fscale;
           _y = y - (.17*.04)*fscale;
         }
         cairo_save(cr);
@@ -1041,7 +1087,7 @@ dt_view_image_expose(
           x = width*0.9;
           y = height*0.1;
         }
-        else x = (.04+7*0.04)*fscale;
+        else x = (.04+8*0.04)*fscale;
         dt_view_draw_altered(cr, x, y, s);
         //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
         if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
@@ -1092,7 +1138,7 @@ dt_view_image_expose(
     const float x = zoom == 1 ? (0.07)*fscale : .21*width;
     const float y = zoom == 1 ? 0.17*fscale: 0.1*height;
     const float r = zoom == 1 ? 0.01*fscale : 0.03*width;
-    const int xoffset = 7;
+    const int xoffset = 6;
     gboolean has_local_copy = (img && (img->flags & DT_IMAGE_LOCAL_COPY));
     cairo_save(cr);
     dtgtk_cairo_paint_local_copy(cr, x+(3*r*xoffset)-5*r, y-r, r*2, r*2, has_local_copy);
@@ -1122,37 +1168,36 @@ dt_view_image_expose(
 
 
   // draw custom metadata from accompanying text file:
-  if(dt_conf_get_bool("plugins/lighttable/draw_custom_metadata") && img && (zoom == 1))
+  if(img && (img->flags & DT_IMAGE_HAS_TXT) && dt_conf_get_bool("plugins/lighttable/draw_custom_metadata") && (zoom == 1))
   {
-    char path[1024];
-    gboolean from_cache = FALSE;
-    dt_image_full_path(img->id, path, 1024, &from_cache);
-    char *c = path + strlen(path);
-    while((c > path) && (*c != '.')) c--;
-    c[1] = 't'; c[2] = 'x'; c[3] = 't'; c[4] = 0;
-    FILE *f = fopen(path, "rb");
-    if(f)
+    char *path = dt_image_get_text_path(img->id);
+    if(path)
     {
-      cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, .015*fscale);
-      // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-      int k = 0;
-      while(!feof(f))
+      FILE *f = fopen(path, "rb");
+      if(f)
       {
-        int read = fscanf(f, "%[^\n]", path);
-        if(read != 1) break;
-        fgetc(f); // munch \n
+        cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_set_font_size (cr, .015*fscale);
+        // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+        int k = 0;
+        while(!feof(f))
+        {
+          int read = fscanf(f, "%[^\n]", path);
+          if(read != 1) break;
+          fgetc(f); // munch \n
 
-        cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
-        cairo_set_source_rgb(cr, .7, .7, .7);
-        cairo_text_path(cr, path);
-        cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.0);
-        cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-        cairo_stroke(cr);
-        k++;
+          cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
+          cairo_set_source_rgb(cr, .7, .7, .7);
+          cairo_text_path(cr, path);
+          cairo_fill_preserve(cr);
+          cairo_set_line_width(cr, 1.0);
+          cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
+          cairo_stroke(cr);
+          k++;
+        }
+        fclose(f);
       }
-      fclose(f);
+      g_free(path);
     }
   }
 
@@ -1369,6 +1414,9 @@ void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos)
 {
   if (vm->proxy.lighttable.view)
     vm->proxy.lighttable.set_position(vm->proxy.lighttable.view, pos);
+
+  // ugh. but will go away once module guis are persistent between views:
+  dt_conf_set_int("plugins/lighttable/recentcollect/pos0", pos);
 }
 
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm)
@@ -1384,13 +1432,6 @@ void dt_view_collection_update(const dt_view_manager_t *vm)
     vm->proxy.module_collect.update(vm->proxy.module_collect.module);
 }
 
-int32_t dt_view_tethering_get_film_id(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_film_id(vm->proxy.tethering.view);
-
-  return -1;
-}
 
 int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
 {
@@ -1398,21 +1439,6 @@ int32_t dt_view_tethering_get_selected_imgid(const dt_view_manager_t *vm)
     return vm->proxy.tethering.get_selected_imgid(vm->proxy.tethering.view);
 
   return -1;
-}
-
-
-const char *dt_view_tethering_get_session_path(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_session_path(vm->proxy.tethering.view);
-  return NULL;
-}
-
-const char *dt_view_tethering_get_session_filename(const dt_view_manager_t *vm, const char *filename)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.get_session_filename(vm->proxy.tethering.view, filename);
-  return NULL;
 }
 
 void dt_view_tethering_set_job_code(const dt_view_manager_t *vm, const char *name)
@@ -1426,19 +1452,6 @@ const char *dt_view_tethering_get_job_code(const dt_view_manager_t *vm)
   if (vm->proxy.tethering.view)
     return vm->proxy.tethering.get_job_code(vm->proxy.tethering.view);
   return NULL;
-}
-
-void dt_view_tethering_set_session_namepattern(const dt_view_manager_t *vm, const char *namepattern)
-{
-  if (vm->proxy.tethering.view)
-    vm->proxy.tethering.set_session_namepattern(vm->proxy.tethering.view, namepattern);
-}
-
-gboolean dt_view_tethering_check_namepattern(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.tethering.view)
-    return vm->proxy.tethering.check_namepattern(vm->proxy.tethering.view);
-  return FALSE;
 }
 
 #ifdef HAVE_MAP

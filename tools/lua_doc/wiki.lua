@@ -1,8 +1,31 @@
+local page_name="/redmine/projects/darktable/wiki/LuaAPI"
+
+local function get_node_with_link(node,name)
+	return "\""..name.."\":"..page_name.."#"..node:get_name()
+end
+
+para = function() return "\n\n" end
+node_to_string = function(node,name) 
+	if name then
+		return get_node_with_link(node,name)
+	else
+		return get_node_with_link(node,node:get_name())
+	end
+end
+
+code = function(text) 
+	return [[\n\n<pre><code class="lua">]]..text.."</code></pre>\n\n"
+end
+
+startlist = function() return "\n\n" end
+endlist = function() return "" end
+listel = function(text) return "\n* "..text end
+
+
 require "content"
 doc = require "core"
 table = require "table"
 dump = require("darktable.debug").dump
-local page_name="/redmine/projects/darktable/wiki/LuaAPI"
 
 local parse_doc_node
 
@@ -20,9 +43,6 @@ local function sorted_pairs (t, f)
 	return iter
 end
 
-local function get_node_with_link(node,name)
-	return "\""..name.."\":"..page_name.."#"..doc.get_name(node)
-end
 
 local function get_reported_type(node,simple)
 	if not doc.get_attribute(node,"reported_type") then
@@ -30,9 +50,6 @@ local function get_reported_type(node,simple)
 		error("all types should have a reported type")
 	end
 	local rtype = doc.get_attribute(node,"reported_type")
-	if type(rtype) ~= "string" then
-		rtype = get_node_with_link(rtype,doc.get_name(rtype))
-	end
 	if rtype == "documentation node" then rtype = nil end
 	if rtype == "dt_singleton" then rtype = nil end
 	if( rtype and not simple and doc.get_attribute(node,"signature")) then
@@ -71,7 +88,10 @@ local function print_content(node)
 		end
 	end
 	if concat ~="" then
-		result = result.."\t*Attributes* : "..concat.."\n"
+		result = result.."\t*Attributes* : "..concat.."\n\n"
+	end
+	if doc.get_attribute(node,"parent") then
+		result = result.."\t*Parent type* : "..tostring(doc.get_attribute(node,"parent")).."\n"
 	end
 
 	result = result.."\n"
@@ -86,6 +106,16 @@ local function print_content(node)
 	if(ret_val) then
 		result = result .. parse_doc_node(ret_val,node,doc.get_short_name(ret_val)).."\n";
 		result = result.."\n"
+	end
+	local history = doc.get_version_info(node)
+	if next(history) then
+		result = result.."\t*Version History* : \n"
+		for version, notes in pairs(history) do
+			result = result.."\t\t*"..version.."*\n"
+			for _,text in pairs(notes) do
+				result = result.."\t\t"..text.."\n"
+			end
+		end
 	end
 	for k,v in doc.unskiped_children(node) do
 		result = result .. parse_doc_node(v,node,k).."\n";
@@ -123,12 +153,12 @@ parse_doc_node = function(node,parent,prev_name)
 			tmp_node = doc.get_main_parent(tmp_node)
 		end
 		if(node:get_short_name() == "return") then
-			result = result .. tmp_string.."(#"..doc.get_name(node).."). _return_\n\n"
+			result = result .. tmp_string.."(#"..node_name.."). _return_\n\n"
 		else
-			result = result .. tmp_string.."(#"..doc.get_name(node).."). *"..node:get_short_name().."*\n\n"
+			result = result .. tmp_string.."(#"..node_name.."). *"..node:get_short_name().."*\n\n"
 		end
 	elseif depth ~= 0 then
-		result = result .. "h"..depth.."(#"..doc.get_name(node).."). "..prev_name.."\n\n"
+		result = result .. "h"..depth.."(#"..node_name.."). "..prev_name.."\n\n"
 	end
 	if(not doc.is_main_parent(node,parent,prev_name) ) then
 		result = result .. "see "..get_node_with_link(node,doc.get_name(node)).."\n\n"
@@ -143,8 +173,18 @@ M = {}
 
 M.page_name = page_name
 
+
 function M.get_doc()
-	return "{{toc}}\n\n"..parse_doc_node(doc.toplevel,nil,"")
+	doc.toplevel:set_text(
+	[[This documentation is for the *developement* version of darktable. for the stable version, please visit "the user manual":http://www.darktable.org/usermanual/index.html.php
+
+]]..doc.get_text(doc.toplevel)..
+[[
+
+
+
+This documentation was generated with darktable version ]]..real_darktable.configuration.version..[[.]])
+	return "{{>toc}}\n\n"..parse_doc_node(doc.toplevel,nil,"")
 end
 
 

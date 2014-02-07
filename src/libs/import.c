@@ -150,11 +150,9 @@ static void _lib_import_from_camera_callback(GtkButton *button,gpointer data)
   if( params->result )
   {
     /* initialize a import job and put it on queue.... */
-    gchar *path = g_build_path(G_DIR_SEPARATOR_S,params->basedirectory,params->subdirectory,(char *)NULL);
     dt_job_t j;
-    dt_camera_import_job_init(&j,params->jobcode,path,params->filenamepattern,params->result,params->camera,params->time_override);
+    dt_camera_import_job_init(&j, params->jobcode,params->result,params->camera,params->time_override);
     dt_control_add_job(darktable.control, &j);
-    g_free(path);
   }
   g_free(params);
 }
@@ -164,8 +162,6 @@ static void _lib_import_tethered_callback(GtkToggleButton *button,gpointer data)
 {
   /* select camera to work with before switching mode */
   dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
-  dt_conf_set_int( "plugins/capture/mode", DT_CAPTURE_MODE_TETHERED);
-  dt_conf_set_int("plugins/capture/current_filmroll",-1);
   dt_ctl_switch_mode_to(DT_CAPTURE);
 }
 
@@ -731,7 +727,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
       else
       {
         dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
-        DT_CTL_SET_GLOBAL(lib_image_mouse_over_id, id);
+        dt_control_set_mouse_over_id(id);
         dt_ctl_switch_mode_to(DT_DEVELOP);
       }
     }
