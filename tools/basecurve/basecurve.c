@@ -45,6 +45,25 @@ typedef struct dt_iop_basecurve_params_t
 }
 dt_iop_basecurve_params_t;
 
+typedef struct dt_iop_tonecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_tonecurve_node_t;
+
+#define DT_IOP_TONECURVE_MAXNODES 20
+typedef struct dt_iop_tonecurve_params_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+  int tonecurve_unbound_ab;
+}
+dt_iop_tonecurve_params_t;
+
 // copied from exif.cc:
 // encode binary blob into text:
 void text_encode (const unsigned char *input, char *output, const int len)
@@ -546,7 +565,38 @@ main(int argc, char** argv)
     CurveDataSample(&fit, &csample);
     for(int k=0; k<0x10000; k++)
       fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
-    fprintf(stdout, "# still WIP, a dump of best fit curve in is fit.dat\n");
+
+    struct dt_iop_tonecurve_params_t params;
+    memset(&params, 0, sizeof(params));
+    for (int k=0; k<fit.m_numAnchors; k++)
+    {
+      params.tonecurve[0][k].x = fit.m_anchors[k].x;
+      params.tonecurve[0][k].y = fit.m_anchors[k].y;
+    }
+    for (int k=1; k<3; k++)
+    {
+      params.tonecurve[k][0].x = 0.f;
+      params.tonecurve[k][0].y = 0.f;
+      params.tonecurve[k][1].x = .5f;
+      params.tonecurve[k][1].y = .5f;
+      params.tonecurve[k][2].x = 1.f;
+      params.tonecurve[k][2].y = 1.f;
+    }
+    params.tonecurve_nodes[0] = fit.m_numAnchors;
+    params.tonecurve_nodes[1] = 3;
+    params.tonecurve_nodes[2] = 3;
+    for (int k=0; k<3; k++)
+    {
+      params.tonecurve_type[k] = 2;
+    }
+    params.tonecurve_autoscale_ab = 1;
+    params.tonecurve_unbound_ab = 0;
+
+    char encoded[2048];
+    text_encode((uint8_t*)&params, encoded, sizeof(params));
+    fprintf(stdout, "to test your new tonecurve, copy/paste the following line into your shell.\n");
+    fprintf(stdout, "note that it is a smart idea to backup your database before messing with it on this level.\n");
+    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',4,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
   }
 
 exit:
