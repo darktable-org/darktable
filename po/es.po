@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-07 14:39+0100\n"
-"PO-Revision-Date: 2014-02-07 09:20-0400\n"
-"Last-Translator: tatica <tatadbb@gmail.com>\n"
+"POT-Creation-Date: 2014-02-07 15:07+0100\n"
+"PO-Revision-Date: 2014-02-07 15:10+0100\n"
+"Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
@@ -763,24 +763,12 @@ msgstr[0] "%d copia local ha sido sincronizada"
 msgstr[1] "%d copias locales han sido sincronizadas"
 
 #: ../src/common/imageio.c:666
-#, c-format
 msgid ""
-"failed to allocate memory for %s, please lower the threads used for export "
-"or buy more memory."
+"failed to allocate memory for export, please lower the threads used for "
+"export or buy more memory."
 msgstr ""
-"fallo al reservar memoria necesaria para %s, por favor reduzca los hilos "
-"usados para exportar o compre más memoria."
-
-#: ../src/common/imageio.c:666
-msgid "thumbnail export"
-msgstr "exportar miniatura"
-
-#. Export button
-#. export button
-#: ../src/common/imageio.c:666 ../src/gui/preferences.c:614
-#: ../src/libs/export.c:668 ../src/libs/styles.c:408
-msgid "export"
-msgstr "exportar"
+"no se consiguió reservar la memoria necesaria para exportar, por favor "
+"reduzca el número de hilos usados para exportar o compre más memoria RAM"
 
 #: ../src/common/imageio.c:674 ../src/common/mipmap_cache.c:1163
 #, c-format
@@ -2192,6 +2180,13 @@ msgstr "por defecto"
 msgctxt "preferences"
 msgid "import"
 msgstr "importar"
+
+#. Export button
+#. export button
+#: ../src/gui/preferences.c:614 ../src/libs/export.c:668
+#: ../src/libs/styles.c:408
+msgid "export"
+msgstr "exportar"
 
 #: ../src/gui/preferences.c:914
 msgid "press key combination to remap..."
@@ -8354,6 +8349,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "gráfico"
+
+#~ msgid "thumbnail export"
+#~ msgstr "exportar miniatura"
 
 #~ msgid "indicate focus regions"
 #~ msgstr "indica la región de enfoque"
