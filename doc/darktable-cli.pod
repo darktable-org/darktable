@@ -49,12 +49,12 @@ from the file extension.
 
 =item B<< --width <max width>  >>
 
-This optional parameter allows to limit the width of the exported
+This optional parameter allows one to limit the width of the exported
 image to that number of pixels.
 
 =item B<< --height <max height>  >>
 
-This optional parameter allows to limit the height of the exported
+This optional parameter allows one to limit the height of the exported
 image to that number of pixels.
 
 =item B<< --bpp <bpp>  >>
