@@ -548,8 +548,9 @@ main(int argc, char** argv)
 
     text_encode ((uint8_t *)&params, encoded, sizeof(params));
 
-    fprintf(stdout, "to test your new basecurve, copy/paste the following line into your shell.\n");
-    fprintf(stdout, "note that it is a smart idea to backup your database before messing with it on this level.\n");
+    fprintf(stdout, "#!/bin/sh\n");
+    fprintf(stdout, "#to test your new basecurve, copy/paste the following line into your shell.\n");
+    fprintf(stdout, "#note that it is a smart idea to backup your database before messing with it on this level.\n");
     fprintf(stdout, "(you have been warned :) )\n\n");
     // the big binary blob is a canonical blend mode option (switched off).
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',2,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
@@ -594,8 +595,9 @@ main(int argc, char** argv)
 
     char encoded[2048];
     text_encode((uint8_t*)&params, encoded, sizeof(params));
-    fprintf(stdout, "to test your new tonecurve, copy/paste the following line into your shell.\n");
-    fprintf(stdout, "note that it is a smart idea to backup your database before messing with it on this level.\n");
+    fprintf(stdout, "#!/bin/sh\n");
+    fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
+    fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',4,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
   }
 
