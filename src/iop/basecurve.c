@@ -131,6 +131,8 @@ basecurve_preset_t;
 static const basecurve_preset_t basecurve_presets[] =
 {
   // copy paste your measured basecurve line at the top here, like so (note the exif data and the last 1):
+  // contributed by Dan Torop
+  { "Fujifilm X100S", "Fujifilm", "X100S", 0, 51200, {{{{0.000000, 0.000000}, {0.009145, 0.007905}, {0.026570, 0.032201}, {0.131526, 0.289717}, {0.175858, 0.395263}, {0.350981, 0.696899}, {0.614997, 0.959451}, {1.000000, 1.000000}}}, {8}, {m}}, 0, 1},
   // jo:
   { "Canon EOS 5D Mark II", "Canon", "Canon EOS 5D Mark II", 0, 51200, {{{{0.000000, 0.000366}, {0.006560, 0.003504}, {0.027310, 0.029834}, {0.045915, 0.070230}, {0.206554, 0.539895}, {0.442337, 0.872409}, {0.673263, 0.971703}, {1.000000, 0.999832}}}, {8}, {m}}, 0, 1},
   // contributed by chrik5
