@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "../../src/common/curve_tools.c"
 
@@ -64,25 +65,17 @@ typedef struct dt_iop_tonecurve_params_t
 }
 dt_iop_tonecurve_params_t;
 
-// copied from exif.cc:
-// encode binary blob into text:
-void text_encode (const unsigned char *input, char *output, const int len)
+static void
+hexify(uint8_t* out, const uint8_t* in, size_t len)
 {
-  const char hex[16] =
-  {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8',
-    '9', 'a', 'b', 'c', 'd', 'e', 'f'
-  };
+  static const char hex[] = "0123456789abcdef";
   for(int i=0; i<len; i++)
   {
-    const int hi = input[i] >> 4;
-    const int lo = input[i] & 15;
-    output[2*i]   = hex[hi];
-    output[2*i+1] = hex[lo];
+    out[2*i  ] = hex[in[i] >> 4];
+    out[2*i+1] = hex[in[i] & 15];
   }
-  output[2*len] = '\0';
+  out[2*len] = '\0';
 }
-
 
 static uint16_t*
 read_ppm16(const char *filename, int *wd, int *ht)
@@ -534,7 +527,7 @@ main(int argc, char** argv)
     for(int k=0; k<0x10000; k++)
       fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
 
-    char encoded[2048];
+    uint8_t encoded[2048];
 
     dt_iop_basecurve_params_t params;
     memset(&params, 0, sizeof(params));
@@ -546,7 +539,7 @@ main(int argc, char** argv)
     params.basecurve_nodes[0] = fit.m_numAnchors;
     params.basecurve_type[0] = MONOTONE_HERMITE;
 
-    text_encode ((uint8_t *)&params, encoded, sizeof(params));
+    hexify(encoded, (uint8_t *)&params, sizeof(params));
 
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "#to test your new basecurve, copy/paste the following line into your shell.\n");
@@ -593,8 +586,8 @@ main(int argc, char** argv)
     params.tonecurve_autoscale_ab = 1;
     params.tonecurve_unbound_ab = 0;
 
-    char encoded[2048];
-    text_encode((uint8_t*)&params, encoded, sizeof(params));
+    uint8_t encoded[2048];
+    hexify(encoded, (uint8_t*)&params, sizeof(params));
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
