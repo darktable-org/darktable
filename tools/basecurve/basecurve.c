@@ -342,6 +342,14 @@ print_usage(
   fprintf(stderr, "plot the results with `gnuplot plot.(basecurve|tonecurve) depending on target module'\n");
 }
 
+static inline int
+is_bigendian()
+{
+  // swap to host byte, PPM16 are BE
+  static const union { uint8_t u8[4]; uint32_t u32;} byte_order __attribute__((aligned(4))) = { .u8 = {1,2,3,4} };
+  return byte_order.u32 == 0x01020304;
+
+}
 int
 main(int argc, char** argv)
 {
@@ -424,8 +432,7 @@ main(int argc, char** argv)
   }
 
   // swap to host byte, PPM16 are BE
-  static const union { uint8_t u8[4]; uint32_t u32;} byte_order __attribute__((aligned(4))) = { .u8 = {1,2,3,4} };
-  if (byte_order.u32 != 0x01020304)
+  if (!is_bigendian())
   {
     for (int k=0; k<3*raw_width*raw_height; k++)
     {
