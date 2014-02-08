@@ -26,32 +26,47 @@
 #include <string.h>
 #include <stdint.h>
 
+/* --------------------------------------------------------------------------
+ * Curve code used for fitting the curves
+ * ------------------------------------------------------------------------*/
+
 #include "../../src/common/curve_tools.c"
 
-// copied from iop/basecurve.c:
+/* --------------------------------------------------------------------------
+ * Basecurve params
+ * copied from iop/basecurve.c. fixed at specific revision on purpose
+ * ------------------------------------------------------------------------*/
+
+#define BASECURVE_PARAMS_VERSION 2
+
 typedef struct dt_iop_basecurve_node_t
 {
   float x;
   float y;
-}
-dt_iop_basecurve_node_t;
-#define MAXNODES 20
+} dt_iop_basecurve_node_t;
+
+#define DT_IOP_BASECURVE_MAXNODES 20
 typedef struct dt_iop_basecurve_params_t
 {
   // three curves (c, ., .) with max number of nodes
   // the other two are reserved, maybe we'll have cam rgb at some point.
-  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  dt_iop_basecurve_node_t basecurve[3][DT_IOP_BASECURVE_MAXNODES];
   int basecurve_nodes[3];
   int basecurve_type[3];
-}
-dt_iop_basecurve_params_t;
+} dt_iop_basecurve_params_t;
+
+/* --------------------------------------------------------------------------
+ * Tonecurve params
+ * copied from iop/toncurve.h. fixed at specific revision on purpose
+ * ------------------------------------------------------------------------*/
+
+#define TONECURVE_PARAMS_VERSION 4
 
 typedef struct dt_iop_tonecurve_node_t
 {
   float x;
   float y;
-}
-dt_iop_tonecurve_node_t;
+} dt_iop_tonecurve_node_t;
 
 #define DT_IOP_TONECURVE_MAXNODES 20
 typedef struct dt_iop_tonecurve_params_t
@@ -62,8 +77,11 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
   int tonecurve_unbound_ab;
-}
-dt_iop_tonecurve_params_t;
+} dt_iop_tonecurve_params_t;
+
+/* --------------------------------------------------------------------------
+ * utils
+ * ------------------------------------------------------------------------*/
 
 static void
 hexify(uint8_t* out, const uint8_t* in, size_t len)
@@ -350,6 +368,10 @@ is_bigendian()
   return byte_order.u32 == 0x01020304;
 
 }
+/* --------------------------------------------------------------------------
+ * main
+ * ------------------------------------------------------------------------*/
+
 int
 main(int argc, char** argv)
 {
@@ -553,7 +575,7 @@ main(int argc, char** argv)
     fprintf(stdout, "#note that it is a smart idea to backup your database before messing with it on this level.\n");
     fprintf(stdout, "(you have been warned :) )\n\n");
     // the big binary blob is a canonical blend mode option (switched off).
-    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',2,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
+    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", BASECURVE_PARAMS_VERSION, encoded);
   }
   else if (module == MODULE_TONECURVE)
   {
@@ -598,7 +620,7 @@ main(int argc, char** argv)
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
-    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',4,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", encoded);
+    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", TONECURVE_PARAMS_VERSION, encoded);
   }
 
 exit:
