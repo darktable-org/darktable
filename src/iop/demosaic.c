@@ -51,7 +51,8 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *scale1;
   GtkWidget *greeneq;
   GtkWidget *color_smoothing;
-  GtkWidget *demosaic_method;
+  GtkWidget *demosaic_method_bayer;
+  GtkWidget *demosaic_method_xtrans;
 }
 dt_iop_demosaic_gui_data_t;
 
@@ -82,10 +83,14 @@ typedef struct dt_iop_demosaic_data_t
 }
 dt_iop_demosaic_data_t;
 
+#define DEMOSAIC_XTRANS 1024    // maks for non-Bayer demosaic ops
+
 typedef enum dt_iop_demosaic_method_t
 {
   DT_IOP_DEMOSAIC_PPG = 0,
-  DT_IOP_DEMOSAIC_AMAZE = 1
+  DT_IOP_DEMOSAIC_AMAZE = 1,
+  // methods for x-trans images
+  DT_IOP_DEMOSAIC_LINEAR = DEMOSAIC_XTRANS | 0,
 }
 dt_iop_demosaic_method_t;
 
@@ -412,7 +417,7 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 
 /* taken from dcraw and demosaic_ppg below */
 
-void xtrans_lin_interpolate_f(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const uint8_t xtrans[6][6])
+void xtrans_lin_interpolate(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const uint8_t xtrans[6][6])
 {
   // snap to start of mosaic block
   // FIXME: need this? why?
@@ -495,6 +500,9 @@ void xtrans_lin_interpolate_f(float *out, const float *in, dt_iop_roi_t *roi_out
       *ip = f;
     }
 
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(roi_in, roi_out, in, out, lookup) schedule(static)
+#endif
   for (int row=1; row < roi_out->height-1; row++)
   {
     float *buf = out + 4*roi_out->width*row + 4;
@@ -779,14 +787,16 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
-    demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+    demosaicing_method = (img->filters != 9) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_LINEAR;
 
   const float *const pixels = (float *)i;
   if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
   {
     // output 1:1
+    if(img->filters==9)
+      xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
     // green eq:
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+    else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
       switch(data->green_eq)
@@ -814,15 +824,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if(img->filters==9)
-        xtrans_lin_interpolate_f((float *)o, pixels, &roo, &roi, img->xtrans);
-      else if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
     }
   }
-  else if(roi_out->scale > .5f ||                                      // also covers roi_out->scale >1
+  else if(roi_out->scale > (img->filters == 9 ? 0.333f : .5f) ||       // also covers roi_out->scale >1
           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
           (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
   {
@@ -834,7 +842,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     roo.scale = 1.0f;
 
     float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
+    if(img->filters==9)
+      xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+    else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
       switch(data->green_eq)
@@ -863,9 +873,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if(img->filters==9)
-        xtrans_lin_interpolate_f(tmp, pixels, &roo, &roi, img->xtrans);
-      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
@@ -878,17 +886,17 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   }
   else
   {
-    // sample half-size raw
+    // sample half (or 1/3)-size raw
     const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
+    if(img->filters==9)
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, img->xtrans);
+    else if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
     {
       float *tmp = (float *)dt_alloc_align(16, (size_t)sizeof(float)*roi_in->width*roi_in->height);
       pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters, clip);
       dt_free_align(tmp);
     }
-    else if(img->filters==9)
-      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, img->xtrans);
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters, clip);
   }
@@ -1255,12 +1263,6 @@ void init(dt_iop_module_t *module)
   module->hide_enable_button = 1;
   module->params_size = sizeof(dt_iop_demosaic_params_t);
   module->gui_data = NULL;
-  dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t)
-  {
-    0, 0.0f,0,0,0
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1341,10 +1343,39 @@ void gui_update   (struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+
+  if(self->dev->image_storage.filters != 9)
+  {
+    gtk_widget_show(g->demosaic_method_bayer);
+    gtk_widget_hide(g->demosaic_method_xtrans);
+    gtk_widget_show(g->scale1);
+    gtk_widget_show(g->greeneq);
+    dt_bauhaus_combobox_set(g->demosaic_method_bayer, p->demosaicing_method);
+  }
+  else
+  {
+    gtk_widget_show(g->demosaic_method_xtrans);
+    gtk_widget_hide(g->demosaic_method_bayer);
+    gtk_widget_hide(g->scale1);
+    gtk_widget_hide(g->greeneq);
+    dt_bauhaus_combobox_set(g->demosaic_method_xtrans, p->demosaicing_method & ~DEMOSAIC_XTRANS);
+  }
+
   dt_bauhaus_slider_set(g->scale1, p->median_thrs);
   dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
   dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
-  dt_bauhaus_combobox_set(g->demosaic_method, p->demosaicing_method);
+}
+
+void reload_defaults(dt_iop_module_t *module)
+{
+  dt_iop_demosaic_params_t tmp = (dt_iop_demosaic_params_t)
+  {
+    0, 0.0f,0,0,0
+  };
+  if (module->dev->image_storage.filters == 9)
+    tmp.demosaicing_method = DT_IOP_DEMOSAIC_LINEAR;
+  memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
 }
 
 static void
@@ -1393,7 +1424,7 @@ greeneq_callback (GtkWidget *combo, dt_iop_module_t *self)
 }
 
 static void
-demosaic_method_callback(GtkWidget *combo, dt_iop_module_t *self)
+demosaic_method_bayer_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
   int active = dt_bauhaus_combobox_get(combo);
@@ -1411,6 +1442,21 @@ demosaic_method_callback(GtkWidget *combo, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void
+demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
+{
+  dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
+  int active = dt_bauhaus_combobox_get(combo);
+
+  switch(active|DEMOSAIC_XTRANS)
+  {
+    case DT_IOP_DEMOSAIC_LINEAR:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_LINEAR;
+      break;
+  }
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init     (struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_demosaic_gui_data_t));
@@ -1419,12 +1465,18 @@ void gui_init     (struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
 
-  g->demosaic_method = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->demosaic_method, _("PPG (fast)"));
-  dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
-  dt_bauhaus_widget_set_label(g->demosaic_method, NULL, _("method"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
+  g->demosaic_method_bayer = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->demosaic_method_bayer, NULL, _("method"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_bayer, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("PPG (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_bayer, _("amaze (slow)"));
+  g_object_set(G_OBJECT(g->demosaic_method_bayer), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
+
+  g->demosaic_method_xtrans = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("linear (fast)"));
+  g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
   g_object_set(G_OBJECT(g->scale1), "tooltip-text", _("threshold for edge-aware median.\nset to 0.0 to switch off.\nset to 1.0 to ignore edges."), (char *)NULL);
@@ -1457,8 +1509,10 @@ void gui_init     (struct dt_iop_module_t *self)
                     G_CALLBACK (color_smoothing_callback), self);
   g_signal_connect (G_OBJECT (g->greeneq), "value-changed",
                     G_CALLBACK (greeneq_callback), self);
-  g_signal_connect (G_OBJECT (g->demosaic_method), "value-changed",
-                    G_CALLBACK (demosaic_method_callback), self);
+  g_signal_connect (G_OBJECT (g->demosaic_method_bayer), "value-changed",
+                    G_CALLBACK (demosaic_method_bayer_callback), self);
+  g_signal_connect (G_OBJECT (g->demosaic_method_xtrans), "value-changed",
+                    G_CALLBACK (demosaic_method_xtrans_callback), self);
 }
 
 void gui_cleanup  (struct dt_iop_module_t *self)
