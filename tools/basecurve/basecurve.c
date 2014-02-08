@@ -27,6 +27,12 @@
 #include <stdint.h>
 
 /* --------------------------------------------------------------------------
+ * curve and histogram resolution
+ * ------------------------------------------------------------------------*/
+
+#define CURVE_RESOLUTION 0x10000
+
+/* --------------------------------------------------------------------------
  * Curve code used for fitting the curves
  * ------------------------------------------------------------------------*/
 
@@ -140,14 +146,14 @@ static inline float get_error(CurveData *c, CurveSample *csample, float* basecur
   CurveDataSample(c, csample);
   float sqrerr = 0.0f;
   const float max = 1.0f, min = 0.0f;
-  for(int k=0; k<0x10000; k++)
+  for(int k=0; k<CURVE_RESOLUTION; k++)
   {
     // too few samples? no error if we ignore it.
     if(cnt[k] > 8)
     {
-      float d = (basecurve[k] - (min + (max-min)*csample->m_Samples[k]*(1.0f/0x10000)));
+      float d = (basecurve[k] - (min + (max-min)*csample->m_Samples[k]*(1.0f/CURVE_RESOLUTION)));
       // way more error for lower values of x:
-      d *= 0x10000-k;
+      d *= CURVE_RESOLUTION-k;
       if(k < 655) d *= 100;
       sqrerr += d*d;
     }
@@ -162,8 +168,8 @@ static inline void mutate(CurveData *c, CurveData *t, float* basecurve)
     float min = (c->m_anchors[k-1].x + c->m_anchors[k].x)/2.0f;
     float max = (c->m_anchors[k+1].x + c->m_anchors[k].x)/2.0f;
     const float x = min + drand48()*(max-min);
-    uint32_t pos = x*0x10000;
-    if(pos >= 0x10000) pos = 0xffff;
+    uint32_t pos = x*CURVE_RESOLUTION;
+    if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
     if(pos < 0) pos = 0;
     t->m_anchors[k].x = x;
     t->m_anchors[k].y = basecurve[pos];
@@ -320,8 +326,8 @@ fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int
       {
         float x = k/(tent.m_numAnchors-1.0f);
         x *= x*x; // move closer to 0
-        uint32_t pos = x*0x10000;
-        if(pos >= 0x10000) pos = 0xffff;
+        uint32_t pos = x*CURVE_RESOLUTION;
+        if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
         if(pos < 0) pos = 0;
         tent.m_anchors[k].x = x;
         tent.m_anchors[k].y = curve[pos];
@@ -401,7 +407,6 @@ main(int argc, char** argv)
   int accepts = -1;
   float sqerr = -1.f;
   CurveSample csample = {0};
-  const int res = 0x10000;
 
   // program options
   int num_nodes = 8;
@@ -470,13 +475,13 @@ main(int argc, char** argv)
   }
 
   ncurves = module == MODULE_BASECURVE ? 3 : 1;
-  curve = calloc(1, 0x10000*sizeof(float)*ncurves);
+  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*ncurves);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     goto exit;
   }
 
-  cnt = calloc(1, 0x10000*sizeof(int)*ncurves);
+  cnt = calloc(1, CURVE_RESOLUTION*sizeof(int)*ncurves);
   if (!cnt) {
     fprintf(stderr, "error: failed allocating histogram\n");
     goto exit;
@@ -497,25 +502,25 @@ main(int argc, char** argv)
   {
     for (int ch=0; ch<3; ch++)
     {
-      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*0x10000, cnt+ch*0x10000);
+      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*CURVE_RESOLUTION, cnt+ch*CURVE_RESOLUTION);
     }
 
     // output the histograms:
     fprintf(fb, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
-    for(int k=0;k<0x10000;k++)
+    for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      float ch0 = curve[k + 0*0x10000];
-      float ch1 = curve[k + 1*0x10000];
-      float ch2 = curve[k + 2*0x10000];
-      int c0 = cnt[k + 0*0x10000];
-      int c1 = cnt[k + 1*0x10000];
-      int c2 = cnt[k + 2*0x10000];
+      float ch0 = curve[k + 0*CURVE_RESOLUTION];
+      float ch1 = curve[k + 1*CURVE_RESOLUTION];
+      float ch2 = curve[k + 2*CURVE_RESOLUTION];
+      int c0 = cnt[k + 0*CURVE_RESOLUTION];
+      int c1 = cnt[k + 1*CURVE_RESOLUTION];
+      int c2 = cnt[k + 2*CURVE_RESOLUTION];
       fprintf(fb, "%f %f %f %f %d %d %d\n", ch0, ch1, ch2, (ch0 + ch1 + ch2)/3.0f, c0, c1, c2);
     }
 
     // for now it seems more stable to work on G channel alone
-    curve_to_approximate = curve + 0x10000;
-    cnt_for_approximation = cnt + 0x10000;
+    curve_to_approximate = curve + 1*CURVE_RESOLUTION;
+    cnt_for_approximation = cnt + 1*CURVE_RESOLUTION;
   }
   else if (module == MODULE_TONECURVE)
   {
@@ -523,7 +528,7 @@ main(int argc, char** argv)
 
     // output the histogram
     fprintf(fb, "# tonecurve-L cnt-L\n");
-    for(int k=0;k<0x10000;k++)
+    for(int k=0;k<CURVE_RESOLUTION;k++)
     {
       fprintf(fb, "%f %d\n", curve[k], cnt[k]);
     }
@@ -539,9 +544,9 @@ main(int argc, char** argv)
   free(jpeg_raw);
   jpeg_raw = NULL;
 
-  csample.m_samplingRes = res;
-  csample.m_outputRes = 0x10000;
-  csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*0x10000);
+  csample.m_samplingRes = CURVE_RESOLUTION;
+  csample.m_outputRes = CURVE_RESOLUTION;
+  csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
   fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve_to_approximate, cnt_for_approximation);
 
   if (module == MODULE_BASECURVE)
@@ -553,8 +558,8 @@ main(int argc, char** argv)
       fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"}}, ");
     fprintf(ff, "{%d}, {m}}, 0, 0},\n", fit.m_numAnchors);
     CurveDataSample(&fit, &csample);
-    for(int k=0; k<0x10000; k++)
-      fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
+    for(int k=0; k<CURVE_RESOLUTION; k++)
+      fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
 
     uint8_t encoded[2048];
 
@@ -586,8 +591,8 @@ main(int argc, char** argv)
       fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"");
     fprintf(ff, "}, {{0., 0.}, {1., 1.}}, {{0., 0.}, {1., 1.}}}, {%d, 2, 2}, {2, 2, 2}, 1, 0, 0}},\n", fit.m_numAnchors);
     CurveDataSample(&fit, &csample);
-    for(int k=0; k<0x10000; k++)
-      fprintf(ff, "%f %f\n", k*(1.0f/0x10000), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/0x10000));
+    for(int k=0; k<CURVE_RESOLUTION; k++)
+      fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
 
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
