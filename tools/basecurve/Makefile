@@ -2,6 +2,8 @@ PROGS = basecurve
 
 ifeq ($(BUILD_TYPE),Release)
 CFLAGS += -O3
+else
+CFLAGS += -O0
 endif
 
 CFLAGS += -g -std=c99 -Wall -pedantic

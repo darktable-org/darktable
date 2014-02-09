@@ -23,8 +23,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <unistd.h>
 #include <string.h>
-#include <stdint.h>
+#include <getopt.h>
 
 /* --------------------------------------------------------------------------
  * curve and histogram resolution
@@ -393,17 +394,6 @@ fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int
   }
 }
 
-static void
-print_usage(
-  const char* name)
-{
-  fprintf(stderr, "usage: %s inputraw.ppm (16-bit) inputjpg.ppm (8-bit) [num_nodes] [target module]\n", name);
-  fprintf(stderr, "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n");
-  fprintf(stderr, "and the jpg with `convert input.jpg output.ppm'\n");
-  fprintf(stderr, "target module can be 0 for basecurve, or 1 for tonecurve\n");
-  fprintf(stderr, "plot the results with `gnuplot plot.(basecurve|tonecurve) depending on target module'\n");
-}
-
 static inline int
 is_bigendian()
 {
@@ -412,6 +402,113 @@ is_bigendian()
   return byte_order.u32 == 0x01020304;
 
 }
+struct options
+{
+  const char* fit_filename;
+  const char* curve_filename;
+  enum module_type module;
+  int num_nodes;
+  const char* raw_ppm;
+  const char* jpeg_ppm;
+};
+
+static void
+print_usage(
+  const char* name)
+{
+  fprintf(stderr,
+    "usage: %s [OPTIONS] <inputraw.ppm (16-bit)> <inputjpg.ppm (8-bit)>\n"
+    "\n"
+    "OPTIONS:\n"
+    " -m <module>    'b' for basecurve, 't' for tonecurve\n"
+    " -n <integer>    Number of nodes for the curve\n"
+    " -c <filename>   Curve output filename\n"
+    " -f <filename>   Fit curve output filename\n"
+    " -h              Print this help message\n"
+    "\n"
+    "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n"
+    "and the jpg with `convert input.jpg output.ppm'\n"
+    "plot the results with `gnuplot plot.(basecurve|tonecurve) depending on target module'\n",
+    name);
+}
+
+static void
+set_default_options(
+  struct options* opts)
+{
+  static const char* default_curve = "basecurve.dat";
+  static const char* default_fit = "fit.dat";
+  opts->curve_filename = default_curve;
+  opts->fit_filename = default_fit;
+  opts->jpeg_ppm = NULL;
+  opts->raw_ppm = NULL;
+  opts->num_nodes = 8;
+  opts->module = MODULE_BASECURVE;
+}
+
+static int
+parse_arguments(
+  int argc,
+  char** argv,
+  struct options* opts)
+{
+  opterr = 1;
+
+  int c;
+  int ex = 0;
+  while ((c = getopt(argc, argv, "n:m:c:f:h")) >= 0)
+  {
+    switch (c)
+    {
+    case 'n':
+      opts->num_nodes = atoi(optarg);
+      break;
+    case 'm':
+      if (*optarg == 'b')
+      {
+        opts->module = MODULE_BASECURVE;
+      }
+      else if ((*optarg == 't'))
+      {
+        opts->module = MODULE_TONECURVE;
+      }
+      break;
+    case 'c':
+      opts->curve_filename = optarg;
+      break;
+    case 'f':
+      opts->fit_filename = optarg;
+      break;
+    case ':':
+      fprintf(stderr, "missing argument for option -%c, ignored\n", optopt);
+      print_usage(argv[0]);
+      ex = 1;
+      break;
+    case '?':
+      fprintf(stderr, "unknown option -%c\n", optopt);
+      print_usage(argv[0]);
+      ex = 1;
+      break;
+    case 'h':
+      print_usage(argv[0]);
+      ex = 1;
+    }
+  }
+
+  if (optind < argc - 1)
+  {
+    opts->raw_ppm = argv[optind];
+    opts->jpeg_ppm = argv[optind+1];
+  }
+  else
+  {
+    print_usage(argv[0]);
+    ex = 1;
+  }
+
+  return ex;
+}
+
 /* --------------------------------------------------------------------------
  * main
  * ------------------------------------------------------------------------*/
@@ -420,6 +517,9 @@ int
 main(int argc, char** argv)
 {
   int ret = 1;
+
+  // program options
+  struct options opt;
 
   // raw related vars
   int raw_width = -1;
@@ -446,50 +546,34 @@ main(int argc, char** argv)
   float sqerr = -1.f;
   CurveSample csample = {0};
 
-  // program options
-  int num_nodes = 8;
-  enum module_type module = MODULE_BASECURVE;
-
-  if(argc < 3)
+  set_default_options(&opt);
+  int shallexit = parse_arguments(argc, argv, &opt);
+  if (shallexit)
   {
-    print_usage(argv[0]);
     goto exit;
   }
 
-  fb = fopen("basecurve.dat", "wb");
+  fb = fopen(opt.curve_filename, "wb");
   if (!fb)
   {
-    fprintf(stderr, "error: could not open `basecurve.dat'\n");
+    fprintf(stderr, "error: could not open '%s'\n", opt.curve_filename);
     goto exit;
   }
 
-  ff = fopen("fit.dat", "wb");
+  ff = fopen(opt.fit_filename, "wb");
   if (!ff)
   {
-    fprintf(stderr, "error: could not open `fit.dat'\n");
+    fprintf(stderr, "error: could not open '%s'\n", opt.fit_filename);
     goto exit;
   }
 
-  if(argc > 3)
+  if(opt.num_nodes > 20)
   {
-    num_nodes = atol(argv[3]);
+    // basecurve and tonecurve do not support more than that.
+    opt.num_nodes = 20;
   }
 
-  if (argc > 4)
-  {
-    module = atol(argv[4]);
-  }
-
-  if(num_nodes > 20)
-  {
-    // basecurve doesn't support more than that.
-    num_nodes = 20;
-  }
-
-  // module can be one of basecurve or tonecurve
-  module = (module < 0) ? 0 : (module > MODULE_MAX) ? MODULE_MAX : module;
-
-  raw_buff = read_ppm16(argv[1], &raw_width, &raw_height);
+  raw_buff = read_ppm16(opt.raw_ppm, &raw_width, &raw_height);
   if(!raw_buff)
   {
     fprintf(stderr, "error: failed reading the RAW file data\n");
@@ -505,7 +589,7 @@ main(int argc, char** argv)
     }
   }
 
-  jpeg_raw = read_ppm8(argv[2], &jpeg_width, &jpeg_height);
+  jpeg_raw = read_ppm8(opt.jpeg_ppm, &jpeg_width, &jpeg_height);
   if(!jpeg_raw)
   {
     fprintf(stderr, "error: failed reading JPEG file\n");
@@ -533,7 +617,7 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  if (module == MODULE_BASECURVE)
+  if (opt.module == MODULE_BASECURVE)
   {
     for (int ch=0; ch<3; ch++)
     {
@@ -553,7 +637,7 @@ main(int argc, char** argv)
       fprintf(fb, "%f %f %f %f %d %d %d\n", ch0, ch1, ch2, (ch0 + ch1 + ch2)/3.0f, c0, c1, c2);
     }
   }
-  else if (module == MODULE_TONECURVE)
+  else if (opt.module == MODULE_TONECURVE)
   {
     build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, hist);
 
@@ -575,10 +659,10 @@ main(int argc, char** argv)
   csample.m_outputRes = CURVE_RESOLUTION;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
 
-  if (module == MODULE_BASECURVE)
+  if (opt.module == MODULE_BASECURVE)
   {
     // fit G channel curve only, this seems to be the best choice for now
-    fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve+CURVE_RESOLUTION, hist+CURVE_RESOLUTION);
+    fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve+CURVE_RESOLUTION, hist+CURVE_RESOLUTION);
 
     fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
     fprintf(ff, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
@@ -611,14 +695,14 @@ main(int argc, char** argv)
     // the big binary blob is a canonical blend mode option (switched off).
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", BASECURVE_PARAMS_VERSION, encoded);
   }
-  else if (module == MODULE_TONECURVE)
+  else if (opt.module == MODULE_TONECURVE)
   {
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
 
     for (int i=0; i<1 /* XXX: till i get ab right */; i++)
     {
-      fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve+i*CURVE_RESOLUTION, hist+i*CURVE_RESOLUTION);
+      fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve+i*CURVE_RESOLUTION, hist+i*CURVE_RESOLUTION);
 
       for (int k=0; k<fit.m_numAnchors; k++)
       {
@@ -631,12 +715,12 @@ main(int argc, char** argv)
     // XXX till i get ab right
     for (int i=1; i<3; i++)
     {
-      for (int k=0; k<num_nodes; k++)
+      for (int k=0; k<opt.num_nodes; k++)
       {
-        params.tonecurve[i][k].x = (float)k/(float)num_nodes;
-        params.tonecurve[i][k].y = (float)k/(float)num_nodes;
+        params.tonecurve[i][k].x = (float)k/(float)opt.num_nodes;
+        params.tonecurve[i][k].y = (float)k/(float)opt.num_nodes;
       }
-      params.tonecurve_nodes[i] = num_nodes;
+      params.tonecurve_nodes[i] = opt.num_nodes;
       params.tonecurve_type[i] = 2; // monotone hermite
     }
 
