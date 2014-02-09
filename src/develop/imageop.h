@@ -495,8 +495,8 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
 #endif
   for(int j=0; j<height; j++)
   {
-    const float *in  = ((const float *)ivoid)+4*width*j+3;
-    float *out = ((float *)ovoid)+4*width*j+3;
+    const float *in  = ((const float *)ivoid)+(size_t)4*width*j+3;
+    float *out = ((float *)ovoid)+(size_t)4*width*j+3;
     for(int i=0; i<width; i++)
     {
       *out = *in;

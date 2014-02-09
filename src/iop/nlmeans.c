@@ -207,12 +207,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   //float weight[4] = { powf(d->luma, 0.6), powf(d->chroma, 0.6), powf(d->chroma, 0.6), 1.0f };
   float weight[4] = { d->luma, d->chroma, d->chroma, 1.0f };
 
-  dev_U2 = dt_opencl_alloc_device_buffer(devid, width*height*4*sizeof(float));
+  dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width*height*4*sizeof(float));
   if(dev_U2 == NULL) goto error;
 
   for(int k=0; k<NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, width*height*sizeof(float));
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width*height*sizeof(float));
     if(buckets[k] == NULL) goto error;
   }
 
@@ -385,7 +385,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   if(P < 1)
   {
     // nothing to do from this distance:
-    memcpy (ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    memcpy (ovoid, ivoid, (size_t)sizeof(float)*4*roi_out->width*roi_out->height);
     return;
   }
 
@@ -396,9 +396,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float nL = 1.0f/max_L, nC = 1.0f/max_C;
   const float norm2[4] = { nL*nL, nC*nC, nC*nC, 1.0f };
 
-  float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float)*roi_out->width*dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
+  memset(ovoid, 0x0, (size_t)sizeof(float)*roi_out->width*roi_out->height*4);
 
   // for each shift vector
   for(int kj=-K; kj<=K; kj++)
@@ -414,9 +414,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int j=0; j<roi_out->height; j++)
       {
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
-        float *S = Sa + dt_get_thread_num() * roi_out->width;
-        const float *ins = ((float *)ivoid) + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)ovoid) + 4*roi_out->width*j;
+        float *S = Sa + (size_t)dt_get_thread_num() * roi_out->width;
+        const float *ins = ((float *)ivoid) + 4*((size_t)roi_in->width *(j+kj) + ki);
+        float *out = ((float *)ovoid) + 4*(size_t)roi_out->width*j;
 
         const int Pm = MIN(MIN(P, j+kj), j);
         const int PM = MIN(MIN(P, roi_out->height-1-j-kj), roi_out->height-1-j);
@@ -430,8 +430,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           {
             int i = MAX(0, -ki);
             float *s = S + i;
-            const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+jj);
-            const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
+            const float *inp  = ((float *)ivoid) + 4*i + 4* (size_t)roi_in->width *(j+jj);
+            const float *inps = ((float *)ivoid) + 4*i + 4*((size_t)roi_in->width *(j+jj+kj) + ki);
             const int last = roi_out->width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
@@ -466,10 +466,10 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           // sliding window in j direction:
           int i = MAX(0, -ki);
           float *s = S + i;
-          const float *inp  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j+P+1);
-          const float *inps = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
-          const float *inm  = ((float *)ivoid) + 4*i + 4* roi_in->width *(j-P);
-          const float *inms = ((float *)ivoid) + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
+          const float *inp  = ((float *)ivoid) + 4*i + 4* (size_t)roi_in->width *(j+P+1);
+          const float *inps = ((float *)ivoid) + 4*i + 4*((size_t)roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = ((float *)ivoid) + 4*i + 4* (size_t)roi_in->width *(j-P);
+          const float *inms = ((float *)ivoid) + 4*i + 4*((size_t)roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
           for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
@@ -546,8 +546,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    float *out = ((float *)ovoid) + 4*roi_out->width*j;
-    float *in  = ((float *)ivoid) + 4*roi_out->width*j;
+    float *out = ((float *)ovoid) + 4*(size_t)roi_out->width*j;
+    float *in  = ((float *)ivoid) + 4*(size_t)roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
       _mm_store_ps(out, _mm_add_ps(

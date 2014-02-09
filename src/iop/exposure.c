@@ -123,8 +123,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    const float *in = ((float *)i) + ch*k*roi_out->width;
-    float *out = ((float *)o) + ch*k*roi_out->width;
+    const float *in = ((float *)i) + (size_t)ch*k*roi_out->width;
+    float *out = ((float *)o) + (size_t)ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
       _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }

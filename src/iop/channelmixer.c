@@ -158,8 +158,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    const float *in = ((float *)ivoid) + ch*j*roi_out->width;
-    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+    const float *in = ((float *)ivoid) + (size_t)ch*j*roi_out->width;
+    float *out = ((float *)ovoid) + (size_t)ch*j*roi_out->width;
     for(int i=0; i<roi_out->width; i++)
     {
       float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;

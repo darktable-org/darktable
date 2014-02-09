@@ -64,8 +64,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    float *in = ((float *)i) + k*ch*roi_out->width;
-    float *out = ((float *)o) + k*ch*roi_out->width;
+    float *in = ((float *)i) + (size_t)k*ch*roi_out->width;
+    float *out = ((float *)o) + (size_t)k*ch*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       float L_in = in[0] / 100.0;
@@ -104,7 +104,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     }
   }
-
 }
 
 #ifdef HAVE_OPENCL

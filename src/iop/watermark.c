@@ -591,7 +591,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
   if (!svgdoc)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -601,7 +601,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   g_free (svgdoc);
   if (!svg || error)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -610,13 +610,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* create cairo memory surface */
   guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
-  memset (image,0,stride*roi_out->height);
+  memset (image,0,(size_t)stride*roi_out->height);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
   if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS)
   {
 //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 

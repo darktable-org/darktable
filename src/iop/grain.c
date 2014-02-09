@@ -367,8 +367,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    float *in  = ((float *)ivoid) + roi_out->width * j * ch;
-    float *out = ((float *)ovoid) + roi_out->width * j * ch;
+    float *in  = ((float *)ivoid) + (size_t)roi_out->width * j * ch;
+    float *out = ((float *)ovoid) + (size_t)roi_out->width * j * ch;
     for(int i=0; i<roi_out->width; i++)
     {
       // calculate x, y in a resolution independent way:

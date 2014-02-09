@@ -178,8 +178,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    in = ((float *)ivoid) + ch*k*roi_out->width;
-    out = ((float *)ovoid) + ch*k*roi_out->width;
+    in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+    out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       double ra,la;

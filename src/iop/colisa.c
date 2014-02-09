@@ -183,7 +183,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in,out,data) schedule(static)
 #endif
-  for(int k=0; k<width*height; k++)
+  for(size_t k=0; k<(size_t)width*height; k++)
   {
     float L     = (in[k*ch+0] < 100.0f) ? data->ctable[CLAMP((int)(in[k*ch+0]/100.0f*0x10000ul), 0, 0xffff)] :
                   dt_iop_eval_exp(data->cunbounded_coeffs, in[k*ch+0]/100.0f);

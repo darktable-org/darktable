@@ -221,7 +221,7 @@ public:
    *    vd_ : dimensionality of value vectors
    * nData_ : number of points in the input
    */
-  PermutohedralLattice(int nData_, int nThreads_=1) :
+  PermutohedralLattice(size_t nData_, int nThreads_=1) :
     nData(nData_), nThreads(nThreads_)
   {
 
@@ -279,7 +279,7 @@ public:
 
 
   /* Performs splatting with given position and value vectors */
-  void splat(float *position, float *value, int replay_index, int thread_index=0)
+  void splat(float *position, float *value, size_t replay_index, int thread_index=0)
   {
     float elevated[D+1];
     int greedy[D+1];
@@ -419,7 +419,7 @@ public:
    * containing each position vector were calculated and stored in the splatting step.
    * We may reuse this to accelerate the algorithm. (See pg. 6 in paper.)
    */
-  void slice(float *col, int replay_index)
+  void slice(float *col, size_t replay_index)
   {
     float *base = hashTables[0].getValues();
     for (int j = 0; j < VD; j++) col[j] = 0;

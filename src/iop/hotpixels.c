@@ -119,7 +119,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int min_neighbours = data->permissive ? 3 : 4;
 
   // The loop should output only a few pixels, so just copy everything first
-  memcpy(o, i, roi_out->width*roi_out->height*sizeof(float));
+  memcpy(o, i, (size_t)roi_out->width*roi_out->height*sizeof(float));
 
   int fixed = 0;
 #ifdef _OPENMP
@@ -127,8 +127,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for (int row=2; row<roi_out->height-2; row++)
   {
-    const float *in = (float*)i + width*row+2;
-    float *out = (float*)o + width*row+2;
+    const float *in = (float*)i + (size_t)width*row+2;
+    float *out = (float*)o + (size_t)width*row+2;
     for (int col=2; col<width-1; col++, in++, out++)
     {
       float mid= *in * multiplier;

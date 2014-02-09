@@ -115,7 +115,7 @@ extern "C"
     sigma[4] = data->sigma[4];
     if(fmaxf(sigma[0], sigma[1]) < .1)
     {
-      memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
+      memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
       return;
     }
 
@@ -124,7 +124,7 @@ extern "C"
     if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
     {
       // no use denoising the thumbnail. takes ages without permutohedral
-      memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
+      memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     }
     else if(rad <= 6)
     {
@@ -143,8 +143,8 @@ extern "C"
 #endif
       for(int j=rad; j<roi_out->height-rad; j++)
       {
-        in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
-        out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
+        in  = ((float *)ivoid) + ch*((size_t)j*roi_in->width  + rad);
+        out = ((float *)ovoid) + ch*((size_t)j*roi_out->width + rad);
         float weights[2*(6+1)*2*(6+1)];
         float *w = weights + rad*wd + rad;
         float sumw;
@@ -163,8 +163,8 @@ extern "C"
           for(int c=0; c<3; c++) out[c] = 0.0f;
           for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++)
             {
-              float *inp = in + ch*(l*roi_in->width+k);
-              float weight = w[l*wd+k];
+              float *inp = in + ch*((size_t)l*roi_in->width+k);
+              float weight = w[(size_t)l*wd+k];
               for(int c=0; c<3; c++) out[c] += inp[c]*weight;
             }
           out += ch;
@@ -175,13 +175,13 @@ extern "C"
       in  = (float *)ivoid;
       out = (float *)ovoid;
       for(int j=0; j<rad; j++)
-        memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+        memcpy(((float*)ovoid) + (size_t)ch*j*roi_out->width, ((float*)ivoid) + (size_t)ch*j*roi_in->width, (size_t)ch*sizeof(float)*roi_out->width);
       for(int j=roi_out->height-rad; j<roi_out->height; j++)
-        memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+        memcpy(((float*)ovoid) + (size_t)ch*j*roi_out->width, ((float*)ivoid) + (size_t)ch*j*roi_in->width, (size_t)ch*sizeof(float)*roi_out->width);
       for(int j=rad; j<roi_out->height-rad; j++)
       {
-        in = ((float *)ivoid) + ch*roi_out->width*j;
-        out = ((float *)ovoid) + ch*roi_out->width*j;
+        in = ((float *)ivoid) + (size_t)ch*roi_out->width*j;
+        out = ((float *)ovoid) + (size_t)ch*roi_out->width*j;
         for(int i=0; i<rad; i++)
           for(int c=0; c<3; c++) out[ch*i + c] = in[ch*i + c];
         for(int i=roi_out->width-rad; i<roi_out->width; i++)
@@ -191,7 +191,7 @@ extern "C"
     else
     {
       for(int k=0; k<5; k++) sigma[k] = 1.0f/sigma[k];
-      PermutohedralLattice<5,4> lattice(roi_in->width*roi_in->height, omp_get_max_threads());
+      PermutohedralLattice<5,4> lattice((size_t)roi_in->width*roi_in->height, omp_get_max_threads());
 
       // splat into the lattice
 #ifdef _OPENMP
@@ -199,9 +199,9 @@ extern "C"
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
-        const float *in = (const float*)ivoid + j*roi_in->width*ch;
+        const float *in = (const float*)ivoid + (size_t)j*roi_in->width*ch;
         const int thread = omp_get_thread_num();
-        int index = j * roi_in->width;
+        size_t index = (size_t)j * roi_in->width;
         for(int i=0; i<roi_in->width; i++, index++)
         {
           float pos[5] = {i*sigma[0], j*sigma[1], in[0]*sigma[2], in[1]*sigma[3], in[2]*sigma[4]};
@@ -222,8 +222,8 @@ extern "C"
 #endif
       for(int j=0; j<roi_in->height; j++)
       {
-        float *out = (float*)ovoid + j*roi_in->width*ch;
-        int index = j * roi_in->width;
+        float *out = (float*)ovoid + (size_t)j*roi_in->width*ch;
+        size_t index = (size_t)j * roi_in->width;
         for(int i=0; i<roi_in->width; i++, index++)
         {
           float val[4];
