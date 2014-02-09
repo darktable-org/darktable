@@ -158,7 +158,7 @@ error:
 
 /* input: 0 - 16384 (valid range: from black level to white level) */
 /* output: -14 ... 0 */
-float raw_to_ev(float raw, float black_level, float white_level)
+static float raw_to_ev(float raw, float black_level, float white_level)
 {
     float raw_max = white_level - black_level;
     float raw_ev = -log2f(raw_max) + log2f(CLAMP(raw, 0.0f, 16384.0f));
@@ -166,7 +166,7 @@ float raw_to_ev(float raw, float black_level, float white_level)
     return raw_ev;
 }
 
-int compute_correction(dt_iop_module_t *self, float *correction)
+static int compute_correction(dt_iop_module_t *self, float *correction)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
