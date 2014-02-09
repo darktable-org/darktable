@@ -210,10 +210,26 @@ static inline float Lab(float val)
   return val;
 }
 
-static inline float RGB_to_L(float r, float g, float b)
+static inline void
+RGB2Lab(float* L, float* a, float*b, float R, float G, float B)
 {
-  float y = 0.2126f*r + 0.7152f*g + 0.0722f*b;
-  return (116.f*Lab(y) - 16.f) / 100.f;
+  const float X = 0.412453f*R + 0.357580f*G + 0.180423f*B;
+  const float Y = 0.212671f*R + 0.715160f*G + 0.072169f*B;
+  const float Z = 0.019334f*R + 0.119193f*G + 0.950227f*B;
+  const float fx = Lab(X);
+  const float fy = Lab(Y);
+  const float fz = Lab(Z);
+  // Normalized to the [0,1] cube
+  *L = 116.f*fy - 16.f;
+  *a = 500.f*(fx - fy);
+  *b = 200.f*(fy - fz);
+}
+static inline void
+Lab2UnitCube(float* L, float* a, float*b)
+{
+  *L /= 100.f;
+  *a = (*a + 128.f) / 256.f;
+  *b = (*b + 128.f) / 256.f;
 }
 
 enum module_type
@@ -258,8 +274,16 @@ static void
 build_tonecurve(
   int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
   int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
-  int ch, float* curve, int* cnt)
+  int ch, float* curve, int* hist)
 {
+  float* cL = curve;
+  float* ca = cL + CURVE_RESOLUTION;
+  float* cb = ca + CURVE_RESOLUTION;
+
+  int* hL = hist;
+  int* ha = hL + CURVE_RESOLUTION;
+  int* hb = ha + CURVE_RESOLUTION;
+
   for(int j=0;j<height_jpeg;j++)
   {
     for(int i=0;i<width_jpeg;i++)
@@ -279,7 +303,11 @@ build_tonecurve(
       b = linearize_sRGB(b);
 
       // Compute the JPEG L val
-      float jpegL = RGB_to_L(r, g, b);
+      float L_jpeg;
+      float a_jpeg;
+      float b_jpeg;
+      RGB2Lab(&L_jpeg, &a_jpeg, &b_jpeg, r, g, b);
+      Lab2UnitCube(&L_jpeg, &a_jpeg, &b_jpeg);
 
       // grab RGB from RAW
       r = (float)buf_raw[3*(width_raw*rj + ri) + 0]/65535.f;
@@ -287,11 +315,21 @@ build_tonecurve(
       b = (float)buf_raw[3*(width_raw*rj + ri) + 2]/65535.f;
 
       // Compute the RAW L val
-      float rawL = RGB_to_L(r, g, b);
+      float L_raw;
+      float a_raw;
+      float b_raw;
+      RGB2Lab(&L_raw, &a_raw, &b_raw, r, g, b);
+      Lab2UnitCube(&L_raw, &a_raw, &b_raw);
 
-      uint16_t raw = (uint16_t)((rawL*65535.f) + 0.5f);
-      curve[raw] = (curve[raw]*cnt[raw] + jpegL)/(cnt[raw] + 1.0f);
-      cnt[raw]++;
+      uint16_t Li = (uint16_t)(L_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      uint16_t ai = (uint16_t)(a_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      uint16_t bi = (uint16_t)(b_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      cL[Li] = (cL[Li]*hL[Li] + L_jpeg)/(hL[Li] + 1.0f);
+      ca[ai] = (ca[ai]*ha[ai] + a_jpeg)/(ha[ai] + 1.0f);
+      cb[bi] = (cb[bi]*hb[bi] + b_jpeg)/(hb[bi] + 1.0f);
+      hL[Li]++;
+      ha[ai]++;
+      hb[bi]++;
     }
   }
 }
@@ -402,7 +440,7 @@ main(int argc, char** argv)
   // curve related vars
   int ncurves = -1;
   float* curve = NULL;
-  int* cnt = NULL;
+  int* hist = NULL;
   CurveData fit;
   int accepts = -1;
   float sqerr = -1.f;
@@ -474,15 +512,15 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  ncurves = module == MODULE_BASECURVE ? 3 : 1;
+  ncurves = 3;
   curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*ncurves);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     goto exit;
   }
 
-  cnt = calloc(1, CURVE_RESOLUTION*sizeof(int)*ncurves);
-  if (!cnt) {
+  hist = calloc(1, CURVE_RESOLUTION*sizeof(int)*ncurves);
+  if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     goto exit;
   }
@@ -495,14 +533,11 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  float* curve_to_approximate = NULL;
-  int* cnt_for_approximation = NULL;
-
   if (module == MODULE_BASECURVE)
   {
     for (int ch=0; ch<3; ch++)
     {
-      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*CURVE_RESOLUTION, cnt+ch*CURVE_RESOLUTION);
+      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*CURVE_RESOLUTION, hist+ch*CURVE_RESOLUTION);
     }
 
     // output the histograms:
@@ -512,30 +547,22 @@ main(int argc, char** argv)
       float ch0 = curve[k + 0*CURVE_RESOLUTION];
       float ch1 = curve[k + 1*CURVE_RESOLUTION];
       float ch2 = curve[k + 2*CURVE_RESOLUTION];
-      int c0 = cnt[k + 0*CURVE_RESOLUTION];
-      int c1 = cnt[k + 1*CURVE_RESOLUTION];
-      int c2 = cnt[k + 2*CURVE_RESOLUTION];
+      int c0 = hist[k + 0*CURVE_RESOLUTION];
+      int c1 = hist[k + 1*CURVE_RESOLUTION];
+      int c2 = hist[k + 2*CURVE_RESOLUTION];
       fprintf(fb, "%f %f %f %f %d %d %d\n", ch0, ch1, ch2, (ch0 + ch1 + ch2)/3.0f, c0, c1, c2);
     }
-
-    // for now it seems more stable to work on G channel alone
-    curve_to_approximate = curve + 1*CURVE_RESOLUTION;
-    cnt_for_approximation = cnt + 1*CURVE_RESOLUTION;
   }
   else if (module == MODULE_TONECURVE)
   {
-    build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, cnt);
+    build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, hist);
 
     // output the histogram
     fprintf(fb, "# tonecurve-L cnt-L\n");
     for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      fprintf(fb, "%f %d\n", curve[k], cnt[k]);
+      fprintf(fb, "%f %d\n", curve[k], hist[k]);
     }
-
-    // for now it seems more stable to work on G channel alone
-    curve_to_approximate = curve;
-    cnt_for_approximation = cnt;
   }
 
   free(raw_buff);
@@ -547,10 +574,12 @@ main(int argc, char** argv)
   csample.m_samplingRes = CURVE_RESOLUTION;
   csample.m_outputRes = CURVE_RESOLUTION;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
-  fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve_to_approximate, cnt_for_approximation);
 
   if (module == MODULE_BASECURVE)
   {
+    // fit G channel curve only, this seems to be the best choice for now
+    fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve+CURVE_RESOLUTION, hist+CURVE_RESOLUTION);
+
     fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
     fprintf(ff, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
     fprintf(ff, "# { \"new measured basecurve\", \"insert maker\", \"insert model\", 0, 51200,                        {{{");
@@ -584,49 +613,58 @@ main(int argc, char** argv)
   }
   else if (module == MODULE_TONECURVE)
   {
-    fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
-    fprintf(ff, "# in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
-      "{\"put a name here\", {{{");
-    for(int k=0;k<fit.m_numAnchors;k++)
-      fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"");
-    fprintf(ff, "}, {{0., 0.}, {1., 1.}}, {{0., 0.}, {1., 1.}}}, {%d, 2, 2}, {2, 2, 2}, 1, 0, 0}},\n", fit.m_numAnchors);
-    CurveDataSample(&fit, &csample);
-    for(int k=0; k<CURVE_RESOLUTION; k++)
-      fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
-
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
-    for (int k=0; k<fit.m_numAnchors; k++)
+
+    for (int i=0; i<1 /* XXX: till i get ab right */; i++)
     {
-      params.tonecurve[0][k].x = fit.m_anchors[k].x;
-      params.tonecurve[0][k].y = fit.m_anchors[k].y;
+      fit_curve(&fit, &accepts, &sqerr, &csample, num_nodes, curve+i*CURVE_RESOLUTION, hist+i*CURVE_RESOLUTION);
+
+      for (int k=0; k<fit.m_numAnchors; k++)
+      {
+        params.tonecurve[i][k].x = fit.m_anchors[k].x;
+        params.tonecurve[i][k].y = fit.m_anchors[k].y;
+      }
+      params.tonecurve_nodes[i] = fit.m_numAnchors;
+      params.tonecurve_type[i] = 2; // monotone hermite
     }
-    for (int k=1; k<3; k++)
+    // XXX till i get ab right
+    for (int i=1; i<3; i++)
     {
-      params.tonecurve[k][0].x = 0.f;
-      params.tonecurve[k][0].y = 0.f;
-      params.tonecurve[k][1].x = .5f;
-      params.tonecurve[k][1].y = .5f;
-      params.tonecurve[k][2].x = 1.f;
-      params.tonecurve[k][2].y = 1.f;
+      for (int k=0; k<num_nodes; k++)
+      {
+        params.tonecurve[i][k].x = (float)k/(float)num_nodes;
+        params.tonecurve[i][k].y = (float)k/(float)num_nodes;
+      }
+      params.tonecurve_nodes[i] = num_nodes;
+      params.tonecurve_type[i] = 2; // monotone hermite
     }
-    params.tonecurve_nodes[0] = fit.m_numAnchors;
-    params.tonecurve_nodes[1] = 3;
-    params.tonecurve_nodes[2] = 3;
-    for (int k=0; k<3; k++)
-    {
-      params.tonecurve_type[k] = 2;
-    }
-    params.tonecurve_autoscale_ab = 1;
+
+    params.tonecurve_autoscale_ab = 1; // XXX: till i get ab right
     params.tonecurve_unbound_ab = 0;
 
     uint8_t encoded[2048];
     hexify(encoded, (uint8_t*)&params, sizeof(params));
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
-    fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
+    fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n\n");
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", TONECURVE_PARAMS_VERSION, encoded);
-  }
+    fprintf(stdout, "\n\n\n"
+                    "# if it pleases you, then in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
+                    "# {\"put a name here\", {{");
+    for (int i=0; i<3; i++)
+    {
+      fprintf(stdout, "{");
+      for(int k=0;k<params.tonecurve_nodes[i];k++)
+      {
+        fprintf(stdout, "{%f, %f}%s", params.tonecurve[i][k].x, params.tonecurve[i][k].y, params.tonecurve_nodes[i]-1?", ":"");
+      }
+      fprintf(stdout, "},");
+    }
+    fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, 0, 0, 0}},\n",
+      params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],
+      params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2]);
+}
 
 exit:
   if (fb)
@@ -649,10 +687,10 @@ exit:
     free(curve);
     curve = NULL;
   }
-  if (cnt)
+  if (hist)
   {
-    free(cnt);
-    cnt = NULL;
+    free(hist);
+    hist = NULL;
   }
 
   return ret;
