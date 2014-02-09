@@ -83,7 +83,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   {
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
-    *buffer = (uint8_t *)malloc(sizeof(uint8_t)*jpg.width*jpg.height*4);
+    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t)*jpg.width*jpg.height*4);
     if(!buffer) goto libraw_fail;
     *width = jpg.width;
     *height = jpg.height;
@@ -132,7 +132,7 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0; j<ht; j++) memcpy(out+j*bpp*wd, in+j*stride, bpp*wd);
+    for(int j=0; j<ht; j++) memcpy(out+(size_t)j*bpp*wd, in+(size_t)j*stride, bpp*wd);
     return;
   }
   int ii = 0, jj = 0;
@@ -157,8 +157,8 @@ dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const int w
 #endif
   for(int j=0; j<ht; j++)
   {
-    char *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
-    const char *in2  = in + stride*j;
+    char *out2 = out + (size_t)labs(sj)*jj + (size_t)labs(si)*ii + (size_t)sj*j;
+    const char *in2  = in + (size_t)stride*j;
     for(int i=0; i<wd; i++)
     {
       memcpy(out2, in2, bpp);
@@ -177,7 +177,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[ch*(j*stride + i)+k]-black)*scale;
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*((size_t)j*wd + i)+k] = (in[ch*((size_t)j*stride + i)+k]-black)*scale;
     return;
   }
   int ii = 0, jj = 0;
@@ -202,7 +202,7 @@ dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const floa
 #endif
   for(int j=0; j<ht; j++)
   {
-    float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
+    float *out2 = out + (size_t)labs(sj)*jj + (size_t)labs(si)*ii + (size_t)sj*j;
     const uint16_t *in2  = in + stride*j;
     for(int i=0; i<wd; i++)
     {
@@ -222,7 +222,7 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(in, out)
 #endif
-    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*(j*wd + i)+k] = (in[j*stride + ch*i +k]-black)*scale;
+    for(int j=0; j<ht; j++) for(int i=0; i<wd; i++) for(int k=0; k<ch; k++) out[4*((size_t)j*wd + i)+k] = (in[(size_t)j*stride + ch*i +k]-black)*scale;
     return;
   }
   int ii = 0, jj = 0;
@@ -247,8 +247,8 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
 #endif
   for(int j=0; j<ht; j++)
   {
-    float *out2 = out + labs(sj)*jj + labs(si)*ii + sj*j;
-    const uint8_t *in2  = in + stride*j;
+    float *out2 = out + (size_t)labs(sj)*jj + (size_t)labs(si)*ii + sj*j;
+    const uint8_t *in2  = in + (size_t)stride*j;
     for(int i=0; i<wd; i++)
     {
       for(int k=0; k<ch; k++) out2[k] = (in2[k] - black)*scale;
@@ -444,7 +444,7 @@ dt_imageio_open_raw(
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(img, image, raw, buf)
 #endif
-    for(int k=0; k<img->width*img->height; k++)
+    for(size_t k=0; k<(size_t)img->width*img->height; k++)
       ((uint16_t *)buf)[k] = CLAMPS((((uint16_t *)image->data)[k] - raw->color.black)*65535.0f/(float)(raw->color.maximum - raw->color.black), 0, 0xffff);
   }
   // clean up raw stuff.
@@ -502,7 +502,7 @@ static const uint8_t _imageio_ldr_magic[] =
 
 gboolean dt_imageio_is_ldr(const char *filename)
 {
-  int offset=0;
+  size_t offset=0;
   uint8_t block[16]= {0};
   FILE *fin = fopen(filename,"rb");
   if (fin)
@@ -795,7 +795,7 @@ int dt_imageio_export_with_flags(
     const double scale = fminf(scalex, scaley);
     processed_width  = scale*pipe.processed_width  + .5f;
     processed_height = scale*pipe.processed_height + .5f;
-    moutbuf = (uint8_t *)dt_alloc_align(64, sizeof(float)*processed_width*processed_height*4);
+    moutbuf = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(float)*processed_width*processed_height*4);
     outbuf = moutbuf;
     // now downscale into the new buffer:
     dt_iop_roi_t roi_in, roi_out;
@@ -827,7 +827,7 @@ int dt_imageio_export_with_flags(
       if(high_quality_processing)
       {
         const float *const inbuf = (float *)outbuf;
-        for(int k=0; k<processed_width*processed_height; k++)
+        for(size_t k=0; k<(size_t)processed_width*processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
           const uint8_t r = CLAMP(inbuf[4*k+2]*0xff, 0, 0xff);
@@ -846,7 +846,7 @@ int dt_imageio_export_with_flags(
       if(high_quality_processing)
       {
         const float *const inbuf = (float *)outbuf;
-        for(int k=0; k<processed_width*processed_height; k++)
+        for(size_t k=0; k<(size_t)processed_width*processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
           const uint8_t r = CLAMP(inbuf[4*k+0]*0xff, 0, 0xff);
@@ -864,7 +864,7 @@ int dt_imageio_export_with_flags(
 #pragma omp parallel for default(none) shared(processed_width, processed_height) schedule(static)
 #endif
         // just flip byte order
-        for(int k=0; k<processed_width*processed_height; k++)
+        for(size_t k=0; k<(size_t)processed_width*processed_height; k++)
         {
           uint8_t tmp = buf8[4*k+0];
           buf8[4*k+0] = buf8[4*k+2];
@@ -881,7 +881,7 @@ int dt_imageio_export_with_flags(
     for(int y=0; y<processed_height; y++) for(int x=0; x<processed_width ; x++)
       {
         // convert in place
-        const int k = x + processed_width*y;
+        const size_t k = (size_t)processed_width*y + x;
         for(int i=0; i<3; i++) buf16[4*k+i] = CLAMP(buff[4*k+i]*0x10000, 0, 0xffff);
       }
   }

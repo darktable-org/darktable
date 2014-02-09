@@ -150,8 +150,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     int stride = ch*roi_out->width;
 
-    in = (float *)ivoid+(k*stride);
-    out = (float *)ovoid+(k*stride);
+    in = (float *)ivoid + (size_t)k*stride;
+    out = (float *)ovoid + (size_t)k*stride;
 
     for(int l=0; l < stride; l+=ch)
     {

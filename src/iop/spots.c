@@ -298,8 +298,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for (int k=0; k<roi_out->height; k++)
   {
-    float *outb = out + ch*k*roi_out->width;
-    const float *inb =  in + ch*roi_in->width*(k+roi_out->y-roi_in->y) + ch*(roi_out->x-roi_in->x);
+    float *outb = out + (size_t)ch*k*roi_out->width;
+    const float *inb =  in + (size_t)ch*roi_in->width*(k+roi_out->y-roi_in->y) + ch*(roi_out->x-roi_in->x);
     memcpy(outb, inb, sizeof(float)*roi_out->width*ch);
   }
 
@@ -380,9 +380,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
             const float f = filter[xx-posx+1]*filter[yy-posy+1];
             for(int c=0; c<ch; c++)
-              out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
-                out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
-                in[4*(roi_in->width*(yy-posy+posy_source-roi_in->y) + xx-posx+posx_source-roi_in->x) + c] * f;
+              out[4*((size_t)roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
+                out[4*((size_t)roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
+                in[4*((size_t)roi_in->width*(yy-posy+posy_source-roi_in->y) + xx-posx+posx_source-roi_in->x) + c] * f;
           }
         }
       }
@@ -433,9 +433,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
               float f = mask[((int)((yy-fts)/roi_in->scale))*width + (int)((xx-fls)/roi_in->scale)];  //we can add the opacity here
 
               for(int c=0; c<ch; c++)
-                out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
-                  out[4*(roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
-                  in[4*(roi_in->width*(yy-dy-roi_in->y) + xx-dx-roi_in->x) + c] * f;
+                out[4*((size_t)roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] =
+                  out[4*((size_t)roi_out->width*(yy-roi_out->y) + xx-roi_out->x) + c] * (1.0f-f) +
+                  in[4*((size_t)roi_in->width*(yy-dy-roi_in->y) + xx-dx-roi_in->x) + c] * f;
             }
           }
         }

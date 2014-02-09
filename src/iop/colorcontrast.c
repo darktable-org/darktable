@@ -159,8 +159,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->height; j++)
   {
 
-    float *in  = ((float *)i) + ch*roi_in->width *j;
-    float *out = ((float *)o) + ch*roi_out->width*j;
+    float *in  = ((float *)i) + (size_t)ch*roi_in->width *j;
+    float *out = ((float *)o) + (size_t)ch*roi_out->width*j;
 
     const __m128 scale = _mm_set_ps(1.0f,d->b_steepness,d->a_steepness,1.0f);
     const __m128 offset = _mm_set_ps(0.0f,d->b_offset,d->a_offset,0.0f);

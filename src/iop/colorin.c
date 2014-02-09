@@ -294,8 +294,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int j=0; j<roi_out->height; j++)
     {
 
-      float *buf_in  = in + ch*roi_in->width *j;
-      float *buf_out = out + ch*roi_out->width*j;
+      float *buf_in  = in + (size_t)ch*roi_in->width *j;
+      float *buf_out = out + (size_t)ch*roi_out->width*j;
       float cam[3];
       const __m128 cm0 = _mm_set_ps(0.0f,cmat[6],cmat[3],cmat[0]);
       const __m128 cm1 = _mm_set_ps(0.0f,cmat[7],cmat[4],cmat[1]);
@@ -377,7 +377,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const int m=(k*(roi_out->width*ch));
+      const size_t m = (size_t)k*roi_out->width*ch;
 
       for (int l=0; l<roi_out->width; l++)
       {

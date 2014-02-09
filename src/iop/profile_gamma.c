@@ -93,7 +93,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     out[0] = table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
     out[1] = table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];

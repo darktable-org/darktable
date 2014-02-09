@@ -161,8 +161,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    const float *in = ((float *)i) + 4*k*roi_out->width;
-    float *out = ((float *)o) + 4*k*roi_out->width;
+    const float *in = ((float *)i) + (size_t)4*k*roi_out->width;
+    float *out = ((float *)o) + (size_t)4*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
       out[0] = 100.0f*color_filter(in[1], in[2], d->a, d->b, sigma2);
@@ -188,8 +188,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    const float *in = ((float *)i) + 4*k*roi_out->width;
-    float *out = ((float *)o) + 4*k*roi_out->width;
+    const float *in = ((float *)i) + (size_t)4*k*roi_out->width;
+    float *out = ((float *)o) + (size_t)4*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
     {
       const float tt = envelope(in[0]);

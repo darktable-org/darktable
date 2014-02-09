@@ -725,7 +725,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    const int k = ch*roi_out->width*j;
+    const size_t k = (size_t)ch*roi_out->width*j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();

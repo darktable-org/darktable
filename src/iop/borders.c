@@ -325,9 +325,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const int ch = piece->colors;
-  const int in_stride  = ch*roi_in->width;
-  const int out_stride = ch*roi_out->width;
-  const int cp_stride = in_stride*sizeof(float);
+  const size_t in_stride  = (size_t)ch*roi_in->width;
+  const size_t out_stride = (size_t)ch*roi_out->width;
+  const size_t cp_stride = in_stride*sizeof(float);
 
   const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
@@ -342,7 +342,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
   const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
   float *buf = (float *)ovoid;
-  for(int k=0; k<roi_out->width*roi_out->height; k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
 
   // Frame line draw
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
@@ -374,13 +374,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     for(int r=frame_tl_out_y; r<=frame_br_out_y; r++)
     {
-      buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
+      buf = (float *)ovoid + ((size_t)r*out_stride + frame_tl_out_x*ch);
       for(int c=frame_tl_out_x; c<=frame_br_out_x; c++, buf+=4)
         memcpy(buf, col_frame, sizeof(float)*4);
     }
     for(int r=frame_tl_in_y; r<=frame_br_in_y; r++)
     {
-      buf = (float *)ovoid + r*out_stride + frame_tl_in_x*ch;
+      buf = (float *)ovoid + ((size_t)r*out_stride + frame_tl_in_x*ch);
       for(int c=frame_tl_in_x; c<=frame_br_in_x; c++, buf+=4)
         memcpy(buf, col, sizeof(float)*4);
     }
@@ -389,8 +389,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // blit image inside border and fill the output with previous processed out
   for(int j=0; j<roi_in->height; j++)
   {
-    float *out = ((float *)ovoid) + (j + border_in_y)*out_stride + ch * border_in_x;
-    const float *in  = ((float *)ivoid) + j*in_stride;
+    float *out = ((float *)ovoid) + (size_t)(j + border_in_y)*out_stride + ch * border_in_x;
+    const float *in  = ((float *)ivoid) + (size_t)j*in_stride;
     memcpy(out, in, cp_stride);
   }
 

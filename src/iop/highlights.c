@@ -174,8 +174,8 @@ void process(
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      float *out = (float *)ovoid + 4*roi_out->width*j;
-      float *in  = (float *)ivoid + 4*roi_in->width*j;
+      float *out = (float *)ovoid + (size_t)4*roi_out->width*j;
+      float *in  = (float *)ivoid + (size_t)4*roi_in->width*j;
       for(int i=0; i<roi_out->width; i++)
       {
         _mm_stream_ps(out, _mm_min_ps(clipm, _mm_set_ps(in[3],in[2],in[1],in[0])));
@@ -195,8 +195,8 @@ void process(
 #endif
       for(int j=0; j<roi_out->height; j++)
       {
-        float *out = (float *)ovoid + roi_out->width*j;
-        float *in  = (float *)ivoid + roi_out->width*j;
+        float *out = (float *)ovoid + (size_t)roi_out->width*j;
+        float *in  = (float *)ivoid + (size_t)roi_out->width*j;
         for(int i=0; i<roi_out->width; i++)
         {
           if(i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
@@ -215,7 +215,7 @@ void process(
             {
               for(int ii=0; ii<=1; ii++)
               {
-                const float val = in[jj*roi_out->width + ii];
+                const float val = in[(size_t)jj*roi_out->width + ii];
                 mean += val*0.25f;
                 blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
               }
@@ -237,7 +237,7 @@ void process(
     case DT_IOP_HIGHLIGHTS_CLIP:
     {
       const __m128 clipm = _mm_set1_ps(clip);
-      const int n = roi_out->height*roi_out->width;
+      const size_t n = (size_t)roi_out->height*roi_out->width;
       float *const out = (float *)ovoid;
       float *const in  = (float *)ivoid;
 #ifdef _OPENMP
@@ -247,7 +247,7 @@ void process(
         _mm_stream_ps(out+j, _mm_min_ps(clipm, _mm_load_ps(in+j)));
       _mm_sfence();
       // lets see if there's a non-multiple of four rest to process:
-      if(n & 3) for(int j=n&~3u; j<n; j++) out[j] = MIN(clip, in[j]);
+      if(n & 3) for(size_t j=n&~3u; j<n; j++) out[j] = MIN(clip, in[j]);
       break;
     }
   }

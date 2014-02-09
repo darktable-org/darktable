@@ -203,16 +203,16 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
     if(y < 0)       y = 0; \
     if(y >= height) y = height - 1; \
     \
-    px2 = ((__m128 *)in) + x + y*width; \
+    px2 = ((__m128 *)in) + x + (size_t)y*width; \
     \
     SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj); \
   } while (0)
 
 #define ROW_PROLOGUE \
-  const __m128 *px = ((__m128 *)in) + j*width; \
+  const __m128 *px = ((__m128 *)in) + (size_t)j*width; \
   const __m128 *px2; \
-  float *pdetail = detail + 4*j*width; \
-  float *pcoarse = out + 4*j*width;
+  float *pdetail = detail + (size_t)4*j*width; \
+  float *pcoarse = out + (size_t)4*j*width;
 
 #define SUM_PIXEL_PROLOGUE \
   __m128 sum = _mm_setzero_ps(); \
@@ -284,7 +284,7 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
     for(int i=2*mult; i<width-2*mult; i++)
     {
       SUM_PIXEL_PROLOGUE
-      px2 = ((__m128*)in) + i-2*mult + (j-2*mult)*width;
+      px2 = ((__m128*)in) + i-2*mult + (size_t)(j-2*mult)*width;
       for (int jj=0; jj<5; jj++)
       {
         for (int ii=0; ii<5; ii++)
@@ -357,9 +357,9 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
   for(int j=0; j<height; j++)
   {
     // TODO: prefetch? _mm_prefetch()
-    const __m128 *pin = (__m128 *)in + j*width;
-    __m128 *pdetail = (__m128 *)detail + j*width;
-    float *pout = out + 4*j*width;
+    const __m128 *pin = (__m128 *)in + (size_t)j*width;
+    __m128 *pdetail = (__m128 *)detail + (size_t)j*width;
+    float *pout = out + (size_t)4*j*width;
     for(int i=0; i<width; i++)
     {
       const __m128i maski = _mm_set1_epi32(0x80000000u);
@@ -460,7 +460,7 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  tmp = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+  tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float)*4*width*height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
@@ -469,7 +469,7 @@ process (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, voi
 
   for(int k=0; k<max_scale; k++)
   {
-    detail[k] = (float *)dt_alloc_align(64, sizeof(float)*4*width*height);
+    detail[k] = (float *)dt_alloc_align(64, (size_t)sizeof(float)*4*width*height);
     if(detail[k] == NULL)
     {
       fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");

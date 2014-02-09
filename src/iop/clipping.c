@@ -766,8 +766,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const float *in  = ((float *)ivoid)+ch*roi_out->width*j;
-      float *out = ((float *)ovoid)+ch*roi_out->width*j;
+      const float *in  = ((float *)ivoid)+(size_t)ch*roi_out->width*j;
+      float *out = ((float *)ovoid)+(size_t)ch*roi_out->width*j;
       for(int i=0; i<roi_out->width; i++)
       {
         for(int c=0; c<4; c++) out[c] = in[c];
@@ -794,7 +794,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     // TODO: optimize with scanlines and linear steps between?
     for(int j=0; j<roi_out->height; j++)
     {
-      float *out = ((float *)ovoid)+ch*j*roi_out->width;
+      float *out = ((float *)ovoid)+(size_t)ch*j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out+=ch)
       {
         float pi[2], po[2];

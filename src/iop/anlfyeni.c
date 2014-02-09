@@ -145,8 +145,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int j=0; j<roi_out->height; j++)
   {
     int i;
-    const float *in  = ((float *)ivoid) + ch*roi_in->width *j;
-    float *out = ((float *)ovoid) + ch*roi_out->width*j;
+    const float *in  = ((float *)ivoid) + (size_t)ch*roi_in->width *j;
+    float *out = ((float *)ovoid) + (size_t)ch*roi_out->width*j;
     const float *inp0 = in;
     const float *inp1 = in + ch_width_1;
     mu_f[0] = yeni(inp0[0], inp0[0], d->alpha/roi_in->scale*piece->iscale);
