@@ -379,7 +379,7 @@ write_image (dt_imageio_module_data_t *jpg_tmp, const char *filename, const void
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
     JSAMPROW tmp[1];
-    buf = in + jpg->cinfo.next_scanline * jpg->cinfo.image_width * 4;
+    buf = in + (size_t)jpg->cinfo.next_scanline * jpg->cinfo.image_width * 4;
     for(int i=0; i<jpg->width; i++) for(int k=0; k<3; k++) row[3*i+k] = buf[4*i+k];
     tmp[0] = row;
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
@@ -426,7 +426,7 @@ int read_image (dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   }
   (void)jpeg_start_decompress(&(jpg->dinfo));
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width*jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)malloc((size_t)jpg->dinfo.output_width*jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
