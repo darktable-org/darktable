@@ -258,7 +258,7 @@ dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const float 
   }
 }
 
-int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
+size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation)
 {
   int ii = i, jj = j, w = wd, fw = fwd, fh = fht;
   if(orientation & 4)
@@ -271,7 +271,7 @@ int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int
   }
   if(orientation & 2) ii = (int)fw - ii - 1;
   if(orientation & 1) jj = (int)fh - jj - 1;
-  return jj*w + ii;
+  return (size_t)jj*w + ii;
 }
 
 dt_imageio_retval_t
