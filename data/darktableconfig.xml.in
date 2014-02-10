@@ -178,7 +178,7 @@
   <dtconfig>
     <name>maximum_number_tiles</name>
     <type>int</type>
-    <default>10000/default>
+    <default>10000</default>
     <shortdescription>assumed maximum sane number of tiles</shortdescription>
     <longdescription>if during tiling this number is exceeded darktable assumes that tiling is not possible and falls back to untiled processing - with all system memory limits taking full effect. in case you want to process huge images you may want to increase this number.</longdescription>
   </dtconfig>
