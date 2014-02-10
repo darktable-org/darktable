@@ -730,7 +730,7 @@ void process_nlmeans(
       {
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         float *S = Sa + dt_get_thread_num() * roi_out->width;
-        const float *ins = in + (size_t)4*roi_in->width *(j+kj) + ki;
+        const float *ins = in + 4l*((size_t)roi_in->width *(j+kj) + ki);
         float *out = ((float *)ovoid) + (size_t)4*roi_out->width*j;
 
         const int Pm = MIN(MIN(P, j+kj), j);
@@ -746,7 +746,7 @@ void process_nlmeans(
             int i = MAX(0, -ki);
             float *s = S + i;
             const float *inp  = in + 4*i + (size_t)4* roi_in->width *(j+jj);
-            const float *inps = in + 4*i + (size_t)4*roi_in->width *(j+jj+kj) + ki;
+            const float *inps = in + 4*i +  4l*((size_t)roi_in->width *(j+jj+kj) + ki);
             const int last = roi_out->width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
@@ -787,10 +787,10 @@ void process_nlmeans(
           // sliding window in j direction:
           int i = MAX(0, -ki);
           float *s = S + i;
-          const float *inp  = in + 4*i + (size_t)4* roi_in->width *(j+P+1);
-          const float *inps = in + 4*i + (size_t)4* roi_in->width *(j+P+1+kj) + ki;
-          const float *inm  = in + 4*i + (size_t)4* roi_in->width *(j-P);
-          const float *inms = in + 4*i + (size_t)4* roi_in->width *(j-P+kj) + ki;
+          const float *inp  = in + 4*i + 4l*(size_t) roi_in->width *(j+P+1);
+          const float *inps = in + 4*i + 4l*(size_t)(roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = in + 4*i + 4l*(size_t) roi_in->width *(j-P);
+          const float *inms = in + 4*i + 4l*(size_t)(roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
           for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
