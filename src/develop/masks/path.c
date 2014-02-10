@@ -2390,7 +2390,7 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
   const float ly = p1[1]-p0[1];
 
   const int dx = lx < 0 ? -1 : 1;
-  const int dy = ly < 0 ? -1 : 1;
+  const int dy = (ly < 0 ? -1 : 1)*bw;
 
   for (int i=0 ; i<l; i++)
   {
@@ -2398,9 +2398,10 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
     const int x = (int)((float)i*lx/(float)l) + p0[0];
     const int y = (int)((float)i*ly/(float)l) + p0[1];
     const float op = 1.0-(float)i/(float)l;
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+    size_t index = (size_t)y*bw+x;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[index] = fmaxf((*buffer)[index],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[index+dx] = fmaxf((*buffer)[index+dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dy] = fmaxf((*buffer)[index+dy],op); //this one is to avoid gap due to int rounding
   }
 }
 
@@ -2435,14 +2436,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   start = start2 = dt_get_wtime();
 
   //we allocate the output buffer
-  *buffer = malloc(width*height*sizeof(float));
+  *buffer = malloc((size_t)width*height*sizeof(float));
   if (*buffer == NULL)
   {
     free(points);
     free(border);
     return 0;
   }
-  memset(*buffer,0,width*height*sizeof(float));
+  memset(*buffer,0,(size_t)width*height*sizeof(float));
 
   int nb_corner = g_list_length(form->points);
 
@@ -2586,7 +2587,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     if(path_encircles_roi)
     {
       // roi lies completely within path
-      for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
+      for (size_t k=0; k < (size_t)width*height; k++) (*buffer)[k] = 1.0f;
     }
     else
     {
@@ -2622,7 +2623,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
           if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
 
-          (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+          size_t index = (size_t)yy*width+xx;
+
+          (*buffer)[index] = 1.0f - (*buffer)[index];
         }
       }
 
@@ -2641,9 +2644,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
         int state = 0;
         for (int xx=xmin ; xx<=xmax; xx++)
         {
-          float v = (*buffer)[yy*width+xx];
+          size_t index = (size_t)yy*width+xx;
+          float v = (*buffer)[index];
           if (v > 0.5f) state = !state;
-          if (state) (*buffer)[yy*width+xx] = 1.0f;
+          if (state) (*buffer)[index] = 1.0f;
         }
       }
 

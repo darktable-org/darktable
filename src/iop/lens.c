@@ -182,7 +182,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 
   if(!d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(out, in, ch*sizeof(float)*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)ch*sizeof(float)*roi_out->width*roi_out->height);
     return;
   }
 
@@ -205,7 +205,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
       // acquire temp memory for distorted pixel coords
-      const size_t req2 = roi_out->width*2*3*sizeof(float);
+      const size_t req2 = (size_t)roi_out->width*2*3*sizeof(float);
       if(req2 > 0 && d->tmpbuf2_len < req2*dt_get_num_threads())
       {
         d->tmpbuf2_len = req2*dt_get_num_threads();
@@ -224,7 +224,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         lf_modifier_apply_subpixel_geometry_distortion (
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        float *buf = ((float *)ovoid) + y*roi_out->width*ch;
+        float *buf = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++,buf+=ch,pi+=6)
         {
           for(int c=0; c<3; c++)
@@ -250,7 +250,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       #pragma omp parallel for default(none) shared(roi_out, out, in) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+ch*y*roi_out->width, in+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
+        memcpy(out+(size_t)ch*y*roi_out->width, in+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
     }
 
     if (modflags & LF_MODIFY_VIGNETTING)
@@ -264,7 +264,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         // actually this way row stride does not matter.
         float *buf = out;
         lf_modifier_apply_color_modification (modifier,
-                                              buf + ch*roi_out->width*y, roi_out->x, roi_out->y + y,
+                                              buf + (size_t)ch*roi_out->width*y, roi_out->x, roi_out->y + y,
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
     }
@@ -272,7 +272,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   else // correct distortions:
   {
     // acquire temp memory for image buffer
-    const size_t req = roi_in->width*roi_in->height*ch*sizeof(float);
+    const size_t req = (size_t)roi_in->width*roi_in->height*ch*sizeof(float);
     if(req > 0 && d->tmpbuf_len < req)
     {
       d->tmpbuf_len = req;
@@ -291,12 +291,12 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         // actually this way row stride does not matter.
         float *buf = d->tmpbuf;
         lf_modifier_apply_color_modification (modifier,
-                                              buf + ch*roi_in->width*y, roi_in->x, roi_in->y + y,
+                                              buf + (size_t)ch*roi_in->width*y, roi_in->x, roi_in->y + y,
                                               roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
     }
 
-    const size_t req2 = roi_out->width*2*3*sizeof(float);
+    const size_t req2 = (size_t)roi_out->width*2*3*sizeof(float);
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION |
                     LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -319,7 +319,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
         lf_modifier_apply_subpixel_geometry_distortion (
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
         // reverse transform the global coords from lf to our buffer
-        float *out = ((float *)ovoid) + y*roi_out->width*ch;
+        float *out = ((float *)ovoid) + (size_t)y*roi_out->width*ch;
         for (int x = 0; x < roi_out->width; x++,pi+=6)
         {
           for(int c=0; c<3; c++)
@@ -342,13 +342,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     }
     else
     {
-      const size_t len = sizeof(float)*ch*roi_out->width*roi_out->height;
+      const size_t len = (size_t)sizeof(float)*ch*roi_out->width*roi_out->height;
       const float *const input = (d->tmpbuf_len >= len) ? d->tmpbuf : in;
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(roi_out, out) schedule(static)
 #endif
       for (int y = 0; y < roi_out->height; y++)
-        memcpy(out+ch*y*roi_out->width, input+ch*y*roi_out->width, ch*sizeof(float)*roi_out->width);
+        memcpy(out+(size_t)ch*y*roi_out->width, input+(size_t)ch*y*roi_out->width, (size_t)ch*sizeof(float)*roi_out->width);
     }
   }
   lf_modifier_destroy(modifier);
@@ -386,7 +386,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = MAX(iheight, oheight);
   const int ch = piece->colors;
   const int tmpbufwidth = owidth*2*3;
-  const int tmpbuflen = d->inverse ? oheight*owidth*2*3*sizeof(float) : MAX(oheight*owidth*2*3, iheight*iwidth*ch)*sizeof(float);
+  const size_t tmpbuflen = d->inverse ? (size_t)oheight*owidth*2*3*sizeof(float) : MAX((size_t)oheight*owidth*2*3, (size_t)iheight*iwidth*ch)*sizeof(float);
   const unsigned int pixelformat = ch == 3 ? LF_CR_3 (RED, GREEN, BLUE) : LF_CR_4 (RED, GREEN, BLUE, UNKNOWN);
 
   const float orig_w = roi_in->scale*piece->iwidth,
@@ -459,13 +459,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        float *pi = tmpbuf + y * tmpbufwidth;
+        float *pi = tmpbuf + (size_t)y * tmpbufwidth;
         lf_modifier_apply_subpixel_geometry_distortion (
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
       /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, (size_t)owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -496,14 +496,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
-        float *buf = tmpbuf + y * ch*roi_out->width;
+        float *buf = tmpbuf + (size_t)y * ch*roi_out->width;
         for (int k=0; k < ch*roi_out->width; k++) buf[k] = 0.5f;
         lf_modifier_apply_color_modification (modifier, buf, roi_out->x, roi_out->y + y,
                                               roi_out->width, 1, pixelformat, ch*roi_out->width);
       }
 
       /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_out->width*roi_out->height*sizeof(float), CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, (size_t)ch*roi_out->width*roi_out->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -535,14 +535,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
       {
         /* Colour correction: vignetting and CCI */
         // actually this way row stride does not matter.
-        float *buf = tmpbuf + y * ch*roi_in->width;
+        float *buf = tmpbuf + (size_t)y * ch*roi_in->width;
         for (int k=0; k < ch*roi_in->width; k++) buf[k] = 0.5f;
         lf_modifier_apply_color_modification (modifier, buf, roi_in->x, roi_in->y + y,
                                               roi_in->width, 1, pixelformat, ch*roi_in->width);
       }
 
       /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, ch*roi_in->width*roi_in->height*sizeof(float), CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, (size_t)ch*roi_in->width*roi_in->height*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_lens_vignette, 0, sizeof(cl_mem), (void *)&dev_in);
@@ -568,13 +568,13 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 #endif
       for (int y = 0; y < roi_out->height; y++)
       {
-        float *pi = tmpbuf + y * tmpbufwidth;
+        float *pi = tmpbuf + (size_t)y * tmpbufwidth;
         lf_modifier_apply_subpixel_geometry_distortion (
           modifier, roi_out->x, roi_out->y+y, roi_out->width, 1, pi);
       }
 
       /* _blocking_ memory transfer: host tmpbuf buffer -> opencl dev_tmpbuf */
-      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, owidth*oheight*2*3*sizeof(float), CL_TRUE);
+      err = dt_opencl_write_buffer_to_device(devid, tmpbuf, dev_tmpbuf, 0, (size_t)owidth*oheight*2*3*sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_set_kernel_arg(devid, ldkernel, 0, sizeof(cl_mem), (void *)&dev_tmp);
@@ -629,7 +629,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
   return;
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
@@ -645,7 +645,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
                    d->target_geom, d->modify_flags, !d->inverse);
   float *buf = malloc(2*3*sizeof(float));
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
@@ -659,7 +659,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
   if(!d->lens->Maker || d->crop <= 0.0f) return 0;
@@ -674,7 +674,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
                    d->target_geom, d->modify_flags, d->inverse);
   float *buf = malloc(2*3*sizeof(float));
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     if (modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {

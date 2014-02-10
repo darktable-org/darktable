@@ -83,15 +83,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance=(float *)malloc((roi_out->width*roi_out->height)*sizeof(float));
+  float *luminance=(float *)malloc(((size_t)roi_out->width*roi_out->height)*sizeof(float));
   //double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(luminance,roi_in,roi_out,ivoid)
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    float *in=(float *)ivoid+j*roi_out->width*ch;
-    float *lm=luminance+j*roi_out->width;
+    float *in=(float *)ivoid+(size_t)j*roi_out->width*ch;
+    float *lm=luminance+(size_t)j*roi_out->width;
     for(int i=0; i<roi_out->width; i++)
     {
       double pmax=CLIP(fmax(in[0],fmax(in[1],in[2]))); // Max value in RGB set
@@ -130,7 +130,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     memset(hist,0,(bins+1)*sizeof(int));
     for ( int yi = yMin; yi < yMax; ++yi )
       for ( int xi = xMin0; xi < xMax0; ++xi )
-        ++hist[ ROUND_POSISTIVE(luminance[yi*roi_in->width+xi] * (float)bins) ];
+        ++hist[ ROUND_POSISTIVE(luminance[(size_t)yi*roi_in->width+xi] * (float)bins) ];
 
     // Destination row
     memset(dest,0,roi_out->width*sizeof(float));
@@ -139,7 +139,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int i=0; i<roi_out->width; i++)
     {
 
-      int v = ROUND_POSISTIVE(luminance[j*roi_in->width+i] * (float)bins);
+      int v = ROUND_POSISTIVE(luminance[(size_t)j*roi_in->width+i] * (float)bins);
 
       int xMin = fmax( 0, i - rad );
       int xMax = i + rad + 1;
@@ -153,7 +153,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         int xMin1 = xMin - 1;
         for ( int yi = yMin; yi < yMax; ++yi )
-          --hist[  ROUND_POSISTIVE(luminance[yi*roi_in->width+xMin1] * (float)bins) ];
+          --hist[  ROUND_POSISTIVE(luminance[(size_t)yi*roi_in->width+xMin1] * (float)bins) ];
       }
 
       /* add newly included values to histogram */
@@ -161,7 +161,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         int xMax1 = xMax - 1;
         for ( int yi = yMin; yi < yMax; ++yi )
-          ++hist[  ROUND_POSISTIVE(luminance[yi*roi_in->width+xMax1] * (float)bins) ];
+          ++hist[  ROUND_POSISTIVE(luminance[(size_t)yi*roi_in->width+xMax1] * (float)bins) ];
       }
 
       /* clip histogram and redistribute clipped entries */
@@ -216,8 +216,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     }
 
     // Apply row
-    float *in = ((float *)ivoid) + j*roi_out->width*ch;
-    float *out = ((float *)ovoid) + j*roi_out->width*ch;
+    float *in = ((float *)ivoid) + (size_t)j*roi_out->width*ch;
+    float *out = ((float *)ovoid) + (size_t)j*roi_out->width*ch;
     for(int r=0; r<roi_out->width; r++)
     {
       float H, S, L;

@@ -878,7 +878,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
-  float *points = malloc(mw*mh*2*sizeof(float));
+  float *points = malloc((size_t)mw*mh*2*sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -891,15 +891,16 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   for (int j=0; j<mh; j++)
     for (int i=0; i<mw; i++)
     {
-      points[(j*mw+i)*2] = (mesh*i+px)*iscale;
-      points[(j*mw+i)*2+1] = (mesh*j+py)*iscale;
+      size_t index = (size_t)j*mw+i;
+      points[index*2] = (mesh*i+px)*iscale;
+      points[index*2+1] = (mesh*j+py)*iscale;
     }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] gradient draw took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //we backtransform all these points
-  if (!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, mw*mh))
+  if (!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, (size_t)mw*mh))
   {
     free(points);
     return 0;
@@ -932,24 +933,25 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   {
     for (int i=0; i<mw; i++)
     {
-      float x = points[(j*mw+i)*2];
-      float y = points[(j*mw+i)*2+1];
+      size_t index = (size_t)j*mw + i;
+      float x = points[index*2];
+      float y = points[index*2+1];
 
       float distance = (sinv * x - cosv * y - offset) * hwscale;
       float value = normf * distance / sqrtf(1.0f + steepness*distance*distance) + 0.5f;
 
-      points[(j*mw+i)*2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
+      points[index*2] = (value < 0.0f) ? 0.0f : ((value > 1.0f) ? 1.0f : value);
     }
   }
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
+  *buffer = malloc((size_t)w*h*sizeof(float));
   if(*buffer == NULL)
   {
     free(points);
     return 0;
   }
-  memset(*buffer,0,w*h*sizeof(float));
+  memset(*buffer,0,(size_t)w*h*sizeof(float));
 
   //we fill the mask buffer by interpolation
 #ifdef _OPENMP
@@ -967,10 +969,11 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
     {
       int ii = i % mesh;
       int mi = i / mesh;
-      (*buffer)[j*w+i] = (  points[(mj*mw+mi)*2]       * (mesh-ii)*(mesh-jj) +
-                            points[(mj*mw+mi+1)*2]     * ii*(mesh-jj)        +
-                            points[((mj+1)*mw+mi)*2]   * (mesh-ii)*jj        +
-                            points[((mj+1)*mw+mi+1)*2] * ii*jj                 ) / (mesh*mesh);
+      size_t mindex = (size_t)mj*mw + mi;
+      (*buffer)[(size_t)j*w+i] = (  points[mindex*2]          * (mesh-ii)*(mesh-jj) +
+                                    points[(mindex+1)*2]      * ii*(mesh-jj)        +
+                                    points[(mindex+mw)*2]     * (mesh-ii)*jj        +
+                                    points[(mindex+mw+1)*2]   * ii*jj                 ) / (mesh*mesh);
     }
   }
 

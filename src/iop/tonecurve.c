@@ -212,8 +212,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<height; k++)
   {
-    float *in = ((float *)i) + k*ch*width;
-    float *out = ((float *)o) + k*ch*width;
+    float *in = ((float *)i) + (size_t)k*ch*width;
+    float *out = ((float *)o) + (size_t)k*ch*width;
 
     for (int j=0; j<width; j++,in+=ch,out+=ch)
     {

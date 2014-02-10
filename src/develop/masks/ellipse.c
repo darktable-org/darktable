@@ -1185,7 +1185,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
-  float *points = malloc(mw*mh*2*sizeof(float));
+  float *points = malloc((size_t)mw*mh*2*sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1198,15 +1198,16 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   for (int j=0; j<mh; j++)
     for (int i=0; i<mw; i++)
     {
-      points[(j*mw+i)*2] = (mesh*i+px)*iscale;
-      points[(j*mw+i)*2+1] = (mesh*j+py)*iscale;
+      size_t index = (size_t)j*mw+i;
+      points[index*2] = (mesh*i+px)*iscale;
+      points[index*2+1] = (mesh*j+py)*iscale;
     }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse draw took %0.04f sec\n", form->name, dt_get_wtime()-start2);
   start2 = dt_get_wtime();
 
   //we back transform all these points
-  if (!dt_dev_distort_backtransform_plus(module->dev,piece->pipe,0,module->priority,points,mw*mh))
+  if (!dt_dev_distort_backtransform_plus(module->dev,piece->pipe,0,module->priority,points,(size_t)mw*mh))
   {
     free(points);
     return 0;
@@ -1250,8 +1251,9 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   for (int i=0; i<mh; i++)
     for (int j=0; j<mw; j++)
     {
-      float x = points[(i*mw+j)*2] - center[0];
-      float y = points[(i*mw+j)*2+1] - center[1];
+      size_t index = (size_t)i*mw+j;
+      float x = points[index*2] - center[0];
+      float y = points[index*2+1] - center[1];
       float v = atan2(y, x) - alpha;
       float cosv = cos(v);
       float sinv = sin(v);
@@ -1259,24 +1261,24 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
       float total2 = ta*ta*tb*tb/(ta*ta*sinv*sinv + tb*tb*cosv*cosv);
       float l2 = x*x + y*y;
 
-      if (l2<radius2) points[(i*mw+j)*2] = 1.0f;
+      if (l2<radius2) points[index*2] = 1.0f;
       else if (l2 < total2)
       {
         float f = (total2-l2)/(total2-radius2);
-        points[(i*mw+j)*2] = f*f;
+        points[index*2] = f*f;
       }
-      else points[(i*mw+j)*2] = 0.0f;
+      else points[index*2] = 0.0f;
     }
 
 
   //we allocate the buffer
-  *buffer = malloc(w*h*sizeof(float));
+  *buffer = malloc((size_t)w*h*sizeof(float));
   if(*buffer == NULL)
   {
     free(points);
     return 0;
   }
-  memset(*buffer,0,w*h*sizeof(float));
+  memset(*buffer,0,(size_t)w*h*sizeof(float));
 
   //we fill the mask buffer by interpolation
 #ifdef _OPENMP
@@ -1294,10 +1296,11 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     {
       int ii = i % mesh;
       int mi = i / mesh;
-      (*buffer)[j*w+i] = (  points[(mj*mw+mi)*2]       * (mesh-ii)*(mesh-jj) +
-                            points[(mj*mw+mi+1)*2]     * ii*(mesh-jj)        +
-                            points[((mj+1)*mw+mi)*2]   * (mesh-ii)*jj        +
-                            points[((mj+1)*mw+mi+1)*2] * ii*jj                 ) / (mesh*mesh);
+      size_t mindex = (size_t)mj*mw + mi;
+      (*buffer)[(size_t)j*w+i] = (  points[mindex*2]          * (mesh-ii)*(mesh-jj) +
+                                    points[(mindex+1)*2]      * ii*(mesh-jj)        +
+                                    points[(mindex+mw)*2]     * (mesh-ii)*jj        +
+                                    points[(mindex+mw+1)*2]   * ii*jj                 ) / (mesh*mesh);
     }
   }
 

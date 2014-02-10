@@ -107,7 +107,7 @@ hat_transform(float *temp, const float *const base, int stride, int size, int sc
   const float *basep0;
   const float *basep1;
   const float *basep2;
-  const int stxsc = stride*scale;
+  const size_t stxsc = (size_t)stride*scale;
 
   basep0 = base;
   basep1 = base + stxsc;
@@ -134,7 +134,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   static const float noise[] =
   { 0.8002,0.2735,0.1202,0.0585,0.0291,0.0152,0.0080,0.0044 };
 
-  const int size = (roi->width/2+1) * (roi->height/2+1);
+  const size_t size = (size_t)(roi->width/2+1) * (roi->height/2+1);
 #if 0
   float maximum = 1.0;		/* FIXME */
   float black = 0.0;		/* FIXME */
@@ -161,9 +161,9 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
-      float *fimgp = fimg + size + row/2 * halfwidth;
+      float *fimgp = fimg + size + (size_t)row/2 * halfwidth;
       int col = (c&2)>>1;
-      const float *inp = in + row*roi->width + col;
+      const float *inp = in + (size_t)row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, inp+=2)
         *fimgp = sqrt(MAX(0, *inp));
     }
@@ -172,9 +172,9 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
     for (lev=0; lev < 5; lev++)
     {
-      const int pass1 = size*((lev & 1)*2 + 1);
-      const int pass2 = 2*size;
-      const int pass3 = 4*size - pass1;
+      const size_t pass1 = size*((lev & 1)*2 + 1);
+      const size_t pass2 = 2*size;
+      const size_t pass3 = 4*size - pass1;
 
       // filter horizontally and transpose
 #ifdef _OPENMP
@@ -182,7 +182,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
       for (int col=0; col < halfwidth; col++)
       {
-        hat_transform(fimg+pass2+col*halfheight, fimg+pass1+col, halfwidth, halfheight, 1 << lev);
+        hat_transform(fimg+pass2+(size_t)col*halfheight, fimg+pass1+col, halfwidth, halfheight, 1 << lev);
       }
       // filter vertically and transpose back
 #ifdef _OPENMP
@@ -190,14 +190,14 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
       for (int row=0; row < halfheight; row++)
       {
-        hat_transform(fimg+pass3+row*halfwidth, fimg+pass2+row, halfheight, halfwidth, 1 << lev);
+        hat_transform(fimg+pass3+(size_t)row*halfwidth, fimg+pass2+row, halfheight, halfwidth, 1 << lev);
       }
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(lev)
 #endif
-      for (int i=0; i < halfwidth*halfheight; i++)
+      for (size_t i=0; i < (size_t)halfwidth*halfheight; i++)
       {
         float *fimgp = fimg + i;
         const float diff = fimgp[pass1] - fimgp[pass3];
@@ -211,9 +211,9 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
     for (int row=c&1; row<roi->height; row+=2)
     {
-      const float *fimgp = fimg + row/2 * halfwidth;
+      const float *fimgp = fimg + (size_t)row/2 * halfwidth;
       int col = (c&2)>>1;
-      float *outp = out + row*roi->width + col;
+      float *outp = out + (size_t)row*roi->width + col;
       for (; col<roi->width; col+=2, fimgp++, outp+=2)
       {
         float d = fimgp[0] + fimgp[lastpass];
@@ -269,7 +269,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   if (d->threshold > 0.0)
     wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(&piece->pipe->image));
   else
-    memcpy(ovoid, ivoid, roi_out->width * roi_out->height * sizeof(float));
+    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
 }
 
 void reload_defaults(dt_iop_module_t *module)

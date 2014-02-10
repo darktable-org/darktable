@@ -39,7 +39,7 @@ int write_image (dt_imageio_module_data_t *pfm, const char *filename, const void
     {
       for(int i=0; i<pfm->width; i++)
       {
-        int cnt = fwrite(in + 4*(pfm->width*j + i), sizeof(float)*3, 1, f);
+        int cnt = fwrite(in + 4*((size_t)pfm->width*j + i), sizeof(float)*3, 1, f);
         if(cnt != 1) status = 1;
         else status = 0;
       }

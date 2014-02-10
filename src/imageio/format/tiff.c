@@ -183,7 +183,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
       for(int x=0; x<d->width; x++)
         for(int k=0; k<3; k++)
         {
-          (wdata)[0] = in16[4*d->width*y + 4*x + k];
+          (wdata)[0] = in16[(size_t)4*d->width*y + 4*x + k];
           wdata++;
         }
       if((wdata-stripesize/sizeof(uint16_t))==rowdata)
@@ -210,7 +210,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
       for(int x=0; x<d->width; x++)
         for(int k=0; k<3; k++)
         {
-          (wdata)[0] = in8[4*d->width*y + 4*x + k];
+          (wdata)[0] = in8[(size_t)4*d->width*y + 4*x + k];
           wdata++;
         }
       if((wdata-stripesize)==rowdata)

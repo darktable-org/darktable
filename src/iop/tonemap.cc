@@ -115,13 +115,13 @@ extern "C"
     dt_iop_tonemapping_data_t *data = (dt_iop_tonemapping_data_t *)piece->data;
     const int ch = piece->colors;
 
-    int width,height,size;
+    int width,height;
     float inv_sigma_s;
     const float inv_sigma_r=1.0/0.4;
 
     width=roi_in->width;
     height=roi_in->height;
-    size=width*height;
+    const size_t size=(size_t)width*height;
     const float iw=piece->buf_in.width*roi_out->scale;
     const float ih=piece->buf_in.height*roi_out->scale;
 
@@ -138,9 +138,9 @@ extern "C"
 #endif
     for(int j=0; j<height; j++)
     {
-      int index = j*width;
+      size_t index = (size_t)j*width;
       const int thread = omp_get_thread_num();
-      const float *in = (const float*)ivoid + j*width*ch;
+      const float *in = (const float*)ivoid + (size_t)j*width*ch;
       for(int i=0; i<width; i++, index++, in+=ch)
       {
         float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
@@ -183,9 +183,9 @@ extern "C"
 #endif
     for(int j=0; j<height; j++)
     {
-      int index = j*width;
-      const float *in = (const float*)ivoid + j*width*ch;
-      float *out = (float*)ovoid + j*width*ch;
+      size_t index = (size_t)j*width;
+      const float *in = (const float*)ivoid + (size_t)j*width*ch;
+      float *out = (float*)ovoid + (size_t)j*width*ch;
       for(int i=0; i<width; i++, index++, in+=ch, out+=ch)
       {
         float val[2];

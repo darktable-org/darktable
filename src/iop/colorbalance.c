@@ -147,8 +147,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *in  = ((float *)i) + ch*roi_in->width *j;
-    float *out = ((float *)o) + ch*roi_out->width*j;
+    float *in  = ((float *)i) + (size_t)ch*roi_in->width *j;
+    float *out = ((float *)o) + (size_t)ch*roi_out->width*j;
     for(int i = 0; i < roi_out->width; i++)
     {
       // transform the pixel to sRGB:

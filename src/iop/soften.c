@@ -130,9 +130,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
-    int index = ch*k;
+    size_t index = ch*k;
     float h,s,l;
     rgb2hsl(&in[index],&h,&s,&l);
     s*=saturation;
@@ -157,7 +157,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int y=0; y<roi_out->height; y++)
     {
       __m128 scanline[size];
-      int index = y * roi_out->width;
+      size_t index = (size_t)y * roi_out->width;
       __m128 L = _mm_setzero_ps();
       int hits = 0;
       for(int x=-radius; x<roi_out->width; x++)
@@ -193,7 +193,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       __m128 scanline[size];
       __m128 L = _mm_setzero_ps();
       int hits=0;
-      int index = -radius*roi_out->width+x;
+      size_t index = (size_t)x - radius*roi_out->width;
       for(int y=-radius; y<roi_out->height; y++)
       {
         int op=y-radius-1;
@@ -215,7 +215,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
 
       for (int y=0; y<roi_out->height; y++)
-        _mm_store_ps(&out[(y*roi_out->width+x)*ch], scanline[y]);
+        _mm_store_ps(&out[((size_t)y*roi_out->width+x)*ch], scanline[y]);
     }
   }
 
@@ -225,7 +225,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     int index = ch*k;
     _mm_store_ps(&out[index],
@@ -308,7 +308,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if (dev_tmp == NULL) goto error;
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
 
   /* overexpose image */

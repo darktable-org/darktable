@@ -124,7 +124,7 @@ dt_imageio_open_tiff(
       /* read 8bpp data from scanline */
       for (uint32_t i=0; i < width; i++)
       {
-        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+        size_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
 
         /* set rgb to first sample from scanline eg. support spp == 1 */
         mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf8[spp * i + 0] * (1.0/255.0);
@@ -143,7 +143,7 @@ dt_imageio_open_tiff(
       /* read 16bpp data scanline */
       for (uint32_t i=0; i < width; i++)
       {
-        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+        size_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
 
         /* set rgb to first sample from scanline eg. support spp == 1 */
         mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf16[spp * i + 0] * (1.0/65535.0);
@@ -162,7 +162,7 @@ dt_imageio_open_tiff(
       /* read 32bpp data scanline */
       for (uint32_t i=0; i < width; i++)
       {
-        uint32_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
+        size_t idx = dt_imageio_write_pos(i, row, wd2, ht2, wd2, ht2, orientation);
 
         /* set rgb to first sample from scanline eg. support spp == 1 */
         mipbuf[4 * idx + 0] = mipbuf[4 * idx + 1] = mipbuf[4 * idx + 2] = buf32[spp * i + 0];

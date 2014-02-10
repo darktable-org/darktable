@@ -62,8 +62,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const float *in = ((float *)i) + ch*k*roi_out->width;
-      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      const float *in = ((float *)i) + (size_t)ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + (size_t)ch*k*roi_out->width;
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       {
         float gray = 0.3f*in[0] + 0.59f*in[1] + 0.11f*in[2];
@@ -83,8 +83,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const float *in = ((float *)i) + ch*k*roi_out->width;
-      uint8_t *out = ((uint8_t *)o) + ch*k*roi_out->width;
+      const float *in = ((float *)i) + (size_t)ch*k*roi_out->width;
+      uint8_t *out = ((uint8_t *)o) + (size_t)ch*k*roi_out->width;
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
       {
         for(int c=0; c<3; c++)

@@ -63,7 +63,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, chs*sizeof(float)*width*height);
+  memcpy(out, in, (size_t)chs*sizeof(float)*width*height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -83,11 +83,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
-  float **tmp = (float **)malloc(sizeof(float *)*numl_cap);
+  float **tmp = (float **)malloc((size_t)sizeof(float *)*numl_cap);
   for(int k=1; k<numl_cap; k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
-    tmp[k] = (float *)malloc(sizeof(float)*wd*ht);
+    tmp[k] = (float *)malloc((size_t)sizeof(float)*wd*ht);
   }
 
   for(int level=1; level<numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
@@ -136,14 +136,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
       const int step = 1<<l;
 #if 1 // scale coefficients
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] *= coeff*coeff;
+      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff*coeff;
 #else // soft-thresholding (shrinkage)
-#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[chs*width*j + chs*i + ch]) - (1.0-coeff)), out[chs*width*j + chs*i + ch]))
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] = wshrink;
+#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs*width*j + chs*i + ch]) - (1.0-coeff)), out[(size_t)chs*width*j + chs*i + ch]))
+      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
 #undef wshrink
 #endif
     }
