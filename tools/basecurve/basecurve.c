@@ -27,6 +27,8 @@
 #include <string.h>
 #include <getopt.h>
 
+#include "errno.h"
+
 /* --------------------------------------------------------------------------
  * curve and histogram resolution
  * ------------------------------------------------------------------------*/
@@ -584,12 +586,14 @@ main(int argc, char** argv)
   curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*ncurves);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
+    ret = -1;
     goto exit;
   }
 
   hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*ncurves);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
+    ret = -1;
     goto exit;
   }
 
@@ -601,10 +605,24 @@ main(int argc, char** argv)
     {
       fseek(fs, CURVE_RESOLUTION*3*(sizeof(float) + sizeof(uint32_t)), SEEK_SET);
     }
-    fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
-    // XXX test read bytes
-    fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
-    // XXX test read bytes
+    int r = fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
+    if (r != 3*CURVE_RESOLUTION*sizeof(float))
+    {
+      /* could not read save state, either missing stats in that save file or
+       * corrupt data. both cases need to clean state */
+      memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+    }
+    else
+    {
+      r = fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
+      if (r != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+      {
+        /* could not read save state, either missing stats in that save file or
+         * corrupt data. both cases need to clean state */
+        memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+        memset(hist, 0, 3*CURVE_RESOLUTION*sizeof(uint32_t));
+      }
+    }
 
     fclose(fs);
     fs = NULL;
@@ -646,6 +664,13 @@ main(int argc, char** argv)
     goto exit;
   }
 
+  fb = fopen(opt.curve_filename, "wb");
+  if (!fb)
+  {
+    fprintf(stderr, "error: could not open '%s'\n", opt.curve_filename);
+    goto exit;
+  }
+
   if (opt.module == MODULE_BASECURVE)
   {
     for (int ch=0; ch<3; ch++)
@@ -678,6 +703,9 @@ main(int argc, char** argv)
     }
   }
 
+  fclose(fb);
+  fb = NULL;
+
   free(raw_buff);
   raw_buff = NULL;
 
@@ -685,7 +713,11 @@ main(int argc, char** argv)
   jpeg_raw = NULL;
 
   // write save state
-  fs = fopen(opt.save_filename, "a");
+  fs = fopen(opt.save_filename, "r+");
+  if (!fs && errno == ENOENT)
+  {
+    fs = fopen(opt.save_filename, "w+");
+  }
   if (fs)
   {
     if (opt.module == MODULE_BASECURVE)
@@ -696,10 +728,25 @@ main(int argc, char** argv)
     {
       fseek(fs, CURVE_RESOLUTION*3*(sizeof(float) + sizeof(uint32_t)), SEEK_SET);
     }
-    fwrite(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
-    // XXX test written bytes
-    fwrite(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
-    // XXX test written bytes
+    int w = fwrite(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
+    if (w != 3*CURVE_RESOLUTION*sizeof(float))
+    {
+      fprintf(stderr, "error: failed writing curves to save state file\n");
+      ret = -1;
+      goto exit;
+    }
+    w = fwrite(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
+    if (w != 3*CURVE_RESOLUTION*sizeof(float))
+    {
+      fprintf(stderr, "error: failed writing histograms to save state file\n");
+      ret = -1;
+      goto exit;
+    }
+  }
+  else
+  {
+    fprintf(stdout, "failed opening save file errno=%d\n", errno);
+
   }
 
   if (!opt.finalize)
@@ -711,13 +758,6 @@ fit:
   csample.m_samplingRes = CURVE_RESOLUTION;
   csample.m_outputRes = CURVE_RESOLUTION;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
-
-  fb = fopen(opt.curve_filename, "wb");
-  if (!fb)
-  {
-    fprintf(stderr, "error: could not open '%s'\n", opt.curve_filename);
-    goto exit;
-  }
 
   ff = fopen(opt.fit_filename, "wb");
   if (!ff)
@@ -770,6 +810,11 @@ fit:
     for (int i=0; i<1 /* XXX: till i get ab right */; i++)
     {
       fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve+i*CURVE_RESOLUTION, hist+i*CURVE_RESOLUTION);
+
+      CurveDataSample(&fit, &csample);
+      for(int k=0; k<CURVE_RESOLUTION; k++)
+        fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
+      fprintf(ff, "\n\n");
 
       for (int k=0; k<fit.m_numAnchors; k++)
       {
