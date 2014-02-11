@@ -27,7 +27,7 @@
 #include <string.h>
 #include <getopt.h>
 
-#include "errno.h"
+#include <errno.h>
 
 /* --------------------------------------------------------------------------
  * curve and histogram resolution
