@@ -1308,8 +1308,8 @@ dt_interpolation_resample(
 #endif
     for (int y=0; y<roi_out->height; y++)
     {
-      float* i = (float*)((char*)in + in_stride*(y + roi_out->y) + x0);
-      float* o = (float*)((char*)out + out_stride*y);
+      float* i = (float*)((char*)in + (size_t)in_stride*(y + roi_out->y) + x0);
+      float* o = (float*)((char*)out + (size_t)out_stride*y);
       memcpy(o, i, l);
     }
 #if DEBUG_RESAMPLING_TIMING
