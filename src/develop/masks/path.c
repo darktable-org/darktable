@@ -2390,7 +2390,8 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
   const float ly = p1[1]-p0[1];
 
   const int dx = lx < 0 ? -1 : 1;
-  const int dy = (ly < 0 ? -1 : 1)*bw;
+  const int dy = ly < 0 ? -1 : 1;
+  const int dpy = dy * bw;
 
   for (int i=0 ; i<l; i++)
   {
@@ -2401,7 +2402,7 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
     size_t index = (size_t)y*bw+x;
     if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[index] = fmaxf((*buffer)[index],op);
     if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[index+dx] = fmaxf((*buffer)[index+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dy] = fmaxf((*buffer)[index+dy],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dpy] = fmaxf((*buffer)[index+dpy],op); //this one is to avoid gap due to int rounding
   }
 }
 
