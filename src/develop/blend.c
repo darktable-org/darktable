@@ -1922,7 +1922,7 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
 
   /* we can only handle blending if roi_out and roi_in have the same scale and
      if roi_out fits into the area given by roi_in */
-  if (roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0 
+  if (roi_out->scale != roi_in->scale /*|| xoffs < 0 || yoffs < 0 */
       || ((xoffs > 0 || yoffs > 0) && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
   {
     //printf("%s: scale %f/%f %d\n", self->op, roi_out->scale, roi_in->scale, roi_out->scale == roi_in->scale);
@@ -2240,7 +2240,7 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   /* we can only handle blending if roi_out and roi_in have the same scale and
      if roi_out fits into the area given by roi_in */
-  if (roi_out->scale != roi_in->scale || xoffs < 0 || yoffs < 0 
+  if (roi_out->scale != roi_in->scale /*|| xoffs < 0 || yoffs < 0 */
       || ((xoffs > 0 || yoffs > 0) && (roi_out->width + xoffs > roi_in->width || roi_out->height + yoffs > roi_in->height)))
 
   {
