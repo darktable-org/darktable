@@ -403,7 +403,7 @@ if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   # and too many warnings reported by Clang for now
   if(NOT SOURCE_PACKAGE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   endif(NOT SOURCE_PACKAGE)
 
   # gcc-4.8 build fails on unused local typedefs in gmacros.h:162
