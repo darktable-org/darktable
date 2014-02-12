@@ -20,11 +20,13 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
+#include "external/adobe_coeff.c"
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,10 +89,13 @@ dt_iop_demosaic_data_t;
 
 typedef enum dt_iop_demosaic_method_t
 {
+  // methods for Bayer images
   DT_IOP_DEMOSAIC_PPG = 0,
   DT_IOP_DEMOSAIC_AMAZE = 1,
   // methods for x-trans images
   DT_IOP_DEMOSAIC_LINEAR = DEMOSAIC_XTRANS | 0,
+  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
 }
 dt_iop_demosaic_method_t;
 
@@ -415,23 +420,20 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 
 #define fcol(row,col) xtrans[((row)+6)%6][((col)+6)%6]
 
-/* taken from dcraw and demosaic_ppg below */
 
-void xtrans_lin_interpolate(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const uint8_t xtrans[6][6])
+void border_interpolate (
+  float *out, const float *in,
+  const dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
+  const uint8_t xtrans[6][6],
+  const int border)
 {
-  // snap to start of mosaic block
-  // FIXME: need this? why?
-  roi_out->x = 0;
-  roi_out->y = 0;
-
-  // border interpolate
   for (unsigned row=0; row < roi_out->height; row++)
     for (unsigned col=0; col < roi_out->width; col++) {
       float sum[3] = {0.0f};
       uint8_t count[3] = {0};
-      if (col==1 && row >= 1 && row < roi_out->height-1)
-	col = roi_out->width-1;
-      if(col == roi_out->width) break;
+      if (col==border && row >= border && row < roi_out->height-border)
+	col = roi_out->width-border;
+      if(col >= roi_out->width) break;
       // average all the adjoining pixels inside image by color
       for (int y=row-1; y != row+2; y++)
 	for (int x=col-1; x != col+2; x++)
@@ -445,9 +447,9 @@ void xtrans_lin_interpolate(float *out, const float *in, dt_iop_roi_t *roi_out, 
 	  }
         }
       const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
-      // for each color which needs interpolation (not the sensor
-      // color for current pixel), simply average adjoining pixels of
-      // that sensor color which are w/in image
+      // for current cell, copy the current sensor's color data,
+      // interpolate the other two colors from surrounding pixels of
+      // their color
       for (int c=0; c<3; c++)
       {
         if (c != f && count[c] != 0)
@@ -456,6 +458,424 @@ void xtrans_lin_interpolate(float *out, const float *in, dt_iop_roi_t *roi_out, 
           out[4*(row*roi_out->width+col)+c] = in[(row+roi_out->y)*roi_in->width+col+roi_out->x];
       }
     }
+}
+
+
+// from here through xtrans_interpolate much is adapted from dcraw 9.20
+
+void pseudoinverse (double (*in)[3], double (*out)[3], int size)
+{
+  double work[3][6], num;
+  int i, j, k;
+
+  for (i=0; i < 3; i++) {
+    for (j=0; j < 6; j++)
+      work[i][j] = j == i+3;
+    for (j=0; j < 3; j++)
+      for (k=0; k < size; k++)
+	work[i][j] += in[k][i] * in[k][j];
+  }
+  for (i=0; i < 3; i++) {
+    num = work[i][i];
+    for (j=0; j < 6; j++)
+      work[i][j] /= num;
+    for (k=0; k < 3; k++) {
+      if (k==i) continue;
+      num = work[k][i];
+      for (j=0; j < 6; j++)
+	work[k][j] -= work[i][j] * num;
+    }
+  }
+  for (i=0; i < size; i++)
+    for (j=0; j < 3; j++)
+      for (out[i][j]=k=0; k < 3; k++)
+	out[i][j] += work[j][k+3] * in[i][k];
+}
+
+// from dcraw: calculate rgb_cam from cam_xyz
+// FIXME: is there a colorspaces equivalent?
+void cam_xyz_coeff (float rgb_cam[3][4], float cam_xyz[4][3])
+{
+  double cam_rgb[4][3], inverse[4][3], num;
+  //float pre_mul[4];
+  int i, j, k;
+
+  const double xyz_rgb[3][3] = {			/* XYZ from RGB */
+    { 0.412453, 0.357580, 0.180423 },
+    { 0.212671, 0.715160, 0.072169 },
+    { 0.019334, 0.119193, 0.950227 } };
+
+  for (i=0; i < 3; i++)		/* Multiply out XYZ colorspace */
+    for (j=0; j < 3; j++)
+      for (cam_rgb[i][j] = k=0; k < 3; k++)
+	cam_rgb[i][j] += cam_xyz[i][k] * xyz_rgb[k][j];
+
+  for (i=0; i < 3; i++) {		/* Normalize cam_rgb so that */
+    for (num=j=0; j < 3; j++)		/* cam_rgb * (1,1,1) is (1,1,1,1) */
+      num += cam_rgb[i][j];
+    for (j=0; j < 3; j++)
+      cam_rgb[i][j] /= num;
+  }
+  pseudoinverse (cam_rgb, inverse, 3);
+  for (i=0; i < 3; i++)
+    for (j=0; j < 3; j++)
+      rgb_cam[i][j] = inverse[j][i];
+}
+
+void cielab_init(const dt_image_t *img, float cbrt[0x10000], float xyz_cam[3][3])
+{
+  int c, i, j, k;
+  float r;
+
+  const double xyz_rgb[3][3] = {			/* XYZ from RGB */
+    { 0.412453, 0.357580, 0.180423 },
+    { 0.212671, 0.715160, 0.072169 },
+    { 0.019334, 0.119193, 0.950227 } };
+  const float d65_white[3] = { 0.950456, 1, 1.088754 };
+
+  // FIXME: this is a very verbose way to get the camera matrix for conversion to Lab: replace this with colorspaces library code, dt_colorspaces_create_xyzmatrix_profile or dt_colorspaces_create_cmatrix_profile instead? or dt_colorspaces_create_linear_rgb_profile
+
+  // find the color conversion matrix
+
+  // from colorin module:
+  char makermodel[1024];
+  dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+  float cam_xyz[12];
+  float rgb_cam[3][4];
+  cam_xyz[0] = NAN;
+  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
+  // FIXME: little visual difference between linear RGB and camera matrix, so save a lot of code and just use linear RGB always?
+  if (isnan(cam_xyz[0]))
+    for (i=0; i < 4; i++)
+      for (c=0; c < 3; c++)
+        rgb_cam[c][i] = c == i;
+  else
+    cam_xyz_coeff (rgb_cam, (float (*)[3])cam_xyz);
+
+  // taken from dcraw's cielab()
+  for (i=0; i < 0x10000; i++) {
+    r = i / 65535.0;
+    cbrt[i] = r > 0.008856 ? pow(r,1/3.0) : 7.787*r + 16/116.0;
+  }
+  for (i=0; i < 3; i++)
+    for (j=0; j < 3; j++)
+      for (xyz_cam[i][j] = k=0; k < 3; k++)
+        xyz_cam[i][j] += xyz_rgb[i][k] * rgb_cam[k][j] / d65_white[i];
+}
+
+#define LIM(x,min,max) MAX(min,MIN(x,max))
+#define CLIP(x) LIM(x,0,65535)
+
+void cielab(const float cbrt[0x10000], float xyz_cam[3][3],
+            unsigned short rgb[3], short lab[3])
+{
+  int c;
+  float xyz[3];
+
+  xyz[0] = xyz[1] = xyz[2] = 0.5;
+  for (c=0; c<3; c++) {
+    xyz[0] += xyz_cam[0][c] * rgb[c];
+    xyz[1] += xyz_cam[1][c] * rgb[c];
+    xyz[2] += xyz_cam[2][c] * rgb[c];
+  }
+  xyz[0] = cbrt[CLIP((int) xyz[0])];
+  xyz[1] = cbrt[CLIP((int) xyz[1])];
+  xyz[2] = cbrt[CLIP((int) xyz[2])];
+  lab[0] = 64 * (116 * xyz[1] - 16);
+  lab[1] = 64 * 500 * (xyz[0] - xyz[1]);
+  lab[2] = 64 * 200 * (xyz[1] - xyz[2]);
+}
+
+
+#define SQR(x) ((x)*(x))
+#define TS 512		/* Tile Size */
+
+/*
+   Frank Markesteijn's algorithm for Fuji X-Trans sensors
+ */
+void
+xtrans_markesteijn_interpolate(
+  float *out, const float *in,
+  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
+  const dt_image_t *img,
+  const uint8_t xtrans[6][6], int passes)
+{
+  int c, d, f, g, h, i, v, ng, row, col, top, left, mrow, mcol;
+  int val, ndir, pass, hm[8], avg[4];
+  int color[3][8];
+  static const short orth[12] = { 1,0,0,1,-1,0,0,-1,1,0,0,1 },
+	patt[2][16] = { { 0,1,0,-1,2,0,-1,0,1,1,1,-1,0,0,0,0 },
+			{ 0,1,0,-2,1,0,-2,0,1,1,-2,-2,1,-1,-1,1 } },
+	dir[4] = { 1,TS,TS+1,TS-1 };
+
+  short allhex[3][3][2][8], *hex;
+  unsigned short min, max, sgrow, sgcol;
+  unsigned short (*rgb)[TS][TS][3], (*rix)[3],(*pix)[4];
+  short (*lab)    [TS][3], (*lix)[3];
+  float (*drv)[TS][TS], diff[6], tr;
+  char (*homo)[TS][TS], *buffer;
+
+  int width = roi_out->width;
+  int height = roi_out->height;
+
+  int xoff = roi_in->x;
+  int yoff = roi_in->y;
+
+  float cbrt[0x10000], xyz_cam[3][3];
+
+  // FIXME: for first pass at this, convert data into a buffer of unsigned shorts as dcraw does -- make this work with floats instead, and perhaps not so much copying
+  unsigned short (*image)[4];
+  image = (unsigned short (*)[4]) calloc(height, width*sizeof *image);
+  for (row=0; row < height; row++)
+    for (col=0; col < width; col++)
+      for (c=0; c<4; c++)
+        if (fcol(row+yoff,col+xoff) == c)
+          image[row*width+col][c] = 0xffff * in[roi_in->width*(row + roi_out->y) + col + roi_out->x];
+        else
+          image[row*width+col][c]=0;
+
+  border_interpolate(out, in, roi_out, roi_in, xtrans, 6);
+
+  // FIXME: hack: this copies interpolated data into the temporary buffer
+  for (unsigned row=0; row < height; row++)
+    for (unsigned col=0; col < width; col++) {
+      if (col==6 && row >= 6 && row < roi_out->height-6)
+	col = roi_out->width-6;
+      if(col < width)
+        for (c=0; c<3; c++)
+          image[row*width+col][c] = 0xffff * out[4*(row*width+col)+c];
+    }
+
+  cielab_init(img, cbrt, xyz_cam);
+
+  ndir = 4 << (passes > 1);
+  // FIXME: handle malloc error here and in image calloc above; and should dt_alloc_align()?
+  buffer = (char *) malloc (TS*TS*(ndir*11+6));
+  rgb  = (unsigned short(*)[TS][TS][3]) buffer;
+  lab  = (short (*)    [TS][3])(buffer + TS*TS*(ndir*6));
+  drv  = (float (*)[TS][TS])   (buffer + TS*TS*(ndir*6+6));
+  homo = (char  (*)[TS][TS])   (buffer + TS*TS*(ndir*10+6));
+
+  sgrow=sgcol=-1;               // gcc thinks these could be uninitialized below
+
+  /* Map a green hexagon around each non-green pixel and vice versa:	*/
+  for (row=0; row < 3; row++)
+    for (col=0; col < 3; col++)
+      for (ng=d=0; d < 10; d+=2) {
+	g = fcol(row,col) == 1;
+	if (fcol(row+orth[d],col+orth[d+2]) == 1) ng=0; else ng++;
+	if (ng == 4) { sgrow = row; sgcol = col; }
+	if (ng == g+1)
+          for (c=0; c<8; c++) {
+            v = orth[d  ]*patt[g][c*2] + orth[d+1]*patt[g][c*2+1];
+            h = orth[d+2]*patt[g][c*2] + orth[d+3]*patt[g][c*2+1];
+            allhex[row][col][0][c^(g*2 & d)] = h + v*width;
+            allhex[row][col][1][c^(g*2 & d)] = h + v*TS;
+          }
+      }
+
+  /* Set green1 and green3 to the minimum and maximum allowed values:	*/
+  for (row=2; row < height-2; row++)
+    for (min=~(max=0), col=2; col < width-2; col++) {
+      if (fcol(yoff+row,xoff+col) == 1 && (min=~(max=0))) continue;
+      pix = image + row*width + col;
+      hex = allhex[row%3][col%3][0];
+      if (!max)
+        for (c=0; c<6; c++) {
+          val = pix[hex[c]][1];
+          if (min > val) min = val;
+          if (max < val) max = val;
+        }
+      pix[0][1] = min;
+      pix[0][3] = max;
+      switch ((row-sgrow) % 3) {
+	case 1: if (row < height-3) { row++; col--; } break;
+	case 2: if ((min=~(max=0)) && (col+=2) < width-3 && row > 2) row--;
+      }
+    }
+
+  for (top=3; top < height-19; top += TS-16)
+    for (left=3; left < width-19; left += TS-16) {
+      mrow = MIN (top+TS, height-3);
+      mcol = MIN (left+TS, width-3);
+      for (row=top; row < mrow; row++)
+	for (col=left; col < mcol; col++)
+	  memcpy (rgb[0][row-top][col-left], image[row*width+col], 6);
+      for (c=0; c<3; c++) memcpy (rgb[c+1], rgb[0], sizeof *rgb);
+
+      /* Interpolate green horizontally, vertically, and along both diagonals: */
+      for (row=top; row < mrow; row++)
+	for (col=left; col < mcol; col++) {
+	  if ((f = fcol(row+yoff,col+xoff)) == 1) continue;
+          pix = image + row*width + col;
+	  hex = allhex[row%3][col%3][0];
+	  color[1][0] = 174 * (pix[  hex[1]][1] + pix[  hex[0]][1]) -
+			 46 * (pix[2*hex[1]][1] + pix[2*hex[0]][1]);
+	  color[1][1] = 223 *  pix[  hex[3]][1] + pix[  hex[2]][1] * 33 +
+			 92 * (pix[      0 ][f] - pix[ -hex[2]][f]);
+	  for (c=0; c<2; c++) color[1][2+c] =
+		164 * pix[hex[4+c]][1] + 92 * pix[-2*hex[4+c]][1] + 33 *
+		(2*pix[0][f] - pix[3*hex[4+c]][f] - pix[-3*hex[4+c]][f]);
+	  for (c=0; c<4; c++) rgb[c^!((row-sgrow) % 3)][row-top][col-left][1] =
+		LIM(color[1][c] >> 8,pix[0][1],pix[0][3]);
+	}
+
+      for (pass=0; pass < passes; pass++) {
+	if (pass == 1)
+	  memcpy (rgb+=4, buffer, 4*sizeof *rgb);
+
+        /* Recalculate green from interpolated values of closer pixels:	*/
+	if (pass) {
+	  for (row=top+2; row < mrow-2; row++)
+	    for (col=left+2; col < mcol-2; col++) {
+	      if ((f = fcol(row+yoff,col+xoff)) == 1) continue;
+	      pix = image + row*width + col;
+	      hex = allhex[row%3][col%3][1];
+	      for (d=3; d < 6; d++) {
+		rix = &rgb[(d-2)^!((row-sgrow) % 3)][row-top][col-left];
+		val = rix[-2*hex[d]][1] + 2*rix[hex[d]][1]
+		    - rix[-2*hex[d]][f] - 2*rix[hex[d]][f] + 3*rix[0][f];
+		rix[0][1] = LIM(val/3,pix[0][1],pix[0][3]);
+	      }
+	    }
+	}
+
+        /* Interpolate red and blue values for solitary green pixels:	*/
+	for (row=(top-sgrow+4)/3*3+sgrow; row < mrow-2; row+=3)
+	  for (col=(left-sgcol+4)/3*3+sgcol; col < mcol-2; col+=3) {
+	    rix = &rgb[0][row-top][col-left];
+	    h = fcol(row+yoff,col+xoff+1);
+	    memset (diff, 0, sizeof diff);
+	    for (i=1, d=0; d < 6; d++, i^=TS^1, h^=2) {
+	      for (c=0; c < 2; c++, h^=2) {
+		g = 2*rix[0][1] - rix[i<<c][1] - rix[-i<<c][1];
+		color[h][d] = g + rix[i<<c][h] + rix[-i<<c][h];
+		if (d > 1)
+		  diff[d] += SQR (rix[i<<c][1] - rix[-i<<c][1]
+				- rix[i<<c][h] + rix[-i<<c][h]) + SQR(g);
+	      }
+	      if (d > 1 && (d & 1))
+		if (diff[d-1] < diff[d])
+                  for (c=0; c<2; c++) color[c*2][d] = color[c*2][d-1];
+	      if (d < 2 || (d & 1)) {
+		for (c=0; c<2; c++) rix[0][c*2] = CLIP(color[c*2][d]/2);
+		rix += TS*TS;
+	      }
+	    }
+	  }
+
+        /* Interpolate red for blue pixels and vice versa:		*/
+	for (row=top+1; row < mrow-1; row++)
+	  for (col=left+1; col < mcol-1; col++) {
+	    if ((f = 2-fcol(row+yoff,col+xoff)) == 1) continue;
+	    rix = &rgb[0][row-top][col-left];
+	    i = (row-sgrow) % 3 ? TS:1;
+	    for (d=0; d < 4; d++, rix += TS*TS)
+	      rix[0][f] = CLIP((rix[i][f] + rix[-i][f] +
+		  2*rix[0][1] - rix[i][1] - rix[-i][1])/2);
+	  }
+
+        /* Fill in red and blue for 2x2 blocks of green:		*/
+	for (row=top+2; row < mrow-2; row++) if ((row-sgrow) % 3)
+	  for (col=left+2; col < mcol-2; col++) if ((col-sgcol) % 3) {
+	    rix = &rgb[0][row-top][col-left];
+	    hex = allhex[row%3][col%3][1];
+	    for (d=0; d < ndir; d+=2, rix += TS*TS)
+	      if (hex[d] + hex[d+1]) {
+		g = 3*rix[0][1] - 2*rix[hex[d]][1] - rix[hex[d+1]][1];
+		for (c=0; c < 4; c+=2) rix[0][c] =
+			CLIP((g + 2*rix[hex[d]][c] + rix[hex[d+1]][c])/3);
+	      } else {
+		g = 2*rix[0][1] - rix[hex[d]][1] - rix[hex[d+1]][1];
+		for (c=0; c < 4; c+=2) rix[0][c] =
+			CLIP((g + rix[hex[d]][c] + rix[hex[d+1]][c])/2);
+	      }
+	  }
+      }
+      rgb = (unsigned short(*)[TS][TS][3]) buffer;
+      mrow -= top;
+      mcol -= left;
+
+      /* Convert to CIELab and differentiate in all directions:	*/
+      for (d=0; d < ndir; d++) {
+	for (row=2; row < mrow-2; row++)
+	  for (col=2; col < mcol-2; col++)
+	    cielab (cbrt, xyz_cam, rgb[d][row][col], lab[row][col]);
+	for (f=dir[d & 3],row=3; row < mrow-3; row++)
+	  for (col=3; col < mcol-3; col++) {
+	    lix = &lab[row][col];
+	    g = 2*lix[0][0] - lix[f][0] - lix[-f][0];
+	    drv[d][row][col] = SQR(g)
+	      + SQR((2*lix[0][1] - lix[f][1] - lix[-f][1] + g*500/232))
+	      + SQR((2*lix[0][2] - lix[f][2] - lix[-f][2] - g*500/580));
+	  }
+      }
+
+      /* Build homogeneity maps from the derivatives:			*/
+      memset(homo, 0, ndir*TS*TS);
+      for (row=4; row < mrow-4; row++)
+	for (col=4; col < mcol-4; col++) {
+	  for (tr=FLT_MAX, d=0; d < ndir; d++)
+	    if (tr > drv[d][row][col])
+		tr = drv[d][row][col];
+	  tr *= 8;
+	  for (d=0; d < ndir; d++)
+	    for (v=-1; v <= 1; v++)
+	      for (h=-1; h <= 1; h++)
+		if (drv[d][row+v][col+h] <= tr)
+		  homo[d][row][col]++;
+	}
+
+      /* Average the most homogenous pixels for the final result:	*/
+      if (height-top < TS+4) mrow = height-top+2;
+      if (width-left < TS+4) mcol = width-left+2;
+      for (row = MIN(top,8); row < mrow-8; row++)
+	for (col = MIN(left,8); col < mcol-8; col++) {
+	  for (d=0; d < ndir; d++)
+	    for (hm[d]=0, v=-2; v <= 2; v++)
+	      for (h=-2; h <= 2; h++)
+		hm[d] += homo[d][row+v][col+h];
+	  for (d=0; d < ndir-4; d++)
+	    if (hm[d] < hm[d+4]) hm[d  ] = 0; else
+	    if (hm[d] > hm[d+4]) hm[d+4] = 0;
+	  for (max=hm[0],d=1; d < ndir; d++)
+	    if (max < hm[d]) max = hm[d];
+	  max -= max >> 3;
+	  memset (avg, 0, sizeof avg);
+	  for (d=0; d < ndir; d++)
+	    if (hm[d] >= max) {
+	      for (c=0; c<3; c++) avg[c] += rgb[d][row][col][c];
+	      avg[3]++;
+	    }
+	  for (c=0; c<3; c++) image[(row+top)*width+col+left][c] = avg[c]/avg[3];
+	}
+    }
+  free(buffer);
+
+  for (row=0; row < height; row++)
+    for (col=0; col < width; col++)
+      for (c=0; c<4; c++)
+        out[4*(row*width+col)+c]=(float)image[row*width+col][c]/0xffff;
+  free(image);
+}
+
+#undef TS
+
+
+/* taken from dcraw and demosaic_ppg below */
+
+void xtrans_lin_interpolate(
+  float *out, const float *in,
+  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
+  // FIXME: make this const uint8_t (*const xtrans)?
+  const uint8_t xtrans[6][6])
+{
+  // snap to start of mosaic block
+  // FIXME: need this? why?
+  roi_out->x = 0;
+  roi_out->y = 0;
+
+  border_interpolate(out, in, roi_out, roi_in, xtrans, 1);
 
   // build interpolation lookup table which for a given offset in the sensor
   // lists neighboring pixels from which to interpolate:
@@ -734,6 +1154,7 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
 void
 modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_out, dt_iop_roi_t *roi_in)
 {
+  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
   // this op is disabled for preview pipe/filters == 0
 
   *roi_in = *roi_out;
@@ -744,8 +1165,16 @@ modify_roi_in (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piec
   roi_in->height /= roi_out->scale;
   roi_in->scale = 1.0f;
   // clamp to even x/y, to make demosaic pattern still hold..
-  roi_in->x = MAX(0, roi_in->x & ~1);
-  roi_in->y = MAX(0, roi_in->y & ~1);
+  if (data->filters != 9) {
+    roi_in->x = MAX(0, roi_in->x & ~1);
+    roi_in->y = MAX(0, roi_in->y & ~1);
+  }
+  else
+  {
+    // bilinear can handle any offset, but Markesteijn needs factors of 3
+    roi_in->x = MAX(0, roi_in->x - (roi_in->x%3));
+    roi_in->y = MAX(0, roi_in->y - (roi_in->y%3));
+  }
 
   // clamp numeric inaccuracies to full buffer, to avoid scaling/copying in pixelpipe:
   if(abs(piece->pipe->image.width - roi_in->width) < MAX(ceilf(1.0f/roi_out->scale), 10))
@@ -794,7 +1223,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   {
     // output 1:1
     if(img->filters==9)
-      xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
+    {
+      if (demosaicing_method != DT_IOP_DEMOSAIC_LINEAR)
+        xtrans_markesteijn_interpolate(
+          (float *)o, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
+      else
+        xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
+    }
     // green eq:
     else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
@@ -843,7 +1278,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 
     float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
     if(img->filters==9)
-      xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+    {
+      if (demosaicing_method != DT_IOP_DEMOSAIC_LINEAR)
+        xtrans_markesteijn_interpolate(
+          tmp, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
+      else
+        xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+    }
     else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
       float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
@@ -1318,6 +1759,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
 
   piece->process_cl_ready = 1;
 
+  // x-trans images not implemented in OpenCL yet
+  if(d->filters == 9)
+    piece->process_cl_ready = 0;
+
   // Demosaic mode AMAZE not implemented in OpenCL yet.
   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
     piece->process_cl_ready = 0;
@@ -1450,6 +1895,13 @@ demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
 
   switch(active|DEMOSAIC_XTRANS)
   {
+    case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN_3;
+      break;
+    case DT_IOP_DEMOSAIC_MARKESTEIJN:
+      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
+      break;
+    default:
     case DT_IOP_DEMOSAIC_LINEAR:
       p->demosaicing_method = DT_IOP_DEMOSAIC_LINEAR;
       break;
@@ -1476,6 +1928,8 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("linear (fast)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
   g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
