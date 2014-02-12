@@ -35,6 +35,13 @@
 
 #define CURVE_RESOLUTION 0x10000
 
+extern int
+exif_get_ascii_datafield(
+  const char* filename,
+  const char* key,
+  char* buf,
+  size_t buflen);
+
 /* --------------------------------------------------------------------------
  * Curve code used for fitting the curves
  * ------------------------------------------------------------------------*/
@@ -414,6 +421,7 @@ struct options
   const char* jpeg_ppm;
   const char* save_filename;
   int finalize;
+  const char* exif_filename;
 };
 
 static void
@@ -430,6 +438,7 @@ print_usage(
     " -f <filename>   Fit curve output filename\n"
     " -s <filename>   Save state\n"
     " -z              Compute the fitting curve\n"
+    " -e <filename>   Grab camera model from Exif's file\n"
     " -h              Print this help message\n"
     "\n"
     "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n"
@@ -456,6 +465,7 @@ set_default_options(
   opts->num_nodes = 8;
   opts->module = MODULE_BASECURVE;
   opts->finalize = 0;
+  opts->exif_filename = NULL;
 
 }
 
@@ -469,7 +479,7 @@ parse_arguments(
 
   int c;
   int ex = 0;
-  while ((c = getopt(argc, argv, "n:m:c:f:hs:z")) >= 0)
+  while ((c = getopt(argc, argv, "n:m:c:f:hs:ze:")) >= 0)
   {
     switch (c)
     {
@@ -497,6 +507,9 @@ parse_arguments(
       break;
     case 'z':
       opts->finalize = 1;
+      break;
+    case 'e':
+      opts->exif_filename = optarg;
       break;
     case ':':
       fprintf(stderr, "missing argument for option -%c, ignored\n", optopt);
@@ -754,7 +767,17 @@ main(int argc, char** argv)
     goto exit;
   }
 
-fit:
+fit:;
+
+  char maker[32];
+  char model[32];
+
+  if (opt.exif_filename)
+  {
+    exif_get_ascii_datafield(opt.exif_filename, "Exif.Image.Model", model, sizeof(model));
+    exif_get_ascii_datafield(opt.exif_filename, "Exif.Image.Make", maker, sizeof(maker));
+  }
+
   csample.m_samplingRes = CURVE_RESOLUTION;
   csample.m_outputRes = CURVE_RESOLUTION;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
@@ -773,7 +796,10 @@ fit:
 
     fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
     fprintf(ff, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
-    fprintf(ff, "# { \"new measured basecurve\", \"insert maker\", \"insert model\", 0, 51200,                        {{{");
+    fprintf(ff, "# { \"%s\", \"%s\", \"%s\", 0, 51200,                        {{{",
+      opt.exif_filename ? model : "new measured basecurve",
+      opt.exif_filename ? maker : "insert maker",
+      opt.exif_filename ? model : "insert model");
     for(int k=0;k<fit.m_numAnchors;k++)
       fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"}}, ");
     fprintf(ff, "{%d}, {m}}, 0, 0},\n", fit.m_numAnchors);
@@ -800,7 +826,9 @@ fit:
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n");
     fprintf(stdout, "(you have been warned :) )\n\n");
     // the big binary blob is a canonical blend mode option (switched off).
-    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured basecurve','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", BASECURVE_PARAMS_VERSION, encoded);
+    fprintf(stdout, "echo \"INSERT INTO presets VALUES('%s','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
+      opt.exif_filename ? model : "new measured basecurve",
+      BASECURVE_PARAMS_VERSION, encoded);
   }
   else if (opt.module == MODULE_TONECURVE)
   {
@@ -844,10 +872,13 @@ fit:
     fprintf(stdout, "#!/bin/sh\n");
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n\n");
-    fprintf(stdout, "echo \"INSERT INTO presets VALUES('measured tonecurve','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n", TONECURVE_PARAMS_VERSION, encoded);
+    fprintf(stdout, "echo \"INSERT INTO presets VALUES('%s','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
+            opt.exif_filename ? model : "new measured tonecurve",
+            TONECURVE_PARAMS_VERSION, encoded);
     fprintf(stdout, "\n\n\n"
                     "# if it pleases you, then in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
-                    "# {\"put a name here\", {{");
+                    "# {\"%s\", {{",
+                    opt.exif_filename ? model : "new measured tonecurve");
     for (int i=0; i<3; i++)
     {
       fprintf(stdout, "{");

@@ -1,19 +1,26 @@
-PROGS = basecurve
+PROGS = dt-curve-tool
 
 ifeq ($(BUILD_TYPE),Release)
-CFLAGS += -O3
+CCFLAGS += -O3
 else
-CFLAGS += -O0
+CCFLAGS += -O0
 endif
 
-CFLAGS += -g -std=c99 -Wall -pedantic
+CCFLAGS += -g -Wall
+
+CFLAGS = $(CCFLAGS) -std=c99 -pedantic
+CXXCFLAGS=$(CFLAGS)
+
+DT_CURVE_TOOL_OBJS += exif-wrapper.o
+DT_CURVE_TOOL_OBJS += dt-curve-tool.o
 
 all: $(PROGS)
 
 clean:
-	rm -f $(PROGS)
+	rm -f $(PROGS) $(DT_CURVE_TOOL_OBJS)
 
-basecurve: basecurve.c
-	$(CC) $(CFLAGS) basecurve.c -lm -o $@
+
+dt-curve-tool: $(DT_CURVE_TOOL_OBJS)
+	$(CXX) $(CXXFLAGS) $^ -lm -lexiv2 -o $@
 
 .PHONY: all clean
