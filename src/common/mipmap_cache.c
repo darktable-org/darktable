@@ -873,7 +873,7 @@ dt_mipmap_cache_read_get(
   else if(flags == DT_MIPMAP_PREFETCH)
   {
     // and opposite: prefetch without locking
-    if(mip > DT_MIPMAP_FULL || mip < DT_MIPMAP_0) return;
+    if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0) return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     dt_job_t j;
     dt_image_load_job_init(&j, imgid, mip);
     // if the job already exists, make it high-priority, if not, add it:

@@ -15,6 +15,7 @@ set(OSM_GPS_MAP_SOURCES
 if(NOT WIN32)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 endif(NOT WIN32)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-type-limits") # gcc < 4.8 choke on enum < 0 comparisons
 add_definitions("-D M_PI=3.14159265358979323846" "-D M_LN2=0.69314718055994530942" "-D M_LOG10E=0.43429448190325182765" )
 
 if(LIBSOUP22_FOUND)
