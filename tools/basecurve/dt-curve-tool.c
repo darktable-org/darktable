@@ -438,7 +438,7 @@ print_usage(
     " -f <filename>   Fit curve output filename\n"
     " -s <filename>   Save state\n"
     " -z              Compute the fitting curve\n"
-    " -e <filename>   Grab camera model from Exif's file\n"
+    " -e <filename>   Retrieve model and make from file's Exif metadata\n"
     " -h              Print this help message\n"
     "\n"
     "convert the raw with `dcraw -6 -W -g 1 1 -w input.raw'\n"
