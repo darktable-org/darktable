@@ -1077,6 +1077,7 @@ dt_interpolation_new(
  * @param pindex [out] Array of sample indexes to be used for applying each kernel tap
  * arrays of informations
  * @param pmeta [out] Array of int triplets (length, kernel, index) telling where to start for an arbitrary out position meta[3*out]
+ * @param maxtaps [out] returns maximum taps per pixel to allow calculating lengthes of returned arrays
  * @return 0 for success, !0 for failure
  */
 static int
@@ -1090,7 +1091,8 @@ prepare_resampling_plan(
   int** plength,
   float** pkernel,
   int** pindex,
-  int** pmeta)
+  int** pmeta,
+  int* maxtaps)
 {
   // Safe return values
   *plength = NULL;
@@ -1265,6 +1267,12 @@ prepare_resampling_plan(
   {
     *pmeta = meta;
   }
+
+  if (maxtaps)
+  {
+    *maxtaps = maxtapsapixel;
+  }
+
   return 0;
 }
 
@@ -1326,13 +1334,13 @@ dt_interpolation_resample(
 #endif
 
   // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, NULL);
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, NULL, NULL);
   if (r)
   {
     goto exit;
   }
 
-  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta);
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta, NULL);
   if (r)
   {
     goto exit;
@@ -1434,6 +1442,193 @@ exit:
   dt_free_align(hlength);
   dt_free_align(vlength);
 }
+
+
+#ifdef HAVE_OPENCL
+dt_interpolation_cl_global_t *
+dt_interpolation_init_cl_global()
+{
+  dt_interpolation_cl_global_t *g = (dt_interpolation_cl_global_t *)malloc(sizeof(dt_interpolation_cl_global_t));
+
+  const int program = 2;   // basic.cl, from programs.conf
+  g->kernel_interpolation_resample = dt_opencl_create_kernel(program, "interpolation_resample");
+  return g;
+}
+
+void
+dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
+{
+  if(!g) return;
+  // destroy kernels
+  dt_opencl_free_kernel(g->kernel_interpolation_resample);
+  free(g);
+}
+
+int
+dt_interpolation_resample_cl(
+  const struct dt_interpolation* itor,
+  int devid,
+  cl_mem dev_out,
+  const dt_iop_roi_t* const roi_out,
+  cl_mem dev_in,
+  const dt_iop_roi_t* const roi_in)
+{
+  int* hindex = NULL;
+  int* hlength = NULL;
+  float* hkernel = NULL;
+  int* hmeta = NULL;
+  int* vindex = NULL;
+  int* vlength = NULL;
+  float* vkernel = NULL;
+  int* vmeta = NULL;
+
+  int hmaxtaps = 0, vmaxtaps = 0;
+  int r;
+  cl_int err = -999;
+
+  cl_mem dev_hindex = NULL;
+  cl_mem dev_hlength = NULL;
+  cl_mem dev_hkernel = NULL;
+  cl_mem dev_hmeta = NULL;
+  cl_mem dev_vindex = NULL;
+  cl_mem dev_vlength = NULL;
+  cl_mem dev_vkernel = NULL;
+  cl_mem dev_vmeta = NULL;
+
+  debug_info(
+    "resampling_cl %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n",
+    (void *)dev_in,
+    roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale,
+    (void *)dev_out,
+    roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
+
+  // Fast code path for 1:1 copy, only cropping area can change
+  if (roi_out->scale == 1.f)
+  {
+#if DEBUG_RESAMPLING_TIMING
+    int64_t ts_resampling = getts();
+#endif
+    size_t iorigin[] = { roi_out->x, roi_out->y, 0};
+    size_t oorigin[] = { 0, 0, 0};
+    size_t region[] = { roi_out->width, roi_out->height, 1};
+
+    // copy original input from dev_in -> dev_out as starting point
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    if(err != CL_SUCCESS) goto error;
+
+#if DEBUG_RESAMPLING_TIMING
+    ts_resampling = getts() - ts_resampling;
+    fprintf(stderr, "resampling_cl %p plan:0us resampling:%"PRId64"us\n", (void *)dev_in, ts_resampling);
+#endif
+    // All done, so easy case
+    return TRUE;
+  }
+
+  // Generic non 1:1 case... much more complicated :D
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_plan = getts();
+#endif
+
+  // Prepare resampling plans once and for all
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, &hmeta, &hmaxtaps);
+  if (r)
+  {
+    goto error;
+  }
+
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta, &vmaxtaps);
+  if (r)
+  {
+    goto error;
+  }
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_plan = getts() - ts_plan;
+#endif
+
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_resampling = getts();
+#endif
+
+  int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
+
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*hmaxtaps, hindex);
+  if (dev_hindex == NULL) goto error;
+
+  dev_hlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width, hlength);
+  if (dev_hlength == NULL) goto error;
+
+  dev_hkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*width*hmaxtaps, hkernel);
+  if (dev_hkernel == NULL) goto error;
+
+  dev_hmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*3, hmeta);
+  if (dev_hmeta == NULL) goto error;
+
+  dev_vindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*vmaxtaps, vindex);
+  if (dev_vindex == NULL) goto error;
+
+  dev_vlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height, vlength);
+  if (dev_vlength == NULL) goto error;
+
+  dev_vkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*height*vmaxtaps, vkernel);
+  if (dev_vkernel == NULL) goto error;
+
+  dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*3, vmeta);
+  if (dev_vmeta == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_hmeta);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_vmeta);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_hlength);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_vlength);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_hindex);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_vindex);
+  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_hkernel);
+  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), (void *)&dev_vkernel);
+  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  if(err != CL_SUCCESS) goto error;
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_resampling = getts() - ts_resampling;
+  fprintf(stderr, "resampling_cl %p plan:%"PRId64"us resampling:%"PRId64"us\n", (void *)dev_in, ts_plan, ts_resampling);
+#endif
+
+  dt_opencl_release_mem_object(dev_hindex);
+  dt_opencl_release_mem_object(dev_hlength);
+  dt_opencl_release_mem_object(dev_hkernel);
+  dt_opencl_release_mem_object(dev_hmeta);
+  dt_opencl_release_mem_object(dev_vindex);
+  dt_opencl_release_mem_object(dev_vlength);
+  dt_opencl_release_mem_object(dev_vkernel);
+  dt_opencl_release_mem_object(dev_vmeta);
+  dt_free_align(hlength);
+  dt_free_align(vlength);
+  return CL_SUCCESS;
+
+error:
+  if(dev_hindex != NULL) dt_opencl_release_mem_object(dev_hindex);
+  if(dev_hlength != NULL) dt_opencl_release_mem_object(dev_hlength);
+  if(dev_hkernel != NULL) dt_opencl_release_mem_object(dev_hkernel);
+  if(dev_hmeta != NULL) dt_opencl_release_mem_object(dev_hmeta);
+  if(dev_vindex != NULL) dt_opencl_release_mem_object(dev_vindex);
+  if(dev_vlength != NULL) dt_opencl_release_mem_object(dev_vlength);
+  if(dev_vkernel != NULL) dt_opencl_release_mem_object(dev_vkernel);
+  if(dev_vmeta != NULL) dt_opencl_release_mem_object(dev_vmeta);
+  dt_free_align(hlength);
+  dt_free_align(vlength);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);
+  return err;
+}
+#endif
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

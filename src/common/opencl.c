@@ -23,6 +23,7 @@
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
 #include "common/gaussian.h"
+#include "common/interpolation.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
 #include "develop/pixelpipe.h"
@@ -439,6 +440,7 @@ finally:
     dt_capabilities_add("opencl");
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
+    cl->interpolation = dt_interpolation_init_cl_global();
   }
   if(locale)
   {
@@ -454,6 +456,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
+    dt_interpolation_free_cl_global(cl->interpolation);
     for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);

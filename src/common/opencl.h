@@ -126,6 +126,9 @@ typedef struct dt_opencl_t
 
   // global kernels for gaussian filtering, to be reused by a few plugins.
   struct dt_gaussian_cl_global_t *gaussian;
+
+  // global kernels for interpolation resampling.
+  struct dt_interpolation_cl_global_t *interpolation;
 }
 dt_opencl_t;
 

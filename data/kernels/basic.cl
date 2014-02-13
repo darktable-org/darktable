@@ -1373,3 +1373,53 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
   write_imagef(out, (int2)(x, y), o);
 }
 
+/* kernel for the interpolation resample helper */
+kernel void
+interpolation_resample (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                        const global int *hmeta, const global int *vmeta,
+                        const global int *hlength, const global int *vlength,
+                        const global int *hindex, const global int *vindex,
+                        const global float *hkernel, const global float *vkernel)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  // Initialize column resampling indexes
+  const int hlidx = hmeta[x*3];   // H(orizontal) L(ength) I(n)d(e)x
+  const int hkidx = hmeta[x*3+1]; // H(orizontal) K(ernel) I(n)d(e)x
+  const int hiidx = hmeta[x*3+2]; // H(orizontal) I(ndex) I(n)d(e)x
+  const int vlidx = vmeta[y*3];   // V(ertical) L(ength) I(n)d(e)x
+  const int vkidx = vmeta[y*3+1]; // V(ertical) K(ernel) I(n)d(e)x
+  const int viidx = vmeta[y*3+2]; // V(ertical) I(ndex) I(n)d(e)x
+
+  const int hl = hlength[hlidx];  // H(orizontal) L(ength)
+  const int vl = vlength[vlidx];  // V(ertical) L(ength)
+
+  float4 pixel = (float4)0.0f;
+
+#if 1
+  for (int iy = 0; iy < vl; iy++)
+  {  
+    const int yy = vindex[viidx+iy];
+    float4 vpixel = (float4)0.0f;
+
+    for (int ix = 0; ix < hl; ix++)
+    {
+      const int xx = hindex[hiidx+ix];
+      float4 hpixel = read_imagef(in, sampleri,(int2)(xx, yy));
+      vpixel += hpixel * hkernel[hkidx+ix];
+    }
+
+    pixel += vpixel * vkernel[vkidx+iy];
+  }
+#else
+  const int xx = hindex[hiidx];
+  const int yy = vindex[viidx];
+  pixel = read_imagef(in, sampleri,(int2)(xx, yy));
+#endif
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
