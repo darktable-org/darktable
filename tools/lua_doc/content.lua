@@ -396,6 +396,8 @@ types.dt_lua_image_t.get_group_members:add_parameter("image",my_tostring(types.d
 types.dt_lua_image_t.get_group_members:add_return("table of "..my_tostring(types.dt_lua_image_t),[[A table of image objects containing all images that are in the same group as the image.]])
 darktable.tags.attach:set_alias(types.dt_lua_image_t.attach_tag)
 types.dt_lua_image_t.group_leader:set_text([[The image which is the leader of the group this image is a member of.]])
+types.dt_lua_image_t.local_copy:set_text([[True if the image has a copy in the local cache]])
+types.dt_lua_image_t.local_copy:add_version_info([[field added]])
 
 types.dt_imageio_module_format_t:set_text([[A virtual type representing all format types.]])
 types.dt_imageio_module_format_t.plugin_name:set_text([[A unique name for the plugin.]])

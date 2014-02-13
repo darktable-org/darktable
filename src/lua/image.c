@@ -107,6 +107,7 @@ typedef enum
   RESET,
   MOVE,
   COPY,
+  LOCAL_COPY,
   LAST_IMAGE_FIELD
 } image_fields;
 const char *image_fields_name[] =
@@ -130,6 +131,7 @@ const char *image_fields_name[] =
   "reset",
   "move",
   "copy",
+  "local_copy",
   NULL
 };
 static int image_index(lua_State *L)
@@ -325,6 +327,11 @@ static int image_index(lua_State *L)
         lua_pushcfunction(L,dt_lua_copy_image);
         break;
       }
+    case LOCAL_COPY:
+      {
+        lua_pushboolean(L,my_image->flags &DT_IMAGE_LOCAL_COPY);
+        break;
+      }
     default:
       releasereadimage(L,my_image);
       return luaL_error(L,"should never happen %s",lua_tostring(L,-1));
@@ -393,6 +400,19 @@ static int image_newindex(lua_State *L)
       dt_metadata_set(my_image->id,"Xmp.dc.title",luaL_checkstring(L,-1));
       dt_image_synch_xmp(my_image->id);
       break;
+    case LOCAL_COPY:
+      {
+        int imgid = my_image->id;
+        luaL_checktype(L,-1,LUA_TBOOLEAN);
+        // we need to release write image for the other functions to use it
+        releasewriteimage(L,my_image);
+        if(lua_toboolean(L,-1)) {
+          dt_image_local_copy_set(imgid);
+        } else {
+          dt_image_local_copy_reset(imgid);
+        }
+        return 0;
+      }
     default:
       releasewriteimage(L,my_image);
       return luaL_error(L,"unknown index for image : ",lua_tostring(L,-2));
