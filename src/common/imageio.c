@@ -84,7 +84,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(image->data, image->data_size, &jpg)) goto libraw_fail;
     *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t)*jpg.width*jpg.height*4);
-    if(!buffer) goto libraw_fail;
+    if(!*buffer) goto libraw_fail;
     *width = jpg.width;
     *height = jpg.height;
     if(dt_imageio_jpeg_decompress(&jpg, *buffer))
