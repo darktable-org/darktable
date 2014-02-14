@@ -220,16 +220,20 @@ static inline float Lab(float val)
   return val;
 }
 
+// NB: DT uses L*a*b* D50
 static inline void
 RGB2Lab(float* L, float* a, float*b, float R, float G, float B)
 {
-  const float X = 0.412453f*R + 0.357580f*G + 0.180423f*B;
-  const float Y = 0.212671f*R + 0.715160f*G + 0.072169f*B;
-  const float Z = 0.019334f*R + 0.119193f*G + 0.950227f*B;
-  const float fx = Lab(X);
+  // RGB to CIE 1931 XYZ @D50 first
+  const float X = 0.4360747f*R + 0.3850649f*G + 0.1430804f*B;
+  const float Y = 0.2225045f*R + 0.7168786f*G + 0.0606169f*B;
+  const float Z = 0.0139322f*R + 0.0971045f*G + 0.7141733f*B;
+
+  // Apply D50/ICC illuminant, then transform using the L*a*b* function
+  const float fx = Lab(X/0.9642f);
   const float fy = Lab(Y);
-  const float fz = Lab(Z);
-  // Normalized to the [0,1] cube
+  const float fz = Lab(Z/0.8249f);
+
   *L = 116.f*fy - 16.f;
   *a = 500.f*(fx - fy);
   *b = 200.f*(fy - fz);
@@ -691,28 +695,37 @@ main(int argc, char** argv)
       build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*CURVE_RESOLUTION, hist+ch*CURVE_RESOLUTION);
     }
 
+    // for writing easiness
+    float* ch0 = &curve[0*CURVE_RESOLUTION];
+    float* ch1 = &curve[1*CURVE_RESOLUTION];
+    float* ch2 = &curve[2*CURVE_RESOLUTION];
+    uint32_t* h0 = &hist[0*CURVE_RESOLUTION];
+    uint32_t* h1 = &hist[1*CURVE_RESOLUTION];
+    uint32_t* h2 = &hist[2*CURVE_RESOLUTION];
+
     // output the histograms:
     fprintf(fb, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
     for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      float ch0 = curve[k + 0*CURVE_RESOLUTION];
-      float ch1 = curve[k + 1*CURVE_RESOLUTION];
-      float ch2 = curve[k + 2*CURVE_RESOLUTION];
-      int c0 = hist[k + 0*CURVE_RESOLUTION];
-      int c1 = hist[k + 1*CURVE_RESOLUTION];
-      int c2 = hist[k + 2*CURVE_RESOLUTION];
-      fprintf(fb, "%f %f %f %f %d %d %d\n", ch0, ch1, ch2, (ch0 + ch1 + ch2)/3.0f, c0, c1, c2);
+      fprintf(fb, "%f %f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], (ch0[k] + ch1[k] + ch2[k])/3.0f, h0[k], h1[k], h2[k]);
     }
   }
   else if (opt.module == MODULE_TONECURVE)
   {
     build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, hist);
 
+    float* ch0 = &curve[0*CURVE_RESOLUTION];
+    float* ch1 = &curve[1*CURVE_RESOLUTION];
+    float* ch2 = &curve[2*CURVE_RESOLUTION];
+    uint32_t* h0 = &hist[0*CURVE_RESOLUTION];
+    uint32_t* h1 = &hist[1*CURVE_RESOLUTION];
+    uint32_t* h2 = &hist[2*CURVE_RESOLUTION];
+
     // output the histogram
-    fprintf(fb, "# tonecurve-L cnt-L\n");
+    fprintf(fb, "# tonecurve-L tonecurve-a tonecurve-b cnt-L cnt-a cnt-b\n");
     for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      fprintf(fb, "%f %d\n", curve[k], hist[k]);
+      fprintf(fb, "%f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
     }
   }
 
