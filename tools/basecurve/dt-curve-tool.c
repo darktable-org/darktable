@@ -417,15 +417,16 @@ is_bigendian()
 }
 struct options
 {
-  const char* fit_filename;
-  const char* curve_filename;
-  enum module_type module;
+  const char* filename_basecurve_fit;
+  const char* filename_tonecurve_fit;
+  const char* filename_basecurve;
+  const char* filename_tonecurve;
+  const char* filename_state;
+  const char* filename_raw;
+  const char* filename_jpeg;
+  const char* filename_exif;
   int num_nodes;
-  const char* raw_ppm;
-  const char* jpeg_ppm;
-  const char* save_filename;
   int finalize;
-  const char* exif_filename;
 };
 
 static void
@@ -436,10 +437,11 @@ print_usage(
     "usage: %s [OPTIONS] <inputraw.ppm (16-bit)> <inputjpg.ppm (8-bit)>\n"
     "\n"
     "OPTIONS:\n"
-    " -m <module>    'b' for basecurve, 't' for tonecurve\n"
     " -n <integer>    Number of nodes for the curve\n"
-    " -c <filename>   Curve output filename\n"
-    " -f <filename>   Fit curve output filename\n"
+    " -b <filename>   Basecurve output filename\n"
+    " -c <filename>   Basecurve Fit curve output filename\n"
+    " -t <filename>   Tonecurve output filename\n"
+    " -u <filename>   Tonecurve Fit curve output filename\n"
     " -s <filename>   Save state\n"
     " -z              Compute the fitting curve\n"
     " -e <filename>   Retrieve model and make from file's Exif metadata\n"
@@ -458,19 +460,21 @@ static void
 set_default_options(
   struct options* opts)
 {
-  static const char* default_curve = "basecurve.dat";
-  static const char* default_fit = "fit.dat";
-  static const char* default_save = "save.dat";
-  opts->curve_filename = default_curve;
-  opts->fit_filename = default_fit;
-  opts->save_filename = default_save;
-  opts->jpeg_ppm = NULL;
-  opts->raw_ppm = NULL;
-  opts->num_nodes = 8;
-  opts->module = MODULE_BASECURVE;
+  static const char* default_filename_basecurve = "basecurve.dat";
+  static const char* default_filename_basecurve_fit = "basecurve.fit.dat";
+  static const char* default_filename_tonecurve = "tonecurve.dat";
+  static const char* default_filename_tonecurve_fit = "tonecurve.fit.dat";
+  static const char* default_state = "dt-curve-tool.bin";
+  opts->filename_basecurve = default_filename_basecurve;
+  opts->filename_basecurve_fit = default_filename_basecurve_fit;
+  opts->filename_tonecurve = default_filename_tonecurve;
+  opts->filename_tonecurve_fit = default_filename_tonecurve_fit;
+  opts->filename_state = default_state;
+  opts->filename_jpeg = NULL;
+  opts->filename_raw = NULL;
+  opts->num_nodes = 12;
   opts->finalize = 0;
-  opts->exif_filename = NULL;
-
+  opts->filename_exif = NULL;
 }
 
 static int
@@ -483,37 +487,33 @@ parse_arguments(
 
   int c;
   int ex = 0;
-  while ((c = getopt(argc, argv, "n:m:c:f:hs:ze:")) >= 0)
+  while ((c = getopt(argc, argv, "hn:b:c:t:u:s:ze:")) >= 0)
   {
     switch (c)
     {
     case 'n':
       opts->num_nodes = atoi(optarg);
       break;
-    case 'm':
-      if (*optarg == 'b')
-      {
-        opts->module = MODULE_BASECURVE;
-      }
-      else if ((*optarg == 't'))
-      {
-        opts->module = MODULE_TONECURVE;
-      }
+    case 'b':
+      opts->filename_basecurve = optarg;
       break;
     case 'c':
-      opts->curve_filename = optarg;
+      opts->filename_basecurve_fit = optarg;
       break;
-    case 'f':
-      opts->fit_filename = optarg;
+    case 't':
+      opts->filename_tonecurve = optarg;
+      break;
+    case 'u':
+      opts->filename_tonecurve_fit = optarg;
       break;
     case 's':
-      opts->save_filename = optarg;
+      opts->filename_state = optarg;
       break;
     case 'z':
       opts->finalize = 1;
       break;
     case 'e':
-      opts->exif_filename = optarg;
+      opts->filename_exif = optarg;
       break;
     case ':':
       fprintf(stderr, "missing argument for option -%c, ignored\n", optopt);
@@ -535,8 +535,8 @@ parse_arguments(
   {
     if (optind < argc - 1)
     {
-      opts->raw_ppm = argv[optind];
-      opts->jpeg_ppm = argv[optind+1];
+      opts->filename_raw = argv[optind];
+      opts->filename_jpeg = argv[optind+1];
     }
     else
     {
@@ -546,6 +546,61 @@ parse_arguments(
   }
 
   return ex;
+}
+
+void
+read_curveset(
+  FILE* f,
+  float* curve,
+  uint32_t* hist)
+{
+  int r = fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), f);
+  if (r != 3*CURVE_RESOLUTION*sizeof(float))
+  {
+    /* could not read save state, either missing stats in that save file or
+     * corrupt data. both cases need to clean state */
+    memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+  }
+  else
+  {
+    r = fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), f);
+    if (r != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+    {
+      /* could not read save state, either missing stats in that save file or
+       * corrupt data. both cases need to clean state */
+      memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+      memset(hist, 0, 3*CURVE_RESOLUTION*sizeof(uint32_t));
+    }
+  }
+}
+
+int
+write_curveset(
+  FILE* f,
+  float* curve,
+  uint32_t* hist)
+{
+  int ret = -1;
+
+  int w = fwrite(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), f);
+  if (w != 3*CURVE_RESOLUTION*sizeof(float))
+  {
+    fprintf(stderr, "error: failed writing curves to save state file\n");
+    goto exit;
+  }
+
+  w = fwrite(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), f);
+  if (w != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+  {
+    fprintf(stderr, "error: failed writing histograms to save state file\n");
+    goto exit;
+  }
+
+  ret = 0;
+
+exit:
+
+  return ret;
 }
 
 /* --------------------------------------------------------------------------
@@ -572,15 +627,16 @@ main(int argc, char** argv)
   int jpeg_height = -1;
   uint8_t *jpeg_raw = NULL;
 
-  // file output for basecurve and fit data
-  FILE* fb = NULL;
-  FILE* ff = NULL;
-  FILE* fs = NULL;
+  // all in one FILE handle
+  FILE* f = NULL;
 
   // curve related vars
-  int ncurves = -1;
   float* curve = NULL;
+  float* curve_base = NULL;
+  float* curve_tone = NULL;
   uint32_t* hist = NULL;
+  uint32_t* hist_base = NULL;
+  uint32_t* hist_tone = NULL;
   CurveData fit;
   int accepts = -1;
   float sqerr = -1.f;
@@ -599,50 +655,32 @@ main(int argc, char** argv)
     opt.num_nodes = 20;
   }
 
-  ncurves = 3;
-  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*ncurves);
+  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*6);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
     goto exit;
   }
+  curve_base = curve;
+  curve_tone = curve + 3*CURVE_RESOLUTION;
 
-  hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*ncurves);
+  hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*6);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;
     goto exit;
   }
+  hist_base = hist;
+  hist_tone = hist + 3*CURVE_RESOLUTION;
 
   // read saved state if any
-  fs = fopen(opt.save_filename, "rb");
-  if (fs)
+  f = fopen(opt.filename_state, "rb");
+  if (f)
   {
-    if (opt.module == MODULE_TONECURVE)
-    {
-      fseek(fs, CURVE_RESOLUTION*3*(sizeof(float) + sizeof(uint32_t)), SEEK_SET);
-    }
-    int r = fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
-    if (r != 3*CURVE_RESOLUTION*sizeof(float))
-    {
-      /* could not read save state, either missing stats in that save file or
-       * corrupt data. both cases need to clean state */
-      memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
-    }
-    else
-    {
-      r = fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
-      if (r != 3*CURVE_RESOLUTION*sizeof(uint32_t))
-      {
-        /* could not read save state, either missing stats in that save file or
-         * corrupt data. both cases need to clean state */
-        memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
-        memset(hist, 0, 3*CURVE_RESOLUTION*sizeof(uint32_t));
-      }
-    }
-
-    fclose(fs);
-    fs = NULL;
+    read_curveset(f, curve_base, hist_base);
+    read_curveset(f, curve_tone, hist_tone);
+    fclose(f);
+    f = NULL;
   }
 
   if (opt.finalize)
@@ -650,7 +688,7 @@ main(int argc, char** argv)
     goto fit;
   }
 
-  raw_buff = read_ppm16(opt.raw_ppm, &raw_width, &raw_height);
+  raw_buff = read_ppm16(opt.filename_raw, &raw_width, &raw_height);
   if(!raw_buff)
   {
     fprintf(stderr, "error: failed reading the RAW file data\n");
@@ -666,7 +704,7 @@ main(int argc, char** argv)
     }
   }
 
-  jpeg_raw = read_ppm8(opt.jpeg_ppm, &jpeg_width, &jpeg_height);
+  jpeg_raw = read_ppm8(opt.filename_jpeg, &jpeg_width, &jpeg_height);
   if(!jpeg_raw)
   {
     fprintf(stderr, "error: failed reading JPEG file\n");
@@ -681,56 +719,73 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  fb = fopen(opt.curve_filename, "wb");
-  if (!fb)
+  /* ------------------------------------------------------------------------
+   * Basecurve part
+   * ----------------------------------------------------------------------*/
+
+  f = fopen(opt.filename_basecurve, "wb");
+  if (!f)
   {
-    fprintf(stderr, "error: could not open '%s'\n", opt.curve_filename);
+    fprintf(stderr, "error: could not open '%s'\n", opt.filename_basecurve);
     goto exit;
   }
 
-  if (opt.module == MODULE_BASECURVE)
+  for (int ch=0; ch<3; ch++)
   {
-    for (int ch=0; ch<3; ch++)
-    {
-      build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve+ch*CURVE_RESOLUTION, hist+ch*CURVE_RESOLUTION);
-    }
+    build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
+  }
 
+  {
     // for writing easiness
-    float* ch0 = &curve[0*CURVE_RESOLUTION];
-    float* ch1 = &curve[1*CURVE_RESOLUTION];
-    float* ch2 = &curve[2*CURVE_RESOLUTION];
-    uint32_t* h0 = &hist[0*CURVE_RESOLUTION];
-    uint32_t* h1 = &hist[1*CURVE_RESOLUTION];
-    uint32_t* h2 = &hist[2*CURVE_RESOLUTION];
+    float* ch0 = &curve_base[0*CURVE_RESOLUTION];
+    float* ch1 = &curve_base[1*CURVE_RESOLUTION];
+    float* ch2 = &curve_base[2*CURVE_RESOLUTION];
+    uint32_t* h0 = &hist_base[0*CURVE_RESOLUTION];
+    uint32_t* h1 = &hist_base[1*CURVE_RESOLUTION];
+    uint32_t* h2 = &hist_base[2*CURVE_RESOLUTION];
 
     // output the histograms:
-    fprintf(fb, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
+    fprintf(f, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
     for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      fprintf(fb, "%f %f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], (ch0[k] + ch1[k] + ch2[k])/3.0f, h0[k], h1[k], h2[k]);
+      fprintf(f, "%f %f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], (ch0[k] + ch1[k] + ch2[k])/3.0f, h0[k], h1[k], h2[k]);
     }
   }
-  else if (opt.module == MODULE_TONECURVE)
-  {
-    build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve, hist);
 
-    float* ch0 = &curve[0*CURVE_RESOLUTION];
-    float* ch1 = &curve[1*CURVE_RESOLUTION];
-    float* ch2 = &curve[2*CURVE_RESOLUTION];
-    uint32_t* h0 = &hist[0*CURVE_RESOLUTION];
-    uint32_t* h1 = &hist[1*CURVE_RESOLUTION];
-    uint32_t* h2 = &hist[2*CURVE_RESOLUTION];
+  fclose(f);
+  f = NULL;
+
+  /* ------------------------------------------------------------------------
+   * Tonecurve part
+   * ----------------------------------------------------------------------*/
+
+  f = fopen(opt.filename_tonecurve, "wb");
+  if (!f)
+  {
+    fprintf(stderr, "error: could not open '%s'\n", opt.filename_tonecurve);
+    goto exit;
+  }
+
+  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve_tone, hist_tone);
+
+  {
+    float* ch0 = &curve_tone[0*CURVE_RESOLUTION];
+    float* ch1 = &curve_tone[1*CURVE_RESOLUTION];
+    float* ch2 = &curve_tone[2*CURVE_RESOLUTION];
+    uint32_t* h0 = &hist_tone[0*CURVE_RESOLUTION];
+    uint32_t* h1 = &hist_tone[1*CURVE_RESOLUTION];
+    uint32_t* h2 = &hist_tone[2*CURVE_RESOLUTION];
 
     // output the histogram
-    fprintf(fb, "# tonecurve-L tonecurve-a tonecurve-b cnt-L cnt-a cnt-b\n");
+    fprintf(f, "# tonecurve-L tonecurve-a tonecurve-b cnt-L cnt-a cnt-b\n");
     for(int k=0;k<CURVE_RESOLUTION;k++)
     {
-      fprintf(fb, "%f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
+      fprintf(f, "%f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
     }
   }
 
-  fclose(fb);
-  fb = NULL;
+  fclose(f);
+  f = NULL;
 
   free(raw_buff);
   raw_buff = NULL;
@@ -738,41 +793,30 @@ main(int argc, char** argv)
   free(jpeg_raw);
   jpeg_raw = NULL;
 
-  // write save state
-  fs = fopen(opt.save_filename, "r+");
-  if (!fs && errno == ENOENT)
+  /* ------------------------------------------------------------------------
+   * Write save state w/ the gathered data
+   * ----------------------------------------------------------------------*/
+
+  f = fopen(opt.filename_state, "r+");
+  if (!f && errno == ENOENT)
   {
-    fs = fopen(opt.save_filename, "w+");
+    f = fopen(opt.filename_state, "w+");
   }
-  if (fs)
+  if (f)
   {
-    if (opt.module == MODULE_BASECURVE)
+    if (write_curveset(f, curve_base, hist_base))
     {
-      fseek(fs, 0, SEEK_SET);
-    }
-    else if (opt.module == MODULE_TONECURVE)
-    {
-      fseek(fs, CURVE_RESOLUTION*3*(sizeof(float) + sizeof(uint32_t)), SEEK_SET);
-    }
-    int w = fwrite(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), fs);
-    if (w != 3*CURVE_RESOLUTION*sizeof(float))
-    {
-      fprintf(stderr, "error: failed writing curves to save state file\n");
-      ret = -1;
       goto exit;
     }
-    w = fwrite(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), fs);
-    if (w != 3*CURVE_RESOLUTION*sizeof(float))
+    if (write_curveset(f, curve_tone, hist_tone))
     {
-      fprintf(stderr, "error: failed writing histograms to save state file\n");
-      ret = -1;
       goto exit;
     }
   }
   else
   {
     fprintf(stdout, "failed opening save file errno=%d\n", errno);
-
+    goto exit;
   }
 
   if (!opt.finalize)
@@ -785,41 +829,51 @@ fit:;
   char maker[32];
   char model[32];
 
-  if (opt.exif_filename)
+  if (opt.filename_exif)
   {
-    exif_get_ascii_datafield(opt.exif_filename, "Exif.Image.Model", model, sizeof(model));
-    exif_get_ascii_datafield(opt.exif_filename, "Exif.Image.Make", maker, sizeof(maker));
+    exif_get_ascii_datafield(opt.filename_exif, "Exif.Image.Model", model, sizeof(model));
+    exif_get_ascii_datafield(opt.filename_exif, "Exif.Image.Make", maker, sizeof(maker));
   }
 
   csample.m_samplingRes = CURVE_RESOLUTION;
   csample.m_outputRes = CURVE_RESOLUTION;
   csample.m_Samples = (uint16_t *)calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
 
-  ff = fopen(opt.fit_filename, "wb");
-  if (!ff)
+  /* ------------------------------------------------------------------------
+   * Basecurve fit
+   * ----------------------------------------------------------------------*/
+
+  f = fopen(opt.filename_basecurve_fit, "w+b");
+  if (!f)
   {
-    fprintf(stderr, "error: could not open '%s'\n", opt.fit_filename);
+    fprintf(stderr, "error: could not open '%s'\n", opt.filename_basecurve_fit);
     goto exit;
   }
 
-  if (opt.module == MODULE_BASECURVE)
+  // fit G channel curve only, this seems to be the best choice for now
+  fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve_base+CURVE_RESOLUTION, hist_base+CURVE_RESOLUTION);
+
+  fprintf(f, "# err %f improved %d times\n", sqerr, accepts);
+  fprintf(f, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
+  fprintf(f, "# { \"%s\", \"%s\", \"%s\", 0, 51200,                        {{{",
+    opt.filename_exif ? model : "new measured basecurve",
+    opt.filename_exif ? maker : "insert maker",
+    opt.filename_exif ? model : "insert model");
+  for(int k=0;k<fit.m_numAnchors;k++)
   {
-    // fit G channel curve only, this seems to be the best choice for now
-    fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve+CURVE_RESOLUTION, hist+CURVE_RESOLUTION);
+    fprintf(f, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"}}, ");
+  }
+  fprintf(f, "{%d}, {m}}, 0, 0},\n", fit.m_numAnchors);
+  CurveDataSample(&fit, &csample);
+  for(int k=0; k<CURVE_RESOLUTION; k++)
+  {
+    fprintf(f, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
+  }
 
-    fprintf(ff, "# err %f improved %d times\n", sqerr, accepts);
-    fprintf(ff, "# copy paste into iop/basecurve.c (be sure to insert name, maker, model, and set the last 0 to 1 if happy to filter it):\n");
-    fprintf(ff, "# { \"%s\", \"%s\", \"%s\", 0, 51200,                        {{{",
-      opt.exif_filename ? model : "new measured basecurve",
-      opt.exif_filename ? maker : "insert maker",
-      opt.exif_filename ? model : "insert model");
-    for(int k=0;k<fit.m_numAnchors;k++)
-      fprintf(ff, "{%f, %f}%s", fit.m_anchors[k].x, fit.m_anchors[k].y, k<fit.m_numAnchors-1?", ":"}}, ");
-    fprintf(ff, "{%d}, {m}}, 0, 0},\n", fit.m_numAnchors);
-    CurveDataSample(&fit, &csample);
-    for(int k=0; k<CURVE_RESOLUTION; k++)
-      fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
+  fclose(f);
+  f = NULL;
 
+  {
     uint8_t encoded[2048];
 
     dt_iop_basecurve_params_t params;
@@ -840,22 +894,35 @@ fit:;
     fprintf(stdout, "(you have been warned :) )\n\n");
     // the big binary blob is a canonical blend mode option (switched off).
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('%s','','basecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
-      opt.exif_filename ? model : "new measured basecurve",
+      opt.filename_exif ? model : "new measured basecurve",
       BASECURVE_PARAMS_VERSION, encoded);
   }
-  else if (opt.module == MODULE_TONECURVE)
+
+  /* ------------------------------------------------------------------------
+   * Fit the tonecurve
+   * ----------------------------------------------------------------------*/
+
+  f = fopen(opt.filename_tonecurve_fit, "w+b");
+  if (!f)
+  {
+    fprintf(stderr, "error: could not open '%s'\n", opt.filename_tonecurve_fit);
+    goto exit;
+  }
+
   {
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
 
-    for (int i=0; i<1 /* XXX: till i get ab right */; i++)
+    for (int i=0; i<1 /* XXX: till i get ab right, fit L only */; i++)
     {
-      fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve+i*CURVE_RESOLUTION, hist+i*CURVE_RESOLUTION);
+      fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve_tone+i*CURVE_RESOLUTION, hist_tone+i*CURVE_RESOLUTION);
 
       CurveDataSample(&fit, &csample);
       for(int k=0; k<CURVE_RESOLUTION; k++)
-        fprintf(ff, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
-      fprintf(ff, "\n\n");
+      {
+        fprintf(f, "%f %f\n", k*(1.0f/CURVE_RESOLUTION), 0.0 + (1.0f-0.0f)*csample.m_Samples[k]*(1.0f/CURVE_RESOLUTION));
+      }
+      fprintf(f, "\n\n");
 
       for (int k=0; k<fit.m_numAnchors; k++)
       {
@@ -865,7 +932,11 @@ fit:;
       params.tonecurve_nodes[i] = fit.m_numAnchors;
       params.tonecurve_type[i] = 2; // monotone hermite
     }
-    // XXX till i get ab right
+
+    fclose(f);
+    f = NULL;
+
+    // XXX till i get ab right, generate linear transfer curve
     for (int i=1; i<3; i++)
     {
       for (int k=0; k<opt.num_nodes; k++)
@@ -886,12 +957,12 @@ fit:;
     fprintf(stdout, "# to test your new tonecurve, copy/paste the following line into your shell.\n");
     fprintf(stdout, "# note that it is a smart idea to backup your database before messing with it on this level.\n\n");
     fprintf(stdout, "echo \"INSERT INTO presets VALUES('%s','','tonecurve',%d,X'%s',1,X'00000000180000000000C842000000000000000000000000000000000000000000000000000000000000000000000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F',7,0,'','%%','%%','%%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,0,0,0,0,2);\" | sqlite3 ~/.config/darktable/library.db\n",
-            opt.exif_filename ? model : "new measured tonecurve",
+            opt.filename_exif ? model : "new measured tonecurve",
             TONECURVE_PARAMS_VERSION, encoded);
     fprintf(stdout, "\n\n\n"
                     "# if it pleases you, then in iop/tonecurve.c append the following line to the array presets_from_basecurve and modify its name\n"
                     "# {\"%s\", {{",
-                    opt.exif_filename ? model : "new measured tonecurve");
+                    opt.filename_exif ? model : "new measured tonecurve");
     for (int i=0; i<3; i++)
     {
       fprintf(stdout, "{");
@@ -904,23 +975,13 @@ fit:;
     fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, 0, 0, 0}},\n",
       params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],
       params.tonecurve_type[0], params.tonecurve_type[1], params.tonecurve_type[2]);
-}
+  }
 
 exit:
-  if (fb)
+  if (f)
   {
-    fclose(fb);
-    fb = NULL;
-  }
-  if (ff)
-  {
-    fclose(ff);
-    ff = NULL;
-  }
-  if (fs)
-  {
-    fclose(fs);
-    fs = NULL;
+    fclose(f);
+    f = NULL;
   }
   if (csample.m_Samples)
   {
