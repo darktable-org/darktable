@@ -29,6 +29,8 @@
 
 #include <errno.h>
 
+#define CFG_FIT_AB 1
+
 /* --------------------------------------------------------------------------
  * curve and histogram resolution
  * ------------------------------------------------------------------------*/
@@ -427,6 +429,7 @@ struct options
   const char* filename_exif;
   int num_nodes;
   int finalize;
+  int scale_ab;
 };
 
 static void
@@ -442,6 +445,7 @@ print_usage(
     " -c <filename>   Basecurve Fit curve output filename\n"
     " -t <filename>   Tonecurve output filename\n"
     " -u <filename>   Tonecurve Fit curve output filename\n"
+    " -a              Tonecurve Fit the a* and b* channels\n"
     " -s <filename>   Save state\n"
     " -z              Compute the fitting curve\n"
     " -e <filename>   Retrieve model and make from file's Exif metadata\n"
@@ -475,6 +479,7 @@ set_default_options(
   opts->num_nodes = 12;
   opts->finalize = 0;
   opts->filename_exif = NULL;
+  opts->scale_ab = 0;
 }
 
 static int
@@ -487,7 +492,7 @@ parse_arguments(
 
   int c;
   int ex = 0;
-  while ((c = getopt(argc, argv, "hn:b:c:t:u:s:ze:")) >= 0)
+  while ((c = getopt(argc, argv, "hn:b:c:t:u:s:ze:a")) >= 0)
   {
     switch (c)
     {
@@ -514,6 +519,9 @@ parse_arguments(
       break;
     case 'e':
       opts->filename_exif = optarg;
+      break;
+    case 'a':
+      opts->scale_ab = 1;
       break;
     case ':':
       fprintf(stderr, "missing argument for option -%c, ignored\n", optopt);
@@ -913,7 +921,7 @@ fit:;
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
 
-    for (int i=0; i<1 /* XXX: till i get ab right, fit L only */; i++)
+    for (int i=0; i<opt.scale_ab ? 3 : 1; i++)
     {
       fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve_tone+i*CURVE_RESOLUTION, hist_tone+i*CURVE_RESOLUTION);
 
@@ -936,19 +944,25 @@ fit:;
     fclose(f);
     f = NULL;
 
-    // XXX till i get ab right, generate linear transfer curve
-    for (int i=1; i<3; i++)
+    if (opt.scale_ab)
     {
-      for (int k=0; k<opt.num_nodes; k++)
-      {
-        params.tonecurve[i][k].x = (float)k/(float)opt.num_nodes;
-        params.tonecurve[i][k].y = (float)k/(float)opt.num_nodes;
-      }
-      params.tonecurve_nodes[i] = opt.num_nodes;
-      params.tonecurve_type[i] = 2; // monotone hermite
+      params.tonecurve_autoscale_ab = 0;
     }
+    else
+    {
+      for (int i=1; i<3; i++)
+      {
+        for (int k=0; k<opt.num_nodes; k++)
+        {
+          params.tonecurve[i][k].x = (float)k/(float)opt.num_nodes;
+          params.tonecurve[i][k].y = (float)k/(float)opt.num_nodes;
+        }
+        params.tonecurve_nodes[i] = opt.num_nodes;
+        params.tonecurve_type[i] = 2; // monotone hermite
+      }
 
-    params.tonecurve_autoscale_ab = 1; // XXX: till i get ab right
+      params.tonecurve_autoscale_ab = 1;
+    }
     params.tonecurve_unbound_ab = 0;
 
     uint8_t encoded[2048];
