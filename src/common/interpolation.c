@@ -27,6 +27,8 @@
 #include <glib.h>
 #include <assert.h>
 
+#define BLOCKSIZE         2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
+
 /** Border extrapolation modes */
 enum border_mode
 {
@@ -1077,7 +1079,6 @@ dt_interpolation_new(
  * @param pindex [out] Array of sample indexes to be used for applying each kernel tap
  * arrays of informations
  * @param pmeta [out] Array of int triplets (length, kernel, index) telling where to start for an arbitrary out position meta[3*out]
- * @param maxtaps [out] returns maximum taps per pixel to allow calculating lengthes of returned arrays
  * @return 0 for success, !0 for failure
  */
 static int
@@ -1091,8 +1092,7 @@ prepare_resampling_plan(
   int** plength,
   float** pkernel,
   int** pindex,
-  int** pmeta,
-  int* maxtaps)
+  int** pmeta)
 {
   // Safe return values
   *plength = NULL;
@@ -1268,11 +1268,6 @@ prepare_resampling_plan(
     *pmeta = meta;
   }
 
-  if (maxtaps)
-  {
-    *maxtaps = maxtapsapixel;
-  }
-
   return 0;
 }
 
@@ -1334,13 +1329,13 @@ dt_interpolation_resample(
 #endif
 
   // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, NULL, NULL);
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, NULL);
   if (r)
   {
     goto exit;
   }
 
-  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta, NULL);
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta);
   if (r)
   {
     goto exit;
@@ -1464,6 +1459,19 @@ dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
   free(g);
 }
 
+static unsigned int 
+roundToNextPowerOfTwo(unsigned int x)
+{
+  x--;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  x++;
+  return x;
+}
+
 int
 dt_interpolation_resample_cl(
   const struct dt_interpolation* itor,
@@ -1482,7 +1490,6 @@ dt_interpolation_resample_cl(
   float* vkernel = NULL;
   int* vmeta = NULL;
 
-  int hmaxtaps = 0, vmaxtaps = 0;
   int r;
   cl_int err = -999;
 
@@ -1530,17 +1537,21 @@ dt_interpolation_resample_cl(
 #endif
 
   // Prepare resampling plans once and for all
-  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, &hmeta, &hmaxtaps);
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, &hmeta);
   if (r)
   {
     goto error;
   }
 
-  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta, &vmaxtaps);
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta);
   if (r)
   {
     goto error;
   }
+
+  int hmaxtaps = -1, vmaxtaps = -1;
+  for(int k = 0; k < roi_out->width; k++) hmaxtaps = MAX(hmaxtaps, hlength[k]);
+  for(int k = 0; k < roi_out->height; k++) vmaxtaps = MAX(vmaxtaps, vlength[k]);
 
 #if DEBUG_RESAMPLING_TIMING
   ts_plan = getts() - ts_plan;
@@ -1551,10 +1562,43 @@ dt_interpolation_resample_cl(
 #endif
 
   int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
-
   const int width = roi_out->width;
   const int height = roi_out->height;
-  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1};
+
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+
+  // make sure blocksize is not too large
+  int hblocksize = BLOCKSIZE;
+  int vblocksize = roundToNextPowerOfTwo(vmaxtaps);
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+      dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(hblocksize > maxsizes[0] || vblocksize > maxsizes[1] || hblocksize*vblocksize > kernelworkgroupsize
+          || hblocksize*vblocksize > workgroupsize || hblocksize*vblocksize*4*sizeof(float) > localmemsize)
+    {
+      if(hblocksize == 1) break;
+      hblocksize >>= 1;
+    }
+  }
+  else
+  {
+    hblocksize = 1;   // slow but safe
+    vblocksize = 1;
+  }
+
+  size_t sizes[3];
+  size_t local[3];
+
+  sizes[0] = ROUNDUP(width, hblocksize);
+  sizes[1] = height*vblocksize;
+  sizes[2] = 1;
+  local[0] = hblocksize;
+  local[1] = vblocksize;
+  local[2] = 1;
 
   dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*hmaxtaps, hindex);
   if (dev_hindex == NULL) goto error;
@@ -1592,7 +1636,8 @@ dt_interpolation_resample_cl(
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_vindex);
   dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_hkernel);
   dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), (void *)&dev_vkernel);
-  err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
+  dt_opencl_set_kernel_arg(devid, kernel, 12, hblocksize*vblocksize*4*sizeof(float), NULL);
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
 #if DEBUG_RESAMPLING_TIMING

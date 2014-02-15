@@ -1379,47 +1379,64 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
                         const global int *hmeta, const global int *vmeta,
                         const global int *hlength, const global int *vlength,
                         const global int *hindex, const global int *vindex,
-                        const global float *hkernel, const global float *vkernel)
+                        const global float *hkernel, const global float *vkernel,
+                        local float4 *buffer)
 {
   const int x = get_global_id(0);
-  const int y = get_global_id(1);
+  const int yi = get_global_id(1);
+  const int ylsz = get_local_size(1);
+  const int xlid = get_local_id(0);
+  const int ylid = get_local_id(1);
+  const int y = yi / ylsz;
+  const int iy = ylid;
 
-  if(x >= width || y >= height) return;
+  buffer += xlid * ylsz;
 
-  // Initialize column resampling indexes
-  const int hlidx = hmeta[x*3];   // H(orizontal) L(ength) I(n)d(e)x
-  const int hkidx = hmeta[x*3+1]; // H(orizontal) K(ernel) I(n)d(e)x
-  const int hiidx = hmeta[x*3+2]; // H(orizontal) I(ndex) I(n)d(e)x
-  const int vlidx = vmeta[y*3];   // V(ertical) L(ength) I(n)d(e)x
-  const int vkidx = vmeta[y*3+1]; // V(ertical) K(ernel) I(n)d(e)x
-  const int viidx = vmeta[y*3+2]; // V(ertical) I(ndex) I(n)d(e)x
+  if(x < width && y < height)
+  {
+    // Initialize column resampling indexes
+    const int hlidx = hmeta[x*3];   // H(orizontal) L(ength) I(n)d(e)x
+    const int hkidx = hmeta[x*3+1]; // H(orizontal) K(ernel) I(n)d(e)x
+    const int hiidx = hmeta[x*3+2]; // H(orizontal) I(ndex) I(n)d(e)x
+    const int vlidx = vmeta[y*3];   // V(ertical) L(ength) I(n)d(e)x
+    const int vkidx = vmeta[y*3+1]; // V(ertical) K(ernel) I(n)d(e)x
+    const int viidx = vmeta[y*3+2]; // V(ertical) I(ndex) I(n)d(e)x
 
-  const int hl = hlength[hlidx];  // H(orizontal) L(ength)
-  const int vl = vlength[vlidx];  // V(ertical) L(ength)
+    const int hl = hlength[hlidx];  // H(orizontal) L(ength)
+    const int vl = vlength[vlidx];  // V(ertical) L(ength)
 
-  float4 pixel = (float4)0.0f;
+    const int yvalid = iy < vl;
 
-#if 1
-  for (int iy = 0; iy < vl; iy++)
-  {  
-    const int yy = vindex[viidx+iy];
+    const int yy = yvalid ? vindex[viidx+iy] : -1;
+
     float4 vpixel = (float4)0.0f;
 
-    for (int ix = 0; ix < hl; ix++)
+    for (int ix = 0; ix < hl && yvalid; ix++)
     {
       const int xx = hindex[hiidx+ix];
       float4 hpixel = read_imagef(in, sampleri,(int2)(xx, yy));
       vpixel += hpixel * hkernel[hkidx+ix];
     }
 
-    pixel += vpixel * vkernel[vkidx+iy];
+    buffer[ylid] = yvalid ? vpixel * vkernel[vkidx+iy] : (float4)0.0f;
   }
-#else
-  const int xx = hindex[hiidx];
-  const int yy = vindex[viidx];
-  pixel = read_imagef(in, sampleri,(int2)(xx, yy));
-#endif
+  else
+    buffer[ylid] = (float4)0.0f;
 
-  write_imagef (out, (int2)(x, y), pixel);
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  for(int offset = ylsz / 2; offset > 0; offset >>= 1)
+  {
+    if (ylid < offset)
+    {
+      buffer[ylid] += buffer[ylid + offset];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+
+  if (ylid == 0 && x < width && y < height)
+  {
+    write_imagef (out, (int2)(x, y), buffer[0]);
+  }
 }
 
