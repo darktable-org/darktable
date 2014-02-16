@@ -27,8 +27,6 @@
 #include <glib.h>
 #include <assert.h>
 
-#define BLOCKSIZE         2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
-
 /** Border extrapolation modes */
 enum border_mode
 {
@@ -1459,8 +1457,8 @@ dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
   free(g);
 }
 
-static unsigned int 
-roundToNextPowerOfTwo(unsigned int x)
+static uint32_t
+roundToNextPowerOfTwo(uint32_t x)
 {
   x--;
   x |= x >> 1;
@@ -1571,54 +1569,54 @@ dt_interpolation_resample_cl(
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
 
   // make sure blocksize is not too large
-  int hblocksize = BLOCKSIZE;
-  int vblocksize = roundToNextPowerOfTwo(vmaxtaps);
+  int taps = roundToNextPowerOfTwo(vmaxtaps);
+  int vblocksize = 2048*taps;        // start with large blocksize, then shrink by factors of 2 till it fits
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
       dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
   {
     // reduce blocksize step by step until it fits to limits
-    while(hblocksize > maxsizes[0] || vblocksize > maxsizes[1] || hblocksize*vblocksize > kernelworkgroupsize
-          || hblocksize*vblocksize > workgroupsize || hblocksize*vblocksize*4*sizeof(float) > localmemsize)
+    while(vblocksize > maxsizes[1] || vblocksize > kernelworkgroupsize
+          || vblocksize > workgroupsize || vblocksize*4*sizeof(float)+hmaxtaps*sizeof(float)+hmaxtaps*sizeof(int) > localmemsize)
     {
-      if(hblocksize == 1) break;
-      hblocksize >>= 1;
+      vblocksize >>= 1;
     }
   }
   else
   {
-    hblocksize = 1;   // slow but safe
     vblocksize = 1;
   }
 
   size_t sizes[3];
   size_t local[3];
 
-  sizes[0] = ROUNDUP(width, hblocksize);
-  sizes[1] = height*vblocksize;
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUP(height*taps, vblocksize);
   sizes[2] = 1;
-  local[0] = hblocksize;
+  local[0] = 1;
   local[1] = vblocksize;
   local[2] = 1;
 
-  dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*hmaxtaps, hindex);
+  // store resampling plan to device memory
+  // hindex, vindex, hkernel, vkernel: exact size is not known here, so store a bit more than needed
+  dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*(hmaxtaps+1), hindex);
   if (dev_hindex == NULL) goto error;
 
   dev_hlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width, hlength);
   if (dev_hlength == NULL) goto error;
 
-  dev_hkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*width*hmaxtaps, hkernel);
+  dev_hkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*width*(hmaxtaps+1), hkernel);
   if (dev_hkernel == NULL) goto error;
 
   dev_hmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*3, hmeta);
   if (dev_hmeta == NULL) goto error;
 
-  dev_vindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*vmaxtaps, vindex);
+  dev_vindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*(vmaxtaps+1), vindex);
   if (dev_vindex == NULL) goto error;
 
   dev_vlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height, vlength);
   if (dev_vlength == NULL) goto error;
 
-  dev_vkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*height*vmaxtaps, vkernel);
+  dev_vkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*height*(vmaxtaps+1), vkernel);
   if (dev_vkernel == NULL) goto error;
 
   dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*3, vmeta);
@@ -1636,7 +1634,11 @@ dt_interpolation_resample_cl(
   dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_vindex);
   dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_hkernel);
   dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), (void *)&dev_vkernel);
-  dt_opencl_set_kernel_arg(devid, kernel, 12, hblocksize*vblocksize*4*sizeof(float), NULL);
+  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(int), (void *)&hmaxtaps);
+  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(int), (void *)&taps);
+  dt_opencl_set_kernel_arg(devid, kernel, 14, hmaxtaps*sizeof(float), NULL);
+  dt_opencl_set_kernel_arg(devid, kernel, 15, hmaxtaps*sizeof(int), NULL);
+  dt_opencl_set_kernel_arg(devid, kernel, 16, vblocksize*4*sizeof(float), NULL);
   err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
   if(err != CL_SUCCESS) goto error;
 
