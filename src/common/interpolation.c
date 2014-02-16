@@ -1526,7 +1526,7 @@ dt_interpolation_resample_cl(
     fprintf(stderr, "resampling_cl %p plan:0us resampling:%"PRId64"us\n", (void *)dev_in, ts_resampling);
 #endif
     // All done, so easy case
-    return TRUE;
+    return CL_SUCCESS;
   }
 
   // Generic non 1:1 case... much more complicated :D
@@ -1559,6 +1559,10 @@ dt_interpolation_resample_cl(
   int64_t ts_resampling = getts();
 #endif
 
+  // strategy: process image column-wise (local[0] = 1). For each row generate 
+  // a number of parallel work items each taking care of one horizontal convolution,
+  // then sum over work items to do the vertical convolution
+
   int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
   const int width = roi_out->width;
   const int height = roi_out->height;
@@ -1569,8 +1573,8 @@ dt_interpolation_resample_cl(
   size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
 
   // make sure blocksize is not too large
-  int taps = roundToNextPowerOfTwo(vmaxtaps);
-  int vblocksize = 2048*taps;        // start with large blocksize, then shrink by factors of 2 till it fits
+  int taps = roundToNextPowerOfTwo(vmaxtaps);    // the number of work items per row rounded up to a power of 2 (for quick recursive reduction)
+  int vblocksize = 2048*taps;                    // start with large blocksize, then shrink by factors of 2 till it fits
   if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
       dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
   {
@@ -1597,7 +1601,7 @@ dt_interpolation_resample_cl(
   local[2] = 1;
 
   // store resampling plan to device memory
-  // hindex, vindex, hkernel, vkernel: exact size is not known here, so store a bit more than needed
+  // hindex, vindex, hkernel, vkernel: (v|h)maxtaps might be too small, so store a bit more than needed
   dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*(hmaxtaps+1), hindex);
   if (dev_hindex == NULL) goto error;
 

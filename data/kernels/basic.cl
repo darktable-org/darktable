@@ -1405,6 +1405,7 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
   const int hl = hlength[hlidx];   // H(orizontal) L(ength)
   const int vl = vlength[vlidx];   // V(ertical) L(ength)
 
+  // generate local copy of horizontal index field and kernel
   if(ylid < htaps)
   {
     lindex[ylid] = hindex[hiidx+ylid];
@@ -1413,6 +1414,7 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
+  // horizontal convolution kernel; store intermediate result in local buffer
   if(x < width && y < height)
   {
     const int yvalid = iy < vl;
@@ -1435,6 +1437,7 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
 
   barrier(CLK_LOCAL_MEM_FENCE);
 
+  // recursively reduce local buffer (vertical convolution kernel)
   for(int offset = vtaps / 2; offset > 0; offset >>= 1)
   {
     if (iy < offset)
@@ -1444,6 +1447,7 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
     barrier(CLK_LOCAL_MEM_FENCE);
   }
 
+  // store final result
   if (iy == 0 && x < width && y < height)
   {
     write_imagef (out, (int2)(x, y), buffer[ylid]);
