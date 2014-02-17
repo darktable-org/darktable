@@ -35,7 +35,6 @@ FILE(GLOB SOURCE_FILES
   "common/imageio_module.c"
   "common/imageio_pfm.c"
   "common/imageio_rgbe.c"
-  "common/imageio_tiff.c"
   "common/imageio_gm.c"
   "common/imageio_rawspeed.cc"
   "common/import_session.c"
@@ -154,23 +153,47 @@ if(INOTIFY_FOUND)
   add_definitions(${INOTIFY_DEFINITIONS})
 endif(INOTIFY_FOUND)
 
-find_package(OpenEXR)
-if(OPENEXR_FOUND)
-  include_directories(${OpenEXR_INCLUDE_DIRS})
-  list(APPEND LIBS ${OpenEXR_LIBRARIES})
-  add_definitions(${OpenEXR_DEFINITIONS})
-  list(APPEND SOURCES "common/imageio_exr.cc")
-endif(OPENEXR_FOUND)
 
-find_package(WebP 0.3.0)
-if(WEBP_FOUND)
-  include_directories(${WebP_INCLUDE_DIRS})
-  list(APPEND LIBS ${WebP_LIBRARIES})
-  add_definitions(${WebP_DEFINITIONS})
-endif(WEBP_FOUND)
+if(USE_OPENEXR)
+  find_package(OpenEXR REQUIRED)
+  if(OPENEXR_FOUND)
+    include_directories(${OpenEXR_INCLUDE_DIRS})
+    list(APPEND LIBS ${OpenEXR_LIBRARIES})
+    add_definitions(${OpenEXR_DEFINITIONS})
+    list(APPEND SOURCES "common/imageio_exr.cc")
+  endif(OPENEXR_FOUND)
+endif(USE_OPENEXR)
+
+if(USE_TIFF)
+  find_package(TIFF REQUIRED)
+  if(TIFF_FOUND)
+    include_directories(${TIFF_INCLUDE_DIRS})
+    list(APPEND LIBS ${TIFF_LIBRARIES})
+    add_definitions(${TIFF_DEFINITIONS})
+    list(APPEND SOURCES "common/imageio_tiff.c")
+  endif(TIFF_FOUND)
+endif(USE_TIFF)
+
+if(USE_WEBP)
+  find_package(WebP 0.3.0 REQUIRED)
+  if(WebP_FOUND)
+    include_directories(${WebP_INCLUDE_DIRS})
+    list(APPEND LIBS ${WebP_LIBRARIES})
+    add_definitions(${WebP_DEFINITIONS})
+  endif(WebP_FOUND)
+endif(USE_WEBP)
+
+if(USE_LENSFUN)
+  find_package(LensFun REQUIRED)
+  if(LENSFUN_FOUND)
+    include_directories(${LensFun_INCLUDE_DIRS})
+    list(APPEND LIBS ${LensFun_LIBRARIES})
+    add_definitions(${LensFun_DEFINITIONS})
+  endif(LENSFUN_FOUND)
+endif(USE_LENSFUN)
 
 # Find all the libs that don't require extra parameters
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG JPEG TIFF LCMS2)
+foreach(lib ${OUR_LIBS} GIO GThread GModule Cairo PangoCairo PThread Rsvg2 GDK-PixBuf LibXml2 Sqlite3 Exiv2 CURL PNG LCMS2 JPEG)
   find_package(${lib} REQUIRED)
   include_directories(${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})
