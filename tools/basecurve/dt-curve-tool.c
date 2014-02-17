@@ -288,7 +288,7 @@ static void
 build_tonecurve(
   int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
   int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
-  int ch, float* curve, uint32_t* hist)
+  float* curve, uint32_t* hist)
 {
   float* cL = curve;
   float* ca = cL + CURVE_RESOLUTION;
@@ -772,7 +772,7 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, 1, curve_tone, hist_tone);
+  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, curve_tone, hist_tone);
 
   {
     float* ch0 = &curve_tone[0*CURVE_RESOLUTION];
@@ -919,7 +919,8 @@ fit:;
     struct dt_iop_tonecurve_params_t params;
     memset(&params, 0, sizeof(params));
 
-    for (int i=0; i<opt.scale_ab ? 3 : 1; i++)
+    printf("%d\n", opt.scale_ab);
+    for (int i=0; i<(opt.scale_ab ? 3 : 1); i++)
     {
       fit_curve(&fit, &accepts, &sqerr, &csample, opt.num_nodes, curve_tone+i*CURVE_RESOLUTION, hist_tone+i*CURVE_RESOLUTION);
 
