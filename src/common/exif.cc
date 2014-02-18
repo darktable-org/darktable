@@ -454,7 +454,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
               != exifData.end() && pos->size())
     {
       float value = pos->toFloat();
-      img->exif_focus_distance = (0.001 * value);
+      /* value is originally stored as a rational (fraction), with a
+       * denominator of 10, which is properly accounted for when converting
+       * to float. thus we divide by a 100 instead of a 1000.
+       */
+      img->exif_focus_distance = (value/100);
     }
     else if ( (pos=Exiv2::subjectDistance(exifData))
               != exifData.end() && pos->size())
