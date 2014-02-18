@@ -453,12 +453,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusFi.FocusDistance")))
               != exifData.end() && pos->size())
     {
-      float value = pos->toFloat();
-      /* value is originally stored as a rational (fraction), with a
-       * denominator of 10, which is properly accounted for when converting
-       * to float. thus we divide by a 100 instead of a 1000.
+      /* the distance is stored as a rational (fraction). according to http://www.dpreview.com/forums/thread/1173960?page=4
+       * some Olympus cameras have a wrong denominator of 10 in there while the nominator is always in mm. thus we ignore the denominator
+       * and divide with 1000.
+       * "I've checked a number of E-1 and E-300 images, and I agree that the FocusDistance looks like it is in mm for the E-1. However,
+       * it looks more like cm for the E-300.
+       * For both cameras, this value is stored as a rational. With the E-1, the denominator is always 1, while for the E-300 it is 10.
+       * Therefore, it looks like the numerator in both cases is in mm (which makes a bit of sense, in an odd sort of way). So I think
+       * what I will do in ExifTool is to take the numerator and divide by 1000 to display the focus distance in meters."
+       *   -- Boardhead, dpreview forums in 2005
        */
-      img->exif_focus_distance = (value/100);
+      int nominator = pos->toRational(0).first;
+      img->exif_focus_distance = (0.001 * nominator);
     }
     else if ( (pos=Exiv2::subjectDistance(exifData))
               != exifData.end() && pos->size())
