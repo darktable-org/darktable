@@ -24,12 +24,13 @@
 #include "dtgtk/button.h"
 #include "dtgtk/togglebutton.h"
 #include "control/conf.h"
+#include "control/control.h"
 
 DT_MODULE(1)
 
 typedef struct dt_lib_tool_preferences_t
 {
-  GtkWidget *preferences_button, *grouping_button;
+  GtkWidget *preferences_button, *grouping_button, *overlays_button;
 }
 dt_lib_tool_preferences_t;
 
@@ -37,6 +38,8 @@ dt_lib_tool_preferences_t;
 static void _lib_filter_grouping_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for preference button */
 static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_data);
+/* callback for overlays button */
+static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data);
 
 const char* name()
 {
@@ -84,6 +87,19 @@ void gui_init(dt_lib_module_t *self)
                     NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->grouping_button), darktable.gui->grouping);
 
+  /* create the "show/hide overlays" button */
+  d->overlays_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_overlays, CPF_STYLE_FLAT);
+  gtk_widget_set_size_request(d->overlays_button, 18,18);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->overlays_button, FALSE, FALSE, 2);
+  if(darktable.gui->show_overlays)
+    g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("hide image overlays"), (char *)NULL);
+  else
+    g_object_set(G_OBJECT(d->overlays_button), "tooltip-text", _("show image overlays"), (char *)NULL);
+  g_signal_connect (G_OBJECT (d->overlays_button), "clicked",
+                    G_CALLBACK (_lib_overlays_button_clicked),
+                    NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
+
   /* create the preference button */
   d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT);
   gtk_widget_set_size_request(d->preferences_button, 18,18);
@@ -118,10 +134,22 @@ static void _lib_filter_grouping_button_clicked (GtkWidget *widget, gpointer use
   dt_collection_update_query(darktable.collection);
 }
 
+static void _lib_overlays_button_clicked (GtkWidget *widget, gpointer user_data)
+{
+  darktable.gui->show_overlays = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if(darktable.gui->show_overlays)
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("hide image overlays"), (char *)NULL);
+  else
+    g_object_set(G_OBJECT(widget), "tooltip-text", _("show image overlays"), (char *)NULL);
+  dt_conf_set_bool("lighttable/ui/expose_statuses", darktable.gui->show_overlays);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+}
+
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "grouping"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "preferences"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "show overlays"), 0, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -130,6 +158,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "grouping", d->grouping_button);
   dt_accel_connect_button_lib(self, "preferences", d->preferences_button);
+  dt_accel_connect_button_lib(self, "show overlays", d->overlays_button);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

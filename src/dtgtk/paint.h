@@ -101,6 +101,8 @@ void dtgtk_cairo_paint_styles(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags
 void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint the preferences wheel. */
 void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
+/** paint the "show ovelays" icon. */
+void dtgtk_cairo_paint_overlays(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint and */
 void dtgtk_cairo_paint_and(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags);
 /** paint or */
