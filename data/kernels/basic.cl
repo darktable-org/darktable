@@ -1406,10 +1406,12 @@ interpolation_resample (read_only image2d_t in, write_only image2d_t out, const 
   const int vl = vlength[vlidx];   // V(ertical) L(ength)
 
   // generate local copy of horizontal index field and kernel
-  if(ylid < htaps)
+  for(int n = 0; n <= htaps/ylsz; n++)
   {
-    lindex[ylid] = hindex[hiidx+ylid];
-    lkernel[ylid] = hkernel[hkidx+ylid];
+    int k = mad24(n, ylsz, ylid);
+    if(k >= hl) continue;
+    lindex[k] = hindex[hiidx+k];
+    lkernel[k] = hkernel[hkidx+k];
   }
 
   barrier(CLK_LOCAL_MEM_FENCE);

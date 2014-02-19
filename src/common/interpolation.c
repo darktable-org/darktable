@@ -1582,12 +1582,21 @@ dt_interpolation_resample_cl(
     while(vblocksize > maxsizes[1] || vblocksize > kernelworkgroupsize
           || vblocksize > workgroupsize || vblocksize*4*sizeof(float)+hmaxtaps*sizeof(float)+hmaxtaps*sizeof(int) > localmemsize)
     {
+      if(vblocksize == 1) break;
       vblocksize >>= 1;
     }
   }
   else
   {
     vblocksize = 1;
+  }
+
+  if(vblocksize < taps)
+  {
+    // our strategy does not work: the vertical number of taps exceeds the vertical workgroupsize;
+    // there is no point in continuing on the GPU - that would be way too slow; let's delegate the stuff to the CPU then.
+    dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] resampling plan cannot efficiently be run on the GPU - fall back to CPU.\n");
+    goto error;
   }
 
   size_t sizes[3];
