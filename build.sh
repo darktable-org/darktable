@@ -27,6 +27,7 @@ OPT_EXPERIMENTAL_IOP=-1
 OPT_GEO=-1
 OPT_LUA=-1
 OPT_OPENEXR=-1
+OPT_WEBP=-1
 
 # ---------------------------------------------------------------------------
 # Parse options
@@ -70,6 +71,9 @@ parse_feature()
 		;;
 	openexr)
 		OPT_OPENEXR=$value
+		;;
+	webp)
+		OPT_WEBP=$value
 		;;
 	*)
 		echo "warning: unknown feature '$feature'"
@@ -145,6 +149,7 @@ so that the cmake script autodetects features.
    --enable-geo
    --enable-lua
    --enable-openexr
+   --enable-webp
 
 Extra:
 -h --help                Print help message
@@ -218,6 +223,7 @@ cmake_boolean_option INSTALL_IOP_EXPERIMENTAL $OPT_EXPERIMENTAL_IOP
 cmake_boolean_option USE_GEO $OPT_GEO
 cmake_boolean_option USE_LUA $OPT_LUA
 cmake_boolean_option USE_OPENEXR $OPT_OPENEXR
+cmake_boolean_option USE_WEBP $OPT_WEBP
 
 # Some people might need this, but ignore if unset in environment
 CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH:-}
