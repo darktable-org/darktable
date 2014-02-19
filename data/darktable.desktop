@@ -31,6 +31,7 @@ Categories=Graphics;Photography;GTK;
 # TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 Keywords=graphics;photography;raw;
 Keywords[sv]=grafik;fotografi;rå;
+Keywords[nl]=beeld;fotografie;raw;
 
 Exec=darktable %U
 TryExec=darktable
