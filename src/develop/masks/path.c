@@ -430,7 +430,11 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   if(*inter == NULL) return 0;
 
   int *binter = malloc(sizeof(int)*ss);
-  if(binter == NULL) return 0;
+  if(binter == NULL) {
+    free(*inter);
+    *inter = NULL;
+    return 0;
+  }
   memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
@@ -443,6 +447,8 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   if (!_path_buffer_grow(&extra, &extrap, &extra_max))
   {
     free(binter);
+    free(*inter);
+    *inter = NULL;
     return 0;
   }
 
@@ -461,6 +467,8 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
     if (!_path_buffer_grow(&extra, &extrap, &extra_max))
     {
       free(binter);
+      free(*inter);
+      *inter = NULL;
       return 0;
     }
 
