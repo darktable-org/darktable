@@ -789,14 +789,6 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const dt_image_t *img = &self->dev->image_storage;
   const float threshold = 0.0001f * img->exif_iso;
 
-  const int qual = get_quality();
-  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-  if(interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation currently supported by opencl demosaic\n");
-    return FALSE;
-  }
-
   if(roi_out->scale >= 1.00001f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
@@ -804,6 +796,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   }
 
   const int devid = piece->pipe->devid;
+  const int qual = get_quality();
 
   cl_mem dev_tmp = NULL;
   cl_mem dev_green_eq = NULL;
@@ -958,19 +951,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     // scale temp buffer to output buffer
-    int zero = 0;
-    sizes[0] = ROUNDUPWD(roi_out->width);
-    sizes[1] = ROUNDUPHT(roi_out->height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 0, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 1, sizeof(cl_mem), &dev_out);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 2, sizeof(int), &roi_out->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 3, sizeof(int), &roi_out->height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 4, sizeof(int), (void*)&zero);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 5, sizeof(int), (void*)&zero);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 6, sizeof(int), (void*)&roi_out->width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 7, sizeof(int), (void*)&roi_out->height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_downsample, 8, sizeof(float), (void*)&roi_out->scale);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_downsample, sizes);
+    dt_iop_roi_t roi, roo;
+    roi = *roi_in;
+    roo = *roi_out;
+    roo.x = roo.y = roi.x = roi.y = 0;
+    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_tmp, &roo, &roi);
     if(err != CL_SUCCESS) goto error;
   }
   else

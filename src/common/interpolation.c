@@ -1265,6 +1265,7 @@ prepare_resampling_plan(
   {
     *pmeta = meta;
   }
+
   return 0;
 }
 
@@ -1434,6 +1435,260 @@ exit:
   dt_free_align(hlength);
   dt_free_align(vlength);
 }
+
+
+#ifdef HAVE_OPENCL
+dt_interpolation_cl_global_t *
+dt_interpolation_init_cl_global()
+{
+  dt_interpolation_cl_global_t *g = (dt_interpolation_cl_global_t *)malloc(sizeof(dt_interpolation_cl_global_t));
+
+  const int program = 2;   // basic.cl, from programs.conf
+  g->kernel_interpolation_resample = dt_opencl_create_kernel(program, "interpolation_resample");
+  return g;
+}
+
+void
+dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
+{
+  if(!g) return;
+  // destroy kernels
+  dt_opencl_free_kernel(g->kernel_interpolation_resample);
+  free(g);
+}
+
+static uint32_t
+roundToNextPowerOfTwo(uint32_t x)
+{
+  x--;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  x++;
+  return x;
+}
+
+int
+dt_interpolation_resample_cl(
+  const struct dt_interpolation* itor,
+  int devid,
+  cl_mem dev_out,
+  const dt_iop_roi_t* const roi_out,
+  cl_mem dev_in,
+  const dt_iop_roi_t* const roi_in)
+{
+  int* hindex = NULL;
+  int* hlength = NULL;
+  float* hkernel = NULL;
+  int* hmeta = NULL;
+  int* vindex = NULL;
+  int* vlength = NULL;
+  float* vkernel = NULL;
+  int* vmeta = NULL;
+
+  int r;
+  cl_int err = -999;
+
+  cl_mem dev_hindex = NULL;
+  cl_mem dev_hlength = NULL;
+  cl_mem dev_hkernel = NULL;
+  cl_mem dev_hmeta = NULL;
+  cl_mem dev_vindex = NULL;
+  cl_mem dev_vlength = NULL;
+  cl_mem dev_vkernel = NULL;
+  cl_mem dev_vmeta = NULL;
+
+  debug_info(
+    "resampling_cl %p (%dx%d@%dx%d scale %f) -> %p (%dx%d@%dx%d scale %f)\n",
+    (void *)dev_in,
+    roi_in->width, roi_in->height, roi_in->x, roi_in->y, roi_in->scale,
+    (void *)dev_out,
+    roi_out->width, roi_out->height, roi_out->x, roi_out->y, roi_out->scale);
+
+  // Fast code path for 1:1 copy, only cropping area can change
+  if (roi_out->scale == 1.f)
+  {
+#if DEBUG_RESAMPLING_TIMING
+    int64_t ts_resampling = getts();
+#endif
+    size_t iorigin[] = { roi_out->x, roi_out->y, 0};
+    size_t oorigin[] = { 0, 0, 0};
+    size_t region[] = { roi_out->width, roi_out->height, 1};
+
+    // copy original input from dev_in -> dev_out as starting point
+    err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, iorigin, oorigin, region);
+    if(err != CL_SUCCESS) goto error;
+
+#if DEBUG_RESAMPLING_TIMING
+    ts_resampling = getts() - ts_resampling;
+    fprintf(stderr, "resampling_cl %p plan:0us resampling:%"PRId64"us\n", (void *)dev_in, ts_resampling);
+#endif
+    // All done, so easy case
+    return CL_SUCCESS;
+  }
+
+  // Generic non 1:1 case... much more complicated :D
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_plan = getts();
+#endif
+
+  // Prepare resampling plans once and for all
+  r = prepare_resampling_plan(itor, roi_in->width, roi_in->x, roi_out->width, roi_out->x, roi_out->scale, &hlength, &hkernel, &hindex, &hmeta);
+  if (r)
+  {
+    goto error;
+  }
+
+  r = prepare_resampling_plan(itor, roi_in->height, roi_in->y, roi_out->height, roi_out->y, roi_out->scale, &vlength, &vkernel, &vindex, &vmeta);
+  if (r)
+  {
+    goto error;
+  }
+
+  int hmaxtaps = -1, vmaxtaps = -1;
+  for(int k = 0; k < roi_out->width; k++) hmaxtaps = MAX(hmaxtaps, hlength[k]);
+  for(int k = 0; k < roi_out->height; k++) vmaxtaps = MAX(vmaxtaps, vlength[k]);
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_plan = getts() - ts_plan;
+#endif
+
+#if DEBUG_RESAMPLING_TIMING
+  int64_t ts_resampling = getts();
+#endif
+
+  // strategy: process image column-wise (local[0] = 1). For each row generate 
+  // a number of parallel work items each taking care of one horizontal convolution,
+  // then sum over work items to do the vertical convolution
+
+  int kernel = darktable.opencl->interpolation->kernel_interpolation_resample;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+
+  size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
+  size_t workgroupsize = 0;          // the maximum number of items in a work group
+  unsigned long localmemsize = 0;    // the maximum amount of local memory we can use
+  size_t kernelworkgroupsize = 0;    // the maximum amount of items in work group for this kernel
+
+  // make sure blocksize is not too large
+  int taps = roundToNextPowerOfTwo(vmaxtaps);    // the number of work items per row rounded up to a power of 2 (for quick recursive reduction)
+  int vblocksize = 2048*taps;                    // start with large blocksize, then shrink by factors of 2 till it fits
+  if(dt_opencl_get_work_group_limits(devid, maxsizes, &workgroupsize, &localmemsize) == CL_SUCCESS &&
+      dt_opencl_get_kernel_work_group_size(devid, kernel, &kernelworkgroupsize) == CL_SUCCESS)
+  {
+    // reduce blocksize step by step until it fits to limits
+    while(vblocksize > maxsizes[1] || vblocksize > kernelworkgroupsize
+          || vblocksize > workgroupsize || vblocksize*4*sizeof(float)+hmaxtaps*sizeof(float)+hmaxtaps*sizeof(int) > localmemsize)
+    {
+      if(vblocksize == 1) break;
+      vblocksize >>= 1;
+    }
+  }
+  else
+  {
+    vblocksize = 1;
+  }
+
+  if(vblocksize < taps)
+  {
+    // our strategy does not work: the vertical number of taps exceeds the vertical workgroupsize;
+    // there is no point in continuing on the GPU - that would be way too slow; let's delegate the stuff to the CPU then.
+    dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] resampling plan cannot efficiently be run on the GPU - fall back to CPU.\n");
+    goto error;
+  }
+
+  size_t sizes[3];
+  size_t local[3];
+
+  sizes[0] = ROUNDUPWD(width);
+  sizes[1] = ROUNDUP(height*taps, vblocksize);
+  sizes[2] = 1;
+  local[0] = 1;
+  local[1] = vblocksize;
+  local[2] = 1;
+
+  // store resampling plan to device memory
+  // hindex, vindex, hkernel, vkernel: (v|h)maxtaps might be too small, so store a bit more than needed
+  dev_hindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*(hmaxtaps+1), hindex);
+  if (dev_hindex == NULL) goto error;
+
+  dev_hlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width, hlength);
+  if (dev_hlength == NULL) goto error;
+
+  dev_hkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*width*(hmaxtaps+1), hkernel);
+  if (dev_hkernel == NULL) goto error;
+
+  dev_hmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*width*3, hmeta);
+  if (dev_hmeta == NULL) goto error;
+
+  dev_vindex = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*(vmaxtaps+1), vindex);
+  if (dev_vindex == NULL) goto error;
+
+  dev_vlength = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height, vlength);
+  if (dev_vlength == NULL) goto error;
+
+  dev_vkernel = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*height*(vmaxtaps+1), vkernel);
+  if (dev_vkernel == NULL) goto error;
+
+  dev_vmeta = dt_opencl_copy_host_to_device_constant(devid, sizeof(int)*height*3, vmeta);
+  if (dev_vmeta == NULL) goto error;
+
+  dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
+  dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_out);
+  dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(int), (void *)&width);
+  dt_opencl_set_kernel_arg(devid, kernel, 3, sizeof(int), (void *)&height);
+  dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(cl_mem), (void *)&dev_hmeta);
+  dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(cl_mem), (void *)&dev_vmeta);
+  dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(cl_mem), (void *)&dev_hlength);
+  dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(cl_mem), (void *)&dev_vlength);
+  dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(cl_mem), (void *)&dev_hindex);
+  dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(cl_mem), (void *)&dev_vindex);
+  dt_opencl_set_kernel_arg(devid, kernel, 10, sizeof(cl_mem), (void *)&dev_hkernel);
+  dt_opencl_set_kernel_arg(devid, kernel, 11, sizeof(cl_mem), (void *)&dev_vkernel);
+  dt_opencl_set_kernel_arg(devid, kernel, 12, sizeof(int), (void *)&hmaxtaps);
+  dt_opencl_set_kernel_arg(devid, kernel, 13, sizeof(int), (void *)&taps);
+  dt_opencl_set_kernel_arg(devid, kernel, 14, hmaxtaps*sizeof(float), NULL);
+  dt_opencl_set_kernel_arg(devid, kernel, 15, hmaxtaps*sizeof(int), NULL);
+  dt_opencl_set_kernel_arg(devid, kernel, 16, vblocksize*4*sizeof(float), NULL);
+  err = dt_opencl_enqueue_kernel_2d_with_local(devid, kernel, sizes, local);
+  if(err != CL_SUCCESS) goto error;
+
+#if DEBUG_RESAMPLING_TIMING
+  ts_resampling = getts() - ts_resampling;
+  fprintf(stderr, "resampling_cl %p plan:%"PRId64"us resampling:%"PRId64"us\n", (void *)dev_in, ts_plan, ts_resampling);
+#endif
+
+  dt_opencl_release_mem_object(dev_hindex);
+  dt_opencl_release_mem_object(dev_hlength);
+  dt_opencl_release_mem_object(dev_hkernel);
+  dt_opencl_release_mem_object(dev_hmeta);
+  dt_opencl_release_mem_object(dev_vindex);
+  dt_opencl_release_mem_object(dev_vlength);
+  dt_opencl_release_mem_object(dev_vkernel);
+  dt_opencl_release_mem_object(dev_vmeta);
+  dt_free_align(hlength);
+  dt_free_align(vlength);
+  return CL_SUCCESS;
+
+error:
+  if(dev_hindex != NULL) dt_opencl_release_mem_object(dev_hindex);
+  if(dev_hlength != NULL) dt_opencl_release_mem_object(dev_hlength);
+  if(dev_hkernel != NULL) dt_opencl_release_mem_object(dev_hkernel);
+  if(dev_hmeta != NULL) dt_opencl_release_mem_object(dev_hmeta);
+  if(dev_vindex != NULL) dt_opencl_release_mem_object(dev_vindex);
+  if(dev_vlength != NULL) dt_opencl_release_mem_object(dev_vlength);
+  if(dev_vkernel != NULL) dt_opencl_release_mem_object(dev_vkernel);
+  if(dev_vmeta != NULL) dt_opencl_release_mem_object(dev_vmeta);
+  dt_free_align(hlength);
+  dt_free_align(vlength);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);
+  return err;
+}
+#endif
+
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
