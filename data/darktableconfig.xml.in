@@ -1162,7 +1162,7 @@
   <dtconfig>
     <name>plugins/imageio/format/jpeg/quality</name>
     <type>int</type>
-    <default>97</default>
+    <default>95</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
