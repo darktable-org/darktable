@@ -32,6 +32,7 @@ Categories=Graphics;Photography;GTK;
 Keywords=graphics;photography;raw;
 Keywords[sv]=grafik;fotografi;rå;
 Keywords[nl]=beeld;fotografie;raw;
+Keywords[fr]=graphisme;photographie;raw;
 
 Exec=darktable %U
 TryExec=darktable
@@ -41,4 +42,3 @@ StartupNotify=true
 MimeType=application/x-darktable;image/x-dcraw;
 
 Icon=darktable
-
