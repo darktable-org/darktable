@@ -72,19 +72,8 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
   // Create little endian tiff image
   TIFF *tif=TIFFOpen(filename,"wl");
-  if (d->bpp == 16)
-  {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  }
-  else if (d->bpp == 32)
-  {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
-    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
-  }
-  else // (d->bpp == 8)
-  {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-  }
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, d->bpp);
+  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT);
 
   // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
   // "A proprietary ZIP/Flate compression code (0x80b2) has been used by some"
