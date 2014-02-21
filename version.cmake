@@ -1,0 +1,1 @@
+set(PROJECT_VERSION "1.5")
