@@ -1,5 +1,6 @@
 
 build/src/preferences_gen.h
+data/darktable.desktop.in
 src/cli/main.c
 src/common/collection.c
 src/common/colorspaces.c
