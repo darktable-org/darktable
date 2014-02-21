@@ -50,7 +50,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
     int wonx = roi_out->x;
     int wony = roi_out->y;
     int wonw = roi_out->width;
-    int wonh = roi_out->height;
+//    int wonh = roi_out->height;
     int winx = roi_in->x;
     int winy = roi_in->y;
     int winw = roi_in->width;
@@ -125,7 +125,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
     /** Staggered nearest neigbour interpolation rgb neigbours are resp. 3,2,3 */
 
     //main body
-
+    /*
     for (int j = ey + wony; j < wony + winh; j += 2)
         for (int i = ex + wonx; i < wonx + winw; i += 2) {
             //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
@@ -170,14 +170,11 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
             }
 
         }
-
+    */
     /** Staggered nearest neigbour interpolation rgb neigbours are resp. 3,2,3 with green edge improvement*/
 
     //main body
-
-    /* 
-    printf("thrs = %f\n", thrs);
-    fflush(stdout);
+    
     for (int j = ey + wony; j < wony + winh; j += 2)
         for (int i = ex + wonx; i < wonx + winw; i += 2) {
             //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
@@ -195,15 +192,15 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g2 = in[i + (j + 1)* (winw)];
                     g1 = in[ i - 1 + (j + 2) * (winw)];
 
-                    if (sign(g1 - g2) == sign(g4 - g3)) {
+//                    if (sign(g1 - g2) == sign(g4 - g3)) {
                         if (abs(g1 - g2) < abs(g4 - g3)) {
-                            comp = ((g2 + (g2 - g1) / 2.0f) - g) / g;
+                            comp = (g2 - g1) / 2.0f;
                         } else {
-                            comp = ((g3 + (g3 - g4) / 2.0f) - g) / g;
+                            comp = (g3 - g4) / 2.0f;
                         };
-                    } else {
-                        comp = 0.0f;
-                    }
+//                    } else {
+//                        comp = 0.0f;
+//                    }
                     
                 }
                 //demosaic q00, b
@@ -224,7 +221,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                 };
                 
                 // comp needs delimiting for high noise.  
-                    comp = tan(comp*thrs*2.0f)/1.0f/3.160;
+                    comp=tanf(comp*thrs*thrs*30);
                 out[(size_t) (i + j * wonw)*4] = normclamp(r * (1.0f + comp));
                 out[(size_t) 1 + (i + j * wonw)*4] = normclamp(g * (1.0f + comp));
                 out[(size_t) 2 + (i + j * wonw)*4] = normclamp(b * (1.0f + comp));
@@ -242,15 +239,15 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g2 = in[1 + i + (j)* (winw)];
                     g1 = in[ i + (j - 1) * (winw)];
 
-                    if (sign(g1 - g2) == sign(g4 - g3)) {
+ //                   if (sign(g1 - g2) == sign(g4 - g3)) {
                         if (abs(g1 - g2) < abs(g4 - g3)) {
-                            comp = ((g2 + (g2 - g1) / 2.0f) - g) / g;
+                            comp = (g2 - g1) / 2.0f;
                         } else {
-                            comp = ((g3 + (g3 - g4) / 2.0f) - g) / g;
+                            comp = (g3 - g4) / 2.0f;
                         };
-                    } else {
-                        comp = 0.0f;
-                    }
+//                    } else {
+//                        comp = 0.0f;
+//                    }
                 }
 
                 //demosaic q10, b
@@ -270,7 +267,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                 };
                
                    // comp needs delimiting for high noise. Not implemented    
-                    comp = tan(comp*thrs*2.0f)/1.0f/3.160;
+                    comp=tanf(comp*thrs*thrs*30);
                  out[(size_t) (1 + i + j * wonw)*4] = normclamp(r * (1.0f + comp));
                 out[(size_t) 1 + (1 + i + j * wonw)*4] = normclamp(g * (1.0f + comp));
                 out[(size_t) 2 + (1 + i + j * wonw)*4] = normclamp(b * (1.0f + comp));
@@ -289,15 +286,15 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g2 = in[1 + i + (j)* (winw)];
                     g1 = in[ i + (j - 1) * (winw)];
 
-                    if (sign(g1 - g2) == sign(g4 - g3)) {
+//                    if (sign(g1 - g2) == sign(g4 - g3)) {
                         if (abs(g1 - g2) < abs(g4 - g3)) {
-                            comp = ((g2 + (g2 - g1) / 2.0f) - g) / g;
+                            comp = (g2 - g1) / 2.0f;
                         } else {
-                            comp = ((g3 + (g3 - g4) / 2.0f) - g) / g;
+                            comp = (g3 - g4) / 2.0f;
                         };
-                    } else {
-                        comp = 0.0f;
-                    }
+//                    } else {
+//                        comp = 0.0f;
+//                    }
                     
                 }
 
@@ -318,7 +315,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     d = min;
                 };
                 // comp needs delimiting for high noise. Not implemented    
-                    comp = tan(comp*thrs*2.0f)/1.0f/3.160;
+                    comp=tanf(comp*thrs*thrs*30);
                
                 out[(size_t) (i + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp));
                 out[(size_t) 1 + (i + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp));
@@ -337,15 +334,15 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g2 = in[1 + i + (j + 2)* (winw)];
                     g1 = in[ i + (j + 3) * (winw)];
 
-                    if (sign(g1 - g2) == sign(g4 - g3)) {
+  //                  if (sign(g1 - g2) == sign(g4 - g3)) {
                         if (abs(g1 - g2) < abs(g4 - g3)) {
-                            comp = ((g2 + (g2 - g1) / 2.0f) - g) / g;
+                            comp = (g2 - g1) / 2.0f;
                         } else {
-                            comp = ((g3 + (g3 - g4) / 2.0f) - g) / g;
+                            comp = (g3 - g4) / 2.0f;
                         };
-                    } else {
-                        comp = 0.0f;
-                    }
+//                    } else {
+//                        comp = 0.0f;
+//                    }
                }
 
                 //demosaic q11, b
@@ -365,7 +362,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                 };
                
                    // comp needs delimiting for high noise. Not implemented    
-                    comp = tan(comp*thrs*10.0f)/2.0f/3.160;
+                    comp=tanf(comp*thrs*thrs*30);
                   out[(size_t) (i + 1 + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp));
                 out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp));
                 out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp));
@@ -378,7 +375,6 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
 
         }
 
-*/
     //TODO     // top border from 0 to winsize
     //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
     //            int j =0;
