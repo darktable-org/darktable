@@ -33,6 +33,7 @@ Keywords=graphics;photography;raw;
 Keywords[sv]=grafik;fotografi;rå;
 Keywords[nl]=beeld;fotografie;raw;
 Keywords[fr]=graphisme;photographie;raw;
+Keywords[it]=grafica;fotografia;raw;
 
 Exec=darktable %U
 TryExec=darktable
