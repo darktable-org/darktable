@@ -108,7 +108,6 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
 int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
-void _dispatch_camera_exif_data_changed(const dt_camctl_t *c,const time_t exif_time, const dt_camera_t *camera);
 
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
@@ -1474,6 +1473,7 @@ const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *fi
   return path;
 }
 
+
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera)
 {
   dt_camctl_t *camctl=(dt_camctl_t *)c;
@@ -1490,7 +1490,6 @@ const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t 
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
   return path;
 }
-
 
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera)
 {
