@@ -3,10 +3,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-22 13:27+0100\n"
-"PO-Revision-Date: 2014-01-26 07:57+0100\n"
+"POT-Creation-Date: 2014-02-22 12:45+0100\n"
+"PO-Revision-Date: 2014-02-22 12:57+0100\n"
 "Last-Translator: Thomas Pryds <thomas@pryds.eu>\n"
-"Language-Team: Danish <dansk@dansk-listen.dk>\n"
+"Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,73 +14,62 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Vé 0.1.2\n"
 
-#: ../build/src/preferences_gen.h:1196
+#: ../build/src/preferences_gen.h:1246
 msgid "GUI options"
 msgstr "tilvalg for grafisk brugerflade"
 
-#: ../build/src/preferences_gen.h:1199
-msgid "look for updated xmp files on startup"
-msgstr "kig efter opdaterede xmp-filer ved opstart"
+#: ../build/src/preferences_gen.h:1249
+msgid "width of the side panels in pixels"
+msgstr "bredde af sidepanelerne i pixels"
 
-#: ../build/src/preferences_gen.h:1208 ../build/src/preferences_gen.h:1251
-#: ../build/src/preferences_gen.h:1270 ../build/src/preferences_gen.h:1289
-#: ../build/src/preferences_gen.h:1308 ../build/src/preferences_gen.h:1327
-#: ../build/src/preferences_gen.h:1370 ../build/src/preferences_gen.h:1389
-#: ../build/src/preferences_gen.h:1407 ../build/src/preferences_gen.h:1425
-#: ../build/src/preferences_gen.h:1443 ../build/src/preferences_gen.h:1461
-#: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1592
-#: ../build/src/preferences_gen.h:1643 ../build/src/preferences_gen.h:1662
-#: ../build/src/preferences_gen.h:1704 ../build/src/preferences_gen.h:1723
-#: ../build/src/preferences_gen.h:1742 ../build/src/preferences_gen.h:1781
-#: ../build/src/preferences_gen.h:1929 ../build/src/preferences_gen.h:1968
-#: ../build/src/preferences_gen.h:1987 ../build/src/preferences_gen.h:2010
-#: ../build/src/preferences_gen.h:2029 ../build/src/preferences_gen.h:2068
-#: ../build/src/preferences_gen.h:2111 ../build/src/preferences_gen.h:2150
-#: ../build/src/preferences_gen.h:2200 ../build/src/preferences_gen.h:2219
-#: ../build/src/preferences_gen.h:2238 ../src/lua/preferences.c:356
+#: ../build/src/preferences_gen.h:1263 ../build/src/preferences_gen.h:1382
+#: ../build/src/preferences_gen.h:1517 ../build/src/preferences_gen.h:1560
+#: ../build/src/preferences_gen.h:1584 ../build/src/preferences_gen.h:1716
+#: ../build/src/preferences_gen.h:1911 ../build/src/preferences_gen.h:1935
+#: ../build/src/preferences_gen.h:1960 ../src/lua/preferences.c:373
+#, c-format
+msgid "double click to reset to `%d'"
+msgstr "dobbeltklik for at nulstille til ‘%d’"
+
+#: ../build/src/preferences_gen.h:1266
+msgid "(needs a restart)"
+msgstr "(der kræves en genstart)"
+
+#: ../build/src/preferences_gen.h:1273
+msgid "don't use embedded preview JPEG but half-size raw"
+msgstr "brug ikke indbygget forhåndsvisning af JPEG men halv størrelse af raw"
+
+#: ../build/src/preferences_gen.h:1282 ../build/src/preferences_gen.h:1301
+#: ../build/src/preferences_gen.h:1320 ../build/src/preferences_gen.h:1339
+#: ../build/src/preferences_gen.h:1358 ../build/src/preferences_gen.h:1401
+#: ../build/src/preferences_gen.h:1420 ../build/src/preferences_gen.h:1438
+#: ../build/src/preferences_gen.h:1456 ../build/src/preferences_gen.h:1474
+#: ../build/src/preferences_gen.h:1492 ../build/src/preferences_gen.h:1536
+#: ../build/src/preferences_gen.h:1623 ../build/src/preferences_gen.h:1674
+#: ../build/src/preferences_gen.h:1693 ../build/src/preferences_gen.h:1735
+#: ../build/src/preferences_gen.h:1754 ../build/src/preferences_gen.h:1773
+#: ../build/src/preferences_gen.h:1792 ../build/src/preferences_gen.h:1831
+#: ../build/src/preferences_gen.h:1979 ../build/src/preferences_gen.h:2018
+#: ../build/src/preferences_gen.h:2037 ../build/src/preferences_gen.h:2060
+#: ../build/src/preferences_gen.h:2079 ../build/src/preferences_gen.h:2118
+#: ../build/src/preferences_gen.h:2161 ../build/src/preferences_gen.h:2200
+#: ../build/src/preferences_gen.h:2219 ../build/src/preferences_gen.h:2238
+#: ../build/src/preferences_gen.h:2288 ../build/src/preferences_gen.h:2307
+#: ../build/src/preferences_gen.h:2326 ../src/lua/preferences.c:356
 #: ../src/lua/preferences.c:364
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dobbeltklik for at nulstille til ‘%s’"
 
-#: ../build/src/preferences_gen.h:1208 ../build/src/preferences_gen.h:1251
-#: ../build/src/preferences_gen.h:1370 ../build/src/preferences_gen.h:1389
-#: ../build/src/preferences_gen.h:1723 ../build/src/preferences_gen.h:2010
-#: ../build/src/preferences_gen.h:2029
+#: ../build/src/preferences_gen.h:1282 ../build/src/preferences_gen.h:1401
+#: ../build/src/preferences_gen.h:1420 ../build/src/preferences_gen.h:1754
+#: ../build/src/preferences_gen.h:2060 ../build/src/preferences_gen.h:2079
+#: ../build/src/preferences_gen.h:2219
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FALSK"
 
-#: ../build/src/preferences_gen.h:1211
-msgid ""
-"check file modification times of all xmp files on startup to check if any "
-"got updated in the meantime"
-msgstr ""
-"check tidspunkter for filmodificering for alle xmp-filer ved opstart for at "
-"checke, om nogen er blevet opdateret i mellemtiden"
-
-#: ../build/src/preferences_gen.h:1218
-msgid "width of the side panels in pixels"
-msgstr "bredde af sidepanelerne i pixels"
-
-#: ../build/src/preferences_gen.h:1232 ../build/src/preferences_gen.h:1351
-#: ../build/src/preferences_gen.h:1486 ../build/src/preferences_gen.h:1529
-#: ../build/src/preferences_gen.h:1553 ../build/src/preferences_gen.h:1685
-#: ../build/src/preferences_gen.h:1861 ../build/src/preferences_gen.h:1885
-#: ../build/src/preferences_gen.h:1910 ../src/lua/preferences.c:373
-#, c-format
-msgid "double click to reset to `%d'"
-msgstr "dobbeltklik for at nulstille til ‘%d’"
-
-#: ../build/src/preferences_gen.h:1235
-msgid "(needs a restart)"
-msgstr "(der kræves en genstart)"
-
-#: ../build/src/preferences_gen.h:1242
-msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "brug ikke indbygget forhåndsvisning af JPEG men halv størrelse af raw"
-
-#: ../build/src/preferences_gen.h:1254
+#: ../build/src/preferences_gen.h:1285
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -89,52 +78,53 @@ msgstr ""
 "filen, men bearbejd raw-data i stedet. dette er langsommere men giver dig "
 "farvestyrede miniaturebilleder."
 
-#: ../build/src/preferences_gen.h:1261
+#: ../build/src/preferences_gen.h:1292
 msgid "ask before removing images from database"
 msgstr "spørg før fjernelse af billeder fra database"
 
-#: ../build/src/preferences_gen.h:1270 ../build/src/preferences_gen.h:1289
-#: ../build/src/preferences_gen.h:1308 ../build/src/preferences_gen.h:1327
-#: ../build/src/preferences_gen.h:1505 ../build/src/preferences_gen.h:1662
-#: ../build/src/preferences_gen.h:1704 ../build/src/preferences_gen.h:1742
-#: ../build/src/preferences_gen.h:1929 ../build/src/preferences_gen.h:1987
+#: ../build/src/preferences_gen.h:1301 ../build/src/preferences_gen.h:1320
+#: ../build/src/preferences_gen.h:1339 ../build/src/preferences_gen.h:1358
+#: ../build/src/preferences_gen.h:1536 ../build/src/preferences_gen.h:1693
+#: ../build/src/preferences_gen.h:1735 ../build/src/preferences_gen.h:1773
+#: ../build/src/preferences_gen.h:1792 ../build/src/preferences_gen.h:1979
+#: ../build/src/preferences_gen.h:2037
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "SANDT"
 
-#: ../build/src/preferences_gen.h:1273
+#: ../build/src/preferences_gen.h:1304
 msgid "always ask the user before any image is removed from DB."
 msgstr "spørg altid brugeren før et billede fjernes fra databasen."
 
-#: ../build/src/preferences_gen.h:1280
+#: ../build/src/preferences_gen.h:1311
 msgid "ask before erasing images from disk"
 msgstr "spørg før billeder slettes fra disken"
 
-#: ../build/src/preferences_gen.h:1292
+#: ../build/src/preferences_gen.h:1323
 msgid "always ask the user before any image file is deleted."
 msgstr "spørg altid brugeren før et billede slettes."
 
-#: ../build/src/preferences_gen.h:1299
+#: ../build/src/preferences_gen.h:1330
 msgid "ask before moving images from film roll folder"
 msgstr "spørg før billeder flyttes fra mappen med filmruller"
 
-#: ../build/src/preferences_gen.h:1311
+#: ../build/src/preferences_gen.h:1342
 msgid "always ask the user before any image file is moved."
 msgstr "spørg altid brugeren før en billedfil flyttes."
 
-#: ../build/src/preferences_gen.h:1318
+#: ../build/src/preferences_gen.h:1349
 msgid "ask before copying images to new film roll folder"
 msgstr "spørg før billeder kopieres til ny mappe med filmruller"
 
-#: ../build/src/preferences_gen.h:1330
+#: ../build/src/preferences_gen.h:1361
 msgid "always ask the user before any image file is copied."
 msgstr "spørg altid brugeren før et billede kopieres."
 
-#: ../build/src/preferences_gen.h:1337
+#: ../build/src/preferences_gen.h:1368
 msgid "number of folder levels to show in lists"
 msgstr "antal mappeniveauer der vises i lister"
 
-#: ../build/src/preferences_gen.h:1354
+#: ../build/src/preferences_gen.h:1385
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
@@ -142,11 +132,11 @@ msgstr ""
 "antallet af mappeniveauer, der vises i navne for filmruller, startende fra "
 "højre"
 
-#: ../build/src/preferences_gen.h:1361
+#: ../build/src/preferences_gen.h:1392
 msgid "ignore JPEG images when importing film rolls"
 msgstr "ignorér JPEG-billeder under import af filmruller"
 
-#: ../build/src/preferences_gen.h:1373
+#: ../build/src/preferences_gen.h:1404
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -155,49 +145,49 @@ msgstr ""
 "ingen mening at importere begge dele. Med denne indstilling kan alle fundne "
 "JPEG'er ignoreres."
 
-#: ../build/src/preferences_gen.h:1380
+#: ../build/src/preferences_gen.h:1411
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "gennemse mapper rekursivt under importering af filmruller"
 
-#: ../build/src/preferences_gen.h:1398
+#: ../build/src/preferences_gen.h:1429
 msgid "creator to be applied when importing"
 msgstr "skaberen der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1416
+#: ../build/src/preferences_gen.h:1447
 msgid "publisher to be applied when importing"
 msgstr "udgiveren der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1434
+#: ../build/src/preferences_gen.h:1465
 msgid "rights to be applied when importing"
 msgstr "rettigheder der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1452
+#: ../build/src/preferences_gen.h:1483
 msgid "comma separated tags to be applied when importing"
 msgstr "kommaseparerede mærker der skal anvendes under importering"
 
-#: ../build/src/preferences_gen.h:1470
+#: ../build/src/preferences_gen.h:1501
 msgid "initial import rating"
 msgstr "indledende bedømmelse under importering"
 
-#: ../build/src/preferences_gen.h:1489
+#: ../build/src/preferences_gen.h:1520
 msgid "initial star rating for all images when importing a filmroll"
 msgstr ""
 "indledende stjernebedømmelse for alle billeder under importering af en "
 "filmrulle"
 
-#: ../build/src/preferences_gen.h:1496
+#: ../build/src/preferences_gen.h:1527
 msgid "enable filmstrip"
 msgstr "aktivér filmstribe"
 
-#: ../build/src/preferences_gen.h:1508
+#: ../build/src/preferences_gen.h:1539
 msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "aktivér filmstribe i mørkekammer-, tethering- og korttilstand."
 
-#: ../build/src/preferences_gen.h:1515
+#: ../build/src/preferences_gen.h:1546
 msgid "maximum width of image drawing area"
 msgstr "maksimal bredde af optegningsområde for billedet"
 
-#: ../build/src/preferences_gen.h:1532
+#: ../build/src/preferences_gen.h:1563
 msgid ""
 "maximum width of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -208,11 +198,11 @@ msgstr ""
 "(der kræves en genstart, og nuværende gemte miniaturebilleder gøres "
 "ugyldige)."
 
-#: ../build/src/preferences_gen.h:1539
+#: ../build/src/preferences_gen.h:1570
 msgid "maximum height of image drawing area"
 msgstr "maksimal højde af optegningsområde for billedet"
 
-#: ../build/src/preferences_gen.h:1556
+#: ../build/src/preferences_gen.h:1587
 msgid ""
 "maximum height of the image drawing area in darkroom mode. adjust to your "
 "screen\n"
@@ -223,27 +213,27 @@ msgstr ""
 "(der kræves en genstart, og nuværende gemte miniaturebilleder gøres "
 "ugyldige)."
 
-#: ../build/src/preferences_gen.h:1563
+#: ../build/src/preferences_gen.h:1594
 msgid "compression of thumbnail images"
 msgstr "komprimering af miniaturebilleder"
 
-#: ../build/src/preferences_gen.h:1573 ../build/src/preferences_gen.h:1592
-#: ../build/src/preferences_gen.h:1612 ../build/src/preferences_gen.h:1643
+#: ../build/src/preferences_gen.h:1604 ../build/src/preferences_gen.h:1623
+#: ../build/src/preferences_gen.h:1643 ../build/src/preferences_gen.h:1674
 msgctxt "preferences"
 msgid "off"
 msgstr "fra"
 
-#: ../build/src/preferences_gen.h:1577
+#: ../build/src/preferences_gen.h:1608
 msgctxt "preferences"
 msgid "low quality (fast)"
 msgstr "lav kvalitet (hurtig)"
 
-#: ../build/src/preferences_gen.h:1581
+#: ../build/src/preferences_gen.h:1612
 msgctxt "preferences"
 msgid "high quality (slow)"
 msgstr "høj kvalitet (langsom)"
 
-#: ../build/src/preferences_gen.h:1595
+#: ../build/src/preferences_gen.h:1626
 msgid ""
 "off - no compression in memory, JPG on disk. low quality - DXT1 (fast). high "
 "quality - DXT1, same memory as low quality variant but slower."
@@ -252,36 +242,36 @@ msgstr ""
 "(hurtig). høj kvalitet - DXT1, samme hukommelse som lav kvalitet, men "
 "langsommere."
 
-#: ../build/src/preferences_gen.h:1602
+#: ../build/src/preferences_gen.h:1633
 msgid "pen pressure control for brush masks"
 msgstr "styring af pennetryk for penselmasker"
 
-#: ../build/src/preferences_gen.h:1616
+#: ../build/src/preferences_gen.h:1647
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "hårdhed (relativ)"
 
-#: ../build/src/preferences_gen.h:1620
+#: ../build/src/preferences_gen.h:1651
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "hårdhed (absolut)"
 
-#: ../build/src/preferences_gen.h:1624
+#: ../build/src/preferences_gen.h:1655
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "uigennemsigtighed (relativ)"
 
-#: ../build/src/preferences_gen.h:1628
+#: ../build/src/preferences_gen.h:1659
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "uigennemsigtighed (absolut)"
 
-#: ../build/src/preferences_gen.h:1632
+#: ../build/src/preferences_gen.h:1663
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "penselstørrelse (relativ)"
 
-#: ../build/src/preferences_gen.h:1646
+#: ../build/src/preferences_gen.h:1677
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -291,15 +281,15 @@ msgstr ""
 "- specificeret attribut for trykaflæsning, absolut/relativ - trykaflæsning "
 "bruges direkte som attribut eller multipliceres med prædefineret indstilling."
 
-#: ../build/src/preferences_gen.h:1653
+#: ../build/src/preferences_gen.h:1684
 msgid "ask before deleting a tag"
 msgstr "spørg før et mærke slettes"
 
-#: ../build/src/preferences_gen.h:1671
+#: ../build/src/preferences_gen.h:1702
 msgid "maximum number of images drawn on map"
 msgstr "maksimalt antal billeder på kort"
 
-#: ../build/src/preferences_gen.h:1688
+#: ../build/src/preferences_gen.h:1719
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down (needs a restart)."
@@ -307,57 +297,65 @@ msgstr ""
 "det maksimale antal geomærkede billeder, der vises på kortet. forøgelse af "
 "dette antal kan sløve optegning af kortet ned (der kræves en genstart)."
 
-#: ../build/src/preferences_gen.h:1695
+#: ../build/src/preferences_gen.h:1726
 msgid "pretty print the image location"
 msgstr "vis billedplacering pænt"
 
-#: ../build/src/preferences_gen.h:1707
+#: ../build/src/preferences_gen.h:1738
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
 "vis en mere læsbar gengivelse af placeringen i billedinformations-modulet."
 
-#: ../build/src/preferences_gen.h:1714
+#: ../build/src/preferences_gen.h:1745
 msgid "expand a single lighttable module at a time"
 msgstr "udvid et enkelt lysbordsmodul ad gangen"
 
-#: ../build/src/preferences_gen.h:1726
+#: ../build/src/preferences_gen.h:1757
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "denne valgmulighed slår muligheden for at shift-klikke til og fra i "
 "lysbordtilstand"
 
-#: ../build/src/preferences_gen.h:1733
+#: ../build/src/preferences_gen.h:1764
 msgid "expand a single darkroom module at a time"
 msgstr "udvid et enkelt mørkekammermodul ad gangen"
 
-#: ../build/src/preferences_gen.h:1745
+#: ../build/src/preferences_gen.h:1776
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "denne valgmulighed slår muligheden for at shift-klikke til og fra i "
 "mørkekammertilstand"
 
-#: ../build/src/preferences_gen.h:1752
+#: ../build/src/preferences_gen.h:1783
+msgid "do high quality processing for slideshow"
+msgstr "udfør højkvalitetsbearbejdning for diasshow"
+
+#: ../build/src/preferences_gen.h:1795
+msgid "same option as for export, but applies to slideshow."
+msgstr "samme tilvalg som for eksport, men anvendes på diasshow."
+
+#: ../build/src/preferences_gen.h:1802
 msgid "method to use for getting the display profile"
 msgstr "metode for hentning af visningsprofil"
 
-#: ../build/src/preferences_gen.h:1762 ../build/src/preferences_gen.h:1781
+#: ../build/src/preferences_gen.h:1812 ../build/src/preferences_gen.h:1831
 msgctxt "preferences"
 msgid "all"
 msgstr "alle"
 
-#: ../build/src/preferences_gen.h:1766
+#: ../build/src/preferences_gen.h:1816
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/src/preferences_gen.h:1770
+#: ../build/src/preferences_gen.h:1820
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/src/preferences_gen.h:1784
+#: ../build/src/preferences_gen.h:1834
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
@@ -366,20 +364,20 @@ msgstr ""
 "af den aktuelle visningsprofil. dette er brugbart, når én mulighed giver "
 "forkerte resultater"
 
-#: ../build/src/preferences_gen.h:1819
+#: ../build/src/preferences_gen.h:1869
 msgid "core options"
 msgstr "grundvalgmuligheder"
 
-#: ../build/src/preferences_gen.h:1822
+#: ../build/src/preferences_gen.h:1872
 msgid "memory in megabytes to use for mipmap cache"
 msgstr "hukommelse i megabytes til brug for mipmap cache"
 
-#: ../build/src/preferences_gen.h:1837
+#: ../build/src/preferences_gen.h:1887
 #, c-format
 msgid "double click to reset to `%<PRId64>'"
 msgstr "dobbeltklik for at nulstille til ‘%<PRId64>’"
 
-#: ../build/src/preferences_gen.h:1840
+#: ../build/src/preferences_gen.h:1890
 msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
@@ -387,11 +385,11 @@ msgstr ""
 "dette styrer, hvor meget hukommelse der skal bruges til miniaturebilleder og "
 "andre buffers (der kræves en genstart)."
 
-#: ../build/src/preferences_gen.h:1847
+#: ../build/src/preferences_gen.h:1897
 msgid "number of background threads"
 msgstr "antal baggrundstråde"
 
-#: ../build/src/preferences_gen.h:1864
+#: ../build/src/preferences_gen.h:1914
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -401,11 +399,11 @@ msgstr ""
 "importering. cache vil vokse til maksimalt det dobbelte af dette tal for "
 "fuldopløste billedbuffers (der kræves en genstart)."
 
-#: ../build/src/preferences_gen.h:1871
+#: ../build/src/preferences_gen.h:1921
 msgid "host memory limit (in MB) for tiling"
 msgstr "værts hukommelsesgrænse (i MB) for tiling"
 
-#: ../build/src/preferences_gen.h:1888
+#: ../build/src/preferences_gen.h:1938
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -418,11 +416,11 @@ msgstr ""
 "tiles. ved at sætte dette til 0 vil enhver begrænsning ses bort fra. værdier "
 "under 500 vil opfattes som 500 (der kræves en genstart)."
 
-#: ../build/src/preferences_gen.h:1895
+#: ../build/src/preferences_gen.h:1945
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "minimal mængde hukommelse (i MB) for en enkelt buffer i tiling"
 
-#: ../build/src/preferences_gen.h:1913
+#: ../build/src/preferences_gen.h:1963
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -433,11 +431,11 @@ msgstr ""
 "enkelt billedbuffer. vægtes højere end heuristics baseret på "
 "host_memory_limit (der kræves en genstart)."
 
-#: ../build/src/preferences_gen.h:1920
+#: ../build/src/preferences_gen.h:1970
 msgid "write sidecar file for each image"
 msgstr "skriv metadatafil for hvert billede"
 
-#: ../build/src/preferences_gen.h:1932
+#: ../build/src/preferences_gen.h:1982
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -445,26 +443,26 @@ msgstr ""
 "disse redundante filer kan senere re-importeres til en anden database, med "
 "dine ændringer til billedet gemt."
 
-#: ../build/src/preferences_gen.h:1939
+#: ../build/src/preferences_gen.h:1989
 msgid "store xmp tags in compressed format"
 msgstr "gem xmp-mærker i komprimeret format"
 
-#: ../build/src/preferences_gen.h:1949
+#: ../build/src/preferences_gen.h:1999
 msgctxt "preferences"
 msgid "never"
 msgstr "aldrig"
 
-#: ../build/src/preferences_gen.h:1953
+#: ../build/src/preferences_gen.h:2003
 msgctxt "preferences"
 msgid "always"
 msgstr "altid"
 
-#: ../build/src/preferences_gen.h:1957 ../build/src/preferences_gen.h:1968
+#: ../build/src/preferences_gen.h:2007 ../build/src/preferences_gen.h:2018
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "kun store indgange"
 
-#: ../build/src/preferences_gen.h:1971
+#: ../build/src/preferences_gen.h:2021
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to "
@@ -474,11 +472,11 @@ msgstr ""
 "tilgængelige plads til opbevaring af historikstakken i outputfiler. denne "
 "mulighed tillader komprimering af xmp-mærker for at spare plads."
 
-#: ../build/src/preferences_gen.h:1978
+#: ../build/src/preferences_gen.h:2028
 msgid "activate OpenCL support"
 msgstr "aktivér OpenCL-understøttelse"
 
-#: ../build/src/preferences_gen.h:1990
+#: ../build/src/preferences_gen.h:2040
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -486,23 +484,23 @@ msgstr ""
 "brug OpenCL runtime på dit system for øget bearbejdningshastighed. kan sætte "
 "til og fra på et vilkårligt tidspunkt."
 
-#: ../build/src/preferences_gen.h:1994
+#: ../build/src/preferences_gen.h:2044
 msgid "not available on this system"
 msgstr "ikke tilgængelig på dette system"
 
-#: ../build/src/preferences_gen.h:2001
+#: ../build/src/preferences_gen.h:2051
 msgid "always try to use LittleCMS 2"
 msgstr "prøv altid at bruge LittleCMS 2"
 
-#: ../build/src/preferences_gen.h:2013
+#: ../build/src/preferences_gen.h:2063
 msgid "this is significantly slower than the default."
 msgstr "dette er betydeligt langsommere end standardindstillingen."
 
-#: ../build/src/preferences_gen.h:2020
+#: ../build/src/preferences_gen.h:2070
 msgid "do high quality resampling during export"
 msgstr "udfør højkvalitets-resampling under eksport"
 
-#: ../build/src/preferences_gen.h:2032
+#: ../build/src/preferences_gen.h:2082
 msgid ""
 "the image will first be processed in full resolution, and downscaled at the "
 "very end. this can result in better quality sometimes, but will always be "
@@ -512,26 +510,26 @@ msgstr ""
 "helt til sidst. dette kan nogle gange resultere i bedre kvalitet men vil "
 "altid være langsommere."
 
-#: ../build/src/preferences_gen.h:2039
+#: ../build/src/preferences_gen.h:2089
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "demosaicing for mørkekammer-tilstand (zoomet ud)"
 
-#: ../build/src/preferences_gen.h:2049
+#: ../build/src/preferences_gen.h:2099
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "altid bilineær (hurtig)"
 
-#: ../build/src/preferences_gen.h:2053 ../build/src/preferences_gen.h:2068
+#: ../build/src/preferences_gen.h:2103 ../build/src/preferences_gen.h:2118
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "flest PPG (fornuftig)"
 
-#: ../build/src/preferences_gen.h:2057
+#: ../build/src/preferences_gen.h:2107
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "fuld (muligvis langsom)"
 
-#: ../build/src/preferences_gen.h:2071
+#: ../build/src/preferences_gen.h:2121
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -542,31 +540,31 @@ msgstr ""
 "interpoleringstilstand specificeret herunder, fuld bruger præcis de samme "
 "indstillinger som fuld-størrelseseksport."
 
-#: ../build/src/preferences_gen.h:2078
+#: ../build/src/preferences_gen.h:2128
 msgid "pixel interpolator"
 msgstr "pixel-interpolator"
 
-#: ../build/src/preferences_gen.h:2088
+#: ../build/src/preferences_gen.h:2138
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilineær"
 
-#: ../build/src/preferences_gen.h:2092
+#: ../build/src/preferences_gen.h:2142
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bikubisk"
 
-#: ../build/src/preferences_gen.h:2096
+#: ../build/src/preferences_gen.h:2146
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:2100 ../build/src/preferences_gen.h:2111
+#: ../build/src/preferences_gen.h:2150 ../build/src/preferences_gen.h:2161
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/src/preferences_gen.h:2114
+#: ../build/src/preferences_gen.h:2164
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -574,52 +572,89 @@ msgstr ""
 "pixel-interpolator, der bruges ved rotering og objektivkorrektion (bilineær, "
 "bikubisk, lanczos2, lanczos3)."
 
-#: ../build/src/preferences_gen.h:2121
+#: ../build/src/preferences_gen.h:2171
 msgid "password storage backend to use"
 msgstr "backend for opbevaring af passwords"
 
-#: ../build/src/preferences_gen.h:2131 ../build/src/preferences_gen.h:2150
+#: ../build/src/preferences_gen.h:2181 ../build/src/preferences_gen.h:2200
 msgctxt "preferences"
 msgid "none"
 msgstr "ingen"
 
-#: ../build/src/preferences_gen.h:2135
+#: ../build/src/preferences_gen.h:2185
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/src/preferences_gen.h:2139
+#: ../build/src/preferences_gen.h:2189
 msgctxt "preferences"
 msgid "gnome keyring"
 msgstr "gnome-nøglering"
 
-#: ../build/src/preferences_gen.h:2153
+#: ../build/src/preferences_gen.h:2203
 msgid "the storage backend for password storage: none, kwallet, gnome keyring"
 msgstr "backend for password-opbevaring: ingen, kwallet, gnome keyring"
 
-#: ../build/src/preferences_gen.h:2188
+#: ../build/src/preferences_gen.h:2210
+msgid "look for updated xmp files on startup"
+msgstr "kig efter opdaterede xmp-filer ved opstart"
+
+#: ../build/src/preferences_gen.h:2222
+msgid ""
+"check file modification times of all xmp files on startup to check if any "
+"got updated in the meantime"
+msgstr ""
+"check tidspunkter for filmodificering for alle xmp-filer ved opstart for at "
+"checke, om nogen er blevet opdateret i mellemtiden"
+
+#: ../build/src/preferences_gen.h:2229
+msgid "executable for playing audio files"
+msgstr "eksekvérbar fil for afspilning af lydfiler"
+
+#: ../build/src/preferences_gen.h:2241
+msgid ""
+"this external program is used to play audio files some cameras record to "
+"keep notes for images"
+msgstr ""
+"dette eksterne program bruges til at afspille lydfiler, som optages af nogle "
+"kameraer som noter til billeder"
+
+#: ../build/src/preferences_gen.h:2276
 msgid "session options"
 msgstr "sessionsindstillinger"
 
-#: ../build/src/preferences_gen.h:2191
+#: ../build/src/preferences_gen.h:2279
 msgid "base directory naming pattern"
 msgstr "navngivningsmønster for grundmappe"
 
-#: ../build/src/preferences_gen.h:2203 ../build/src/preferences_gen.h:2222
+#: ../build/src/preferences_gen.h:2291 ../build/src/preferences_gen.h:2310
 msgid "part of full import path for an import session"
 msgstr "del af den fulde importsti for en importeringssession"
 
-#: ../build/src/preferences_gen.h:2210
+#: ../build/src/preferences_gen.h:2298
 msgid "sub directory naming pattern"
 msgstr "navngivningsmønster for undermapper"
 
-#: ../build/src/preferences_gen.h:2229
+#: ../build/src/preferences_gen.h:2317
 msgid "file naming pattern"
 msgstr "navngivningsmønster for filer"
 
-#: ../build/src/preferences_gen.h:2241
+#: ../build/src/preferences_gen.h:2329
 msgid "file naming pattern used for a import session"
 msgstr "navngivningsmønster for filer, der bruges under en importeringssession"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtuelt lysbord og mørkekammer"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "organisér og fremkald billeder fra digitale kameraer"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "grafik;fotografi;raw;"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -753,7 +788,8 @@ msgstr[0] "importerer %d billede"
 msgstr[1] "importerer %d billeder"
 
 #: ../src/common/film.c:531
-msgid "cannot remove film roll having local copies with non accessible originals"
+msgid ""
+"cannot remove film roll having local copies with non accessible originals"
 msgstr ""
 "kan ikke fjerne filmrullen, der har lokale kopier med ikke-tilgængelige "
 "originaler"
@@ -775,9 +811,9 @@ msgstr "til"
 #: ../src/common/history.c:291 ../src/common/styles.c:632
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
 #: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
-#: ../src/imageio/format/j2k.c:640 ../src/iop/demosaic.c:1329
-#: ../src/iop/vignette.c:1117 ../src/libs/history.c:155
-#: ../src/libs/live_view.c:404
+#: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1095
+#: ../src/iop/demosaic.c:1314 ../src/iop/vignette.c:1117
+#: ../src/libs/history.c:155 ../src/libs/live_view.c:404
 msgid "off"
 msgstr "fra"
 
@@ -785,21 +821,21 @@ msgstr "fra"
 msgid "orphaned image"
 msgstr "forældreløs billede"
 
-#: ../src/common/image.c:1184
+#: ../src/common/image.c:1173
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "kan ikke oprette en lokal kopi, når den originale fil ikke er tilgængelig."
 
-#: ../src/common/image.c:1198
+#: ../src/common/image.c:1187
 msgid "cannot create local copy."
 msgstr "kan ikke oprette en lokal kopi."
 
-#: ../src/common/image.c:1232 ../src/control/jobs/control_jobs.c:406
+#: ../src/common/image.c:1221 ../src/control/jobs/control_jobs.c:406
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "kan ikke fjerne den lokale kopi, når den originale fil ikke er tilgængelig."
 
-#: ../src/common/image.c:1386
+#: ../src/common/image.c:1375
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -807,12 +843,24 @@ msgstr[0] "%d lokal kopi er synkroniseret"
 msgstr[1] "%d lokale kopier er synkroniseret"
 
 #: ../src/common/imageio.c:669
+#, c-format
 msgid ""
-"failed to allocate memory for export, please lower the threads used for "
-"export or buy more memory."
+"failed to allocate memory for %s, please lower the threads used for export "
+"or buy more memory."
 msgstr ""
-"fejl under allokering af hukommelse til eksport; formindst venligst antallet "
-"af tråde for eksport eller køb mere hukommelse."
+"fejl under allokering af hukommelse til %s; formindsk venligst antallet af "
+"tråde for eksport eller køb mere hukommelse."
+
+#: ../src/common/imageio.c:669
+msgid "thumbnail export"
+msgstr "eksport af miniaturebilleder"
+
+#. Export button
+#. export button
+#: ../src/common/imageio.c:669 ../src/gui/preferences.c:615
+#: ../src/libs/export.c:668 ../src/libs/styles.c:408
+msgid "export"
+msgstr "eksportér"
 
 #: ../src/common/imageio.c:677 ../src/common/mipmap_cache.c:1163
 #, c-format
@@ -890,8 +938,8 @@ msgstr "stil %s blev succesfuldt importeret"
 
 #: ../src/common/variables.c:220 ../src/iop/clipping.c:1461
 #: ../src/iop/clipping.c:1703 ../src/iop/clipping.c:1721
-#: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783 ../src/iop/lens.c:1771
-#: ../src/libs/export.c:642 ../src/libs/live_view.c:323
+#: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783
+#: ../src/iop/lens.c:1771 ../src/libs/export.c:642 ../src/libs/live_view.c:323
 #: ../src/libs/live_view.c:335 ../src/libs/live_view.c:353
 #, c-format
 msgid "none"
@@ -906,29 +954,37 @@ msgstr "arbejder …"
 msgid "switch to %s mode"
 msgstr "skift til %s tilstand"
 
-#: ../src/control/crawler.c:234
+#: ../src/control/crawler.c:341 ../src/libs/select.c:36
+msgid "select"
+msgstr "vælg"
+
+#: ../src/control/crawler.c:347
 msgid "path"
 msgstr "sti"
 
-#: ../src/control/crawler.c:240
+#: ../src/control/crawler.c:353
 msgid "xmp timestamp"
 msgstr "xmp-tidsstempel"
 
-#: ../src/control/crawler.c:246
+#: ../src/control/crawler.c:359
 msgid "database timestamp"
 msgstr "database-tidsstempel"
 
-#: ../src/control/crawler.c:260
+#: ../src/control/crawler.c:369
 msgid "updated xmp sidecar files found"
 msgstr "opdaterede xmp-metadatafiler blev fundet"
 
-#: ../src/control/crawler.c:262
-msgid "reload xmp files"
-msgstr "genindlæs xmp-filer"
+#: ../src/control/crawler.c:388 ../src/libs/select.c:96
+msgid "select all"
+msgstr "vælg alle"
 
-#: ../src/control/crawler.c:263
-msgid "overwrite xmp files"
-msgstr "overskriv xmp-filer"
+#: ../src/control/crawler.c:395
+msgid "reload selected xmp files"
+msgstr "genindlæs valgte xmp-filer"
+
+#: ../src/control/crawler.c:396
+msgid "overwrite selected xmp files"
+msgstr "overskriv valgte xmp-filer"
 
 #: ../src/control/jobs/camera_jobs.c:85
 #, c-format
@@ -941,16 +997,16 @@ msgstr[1] "tager % billeder"
 msgid "please set your camera to manual mode first!"
 msgstr "sæt venligst dit kamera til manuel tilstand først!"
 
-#: ../src/control/jobs/camera_jobs.c:271
+#: ../src/control/jobs/camera_jobs.c:272
 #, c-format
 msgid "%d/%d imported to %s"
 msgstr "%d/%d importeret til %s"
 
-#: ../src/control/jobs/camera_jobs.c:283
+#: ../src/control/jobs/camera_jobs.c:284
 msgid "starting to import images from camera"
 msgstr "starter importering af billeder fra kamera"
 
-#: ../src/control/jobs/camera_jobs.c:293
+#: ../src/control/jobs/camera_jobs.c:294
 #, c-format
 msgid "importing %d image from camera"
 msgid_plural "importing %d images from camera"
@@ -1048,11 +1104,11 @@ msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "oprettelse af filmrulle i destinationsmappe mislykkedes, flytning afbrudt …"
 
-#: ../src/control/jobs/control_jobs.c:922 ../src/control/jobs/control_jobs.c:979
-#: ../src/imageio/storage/disk.c:70 ../src/imageio/storage/disk.c:126
-#: ../src/imageio/storage/gallery.c:79 ../src/imageio/storage/gallery.c:162
-#: ../src/imageio/storage/latex.c:79 ../src/imageio/storage/latex.c:162
-#: ../src/libs/styles.c:240
+#: ../src/control/jobs/control_jobs.c:922
+#: ../src/control/jobs/control_jobs.c:979 ../src/imageio/storage/disk.c:70
+#: ../src/imageio/storage/disk.c:126 ../src/imageio/storage/gallery.c:79
+#: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
+#: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "vælg mappe"
 
@@ -1729,12 +1785,12 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s er blevet importeret"
 msgstr[1] "%s er blevet importeret"
 
-#: ../src/develop/tiling.c:805 ../src/develop/tiling.c:1101
+#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "tiling for modul '%s' mislykkedes. output kan være mangelfuldt."
 
-#: ../src/develop/pixelpipe_hb.c:2169
+#: ../src/develop/pixelpipe_hb.c:2168
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -1890,83 +1946,88 @@ msgstr ""
 "vælg de billeder fra listen herunder, som du vil importere til en ny "
 "filmrulle"
 
-#: ../src/gui/camera_import_dialog.c:501
+#: ../src/gui/camera_import_dialog.c:505
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "brug venligst format ÅÅÅÅ-MM-DD for datooverskrivning"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:894
+#: ../src/gui/gtk.c:901
 msgctxt "accel"
 msgid "capture view"
 msgstr "optagelsesvisning"
 
-#: ../src/gui/gtk.c:895
+#: ../src/gui/gtk.c:902
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "lysbordvisning"
 
-#: ../src/gui/gtk.c:896
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "mørkekammervisning"
 
-#: ../src/gui/gtk.c:897
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "map view"
 msgstr "kortvisning"
 
+#: ../src/gui/gtk.c:905
+msgctxt "accel"
+msgid "slideshow view"
+msgstr "diasshow-visning"
+
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:920
+#: ../src/gui/gtk.c:932
 msgctxt "accel"
 msgid "quit"
 msgstr "afslut"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:927
+#: ../src/gui/gtk.c:939
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "forøg lysstyrke"
 
-#: ../src/gui/gtk.c:929
+#: ../src/gui/gtk.c:941
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "formindsk lysstyrke"
 
-#: ../src/gui/gtk.c:931
+#: ../src/gui/gtk.c:943
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "forøg kontrast"
 
-#: ../src/gui/gtk.c:933
+#: ../src/gui/gtk.c:945
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "formindsk kontrast"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:954
+#: ../src/gui/gtk.c:966
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "slå fuldskærm til og fra"
 
-#: ../src/gui/gtk.c:955
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "forlad fuldskærm"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:967
+#: ../src/gui/gtk.c:979
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "slå siderammer til og fra"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:970
+#: ../src/gui/gtk.c:982
 msgctxt "accel"
 msgid "toggle header"
 msgstr "slå topramme til og fra"
 
 #. View-switch
-#: ../src/gui/gtk.c:974
+#: ../src/gui/gtk.c:986
 msgctxt "accel"
 msgid "switch view"
 msgstr "skift visning"
@@ -2147,7 +2208,8 @@ msgid "focal length"
 msgstr "brændvidde"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:411 ../src/iop/levels.c:286 ../src/iop/tonecurve.c:661
+#: ../src/iop/exposure.c:412 ../src/iop/levels.c:285
+#: ../src/iop/tonecurve.c:661
 msgid "auto"
 msgstr "auto"
 
@@ -2175,23 +2237,18 @@ msgctxt "preferences"
 msgid "import"
 msgstr "importér"
 
-#. Export button
-#. export button
-#: ../src/gui/preferences.c:615 ../src/libs/export.c:668
-#: ../src/libs/styles.c:408
-msgid "export"
-msgstr "eksportér"
-
 #: ../src/gui/preferences.c:915
 msgid "press key combination to remap..."
 msgstr "udfør tastekombination for at ændre …"
 
-#: ../src/gui/preferences.c:1078 ../src/gui/presets.c:171 ../src/libs/lib.c:315
+#: ../src/gui/preferences.c:1078 ../src/gui/presets.c:171
+#: ../src/libs/lib.c:315
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "vil du virkelig slette forudindstillingen ‘%s’?"
 
-#: ../src/gui/preferences.c:1079 ../src/gui/presets.c:172 ../src/libs/lib.c:316
+#: ../src/gui/preferences.c:1079 ../src/gui/presets.c:172
+#: ../src/libs/lib.c:316
 msgid "delete preset?"
 msgstr "slet forudindstilling?"
 
@@ -2216,7 +2273,8 @@ msgstr ""
 msgid "edit `%s' for module `%s'"
 msgstr "redigér ‘%s’ for modul ‘%s’"
 
-#: ../src/gui/preferences.c:1331 ../src/gui/presets.c:378 ../src/libs/lib.c:234
+#: ../src/gui/preferences.c:1331 ../src/gui/presets.c:378
+#: ../src/libs/lib.c:234
 msgid "description or further information"
 msgstr "beskrivelse af yderligere information"
 
@@ -2306,9 +2364,11 @@ msgstr "unavngivet forudindstilling"
 
 #: ../src/gui/presets.c:235 ../src/libs/lib.c:138
 #, c-format
-msgid "preset `%s' already exists.\n"
+msgid ""
+"preset `%s' already exists.\n"
 "do you want to overwrite?"
-msgstr "forudindstilling ‘%s’ eksisterer allerede.\n"
+msgstr ""
+"forudindstilling ‘%s’ eksisterer allerede.\n"
 "vil du overskrive?"
 
 #: ../src/gui/presets.c:238 ../src/libs/lib.c:141
@@ -2470,35 +2530,35 @@ msgstr "16-bit"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bit)"
 
-#: ../src/imageio/format/tiff.c:341
+#: ../src/imageio/format/tiff.c:374
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bit)"
 
-#: ../src/imageio/format/tiff.c:386
+#: ../src/imageio/format/tiff.c:419
 msgid "8 bit"
 msgstr "8 bit"
 
-#: ../src/imageio/format/tiff.c:387
+#: ../src/imageio/format/tiff.c:420
 msgid "16 bit"
 msgstr "16 bit"
 
-#: ../src/imageio/format/tiff.c:388
+#: ../src/imageio/format/tiff.c:421
 msgid "32 bit (float)"
 msgstr "32 bit (flydende komma)"
 
-#: ../src/imageio/format/tiff.c:400
+#: ../src/imageio/format/tiff.c:433
 msgid "uncompressed"
 msgstr "ukomprimeret"
 
-#: ../src/imageio/format/tiff.c:401
+#: ../src/imageio/format/tiff.c:434
 msgid "deflate"
 msgstr "komprimér"
 
-#: ../src/imageio/format/tiff.c:402
+#: ../src/imageio/format/tiff.c:435
 msgid "deflate with predictor"
 msgstr "komprimér med indikator"
 
-#: ../src/imageio/format/tiff.c:403
+#: ../src/imageio/format/tiff.c:436
 msgid "deflate with predictor (float)"
 msgstr "komprimér med indikator (flydende komma)"
 
@@ -2508,7 +2568,8 @@ msgstr "fil på disk"
 
 #: ../src/imageio/storage/disk.c:118 ../src/imageio/storage/gallery.c:155
 #: ../src/imageio/storage/latex.c:155
-msgid "enter the path where to put exported images\n"
+msgid ""
+"enter the path where to put exported images\n"
 "recognized variables:"
 msgstr ""
 "skriv stien, hvor eksporterede billeder skal anbringes\n"
@@ -2568,7 +2629,8 @@ msgstr ""
 "før du går videre."
 
 #: ../src/imageio/storage/facebook.c:606 ../src/imageio/storage/picasa.c:826
-msgid "step 2: paste your browser URL and click the OK button once you are done."
+msgid ""
+"step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
 "skridt 2: indsæt din browsers URL og klik på OK-knappen, når du er færdig."
 
@@ -2612,10 +2674,10 @@ msgstr "log ud"
 
 #. Set default permission to private
 #: ../src/imageio/storage/facebook.c:931 ../src/imageio/storage/facebook.c:944
-#: ../src/imageio/storage/facebook.c:971 ../src/imageio/storage/facebook.c:1074
-#: ../src/imageio/storage/flickr.c:526 ../src/imageio/storage/picasa.c:1104
-#: ../src/imageio/storage/picasa.c:1262 ../src/imageio/storage/picasa.c:1275
-#: ../src/imageio/storage/picasa.c:1341
+#: ../src/imageio/storage/facebook.c:971
+#: ../src/imageio/storage/facebook.c:1074 ../src/imageio/storage/flickr.c:526
+#: ../src/imageio/storage/picasa.c:1104 ../src/imageio/storage/picasa.c:1262
+#: ../src/imageio/storage/picasa.c:1275 ../src/imageio/storage/picasa.c:1341
 msgid "login"
 msgstr "log ind"
 
@@ -2870,7 +2932,7 @@ msgstr "støjfjernelse"
 msgid "denoise (strong)"
 msgstr "støjfjernelse (stærk)"
 
-#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:64
+#: ../src/iop/atrous.c:912 ../src/iop/bloom.c:80
 msgid "bloom"
 msgstr "bloom"
 
@@ -2911,7 +2973,8 @@ msgstr "fed"
 msgid "dull"
 msgstr "dunkel"
 
-#: ../src/iop/atrous.c:1433 ../src/iop/equalizer.c:342 ../src/iop/nlmeans.c:716
+#: ../src/iop/atrous.c:1433 ../src/iop/equalizer.c:342
+#: ../src/iop/nlmeans.c:716
 msgid "luma"
 msgstr "luma"
 
@@ -2919,7 +2982,8 @@ msgstr "luma"
 msgid "change lightness at each feature size"
 msgstr "ændr lysskarphed ved hver konturstørrelse"
 
-#: ../src/iop/atrous.c:1435 ../src/iop/equalizer.c:343 ../src/iop/nlmeans.c:718
+#: ../src/iop/atrous.c:1435 ../src/iop/equalizer.c:343
+#: ../src/iop/nlmeans.c:718
 msgid "chroma"
 msgstr "kroma"
 
@@ -2927,7 +2991,7 @@ msgstr "kroma"
 msgid "change color saturation at each feature size"
 msgstr "ændr farvemætning ved hver konturstørrelse"
 
-#: ../src/iop/atrous.c:1437 ../src/iop/highpass.c:509
+#: ../src/iop/atrous.c:1437 ../src/iop/highpass.c:508
 msgid "sharpness"
 msgstr "skarphed"
 
@@ -2935,7 +2999,8 @@ msgstr "skarphed"
 msgid "sharpness of edges at each feature size"
 msgstr "kantskarphed ved hver konturstørrelse"
 
-#: ../src/iop/atrous.c:1473 ../src/iop/colorzones.c:1057 ../src/iop/soften.c:589
+#: ../src/iop/atrous.c:1473 ../src/iop/colorzones.c:1057
+#: ../src/iop/soften.c:589
 msgid "mix"
 msgstr "miks"
 
@@ -3027,8 +3092,8 @@ msgstr "grundkurve"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse: input, ordinat: output. virker på RGB-kanaler"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1923 ../src/iop/vignette.c:1123
-#: ../src/iop/watermark.c:1045
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:1923
+#: ../src/iop/vignette.c:1123 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "skalér"
 
@@ -3057,7 +3122,7 @@ msgstr "lokal kontrast"
 msgid "coarseness"
 msgstr "ruhed"
 
-#: ../src/iop/bilat.c:272 ../src/iop/colisa.c:382 ../src/iop/lowpass.c:604
+#: ../src/iop/bilat.c:272 ../src/iop/colisa.c:382 ../src/iop/lowpass.c:646
 msgid "contrast"
 msgstr "kontrast"
 
@@ -3069,7 +3134,7 @@ msgstr "detaljer"
 msgid "denoise (bilateral filter)"
 msgstr "fjern støj (bilateral filter)"
 
-#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:139 ../src/iop/shadhi.c:231
+#: ../src/iop/bilateral.cc:88 ../src/iop/lowpass.c:166 ../src/iop/shadhi.c:231
 #: ../src/iop/sharpen.c:104
 msgctxt "accel"
 msgid "radius"
@@ -3110,48 +3175,48 @@ msgid "how much to blur blue"
 msgstr "hvor meget blå skal udjævnes"
 
 #: ../src/iop/bilateral.cc:348 ../src/iop/clahe.c:342 ../src/iop/dither.c:568
-#: ../src/iop/lowpass.c:603 ../src/iop/shadhi.c:750 ../src/iop/sharpen.c:572
+#: ../src/iop/lowpass.c:645 ../src/iop/shadhi.c:750 ../src/iop/sharpen.c:572
 msgid "radius"
 msgstr "radius"
 
-#: ../src/iop/bloom.c:80 ../src/iop/soften.c:104
+#: ../src/iop/bloom.c:96 ../src/iop/soften.c:104
 msgctxt "accel"
 msgid "size"
 msgstr "størrelse"
 
-#: ../src/iop/bloom.c:81 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
+#: ../src/iop/bloom.c:97 ../src/iop/hotpixels.c:84 ../src/iop/sharpen.c:106
 msgctxt "accel"
 msgid "threshold"
 msgstr "grænseværdi"
 
-#: ../src/iop/bloom.c:82 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
+#: ../src/iop/bloom.c:98 ../src/iop/grain.c:327 ../src/iop/hotpixels.c:85
 msgctxt "accel"
 msgid "strength"
 msgstr "styrke"
 
-#: ../src/iop/bloom.c:336 ../src/iop/soften.c:564 ../src/libs/camera.c:587
+#: ../src/iop/bloom.c:539 ../src/iop/soften.c:564 ../src/libs/camera.c:587
 msgid "size"
 msgstr "størrelse"
 
-#: ../src/iop/bloom.c:337
+#: ../src/iop/bloom.c:540
 msgid "the size of bloom"
 msgstr "størrelsen af bloom"
 
-#: ../src/iop/bloom.c:342 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
+#: ../src/iop/bloom.c:545 ../src/iop/hotpixels.c:310 ../src/iop/sharpen.c:578
 msgid "threshold"
 msgstr "grænseværdi"
 
-#: ../src/iop/bloom.c:343
+#: ../src/iop/bloom.c:546
 msgid "the threshold of light"
 msgstr "grænseværdien for lys"
 
-#: ../src/iop/bloom.c:348 ../src/iop/denoiseprofile.c:1727
+#: ../src/iop/bloom.c:551 ../src/iop/denoiseprofile.c:1727
 #: ../src/iop/grain.c:524 ../src/iop/hotpixels.c:318 ../src/iop/nlmeans.c:714
 #: ../src/iop/velvia.c:346
 msgid "strength"
 msgstr "styrke"
 
-#: ../src/iop/bloom.c:349
+#: ../src/iop/bloom.c:552
 msgid "the strength of bloom"
 msgstr "styrken på bloom"
 
@@ -3196,7 +3261,8 @@ msgid "select frame line color"
 msgstr "vælg rammelinjens farve"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741 ../src/libs/import.c:814
+#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
+#: ../src/libs/import.c:814
 msgid "image"
 msgstr "billede"
 
@@ -3363,7 +3429,8 @@ msgid "automatic chromatic aberration correction"
 msgstr "automatisk korrektion af kromatiske aberrationer"
 
 #: ../src/iop/cacorrect.c:1288
-msgid "automatic chromatic aberration correction\n"
+msgid ""
+"automatic chromatic aberration correction\n"
 "only works for raw images."
 msgstr ""
 "automatisk korrektion af kromatiske aberrationer\n"
@@ -3388,7 +3455,7 @@ msgstr "farvetone"
 #: ../src/iop/channelmixer.c:438 ../src/iop/colisa.c:384
 #: ../src/iop/colorcorrection.c:289 ../src/iop/colorize.c:470
 #: ../src/iop/colorzones.c:1031 ../src/iop/colorzones.c:1067
-#: ../src/iop/graduatednd.c:1076 ../src/iop/lowpass.c:606
+#: ../src/iop/graduatednd.c:1076 ../src/iop/lowpass.c:648
 #: ../src/iop/soften.c:572 ../src/iop/splittoning.c:585
 #: ../src/iop/vignette.c:1126
 msgid "saturation"
@@ -3514,7 +3581,8 @@ msgstr "vinkel"
 
 #: ../src/iop/clipping.c:1716
 msgid "right-click and drag a line on the image to drag a straight line"
-msgstr "højreklik og træk en lige linie på billedet for at trække en lige linie"
+msgstr ""
+"højreklik og træk en lige linie på billedet for at trække en lige linie"
 
 #: ../src/iop/clipping.c:1720
 msgid "keystone"
@@ -3634,8 +3702,8 @@ msgstr "gyldne spiralsektioner"
 msgid "golden spiral"
 msgstr "gylden spiral"
 
-#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1777 ../src/libs/live_view.c:347
-#: ../src/libs/tools/filter.c:122
+#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1777
+#: ../src/libs/live_view.c:347 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "alle"
 
@@ -3657,19 +3725,19 @@ msgstr "vinkel"
 msgid "contrast brightness saturation"
 msgstr "kontrast for lysstyrkemætning"
 
-#: ../src/iop/colisa.c:95 ../src/iop/lowpass.c:140
+#: ../src/iop/colisa.c:95 ../src/iop/lowpass.c:167
 msgctxt "accel"
 msgid "contrast"
 msgstr "kontrast"
 
-#: ../src/iop/colisa.c:96 ../src/iop/lowpass.c:141 ../src/iop/soften.c:106
+#: ../src/iop/colisa.c:96 ../src/iop/lowpass.c:168 ../src/iop/soften.c:106
 #: ../src/iop/vignette.c:160
 msgctxt "accel"
 msgid "brightness"
 msgstr "lysstyrke"
 
 #: ../src/iop/colisa.c:97 ../src/iop/colorcorrection.c:114
-#: ../src/iop/lowpass.c:142 ../src/iop/soften.c:105 ../src/iop/vignette.c:161
+#: ../src/iop/lowpass.c:169 ../src/iop/soften.c:105 ../src/iop/vignette.c:161
 msgctxt "accel"
 msgid "saturation"
 msgstr "mætning"
@@ -3826,74 +3894,96 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "sæt global mætning"
 
-#: ../src/iop/colorin.c:58
+#: ../src/iop/colorin.c:50
 msgid "input color profile"
 msgstr "input-farveprofil"
 
-#: ../src/iop/colorin.c:475
+#: ../src/iop/colorin.c:582
+msgid "input profile could not be generated!"
+msgstr "inputfil kunne ikke genereres!"
+
+#: ../src/iop/colorin.c:640
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ikke understøttet inputprofil er erstattet af lineær Rec709 RGB!"
 
-#: ../src/iop/colorin.c:741 ../src/iop/colorin.c:773
+#: ../src/iop/colorin.c:922 ../src/iop/colorin.c:954
 msgid "embedded ICC profile"
 msgstr "indbygget ICC-profil"
 
-#: ../src/iop/colorin.c:743 ../src/iop/colorin.c:775
+#: ../src/iop/colorin.c:924 ../src/iop/colorin.c:956
 msgid "DNG embedded matrix"
 msgstr "DNG-indbygget matrice"
 
-#: ../src/iop/colorin.c:745 ../src/iop/colorin.c:777
+#: ../src/iop/colorin.c:926 ../src/iop/colorin.c:958
 msgid "standard color matrix"
 msgstr "standard farvematrice"
 
-#: ../src/iop/colorin.c:747 ../src/iop/colorin.c:779
+#: ../src/iop/colorin.c:928 ../src/iop/colorin.c:960
 msgid "enhanced color matrix"
 msgstr "forbedret farvematrice"
 
-#: ../src/iop/colorin.c:749 ../src/iop/colorin.c:781
+#: ../src/iop/colorin.c:930 ../src/iop/colorin.c:962
 msgid "vendor color matrix"
 msgstr "producent-farvematrice"
 
-#: ../src/iop/colorin.c:751 ../src/iop/colorin.c:783
+#: ../src/iop/colorin.c:932 ../src/iop/colorin.c:964
 msgid "alternate color matrix"
 msgstr "alternativ farvematrice"
 
-#: ../src/iop/colorin.c:753 ../src/iop/colorin.c:785
+#: ../src/iop/colorin.c:934 ../src/iop/colorin.c:966
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (fx JPG)"
 
-#: ../src/iop/colorin.c:755 ../src/iop/colorin.c:787 ../src/iop/colorout.c:919
-#: ../src/iop/colorout.c:920 ../src/iop/colorout.c:921 ../src/libs/export.c:558
+#: ../src/iop/colorin.c:936 ../src/iop/colorin.c:968 ../src/iop/colorin.c:1097
+#: ../src/iop/colorout.c:919 ../src/iop/colorout.c:920
+#: ../src/iop/colorout.c:921 ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/iop/colorin.c:757 ../src/iop/colorin.c:789 ../src/iop/colorout.c:907
-#: ../src/iop/colorout.c:908 ../src/iop/colorout.c:909 ../src/libs/export.c:570
+#: ../src/iop/colorin.c:938 ../src/iop/colorin.c:970 ../src/iop/colorin.c:1098
+#: ../src/iop/colorout.c:907 ../src/iop/colorout.c:908
+#: ../src/iop/colorout.c:909 ../src/libs/export.c:570
 msgid "linear Rec709 RGB"
 msgstr "lineær Rec709 RGB"
 
-#: ../src/iop/colorin.c:759 ../src/iop/colorin.c:791
+#: ../src/iop/colorin.c:940 ../src/iop/colorin.c:972
 msgid "linear infrared BGR"
 msgstr "lineær infrarød BGR"
 
-#: ../src/iop/colorin.c:761 ../src/iop/colorin.c:793
+#: ../src/iop/colorin.c:942 ../src/iop/colorin.c:974
 msgid "linear XYZ"
 msgstr "lineær XYZ"
 
-#: ../src/iop/colorin.c:763 ../src/iop/colorin.c:795
+#: ../src/iop/colorin.c:944 ../src/iop/colorin.c:976
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:592
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:895 ../src/iop/denoiseprofile.c:1723
+#: ../src/iop/colorin.c:1076 ../src/iop/denoiseprofile.c:1723
 #: ../src/libs/export.c:609
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:904
+#: ../src/iop/colorin.c:1085
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ICC-profiler i %s/color/in eller %s/color/in"
+
+#: ../src/iop/colorin.c:1093
+msgid "gamut clipping"
+msgstr "gamut-beskæring"
+
+#: ../src/iop/colorin.c:1096
+msgid "sRGB"
+msgstr "sRGB"
+
+#: ../src/iop/colorin.c:1099
+msgid "Beta RGB (compatible)"
+msgstr "Beta-RGB (kompatibel)"
+
+#: ../src/iop/colorin.c:1101
+msgid "confine Lab values to gamut of RGB color space"
+msgstr "begræns Lab-værdier til gamut for RGB-farverum"
 
 #: ../src/iop/colorize.c:86
 msgid "colorize"
@@ -4021,20 +4111,24 @@ msgstr "softproof"
 msgid "output intent"
 msgstr "output-hensigt"
 
-#: ../src/iop/colorout.c:867 ../src/iop/colorout.c:874 ../src/libs/export.c:539
+#: ../src/iop/colorout.c:867 ../src/iop/colorout.c:874
+#: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "opfattelsesmæssig"
 
-#: ../src/iop/colorout.c:868 ../src/iop/colorout.c:875 ../src/libs/export.c:540
+#: ../src/iop/colorout.c:868 ../src/iop/colorout.c:875
+#: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "relativ kolorimetri"
 
-#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876 ../src/libs/export.c:541
+#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
+#: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mætning"
 
-#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877 ../src/libs/export.c:542
+#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
+#: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "absolut kolorimetri"
 
@@ -4059,8 +4153,8 @@ msgstr "visningsprofil"
 msgid "system display profile"
 msgstr "systemvisningsprofil"
 
-#: ../src/iop/colorout.c:913 ../src/iop/colorout.c:914 ../src/iop/colorout.c:915
-#: ../src/libs/export.c:551
+#: ../src/iop/colorout.c:913 ../src/iop/colorout.c:914
+#: ../src/iop/colorout.c:915 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sikker)"
 
@@ -4178,24 +4272,24 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "grænseværdi for kanter"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1300
 msgid "PPG (fast)"
 msgstr "PPG (hurtig)"
 
-#: ../src/iop/demosaic.c:1316
+#: ../src/iop/demosaic.c:1301
 msgid "amaze (slow)"
 msgstr "amaze (langsom)"
 
-#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
+#: ../src/iop/demosaic.c:1302 ../src/iop/dither.c:563
 #: ../src/iop/highlights.c:377
 msgid "method"
 msgstr "metode"
 
-#: ../src/iop/demosaic.c:1319
+#: ../src/iop/demosaic.c:1304
 msgid "demosaicing raw data method"
 msgstr "metode for demosaicing raw-data"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1307
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4205,59 +4299,59 @@ msgstr ""
 "sæt til 0,0 for at slå fra.\n"
 "sæt til 1,0 for at ignorere kanter."
 
-#: ../src/iop/demosaic.c:1323
+#: ../src/iop/demosaic.c:1308
 msgid "edge threshold"
 msgstr "grænseværdi for kanter"
 
-#: ../src/iop/demosaic.c:1327
+#: ../src/iop/demosaic.c:1312
 msgid "color smoothing"
 msgstr "farveudjævning"
 
-#: ../src/iop/demosaic.c:1330
+#: ../src/iop/demosaic.c:1315
 msgid "one time"
 msgstr "en gang"
 
-#: ../src/iop/demosaic.c:1331
+#: ../src/iop/demosaic.c:1316
 msgid "two times"
 msgstr "to gange"
 
-#: ../src/iop/demosaic.c:1332
+#: ../src/iop/demosaic.c:1317
 msgid "three times"
 msgstr "tre gange"
 
-#: ../src/iop/demosaic.c:1333
+#: ../src/iop/demosaic.c:1318
 msgid "four times"
 msgstr "fire gange"
 
-#: ../src/iop/demosaic.c:1334
+#: ../src/iop/demosaic.c:1319
 msgid "five times"
 msgstr "fem gange"
 
-#: ../src/iop/demosaic.c:1335
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "hvor mange median-trin for farveudjævning efter demosaicing"
 
-#: ../src/iop/demosaic.c:1339
+#: ../src/iop/demosaic.c:1324
 msgid "match greens"
 msgstr "match grønne"
 
-#: ../src/iop/demosaic.c:1340
+#: ../src/iop/demosaic.c:1325
 msgid "disabled"
 msgstr "slået fra"
 
-#: ../src/iop/demosaic.c:1341
+#: ../src/iop/demosaic.c:1326
 msgid "local average"
 msgstr "lokalt gennemsnit"
 
-#: ../src/iop/demosaic.c:1342
+#: ../src/iop/demosaic.c:1327
 msgid "full average"
 msgstr "fuldt gennemsnit"
 
-#: ../src/iop/demosaic.c:1343
+#: ../src/iop/demosaic.c:1328
 msgid "full and local average"
 msgstr "fuldt og lokalt gennemsnit"
 
-#: ../src/iop/demosaic.c:1344
+#: ../src/iop/demosaic.c:1329
 msgid "green channels matching method"
 msgstr "matching-metode for grønne kanaler"
 
@@ -4414,7 +4508,7 @@ msgstr "sort"
 msgid "adjust the exposure correction"
 msgstr "justér eksponeringskorrektionen"
 
-#: ../src/iop/exposure.c:414
+#: ../src/iop/exposure.c:415
 msgid "percentage of bright values clipped out"
 msgstr "procentdel af lyse værdier, der klippes fra"
 
@@ -4577,9 +4671,11 @@ msgstr "komprimering"
 
 #: ../src/iop/graduatednd.c:1040
 #, no-c-format
-msgid "compression of graduation:\n"
+msgid ""
+"compression of graduation:\n"
 "0% = soft, 100% = hard"
-msgstr "komprimering af graduering:\n"
+msgstr ""
+"komprimering af graduering:\n"
 "0% = blød, 100% = hård"
 
 #: ../src/iop/graduatednd.c:1046
@@ -4657,15 +4753,15 @@ msgctxt "accel"
 msgid "contrast boost"
 msgstr "kontrastforstærkning"
 
-#: ../src/iop/highpass.c:512
+#: ../src/iop/highpass.c:511
 msgid "the sharpness of highpass filter"
 msgstr "skarpheden af highpass-filter"
 
-#: ../src/iop/highpass.c:518
+#: ../src/iop/highpass.c:517
 msgid "contrast boost"
 msgstr "kontrastforstærkning"
 
-#: ../src/iop/highpass.c:521
+#: ../src/iop/highpass.c:520
 msgid "the contrast of highpass filter"
 msgstr "kontrasten på highpass-filter"
 
@@ -4767,7 +4863,8 @@ msgstr "vælg korrektioner"
 
 #: ../src/iop/lens.c:1120
 #, c-format
-msgid "maker:\t\t%s\n"
+msgid ""
+"maker:\t\t%s\n"
 "model:\t\t%s%s\n"
 "mount:\t\t%s\n"
 "crop factor:\t%.1f"
@@ -4952,24 +5049,25 @@ msgstr "hvilke korrektioner, der rent faktisk er udført"
 msgid "levels"
 msgstr "niveauer"
 
-#: ../src/iop/levels.c:270
-msgid "drag handles to set black, grey, and white points.  operates on L channel."
+#: ../src/iop/levels.c:269
+msgid ""
+"drag handles to set black, grey, and white points.  operates on L channel."
 msgstr ""
 "træk håndtagene for at sætte sort-, grå- og hvidpunkter. opererer på L-kanal."
 
-#: ../src/iop/levels.c:287
+#: ../src/iop/levels.c:286
 msgid "apply auto levels"
 msgstr "anvend autoniveauer"
 
-#: ../src/iop/levels.c:291
+#: ../src/iop/levels.c:290
 msgid "pick blackpoint from image"
 msgstr "vælg sort punkt fra billede"
 
-#: ../src/iop/levels.c:295
+#: ../src/iop/levels.c:294
 msgid "pick medium greypoint from image"
 msgstr "vælg mediumgrå punkt fra billede"
 
-#: ../src/iop/levels.c:299
+#: ../src/iop/levels.c:298
 msgid "pick whitepoint from image"
 msgstr "vælg hvidt punkt fra billede"
 
@@ -5054,68 +5152,68 @@ msgstr "blåforskydning"
 msgid "blueness in shadows"
 msgstr "blåskær i skygger"
 
-#: ../src/iop/lowpass.c:105
+#: ../src/iop/lowpass.c:118
 msgid "lowpass"
 msgstr "lowpass"
 
-#: ../src/iop/lowpass.c:552
+#: ../src/iop/lowpass.c:594
 msgid "local contrast mask"
 msgstr "lokal kontrastmaske"
 
-#: ../src/iop/lowpass.c:588
+#: ../src/iop/lowpass.c:630
 msgid "filter order"
 msgstr "filterrækkefølge"
 
-#: ../src/iop/lowpass.c:591
+#: ../src/iop/lowpass.c:633
 msgid "0th order"
 msgstr "0. rækkefølge"
 
-#: ../src/iop/lowpass.c:592
+#: ../src/iop/lowpass.c:634
 msgid "1st order"
 msgstr "1. rækkefølge"
 
-#: ../src/iop/lowpass.c:593
+#: ../src/iop/lowpass.c:635
 msgid "2nd order"
 msgstr "2. rækkefølge"
 
-#: ../src/iop/lowpass.c:594
+#: ../src/iop/lowpass.c:636
 msgid "filter order of gaussian blur"
 msgstr "filterrækkefølge for gaussian udjævning"
 
-#: ../src/iop/lowpass.c:605
+#: ../src/iop/lowpass.c:647
 msgctxt "lowpass"
 msgid "brightness"
 msgstr "lysstyrke"
 
-#: ../src/iop/lowpass.c:609 ../src/iop/shadhi.c:741
+#: ../src/iop/lowpass.c:651 ../src/iop/shadhi.c:741
 msgid "soften with"
 msgstr "blødgør med"
 
-#: ../src/iop/lowpass.c:610 ../src/iop/shadhi.c:742
+#: ../src/iop/lowpass.c:652 ../src/iop/shadhi.c:742
 msgid "gaussian"
 msgstr "gaussian"
 
-#: ../src/iop/lowpass.c:611 ../src/iop/shadhi.c:743
+#: ../src/iop/lowpass.c:653 ../src/iop/shadhi.c:743
 msgid "bilateral filter"
 msgstr "bilateral filter"
 
-#: ../src/iop/lowpass.c:618
+#: ../src/iop/lowpass.c:660
 msgid "radius of gaussian/bilateral blur"
 msgstr "radius for gaussian/bilateral udjævning"
 
-#: ../src/iop/lowpass.c:619
+#: ../src/iop/lowpass.c:661
 msgid "contrast of lowpass filter"
 msgstr "kontrast for lowpass-filter"
 
-#: ../src/iop/lowpass.c:620
+#: ../src/iop/lowpass.c:662
 msgid "brightness adjustment of lowpass filter"
 msgstr "justering af lysstyrke for lowpass-filter"
 
-#: ../src/iop/lowpass.c:621
+#: ../src/iop/lowpass.c:663
 msgid "color saturation of lowpass filter"
 msgstr "farvemætning for lowpass-filter"
 
-#: ../src/iop/lowpass.c:622
+#: ../src/iop/lowpass.c:664
 msgid "which filter to use for blurring"
 msgstr "hvilket filter der skal bruges til udjævning"
 
@@ -5297,9 +5395,11 @@ msgid "filter to use for softening. bilateral avoids halos"
 msgstr "filter til brug for blødgøring. bilateral undgår stråleglansringe"
 
 #: ../src/iop/shadhi.c:773
-msgid "compress the effect on shadows/highlights and\n"
+msgid ""
+"compress the effect on shadows/highlights and\n"
 "preserve midtones"
-msgstr "komprimér effekten på skygger/højlys og\n"
+msgstr ""
+"komprimér effekten på skygger/højlys og\n"
 "bibehold midtertoner"
 
 #: ../src/iop/shadhi.c:774
@@ -5423,9 +5523,11 @@ msgid "the balance of center of splittoning"
 msgstr "centerbalance for splittoning"
 
 #: ../src/iop/splittoning.c:636
-msgid "compress the effect on highlights/shadows and\n"
+msgid ""
+"compress the effect on highlights/shadows and\n"
 "preserve midtones"
-msgstr "komprimér effekten på højlys/skygger og\n"
+msgstr ""
+"komprimér effekten på højlys/skygger og\n"
 "bibehold midtertoner"
 
 #: ../src/iop/spots.c:54
@@ -6167,16 +6269,18 @@ msgstr "historik"
 msgid "description"
 msgstr "beskrivelse"
 
-#: ../src/libs/collect.h:40 ../src/libs/import.c:493 ../src/libs/metadata.c:359
-#: ../src/libs/metadata_view.c:103
+#: ../src/libs/collect.h:40 ../src/libs/import.c:493
+#: ../src/libs/metadata.c:359 ../src/libs/metadata_view.c:103
 msgid "creator"
 msgstr "skaber"
 
-#: ../src/libs/collect.h:41 ../src/libs/import.c:499 ../src/libs/metadata.c:372
+#: ../src/libs/collect.h:41 ../src/libs/import.c:499
+#: ../src/libs/metadata.c:372
 msgid "publisher"
 msgstr "udgiver"
 
-#: ../src/libs/collect.h:42 ../src/libs/import.c:505 ../src/libs/metadata.c:385
+#: ../src/libs/collect.h:42 ../src/libs/import.c:505
+#: ../src/libs/metadata.c:385
 msgid "rights"
 msgstr "rettigheder"
 
@@ -6258,9 +6362,11 @@ msgid "error loading file '%s'"
 msgstr "fejl under indlæsning af fil '%s'"
 
 #: ../src/libs/copy_history.c:255
-msgid "copy part history stack of\n"
+msgid ""
+"copy part history stack of\n"
 "first selected image (ctrl-shift-c)"
-msgstr "kopiér delvis historikstak fra\n"
+msgstr ""
+"kopiér delvis historikstak fra\n"
 "første valgte billede (ctrl-shift-c)"
 
 #: ../src/libs/copy_history.c:258
@@ -6268,9 +6374,11 @@ msgid "copy all"
 msgstr "kopiér alle"
 
 #: ../src/libs/copy_history.c:260
-msgid "copy history stack of\n"
+msgid ""
+"copy history stack of\n"
 "first selected image (ctrl-c)"
-msgstr "kopiér historikstak fra\n"
+msgstr ""
+"kopiér historikstak fra\n"
 "første valgte billede (ctrl-c)"
 
 #: ../src/libs/copy_history.c:263
@@ -6278,9 +6386,11 @@ msgid "discard"
 msgstr "kassér"
 
 #: ../src/libs/copy_history.c:265
-msgid "discard history stack of\n"
+msgid ""
+"discard history stack of\n"
 "all selected images"
-msgstr "kassér historikstak fra\n"
+msgstr ""
+"kassér historikstak fra\n"
 "alle valgte billeder"
 
 #: ../src/libs/copy_history.c:271
@@ -6288,9 +6398,11 @@ msgid "paste"
 msgstr "indsæt"
 
 #: ../src/libs/copy_history.c:272
-msgid "paste part history stack to\n"
+msgid ""
+"paste part history stack to\n"
 "all selected images (ctrl-shift-v)"
-msgstr "indsæt delvis historikstak til\n"
+msgstr ""
+"indsæt delvis historikstak til\n"
 "alle valgte billeder (ctrl-shift-v)"
 
 #: ../src/libs/copy_history.c:277
@@ -6298,9 +6410,11 @@ msgid "paste all"
 msgstr "indsæt alle"
 
 #: ../src/libs/copy_history.c:278
-msgid "paste history stack to\n"
+msgid ""
+"paste history stack to\n"
 "all selected images (ctrl-v)"
-msgstr "indsæt historikstak til\n"
+msgstr ""
+"indsæt historikstak til\n"
 "alle valgte billeder (ctrl-v)"
 
 #: ../src/libs/copy_history.c:283
@@ -6316,9 +6430,11 @@ msgid "load sidecar file"
 msgstr "indlæs metadatafil"
 
 #: ../src/libs/copy_history.c:294
-msgid "open an XMP sidecar file\n"
+msgid ""
+"open an XMP sidecar file\n"
 "and apply it to selected images"
-msgstr "åbn en XMP-metadatafil\n"
+msgstr ""
+"åbn en XMP-metadatafil\n"
 "og anvend den på valgte billeder"
 
 #: ../src/libs/copy_history.c:297
@@ -6381,23 +6497,29 @@ msgid "global options"
 msgstr "globale valgmuligheder"
 
 #: ../src/libs/export.c:511
-msgid "maximum output width\n"
+msgid ""
+"maximum output width\n"
 "set to 0 for no scaling"
-msgstr "maksimum outputbredde\n"
+msgstr ""
+"maksimum outputbredde\n"
 "sæt til 0 for ingen skalering"
 
 #: ../src/libs/export.c:513
-msgid "maximum output height\n"
+msgid ""
+"maximum output height\n"
 "set to 0 for no scaling"
-msgstr "maksimum outputhøjde\n"
+msgstr ""
+"maksimum outputhøjde\n"
 "sæt til 0 for ingen skalering"
 
+#.
 #. gtk_widget_add_events(GTK_WIDGET(d->width), GDK_FOCUS_CHANGE_MASK);
 #. g_signal_connect (G_OBJECT (d->width), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->width), "focus-out-event", G_CALLBACK(focus_out), NULL);
 #. gtk_widget_add_events(GTK_WIDGET(d->height), GDK_FOCUS_CHANGE_MASK);
 #. g_signal_connect (G_OBJECT (d->height), "focus-in-event",  G_CALLBACK(focus_in),  NULL);
 #. g_signal_connect (G_OBJECT (d->height), "focus-out-event", G_CALLBACK(focus_out), NULL);
+#.
 #: ../src/libs/export.c:525
 msgid "max size"
 msgstr "maksstørrelse"
@@ -6434,7 +6556,8 @@ msgid "export with current settings (ctrl-e)"
 msgstr "eksportér med aktuelle indstillinger (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:878 ../src/libs/styles.c:69 ../src/views/darkroom.c:1703
+#: ../src/libs/export.c:878 ../src/libs/styles.c:69
+#: ../src/views/darkroom.c:1703
 msgctxt "accel"
 msgid "export"
 msgstr "eksportér"
@@ -6466,9 +6589,11 @@ msgstr ""
 "rmdir <dir>\t\t\tslet tom mappe"
 
 #: ../src/libs/geotagging.c:385
-msgid "enter the time shown on the selected picture\n"
+msgid ""
+"enter the time shown on the selected picture\n"
 "format: hh:mm:ss"
-msgstr "indtast tid, der vises på valgt billede\n"
+msgstr ""
+"indtast tid, der vises på valgt billede\n"
 "format: tt:mm:ss"
 
 #: ../src/libs/geotagging.c:433
@@ -6496,9 +6621,11 @@ msgid "time offset"
 msgstr "tidsforskydning"
 
 #: ../src/libs/geotagging.c:589
-msgid "time offset\n"
+msgid ""
+"time offset\n"
 "format: [+-]?[[hh:]mm:]ss"
-msgstr "tidsforskydning\n"
+msgstr ""
+"tidsforskydning\n"
 "format: [+-]?[[tt:]mm:]ss"
 
 #: ../src/libs/geotagging.c:599
@@ -6523,9 +6650,11 @@ msgid "histogram"
 msgstr "histogram"
 
 #: ../src/libs/histogram.c:133 ../src/libs/histogram.c:507
-msgid "drag to change exposure,\n"
+msgid ""
+"drag to change exposure,\n"
 "doubleclick resets"
-msgstr "træk for at ændre eksponering,\n"
+msgstr ""
+"træk for at ændre eksponering,\n"
 "dobbeltklik nulstiller"
 
 #: ../src/libs/histogram.c:472
@@ -6565,9 +6694,11 @@ msgid "click to show blue channel"
 msgstr "klik for at vise blå kanal"
 
 #: ../src/libs/histogram.c:502
-msgid "drag to change black point,\n"
+msgid ""
+"drag to change black point,\n"
 "doubleclick resets"
-msgstr "træk for at ændre sort punkt,\n"
+msgstr ""
+"træk for at ændre sort punkt,\n"
 "dobbeltklik nulstiller"
 
 #: ../src/libs/history.c:75
@@ -7180,9 +7311,11 @@ msgstr "billedinformation"
 
 #: ../src/libs/metadata_view.c:220
 #, c-format
-msgid "double click to jump to film roll\n"
+msgid ""
+"double click to jump to film roll\n"
 "%s"
-msgstr "dobbeltklik for at hoppe til filmrulle\n"
+msgstr ""
+"dobbeltklik for at hoppe til filmrulle\n"
 "%s"
 
 #: ../src/libs/metadata_view.c:424
@@ -7271,14 +7404,6 @@ msgstr " eller "
 msgid " but not "
 msgstr " men ikke "
 
-#: ../src/libs/select.c:36
-msgid "select"
-msgstr "vælg"
-
-#: ../src/libs/select.c:96
-msgid "select all"
-msgstr "vælg alle"
-
 #: ../src/libs/select.c:98
 msgid "select all images in current collection (ctrl-a)"
 msgstr "vælg alle billeder i aktuel samling (ctrl-a)"
@@ -7296,9 +7421,11 @@ msgid "invert selection"
 msgstr "invertér markering"
 
 #: ../src/libs/select.c:112
-msgid "select unselected images\n"
+msgid ""
+"select unselected images\n"
 "in current collection (ctrl-!)"
-msgstr "vælg ikke-valgte billeder\n"
+msgstr ""
+"vælg ikke-valgte billeder\n"
 "i aktuel samling (ctrl-!)"
 
 #: ../src/libs/select.c:117
@@ -7306,9 +7433,11 @@ msgid "select film roll"
 msgstr "vælg filmrulle"
 
 #: ../src/libs/select.c:119
-msgid "select all images which are in the same\n"
+msgid ""
+"select all images which are in the same\n"
 "film roll as the selected images"
-msgstr "vælg alle billeder, der er i samme\n"
+msgstr ""
+"vælg alle billeder, der er i samme\n"
 "filmrulle som det valgte billede"
 
 #: ../src/libs/select.c:126
@@ -7316,9 +7445,11 @@ msgid "select untouched"
 msgstr "vælg uberørte"
 
 #: ../src/libs/select.c:128
-msgid "select untouched images in\n"
+msgid ""
+"select untouched images in\n"
 "current collection"
-msgstr "vælg uberørte billeder i\n"
+msgstr ""
+"vælg uberørte billeder i\n"
 "aktuel samling"
 
 #: ../src/libs/session.c:48
@@ -7379,9 +7510,11 @@ msgid "darktable style files"
 msgstr "darktable stilfiler"
 
 #: ../src/libs/styles.c:350
-msgid "available styles,\n"
+msgid ""
+"available styles,\n"
 "doubleclick to apply"
-msgstr "tilgængelige stile,\n"
+msgstr ""
+"tilgængelige stile,\n"
 "dobbeltklik for at anvende"
 
 #: ../src/libs/styles.c:356
@@ -7459,9 +7592,11 @@ msgid ""
 msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
-msgstr[0] "vil du virkelig slette mærket ‘%s’?\n"
+msgstr[0] ""
+"vil du virkelig slette mærket ‘%s’?\n"
 "%d billede har dette mærke!"
-msgstr[1] "vil du virkelig slette mærket ‘%s’?\n"
+msgstr[1] ""
+"vil du virkelig slette mærket ‘%s’?\n"
 "%d billeder har dette mærke!"
 
 #: ../src/libs/tagging.c:322
@@ -7469,9 +7604,11 @@ msgid "delete tag?"
 msgstr "slet mærke?"
 
 #: ../src/libs/tagging.c:421
-msgid "attached tags,\n"
+msgid ""
+"attached tags,\n"
 "doubleclick to detach"
-msgstr "fastgjorte mærker,\n"
+msgstr ""
+"fastgjorte mærker,\n"
 "dobbeltklik for at frigøre"
 
 #: ../src/libs/tagging.c:428
@@ -7495,9 +7632,11 @@ msgid "enter tag name"
 msgstr "skriv mærkenavn"
 
 #: ../src/libs/tagging.c:478
-msgid "related tags,\n"
+msgid ""
+"related tags,\n"
 "doubleclick to attach"
-msgstr "relaterede mærker,\n"
+msgstr ""
+"relaterede mærker,\n"
 "dobbeltklik for at fastgøre"
 
 #: ../src/libs/tagging.c:485
@@ -7505,9 +7644,11 @@ msgid "new"
 msgstr "nyt"
 
 #: ../src/libs/tagging.c:487
-msgid "create a new tag with the\n"
+msgid ""
+"create a new tag with the\n"
 "name you entered"
-msgstr "opret et nyt mærke med det\n"
+msgstr ""
+"opret et nyt mærke med det\n"
 "navn du skrev"
 
 #: ../src/libs/tagging.c:494
@@ -7520,33 +7661,43 @@ msgstr "farvemærkater"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:69
-msgid "toggle red label\n"
+msgid ""
+"toggle red label\n"
 "of selected images (f1)"
-msgstr "slå rødt mærkat til og fra\n"
+msgstr ""
+"slå rødt mærkat til og fra\n"
 "for valgte billeder (f1)"
 
 #: ../src/libs/tools/colorlabels.c:70
-msgid "toggle yellow label\n"
+msgid ""
+"toggle yellow label\n"
 "of selected images (f2)"
-msgstr "slå gult mærkat til og fra\n"
+msgstr ""
+"slå gult mærkat til og fra\n"
 "for valgte billeder (f2)"
 
 #: ../src/libs/tools/colorlabels.c:71
-msgid "toggle green label\n"
+msgid ""
+"toggle green label\n"
 "of selected images (f3)"
-msgstr "slå grønt mærkat til og fra\n"
+msgstr ""
+"slå grønt mærkat til og fra\n"
 "for valgte billeder (f3)"
 
 #: ../src/libs/tools/colorlabels.c:72
-msgid "toggle blue label\n"
+msgid ""
+"toggle blue label\n"
 "of selected images (f4)"
-msgstr "slå blåt mærkat til og fra\n"
+msgstr ""
+"slå blåt mærkat til og fra\n"
 "for valgte billeder (f4)"
 
 #: ../src/libs/tools/colorlabels.c:73
-msgid "toggle purple label\n"
+msgid ""
+"toggle purple label\n"
 "of selected images (f5)"
-msgstr "slå lilla mærkat til og fra\n"
+msgstr ""
+"slå lilla mærkat til og fra\n"
 "for valgte billeder (f5)"
 
 #: ../src/libs/tools/colorlabels.c:74
@@ -7596,37 +7747,37 @@ msgstr "filmstribe"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1812
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1892
 msgctxt "accel"
 msgid "rate 0"
 msgstr "bedøm 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1813
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1893
 msgctxt "accel"
 msgid "rate 1"
 msgstr "bedøm 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1814
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1894
 msgctxt "accel"
 msgid "rate 2"
 msgstr "bedøm 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1815
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1895
 msgctxt "accel"
 msgid "rate 3"
 msgstr "bedøm 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1816
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1896
 msgctxt "accel"
 msgid "rate 4"
 msgstr "bedøm 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1817
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1897
 msgctxt "accel"
 msgid "rate 5"
 msgstr "bedøm 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1818
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1898
 msgctxt "accel"
 msgid "rate reject"
 msgstr "bedøm som afvis"
@@ -7664,27 +7815,27 @@ msgstr "duplikér billede"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1833
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1913
 msgctxt "accel"
 msgid "color red"
 msgstr "sæt rød farve"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1834
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1914
 msgctxt "accel"
 msgid "color yellow"
 msgstr "sæt gul farve"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1835
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1915
 msgctxt "accel"
 msgid "color green"
 msgstr "sæt grøn farve"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1836
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1916
 msgctxt "accel"
 msgid "color blue"
 msgstr "sæt blå farve"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1837
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1917
 msgctxt "accel"
 msgid "color purple"
 msgstr "sæt lilla farve"
@@ -7746,11 +7897,13 @@ msgstr "sortér efter"
 msgid "preferences"
 msgstr "indstillinger"
 
-#: ../src/libs/tools/global_toolbox.c:79 ../src/libs/tools/global_toolbox.c:113
+#: ../src/libs/tools/global_toolbox.c:79
+#: ../src/libs/tools/global_toolbox.c:113
 msgid "expand grouped images"
 msgstr "udvid grupperede billeder"
 
-#: ../src/libs/tools/global_toolbox.c:81 ../src/libs/tools/global_toolbox.c:115
+#: ../src/libs/tools/global_toolbox.c:81
+#: ../src/libs/tools/global_toolbox.c:115
 msgid "collapse grouped images"
 msgstr "kollaps grupperede billeder"
 
@@ -7772,7 +7925,7 @@ msgstr "indstillinger"
 msgid "hinter"
 msgstr "tipser"
 
-#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:129
+#: ../src/libs/tools/lighttable.c:61 ../src/views/lighttable.c:136
 msgid "lighttable"
 msgstr "lysbord"
 
@@ -7823,7 +7976,8 @@ msgstr "mørkekammer"
 
 #: ../src/views/darkroom.c:893
 msgid "no userdefined presets for favorite modules were found"
-msgstr "ingen brugerdefinerede forudindstillinger for favoritmoduler blev fundet"
+msgstr ""
+"ingen brugerdefinerede forudindstillinger for favoritmoduler blev fundet"
 
 #: ../src/views/darkroom.c:898
 #, c-format
@@ -7843,7 +7997,8 @@ msgid "quick access for applying any of your styles"
 msgstr "hurtig adgang til anvendelse af dine stile"
 
 #: ../src/views/darkroom.c:1127
-msgid "toggle over/under exposed indication\n"
+msgid ""
+"toggle over/under exposed indication\n"
 "right click for options"
 msgstr ""
 "slå indikation af over/undereksponering til og fra\n"
@@ -7883,7 +8038,7 @@ msgstr "grænseværdi for hvad, der anses for overeksponeret"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1691 ../src/views/map.c:565
+#: ../src/views/darkroom.c:1691 ../src/views/map.c:578
 #: ../src/views/tethering.c:385
 msgctxt "accel"
 msgid "toggle film strip"
@@ -7922,107 +8077,121 @@ msgctxt "accel"
 msgid "overexposed"
 msgstr "overeksponeret"
 
-#: ../src/views/lighttable.c:497
+#: ../src/views/lighttable.c:507
 msgid "there are no images in this collection"
 msgstr "der er ingen billeder i denne samling"
 
-#: ../src/views/lighttable.c:499
+#: ../src/views/lighttable.c:509
 msgid "if you have not imported any images yet"
 msgstr "hvis du ikke har importeret nogen billeder endnu"
 
-#: ../src/views/lighttable.c:501
+#: ../src/views/lighttable.c:511
 msgid "you can do so in the import module"
 msgstr "kan du gøre det i importmodulet"
 
-#: ../src/views/lighttable.c:508
+#: ../src/views/lighttable.c:518
 msgid "try to relax the filter settings in the top panel"
 msgstr "prøv at gøre filterindstillingerne bredere i toppanelet"
 
-#: ../src/views/lighttable.c:515
+#: ../src/views/lighttable.c:525
 msgid "or add images in the collection module in the left panel"
 msgstr "eller tilføj billeder i samling-modulet i det venstre panel"
 
-#: ../src/views/lighttable.c:1820
+#: ../src/views/lighttable.c:1900
 msgctxt "accel"
 msgid "expose statuses"
 msgstr "eksportér statusser"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:1823
+#: ../src/views/lighttable.c:1903
 msgctxt "accel"
 msgid "navigate up"
 msgstr "navigér op"
 
-#: ../src/views/lighttable.c:1825
+#: ../src/views/lighttable.c:1905
 msgctxt "accel"
 msgid "navigate down"
 msgstr "navigér ned"
 
-#: ../src/views/lighttable.c:1827
+#: ../src/views/lighttable.c:1907
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "navigér side op"
 
-#: ../src/views/lighttable.c:1829
+#: ../src/views/lighttable.c:1909
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "navigér side ned"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1840
+#: ../src/views/lighttable.c:1920
 msgctxt "accel"
 msgid "scroll up"
 msgstr "rul op"
 
-#: ../src/views/lighttable.c:1842
+#: ../src/views/lighttable.c:1922
 msgctxt "accel"
 msgid "scroll down"
 msgstr "rul ned"
 
-#: ../src/views/lighttable.c:1844
+#: ../src/views/lighttable.c:1924
 msgctxt "accel"
 msgid "scroll left"
 msgstr "rul til venstre"
 
-#: ../src/views/lighttable.c:1846
+#: ../src/views/lighttable.c:1926
 msgctxt "accel"
 msgid "scroll right"
 msgstr "rul til højre"
 
-#: ../src/views/lighttable.c:1848
+#: ../src/views/lighttable.c:1928
 msgctxt "accel"
 msgid "scroll center"
 msgstr "rul til centrum"
 
-#: ../src/views/lighttable.c:1850
+#: ../src/views/lighttable.c:1930
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "genpositionér billeder til gitter"
 
 #. Preview key
-#: ../src/views/lighttable.c:1854
+#: ../src/views/lighttable.c:1934
 msgctxt "accel"
 msgid "preview"
 msgstr "forhåndsvisning"
 
-#: ../src/views/lighttable.c:1855
+#: ../src/views/lighttable.c:1935
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "forudvisning med fokusdetektion"
 
-#: ../src/views/map.c:95
+#: ../src/views/map.c:98
 msgid "map"
 msgstr "kort"
 
-#: ../src/views/map.c:562
+#: ../src/views/map.c:575
 msgctxt "accel"
 msgid "undo"
 msgstr "fortryd"
 
-#: ../src/views/map.c:563
+#: ../src/views/map.c:576
 msgctxt "accel"
 msgid "redo"
 msgstr "gentag"
+
+#: ../src/views/slideshow.c:168
+msgid "end of images. press any key to return to lighttable mode"
+msgstr ""
+"slutning på billeder. tryk en tast for at vende tilbage til lysbord-tilstand"
+
+#: ../src/views/slideshow.c:303
+msgid "slideshow"
+msgstr "diasshow"
+
+#: ../src/views/slideshow.c:495
+msgctxt "accel"
+msgid "start and stop"
+msgstr "start og stop"
 
 #: ../src/views/tethering.c:90
 msgid "tethering"
@@ -8080,7 +8249,8 @@ msgstr "rul for at sætte penselstørrelse"
 
 #: ../src/develop/masks/masks.c:61
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
-msgstr "rul for at sætte hårdhed, ctrl+rul for at sætte formens uigennemsigtighed"
+msgstr ""
+"rul for at sætte hårdhed, ctrl+rul for at sætte formens uigennemsigtighed"
 
 #: ../src/develop/masks/masks.c:163
 #, c-format
