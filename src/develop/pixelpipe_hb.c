@@ -35,6 +35,13 @@
 #include <math.h>
 #include <unistd.h>
 
+#define PIXELPIPE_FLOW_NONE                     0
+#define PIXELPIPE_FLOW_PROCESSED_ON_CPU         1<<0
+#define PIXELPIPE_FLOW_PROCESSED_ON_GPU         1<<1
+#define PIXELPIPE_FLOW_PROCESSED_WITH_TILING    1<<2
+#define PIXELPIPE_FLOW_BLENDED_ON_CPU           1<<3
+#define PIXELPIPE_FLOW_BLENDED_ON_GPU           1<<4
+
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
 
@@ -871,6 +878,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
+    int pixelpipe_flow = PIXELPIPE_FLOW_NONE;
+
     dt_develop_tiling_t tiling = { 0 };
     dt_develop_tiling_t tiling_blendop = { 0 };
 
@@ -975,8 +984,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_cl of module; module should emit meaningful messages in case of error */
-          if (success_opencl)
+          if (success_opencl) {
             success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+          }
 
           if(pipe->shutdown)
           {
@@ -1026,8 +1038,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           /* process blending */
-          if (success_opencl)
+          if (success_opencl) {
             success_opencl = dt_develop_blend_process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_CPU);
+          }
 
           /* synchronization point for opencl pipe */
           if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
@@ -1079,8 +1094,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           dt_iop_nap(darktable.opencl->micro_nap);
 
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
-          if (success_opencl)
+          if (success_opencl) {
             success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU);
+          }
 
           if(pipe->shutdown)
           {
@@ -1129,8 +1147,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           /* do process blending on cpu (this is anyhow fast enough) */
-          if (success_opencl)
+          if (success_opencl) {
             dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
+          }
 
           /* synchronization point for opencl pipe */
           if (success_opencl && (!darktable.opencl->async_pixelpipe || pipe->type == DT_DEV_PIXELPIPE_EXPORT))
@@ -1253,10 +1274,15 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           /* process module on cpu. use tiling if needed and possible. */
           if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
               !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
-                                                MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
+                                                MAX(in_bpp, bpp), tiling.factor, tiling.overhead)) {
             module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
-          else
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
+          } else {
             module->process(module, piece, input, *output, &roi_in, roi_out);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+          }
 
           if(pipe->shutdown)
           {
@@ -1308,6 +1334,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+          pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
         }
 
         if(pipe->shutdown)
@@ -1357,10 +1385,15 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         /* process module on cpu. use tiling if needed and possible. */
         if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
             !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
-                                              MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
+                                              MAX(in_bpp, bpp), tiling.factor, tiling.overhead)) {
           module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
-        else
+          pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
+        } else {
           module->process(module, piece, input, *output, &roi_in, roi_out);
+          pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+        }
 
         if(pipe->shutdown)
         {
@@ -1410,6 +1443,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+        pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
 
         if(pipe->shutdown)
         {
@@ -1429,10 +1464,15 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       /* process module on cpu. use tiling if needed and possible. */
       if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
           !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
-                                            MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
+                                            MAX(in_bpp, bpp), tiling.factor, tiling.overhead)) {
         module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
-      else
+        pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
+      } else {
         module->process(module, piece, input, *output, &roi_in, roi_out);
+        pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+      }
 
       if(pipe->shutdown)
       {
@@ -1482,15 +1522,22 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+      pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
     }
 #else
     /* process module on cpu. use tiling if needed and possible. */
     if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
         !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
-                                          MAX(in_bpp, bpp), tiling.factor, tiling.overhead))
+                                          MAX(in_bpp, bpp), tiling.factor, tiling.overhead)) {
       module->process_tiling(module, piece, input, *output, &roi_in, roi_out, in_bpp);
-    else
+      pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU);
+    } else {
       module->process(module, piece, input, *output, &roi_in, roi_out);
+      pixelpipe_flow |=  (PIXELPIPE_FLOW_PROCESSED_ON_CPU);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
+    }
 
     if(pipe->shutdown)
     {
@@ -1540,9 +1587,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
+    pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
+    pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
 #endif
 
-    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' [%s]", module->name(),
+    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s, blending on %s [%s]", module->name(),
+                  pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "???",
+                  pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
+                  pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "???",
                   _pipe_type_to_str(pipe->type));
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
