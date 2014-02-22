@@ -314,7 +314,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   listener.request_image_path=_camera_request_image_path;
   listener.request_image_filename=_camera_request_image_filename;
   listener.camera_exif_data_changed=_camera_change_exif_time;
-  
+
   // start download of images
   dt_camctl_register_listener(darktable.camctl,&listener);
   dt_camctl_import(darktable.camctl,t->camera,t->images);

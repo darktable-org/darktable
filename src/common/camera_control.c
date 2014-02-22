@@ -99,7 +99,6 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
 /** Dispatch functions for listener interfaces */
 const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t *camera);
 const char *_dispatch_request_image_filename(const dt_camctl_t *c,const char *filename,const dt_camera_t *camera);
-gboolean _dispatch_request_if_exif_needed(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_image_downloaded(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename);
 void _dispatch_camera_connected(const dt_camctl_t *c,const dt_camera_t *camera);
 void _dispatch_camera_disconnected(const dt_camctl_t *c,const dt_camera_t *camera);
@@ -108,6 +107,7 @@ void _dispatch_camera_error(const dt_camctl_t *c,const dt_camera_t *camera,dt_ca
 int _dispatch_camera_storage_image_filename(const dt_camctl_t *c,const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif);
 void _dispatch_camera_property_value_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,const char *value);
 void _dispatch_camera_property_accessibility_changed(const dt_camctl_t *c,const dt_camera_t *camera,const char *name,gboolean read_only);
+void _dispatch_camera_exif_data_changed(const dt_camctl_t *c,const time_t exif_time, const dt_camera_t *camera);
 
 /** Helper function to destroy a dt_camera_t object */
 static void dt_camctl_camera_destroy(dt_camera_t *cam);
