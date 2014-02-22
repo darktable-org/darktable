@@ -18,6 +18,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <inttypes.h>
 #include <tiffio.h>
 #include "common/darktable.h"
@@ -170,7 +171,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
       if ((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (tmsize_t)(rowsize * DT_TIFFIO_STRIPE));
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
 
@@ -178,7 +179,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
-      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (tmsize_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
       wdata = rowdata;
     }
   }
@@ -199,7 +200,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (tmsize_t)(rowsize * DT_TIFFIO_STRIPE));
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
 
@@ -207,7 +208,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     }
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (tmsize_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
   else
@@ -227,7 +228,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
 
       if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (tmsize_t)(rowsize * DT_TIFFIO_STRIPE));
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
 
@@ -235,7 +236,7 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     }
     if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
-      TIFFWriteEncodedStrip(tif, stripe, rowdata, (uint32_t)((tmsize_t)wdata - (uintptr_t)rowdata));
+      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
     }
   }
 
