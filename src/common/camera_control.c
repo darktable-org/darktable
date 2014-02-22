@@ -843,9 +843,7 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
       g_strlcat(filename, eos+1, DT_MAX_PATH_LEN);
       g_free(_file);
 
-      if (_dispatch_request_if_exif_needed(c,cam)) {
-        _get_exif_time_from_import(c, folder, filename, cam);
-      }
+      _get_exif_time_from_import(c, folder, filename, cam);
       const char *output_path=_dispatch_request_image_path(c,cam);
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
       if(!fname)
@@ -1491,23 +1489,6 @@ const char *_dispatch_request_image_path(const dt_camctl_t *c,const dt_camera_t 
     while((listener=g_list_next(listener))!=NULL);
   dt_pthread_mutex_unlock(&camctl->listeners_lock);
   return path;
-}
-
-gboolean _dispatch_request_if_exif_needed(const dt_camctl_t *c,const dt_camera_t *camera)
-{
-  dt_camctl_t *camctl=(dt_camctl_t *)c;
-  GList *listener;
-  gboolean needs_exif=FALSE;
-  dt_pthread_mutex_lock(&camctl->listeners_lock);
-  if((listener=g_list_first(camctl->listeners))!=NULL)
-    do
-    {
-      if( ((dt_camctl_listener_t*)listener->data)->request_if_exif_needed != NULL )
-        needs_exif=((dt_camctl_listener_t*)listener->data)->request_if_exif_needed(camera,((dt_camctl_listener_t*)listener->data)->data);
-    }
-    while((listener=g_list_next(listener))!=NULL);
-  dt_pthread_mutex_unlock(&camctl->listeners_lock);
-  return needs_exif;
 }
 
 

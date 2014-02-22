@@ -280,113 +280,12 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
   t->import_count++;
 }
 
-void _camera_import_exif_data_changed(const dt_camera_t *camera,time_t exif_time,void *data)
+void _camera_change_exif_time(const dt_camera_t *camera,time_t exif_time,void *data)
 {
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_variables_set_time(t->vp, exif_time);
+  dt_import_session_set_time(t->shared.session, exif_time);
 }
 
-gboolean _filename_contains_exif(const char* filename)
-{  
-  const char* EXIFTAGS[7] = {"$(EXIF_YEAR)", "$(EXIF_MONTH)", "$(EXIF_DAY)", "$(EXIF_HOUR)", "$(EXIF_MINUTE)", "$(EXIF_SECOND)", NULL};
-  for(int t=0; EXIFTAGS[t] != NULL; t++)
-  {
-    if (strstr(filename, EXIFTAGS[t]) != NULL) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-gboolean _camera_import_request_if_exif_needed(const dt_camera_t *camera,void *data)
-{
-  dt_camera_import_t *t = (dt_camera_import_t *)data;
-  return (_filename_contains_exif(t->filename) || _filename_contains_exif(t->path));
-}
-
-const char *_camera_import_request_image_filename(const dt_camera_t *camera,const char *filename,void *data)
-{
-  dt_camera_import_t *t = (dt_camera_import_t *)data;
-  t->vp->filename=filename;
-
-  gchar* fixed_path = dt_util_fix_path(t->path);
-  g_free(t->path);
-  t->path = fixed_path;
-
-  dt_variables_expand( t->vp, t->path, FALSE );
-  gchar *storage = dt_variables_get_result(t->vp);
-  
-  dt_variables_expand( t->vp, t->filename, TRUE );
-  gchar *file = dt_variables_get_result(t->vp);
-
-  if (g_strcmp0(storage, t->film->dirname) != 0)
-  {
-    dt_film_cleanup(t->film);
-    dt_film_init(t->film);
-    sprintf(t->film->dirname, "%s", storage);
-        
-    if( g_mkdir_with_parents(t->film->dirname,0755) == -1 )
-    {
-      dt_control_log(_("failed to create import path `%s'."), t->film->dirname);
-      g_free(storage);
-      return NULL;
-    }
-    
-    dt_film_new(t->film,t->film->dirname);
-    dt_film_open(t->film->id);
-  }
-    
-  // Start check if file exist if it does, increase sequence and check again til we know that file doesn't exists..
-  gchar *prev_filename;
-  gchar *fullfile;
-  prev_filename = fullfile = g_build_path(G_DIR_SEPARATOR_S,
-                                          storage, file,
-                                          (char *)NULL);
-
-  if( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE )
-  {
-    do
-    {
-      dt_variables_expand( t->vp, t->filename, TRUE );
-      g_free(file);
-      file = dt_variables_get_result(t->vp);
-      fullfile = g_build_path(G_DIR_SEPARATOR_S, storage, file, (char *)NULL);
-
-      // if we expanded to same filename the variables are wrong and ${SEQUENCE}
-      // is probably missing...
-      if (strcmp(prev_filename, fullfile) == 0)
-      {
-        if (prev_filename != fullfile)
-          g_free(prev_filename);
-
-        g_free(fullfile);
-        g_free(storage);
-
-        dt_control_log(_("couldn't expand to a unique filename for import, please check your import settings."));
-
-        return NULL;
-      }
-
-      g_free(prev_filename);
-      prev_filename = fullfile;
-    }
-    while( g_file_test(fullfile, G_FILE_TEST_EXISTS) == TRUE);
-  }
-
-  if (prev_filename != fullfile)
-    g_free(prev_filename);
-
-  g_free(fullfile);
-  g_free(storage);
-  return file;
-}
-
-const char *_camera_import_request_image_path(const dt_camera_t *camera,void *data)
-{
-  // :) yeap this is kind of stupid yes..
-  dt_camera_import_t *t = (dt_camera_import_t *)data;
-  return t->film->dirname;
-}
 
 int32_t dt_camera_import_job_run(dt_job_t *job)
 {
@@ -414,7 +313,8 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
   listener.image_downloaded=_camera_import_image_downloaded;
   listener.request_image_path=_camera_request_image_path;
   listener.request_image_filename=_camera_request_image_filename;
-
+  listener.camera_exif_data_changed=_camera_change_exif_time;
+  
   // start download of images
   dt_camctl_register_listener(darktable.camctl,&listener);
   dt_camctl_import(darktable.camctl,t->camera,t->images);
