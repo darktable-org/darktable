@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-11 20:13+0100\n"
-"PO-Revision-Date: 2014-02-11 20:22+0100\n"
+"POT-Creation-Date: 2014-02-22 20:00+0100\n"
+"PO-Revision-Date: 2014-02-22 20:02+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -611,7 +611,9 @@ msgstr "sök efter uppdaterade xmp-filer vid start"
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
-msgstr "kontrollera filändringstiden för alla xmp-filer vid start för att se om någon har uppdaterats sen senast"
+msgstr ""
+"kontrollera filändringstiden för alla xmp-filer vid start för att se om "
+"någon har uppdaterats sen senast"
 
 #: ../build/src/preferences_gen.h:2229
 msgid "executable for playing audio files"
@@ -621,7 +623,9 @@ msgstr "program för att spela ljudfiler"
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
-msgstr "detta program används för att spela ljudfiler som kameran har skapat för att spara ljudnoteringar om bilderna"
+msgstr ""
+"detta program används för att spela ljudfiler som kameran har skapat för att "
+"spara ljudnoteringar om bilderna"
 
 #: ../build/src/preferences_gen.h:2276
 msgid "session options"
@@ -646,6 +650,19 @@ msgstr "filens namnmall"
 #: ../build/src/preferences_gen.h:2329
 msgid "file naming pattern used for a import session"
 msgstr "mallen på filnamnen för en import"
+
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Virtuellt ljusbord och mörkerrum"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organisera och utveckla bilder från digitalkameror"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "grafik;fotografi;rå;"
 
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
@@ -801,7 +818,7 @@ msgstr "på"
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
 #: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1095
-#: ../src/iop/demosaic.c:1329 ../src/iop/vignette.c:1117
+#: ../src/iop/demosaic.c:1314 ../src/iop/vignette.c:1117
 #: ../src/libs/history.c:155 ../src/libs/live_view.c:404
 msgid "off"
 msgstr "av"
@@ -2517,35 +2534,35 @@ msgstr "16-bit"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bit)"
 
-#: ../src/imageio/format/tiff.c:341
+#: ../src/imageio/format/tiff.c:375
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bit)"
 
-#: ../src/imageio/format/tiff.c:386
+#: ../src/imageio/format/tiff.c:420
 msgid "8 bit"
 msgstr "8-bit"
 
-#: ../src/imageio/format/tiff.c:387
+#: ../src/imageio/format/tiff.c:421
 msgid "16 bit"
 msgstr "16-bit"
 
-#: ../src/imageio/format/tiff.c:388
+#: ../src/imageio/format/tiff.c:422
 msgid "32 bit (float)"
 msgstr "32-bit (flyttal)"
 
-#: ../src/imageio/format/tiff.c:400
+#: ../src/imageio/format/tiff.c:434
 msgid "uncompressed"
 msgstr "okomprimerad"
 
-#: ../src/imageio/format/tiff.c:401
+#: ../src/imageio/format/tiff.c:435
 msgid "deflate"
 msgstr "komprimera"
 
-#: ../src/imageio/format/tiff.c:402
+#: ../src/imageio/format/tiff.c:436
 msgid "deflate with predictor"
 msgstr "komprimera med framförhållning"
 
-#: ../src/imageio/format/tiff.c:403
+#: ../src/imageio/format/tiff.c:437
 msgid "deflate with predictor (float)"
 msgstr "komprimera med framförhållning (flyttal)"
 
@@ -4256,24 +4273,24 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1300
 msgid "PPG (fast)"
 msgstr "PPG (snabb)"
 
-#: ../src/iop/demosaic.c:1316
+#: ../src/iop/demosaic.c:1301
 msgid "amaze (slow)"
 msgstr "amaze (långsam)"
 
-#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
+#: ../src/iop/demosaic.c:1302 ../src/iop/dither.c:563
 #: ../src/iop/highlights.c:377
 msgid "method"
 msgstr "metod"
 
-#: ../src/iop/demosaic.c:1319
+#: ../src/iop/demosaic.c:1304
 msgid "demosaicing raw data method"
 msgstr "demosaicing-metod för rådata"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1307
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4283,59 +4300,59 @@ msgstr ""
 "värde 0.0 stänger av funktionen.\n"
 "värde 1.0 ignorerar kanter."
 
-#: ../src/iop/demosaic.c:1323
+#: ../src/iop/demosaic.c:1308
 msgid "edge threshold"
 msgstr "kant tröskel"
 
-#: ../src/iop/demosaic.c:1327
+#: ../src/iop/demosaic.c:1312
 msgid "color smoothing"
 msgstr "färguppmjukning"
 
-#: ../src/iop/demosaic.c:1330
+#: ../src/iop/demosaic.c:1315
 msgid "one time"
 msgstr "en gång"
 
-#: ../src/iop/demosaic.c:1331
+#: ../src/iop/demosaic.c:1316
 msgid "two times"
 msgstr "två gånger"
 
-#: ../src/iop/demosaic.c:1332
+#: ../src/iop/demosaic.c:1317
 msgid "three times"
 msgstr "tre gånger"
 
-#: ../src/iop/demosaic.c:1333
+#: ../src/iop/demosaic.c:1318
 msgid "four times"
 msgstr "fyra gånger"
 
-#: ../src/iop/demosaic.c:1334
+#: ../src/iop/demosaic.c:1319
 msgid "five times"
 msgstr "fem gånger"
 
-#: ../src/iop/demosaic.c:1335
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "antal färkuppmjukningspass efter demosaicking"
 
-#: ../src/iop/demosaic.c:1339
+#: ../src/iop/demosaic.c:1324
 msgid "match greens"
 msgstr "matcha grön"
 
-#: ../src/iop/demosaic.c:1340
+#: ../src/iop/demosaic.c:1325
 msgid "disabled"
 msgstr "av"
 
-#: ../src/iop/demosaic.c:1341
+#: ../src/iop/demosaic.c:1326
 msgid "local average"
 msgstr "lokalt medel"
 
-#: ../src/iop/demosaic.c:1342
+#: ../src/iop/demosaic.c:1327
 msgid "full average"
 msgstr "fullständigt medel"
 
-#: ../src/iop/demosaic.c:1343
+#: ../src/iop/demosaic.c:1328
 msgid "full and local average"
 msgstr "fullständig och lokalt medel"
 
-#: ../src/iop/demosaic.c:1344
+#: ../src/iop/demosaic.c:1329
 msgid "green channels matching method"
 msgstr "metod för matchning av grön färgkanal"
 
@@ -8032,7 +8049,7 @@ msgstr "tröskelvärde för överexponerade områden"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1691 ../src/views/map.c:565
+#: ../src/views/darkroom.c:1691 ../src/views/map.c:578
 #: ../src/views/tethering.c:385
 msgctxt "accel"
 msgid "toggle film strip"
@@ -8160,16 +8177,16 @@ msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "förhandsvisning med fokusindikation"
 
-#: ../src/views/map.c:95
+#: ../src/views/map.c:98
 msgid "map"
 msgstr "karta"
 
-#: ../src/views/map.c:562
+#: ../src/views/map.c:575
 msgctxt "accel"
 msgid "undo"
 msgstr "ångra"
 
-#: ../src/views/map.c:563
+#: ../src/views/map.c:576
 msgctxt "accel"
 msgid "redo"
 msgstr "återställ"
