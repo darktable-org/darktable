@@ -89,8 +89,6 @@ src_configure() {
 		$(cmake-utils_use_use web-services GLIBJSON)
 		$(cmake-utils_use_use webp WEBP)
 		-DCUSTOM_CFLAGS=ON
-		-DINSTALL_IOP_EXPERIMENTAL=ON
-		-DINSTALL_IOP_LEGACY=ON
 	)
 	cmake-utils_src_configure
 }
