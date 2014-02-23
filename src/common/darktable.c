@@ -946,7 +946,7 @@ void dt_free_align(void *mem)
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
   dt_times_t end;
-  char buf[120];		/* Arbitrary size, should be lots big enough for everything used in DT */
+  char buf[160];		/* Arbitrary size, should be lots big enough for everything used in DT */
   int i;
 
   /* Skip all the calculations an everything if -d perf isn't on */
