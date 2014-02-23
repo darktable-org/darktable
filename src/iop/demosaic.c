@@ -149,11 +149,7 @@ FC(const int row, const int col, const unsigned int filters) {
 static void
 pre_median_b(float *out, const float *const in, const dt_iop_roi_t * const roi, const int filters, const int num_passes, const float threshold) {
 #if 1
-<<<<<<< HEAD
-  memcpy(out, in, (size_t)roi->width*roi->height*sizeof(float));
-=======
     memcpy(out, in, roi->width * roi->height * sizeof (float));
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
 #else
     // colors:
     const float thrsc = 2 * threshold;
@@ -164,31 +160,6 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t * const roi, 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(rows,c,out) schedule(static)
 #endif
-<<<<<<< HEAD
-      for (int row=rows; row<roi->height-3; row+=2)
-      {
-        float med[9];
-        int col = 3;
-        if(FC(row,col,filters) != c) col++;
-        float *pixo = out + (size_t)roi->width * row + col;
-        const float *pixi = in + (size_t)roi->width * row + col;
-        for(; col<roi->width-3; col+=2)
-        {
-          int cnt = 0;
-          for (int k=0, i = -2*roi->width; i <= 2*roi->width; i += 2*roi->width)
-          {
-            for (int j = i-2; j <= i+2; j+=2)
-            {
-              if(fabsf(pixi[j] - pixi[0]) < thrsc)
-              {
-                med[k++] = pixi[j];
-                cnt ++;
-              }
-              else med[k++] = 64.0f + pixi[j];
-            }
-          }
-          for (int i=0; i<8; i++) for(int ii=i+1; ii<9; ii++) if(med[i] > med[ii]) SWAP(med[i], med[ii]);
-=======
             for (int row = rows; row < roi->height - 3; row += 2) {
                 float med[9];
                 int col = 3;
@@ -206,7 +177,6 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t * const roi, 
                         }
                     }
                     for (int i = 0; i < 8; i++) for (int ii = i + 1; ii < 9; ii++) if (med[i] > med[ii]) SWAP(med[i], med[ii]);
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
 #if 0
                     // cnt == 1 and no small edge in greens.
                     if (fabsf(pixi[-roi->width] - pixi[+roi->width]) + fabsf(pixi[-1] - pixi[+1])
@@ -231,26 +201,6 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t * const roi, 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(out) schedule(static)
 #endif
-<<<<<<< HEAD
-    for (int row=3; row<roi->height-3; row++)
-    {
-      float med[9];
-      int col = 3;
-      if(FC(row,col,filters) != 1 && FC(row,col,filters) != 3) col++;
-      float *pixo = out + (size_t)roi->width * row + col;
-      const float *pixi = in + (size_t)roi->width * row + col;
-      for(; col<roi->width-3; col+=2)
-      {
-        int cnt = 0;
-        for (int k=0, i = 0; i < 5; i ++)
-        {
-          for (int j = -lim[i]; j <= lim[i]; j+=2)
-          {
-            if(fabsf(pixi[roi->width*(i-2) + j] - pixi[0]) < threshold)
-            {
-              med[k++] = pixi[roi->width*(i-2) + j];
-              cnt++;
-=======
         for (int row = 3; row < roi->height - 3; row++) {
             float med[9];
             int col = 3;
@@ -272,7 +222,6 @@ pre_median_b(float *out, const float *const in, const dt_iop_roi_t * const roi, 
                 // pixo[0] = med[(cnt-1)/2];
                 pixo += 2;
                 pixi += 2;
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
             }
         }
     }
@@ -297,46 +246,6 @@ color_smoothing(float *out, const dt_iop_roi_t * const roi_out, const int num_pa
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(out,c)
 #endif
-<<<<<<< HEAD
-      for (int j=1; j<roi_out->height-1; j++)
-      {
-        float *outp = out + (size_t)4*j*roi_out->width + 4;
-        for(int i=1; i<roi_out->width-1; i++,outp+=4)
-        {
-          float med[9] =
-          {
-            outp[-width4-4+3] - outp[-width4-4+1],
-            outp[-width4+0+3] - outp[-width4+0+1],
-            outp[-width4+4+3] - outp[-width4+4+1],
-            outp[-4+3] - outp[-4+1],
-            outp[+0+3] - outp[+0+1],
-            outp[+4+3] - outp[+4+1],
-            outp[+width4-4+3] - outp[+width4-4+1],
-            outp[+width4+0+3] - outp[+width4+0+1],
-            outp[+width4+4+3] - outp[+width4+4+1],
-          };
-          /* optimal 9-element median search */
-          SWAPmed(1,2);
-          SWAPmed(4,5);
-          SWAPmed(7,8);
-          SWAPmed(0,1);
-          SWAPmed(3,4);
-          SWAPmed(6,7);
-          SWAPmed(1,2);
-          SWAPmed(4,5);
-          SWAPmed(7,8);
-          SWAPmed(0,3);
-          SWAPmed(5,8);
-          SWAPmed(4,7);
-          SWAPmed(3,6);
-          SWAPmed(1,4);
-          SWAPmed(2,5);
-          SWAPmed(4,7);
-          SWAPmed(4,2);
-          SWAPmed(6,4);
-          SWAPmed(4,2);
-          outp[c] = fmaxf(med[4] + outp[1], 0.0f);
-=======
             for (int j = 1; j < roi_out->height - 1; j++) {
                 float *outp = out + 4 * j * roi_out->width + 4;
                 for (int i = 1; i < roi_out->width - 1; i++, outp += 4) {
@@ -374,7 +283,6 @@ color_smoothing(float *out, const dt_iop_roi_t * const roi_out, const int num_pa
                     outp[c] = fmaxf(med[4] + outp[1], 0.0f);
                 }
             }
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
         }
     }
 }
@@ -395,33 +303,6 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(out,oi,oj)
 #endif
-<<<<<<< HEAD
-  for(size_t j=oj; j<height-2; j+=2)
-  {
-    for(size_t i=oi; i<width-2; i+=2)
-    {
-      const float o1_1 = in[(j-1)*width+i-1];
-      const float o1_2 = in[(j-1)*width+i+1];
-      const float o1_3 = in[(j+1)*width+i-1];
-      const float o1_4 = in[(j+1)*width+i+1];
-      const float o2_1 = in[(j-2)*width+i];
-      const float o2_2 = in[(j+2)*width+i];
-      const float o2_3 = in[j*width+i-2];
-      const float o2_4 = in[j*width+i+2];
-
-      const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
-      const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
-
-      // prevent divide by zero and ...
-      // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
-      if (m2>0.0f && m1/m2<maximum*2.0f)
-      {
-        const float c1 = (fabsf(o1_1-o1_2)+fabsf(o1_1-o1_3)+fabsf(o1_1-o1_4)+fabsf(o1_2-o1_3)+fabsf(o1_3-o1_4)+fabsf(o1_2-o1_4))/6.0f;
-        const float c2 = (fabsf(o2_1-o2_2)+fabsf(o2_1-o2_3)+fabsf(o2_1-o2_4)+fabsf(o2_2-o2_3)+fabsf(o2_3-o2_4)+fabsf(o2_2-o2_4))/6.0f;
-        if((in[j*width+i]<maximum*0.95f)&&(c1<maximum*thr)&&(c2<maximum*thr))
-        {
-          out[j*width+i] = in[j*width+i]*m1/m2;
-=======
     for (int j = oj; j < height - 2; j += 2) {
         for (int i = oi; i < width - 2; i += 2) {
             const float o1_1 = in[(j - 1) * width + i - 1];
@@ -445,23 +326,11 @@ green_equilibration_lavg(float *out, const float *const in, const int width, con
                     out[j * width + i] = in[j * width + i] * m1 / m2;
                 }
             }
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
         }
     }
 }
 
 static void
-<<<<<<< HEAD
-green_equilibration_favg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y)
-{
-  int oj = 0, oi = 0;
-  //const float ratio_max = 1.1f;
-  double sum1 = 0.0, sum2 = 0.0, gr_ratio;
-
-  if( (FC(oj+y, oi+x, filters) & 1) != 1) oi++;
-  int g2_offset = oi ? -1:1;
-  memcpy(out,in,(size_t)height*width*sizeof(float));
-=======
 green_equilibration_favg(float *out, const float *const in, const int width, const int height, const uint32_t filters, const int x, const int y) {
     int oj = 0, oi = 0;
     //const float ratio_max = 1.1f;
@@ -470,24 +339,14 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
     if ((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
     int g2_offset = oi ? -1 : 1;
     memcpy(out, in, height * width * sizeof (float));
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) reduction(+: sum1, sum2) shared(oi, oj, g2_offset)
 #endif
-<<<<<<< HEAD
-  for(size_t j=oj; j<(height-1); j+=2)
-  {
-    for(size_t i=oi; i<(width-1-g2_offset); i+=2)
-    {
-      sum1 += in[j*width+i];
-      sum2 += in[(j+1) * width + i + g2_offset];
-=======
     for (int j = oj; j < (height - 1); j += 2) {
         for (int i = oi; i < (width - 1 - g2_offset); i += 2) {
             sum1 += in[j * width + i];
             sum2 += in[(j + 1) * width + i + g2_offset];
         }
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
     }
 
     if (sum1 > 0.0 && sum2 > 0.0)
@@ -498,72 +357,15 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(out, oi, oj, gr_ratio, g2_offset)
 #endif
-<<<<<<< HEAD
-  for(int j=oj; j<(height-1); j+=2)
-  {
-    for(int i=oi; i<(width-1-g2_offset); i+=2)
-    {
-      out[(size_t)j*width+i] = in[(size_t)j*width+i] / gr_ratio;
-=======
     for (int j = oj; j < (height - 1); j += 2) {
         for (int i = oi; i < (width - 1 - g2_offset); i += 2) {
             out[j * width + i] = in[j * width + i] / gr_ratio;
         }
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
     }
 }
 
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
-<<<<<<< HEAD
-demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
-{
-  // snap to start of mosaic block:
-  roi_out->x = 0;//MAX(0, roi_out->x & ~1);
-  roi_out->y = 0;//MAX(0, roi_out->y & ~1);
-  // offsets only where the buffer ends:
-  const int offx = 3; //MAX(0, 3 - roi_out->x);
-  const int offy = 3; //MAX(0, 3 - roi_out->y);
-  const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
-  const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
-
-  // border interpolate
-  float sum[8];
-  for (int j=0; j < roi_out->height; j++) for (int i=0; i < roi_out->width; i++)
-    {
-      if (i == offx && j >= offy && j < roi_out->height-offY)
-        i = roi_out->width-offX;
-      if(i == roi_out->width) break;
-      memset (sum, 0, sizeof(float)*8);
-      for (int y=j-1; y != j+2; y++) for (int x=i-1; x != i+2; x++)
-        {
-          const int yy = y + roi_out->y, xx = x + roi_out->x;
-          if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
-          {
-            int f = FC(y,x,filters);
-            sum[f] += in[(size_t)yy*roi_in->width+xx];
-            sum[f+4]++;
-          }
-        }
-      int f = FC(j,i,filters);
-      for(int c=0; c<3; c++)
-      {
-        if (c != f && sum[c+4] > 0.0f)
-          out[4*((size_t)j*roi_out->width+i)+c] = sum[c] / sum[c+4];
-        else
-          out[4*((size_t)j*roi_out->width+i)+c] = in[((size_t)j+roi_out->y)*roi_in->width+i+roi_out->x];
-      }
-    }
-  const int median = thrs > 0.0f;
-  // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
-  if(median)
-  {
-    float *med_in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
-    pre_median(med_in, in, roi_in, filters, 1, thrs);
-    in = med_in;
-  }
-  // for all pixels: interpolate green into float array, or copy color.
-=======
 demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs) {
     // snap to start of mosaic block:
     roi_out->x = 0; //MAX(0, roi_out->x & ~1);
@@ -605,64 +407,9 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
         in = med_in;
     }
     // for all pixels: interpolate green into float array, or copy color.
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_in, roi_out, in, out) schedule(static)
 #endif
-<<<<<<< HEAD
-  for (int j=offy; j < roi_out->height-offY; j++)
-  {
-    float *buf = out + (size_t)4*roi_out->width*j + 4*offx;
-    const float *buf_in = in + (size_t)roi_in->width*(j + roi_out->y) + offx + roi_out->x;
-    for (int i=offx; i < roi_out->width-offX; i++)
-    {
-      const int c = FC(j,i,filters);
-      // prefetch what we need soon (load to cpu caches)
-      _mm_prefetch((char *)buf_in + 256, _MM_HINT_NTA); // TODO: try HINT_T0-3
-      _mm_prefetch((char *)buf_in +   roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in + 2*roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in + 3*roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in -   roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in - 2*roi_in->width + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf_in - 3*roi_in->width + 256, _MM_HINT_NTA);
-      __m128 col = _mm_load_ps(buf);
-      float *color = (float*)&col;
-      const float pc = buf_in[0];
-      // if(__builtin_expect(c == 0 || c == 2, 1))
-      if(c == 0 || c == 2)
-      {
-        color[c] = pc;
-        // get stuff (hopefully from cache)
-        const float pym  = buf_in[ - roi_in->width*1];
-        const float pym2 = buf_in[ - roi_in->width*2];
-        const float pym3 = buf_in[ - roi_in->width*3];
-        const float pyM  = buf_in[ + roi_in->width*1];
-        const float pyM2 = buf_in[ + roi_in->width*2];
-        const float pyM3 = buf_in[ + roi_in->width*3];
-        const float pxm  = buf_in[ - 1];
-        const float pxm2 = buf_in[ - 2];
-        const float pxm3 = buf_in[ - 3];
-        const float pxM  = buf_in[ + 1];
-        const float pxM2 = buf_in[ + 2];
-        const float pxM3 = buf_in[ + 3];
-
-        const float guessx = (pxm + pc + pxM) * 2.0f - pxM2 - pxm2;
-        const float diffx  = (fabsf(pxm2 - pc) +
-                              fabsf(pxM2 - pc) +
-                              fabsf(pxm  - pxM)) * 3.0f +
-                             (fabsf(pxM3 - pxM) + fabsf(pxm3 - pxm)) * 2.0f;
-        const float guessy = (pym + pc + pyM) * 2.0f - pyM2 - pym2;
-        const float diffy  = (fabsf(pym2 - pc) +
-                              fabsf(pyM2 - pc) +
-                              fabsf(pym  - pyM)) * 3.0f +
-                             (fabsf(pyM3 - pyM) + fabsf(pym3 - pym)) * 2.0f;
-        if(diffx > diffy)
-        {
-          // use guessy
-          const float m = fminf(pym, pyM);
-          const float M = fmaxf(pym, pyM);
-          color[1] = fmaxf(fminf(guessy*.25f, M), m);
-=======
     for (int j = offy; j < roi_out->height - offY; j++) {
         float *buf = out + 4 * roi_out->width * j + 4 * offx;
         const float *buf_in = in + roi_in->width * (j + roi_out->y) + offx + roi_out->x;
@@ -723,7 +470,6 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
             memcpy(buf, color, 4 * sizeof (float));
             buf += 4;
             buf_in++;
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
         }
     }
     // SFENCE (make sure stuff is stored now)
@@ -733,71 +479,6 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(roi_in, roi_out, out) schedule(static)
 #endif
-<<<<<<< HEAD
-  for (int j=1; j < roi_out->height-1; j++)
-  {
-    float *buf = out + (size_t)4*roi_out->width*j + 4;
-    for (int i=1; i < roi_out->width-1; i++)
-    {
-      // also prefetch direct nbs top/bottom
-      _mm_prefetch((char *)buf + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf - roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
-      _mm_prefetch((char *)buf + roi_out->width*4*sizeof(float) + 256, _MM_HINT_NTA);
-
-      const int c = FC(j, i, filters);
-      __m128 col = _mm_load_ps(buf);
-      float *color = (float *)&col;
-      // fill all four pixels with correctly interpolated stuff: r/b for green1/2
-      // b for r and r for b
-      if(__builtin_expect(c & 1, 1)) // c == 1 || c == 3)
-      {
-        // calculate red and blue for green pixels:
-        // need 4-nbhood:
-        const float* nt = buf - 4*roi_out->width;
-        const float* nb = buf + 4*roi_out->width;
-        const float* nl = buf - 4;
-        const float* nr = buf + 4;
-        if(FC(j, i+1, filters) == 0) // red nb in same row
-        {
-          color[2] = (nt[2] + nb[2] + 2.0f*color[1] - nt[1] - nb[1])*.5f;
-          color[0] = (nl[0] + nr[0] + 2.0f*color[1] - nl[1] - nr[1])*.5f;
-        }
-        else
-        {
-          // blue nb
-          color[0] = (nt[0] + nb[0] + 2.0f*color[1] - nt[1] - nb[1])*.5f;
-          color[2] = (nl[2] + nr[2] + 2.0f*color[1] - nl[1] - nr[1])*.5f;
-        }
-      }
-      else
-      {
-        // get 4-star-nbhood:
-        const float* ntl = buf - 4 - 4*roi_out->width;
-        const float* ntr = buf + 4 - 4*roi_out->width;
-        const float* nbl = buf - 4 + 4*roi_out->width;
-        const float* nbr = buf + 4 + 4*roi_out->width;
-
-        if(c == 0)
-        {
-          // red pixel, fill blue:
-          const float diff1  = fabsf(ntl[2] - nbr[2]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[2] + nbr[2] + 2.0f*color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[2] - nbl[2]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[2] + nbl[2] + 2.0f*color[1] - ntr[1] - nbl[1];
-          if     (diff1 > diff2) color[2] = guess2 * .5f;
-          else if(diff1 < diff2) color[2] = guess1 * .5f;
-          else color[2] = (guess1 + guess2)*.25f;
-        }
-        else // c == 2, blue pixel, fill red:
-        {
-          const float diff1  = fabsf(ntl[0] - nbr[0]) + fabsf(ntl[1] - color[1]) + fabsf(nbr[1] - color[1]);
-          const float guess1 = ntl[0] + nbr[0] + 2.0f*color[1] - ntl[1] - nbr[1];
-          const float diff2  = fabsf(ntr[0] - nbl[0]) + fabsf(ntr[1] - color[1]) + fabsf(nbl[1] - color[1]);
-          const float guess2 = ntr[0] + nbl[0] + 2.0f*color[1] - ntr[1] - nbl[1];
-          if     (diff1 > diff2) color[0] = guess2 * .5f;
-          else if(diff1 < diff2) color[0] = guess1 * .5f;
-          else color[0] = (guess1 + guess2)*.25f;
-=======
     for (int j = 1; j < roi_out->height - 1; j++) {
         float *buf = out + 4 * roi_out->width * j + 4;
         for (int i = 1; i < roi_out->width - 1; i++) {
@@ -858,7 +539,6 @@ demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_ro
             // _mm_stream_ps(buf, col);
             memcpy(buf, color, 4 * sizeof (float));
             buf += 4;
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
         }
     }
     // _mm_sfence();
@@ -907,127 +587,6 @@ static int get_quality() {
 }
 
 void
-<<<<<<< HEAD
-process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  const dt_image_t *img = &self->dev->image_storage;
-  const float threshold = 0.0001f * img->exif_iso;
-
-  dt_iop_roi_t roi, roo;
-  roi = *roi_in;
-  roo = *roi_out;
-  roo.x = roo.y = 0;
-  // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-
-  const int qual = get_quality();
-  int demosaicing_method = data->demosaicing_method;
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
-    demosaicing_method = DT_IOP_DEMOSAIC_PPG;
-
-  const float *const pixels = (float *)i;
-  if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
-  {
-    // output 1:1
-    // green eq:
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
-      switch(data->green_eq)
-      {
-        case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters,  roi_in->x, roi_in->y);
-          break;
-        case DT_IOP_GREEN_EQ_LOCAL:
-          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
-          break;
-        case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters,  roi_in->x, roi_in->y);
-          green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
-          break;
-      }
-      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg((float *)o, in, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, in, (float *)o, &roi, &roo, data->filters);
-      dt_free_align(in);
-    }
-    else
-    {
-      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
-    }
-  }
-  else if(roi_out->scale > .5f ||                                      // also covers roi_out->scale >1
-          (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) ||  // or in darkroom mode and quality requested by user settings
-          (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))              // we assume you always want that for exports.
-  {
-    // demosaic and then clip and zoom
-    // roo.x = roi_out->x / global_scale;
-    // roo.y = roi_out->y / global_scale;
-    roo.width  = roi_out->width / roi_out->scale;
-    roo.height = roi_out->height / roi_out->scale;
-    roo.scale = 1.0f;
-
-    float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      float *in = (float *)dt_alloc_align(16, (size_t)roi_in->height*roi_in->width*sizeof(float));
-      switch(data->green_eq)
-      {
-        case DT_IOP_GREEN_EQ_FULL:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters,  roi_in->x, roi_in->y);
-          break;
-        case DT_IOP_GREEN_EQ_LOCAL:
-          green_equilibration_lavg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 0, threshold);
-          break;
-        case DT_IOP_GREEN_EQ_BOTH:
-          green_equilibration_favg(in, pixels, roi_in->width, roi_in->height,
-                                   data->filters,  roi_in->x, roi_in->y);
-          green_equilibration_lavg(in, in, roi_in->width, roi_in->height,
-                                   data->filters, roi_in->x, roi_in->y, 1, threshold);
-          break;
-      }
-      // wanted ppg or zoomed out a lot and quality is limited to 1
-      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg(tmp, in, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
-      dt_free_align(in);
-    }
-    else
-    {
-      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
-        demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
-      else
-        amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
-    }
-    roi = *roi_out;
-    roi.x = roi.y = 0;
-    roi.scale = roi_out->scale;
-    dt_iop_clip_and_zoom((float *)o, tmp, &roi, &roo, roi.width, roo.width);
-    dt_free_align(tmp);
-  }
-  else
-  {
-    // sample half-size raw
-    const float clip = fminf(piece->pipe->processed_maximum[0], fminf(piece->pipe->processed_maximum[1], piece->pipe->processed_maximum[2]));
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
-    {
-      float *tmp = (float *)dt_alloc_align(16, (size_t)sizeof(float)*roi_in->width*roi_in->height);
-      pre_median_b(tmp, pixels, roi_in, data->filters, 1, data->median_thrs);
-      dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters, clip);
-      dt_free_align(tmp);
-=======
 process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out) {
     const dt_image_t *img = &self->dev->image_storage;
     const float threshold = 0.0001f * img->exif_iso;
@@ -1143,57 +702,11 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             dt_free_align(tmp);
         } else
             dt_iop_clip_and_zoom_demosaic_half_size_f((float *) o, pixels, &roo, &roi, roo.width, roi.width, data->filters, clip);
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
     }
     if (data->color_smoothing) color_smoothing(o, roi_out, data->color_smoothing);
 }
 
 #ifdef HAVE_OPENCL
-<<<<<<< HEAD
-int
-process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
-            const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
-{
-  dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
-  dt_iop_demosaic_global_data_t *gd = (dt_iop_demosaic_global_data_t *)self->data;
-  const dt_image_t *img = &self->dev->image_storage;
-  const float threshold = 0.0001f * img->exif_iso;
-
-  if(roi_out->scale >= 1.00001f)
-  {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
-    return FALSE;
-  }
-
-  const int devid = piece->pipe->devid;
-  const int qual = get_quality();
-
-  cl_mem dev_tmp = NULL;
-  cl_mem dev_green_eq = NULL;
-  cl_int err = -999;
-
-  if(roi_out->scale > .99999f)
-  {
-    const int width = roi_out->width;
-    const int height = roi_out->height;
-    size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
-    // 1:1 demosaic
-    dev_green_eq = NULL;
-    if(data->green_eq != DT_IOP_GREEN_EQ_NO)
-    {
-      // green equilibration
-      dev_green_eq = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float));
-      if (dev_green_eq == NULL) goto error;
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 0, sizeof(cl_mem), &dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 1, sizeof(cl_mem), &dev_green_eq);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 2, sizeof(int), &width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 3, sizeof(int), &height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 4, sizeof(uint32_t), (void*)&data->filters);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq, 5, sizeof(float), (void*)&threshold);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_green_eq, sizes);
-      if(err != CL_SUCCESS) goto error;
-      dev_in = dev_green_eq;
-=======
 
 int
 process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -1208,7 +721,6 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
     if (interpolation->id != DT_INTERPOLATION_BILINEAR && roi_out->scale <= .99999f && roi_out->scale > 0.5f) {
         dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] only bilinear interpolation currently supported by opencl demosaic\n");
         return FALSE;
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
     }
 
     if (roi_out->scale >= 1.00001f) {
@@ -1272,39 +784,6 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
             if (err != CL_SUCCESS) goto error;
         }
 
-<<<<<<< HEAD
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 0, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 1, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 2, sizeof(int), &width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 3, sizeof(int), &height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 4, sizeof(uint32_t), (void*)&data->filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_ppg_redblue, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    // manage borders
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void*)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void*)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void*)&data->filters);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    // scale temp buffer to output buffer
-    dt_iop_roi_t roi, roo;
-    roi = *roi_in;
-    roo = *roi_out;
-    roo.x = roo.y = roi.x = roi.y = 0;
-    err = dt_iop_clip_and_zoom_cl(devid, dev_out, dev_tmp, &roo, &roi);
-    if(err != CL_SUCCESS) goto error;
-  }
-  else
-  {
-    // sample half-size image:
-    const int zero = 0;
-    cl_mem dev_pix = dev_in;
-    if(piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT && data->median_thrs > 0.0f)
-=======
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 0, sizeof (cl_mem), &dev_out);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 1, sizeof (cl_mem), &dev_out);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 2, sizeof (int), &width);
@@ -1325,7 +804,6 @@ process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem d
     } else if (roi_out->scale > .5f || // full needed because zoomed in enough
             (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || // or in darkroom mode and quality requested by user settings
             (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT)) // we assume you always want that for exports.
->>>>>>> b84c8ed8ddfb5adbb8bde2402ebabb2c0181d5de
     {
         // need to scale to right res
         dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof (float));
