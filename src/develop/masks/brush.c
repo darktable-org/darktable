@@ -27,7 +27,7 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 300000;
+  const int stepsize = 1000000;
   const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
