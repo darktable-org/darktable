@@ -901,7 +901,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->cbox2, 0);
 
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox2), "value-changed",

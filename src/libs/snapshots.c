@@ -303,7 +303,7 @@ void gui_init(dt_lib_module_t *self)
    */
   char wdname[32]= {0};
   char localtmpdir[4096]= {0};
-  dt_loc_get_tmp_dir (localtmpdir,4096);
+  dt_loc_get_tmp_dir (localtmpdir, sizeof(localtmpdir));
 
   for (int k=0; k<d->size; k++)
   {
@@ -317,7 +317,7 @@ void gui_init(dt_lib_module_t *self)
     g_object_set_data(G_OBJECT(d->snapshot[k].button),"snapshot",GINT_TO_POINTER(k+1));
 
     /* setup filename for snapshot */
-    snprintf(d->snapshot[k].filename, 512, "%s/dt_snapshot_%d.png",localtmpdir,k);
+    snprintf(d->snapshot[k].filename, sizeof(d->snapshot[k].filename), "%s/dt_snapshot_%d.png",localtmpdir,k);
 
     /* add button to snapshot box */
     gtk_box_pack_start(GTK_BOX(d->snapshots_box),d->snapshot[k].button,TRUE,TRUE,0);
@@ -375,7 +375,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     else
       name = _("unknown");
   }
-  g_snprintf(label,64,"%s (%d)", name, darktable.develop->history_end);
+  g_snprintf(label,sizeof(label),"%s (%d)", name, darktable.develop->history_end);
   gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
 
   dt_lib_snapshot_t *s = d->snapshot + 0;

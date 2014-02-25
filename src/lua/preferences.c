@@ -353,7 +353,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         cur_elt->widget = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
         break;
@@ -361,7 +361,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         cur_elt->widget = gtk_check_button_new();
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "toggled", G_CALLBACK(callback_bool), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.bool_data.default_value?"true":"false");
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.bool_data.default_value?"true":"false");
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
         break;
@@ -370,7 +370,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_int), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
         break;

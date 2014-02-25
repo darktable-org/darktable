@@ -879,7 +879,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
             {
               int ret;
               char fullpath[512];
-              snprintf(fullpath,512,"%s/%s/%s",c->active_camera->port+5, path, filename);
+              snprintf(fullpath,sizeof(fullpath),"%s/%s/%s",c->active_camera->port+5, path, filename);
               libraw_data_t *raw = libraw_init(0);
               libraw_processed_image_t *image = NULL;
               ret = libraw_open_file(raw, fullpath);

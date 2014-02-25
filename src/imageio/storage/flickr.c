@@ -627,9 +627,9 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   /* construct a temporary file name */
   char fname[4096]= {0};
-  dt_loc_get_tmp_dir (fname,4096);
-  g_strlcat (fname,"/darktable.XXXXXX.",4096);
-  g_strlcat(fname,ext,4096);
+  dt_loc_get_tmp_dir (fname, sizeof(fname));
+  g_strlcat (fname,"/darktable.XXXXXX.", sizeof(fname));
+  g_strlcat(fname, ext, sizeof(fname));
 
   char *caption = NULL;
   char *description = NULL;

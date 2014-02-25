@@ -314,7 +314,7 @@ static inline void dt_print_mem_usage()
   FILE *f;
 
   char pidstatus[128];
-  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+  snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
 
   f = fopen(pidstatus, "r");
   if (!f) return;

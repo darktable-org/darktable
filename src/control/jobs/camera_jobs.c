@@ -64,7 +64,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   int total = t->brackets ? t->count * t->brackets : t->count;
   char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("capturing %d image", "capturing %d images", total), total );
 
   /* try to get exp program mode for nikon */
   char *expprogram = (char *)dt_camctl_camera_get_property(darktable.camctl, NULL, "expprogram");

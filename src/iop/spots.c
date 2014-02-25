@@ -525,7 +525,7 @@ void gui_update (dt_iop_module_t *self)
   dt_masks_form_t *grp = dt_masks_get_from_id(self->dev,self->blend_params->mask_id);
   int nb = 0;
   if (grp && (grp->type & DT_MASKS_GROUP)) nb = g_list_length(grp->points);
-  snprintf(str,3,"%d",nb);
+  snprintf(str,sizeof(str),"%d",nb);
   gtk_label_set_text(g->label, str);
   //update buttons status
   int b1=0,b2=0,b3=0;

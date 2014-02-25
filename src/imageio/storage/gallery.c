@@ -288,8 +288,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
     if(c <= filename) c = filename;
-    snprintf(relfilename, 256, "%s", c);
-    snprintf(relthumbfilename, 256, "%s", relfilename);
+    snprintf(relfilename, sizeof(relfilename), "%s", c);
+    snprintf(relthumbfilename, sizeof(relthumbfilename), "%s", relfilename);
     c = relthumbfilename + strlen(relthumbfilename);
     for(; c>relthumbfilename && *c != '.'; c--);
     if(c <= relthumbfilename) c = relthumbfilename + strlen(relthumbfilename);
@@ -301,7 +301,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     sprintf(sc, "/img_%d.html", num);
     sprintf(relsubfilename, "img_%d.html", num);
 
-    snprintf(pair->line, 4096,
+    snprintf(pair->line, sizeof(pair->line),
              "\n"
              "      <div><a class=\"dia\" rel=\"lightbox[viewer]\" title=\"%s - %s\" href=\"%s\"><span></span><img src=\"%s\" alt=\"img%d\" class=\"img\"/></a>\n"
              "      <h1>%s</h1>\n"

@@ -684,12 +684,12 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   {
     /* set button state */
     char option[1024];
-    snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_iop_module_state_t state=dt_iop_state_HIDDEN;
     if(dt_conf_get_bool (option))
     {
       state = dt_iop_state_ACTIVE;
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+      snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
       if(dt_conf_get_bool (option)) state = dt_iop_state_FAVORITE;
     }
     dt_iop_gui_set_state(module,state);
@@ -1144,7 +1144,7 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
@@ -1186,9 +1186,9 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
   char label[128];
   // if multi_name is emptry or "0"
   if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
   else
-    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   gtk_widget_set_name(lab, "panel_label");
   gtk_label_set_markup(GTK_LABEL(lab),label);
 }
@@ -1414,7 +1414,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char path[1024];
-    snprintf(path,1024,"%s/%s",_("preset"),(const char *)sqlite3_column_text(stmt, 0));
+    snprintf(path,sizeof(path),"%s/%s",_("preset"),(const char *)sqlite3_column_text(stmt, 0));
     dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
 
   }
@@ -1428,8 +1428,8 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20];
   const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/plugins", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/plugins", sizeof(plugindir));
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
   const int name_offset = strlen(SHARED_MODULE_PREFIX),
@@ -1798,7 +1798,7 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
    * and undo our changes right away. */
   module->expanded = expanded;
   char var[1024];
-  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
   dt_conf_set_bool(var, expanded);
 
   /* show / hide plugin widget */
@@ -2035,7 +2035,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_no_show_all(hw[idx],TRUE);
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",
@@ -2819,9 +2819,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
   }
   else if(state==dt_iop_state_ACTIVE)
@@ -2836,9 +2836,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
   }
   else if(state==dt_iop_state_FAVORITE)
@@ -2853,9 +2853,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, TRUE);
   }
 

@@ -164,7 +164,7 @@ lock_again:
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
-    dt_loc_get_datadir(dbfilename, 512);
+    dt_loc_get_datadir(dbfilename, sizeof(dbfilename));
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
     sqlite3_close(db->handle);
     g_free(dbname);

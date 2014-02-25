@@ -136,15 +136,15 @@ static void _lib_collect_update_params(dt_lib_collect_t *d)
   for (int i=0; i<=active; i++)
   {
     /* get item */
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     p->rule[i].item = dt_conf_get_int(confname);
 
     /* get mode */
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     p->rule[i].mode = dt_conf_get_int(confname);
 
     /* get string */
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar* string = dt_conf_get_string(confname);
     if (string != NULL)
     {
@@ -179,20 +179,20 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   for (uint32_t i=0; i<p->rules; i++)
   {
     /* set item */
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     dt_conf_set_int(confname, p->rule[i].item);
 
     /* set mode */
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     dt_conf_set_int(confname, p->rule[i].mode);
 
     /* set string */
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     dt_conf_set_string(confname, p->rule[i].string);
   }
 
   /* set number of rules */
-  snprintf(confname, 200, "plugins/lighttable/collect/num_rules");
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/num_rules");
   dt_conf_set_int(confname, p->rules);
 
   /* update ui */
@@ -465,12 +465,12 @@ void view_popup_menu_onSearchFilmroll (GtkWidget *menuitem, gpointer userdata)
 
         if (g_strcmp0(old, tree_path))
         {
-          g_snprintf(trailing, 1024, "%s", old + strlen(tree_path)+1);
-          g_snprintf(final, 1024, "%s/%s", new_path, trailing);
+          g_snprintf(trailing, sizeof(trailing), "%s", old + strlen(tree_path)+1);
+          g_snprintf(final, sizeof(final), "%s/%s", new_path, trailing);
         }
         else
         {
-          g_snprintf(final, 1024, "%s", new_path);
+          g_snprintf(final, sizeof(final), "%s", new_path);
         }
 
         sqlite3_stmt *stmt2;
@@ -622,7 +622,7 @@ _count_images(const char *path)
   gchar *escaped_text = NULL;
   escaped_text = dt_util_str_replace(path, "'", "''");
 
-  snprintf (query, 1024, "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", escaped_text);
+  snprintf (query, sizeof(query), "select count(id) from images where film_id in (select id from film_rolls where folder like '%s%%')", escaped_text);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   if (sqlite3_step(stmt) == SQLITE_ROW)
     count = sqlite3_column_int(stmt, 0);
@@ -1014,9 +1014,9 @@ set_properties (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
 
   char confname[200];
-  snprintf(confname, 200, "plugins/lighttable/collect/string%1d", dr->num);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", dr->num);
   dt_conf_set_string (confname, text);
-  snprintf(confname, 200, "plugins/lighttable/collect/item%1d", dr->num);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", dr->num);
   dt_conf_set_int (confname, property);
 }
 
@@ -1082,7 +1082,7 @@ static void tags_view (dt_lib_collect_rule_t *dr)
   text = gtk_entry_get_text(GTK_ENTRY(dr->text));
   gchar *escaped_text = NULL;
   escaped_text = dt_util_str_replace(text, "'", "''");
-  snprintf(query, 1024, "SELECT distinct name, id, name LIKE '%%%s%%' FROM tags ORDER BY UPPER(name) DESC", escaped_text);
+  snprintf(query, sizeof(query), "SELECT distinct name, id, name LIKE '%%%s%%' FROM tags ORDER BY UPPER(name) DESC", escaped_text);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -1226,13 +1226,13 @@ list_view (dt_lib_collect_rule_t *dr)
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
-      snprintf(query, 1024, "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
+      snprintf(query, sizeof(query), "select distinct folder, id from film_rolls where folder like '%%%s%%'  order by folder desc", escaped_text);
       break;
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, 1024, "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
+      snprintf(query, sizeof(query), "select distinct maker || ' ' || model as model, 1 from images where maker || ' ' || model like '%%%s%%' order by model", escaped_text);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, 1024, "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)", escaped_text);
+      snprintf(query, sizeof(query), "SELECT distinct name, id FROM tags WHERE name LIKE '%%%s%%' ORDER BY UPPER(name)", escaped_text);
       break;
     case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
@@ -1287,27 +1287,27 @@ list_view (dt_lib_collect_rule_t *dr)
       // TODO: Add empty string for metadata?
       // TODO: Autogenerate this code?
     case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
     case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
     case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
     case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%' order by value",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
     case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(query, 1024, "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
+      snprintf(query, sizeof(query), "select distinct value, 1 from meta_data where key = %d and value like '%%%s%%'order by value ",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
     case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, 1024, "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
+      snprintf(query, sizeof(query), "select distinct lens, 1 from images where lens like '%%%s%%' order by lens", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
     {
@@ -1315,11 +1315,11 @@ list_view (dt_lib_collect_rule_t *dr)
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator && number)
-        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso", operator, number);
+        snprintf(query, sizeof(query), "select distinct cast(iso as integer) as iso, 1 from images where iso %s %s order by iso", operator, number);
       else if(number)
-        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso", number);
+        snprintf(query, sizeof(query), "select distinct cast(iso as integer) as iso, 1 from images where iso = %s order by iso", number);
       else
-        snprintf(query, 1024, "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
+        snprintf(query, sizeof(query), "select distinct cast(iso as integer) as iso, 1 from images where iso like '%%%s%%' order by iso", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -1332,11 +1332,11 @@ list_view (dt_lib_collect_rule_t *dr)
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator && number)
-        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture %s %s order by aperture", operator, number);
+        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where aperture %s %s order by aperture", operator, number);
       else if(number)
-        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture = %s order by aperture", number);
+        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where aperture = %s order by aperture", number);
       else
-        snprintf(query, 1024, "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
+        snprintf(query, sizeof(query), "select distinct round(aperture,1) as aperture, 1 from images where aperture like '%%%s%%' order by aperture", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -1344,7 +1344,7 @@ list_view (dt_lib_collect_rule_t *dr)
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, 1024, "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
+      snprintf(query, sizeof(query), "select distinct filename, 1 from images where filename like '%%%s%%' order by filename", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
@@ -1352,11 +1352,11 @@ list_view (dt_lib_collect_rule_t *dr)
       break;
 
     case DT_COLLECTION_PROP_DAY:
-      snprintf(query, 1024, "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
+      snprintf(query, sizeof(query), "SELECT DISTINCT substr(datetime_taken, 1, 10), 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
 
     default: // time
-      snprintf(query, 1024, "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
+      snprintf(query, sizeof(query), "SELECT DISTINCT datetime_taken, 1 FROM images WHERE datetime_taken LIKE '%%%s%%' ORDER BY datetime_taken DESC", escaped_text);
       break;
   }
   g_free(escaped_text);
@@ -1534,9 +1534,9 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     gtk_widget_set_no_show_all(d->rule[i].hbox, FALSE);
     gtk_widget_set_visible(d->rule[i].hbox, TRUE);
     gtk_widget_show_all(d->rule[i].hbox);
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->rule[i].combo), dt_conf_get_int(confname));
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
     if(text)
     {
@@ -1564,7 +1564,7 @@ _lib_collect_gui_update (dt_lib_module_t *self)
     }
     else
     {
-      snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i+1);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i+1);
       const int mode = dt_conf_get_int(confname);
       if(mode == DT_LIB_COLLECT_MODE_AND)     button->icon = dtgtk_cairo_paint_and;
       if(mode == DT_LIB_COLLECT_MODE_OR)      button->icon = dtgtk_cairo_paint_or;
@@ -1749,9 +1749,9 @@ menuitem_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(active < 10)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
     dt_lib_collect_t *c = get_collect(d);
@@ -1769,9 +1769,9 @@ menuitem_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(active < 10)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
     dt_lib_collect_t *c = get_collect(d);
@@ -1789,9 +1789,9 @@ menuitem_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(active < 10)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", active);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", active);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", active);
     dt_conf_set_string(confname, "");
     dt_conf_set_int("plugins/lighttable/collect/num_rules", active+1);
     dt_lib_collect_t *c = get_collect(d);
@@ -1808,7 +1808,7 @@ menuitem_change_and (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(num < 10 && num > 0)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND);
   }
   dt_collection_update_query(darktable.collection);
@@ -1822,7 +1822,7 @@ menuitem_change_or (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(num < 10 && num > 0)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_OR);
   }
   dt_collection_update_query(darktable.collection);
@@ -1836,7 +1836,7 @@ menuitem_change_and_not (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   if(num < 10 && num > 0)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", num);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", num);
     dt_conf_set_int(confname, DT_LIB_COLLECT_MODE_AND_NOT);
   }
   dt_collection_update_query(darktable.collection);
@@ -1927,19 +1927,19 @@ menuitem_clear (GtkMenuItem *menuitem, dt_lib_collect_rule_t *d)
   for(int i=d->num; i<MAX_RULES-1; i++)
   {
     char confname[200];
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i+1);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i+1);
     const int mode = dt_conf_get_int(confname);
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i+1);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i+1);
     const int item = dt_conf_get_int(confname);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i+1);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i+1);
     gchar *string = dt_conf_get_string(confname);
     if(string)
     {
-      snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
       dt_conf_set_int(confname, mode);
-      snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
       dt_conf_set_int(confname, item);
-      snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
       dt_conf_set_string(confname, string);
       g_free(string);
     }

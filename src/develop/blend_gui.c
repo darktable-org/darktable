@@ -845,7 +845,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     if(data->channels[data->tab][0] >= 8) // min and max make no sense for HSL and LCh
       picker_min[data->tab] = picker_max[data->tab] = picker_mean[data->tab];
 
-    snprintf(text, 256, "(%.1f)", cooked[data->tab]);
+    snprintf(text, sizeof(text), "(%.1f)", cooked[data->tab]);
 
     dtgtk_gradient_slider_multivalue_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
     gtk_label_set_text(label, text);
@@ -1185,7 +1185,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   {
     char txt[512];
     int n = g_list_length(grp->points);
-    snprintf(txt,512,ngettext("%d shape used", "%d shapes used", n), n);
+    snprintf(txt,sizeof(txt),ngettext("%d shape used", "%d shapes used", n), n);
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }
   else

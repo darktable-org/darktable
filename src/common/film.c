@@ -288,7 +288,7 @@ int dt_film_import(const char *dirname)
   /* at last put import film job on queue */
   dt_job_t j;
   film->last_loaded = 0;
-  g_strlcpy(film->dirname, dirname, 512);
+  g_strlcpy(film->dirname, dirname, sizeof(film->dirname));
   film->dir = g_dir_open(film->dirname, 0, NULL);
   dt_film_import1_init(&j, film);
   dt_control_add_job(darktable.control, &j);
