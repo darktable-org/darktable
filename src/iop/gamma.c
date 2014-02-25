@@ -25,13 +25,28 @@
 #ifdef HAVE_GEGL
 #include <gegl.h>
 #endif
-#include "iop/gamma.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/slider.h"
 
 DT_MODULE(1)
+
+
+typedef struct dt_iop_gamma_params_t
+{
+  float gamma, linear;
+}
+dt_iop_gamma_params_t;
+
+
+typedef struct dt_iop_gamma_data_t
+{
+  uint8_t table[0x10000];
+}
+dt_iop_gamma_data_t;
+
 
 const char *name()
 {

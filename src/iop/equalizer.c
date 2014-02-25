@@ -24,9 +24,10 @@
 #include <string.h>
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "iop/equalizer.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "control/control.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
@@ -36,6 +37,54 @@
 // #define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE(1)
+
+
+#define DT_IOP_EQUALIZER_RES 64
+#define DT_IOP_EQUALIZER_BANDS 6
+#define DT_IOP_EQUALIZER_MAX_LEVEL 6
+
+typedef struct dt_iop_equalizer_params_t
+{
+  float equalizer_x[3][DT_IOP_EQUALIZER_BANDS], equalizer_y[3][DT_IOP_EQUALIZER_BANDS];
+}
+dt_iop_equalizer_params_t;
+
+typedef enum dt_iop_equalizer_channel_t
+{
+  DT_IOP_EQUALIZER_L = 0,
+  DT_IOP_EQUALIZER_a = 1,
+  DT_IOP_EQUALIZER_b = 2
+}
+dt_iop_equalizer_channel_t;
+
+typedef struct dt_iop_equalizer_gui_data_t
+{
+  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  GtkHBox *hbox;
+  GtkDrawingArea *area;
+  GtkComboBox *presets;
+  GtkRadioButton *channel_button[3];
+  double mouse_x, mouse_y, mouse_pick;
+  float mouse_radius;
+  dt_iop_equalizer_params_t drag_params;
+  int dragging;
+  int x_move;
+  dt_iop_equalizer_channel_t channel;
+  float draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
+  float draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
+  float draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
+  float band_hist[DT_IOP_EQUALIZER_BANDS];
+  float band_max;
+}
+dt_iop_equalizer_gui_data_t;
+
+typedef struct dt_iop_equalizer_data_t
+{
+  dt_draw_curve_t *curve[3];
+  int num_levels;
+}
+dt_iop_equalizer_data_t;
+
 
 const char *name()
 {

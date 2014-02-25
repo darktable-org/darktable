@@ -29,7 +29,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "iop/grain.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -46,6 +45,24 @@
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE(1)
+
+
+typedef enum _dt_iop_grain_channel_t
+{
+  DT_GRAIN_CHANNEL_HUE=0,
+  DT_GRAIN_CHANNEL_SATURATION,
+  DT_GRAIN_CHANNEL_LIGHTNESS,
+  DT_GRAIN_CHANNEL_RGB
+}
+_dt_iop_grain_channel_t;
+
+typedef struct dt_iop_grain_params_t
+{
+  _dt_iop_grain_channel_t channel;
+  float scale;
+  float strength;
+}
+dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
