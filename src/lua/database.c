@@ -84,7 +84,7 @@ static int import_images(lua_State *L)
   char* full_name= g_realpath(luaL_checkstring(L,-1));
   int result;
 
-  if (!g_file_test(full_name, G_FILE_TEST_EXISTS))
+  if (!full_name || !g_file_test(full_name, G_FILE_TEST_EXISTS))
   {
       g_free(full_name);
       return luaL_error(L,"no such file or directory");
