@@ -183,7 +183,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
       // included and update set, we then need to update the corresponding style item
       if (GPOINTER_TO_INT(upd->data) != -1 && GPOINTER_TO_INT(list->data) != -1)
       {
-        strcpy(query, "update style_items set ");
+        g_strlcpy(query, "update style_items set ", sizeof(query));
 
         for (int k=0; fields[k]; k++)
         {
