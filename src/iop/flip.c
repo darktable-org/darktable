@@ -125,14 +125,14 @@ backtransform(const int32_t *x, int32_t *o, const int32_t orientation, int32_t i
   }
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   //if (!self->enabled) return 2;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x,y;
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     x = points[i];
     y = points[i+1];
@@ -150,14 +150,14 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   //if (!self->enabled) return 2;
   dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x,y;
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     if(d->orientation & 4)
     {

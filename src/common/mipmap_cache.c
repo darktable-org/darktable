@@ -713,7 +713,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // XXX this needs adjustment for video mode (more full-res thumbs for replay)
     // TODO: collect hit/miss stats and auto-adjust to user browsing behaviour
     // TODO: can #prefetches be collected this way, too?
-    const size_t max_mem2 = MAX(0, (k == 0) ? (max_mem) : (max_mem/(k+4)));
+    const size_t max_mem2 = (k == 0) ? (max_mem) : (max_mem/(k+4));
     uint32_t thumbnails = MAX(2, nearest_power_of_two((uint32_t)((double)max_mem2/cache->mip[k].buffer_size)));
     while(thumbnails > parallel && (size_t)thumbnails * cache->mip[k].buffer_size > max_mem2) thumbnails /= 2;
 
@@ -873,7 +873,7 @@ dt_mipmap_cache_read_get(
   else if(flags == DT_MIPMAP_PREFETCH)
   {
     // and opposite: prefetch without locking
-    if(mip > DT_MIPMAP_FULL || mip < DT_MIPMAP_0) return;
+    if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0) return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     dt_job_t j;
     dt_image_load_job_init(&j, imgid, mip);
     // if the job already exists, make it high-priority, if not, add it:

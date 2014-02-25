@@ -21,6 +21,7 @@
 #define DT_DEVELOP_IMAGEOP_H
 
 #include "common/darktable.h"
+#include "common/opencl.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -155,8 +156,8 @@ typedef struct dt_iop_module_so_t
   int  (*process_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out);
   int  (*process_tiling_cl)      (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out, const int bpp);
 
-  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
-  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
 }
 dt_iop_module_so_t;
 
@@ -326,9 +327,9 @@ typedef struct dt_iop_module_t
    * points is an array of float {x1,y1,x2,y2,...}
    * size is 2*points_count */
   /** points before the iop is applied => point after processed */
-  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  int (*distort_transform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
   /** reverse points after the iop is applied => point before process */
-  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, int points_count);
+  int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
 
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
@@ -405,6 +406,9 @@ void dt_iop_flip_and_zoom_8( const uint8_t *in, int32_t iw, int32_t ih, uint8_t 
 
 /** for homebrew pixel pipe: zoom pixel array. */
 void dt_iop_clip_and_zoom(float *out, const float *const in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in, const int32_t out_stride, const int32_t in_stride);
+#ifdef HAVE_OPENCL
+int dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in, const struct dt_iop_roi_t *const roi_out, const struct dt_iop_roi_t * const roi_in);
+#endif
 
 /** clip and zoom mosaiced image without demosaicing it uint16_t -> float4 */
 void
@@ -503,8 +507,8 @@ static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int w
 #endif
   for(int j=0; j<height; j++)
   {
-    const float *in  = ((const float *)ivoid)+4*width*j+3;
-    float *out = ((float *)ovoid)+4*width*j+3;
+    const float *in  = ((const float *)ivoid)+(size_t)4*width*j+3;
+    float *out = ((float *)ovoid)+(size_t)4*width*j+3;
     for(int i=0; i<width; i++)
     {
       *out = *in;

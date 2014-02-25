@@ -198,7 +198,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if (dev_tmp == NULL) goto error;
 
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float)*wd, mat);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, (size_t)sizeof(float)*wd, mat);
   if (dev_m == NULL) goto error;
 
   /* invert image */
@@ -289,7 +289,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
     out[ch*k] = 100.0f-LCLIP(in[ch*k]);	// only L in Lab space
 
 
@@ -305,11 +305,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
-    int index=0;
     for(int y=0; y<roi_out->height; y++)
     {
       float L=0;
       int hits = 0;
+      size_t index = (size_t)y*roi_out->width;
       for(int x=-hr; x<roi_out->width; x++)
       {
         int op = x - hr-1;
@@ -330,7 +330,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       for (int x=0; x<roi_out->width; x++)
         out[(index+x)*ch] = scanline[x];
-      index+=roi_out->width;
     }
 
     /* vertical pass on blurlightness */
@@ -340,7 +339,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       float L=0;
       int hits=0;
-      int index = -hr*roi_out->width+x;
+      size_t index = (size_t)x - hr*roi_out->width;
       for(int y=-hr; y<roi_out->height; y++)
       {
         int op=y-hr-1;
@@ -361,7 +360,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       }
 
       for (int y=0; y<roi_out->height; y++)
-        out[(y*roi_out->width+x)*ch] = scanline[y];
+        out[((size_t)y*roi_out->width+x)*ch] = scanline[y];
     }
   }
 
@@ -371,9 +370,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
-    int index = ch*k;
+    size_t index = ch*k;
     // Mix out and in
     out[index] = out[index]*0.5 + in[index]*0.5;
     out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));

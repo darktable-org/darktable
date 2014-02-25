@@ -87,9 +87,9 @@ dt_gaussian_memory_use(
   const int height,      // height of input image
   const int channels)    // channels per pixel
 {
-  size_t mem_use = width*height*channels*sizeof(float);
+  size_t mem_use = (size_t)width*height*channels*sizeof(float);
 #ifdef HAVE_OPENCL
-  mem_use = (width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float)*2;
+  mem_use = (size_t)(width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float)*2;
 #endif
   return mem_use;
 }
@@ -100,9 +100,9 @@ dt_gaussian_singlebuffer_size(
   const int height,      // height of input image
   const int channels)    // channels per pixel
 {
-  size_t mem_use = width*height*channels*sizeof(float);
+  size_t mem_use = (size_t)width*height*channels*sizeof(float);
 #ifdef HAVE_OPENCL
-  mem_use = (width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float);
+  mem_use = (size_t)(width+BLOCKSIZE)*(height+BLOCKSIZE)*channels*sizeof(float);
 #endif
   return mem_use;
 }
@@ -138,7 +138,7 @@ dt_gaussian_init(
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, width*height*channels*sizeof(float));
+  g->buf = dt_alloc_align(64, (size_t)width*height*channels*sizeof(float));
   if(!g->buf) goto error;
 
   return g;
@@ -191,7 +191,7 @@ dt_gaussian_blur(
     // forward filter
     for(int k=0; k<ch; k++)
     {
-      xp[k] = CLAMPF(in[i*ch+k], Labmin[k], Labmax[k]);
+      xp[k] = CLAMPF(in[(size_t)i*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
       xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
@@ -199,7 +199,7 @@ dt_gaussian_blur(
 
     for(int j=0; j<height; j++)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       for(int k=0; k<ch; k++)
       {
@@ -217,7 +217,7 @@ dt_gaussian_blur(
     // backward filter
     for(int k=0; k<ch; k++)
     {
-      xn[k] = CLAMPF(in[((height - 1) * width + i)*ch+k], Labmin[k], Labmax[k]);
+      xn[k] = CLAMPF(in[((size_t)(height - 1) * width + i)*ch+k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -225,7 +225,7 @@ dt_gaussian_blur(
 
     for(int j=height - 1; j > -1; j--)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       for(int k=0; k<ch; k++)
       {
@@ -262,7 +262,7 @@ dt_gaussian_blur(
     // forward filter
     for(int k=0; k<ch; k++)
     {
-      xp[k] = CLAMPF(temp[j*width*ch+k], Labmin[k], Labmax[k]);
+      xp[k] = CLAMPF(temp[(size_t)j*width*ch+k], Labmin[k], Labmax[k]);
       yb[k] = xp[k] * coefp;
       yp[k] = yb[k];
       xc[k] = yc[k] = xn[k] = xa[k] = yn[k] = ya[k] = 0.0f;
@@ -270,7 +270,7 @@ dt_gaussian_blur(
 
     for(int i=0; i<width; i++)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       for(int k=0; k<ch; k++)
       {
@@ -288,7 +288,7 @@ dt_gaussian_blur(
     // backward filter
     for(int k=0; k<ch; k++)
     {
-      xn[k] = CLAMPF(temp[((j + 1)*width - 1)*ch + k], Labmin[k], Labmax[k]);
+      xn[k] = CLAMPF(temp[((size_t)(j + 1)*width - 1)*ch + k], Labmin[k], Labmax[k]);
       xa[k] = xn[k];
       yn[k] = xn[k] * coefn;
       ya[k] = yn[k];
@@ -296,7 +296,7 @@ dt_gaussian_blur(
 
     for(int i=width - 1; i > -1; i--)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       for(int k=0; k<ch; k++)
       {
@@ -364,7 +364,7 @@ dt_gaussian_blur_4c(
 
     for(int j=0; j<height; j++)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
 
@@ -382,14 +382,14 @@ dt_gaussian_blur_4c(
     }
 
     // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(in+((height - 1) * width + i)*ch), Labmin, Labmax);
+    xn = MMCLAMPPS(_mm_load_ps(in+((size_t)(height - 1) * width + i)*ch), Labmin, Labmax);
     xa = xn;
     yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
     ya = yn;
 
     for(int j=height - 1; j > -1; j--)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       xc = MMCLAMPPS(_mm_load_ps(in+offset), Labmin, Labmax);
 
@@ -411,7 +411,7 @@ dt_gaussian_blur_4c(
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out,temp,a0,a1,a2,a3,b1,b2,coefp,coefn) schedule(static)
 #endif
-  for(int j=0; j<height; j++)
+  for(size_t j=0; j<height; j++)
   {
     __m128 xp = _mm_setzero_ps();
     __m128 yb = _mm_setzero_ps();
@@ -431,7 +431,7 @@ dt_gaussian_blur_4c(
 
     for(int i=0; i<width; i++)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
 
@@ -447,7 +447,7 @@ dt_gaussian_blur_4c(
     }
 
     // backward filter
-    xn = MMCLAMPPS(_mm_load_ps(temp+((j + 1)*width - 1)*ch), Labmin, Labmax);
+    xn = MMCLAMPPS(_mm_load_ps(temp+((size_t)(j + 1)*width - 1)*ch), Labmin, Labmax);
     xa = xn;
     yn = _mm_mul_ps(_mm_set_ps1(coefn), xn);
     ya = yn;
@@ -455,7 +455,7 @@ dt_gaussian_blur_4c(
 
     for(int i=width - 1; i > -1; i--)
     {
-      int offset = (i + j * width)*ch;
+      size_t offset = ((size_t)j * width + i)*ch;
 
       xc = MMCLAMPPS(_mm_load_ps(temp+offset), Labmin, Labmax);
 
@@ -598,9 +598,9 @@ dt_gaussian_init_cl(
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*channels*sizeof(float));
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth*bheight*channels*sizeof(float));
   if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, bwidth*bheight*channels*sizeof(float));
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth*bheight*channels*sizeof(float));
   if(!g->dev_temp2) goto error;
 
   return g;

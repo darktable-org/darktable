@@ -195,12 +195,12 @@ default_simple_togglebutton_callback(GtkWidget *w, dt_iop_gui_simple_callback_t 
 }
 
 static int
-default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   return 1;
 }
 static int
-default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   return 1;
 }
@@ -2207,6 +2207,17 @@ dt_iop_clip_and_zoom(float *out, const float *const in,
   const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
   dt_interpolation_resample(itor, out, roi_out, out_stride*4*sizeof(float), in, roi_in, in_stride*4*sizeof(float));
 }
+
+#ifdef HAVE_OPENCL
+int
+dt_iop_clip_and_zoom_cl(int devid, cl_mem dev_out, cl_mem dev_in,
+                       const dt_iop_roi_t *const roi_out, const dt_iop_roi_t * const roi_in)
+{
+  const struct dt_interpolation* itor = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  return dt_interpolation_resample_cl(itor, devid, dev_out, roi_out, dev_in, roi_in);
+}
+#endif
+
 
 static int
 FC(const int row, const int col, const unsigned int filters)

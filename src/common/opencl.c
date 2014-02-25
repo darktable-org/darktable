@@ -23,6 +23,7 @@
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
 #include "common/gaussian.h"
+#include "common/interpolation.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
 #include "develop/pixelpipe.h"
@@ -439,6 +440,7 @@ finally:
     dt_capabilities_add("opencl");
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
+    cl->interpolation = dt_interpolation_init_cl_global();
   }
   if(locale)
   {
@@ -454,6 +456,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
+    dt_interpolation_free_cl_global(cl->interpolation);
     for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
@@ -1326,7 +1329,7 @@ int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, 
 }
 
 
-void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
+void* dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host)
 {
   if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
@@ -1470,7 +1473,7 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
 }
 
 
-void* dt_opencl_alloc_device_buffer(const int devid, const int size)
+void* dt_opencl_alloc_device_buffer(const int devid, const size_t size)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -1483,7 +1486,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
   return buf;
 }
 
-void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const int size, const int flags)
+void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;

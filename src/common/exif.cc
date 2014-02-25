@@ -453,8 +453,18 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusFi.FocusDistance")))
               != exifData.end() && pos->size())
     {
-      float value = pos->toFloat();
-      img->exif_focus_distance = (0.001 * value);
+      /* the distance is stored as a rational (fraction). according to http://www.dpreview.com/forums/thread/1173960?page=4
+       * some Olympus cameras have a wrong denominator of 10 in there while the nominator is always in mm. thus we ignore the denominator
+       * and divide with 1000.
+       * "I've checked a number of E-1 and E-300 images, and I agree that the FocusDistance looks like it is in mm for the E-1. However,
+       * it looks more like cm for the E-300.
+       * For both cameras, this value is stored as a rational. With the E-1, the denominator is always 1, while for the E-300 it is 10.
+       * Therefore, it looks like the numerator in both cases is in mm (which makes a bit of sense, in an odd sort of way). So I think
+       * what I will do in ExifTool is to take the numerator and divide by 1000 to display the focus distance in meters."
+       *   -- Boardhead, dpreview forums in 2005
+       */
+      int nominator = pos->toRational(0).first;
+      img->exif_focus_distance = (0.001 * nominator);
     }
     else if ( (pos=Exiv2::subjectDistance(exifData))
               != exifData.end() && pos->size())
@@ -527,6 +537,10 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Panasonic.LensType"))) != exifData.end() && pos->size())
+    {
+      dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
+    }
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
@@ -1269,7 +1283,7 @@ unsigned char *dt_exif_xmp_decode (const char *input, const int len, int *output
        if(!output) break;
 
        destLen = bufLen;
- 
+
        result = uncompress(output, &destLen, buffer, compressed_size);
 
        bufLen *= 2;
@@ -1321,7 +1335,7 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
   // tags in array
   const int cnt = pos->count();
 
-  sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagxtag, *stmt_upd_tagxtag, *stmt_ins_tagged, *stmt_upd_tagxtag2;
+  sqlite3_stmt *stmt_sel_id, *stmt_ins_tags, *stmt_ins_tagged;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "select id from tags where name = ?1",
                               -1, &stmt_sel_id, NULL);
@@ -1329,20 +1343,8 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
                               "insert into tags (id, name) values (null, ?1)",
                               -1, &stmt_ins_tags, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "insert into tagxtag select id, ?1, 0 from tags",
-                              -1, &stmt_ins_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = 1000000 where id1 = ?1 and id2 = ?1",
-                              -1, &stmt_upd_tagxtag, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "insert into tagged_images (tagid, imgid) values (?1, ?2)",
                               -1, &stmt_ins_tagged, NULL);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = count + 1 where "
-                              "(id1 = ?1 and id2 in (select tagid from tagged_images where imgid = ?2))"
-                              " or "
-                              "(id2 = ?1 and id1 in (select tagid from tagged_images where imgid = ?2))",
-                              -1, &stmt_upd_tagxtag2, NULL);
   for (int i=0; i<cnt; i++)
   {
     char tagbuf[1024];
@@ -1364,21 +1366,8 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
         sqlite3_clear_bindings(stmt_sel_id);
 
         if (tagid > 0)
-        {
-          if (k == 1)
-          {
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_ins_tagxtag, 1, tagid);
-            sqlite3_step(stmt_ins_tagxtag);
-            sqlite3_reset(stmt_ins_tagxtag);
-            sqlite3_clear_bindings(stmt_ins_tagxtag);
-
-            DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag, 1, tagid);
-            sqlite3_step(stmt_upd_tagxtag);
-            sqlite3_reset(stmt_upd_tagxtag);
-            sqlite3_clear_bindings(stmt_upd_tagxtag);
-          }
           break;
-        }
+
         fprintf(stderr,"[xmp_import] creating tag: %s\n", tag);
         // create this tag (increment id, leave icon empty), retry.
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt_ins_tags, 1, tag, strlen(tag), SQLITE_TRANSIENT);
@@ -1392,26 +1381,21 @@ static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos)
       sqlite3_step(stmt_ins_tagged);
       sqlite3_reset(stmt_ins_tagged);
       sqlite3_clear_bindings(stmt_ins_tagged);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 1, tagid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_tagxtag2, 2, img->id);
-      sqlite3_step(stmt_upd_tagxtag2);
-      sqlite3_reset(stmt_upd_tagxtag2);
-      sqlite3_clear_bindings(stmt_upd_tagxtag2);
 
       tag = next_tag;
     }
   }
   sqlite3_finalize(stmt_sel_id);
   sqlite3_finalize(stmt_ins_tags);
-  sqlite3_finalize(stmt_ins_tagxtag);
-  sqlite3_finalize(stmt_upd_tagxtag);
   sqlite3_finalize(stmt_ins_tagged);
-  sqlite3_finalize(stmt_upd_tagxtag2);
 }
 
 // need a write lock on *img (non-const) to write stars (and soon color labels).
 int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_only)
 {
+  // exclude pfm to avoid stupid errors on the console
+  const char *c = filename + strlen(filename) - 4;
+  if(c >= filename && !strcmp(c, ".pfm")) return 1;
   try
   {
     // read xmp sidecar
@@ -1427,16 +1411,6 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
     // get rid of old meta data
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from meta_data where id = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    // consistency: strip all tags from image (tagged_image, tagxtag)
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update tagxtag set count = count - 1 where "
-                                "(id2 in (select tagid from tagged_images where imgid = ?2)) or "
-                                "(id1 in (select tagid from tagged_images where imgid = ?2))",
-                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);

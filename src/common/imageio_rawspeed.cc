@@ -199,8 +199,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
   img->raw_black_level = r->blackLevel;
   img->raw_white_point = r->whitePoint;
 
-  int raw_width = r->dim.x;
-  int raw_height = r->dim.y;
+  size_t raw_width = r->dim.x;
+  size_t raw_height = r->dim.y;
 
   // work around 50D bug
   char makermodel[1024];
@@ -224,8 +224,8 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
 
   // TODO - OMPize this.
   float scale = 1.0 / (white - black);
-  for( int row = 0; row < raw_height; ++row )
-    for( int col = 0; col < raw_width; ++col )
+  for( size_t row = 0; row < raw_height; ++row )
+    for( size_t col = 0; col < raw_width; ++col )
       for( int k = 0; k < 3; ++k )
         ((float *)buf)[4 * dt_imageio_write_pos(col, row, raw_width, raw_height, raw_width, raw_height, orientation) + k] =
           // ((float)raw_img[row*(raw_width + raw_width_extra)*3 + col*3 + k] - black) * scale;

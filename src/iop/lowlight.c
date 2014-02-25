@@ -139,7 +139,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(roi_in, roi_out, d, i, o, XYZ_sw)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *in = (float *)i + ch*k;
     float *out = (float *)o + ch*k;

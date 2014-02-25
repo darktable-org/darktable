@@ -444,13 +444,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     if(g->buffer)
       free (g->buffer);
 
-    g->buffer = malloc (width*height*ch*sizeof(float));
+    g->buffer = malloc ((size_t)width*height*ch*sizeof(float));
     g->width = width;
     g->height = height;
     g->ch = ch;
 
     if(g->buffer)
-      memcpy(g->buffer, in, width*height*ch*sizeof(float));
+      memcpy(g->buffer, in, (size_t)width*height*ch*sizeof(float));
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -480,7 +480,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
 #endif
     for(int k=0; k<height; k++)
     {
-      int j = ch*width*k;
+      size_t j = (size_t)ch*width*k;
       for(int i=0; i<width; i++)
       {
         const float L = in[j];
@@ -507,7 +507,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     for(int k=0; k<height; k++)
     {
       float weight[data->n];
-      int j = ch*width*k;
+      size_t j = (size_t)ch*width*k;
       for(int i=0; i<width; i++)
       {
         const float L = in[j];
@@ -532,7 +532,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   // incomplete parameter set -> do nothing
   else
   {
-    memcpy(out, in, sizeof(float)*ch*width*height);
+    memcpy(out, in, (size_t)sizeof(float)*ch*width*height);
   }
 }
 
@@ -1132,9 +1132,6 @@ gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
-#undef HISTN
-#undef MAXN
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

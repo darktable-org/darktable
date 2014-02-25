@@ -62,7 +62,7 @@ typedef struct parser_state_t
 
 static float read_number(parser_state_t *self)
 {
-  unsigned long int integer = 0, fractional = 0, fractional_div = 1;
+  float integer = 0.0f, fractional = 0.0f, fractional_div = 1.0f;
   while(*self->p && *self->p >= '0' && *self->p <= '9')
   {
     integer = integer * 10 + (*self->p) - '0';
@@ -79,7 +79,7 @@ static float read_number(parser_state_t *self)
     }
   }
 
-  return integer + (float)fractional / fractional_div;
+  return integer + fractional / fractional_div;
 }
 
 static token_t * get_token(parser_state_t *self)

@@ -24,9 +24,10 @@
 #include <string.h>
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "iop/equalizer.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "control/control.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
@@ -36,6 +37,54 @@
 // #define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE(1)
+
+
+#define DT_IOP_EQUALIZER_RES 64
+#define DT_IOP_EQUALIZER_BANDS 6
+#define DT_IOP_EQUALIZER_MAX_LEVEL 6
+
+typedef struct dt_iop_equalizer_params_t
+{
+  float equalizer_x[3][DT_IOP_EQUALIZER_BANDS], equalizer_y[3][DT_IOP_EQUALIZER_BANDS];
+}
+dt_iop_equalizer_params_t;
+
+typedef enum dt_iop_equalizer_channel_t
+{
+  DT_IOP_EQUALIZER_L = 0,
+  DT_IOP_EQUALIZER_a = 1,
+  DT_IOP_EQUALIZER_b = 2
+}
+dt_iop_equalizer_channel_t;
+
+typedef struct dt_iop_equalizer_gui_data_t
+{
+  dt_draw_curve_t *minmax_curve;        // curve for gui to draw
+  GtkHBox *hbox;
+  GtkDrawingArea *area;
+  GtkComboBox *presets;
+  GtkRadioButton *channel_button[3];
+  double mouse_x, mouse_y, mouse_pick;
+  float mouse_radius;
+  dt_iop_equalizer_params_t drag_params;
+  int dragging;
+  int x_move;
+  dt_iop_equalizer_channel_t channel;
+  float draw_xs[DT_IOP_EQUALIZER_RES], draw_ys[DT_IOP_EQUALIZER_RES];
+  float draw_min_xs[DT_IOP_EQUALIZER_RES], draw_min_ys[DT_IOP_EQUALIZER_RES];
+  float draw_max_xs[DT_IOP_EQUALIZER_RES], draw_max_ys[DT_IOP_EQUALIZER_RES];
+  float band_hist[DT_IOP_EQUALIZER_BANDS];
+  float band_max;
+}
+dt_iop_equalizer_gui_data_t;
+
+typedef struct dt_iop_equalizer_data_t
+{
+  dt_draw_curve_t *curve[3];
+  int num_levels;
+}
+dt_iop_equalizer_data_t;
+
 
 const char *name()
 {
@@ -63,7 +112,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(out, in, chs*sizeof(float)*width*height);
+  memcpy(out, in, (size_t)chs*sizeof(float)*width*height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -83,11 +132,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
-  float **tmp = (float **)malloc(sizeof(float *)*numl_cap);
+  float **tmp = (float **)malloc((size_t)sizeof(float *)*numl_cap);
   for(int k=1; k<numl_cap; k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));
-    tmp[k] = (float *)malloc(sizeof(float)*wd*ht);
+    tmp[k] = (float *)malloc((size_t)sizeof(float)*wd*ht);
   }
 
   for(int level=1; level<numl_cap; level++) dt_iop_equalizer_wtf(out, tmp, level, width, height);
@@ -136,14 +185,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float coeff = 2*dt_draw_curve_calc_value(d->curve[ch==0?0:1], band);
       const int step = 1<<l;
 #if 1 // scale coefficients
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[chs*width*j + chs*i + ch] *= coeff;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] *= coeff*coeff;
+      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] *= coeff;
+      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] *= coeff*coeff;
 #else // soft-thresholding (shrinkage)
-#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[chs*width*j + chs*i + ch]) - (1.0-coeff)), out[chs*width*j + chs*i + ch]))
-      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[chs*width*j + chs*i + ch] = wshrink;
-      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[chs*width*j + chs*i + ch] = wshrink;
+#define wshrink (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs*width*j + chs*i + ch]) - (1.0-coeff)), out[(size_t)chs*width*j + chs*i + ch]))
+      for(int j=0; j<height; j+=step)      for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2; j<height; j+=step) for(int i=0; i<width; i+=step)      out[(size_t)chs*width*j + chs*i + ch] = wshrink;
+      for(int j=step/2; j<height; j+=step) for(int i=step/2; i<width; i+=step) out[(size_t)chs*width*j + chs*i + ch] = wshrink;
 #undef wshrink
 #endif
     }

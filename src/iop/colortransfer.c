@@ -340,7 +340,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
   }
   else if(data->flag == APPLY)
   {
@@ -352,7 +352,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      int j = ch*roi_out->width*k;
+      size_t j = (size_t)ch*roi_out->width*k;
       for(int i=0; i<roi_out->width; i++)
       {
         // L: match histogram
@@ -377,7 +377,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int k=0; k<roi_out->height; k++)
     {
       float weight[MAXN];
-      int j = ch*roi_out->width*k;
+      size_t j = (size_t)ch*roi_out->width*k;
       for(int i=0; i<roi_out->width; i++)
       {
         const float L = in[j];
@@ -403,7 +403,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
   else
   {
-    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
   }
 }
 
@@ -703,9 +703,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
-#undef HISTN
-#undef MAXN
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

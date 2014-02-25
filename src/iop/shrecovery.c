@@ -122,9 +122,10 @@ create_image_weight(int height, int width, int ch, float *in, float *W, float sc
   {
     for(int j = 0; j < width; j++)
     {
-      r = in[(i*width+j)*ch];
-      g = in[(i*width+j)*ch+1];
-      b = in[(i*width+j)*ch+2];
+      size_t index = (size_t)i*width+j;
+      r = in[index*ch];
+      g = in[index*ch+1];
+      b = in[index*ch+2];
       t1 = factor*(sqr(r-mu) + sqr(g-mu) + sqr(b-mu));
       t2 = factor*(sqr(r*scale-mu) + sqr(g*scale-mu) + sqr(b*scale-mu));
       if(t2 < t1)
@@ -137,7 +138,7 @@ create_image_weight(int height, int width, int ch, float *in, float *W, float sc
         e1 = exp(t1 - t2);
         e2 = 1.0;
       }
-      W[i*width+j] = e1/(e1+e2);
+      W[index] = e1/(e1+e2);
     }
   }
 }
@@ -184,11 +185,11 @@ laplace_image(const int size_limit, int width, int height, float *im)
   int st1, st2, st3, st4, st5;
   for(int i = 0; i < h; i++)
   {
-    l1 = im + max(2*i-2,0)*width*3;
-    l2 = im + max(2*i-1,0)*width*3;
-    l3 = im + 2*i*width*3;
-    l4 = im + min(2*i+1,height-1)*width*3;
-    l5 = im + min(2*i+2,height-1)*width*3;
+    l1 = im + (size_t)max(2*i-2,0)*width*3;
+    l2 = im + (size_t)max(2*i-1,0)*width*3;
+    l3 = im + (size_t)2*i*width*3;
+    l4 = im + (size_t)min(2*i+1,height-1)*width*3;
+    l5 = im + (size_t)min(2*i+2,height-1)*width*3;
     for(int j = 0; j < w; j++)
     {
       st1 = max(2*j-2,0)*3;
@@ -230,9 +231,9 @@ laplace_image(const int size_limit, int width, int height, float *im)
             continue;
           i1 = min(max((i-m)/2,0),h-1);
           j1 = min(max((j-n)/2,0),w-1);
-          im[3*(i*width+j)]   -= 4*_w_[n+2]*_w_[m+2]*imn[3*(i1*w+j1)];
-          im[3*(i*width+j)+1] -= 4*_w_[n+2]*_w_[m+2]*imn[3*(i1*w+j1)+1];
-          im[3*(i*width+j)+2] -= 4*_w_[n+2]*_w_[m+2]*imn[3*(i1*w+j1)+2];
+          im[3*((size_t)i*width+j)]   -= 4*_w_[n+2]*_w_[m+2]*imn[3*((size_t)i1*w+j1)];
+          im[3*((size_t)i*width+j)+1] -= 4*_w_[n+2]*_w_[m+2]*imn[3*((size_t)i1*w+j1)+1];
+          im[3*((size_t)i*width+j)+2] -= 4*_w_[n+2]*_w_[m+2]*imn[3*((size_t)i1*w+j1)+2];
         }
       }
     }
@@ -249,8 +250,8 @@ weighted_image(const int size_limit, int width, int height, float *im1, float *i
   int i1, j1, w = width/2, h = height/2;
   float *imn1 = im1 + width*height*3, *imn2 = im2 + width*height*3, *wn = W + width*height;
 
-  const int LENGTH = width*height;
-  for(int i = 0; i < LENGTH; i++)
+  const size_t LENGTH = width*height;
+  for(size_t i = 0; i < LENGTH; i++)
   {
     im1[3*i]   = im1[3*i]*W[i] + im2[3*i]*(1.0-W[i]);
     im1[3*i+1] = im1[3*i+1]*W[i] + im2[3*i+1]*(1.0-W[i]);
@@ -273,9 +274,9 @@ weighted_image(const int size_limit, int width, int height, float *im1, float *i
             continue;
           i1 = min(max((i-m)/2,0),h-1);
           j1 = min(max((j-n)/2,0),w-1);
-          im1[3*(i*width+j)]   += 4*_w_[n+2]*_w_[m+2]*imn1[3*(i1*w+j1)];
-          im1[3*(i*width+j)+1] += 4*_w_[n+2]*_w_[m+2]*imn1[3*(i1*w+j1)+1];
-          im1[3*(i*width+j)+2] += 4*_w_[n+2]*_w_[m+2]*imn1[3*(i1*w+j1)+2];
+          im1[3*((size_t)i*width+j)]   += 4*_w_[n+2]*_w_[m+2]*imn1[3*((size_t)i1*w+j1)];
+          im1[3*((size_t)i*width+j)+1] += 4*_w_[n+2]*_w_[m+2]*imn1[3*((size_t)i1*w+j1)+1];
+          im1[3*((size_t)i*width+j)+2] += 4*_w_[n+2]*_w_[m+2]*imn1[3*((size_t)i1*w+j1)+2];
 
         }
       }
@@ -300,10 +301,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   create_image_weight(roi_out->width, roi_out->height, ch, in, W, scale, d->mu, d->sigma);
   gauss_image_weight(d->size_limit, roi_out->width, roi_out->height, W);
 
-  float *im1 = (float*)malloc(6*sizeof(float)*roi_out->height*roi_out->width);
-  float *im2 = (float*)malloc(6*sizeof(float)*roi_out->height*roi_out->width);
+  float *im1 = (float*)malloc((size_t)6*sizeof(float)*roi_out->height*roi_out->width);
+  float *im2 = (float*)malloc((size_t)6*sizeof(float)*roi_out->height*roi_out->width);
 
-  const int LENGTH = roi_out->width*roi_out->height;
+  const size_t LENGTH = (size_t)roi_out->width*roi_out->height;
   for(int i = 0; i < LENGTH; i++)
   {
     im1[i*3] = in[i*ch];
@@ -325,7 +326,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   weighted_image(d->size_limit, roi_out->width, roi_out->height, im1, im2, W);
 
 
-  for(int i = 0; i < LENGTH; i++)
+  for(size_t i = 0; i < LENGTH; i++)
   {
     out[i*ch] = im1[3*i];
     out[i*ch + 1] = im1[3*i+1];

@@ -26,7 +26,6 @@
 gboolean dt_tag_new(const char *name,guint *tagid)
 {
   int rt;
-  guint id = 0;
   sqlite3_stmt *stmt;
 
   if (!name || name[0] == '\0')
@@ -52,27 +51,16 @@ gboolean dt_tag_new(const char *name,guint *tagid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
-  if (sqlite3_step(stmt) == SQLITE_ROW)
-    id = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "INSERT INTO tagxtag SELECT id, ?1, 0 FROM tags", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE tagxtag SET count = 1000000 WHERE id1 = ?1 AND id2 = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  if( tagid != NULL)
-    *tagid=id;
+  if (tagid != NULL)
+  {
+    *tagid = 0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT id FROM tags WHERE name = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+      *tagid = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+  }
 
   return TRUE;
 }
@@ -107,20 +95,9 @@ guint dt_tag_remove(const guint tagid, gboolean final)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "DELETE FROM tagxtag WHERE id1=?1 OR ID2=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "DELETE FROM tagged_images WHERE tagid=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
 
     /* raise signal of tags change to refresh keywords module */
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-
   }
 
   return count;
@@ -204,17 +181,6 @@ void dt_tag_attach(guint tagid,gint imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE tagxtag SET count = count + 1 WHERE "
-                                "(id1 = ?1 AND id2 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2)) "
-                                "OR "
-                                "(id2 = ?1 AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2))",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
   }
   else
   {
@@ -222,16 +188,6 @@ void dt_tag_attach(guint tagid,gint imgid)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT OR REPLACE INTO tagged_images SELECT imgid, ?1 "
                                 "FROM selected_images", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE tagxtag SET count = count + 1 WHERE (id1 = ?1 AND id2 IN "
-                                "(SELECT tagid FROM selected_images JOIN tagged_images)) OR "
-                                "(id2 = ?1 AND id1 IN (SELECT tagid FROM selected_images "
-                                "JOIN tagged_images))",
-                                -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
@@ -280,17 +236,6 @@ void dt_tag_detach(guint tagid,gint imgid)
   sqlite3_stmt *stmt;
   if(imgid > 0)
   {
-    // remove from specified image by id
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE tagxtag SET count = count - 1 WHERE (id1 = ?1 AND id2 IN "
-                                "(SELECT tagid FROM tagged_images WHERE imgid = ?2)) OR (id2 = ?1 "
-                                "AND id1 IN (SELECT tagid FROM tagged_images WHERE imgid = ?2))",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM tagged_images WHERE tagid = ?1 AND imgid = ?2",
@@ -302,16 +247,6 @@ void dt_tag_detach(guint tagid,gint imgid)
   }
   else
   {
-    // remove from all selected images
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update tagxtag set count = count - 1 where (id1 = ?1 and id2 in "
-                                "(select tagid from selected_images join tagged_images)) or (id2 = ?1 "
-                                "and id1 in (select tagid from selected_images join tagged_images))",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "delete from tagged_images where tagid = ?1 and imgid in "

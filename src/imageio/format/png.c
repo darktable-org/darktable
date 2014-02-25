@@ -181,7 +181,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
     {
       for(int x=0; x<width; x++) for(int k=0; k<3; k++)
         {
-          uint16_t pix = ((uint16_t *)in)[4*width*y + 4*x + k];
+          uint16_t pix = ((uint16_t *)in)[(size_t)4*width*y + 4*x + k];
           uint16_t swapped = (0xff00 & (pix<<8)) | (pix>>8);
           ((uint16_t *)row)[3*x+k] = swapped;
         }
@@ -192,7 +192,7 @@ write_image (dt_imageio_module_data_t *p_tmp, const char *filename, const void *
   {
     for (int y = 0; y < height; y++)
     {
-      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[4*width*y + 4*x + k];
+      for(int x=0; x<width; x++) for(int k=0; k<3; k++) row[3*x+k] = in[(size_t)4*width*y + 4*x + k];
       png_write_row(png_ptr, row);
     }
   }

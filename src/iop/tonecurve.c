@@ -23,17 +23,21 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "iop/tonecurve.h"
-#include "gui/presets.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "control/control.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "common/opencl.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET 1
 #define DT_GUI_CURVE_INFL .3f
+
+#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 20
 
 DT_MODULE(4)
 
@@ -42,6 +46,97 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+
+
+#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 20
+
+typedef enum tonecurve_channel_t
+{
+  ch_L    = 0,
+  ch_a    = 1,
+  ch_b    = 2,
+  ch_max  = 3
+}
+tonecurve_channel_t;
+
+typedef struct dt_iop_tonecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_tonecurve_node_t;
+
+
+// parameter structure of tonecurve 1st version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_params1_t
+{
+  float tonecurve_x[6], tonecurve_y[6];
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_params1_t;
+
+// parameter structure of tonecurve 3rd version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_params3_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_params3_t;
+
+typedef struct dt_iop_tonecurve_params_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+  int tonecurve_unbound_ab;
+}
+dt_iop_tonecurve_params_t;
+
+
+typedef struct dt_iop_tonecurve_gui_data_t
+{
+  dt_draw_curve_t *minmax_curve[3];        // curves for gui to draw
+  int minmax_curve_nodes[3];
+  int minmax_curve_type[3];
+  GtkHBox *hbox;
+  GtkDrawingArea *area;
+  GtkSizeGroup *sizegroup;
+  GtkWidget *autoscale_ab;
+  GtkNotebook* channel_tabs;
+  tonecurve_channel_t channel;
+  double mouse_x, mouse_y;
+  int selected;
+  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+}
+dt_iop_tonecurve_gui_data_t;
+
+typedef struct dt_iop_tonecurve_data_t
+{
+  dt_draw_curve_t *curve[3];     // curves for gegl nodes and pixel processing
+  int curve_nodes[3];            // number of nodes
+  int curve_type[3];             // curve style (e.g. CUBIC_SPLINE)
+  float table[3][0x10000];       // precomputed look-up tables for tone curve
+  float unbounded_coeffs_L[3];   // approximation for extrapolation of L
+  float unbounded_coeffs_ab[12]; // approximation for extrapolation of ab (left and right)
+  int autoscale_ab;
+  int unbound_ab;
+}
+dt_iop_tonecurve_data_t;
+
+typedef struct dt_iop_tonecurve_global_data_t
+{
+  int kernel_tonecurve;
+}
+dt_iop_tonecurve_global_data_t;
+
 
 const char *name()
 {
@@ -212,8 +307,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<height; k++)
   {
-    float *in = ((float *)i) + k*ch*width;
-    float *out = ((float *)o) + k*ch*width;
+    float *in = ((float *)i) + (size_t)k*ch*width;
+    float *out = ((float *)o) + (size_t)k*ch*width;
 
     for (int j=0; j<width; j++,in+=ch,out+=ch)
     {

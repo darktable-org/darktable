@@ -160,7 +160,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     if(g->preview_buffer)
       g_free (g->preview_buffer);
 
-    buffer = g->preview_buffer = g_malloc (roi_in->width*roi_in->height);
+    buffer = g->preview_buffer = g_malloc ((size_t)roi_in->width*roi_in->height);
     g->preview_width=roi_out->width;
     g->preview_height=roi_out->height;
   }
@@ -184,7 +184,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const float sigma2 = (2.5*2.5)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
     float weight = 0.0f;
 
-    memset(mat, 0, wd*wd*sizeof(float));
+    memset(mat, 0, (size_t)wd*wd*sizeof(float));
 
     m = mat;
     for(int l=-rad; l<=rad; l++) for(int k=-rad; k<=rad; k++,m++)
@@ -199,8 +199,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=rad; j<roi_out->height-rad; j++)
     {
-      in  = ((float *)ivoid) + ch*(j*roi_in->width  + rad);
-      out = ((float *)ovoid) + ch*(j*roi_out->width + rad);
+      in  = ((float *)ivoid) + ch*((size_t)j*roi_in->width  + rad);
+      out = ((float *)ovoid) + ch*((size_t)j*roi_out->width + rad);
       for(int i=rad; i<roi_out->width-rad; i++)
       {
         for(int c=0; c<3; c++) out[c] = 0.0f;
@@ -224,7 +224,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out,out,buffer,g,zonemap) schedule(static)
 #endif
-    for (int k=0; k<roi_out->width*roi_out->height; k++)
+    for (size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
     {
       buffer[k] = _iop_zonesystem_zone_index_from_lightness (out[ch*k]/100.0f, zonemap, size);
     }
@@ -252,8 +252,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for (int i=0; i<roi_out->width; i++)
     {
       /* remap lightness into zonemap and apply lightness */
-      const float *inp = in + ch*(j*roi_out->width+i);
-      float *outp = out + ch*(j*roi_out->width+i);
+      const float *inp = in + ch*((size_t)j*roi_out->width+i);
+      float *outp = out + ch*((size_t)j*roi_out->width+i);
 
       const int rz = CLAMPS(inp[0]*rzscale, 0, size-2);  // zone index
 

@@ -211,8 +211,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const uint16_t *in = ((uint16_t*)ivoid) + j*roi_out->width;
-      uint16_t *out = ((uint16_t*)ovoid) + j*roi_out->width;
+      const uint16_t *in = ((uint16_t*)ivoid) + (size_t)j*roi_out->width;
+      uint16_t *out = ((uint16_t*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
         *out = CLAMP(film_rgb_i[FC(j+roi_out->x, i+roi_out->y, filters)] - (int32_t)in[0], 0, 0xffff);
@@ -229,8 +229,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const float *in = ((float *)ivoid) + j*roi_out->width;
-      float *out = ((float*)ovoid) + j*roi_out->width;
+      const float *in = ((float *)ivoid) + (size_t)j*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)j*roi_out->width;
       for(int i=0; i<roi_out->width; i++,out++,in++)
       {
         *out = CLAMP(film_rgb[FC(j+roi_out->x, i+roi_out->y, filters)] - *in/(float)0xffff, 0, 1.0f);
@@ -247,8 +247,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const float *in = ((float*)ivoid) + ch*k*roi_out->width;
-      float *out = ((float*)ovoid) + ch*k*roi_out->width;
+      const float *in = ((float*)ivoid) + (size_t)ch*k*roi_out->width;
+      float *out = ((float*)ovoid) + (size_t)ch*k*roi_out->width;
       for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
         for(int c=0; c<3; c++) out[c] = film_rgb[c] - in[c];
     }

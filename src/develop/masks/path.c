@@ -26,7 +26,7 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static gboolean _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 300000;
+  const int stepsize = 1000000;
   const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
@@ -380,7 +380,7 @@ static void _path_points_recurs(float *p1, float *p2,
 }
 
 /** find all self intersections in a path */
-static int _path_find_self_intersection(int **inter, int nb_corners, float *border, int border_count)
+static int _path_find_self_intersection(int *inter, int nb_corners, float *border, int border_count)
 {
   int inter_count = 0;
 
@@ -426,11 +426,11 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   //we allocate the buffer
   const int ss = hb*wb;
   if (ss < 10) return 0;
-  *inter = malloc(sizeof(int)*nb_corners*8);
-  if(*inter == NULL) return 0;
 
   int *binter = malloc(sizeof(int)*ss);
-  if(binter == NULL) return 0;
+  if(binter == NULL)
+    return 0;
+
   memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
@@ -492,22 +492,22 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
           {
             if (inter_count > 0)
             {
-              if ((v[k]-i)*((*inter)[inter_count*2-2]-(*inter)[inter_count*2-1])>0 && (*inter)[inter_count*2-2] >= v[k] && (*inter)[inter_count*2-1] <= i)
+              if ((v[k]-i)*(inter[inter_count*2-2]-inter[inter_count*2-1])>0 && inter[inter_count*2-2] >= v[k] && inter[inter_count*2-1] <= i)
               {
-                (*inter)[inter_count*2-2] = v[k];
-                (*inter)[inter_count*2-1] = i;
+                inter[inter_count*2-2] = v[k];
+                inter[inter_count*2-1] = i;
               }
               else
               {
-                (*inter)[inter_count*2] = v[k];
-                (*inter)[inter_count*2+1] = i;
+                inter[inter_count*2] = v[k];
+                inter[inter_count*2+1] = i;
                 inter_count++;
               }
             }
             else
             {
-              (*inter)[inter_count*2] = v[k];
-              (*inter)[inter_count*2+1] = i;
+              inter[inter_count*2] = v[k];
+              inter[inter_count*2+1] = i;
               inter_count++;
             }
           }
@@ -590,7 +590,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
   pos = 6*nb;
   posb = 6*nb;
-  float *border_init = malloc(sizeof(float)*6*nb);
+  float border_init[6*nb];
   int cw = _path_is_clockwise(form);
   if (cw == 0) cw = -1;
 
@@ -621,22 +621,17 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     if (border)
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
-      if (!_path_buffer_grow(points, &pos, &points_max)) {
-        free(border_init);
+      if (!_path_buffer_grow(points, &pos, &points_max))
         return 0;
-      }
-      if (!_path_buffer_grow(border, &posb, &border_max)) {
-        free(border_init);
+
+      if (!_path_buffer_grow(border, &posb, &border_max))
         return 0;
-      }
     }
     else
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
-        if (!_path_buffer_grow(points, &pos, &points_max)) {
-          free(border_init);
-          return 0;
-        }
+      if (!_path_buffer_grow(points, &pos, &points_max))
+        return 0;
     }
 
 
@@ -671,10 +666,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       (*border)[k*6] = border_init[k*6] = (*border)[pb];
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
 
-      if (!_path_buffer_grow(border, &posb, &border_max)) {
-        free(border_init);
+      if (!_path_buffer_grow(border, &posb, &border_max))
         return 0;
-      }
     }
 
     //we first want to be sure that there are no gaps in border
@@ -690,14 +683,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
         _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb,_path_is_clockwise(form));
-        if (!_path_buffer_grow(points, &pos, &points_max)) {
-          free(border_init);
+        if (!_path_buffer_grow(points, &pos, &points_max))
           return 0;
-        }
-        if (!_path_buffer_grow(border, &posb, &border_max)) {
-          free(border_init);
+
+        if (!_path_buffer_grow(border, &posb, &border_max))
           return 0;
-        }
       }
     }
   }
@@ -708,11 +698,12 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   start2 = dt_get_wtime();
 
   //we don't want the border to self-intersect
-  int *intersections = NULL;
+  int intersections[nb*8];
   int inter_count = 0;
   if (border)
   {
-    inter_count = _path_find_self_intersection(&intersections,nb,*border,*border_count);
+    inter_count = _path_find_self_intersection(intersections,nb,*border,*border_count);
+
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points self-intersect took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
   }
@@ -754,17 +745,12 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
       if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime()-start2);
       start2 = dt_get_wtime();
-
-      free(border_init);
-      free(intersections);
       return 1;
     }
   }
 
   //if we failed, then free all and return
   free(*points);
-  free(border_init);
-  free(intersections);
   *points = NULL;
   *points_count = 0;
   if (border) free(*border);
@@ -2391,6 +2377,7 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
 
   const int dx = lx < 0 ? -1 : 1;
   const int dy = ly < 0 ? -1 : 1;
+  const int dpy = dy * bw;
 
   for (int i=0 ; i<l; i++)
   {
@@ -2398,9 +2385,10 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
     const int x = (int)((float)i*lx/(float)l) + p0[0];
     const int y = (int)((float)i*ly/(float)l) + p0[1];
     const float op = 1.0-(float)i/(float)l;
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[y*bw+x] = fmaxf((*buffer)[y*bw+x],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[y*bw+x+dx] = fmaxf((*buffer)[y*bw+x+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[(y+dy)*bw+x] = fmaxf((*buffer)[(y+dy)*bw+x],op); //this one is to avoid gap due to int rounding
+    size_t index = (size_t)y*bw+x;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[index] = fmaxf((*buffer)[index],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[index+dx] = fmaxf((*buffer)[index+dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dpy] = fmaxf((*buffer)[index+dpy],op); //this one is to avoid gap due to int rounding
   }
 }
 
@@ -2435,14 +2423,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   start = start2 = dt_get_wtime();
 
   //we allocate the output buffer
-  *buffer = malloc(width*height*sizeof(float));
+  *buffer = malloc((size_t)width*height*sizeof(float));
   if (*buffer == NULL)
   {
     free(points);
     free(border);
     return 0;
   }
-  memset(*buffer,0,width*height*sizeof(float));
+  memset(*buffer,0,(size_t)width*height*sizeof(float));
 
   int nb_corner = g_list_length(form->points);
 
@@ -2586,7 +2574,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     if(path_encircles_roi)
     {
       // roi lies completely within path
-      for (int k=0; k < width*height; k++) (*buffer)[k] = 1.0f;
+      for (size_t k=0; k < (size_t)width*height; k++) (*buffer)[k] = 1.0f;
     }
     else
     {
@@ -2622,7 +2610,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
           if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
 
-          (*buffer)[yy*width+xx] = 1.0f - (*buffer)[yy*width+xx];
+          size_t index = (size_t)yy*width+xx;
+
+          (*buffer)[index] = 1.0f - (*buffer)[index];
         }
       }
 
@@ -2641,9 +2631,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
         int state = 0;
         for (int xx=xmin ; xx<=xmax; xx++)
         {
-          float v = (*buffer)[yy*width+xx];
+          size_t index = (size_t)yy*width+xx;
+          float v = (*buffer)[index];
           if (v > 0.5f) state = !state;
-          if (state) (*buffer)[yy*width+xx] = 1.0f;
+          if (state) (*buffer)[index] = 1.0f;
         }
       }
 

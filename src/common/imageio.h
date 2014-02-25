@@ -79,7 +79,7 @@ dt_imageio_export_with_flags(
   dt_imageio_module_storage_t       *storage,
   dt_imageio_module_data_t          *storage_params);
 
-int dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
+size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht, int orientation);
 
 // general, efficient buffer flipping function using memcopies
 void

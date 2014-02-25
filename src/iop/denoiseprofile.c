@@ -230,8 +230,8 @@ precondition(
 #endif
   for(int j=0; j<ht; j++)
   {
-    float *buf2 = buf + 4*j*wd;
-    const float *in2 = in + 4*j*wd;
+    float *buf2 = buf + (size_t)4*j*wd;
+    const float *in2 = in + (size_t)4*j*wd;
     for(int i=0; i<wd; i++)
     {
       for(int c=0; c<3; c++)
@@ -266,7 +266,7 @@ backtransform(
 #endif
   for(int j=0; j<ht; j++)
   {
-    float *buf2 = buf + 4*j*wd;
+    float *buf2 = buf + (size_t)4*j*wd;
     for(int i=0; i<wd; i++)
     {
       for(int c=0; c<3; c++)
@@ -327,16 +327,16 @@ weight_sse(const __m128 *c1, const __m128 *c2, const float inv_sigma2)
     if(y < 0)       y = 0; \
     if(y >= height) y = height - 1; \
     \
-    px2 = ((__m128 *)in) + x + y*width; \
+    px2 = ((__m128 *)in) + x + (size_t)y*width; \
     \
     SUM_PIXEL_CONTRIBUTION_COMMON(ii, jj); \
   } while (0)
 
 #define ROW_PROLOGUE \
-  const __m128 *px = ((__m128 *)in) + j*width; \
+  const __m128 *px = ((__m128 *)in) + (size_t)j*width; \
   const __m128 *px2; \
-  float *pdetail = detail + 4*j*width; \
-  float *pcoarse = out + 4*j*width;
+  float *pdetail = detail + (size_t)4*j*width; \
+  float *pcoarse = out + (size_t)4*j*width;
 
 #define SUM_PIXEL_PROLOGUE \
   __m128 sum = _mm_setzero_ps(); \
@@ -408,7 +408,7 @@ eaw_decompose (float *const out, const float *const in, float *const detail, con
     for(int i=2*mult; i<width-2*mult; i++)
     {
       SUM_PIXEL_PROLOGUE
-      px2 = ((__m128*)in) + i-2*mult + (j-2*mult)*width;
+      px2 = ((__m128*)in) + i-2*mult + (size_t)(j-2*mult)*width;
       for (int jj=0; jj<5; jj++)
       {
         for (int ii=0; ii<5; ii++)
@@ -481,9 +481,9 @@ eaw_synthesize (float *const out, const float *const in, const float *const deta
   for(int j=0; j<height; j++)
   {
     // TODO: prefetch? _mm_prefetch()
-    const __m128 *pin = (__m128 *)in + j*width;
-    __m128 *pdetail = (__m128 *)detail + j*width;
-    float *pout = out + 4*j*width;
+    const __m128 *pin = (__m128 *)in + (size_t)j*width;
+    __m128 *pdetail = (__m128 *)detail + (size_t)j*width;
+    float *pout = out + (size_t)4*j*width;
     for(int i=0; i<width; i++)
     {
 #if 1
@@ -537,8 +537,8 @@ void process_wavelets(
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k=0; k<max_scale; k++)
-    buf[k] = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
-  tmp = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
+    buf[k] = dt_alloc_align(64, (size_t)4*sizeof(float)*roi_in->width*roi_in->height);
+  tmp = dt_alloc_align(64, (size_t)4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] =
   {
@@ -621,8 +621,8 @@ void process_wavelets(
     // determine thrs as bayesshrink
     // TODO: parallelize!
     float sum_y2[3] = {0.0f};
-    const int n = width*height;
-    for(int k=0; k<n; k++)
+    const size_t n = (size_t)width*height;
+    for(size_t k=0; k<n; k++)
       for(int c=0; c<3; c++)
         sum_y2[c] += buf[scale][4*k+c]*buf[scale][4*k+c];
 
@@ -687,10 +687,10 @@ void process_nlmeans(
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float *Sa = dt_alloc_align(64, sizeof(float)*roi_out->width*dt_get_num_threads());
+  float *Sa = dt_alloc_align(64, (size_t)sizeof(float)*roi_out->width*dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
-  memset(ovoid, 0x0, sizeof(float)*roi_out->width*roi_out->height*4);
-  float *in = dt_alloc_align(64, 4*sizeof(float)*roi_in->width*roi_in->height);
+  memset(ovoid, 0x0, (size_t)sizeof(float)*roi_out->width*roi_out->height*4);
+  float *in = dt_alloc_align(64, (size_t)4*sizeof(float)*roi_in->width*roi_in->height);
 
   const float wb[3] =
   {
@@ -730,8 +730,8 @@ void process_nlmeans(
       {
         if(j+kj < 0 || j+kj >= roi_out->height) continue;
         float *S = Sa + dt_get_thread_num() * roi_out->width;
-        const float *ins = in + 4*(roi_in->width *(j+kj) + ki);
-        float *out = ((float *)ovoid) + 4*roi_out->width*j;
+        const float *ins = in + 4l*((size_t)roi_in->width *(j+kj) + ki);
+        float *out = ((float *)ovoid) + (size_t)4*roi_out->width*j;
 
         const int Pm = MIN(MIN(P, j+kj), j);
         const int PM = MIN(MIN(P, roi_out->height-1-j-kj), roi_out->height-1-j);
@@ -745,8 +745,8 @@ void process_nlmeans(
           {
             int i = MAX(0, -ki);
             float *s = S + i;
-            const float *inp  = in + 4*i + 4* roi_in->width *(j+jj);
-            const float *inps = in + 4*i + 4*(roi_in->width *(j+jj+kj) + ki);
+            const float *inp  = in + 4*i + (size_t)4* roi_in->width *(j+jj);
+            const float *inps = in + 4*i +  4l*((size_t)roi_in->width *(j+jj+kj) + ki);
             const int last = roi_out->width + MIN(0, -ki);
             for(; i<last; i++, inp+=4, inps+=4, s++)
             {
@@ -787,10 +787,10 @@ void process_nlmeans(
           // sliding window in j direction:
           int i = MAX(0, -ki);
           float *s = S + i;
-          const float *inp  = in + 4*i + 4* roi_in->width *(j+P+1);
-          const float *inps = in + 4*i + 4*(roi_in->width *(j+P+1+kj) + ki);
-          const float *inm  = in + 4*i + 4* roi_in->width *(j-P);
-          const float *inms = in + 4*i + 4*(roi_in->width *(j-P+kj) + ki);
+          const float *inp  = in + 4*i + 4l* (size_t)roi_in->width *(j+P+1);
+          const float *inps = in + 4*i + 4l*((size_t)roi_in->width *(j+P+1+kj) + ki);
+          const float *inm  = in + 4*i + 4l* (size_t)roi_in->width *(j-P);
+          const float *inms = in + 4*i + 4l*((size_t)roi_in->width *(j-P+kj) + ki);
           const int last = roi_out->width + MIN(0, -ki);
           for(; ((intptr_t)s & 0xf) != 0 && i<last; i++, inp+=4, inps+=4, inm+=4, inms+=4, s++)
           {
@@ -863,7 +863,7 @@ void process_nlmeans(
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    float *out = ((float *)ovoid) + 4*roi_out->width*j;
+    float *out = ((float *)ovoid) + (size_t)4*roi_out->width*j;
     for(int i=0; i<roi_out->width; i++)
     {
       if(out[3] > 0.0f)
@@ -951,12 +951,12 @@ int process_nlmeans_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
   if (dev_tmp == NULL) goto error;
 
-  dev_U2 = dt_opencl_alloc_device_buffer(devid, width*height*4*sizeof(float));
+  dev_U2 = dt_opencl_alloc_device_buffer(devid, (size_t)width*height*4*sizeof(float));
   if(dev_U2 == NULL) goto error;
 
   for(int k=0; k<NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, width*height*sizeof(float));
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width*height*sizeof(float));
     if(buckets[k] == NULL) goto error;
   }
 
@@ -1180,10 +1180,10 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   const int lsize = maxsizes[0];
   const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, lsize) / lsize);
 
-  dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*2*4*sizeof(float));
+  dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize*2*4*sizeof(float));
   if(dev_m == NULL) goto error;
 
-  dev_r = dt_opencl_alloc_device_buffer(devid, reducesize*2*4*sizeof(float));
+  dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize*2*4*sizeof(float));
   if(dev_r == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4*sizeof(float));
@@ -1319,7 +1319,7 @@ int process_wavelets_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
 
 
     float sumsum[2*4*reducesize];
-    err = dt_opencl_read_buffer_from_device(devid, (void*)sumsum, dev_r, 0, reducesize*2*4*sizeof(float), CL_TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, (void*)sumsum, dev_r, 0, (size_t)reducesize*2*4*sizeof(float), CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
     for(int k = 0; k < reducesize; k++)

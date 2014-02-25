@@ -256,8 +256,8 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 #endif
   for(int j=0; j<height; j++)
   {
-    const float *in = (const float *)ivoid + ch*width*j;
-    float *out = (float *)ovoid + ch*width*j;
+    const float *in = (const float *)ivoid + (size_t)ch*width*j;
+    float *out = (float *)ovoid + (size_t)ch*width*j;
     for(int i=0; i<width; i++, in+=ch, out+=ch)
     {
       out[0] = clipnan(in[0]);
@@ -277,7 +277,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   {
     for(int j=0; j<height; j++)
     {
-      float *out = ((float *)ovoid) + ch*j*width;
+      float *out = ((float *)ovoid) + (size_t)ch*j*width;
       for(int i=0; i<width; i++)
         (void)nearest_color(out+ch*i, f, rf);
     }
@@ -292,7 +292,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // first height-1 rows
   for(int j=0; j<height-1; j++)
   {
-    float *out = ((float *)ovoid) + ch*j*width;
+    float *out = ((float *)ovoid) + (size_t)ch*j*width;
 
     // first column
     err = nearest_color(out, f, rf);
@@ -320,7 +320,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // last row
   do
   {
-    float *out = ((float *)ovoid) + ch*(height-1)*width;
+    float *out = ((float *)ovoid) + (size_t)ch*(height-1)*width;
 
     // lower left pixel
     err = nearest_color(out, f, rf);
@@ -388,7 +388,7 @@ void process_random (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 #endif
   for(int j=0; j<height; j++)
   {
-    const int k = ch*width*j;
+    const size_t k = (size_t)ch*width*j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();

@@ -1176,19 +1176,20 @@ dt_view_image_expose(
       FILE *f = fopen(path, "rb");
       if(f)
       {
+        char line[2048];
         cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size (cr, .015*fscale);
         // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%[^\n]", path);
+          int read = fscanf(f, "%2048[^\n]", line);
           if(read != 1) break;
           fgetc(f); // munch \n
 
           cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
           cairo_set_source_rgb(cr, .7, .7, .7);
-          cairo_text_path(cr, path);
+          cairo_text_path(cr, line);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 1.0);
           cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);

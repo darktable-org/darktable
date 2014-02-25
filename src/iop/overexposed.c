@@ -115,7 +115,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // FIXME: turn off the module instead?
   if(!dev->overexposed.enabled || !dev->gui_attached)
   {
-    memcpy(o, i, roi_out->width*roi_out->height*sizeof(float)*ch);
+    memcpy(o, i, (size_t)roi_out->width*roi_out->height*sizeof(float)*ch);
     return;
   }
 
@@ -132,7 +132,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, upper_color, lower_color) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;

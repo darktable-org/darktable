@@ -139,7 +139,7 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
@@ -162,7 +162,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float eps = 0.0001f;
   float lwmax = eps;
 
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     lwmax = fmaxf(lwmax, (inp[0]*0.01f));
@@ -173,7 +173,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, lwmax) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
@@ -195,7 +195,7 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
@@ -326,10 +326,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     const int groupsize = maxsizes[0];
     const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, groupsize) / groupsize);
 
-    dev_m = dt_opencl_alloc_device_buffer(devid, bufsize*sizeof(float));
+    dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize*sizeof(float));
     if(dev_m == NULL) goto error;
 
-    dev_r = dt_opencl_alloc_device_buffer(devid, reducesize*sizeof(float));
+    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize*sizeof(float));
     if(dev_r == NULL) goto error;
 
     sizes[0] = bwidth;
@@ -360,7 +360,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     if(err != CL_SUCCESS) goto error;
 
     float maximum[reducesize];
-    err = dt_opencl_read_buffer_from_device(devid, (void*)maximum, dev_r, 0, reducesize*sizeof(float), CL_TRUE);
+    err = dt_opencl_read_buffer_from_device(devid, (void*)maximum, dev_r, 0, (size_t)reducesize*sizeof(float), CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_release_mem_object(dev_r);

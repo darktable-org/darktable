@@ -23,20 +23,51 @@
 #include <assert.h>
 #include <string.h>
 #include <xmmintrin.h>
-#include "iop/exposure.h"
 #include "common/opencl.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "dtgtk/resetlabel.h"
+#include "dtgtk/slider.h"
 #include "bauhaus/bauhaus.h"
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
 
 DT_MODULE(3)
+
+
+typedef struct dt_iop_exposure_params_t
+{
+  float black, exposure, gain;
+}
+dt_iop_exposure_params_t;
+
+typedef struct dt_iop_exposure_gui_data_t
+{
+  GtkVBox *vbox1, *vbox2;
+  GtkCheckButton *autoexp;
+  GtkWidget* black;
+  GtkWidget* exposure;
+  GtkWidget* autoexpp;
+}
+dt_iop_exposure_gui_data_t;
+
+typedef struct dt_iop_exposure_data_t
+{
+  float black, exposure, gain;
+}
+dt_iop_exposure_data_t;
+
+typedef struct dt_iop_exposure_global_data_t
+{
+  int kernel_exposure;
+}
+dt_iop_exposure_global_data_t;
+
 
 const char *name()
 {
@@ -218,8 +249,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    const float *in = ((float *)i) + ch*k*roi_out->width;
-    float *out = ((float *)o) + ch*k*roi_out->width;
+    const float *in = ((float *)i) + (size_t)ch*k*roi_out->width;
+    float *out = ((float *)o) + (size_t)ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=4,out+=4)
       _mm_store_ps(out, (_mm_load_ps(in)-blackv)*scalev);
   }

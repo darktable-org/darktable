@@ -126,6 +126,9 @@ typedef struct dt_opencl_t
 
   // global kernels for gaussian filtering, to be reused by a few plugins.
   struct dt_gaussian_cl_global_t *gaussian;
+
+  // global kernels for interpolation resampling.
+  struct dt_interpolation_cl_global_t *interpolation;
 }
 dt_opencl_t;
 
@@ -216,7 +219,7 @@ void* dt_opencl_copy_host_to_device(const int devid, void *host, const int width
 
 void* dt_opencl_copy_host_to_device_rowpitch(const int devid, void *host, const int width, const int height, const int bpp, const int rowpitch);
 
-void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host);
+void* dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host);
 
 int dt_opencl_enqueue_copy_image(const int devid, cl_mem src, cl_mem dst, size_t *orig_src, size_t *orig_dst, size_t *region);
 
@@ -234,9 +237,9 @@ int dt_opencl_read_buffer_from_device(const int devid, void *host, void *device,
 
 int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, const size_t offset, const size_t size, const int blocking);
 
-void* dt_opencl_alloc_device_buffer(const int devid, const int size);
+void* dt_opencl_alloc_device_buffer(const int devid, const size_t size);
 
-void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const int size, const int flags);
+void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags);
 
 void dt_opencl_release_mem_object(void *mem);
 

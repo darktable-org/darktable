@@ -41,6 +41,7 @@ typedef struct dt_map_t
 {
   GtkWidget *center;
   OsmGpsMap *map;
+  OsmGpsMapSource_t map_source;
   OsmGpsMapLayer *osd;
   GSList *images;
   GdkPixbuf *pin;
@@ -69,6 +70,8 @@ static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdo
 static void _view_map_show_osd(const dt_view_t *view, gboolean enabled);
 /* proxy function to set the map source */
 static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source);
+/* wrapper for setting the map source in the GObject */
+static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -130,7 +133,7 @@ void init(dt_view_t *self)
     lib->pin = init_pin();
     lib->drop_filmstrip_activated = FALSE;
 
-    OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+    OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
     const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
     {
@@ -146,11 +149,13 @@ void init(dt_view_t *self)
         }
       }
     }
-    else // open street map should be a nice default ...
-      dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(OSM_GPS_MAP_SOURCE_OPENSTREETMAP));
+    else
+      dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
+
+    lib->map_source = map_source;
 
     lib->map = g_object_new (OSM_TYPE_GPS_MAP,
-                             "map-source", map_source,
+                             "map-source", OSM_GPS_MAP_SOURCE_NULL,
                              "proxy-uri",g_getenv("http_proxy"),
                              NULL);
 
@@ -199,6 +204,8 @@ void cleanup(dt_view_t *self)
   {
     g_object_unref(G_OBJECT(lib->pin));
     g_object_unref(G_OBJECT(lib->osd));
+    // FIXME: it would be nice to cleanly destroy the object, but we are doing this inside expose() so removing the widget can cause segfaults.
+//     g_object_unref(G_OBJECT(lib->map));
   }
   free(self->data);
 }
@@ -498,6 +505,9 @@ void enter(dt_view_t *self)
   lib->selected_image = 0;
   lib->start_drag = FALSE;
 
+  /* set the correct map source */
+  _view_map_set_map_source_g_object(self, lib->map_source);
+
   /* replace center widget */
   GtkWidget *parent = gtk_widget_get_parent(dt_ui_center(darktable.gui->ui));
   gtk_widget_hide(dt_ui_center(darktable.gui->ui));
@@ -536,6 +546,9 @@ void enter(dt_view_t *self)
 
 void leave(dt_view_t *self)
 {
+  /* disable the map source again. no need to risk network traffic while we are not in map mode. */
+  _view_map_set_map_source_g_object(self, OSM_GPS_MAP_SOURCE_NULL);
+
   /* disconnect from filmstrip image activate */
   dt_control_signal_disconnect(darktable.signals,
                                G_CALLBACK(_view_map_filmstrip_activate_callback),
@@ -600,13 +613,13 @@ void connect_key_accels(dt_view_t *self)
 }
 
 
-void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom)
+static void _view_map_center_on_location(const dt_view_t *view, gdouble lon, gdouble lat, gdouble zoom)
 {
   dt_map_t *lib = (dt_map_t *)view->data;
   osm_gps_map_set_center_and_zoom(lib->map, lat, lon, zoom);
 }
 
-void _view_map_show_osd(const dt_view_t *view, gboolean enabled)
+static void _view_map_show_osd(const dt_view_t *view, gboolean enabled)
 {
   dt_map_t *lib = (dt_map_t*)view->data;
 
@@ -623,21 +636,27 @@ void _view_map_show_osd(const dt_view_t *view, gboolean enabled)
   g_signal_emit_by_name(lib->map, "changed");
 }
 
-void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source)
+static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source)
 {
   dt_map_t *lib = (dt_map_t*)view->data;
 
-  const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
-  const gchar *new_map_source = osm_gps_map_source_get_friendly_name(map_source);
-  if(!g_strcmp0(old_map_source, new_map_source))
-    return;
-
-  dt_conf_set_string("plugins/map/map_source", new_map_source);
   GValue value = {0,};
   g_value_init(&value, G_TYPE_INT);
   g_value_set_int(&value, map_source);
   g_object_set_property(G_OBJECT(lib->map), "map-source", &value);
   g_value_unset(&value);
+}
+
+static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t map_source)
+{
+  dt_map_t *lib = (dt_map_t*)view->data;
+
+  if(map_source == lib->map_source)
+    return;
+
+  lib->map_source = map_source;
+  dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
+  _view_map_set_map_source_g_object(view, map_source);
 }
 
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data)

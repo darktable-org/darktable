@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-04 18:04+0100\n"
-"PO-Revision-Date: 2014-02-04 18:09+0100\n"
+"POT-Creation-Date: 2014-02-21 16:54+0100\n"
+"PO-Revision-Date: 2014-02-21 16:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -638,6 +638,19 @@ msgstr "nommage des fichiers"
 msgid "file naming pattern used for a import session"
 msgstr "nommage des fichiers pour la session d'importation"
 
+#: ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Table lumineuse et chambre noire virtuelles"
+
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organiser et développer les images d'un boîtier numérique"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "graphisme;photographie;raw;"
+
 #: ../src/cli/main.c:97
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
@@ -798,7 +811,7 @@ msgstr "activé(e)"
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
 #: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
 #: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1095
-#: ../src/iop/demosaic.c:1329 ../src/iop/vignette.c:1117
+#: ../src/iop/demosaic.c:1314 ../src/iop/vignette.c:1117
 #: ../src/libs/history.c:155 ../src/libs/live_view.c:404
 msgid "off"
 msgstr "désactivé(e)"
@@ -807,22 +820,22 @@ msgstr "désactivé(e)"
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1197
+#: ../src/common/image.c:1173
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1211
+#: ../src/common/image.c:1187
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1245 ../src/control/jobs/control_jobs.c:406
+#: ../src/common/image.c:1221 ../src/control/jobs/control_jobs.c:406
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1399
+#: ../src/common/image.c:1375
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1788,13 +1801,13 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s a été importé"
 msgstr[1] "%s ont été importés"
 
-#: ../src/develop/tiling.c:805 ../src/develop/tiling.c:1101
+#: ../src/develop/tiling.c:807 ../src/develop/tiling.c:1105
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
 "tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
 
-#: ../src/develop/pixelpipe_hb.c:2169
+#: ../src/develop/pixelpipe_hb.c:2168
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2213,7 +2226,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:411 ../src/iop/levels.c:286
+#: ../src/iop/exposure.c:412 ../src/iop/levels.c:285
 #: ../src/iop/tonecurve.c:661
 msgid "auto"
 msgstr "auto"
@@ -2536,35 +2549,35 @@ msgstr "16-bits"
 msgid "PPM (16-bit)"
 msgstr "PPM (16-bits)"
 
-#: ../src/imageio/format/tiff.c:341
+#: ../src/imageio/format/tiff.c:330
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bits)"
 
-#: ../src/imageio/format/tiff.c:386
+#: ../src/imageio/format/tiff.c:375
 msgid "8 bit"
 msgstr "8 bits"
 
-#: ../src/imageio/format/tiff.c:387
+#: ../src/imageio/format/tiff.c:376
 msgid "16 bit"
 msgstr "16 bits"
 
-#: ../src/imageio/format/tiff.c:388
+#: ../src/imageio/format/tiff.c:377
 msgid "32 bit (float)"
 msgstr "32 bits (flottant)"
 
-#: ../src/imageio/format/tiff.c:400
+#: ../src/imageio/format/tiff.c:389
 msgid "uncompressed"
 msgstr "non compressé"
 
-#: ../src/imageio/format/tiff.c:401
+#: ../src/imageio/format/tiff.c:390
 msgid "deflate"
 msgstr "deflate"
 
-#: ../src/imageio/format/tiff.c:402
+#: ../src/imageio/format/tiff.c:391
 msgid "deflate with predictor"
 msgstr "deflate avec prédiction"
 
-#: ../src/imageio/format/tiff.c:403
+#: ../src/imageio/format/tiff.c:392
 msgid "deflate with predictor (float)"
 msgstr "deflate avec prédiction (flottant)"
 
@@ -2996,7 +3009,7 @@ msgstr "chroma"
 msgid "change color saturation at each feature size"
 msgstr "changer la saturation pour chaque taille"
 
-#: ../src/iop/atrous.c:1437 ../src/iop/highpass.c:509
+#: ../src/iop/atrous.c:1437 ../src/iop/highpass.c:508
 msgid "sharpness"
 msgstr "netteté"
 
@@ -4290,24 +4303,24 @@ msgctxt "accel"
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:1315
+#: ../src/iop/demosaic.c:1300
 msgid "PPG (fast)"
 msgstr "PPG (rapide)"
 
-#: ../src/iop/demosaic.c:1316
+#: ../src/iop/demosaic.c:1301
 msgid "amaze (slow)"
 msgstr "amaze (lent)"
 
-#: ../src/iop/demosaic.c:1317 ../src/iop/dither.c:563
+#: ../src/iop/demosaic.c:1302 ../src/iop/dither.c:563
 #: ../src/iop/highlights.c:377
 msgid "method"
 msgstr "méthode"
 
-#: ../src/iop/demosaic.c:1319
+#: ../src/iop/demosaic.c:1304
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:1322
+#: ../src/iop/demosaic.c:1307
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -4317,59 +4330,59 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:1323
+#: ../src/iop/demosaic.c:1308
 msgid "edge threshold"
 msgstr "seuil "
 
-#: ../src/iop/demosaic.c:1327
+#: ../src/iop/demosaic.c:1312
 msgid "color smoothing"
 msgstr "lissage des couleurs"
 
-#: ../src/iop/demosaic.c:1330
+#: ../src/iop/demosaic.c:1315
 msgid "one time"
 msgstr "une passe"
 
-#: ../src/iop/demosaic.c:1331
+#: ../src/iop/demosaic.c:1316
 msgid "two times"
 msgstr "deux passes"
 
-#: ../src/iop/demosaic.c:1332
+#: ../src/iop/demosaic.c:1317
 msgid "three times"
 msgstr "trois passes"
 
-#: ../src/iop/demosaic.c:1333
+#: ../src/iop/demosaic.c:1318
 msgid "four times"
 msgstr "quatre passes"
 
-#: ../src/iop/demosaic.c:1334
+#: ../src/iop/demosaic.c:1319
 msgid "five times"
 msgstr "cinq passes"
 
-#: ../src/iop/demosaic.c:1335
+#: ../src/iop/demosaic.c:1320
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:1339
+#: ../src/iop/demosaic.c:1324
 msgid "match greens"
 msgstr "correction des verts"
 
-#: ../src/iop/demosaic.c:1340
+#: ../src/iop/demosaic.c:1325
 msgid "disabled"
 msgstr "désactivée"
 
-#: ../src/iop/demosaic.c:1341
+#: ../src/iop/demosaic.c:1326
 msgid "local average"
 msgstr "moyenne locale"
 
-#: ../src/iop/demosaic.c:1342
+#: ../src/iop/demosaic.c:1327
 msgid "full average"
 msgstr "moyenne globale"
 
-#: ../src/iop/demosaic.c:1343
+#: ../src/iop/demosaic.c:1328
 msgid "full and local average"
 msgstr "moyenne globale et locale"
 
-#: ../src/iop/demosaic.c:1344
+#: ../src/iop/demosaic.c:1329
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
@@ -4527,7 +4540,7 @@ msgstr "noir"
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:414
+#: ../src/iop/exposure.c:415
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
 
@@ -4780,15 +4793,15 @@ msgctxt "accel"
 msgid "contrast boost"
 msgstr "renforcer le contraste"
 
-#: ../src/iop/highpass.c:512
+#: ../src/iop/highpass.c:511
 msgid "the sharpness of highpass filter"
 msgstr "netteté du filtre passe-haut"
 
-#: ../src/iop/highpass.c:518
+#: ../src/iop/highpass.c:517
 msgid "contrast boost"
 msgstr "renforcer le contraste"
 
-#: ../src/iop/highpass.c:521
+#: ../src/iop/highpass.c:520
 msgid "the contrast of highpass filter"
 msgstr "contraste du filtre passe-haut"
 
@@ -5076,26 +5089,26 @@ msgstr "corrections réellement effectuées"
 msgid "levels"
 msgstr "niveaux"
 
-#: ../src/iop/levels.c:270
+#: ../src/iop/levels.c:269
 msgid ""
 "drag handles to set black, grey, and white points.  operates on L channel."
 msgstr ""
 "déplacer les barres pour régler les points noir, gris et blanc. agit sur le "
 "canal L."
 
-#: ../src/iop/levels.c:287
+#: ../src/iop/levels.c:286
 msgid "apply auto levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/levels.c:291
+#: ../src/iop/levels.c:290
 msgid "pick blackpoint from image"
 msgstr "choisir le point noir dans l'image"
 
-#: ../src/iop/levels.c:295
+#: ../src/iop/levels.c:294
 msgid "pick medium greypoint from image"
 msgstr "choisir le point gris dans l'image"
 
-#: ../src/iop/levels.c:299
+#: ../src/iop/levels.c:298
 msgid "pick whitepoint from image"
 msgstr "choisir le point blanc dans l'image"
 
@@ -8152,7 +8165,7 @@ msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1691 ../src/views/map.c:565
+#: ../src/views/darkroom.c:1691 ../src/views/map.c:578
 #: ../src/views/tethering.c:385
 msgctxt "accel"
 msgid "toggle film strip"
@@ -8280,16 +8293,16 @@ msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/map.c:95
+#: ../src/views/map.c:98
 msgid "map"
 msgstr "carte"
 
-#: ../src/views/map.c:562
+#: ../src/views/map.c:575
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/map.c:563
+#: ../src/views/map.c:576
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"

@@ -17,11 +17,11 @@
 */
 
 // edge-avoiding wavelet:
-#define gweight(i, j, ii, jj) 1.0/(fabsf(weight_a[l][wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][wd*((jj)>>(l-1)) + ((ii)>>(l-1))])+1.e-5)
+#define gweight(i, j, ii, jj) 1.0/(fabsf(weight_a[l][(size_t)wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][(size_t)wd*((jj)>>(l-1)) + ((ii)>>(l-1))])+1.e-5)
 // #define gweight(i, j, ii, jj) 1.0/(powf(fabsf(weight_a[l][wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][wd*((jj)>>(l-1)) + ((ii)>>(l-1))]),0.8)+1.e-5)
 // std cdf(2,2) wavelet:
 // #define gweight(i, j, ii, jj) (wd ? 1.0 : 1.0) //1.0
-#define gbuf(BUF, A, B) ((BUF)[4*(width*((B)) + ((A))) + ch])
+#define gbuf(BUF, A, B) ((BUF)[4*((size_t)width*((B)) + ((A))) + ch])
 
 
 void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int width, const int height)
@@ -29,8 +29,8 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
   const int wd = (int)(1 + (width>>(l-1))), ht = (int)(1 + (height>>(l-1)));
   int ch = 0;
   // store weights for luma channel only, chroma uses same basis.
-  memset(weight_a[l], 0, sizeof(float)*wd*ht);
-  for(int j=0; j<ht-1; j++) for(int i=0; i<wd-1; i++) weight_a[l][j*wd+i] = gbuf(buf, i<<(l-1), j<<(l-1));
+  memset(weight_a[l], 0, (size_t)sizeof(float)*wd*ht);
+  for(int j=0; j<ht-1; j++) for(int i=0; i<wd-1; i++) weight_a[l][(size_t)j*wd+i] = gbuf(buf, i<<(l-1), j<<(l-1));
 
   const int step = 1<<l;
   const int st = step/2;

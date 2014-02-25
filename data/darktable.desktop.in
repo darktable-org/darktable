@@ -1,0 +1,23 @@
+[Desktop Entry]
+Name=Darktable
+_GenericName=Virtual Lighttable and Darkroom
+_Comment=Organize and develop images from digital cameras
+
+X-GNOME-FullName=Darktable Photo Workflow Software
+
+Version=1.0
+
+Type=Application
+Categories=Graphics;Photography;GTK;
+# TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+_Keywords=graphics;photography;raw;
+
+Exec=darktable %U
+TryExec=darktable
+Terminal=false
+StartupNotify=true
+
+MimeType=application/x-darktable;image/x-dcraw;
+
+Icon=darktable
+

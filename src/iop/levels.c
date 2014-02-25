@@ -22,10 +22,11 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "iop/levels.h"
-#include "gui/presets.h"
+#include "develop/imageop.h"
 #include "develop/develop.h"
 #include "control/control.h"
+#include "gui/draw.h"
+#include "gui/presets.h"
 #include "gui/gtk.h"
 #include "dtgtk/button.h"
 #include "common/colorspaces.h"
@@ -36,6 +37,65 @@
 #define DT_GUI_CURVE_INFL .3f
 
 DT_MODULE(1)
+
+static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
+static gboolean dt_iop_levels_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean dt_iop_levels_button_release(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
+static void dt_iop_levels_pick_black_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_pick_grey_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_pick_white_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self);
+static void dt_iop_levels_autoadjust_callback(GtkRange *range, dt_iop_module_t *self);
+
+
+typedef struct dt_iop_levels_params_t
+{
+  float levels[3];
+  int levels_preset;
+}
+dt_iop_levels_params_t;
+
+typedef enum dt_iop_levels_pick_t
+{
+  NONE,
+  BLACK,
+  GREY,
+  WHITE
+}
+dt_iop_levels_pick_t;
+
+typedef struct dt_iop_levels_gui_data_t
+{
+  GtkHBox *hbox;
+  GtkDrawingArea *area;
+  GtkLabel *label;
+  double mouse_x, mouse_y;
+  int dragging, handle_move;
+  float drag_start_percentage;
+  dt_iop_levels_pick_t current_pick;
+  GtkToggleButton *activeToggleButton;
+  float last_picked_color;
+  double pick_xy_positions[3][2];
+}
+dt_iop_levels_gui_data_t;
+
+typedef struct dt_iop_levels_data_t
+{
+  float in_low;
+  float in_high;
+  float in_inv_gamma;
+  float lut[0x10000];
+}
+dt_iop_levels_data_t;
+
+typedef struct dt_iop_levels_global_data_t
+{
+  int kernel_levels;
+}
+dt_iop_levels_global_data_t;
+
 
 const char *name()
 {
@@ -64,8 +124,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int k=0; k<roi_out->height; k++)
   {
-    float *in = ((float *)i) + k*ch*roi_out->width;
-    float *out = ((float *)o) + k*ch*roi_out->width;
+    float *in = ((float *)i) + (size_t)k*ch*roi_out->width;
+    float *out = ((float *)o) + (size_t)k*ch*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
       float L_in = in[0] / 100.0;
@@ -104,7 +164,6 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     }
   }
-
 }
 
 #ifdef HAVE_OPENCL

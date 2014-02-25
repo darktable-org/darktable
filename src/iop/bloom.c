@@ -117,9 +117,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   /* gather light by threshold */
-  float *blurlightness = malloc(roi_out->width*roi_out->height*sizeof(float));
-  memset(blurlightness,0,(roi_out->width*roi_out->height*sizeof(float)));
-  memcpy(out,in,roi_out->width*roi_out->height*ch*sizeof(float));
+  float *blurlightness = malloc((size_t)roi_out->width*roi_out->height*sizeof(float));
+  memset(blurlightness,0,((size_t)roi_out->width*roi_out->height*sizeof(float)));
+  memcpy(out,in,(size_t)roi_out->width*roi_out->height*ch*sizeof(float));
 
   int rad = 256.0f*(fmin(100.0f,data->size+1.0f)/100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -131,7 +131,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid, ovoid, roi_out, roi_in, data,blurlightness) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = ((float *)ivoid) + ch*k;
     float L = inp[0]*scale;
@@ -158,7 +158,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float scanline[size];
       float L=0;
       int hits = 0;
-      int index = y * roi_out->width;
+      size_t index = (size_t)y * roi_out->width;
       for(int x=-hr; x<roi_out->width; x++)
       {
         int op = x - hr-1;
@@ -192,7 +192,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float scanline[size];
       float L=0;
       int hits=0;
-      int index = -hr*roi_out->width+x;
+      size_t index = (size_t)x - hr*roi_out->width;
       for(int y=-hr; y<roi_out->height; y++)
       {
         int op=y-hr-1;
@@ -223,7 +223,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data,blurlightness) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;
