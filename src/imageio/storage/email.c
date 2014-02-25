@@ -98,7 +98,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   dt_image_full_path(imgid, dirname, 1024, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
 
-  strcpy(dirname, filename);
+  g_strlcpy(dirname, filename, sizeof(dirname));
 
   dt_image_path_append_version(imgid, dirname, 4096);
 

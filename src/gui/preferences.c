@@ -765,7 +765,7 @@ static void update_accels_model(gpointer widget, gpointer data)
   gchar *end;
   gint i;
 
-  strcpy(path, "<Darktable>");
+  g_strlcpy(path, "<Darktable>", sizeof(path));
   end = path + strlen(path);
 
   for(i = 0; i < gtk_tree_model_iter_n_children(model, NULL); i++)
@@ -1016,7 +1016,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
       return FALSE;
 
     // Otherwise, construct the proper accelerator path and delete its entry
-    strcpy(accel, "<Darktable>");
+    g_strlcpy(accel, "<Darktable>", sizeof(accel));
     path = gtk_tree_model_get_path(model, &iter);
     path_to_accel(model, path, accel);
     gtk_tree_path_free(path);

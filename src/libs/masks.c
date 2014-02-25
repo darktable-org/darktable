@@ -299,12 +299,12 @@ static void _set_iter_name(dt_lib_masks_t *lm, dt_masks_form_t *form, int state,
   if (!form) return;
 
   char str[256] = "";
-  strcat(str,form->name);
+  g_strlcat(str, form->name, sizeof(str));
 
   if (opacity != 1.0f)
   {
     char str2[256] = "";
-    strcpy(str2,str);
+    g_strlcpy(str2, str, sizeof(str2));
     snprintf(str,256,"%s %d%%",str2,(int)(opacity*100));
   }
 
@@ -961,7 +961,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
             continue;
           }
           char str[10000] = "";
-          strcat(str,form->name);
+          g_strlcat(str, form->name, sizeof(str));
           int nbuse = 0;
 
           //we search were this form is used
@@ -983,8 +983,8 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
                     nbuse = -1;
                     break;
                   }
-                  if (nbuse==0) strcat(str," (");
-                  strcat(str," ");
+                  if (nbuse==0) g_strlcat(str, " (", sizeof(str));
+                  g_strlcat(str, " ", sizeof(str));
                   g_strlcat(str,m->name(),sizeof(str));
                   nbuse++;
                 }
@@ -995,7 +995,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
           }
           if (nbuse != -1)
           {
-            if (nbuse>0) strcat(str," )");
+            if (nbuse>0) g_strlcat(str, ") ", sizeof(str));
 
             //we add the menu entry
             item = gtk_menu_item_new_with_label(str);
@@ -1171,8 +1171,8 @@ static int _is_form_used(int formid, dt_masks_form_t *grp, char *text)
         if (point->formid == formid)
         {
           nb++;
-          if (nb>1) strcat(text,"\n");
-          strcat(text,grp->name);
+          if (nb>1) g_strlcat(text, "\n", sizeof(text));
+          g_strlcat(text, grp->name, sizeof(text));
         }
         if (form->type & DT_MASKS_GROUP) nb += _is_form_used(formid,form,text);
       }
@@ -1188,7 +1188,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
   if (form->type & DT_MASKS_CLONE) return;
   //we create the text entry
   char str[256] = "";
-  strcat(str,form->name);
+  g_strlcat(str, form->name, sizeof(str));
   //we get the right pixbufs
   GdkPixbuf *icop = NULL;
   GdkPixbuf *icinv = NULL;

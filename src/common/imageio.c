@@ -716,7 +716,7 @@ int dt_imageio_export_with_flags(
           h->enabled = s->enabled;
           h->module = m;
           h->multi_priority = 1;
-          strcpy(h->multi_name, "");
+          g_strlcpy(h->multi_name, "", sizeof(h->multi_name));
 
           dev.history_end++;
           dev.history = g_list_append(dev.history, h);

@@ -70,7 +70,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     const dt_iop_colorin_params1_t *old = old_params;
     dt_iop_colorin_params_t *new = new_params;
 
-    strncpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
+    g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
     new->intent = old->intent;
     new->normalize = 0;
     return 0;
