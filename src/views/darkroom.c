@@ -1223,7 +1223,7 @@ void enter(dt_view_t *self)
       dt_ui_container_add_widget(darktable.gui->ui,
                                  DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
       dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
     }
 

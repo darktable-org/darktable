@@ -253,7 +253,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   //we create the new group
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name,128,_("group #%d"),g_list_length(darktable.develop->forms));
+  snprintf(grp->name,sizeof(grp->name),_("group #%d"),g_list_length(darktable.develop->forms));
 
   //we add all selected forms to this group
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -305,7 +305,7 @@ static void _set_iter_name(dt_lib_masks_t *lm, dt_masks_form_t *form, int state,
   {
     char str2[256] = "";
     g_strlcpy(str2, str, sizeof(str2));
-    snprintf(str,256,"%s %d%%",str2,(int)(opacity*100));
+    snprintf(str, sizeof(str), "%s %d%%", str2, (int)(opacity*100));
   }
 
   GdkPixbuf *icop = NULL;
@@ -1135,7 +1135,7 @@ static gboolean _tree_query_tooltip (GtkWidget *widget, gint x, gint y, gboolean
   gtk_tree_model_get (model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
   if (!show) return FALSE;
 
-  g_snprintf (buffer, 511, "%s", tmp);
+  g_strlcpy (buffer, tmp, sizeof(buffer));
   gtk_tooltip_set_markup (tooltip, buffer);
 
   gtk_tree_view_set_tooltip_row (tree_view, tooltip, path);

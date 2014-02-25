@@ -66,7 +66,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 {
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
-  g_strlcpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -99,7 +99,7 @@ dt_imageio_load_module_format (dt_imageio_module_format_t *module, const char *l
 #ifdef USE_LUA
   {
     char pseudo_type_name[1024];
-    snprintf(pseudo_type_name,1024,"dt_imageio_module_format_data_%s",module->plugin_name);
+    snprintf(pseudo_type_name,sizeof(pseudo_type_name),"dt_imageio_module_format_data_%s",module->plugin_name);
     luaA_Type my_type = luaA_type_add(pseudo_type_name,module->params_size(module));
     module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,my_type);
     luaA_struct_typeid(darktable.lua_state.state,my_type);
@@ -127,8 +127,8 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   dt_imageio_module_format_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/plugins/imageio/format", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/plugins/imageio/format", sizeof(plugindir));
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   const int name_offset = strlen(SHARED_MODULE_PREFIX),
@@ -176,7 +176,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
 {
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
-  g_strlcpy(module->plugin_name, plugin_name, 20);
+  g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!module->module) goto error;
   int (*version)();
@@ -206,7 +206,7 @@ dt_imageio_load_module_storage (dt_imageio_module_storage_t *module, const char 
 #ifdef USE_LUA
   {
     char pseudo_type_name[1024];
-    snprintf(pseudo_type_name,1024,"dt_imageio_module_storage_data_%s",module->plugin_name);
+    snprintf(pseudo_type_name,sizeof(pseudo_type_name),"dt_imageio_module_storage_data_%s",module->plugin_name);
     luaA_Type my_type = luaA_type_add(pseudo_type_name,module->params_size(module));
     module->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,my_type);
     luaA_struct_typeid(darktable.lua_state.state,my_type);
@@ -232,8 +232,8 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
   dt_imageio_module_storage_t *module;
   char plugindir[1024], plugin_name[256];
   const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/plugins/imageio/storage", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/plugins/imageio/storage", sizeof(plugindir));
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return 1;
   const int name_offset = strlen(SHARED_MODULE_PREFIX),

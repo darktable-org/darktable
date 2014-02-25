@@ -142,7 +142,7 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
-void dt_image_film_roll(const dt_image_t *img, char *pathname, int len);
+void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len);
 /** appends version numbering for duplicated images without querying the db. */
 void dt_image_path_append_version_no_db(const int version, char *pathname, const int len);
 /** appends version numbering for duplicated images. */

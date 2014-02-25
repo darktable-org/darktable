@@ -186,7 +186,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
       char v[30];
 
       if (!first) strcat (req, ",");
-      snprintf (v, 30, "%u", value);
+      snprintf (v, sizeof(v), "%u", value);
       strcat (req, v);
       first=0;
       l = g_list_next(l);
@@ -266,13 +266,13 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
       mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if (enabled)
       {
-        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
-        else g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
+        if (strcmp(mname,"0") == 0) g_snprintf(name,sizeof(name),"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+        else g_snprintf(name,sizeof(name),"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
       }
       else
       {
-        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
-        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
+        if (strcmp(mname,"0") == 0) g_snprintf(name,sizeof(name),"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
+        g_snprintf(name,sizeof(name),"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
       }
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));

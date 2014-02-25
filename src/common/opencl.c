@@ -938,7 +938,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     if (linkedfile_len>0)
     {
       char link_dest[1024];
-      snprintf(link_dest, 1024, "%s/%s", cachedir, linkedfile);
+      snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
       unlink(link_dest);
     }
     unlink(binname);
@@ -976,7 +976,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
   char options[1024];
-  snprintf(options, 1024, "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s", (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), cl->dev[dev].vendor, kerneldir);
+  snprintf(options, sizeof(options), "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s", (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), cl->dev[dev].vendor, kerneldir);
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
 
   if(err != CL_SUCCESS)
@@ -1047,7 +1047,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
         {
           // save opencl compiled binary as md5sum-named file
           char link_dest[1024];
-          snprintf(link_dest, 1024, "%s/%s", cachedir, md5sum);
+          snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
           FILE* f = fopen(link_dest, "w+");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);

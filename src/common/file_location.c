@@ -122,9 +122,9 @@ static char* find_install_dir(const char*suffix)
       break;
     }
   if(darktable.progname[0] == '/') // absolute path
-    snprintf(tmp, 4096, "%s", darktable.progname);
+    snprintf(tmp, sizeof(tmp), "%s", darktable.progname);
   else if(contains) // relative path
-    snprintf(tmp, 4096, "%s/%s", curr, darktable.progname);
+    snprintf(tmp, sizeof(tmp), "%s/%s", curr, darktable.progname);
   else
   {
     // no idea where we have been called. use compiled in path

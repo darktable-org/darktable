@@ -542,7 +542,7 @@ dt_colorspaces_create_alternate_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "darktable alternate %s", makermodel);
+  snprintf(name, sizeof(name), "darktable alternate %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -596,7 +596,7 @@ dt_colorspaces_create_vendor_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "darktable vendor %s", makermodel);
+  snprintf(name, sizeof(name), "darktable vendor %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -650,7 +650,7 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "Darktable profiled %s", makermodel);
+  snprintf(name, sizeof(name), "Darktable profiled %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -808,17 +808,17 @@ dt_colorspaces_create_output_profile(const int imgid)
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       params = sqlite3_column_blob(stmt, 0);
-      g_strlcpy(profile, params->iccprofile, 1024);
+      g_strlcpy(profile, params->iccprofile, sizeof(profile));
     }
     sqlite3_finalize(stmt);
   }
   if(!overprofile && profile[0] == '\0')
   {
-    g_strlcpy(profile, "sRGB", 1024);
+    g_strlcpy(profile, "sRGB", sizeof(profile));
   }
   else if(profile[0] == '\0')
   {
-    g_strlcpy(profile, overprofile, 1024);
+    g_strlcpy(profile, overprofile, sizeof(profile));
   }
 
   if(overprofile)
