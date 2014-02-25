@@ -82,9 +82,9 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
     int ex, ey;
 
     //determine GRBG coset; (ey,ex) is the offset of the R sub-array
-    if (FC(winx, winy, filters) == 1) //first pixel is G
+    if (FC(winy, winx, filters) == 1) //first pixel is G
     {
-        if (FC(winx, winy + 1, filters) == 0) {
+        if (FC(winy+1, winx + 1, filters) == 0) {
             ex = 1;
             ey = 0;
         } else {
@@ -93,7 +93,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
         }
     } else //first pixel is R or B
     {
-        if (FC(winx, winy, filters) == 0) {
+        if (FC(winy, winx, filters) == 0) {
             ex = 0;
             ey = 0;
         } else {
