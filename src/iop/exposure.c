@@ -39,10 +39,11 @@
 
 DT_MODULE(3)
 
-
 typedef struct dt_iop_exposure_params_t
 {
-  float black, exposure, gain;
+  float black, exposure;
+  gboolean deflicker;
+  float deflicker_percentile, deflicker_level;
 }
 dt_iop_exposure_params_t;
 
@@ -53,12 +54,17 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkWidget* black;
   GtkWidget* exposure;
   GtkWidget* autoexpp;
+  GtkCheckButton *deflicker;
+  GtkWidget *deflicker_percentile;
+  GtkWidget *deflicker_level;
 }
 dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
 {
-  float black, exposure, gain;
+  float black, exposure;
+  gboolean deflicker;
+  float deflicker_percentile, deflicker_level;
 }
 dt_iop_exposure_data_t;
 
@@ -509,10 +515,46 @@ autoexpp_callback (GtkWidget* slider, gpointer user_data)
 }
 
 static void
+deflicker_process (dt_iop_module_t *self)
+{
+  if(!(self->dev->image_storage.flags & DT_IMAGE_RAW)) return;
+
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+  float correction;
+
+  if(p->deflicker && !compute_correction(self, &correction))
+    exposure_set_white(self, exposure2white(correction));
+}
+
+static void
+deflicker_params_callback (GtkWidget* slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+
+  if(!(self->dev->image_storage.flags & DT_IMAGE_RAW)) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  p->deflicker = TRUE;
+  p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
+  p->deflicker_level = dt_bauhaus_slider_get(g->deflicker_level);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), !p->deflicker);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
+
+  deflicker_process (self);
+}
+
+static void
 deflicker_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
+
+  if(!(self->dev->image_storage.flags & DT_IMAGE_RAW)) return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
@@ -528,36 +570,6 @@ deflicker_callback (GtkToggleButton *button, gpointer user_data)
   }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
-deflicker_process (dt_iop_module_t *self)
-{
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  float correction;
-
-  if(p->deflicker && !compute_correction(self, &correction))
-    exposure_set_white(self, exposure2white(correction));
-}
-
-static void
-deflicker_params_callback (GtkWidget* slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-
-  p->deflicker = TRUE;
-  p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
-  p->deflicker_level = dt_bauhaus_slider_get(g->deflicker_level);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), !p->deflicker);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
-
-  deflicker_process (self);
 }
 
 static void
