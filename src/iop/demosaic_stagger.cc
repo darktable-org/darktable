@@ -20,6 +20,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 inline float normclamp(float a) {
     if (a < 0.0f) a = 0.0f;
     if (a > 1.0f) a = 1.0f;
@@ -66,17 +70,24 @@ inline int sign(float a) {
  */
 static void
 demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs) {
-    
 
+
+//#ifdef _OPENMP
+//#pragma omp single
+//#endif
     //extract in and out window parameters.
-    int wonx = roi_out->x;
-    int wony = roi_out->y;
-    int wonw = roi_out->width;
+ #ifdef _OPENMP
+#pragma omp parallel default(none) shared(in,out,roi_out,roi_in,stdout)
+#endif
+    {
+        const int wonx = roi_out->x;
+    const int wony = roi_out->y;
+    const int wonw = roi_out->width;
     //    int wonh = roi_out->height;
-    int winx = roi_in->x;
-    int winy = roi_in->y;
-    int winw = roi_in->width;
-    int winh = roi_in->height;
+    const int winx = roi_in->x;
+    const int winy = roi_in->y;
+    const int winw = roi_in->width;
+    const int winh = roi_in->height;
 
     //offset of R pixel within a Bayer quartet
     int ex, ey;
@@ -84,7 +95,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
     //determine GRBG coset; (ey,ex) is the offset of the R sub-array
     if (FC(winy, winx, filters) == 1) //first pixel is G
     {
-        if (FC(winy+1, winx + 1, filters) == 0) {
+        if (FC(winy + 1, winx + 1, filters) == 0) {
             ex = 1;
             ey = 0;
         } else {
@@ -157,232 +168,237 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
 
         }
      */
-    
-    
+
+
     /** Edge-aware staggered nearest neigbour interpolation rgb neigbours are resp. 3,2,3 with green edge improvement*/
 
     //main body
 
-    for (int j = ey + wony; j < wony + winh; j += 2)
-        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-            //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
-            if (j > 1 && i > 1 && j < winh - 3 && i < winw - 3) {
-                //demosaic q00, r 
-                float r = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-                //demosaic q00, g
-                float g = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
+#ifdef _OPENMP
+#pragma omp for
+#endif
+        for (int j = ey + wony; j < wony + winh; j += 2)
 
-                float comp = 0.0f;
-                if (thrs != 0.0f) {
-                    float g1, g2, g3, g4;
-                    g4 = in[2 + i + (j - 1)* (winw)];
-                    g3 = in[1 + i + j * (winw)];
-                    g2 = in[i + (j + 1)* (winw)];
-                    g1 = in[ i - 1 + (j + 2) * (winw)];
-                    // by averaging the heights of lines 1 and 2 at interpolation 
-                    // point p, the code gains more stability.
-                    comp = (g2 + g3 - g1 - g4) / 4.0f / g;
+            for (int i = ex + wonx; i < wonx + winw; i += 2) {
+                //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
+                if (j > 1 && i > 1 && j < winh - 3 && i < winw - 3) {
+                    //demosaic q00, r 
+                    float r = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
+                    //demosaic q00, g
+                    float g = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
+
+                    float comp = 0.0f;
+                    if (thrs != 0.0f) {
+                        float g1, g2, g3, g4;
+                        g4 = in[2 + i + (j - 1)* (winw)];
+                        g3 = in[1 + i + j * (winw)];
+                        g2 = in[i + (j + 1)* (winw)];
+                        g1 = in[ i - 1 + (j + 2) * (winw)];
+                        // by averaging the heights of lines 1 and 2 at interpolation 
+                        // point p, the code gains more stability.
+                        comp = (g2 + g3 - g1 - g4) / 4.0f / g;
+                    }
+                    //demosaic q00, b
+                    float b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+
+                    //scale comp for thrs
+                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    // extremes protection
+                    float d = 0.0f;
+                    float max = MAX(r * (1.0f + comp), g * (1.0f + comp));
+                    max = MAX(max, b * (1.0f + comp));
+                    float min = MIN(r * (1.0f + comp), g * (1.0f + comp));
+                    min = MIN(max, b * (1.0f + comp));
+                    if (max > 1.0f) {
+                        d = max;
+                    } else if (min < 0.0f) {
+                        d = min;
+                    };
+
+                    out[(size_t) (i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+
+                    //demosaic q10, r 
+                    r = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
+                    //demosaic q10, g
+                    g = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
+
+                    comp = 0.0f;
+                    if (thrs != 0.0f) {
+                        float g1, g2, g3, g4;
+                        g4 = in[3 + i + (j + 2)* (winw)];
+                        g3 = in[2 + i + (j + 1) * (winw)];
+                        g2 = in[1 + i + (j)* (winw)];
+                        g1 = in[ i + (j - 1) * (winw)];
+                        // by averaging the heights of lines 1 and 2 at interpolation 
+                        // point p, the code gains more stability.
+                        comp = (g2 + g3 - g1 - g4) / 4.0f / g;
+                    }
+
+                    //demosaic q10, b
+                    b = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
+
+                    //scale comp for thrs
+                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    // extremes protection
+                    d = 0.0f;
+                    max = MAX(r * (1.0f + comp), g * (1.0f + comp));
+                    max = MAX(max, b * (1.0f + comp));
+                    min = MIN(r * (1.0f + comp), g * (1.0f + comp));
+                    min = MIN(max, b * (1.0f + comp));
+                    if (max > 1.0f) {
+                        d = max;
+                    }
+                    if (min < 0.0f) {
+                        d = min;
+                    };
+
+                    out[(size_t) (1 + i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (1 + i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (1 + i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+
+                    //demosaic q01, r 
+                    r = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
+                    //demosaic q01, g
+                    g = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
+
+                    comp = 0.0f;
+                    if (thrs != 0.0f) {
+                        float g1, g2, g3, g4;
+
+                        g4 = in[2 + i + (j + 3)* (winw)];
+                        g3 = in[1 + i + (j + 2) * (winw)];
+                        g2 = in[i + (j + 1)* (winw)];
+                        g1 = in[ i - 1 + (j) * (winw)];
+                        // by averaging the heights of lines 1 and 2 at interpolation 
+                        // point p, the code gains more stability.
+                        comp = (g2 + g3 - g1 - g4) / 4.0f / g;
+
+                    }
+                    //demosaic q01, b
+                    b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+
+                    //scale comp for thrs
+                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    // extremes protection
+                    d = 0.0f;
+                    max = MAX(r * (1.0f + comp), g * (1.0f + comp));
+                    max = MAX(max, b * (1.0f + comp));
+                    min = MIN(r * (1.0f + comp), g * (1.0f + comp));
+                    min = MIN(max, b * (1.0f + comp));
+                    if (max > 1.0f) {
+                        d = max;
+                    }
+                    if (min < 0.0f) {
+                        d = min;
+                    };
+
+                    out[(size_t) (i + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (i + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (i + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+
+                    //demosaic q11, r 
+                    r = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
+                    //demosaic q11, g
+                    g = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
+
+                    comp = 0.0f;
+                    if (thrs != 0.0f) {
+                        float g1, g2, g3, g4;
+                        g4 = in[3 + i + (j)* (winw)];
+                        g3 = in[2 + i + (j + 1) * (winw)];
+                        g2 = in[1 + i + (j + 2)* (winw)];
+                        g1 = in[ i + (j + 3) * (winw)];
+                        // by averaging the heights of lines 1 and 2 at interpolation 
+                        // point p, the code gains more stability.
+                        comp = (g2 + g3 - g1 - g4) / 4.0f / g;
+                    }
+
+                    //demosaic q11, b
+                    b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
+
+                    //scale comp for thrs
+                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    // extremes protection
+                    d = 0.0f;
+                    max = MAX(r * (1.0f + comp), g * (1.0f + comp));
+                    max = MAX(max, b * (1.0f + comp));
+                    min = MIN(r * (1.0f + comp), g * (1.0f + comp));
+                    min = MIN(max, b * (1.0f + comp));
+                    if (max > 1.0f) {
+                        d = max;
+                    }
+                    if (min < 0.0f) {
+                        d = min;
+                    };
+
+                    out[(size_t) (i + 1 + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+
+                } else {
+                    out[(size_t) (i + j * wonw)*4] = 0;
+                    out[1 + (size_t) (i + j * wonw)*4] = 0;
+                    out[2 + (size_t) (i + j * wonw)*4] = 0;
                 }
-                //demosaic q00, b
-                float b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
 
-                //scale comp for thrs
-                comp = 10.0f * thrs * g * comp / (r + g + b);
-                // extremes protection
-                float d = 0.0f;
-                float max = MAX(r * (1.0f + comp), g * (1.0f + comp));
-                max = MAX(max, b * (1.0f + comp));
-                float min = MIN(r * (1.0f + comp), g * (1.0f + comp));
-                min = MIN(max, b * (1.0f + comp));
-                if (max > 1.0f) {
-                    d = max;
-                } else if (min < 0.0f) {
-                    d = min;
-                };
-
-                out[(size_t) (i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                out[(size_t) 1 + (i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                out[(size_t) 2 + (i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
-
-                //demosaic q10, r 
-                r = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-                //demosaic q10, g
-                g = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-
-                comp = 0.0f;
-                if (thrs != 0.0f) {
-                    float g1, g2, g3, g4;
-                    g4 = in[3 + i + (j + 2)* (winw)];
-                    g3 = in[2 + i + (j + 1) * (winw)];
-                    g2 = in[1 + i + (j)* (winw)];
-                    g1 = in[ i + (j - 1) * (winw)];
-                    // by averaging the heights of lines 1 and 2 at interpolation 
-                    // point p, the code gains more stability.
-                    comp = (g2 + g3 - g1 - g4) / 4.0f / g;
-                }
-
-                //demosaic q10, b
-                b = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
-
-                //scale comp for thrs
-                comp = 10.0f * thrs * g * comp / (r + g + b);
-                // extremes protection
-                d = 0.0f;
-                max = MAX(r * (1.0f + comp), g * (1.0f + comp));
-                max = MAX(max, b * (1.0f + comp));
-                min = MIN(r * (1.0f + comp), g * (1.0f + comp));
-                min = MIN(max, b * (1.0f + comp));
-                if (max > 1.0f) {
-                    d = max;
-                }
-                if (min < 0.0f) {
-                    d = min;
-                };
-
-                out[(size_t) (1 + i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                out[(size_t) 1 + (1 + i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                out[(size_t) 2 + (1 + i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
-
-                //demosaic q01, r 
-                r = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
-                //demosaic q01, g
-                g = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
-
-                comp = 0.0f;
-                if (thrs != 0.0f) {
-                    float g1, g2, g3, g4;
-
-                    g4 = in[2 + i + (j + 3)* (winw)];
-                    g3 = in[1 + i + (j + 2) * (winw)];
-                    g2 = in[i + (j + 1)* (winw)];
-                    g1 = in[ i - 1 + (j) * (winw)];
-                    // by averaging the heights of lines 1 and 2 at interpolation 
-                    // point p, the code gains more stability.
-                    comp = (g2 + g3 - g1 - g4) / 4.0f / g;
-
-                }
-                //demosaic q01, b
-                b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-
-                //scale comp for thrs
-                comp = 10.0f * thrs * g * comp / (r + g + b);
-                // extremes protection
-                d = 0.0f;
-                max = MAX(r * (1.0f + comp), g * (1.0f + comp));
-                max = MAX(max, b * (1.0f + comp));
-                min = MIN(r * (1.0f + comp), g * (1.0f + comp));
-                min = MIN(max, b * (1.0f + comp));
-                if (max > 1.0f) {
-                    d = max;
-                }
-                if (min < 0.0f) {
-                    d = min;
-                };
-
-                out[(size_t) (i + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                out[(size_t) 1 + (i + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                out[(size_t) 2 + (i + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
-
-                //demosaic q11, r 
-                r = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
-                //demosaic q11, g
-                g = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
-
-                comp = 0.0f;
-                if (thrs != 0.0f) {
-                    float g1, g2, g3, g4;
-                    g4 = in[3 + i + (j)* (winw)];
-                    g3 = in[2 + i + (j + 1) * (winw)];
-                    g2 = in[1 + i + (j + 2)* (winw)];
-                    g1 = in[ i + (j + 3) * (winw)];
-                    // by averaging the heights of lines 1 and 2 at interpolation 
-                    // point p, the code gains more stability.
-                    comp = (g2 + g3 - g1 - g4) / 4.0f / g;
-                }
-
-                //demosaic q11, b
-                b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
-
-                //scale comp for thrs
-                comp = 10.0f * thrs * g * comp / (r + g + b);
-                // extremes protection
-                d = 0.0f;
-                max = MAX(r * (1.0f + comp), g * (1.0f + comp));
-                max = MAX(max, b * (1.0f + comp));
-                min = MIN(r * (1.0f + comp), g * (1.0f + comp));
-                min = MIN(max, b * (1.0f + comp));
-                if (max > 1.0f) {
-                    d = max;
-                }
-                if (min < 0.0f) {
-                    d = min;
-                };
-
-                out[(size_t) (i + 1 + (j + 1) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
-
-            } else {
-                out[(size_t) (i + j * wonw)*4] = 0;
-                out[1 + (size_t) (i + j * wonw)*4] = 0;
-                out[2 + (size_t) (i + j * wonw)*4] = 0;
             }
 
-        }
+        //TODO     // top border from 0 to winsize
+        //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
+        //            int j =0;
+        //            //demosaic q00, r 
+        //            out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
+        //            //demosaic q00, g
+        //            out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
+        //            //demosaic q00, b
+        //            out[(size_t) 2 + (i + j * wonw)*4] = in[1 + i + (j + 1)*(winw)];
+        //
+        //            //demosaic q10, r 
+        //            out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
+        //            //demosaic q10, g
+        //            out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
+        //            //demosaic q10, b
+        //            out[(size_t) 2 + (1 + i + j * wonw)*4] = in[1 + i + (1 + j)*(winw)];
+        //        }
+        //
+        //    // bottom border from 0 to wonw
+        //     for (int j = ey + wony; j < wony + winh; j += 2)
+        //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
+        //           if (j > 0 && i > 0 j < winh - 3 && i < winw - 3) {
+        // 
+        //                 //demosaic q00, r 
+        //                out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
+        //                //demosaic q00, g
+        //                out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
+        //                //demosaic q00, b
+        //                out[(size_t) 2 + (i + j * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+        //
+        //                //demosaic q10, r 
+        //                out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
+        //                //demosaic q10, g
+        //                out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
+        //                //demosaic q10, b
+        //                out[(size_t) 2 + (1 + i + j * wonw)*4] = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
+        //
+        //                //demosaic q01, r 
+        //                out[(size_t) (i + (j + 1) * wonw)*4] = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
+        //                //demosaic q01, g
+        //                out[(size_t) 1 + (i + (j + 1) * wonw)*4] = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
+        //                //demosaic q01, b
+        //                out[(size_t) 2 + (i + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+        //
+        //                //demosaic q11, r 
+        //                out[(size_t) (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
+        //                //demosaic q01, g
+        //                out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
+        //                //demosaic q01, b
+        //                out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
+        //           }
+        //    }
 
-    //TODO     // top border from 0 to winsize
-    //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-    //            int j =0;
-    //            //demosaic q00, r 
-    //            out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-    //            //demosaic q00, g
-    //            out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
-    //            //demosaic q00, b
-    //            out[(size_t) 2 + (i + j * wonw)*4] = in[1 + i + (j + 1)*(winw)];
-    //
-    //            //demosaic q10, r 
-    //            out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-    //            //demosaic q10, g
-    //            out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-    //            //demosaic q10, b
-    //            out[(size_t) 2 + (1 + i + j * wonw)*4] = in[1 + i + (1 + j)*(winw)];
-    //        }
-    //
-    //    // bottom border from 0 to wonw
-    //     for (int j = ey + wony; j < wony + winh; j += 2)
-    //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-    //           if (j > 0 && i > 0 j < winh - 3 && i < winw - 3) {
-    // 
-    //                 //demosaic q00, r 
-    //                out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-    //                //demosaic q00, g
-    //                out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
-    //                //demosaic q00, b
-    //                out[(size_t) 2 + (i + j * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-    //
-    //                //demosaic q10, r 
-    //                out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-    //                //demosaic q10, g
-    //                out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-    //                //demosaic q10, b
-    //                out[(size_t) 2 + (1 + i + j * wonw)*4] = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
-    //
-    //                //demosaic q01, r 
-    //                out[(size_t) (i + (j + 1) * wonw)*4] = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
-    //                //demosaic q01, g
-    //                out[(size_t) 1 + (i + (j + 1) * wonw)*4] = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
-    //                //demosaic q01, b
-    //                out[(size_t) 2 + (i + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-    //
-    //                //demosaic q11, r 
-    //                out[(size_t) (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
-    //                //demosaic q01, g
-    //                out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
-    //                //demosaic q01, b
-    //                out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
-    //           }
-    //    }
-
+    }// end of parallelization
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

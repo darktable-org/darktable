@@ -65,20 +65,21 @@ demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
 #ifdef _OPENMP
 #pragma omp single
 #endif
-        printf("Going to copy in");
-        fflush(stdout);
-
+        {
+            printf("Going to copy in");
+            fflush(stdout);
+        }
         //#ifdef _OPENMP
         //#pragma omp for
         //#endif
         for (int row = 0; row < height - 0; row++) {
             for (int col = 0, indx = row * width + col; col < width - 0; col++, indx++) {
                 int c = FC(row, col, filters);
- //           printf("c %d, row %d, col %d", c, row, col);
- //           fflush(stdout);
+                //           printf("c %d, row %d, col %d", c, row, col);
+                //           fflush(stdout);
 
                 //                rgb[c][indx] = CLIP(rawData[row][col]); //rawData = RT datas
-            //TODO what does FC in RT and such
+                //TODO what does FC in RT and such
                 rgb[c][indx] = in[indx]; //darktable input data                                        
             }
         }
@@ -87,10 +88,10 @@ demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
 #ifdef _OPENMP
 #pragma omp single
 #endif
-
-        printf("in copied, ready to rumble");
-        fflush(stdout);
-
+        {
+            printf("in copied, ready to rumble");
+            fflush(stdout);
+        }
         //        {
         //            if (plistener) plistener->setProgress(0.13);
         //       }
