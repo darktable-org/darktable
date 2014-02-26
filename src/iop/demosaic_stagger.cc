@@ -48,8 +48,6 @@ inline int sign(float a) {
  * \brief high-iso demosaic code, edge-aware nearest neighbors interpolation on 
  *        pixel corners.
  * 
- * WARNING EXPERIMENTAL ad-hoc ALGORITHM
- * 
  * Demosaic-code for Bayer array. At array pixel corners r,g,b values are calculated.
  * r,b values for an interpolation point p are bilinear interpolated from the 
  * three closest r, b pixels. The g-value for an interpolation point p are linear 
