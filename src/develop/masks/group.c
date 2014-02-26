@@ -416,6 +416,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 {
   double start2 = dt_get_wtime();
   //we allocate buffers and values
+  if (*buffer == NULL) return 0;
   const int nb = g_list_length(form->points);
   if (nb == 0) return 0;
   float* bufs;
@@ -424,9 +425,6 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   const int width = roi->width;
   const int height = roi->height;
 
-  //we allocate the buffer
-  *buffer = malloc((size_t)width*height*sizeof(float));
-  if(*buffer == NULL) return 0;
   memset(*buffer, 0, (size_t)width*height*sizeof(float));
 
   //and we get all masks
