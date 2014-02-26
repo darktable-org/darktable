@@ -995,7 +995,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
           }
           if (nbuse != -1)
           {
-            if (nbuse>0) g_strlcat(str, ") ", sizeof(str));
+            if (nbuse>0) g_strlcat(str, " )", sizeof(str));
 
             //we add the menu entry
             item = gtk_menu_item_new_with_label(str);
