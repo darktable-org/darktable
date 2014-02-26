@@ -87,6 +87,8 @@ dt_imageio_open_gm(
     goto error;
   }
 
+  fprintf(stderr, "[GraphicsMagick_open] image `%s' loading\n", img->filename);
+
   width = image->columns;
   height = image->rows;
   orientation = image->orientation;
