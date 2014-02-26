@@ -158,12 +158,10 @@ dt_image_cache_init(dt_image_cache_t *cache)
   dt_print(DT_DEBUG_CACHE, "[image_cache] has %d entries\n", num);
   // initialize first image as empty data:
   dt_image_init(cache->images);
-
-  //and copy it to other images
   for(uint32_t k=1; k<num; k++)
   {
     // optimized initialization (avoid accessing conf):
-    memcpy((void*)(cache->images) + k*sizeof(dt_image_t), cache->images, sizeof(dt_image_t));
+    memcpy(cache->images + k, cache->images, sizeof(dt_image_t));
   }
 }
 
