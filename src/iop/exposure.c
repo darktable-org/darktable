@@ -303,14 +303,8 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), p->deflicker);
   dt_bauhaus_slider_set(g->deflicker_percentile, p->deflicker_percentile);
-  dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
-
-  //FIXME: why??? isn't this working?
-  //gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), !p->deflicker);
-
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), TRUE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
+  dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
 
   self->request_color_pick = 0;
@@ -381,8 +375,34 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 static void exposure_set_black(struct dt_iop_module_t *self, const float black);
-static void autoexp_disable(dt_iop_module_t *self);
-static void deflicker_disable(dt_iop_module_t *self);
+
+static void
+autoexp_disable(dt_iop_module_t *self)
+{
+  if (self->request_color_pick <= 0) return;
+
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
+
+  self->request_color_pick = 0;
+}
+
+static void
+deflicker_disable(dt_iop_module_t *self)
+{
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), FALSE);
+
+  p->deflicker = FALSE;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 static void exposure_set_white(struct dt_iop_module_t *self, const float white)
 {
@@ -448,40 +468,12 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
 }
 
 static void
-autoexp_disable(dt_iop_module_t *self)
-{
-  if (self->request_color_pick <= 0) return;
-
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker), TRUE);
-
-  self->request_color_pick = 0;
-}
-
-static void
-deflicker_disable(dt_iop_module_t *self)
-{
-  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), TRUE);
-
-  p->deflicker = FALSE;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void
 autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
 {
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset)
-    return;
+  if(darktable.gui->reset) return;
+
+  deflicker_disable(self);
 
   self->request_color_pick = gtk_toggle_button_get_active(button);
 
@@ -496,7 +488,6 @@ autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
     dt_control_queue_redraw();
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), gtk_toggle_button_get_active(button));
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker), !gtk_toggle_button_get_active(button));
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -541,7 +532,6 @@ deflicker_params_callback (GtkWidget* slider, gpointer user_data)
   p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
   p->deflicker_level = dt_bauhaus_slider_get(g->deflicker_level);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), !p->deflicker);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
 
@@ -552,15 +542,22 @@ static void
 deflicker_callback (GtkToggleButton *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
 
-  if(!(self->dev->image_storage.flags & DT_IMAGE_RAW)) return;
+  if(self->dt->gui->reset) return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
+
+  autoexp_disable(self);
+
+  if(!(self->dev->image_storage.flags & DT_IMAGE_RAW))
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), FALSE);
+    return;
+  }
+
   p->deflicker = gtk_toggle_button_get_active(button);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), !p->deflicker);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
 
@@ -580,6 +577,7 @@ exposure_callback (GtkWidget* slider, gpointer user_data)
 
   autoexp_disable(self);
   deflicker_disable(self);
+
   const float exposure = dt_bauhaus_slider_get(slider);
   dt_iop_exposure_set_white(self, exposure2white(exposure));
 }
@@ -651,7 +649,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->autoexp  = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("auto")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->autoexp), TRUE);
   g->autoexpp = dt_bauhaus_slider_new_with_range(self, 0.0, 0.2, .001, 0.01,3);
   g_object_set(G_OBJECT(g->autoexpp), "tooltip-text", _("percentage of bright values clipped out"), (char *)NULL);
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), TRUE);
@@ -663,7 +660,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->deflicker = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("Deflicker")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), p->deflicker);
-  gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker), TRUE);
 
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
   g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("Percentile"), (char *)NULL);
