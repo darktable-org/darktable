@@ -72,107 +72,106 @@ static void
 demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs) {
 
 
-//#ifdef _OPENMP
-//#pragma omp single
-//#endif
-    //extract in and out window parameters.
- #ifdef _OPENMP
+#ifdef _OPENMP
 #pragma omp parallel default(none) shared(in,out,roi_out,roi_in,stdout)
 #endif
     {
         const int wonx = roi_out->x;
-    const int wony = roi_out->y;
-    const int wonw = roi_out->width;
-    //    int wonh = roi_out->height;
-    const int winx = roi_in->x;
-    const int winy = roi_in->y;
-    const int winw = roi_in->width;
-    const int winh = roi_in->height;
+        const int wony = roi_out->y;
+        const int wonw = roi_out->width;
+        //const int wonh = roi_out->height;
+        const int winx = roi_in->x;
+        const int winy = roi_in->y;
+        const int winw = roi_in->width;
+        const int winh = roi_in->height;
 
-    //offset of R pixel within a Bayer quartet
-    int ex, ey;
+        //offset of R pixel within a Bayer quartet
+        int ex, ey;
 
-    //determine GRBG coset; (ey,ex) is the offset of the R sub-array
-    if (FC(winy, winx, filters) == 1) //first pixel is G
-    {
-        if (FC(winy + 1, winx + 1, filters) == 0) {
-            ex = 1;
-            ey = 0;
-        } else {
-            ex = 0;
-            ey = 1;
-        }
-    } else //first pixel is R or B
-    {
-        if (FC(winy, winx, filters) == 0) {
-            ex = 0;
-            ey = 0;
-        } else {
-            ex = 1;
-            ey = 1;
-        }
-    }
-
-    //printf(" ex, ey %d , %d \n", ex, ey);
-    //fflush(stdout);
-
-    //Working test code for copying Bayer data directly into output data
-    //demostrates window parameters use and confirms basic working.
-    //      for (int j = ey + wony; j < wony + winh - 1; j++)
-    //        for (int i = ex + wonx; i < wonx + winw - 1; i++) {
-    //            out[4 * (j * wonw + i)] = in[(j * winw + i)];
-    //            out[4 * (j * wonw + i)+1] = in[(j * winw + i)];
-    //            out[4 * (j * wonw + i)+2] = in[(j * winw + i)];
-    //        }
-
-    /** Edge unaware staggered nearest neighbor interpolation rgb neighbors are resp. 3,2,3 */
-
-    /*
-    for (int j = ey + wony; j < wony + winh; j += 2)
-        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-            //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
-            if (j > 0 && i > 0 && j < winh - 3 && i < winw - 3) {
-                //demosaic q00, r 
-                out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-                //demosaic q00, g
-                out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
-                //demosaic q00, b
-                out[(size_t) 2 + (i + j * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-
-                //demosaic q10, r 
-                out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-                //demosaic q10, g
-                out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-                //demosaic q10, b
-                out[(size_t) 2 + (1 + i + j * wonw)*4] = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
-
-                //demosaic q01, r 
-                out[(size_t) (i + (j + 1) * wonw)*4] = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
-                //demosaic q01, g
-                out[(size_t) 1 + (i + (j + 1) * wonw)*4] = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
-                //demosaic q01, b
-                out[(size_t) 2 + (i + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-
-                //demosaic q11, r 
-                out[(size_t) (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
-                //demosaic q01, g
-                out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
-                //demosaic q01, b
-                out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
-
-            } else { // write zero into burder.
-                out[(size_t) (i + j * wonw)*4] = 0;
-                out[1 + (size_t) (i + j * wonw)*4] = 0;
-                out[2 + (size_t) (i + j * wonw)*4] = 0;
+        //determine GRBG coset; (ey,ex) is the offset of the R sub-array
+        if (FC(winy, winx, filters) == 1) //first pixel is G
+        {
+            if (FC(winy + 1, winx + 1, filters) == 0) {
+                ex = 1;
+                ey = 0;
+            } else {
+                ex = 0;
+                ey = 1;
             }
-
+        } else //first pixel is R or B
+        {
+            if (FC(winy, winx, filters) == 0) {
+                ex = 0;
+                ey = 0;
+            } else {
+                ex = 1;
+                ey = 1;
+            }
         }
-     */
+
+        //printf(" ex, ey %d , %d \n", ex, ey);
+        //fflush(stdout);
+
+        //Working test code for copying Bayer data directly into output data
+        //demostrates window parameters use and confirms basic working.
+        //      for (int j = ey + wony; j < wony + winh - 1; j++)
+        //        for (int i = ex + wonx; i < wonx + winw - 1; i++) {
+        //            out[4 * (j * wonw + i)] = in[(j * winw + i)];
+        //            out[4 * (j * wonw + i)+1] = in[(j * winw + i)];
+        //            out[4 * (j * wonw + i)+2] = in[(j * winw + i)];
+        //        }
+
+        /** Edge unaware staggered nearest neighbor interpolation rgb neighbors are resp. 3,2,3 */
+
+        /*
+        for (int j = ey + wony; j < wony + winh; j += 2)
+            for (int i = ex + wonx; i < wonx + winw; i += 2) {
+                //Bayer pattern is 2x2 repeating, thus 4 quadrants to interpolate q00, q10, q01,q11.
+                if (j > 0 && i > 0 && j < winh - 3 && i < winw - 3) {
+                    //demosaic q00, r 
+                    out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
+                    //demosaic q00, g
+                    out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
+                    //demosaic q00, b
+                    out[(size_t) 2 + (i + j * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+
+                    //demosaic q10, r 
+                    out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
+                    //demosaic q10, g
+                    out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
+                    //demosaic q10, b
+                    out[(size_t) 2 + (1 + i + j * wonw)*4] = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
+
+                    //demosaic q01, r 
+                    out[(size_t) (i + (j + 1) * wonw)*4] = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
+                    //demosaic q01, g
+                    out[(size_t) 1 + (i + (j + 1) * wonw)*4] = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
+                    //demosaic q01, b
+                    out[(size_t) 2 + (i + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
+
+                    //demosaic q11, r 
+                    out[(size_t) (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
+                    //demosaic q01, g
+                    out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
+                    //demosaic q01, b
+                    out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
+
+                } else { // write zero into burder.
+                    out[(size_t) (i + j * wonw)*4] = 0;
+                    out[1 + (size_t) (i + j * wonw)*4] = 0;
+                    out[2 + (size_t) (i + j * wonw)*4] = 0;
+                }
+
+            }
+         */
 
 
-    /** Edge-aware staggered nearest neigbour interpolation rgb neigbours are resp. 3,2,3 with green edge improvement*/
+        /** Edge-aware staggered nearest neigbour interpolation rgb neigbours are resp. 3,2,3 with green edge improvement*/
 
-    //main body
+        //main body
+
+
+ 
 
 #ifdef _OPENMP
 #pragma omp for
@@ -215,9 +214,9 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                         d = min;
                     };
 
-                    out[(size_t) (i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                    out[(size_t) 1 + (i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                    out[(size_t) 2 + (i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+                    out[(size_t) (i + (j) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (i + (j) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (i + (j) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
 
                     //demosaic q10, r 
                     r = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
@@ -254,9 +253,9 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                         d = min;
                     };
 
-                    out[(size_t) (1 + i + j * wonw)*4] = normclamp(r * (1.0f + comp) - d);
-                    out[(size_t) 1 + (1 + i + j * wonw)*4] = normclamp(g * (1.0f + comp) - d);
-                    out[(size_t) 2 + (1 + i + j * wonw)*4] = normclamp(b * (1.0f + comp) - d);
+                    out[(size_t) (1 + i + (j) * wonw)*4] = normclamp(r * (1.0f + comp) - d);
+                    out[(size_t) 1 + (1 + i + (j) * wonw)*4] = normclamp(g * (1.0f + comp) - d);
+                    out[(size_t) 2 + (1 + i + (j) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
 
                     //demosaic q01, r 
                     r = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
@@ -338,67 +337,43 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = normclamp(b * (1.0f + comp) - d);
 
                 } else {
-                    out[(size_t) (i + j * wonw)*4] = 0;
-                    out[1 + (size_t) (i + j * wonw)*4] = 0;
-                    out[2 + (size_t) (i + j * wonw)*4] = 0;
+                    out[(size_t) (i + (j) * wonw)*4] = 0;
+                    out[1 + (size_t) (i + (j) * wonw)*4] = 0;
+                    out[2 + (size_t) (i + (j) * wonw)*4] = 0;
                 }
 
             }
 
-        //TODO     // top border from 0 to winsize
-        //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-        //            int j =0;
-        //            //demosaic q00, r 
-        //            out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-        //            //demosaic q00, g
-        //            out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
-        //            //demosaic q00, b
-        //            out[(size_t) 2 + (i + j * wonw)*4] = in[1 + i + (j + 1)*(winw)];
-        //
-        //            //demosaic q10, r 
-        //            out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-        //            //demosaic q10, g
-        //            out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-        //            //demosaic q10, b
-        //            out[(size_t) 2 + (1 + i + j * wonw)*4] = in[1 + i + (1 + j)*(winw)];
-        //        }
-        //
-        //    // bottom border from 0 to wonw
-        //     for (int j = ey + wony; j < wony + winh; j += 2)
-        //        for (int i = ex + wonx; i < wonx + winw; i += 2) {
-        //           if (j > 0 && i > 0 j < winh - 3 && i < winw - 3) {
-        // 
-        //                 //demosaic q00, r 
-        //                out[(size_t) (i + j * wonw)*4] = (2.0f * in[i + j * (winw)] + in[i + 2 + j * (winw)] + in[i + (j + 2)*(winw)]) / 4.0f;
-        //                //demosaic q00, g
-        //                out[(size_t) 1 + (i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
-        //                //demosaic q00, b
-        //                out[(size_t) 2 + (i + j * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-        //
-        //                //demosaic q10, r 
-        //                out[(size_t) 4 * (1 + i + j * wonw)] = (2.0f * in[i + 2 + j * (winw)] + in[i + j * (winw)] + in[i + 2 + (j + 2)*(winw)]) / 4.0f;
-        //                //demosaic q10, g
-        //                out[(size_t) 1 + (1 + i + j * wonw)*4] = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
-        //                //demosaic q10, b
-        //                out[(size_t) 2 + (1 + i + j * wonw)*4] = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
-        //
-        //                //demosaic q01, r 
-        //                out[(size_t) (i + (j + 1) * wonw)*4] = (2.0f * in[i + (2 + j)*(winw)] + in[i + j * (winw)] + in[2 + i + (2 + j)*(winw)]) / 4.0f;
-        //                //demosaic q01, g
-        //                out[(size_t) 1 + (i + (j + 1) * wonw)*4] = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
-        //                //demosaic q01, b
-        //                out[(size_t) 2 + (i + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
-        //
-        //                //demosaic q11, r 
-        //                out[(size_t) (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[2 + i + (2 + j)*(winw)] + in[i + (2 + j)*(winw)] + in[2 + i + j * (winw)]) / 4.0f;
-        //                //demosaic q01, g
-        //                out[(size_t) 1 + (i + 1 + (j + 1) * wonw)*4] = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
-        //                //demosaic q01, b
-        //                out[(size_t) 2 + (i + 1 + (j + 1) * wonw)*4] = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
-        //           }
-        //    }
+        //copied from ppg border interpolate
+        const int offx = MAX(ex + wonx, 3); //MAX(0, 3 - roi_out->x);
+        const int offy = MAX(ey + wony, 3); //MAX(0, 3 - roi_out->y);
+        const int offX = 3; //MAX(0, 3 - (roi_in->width  - (roi_out->x + roi_out->width)));
+        const int offY = 3; //MAX(0, 3 - (roi_in->height - (roi_out->y + roi_out->height)));
 
+        float sum[8];
+        for (int j = 0; j < roi_out->height; j++) for (int i = 0; i < roi_out->width; i++) {
+                if (i == offx && j >= offy && j < roi_out->height - offY)
+                    i = roi_out->width - offX;
+                if (i == roi_out->width) break;
+                memset(sum, 0, sizeof (float)*8);
+                for (int y = j - 1; y != j + 2; y++) for (int x = i - 1; x != i + 2; x++) {
+                        const int yy = y + roi_out->y, xx = x + roi_out->x;
+                        if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width) {
+                            int f = FC(y, x, filters);
+                            sum[f] += in[yy * roi_in->width + xx];
+                            sum[f + 4]++;
+                        }
+                    }
+                int f = FC(j, i, filters);
+                for (int c = 0; c < 3; c++) {
+                    if (c != f && sum[c + 4] > 0.0f)
+                        out[4 * (j * roi_out->width + i) + c] = sum[c] / sum[c + 4];
+                    else
+                        out[4 * (j * roi_out->width + i) + c] = in[(j + roi_out->y) * roi_in->width + i + roi_out->x];
+                }
+            }
     }// end of parallelization
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
