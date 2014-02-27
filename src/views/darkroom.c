@@ -1362,6 +1362,15 @@ void leave(dt_view_t *self)
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
 
+  //cleanup visible masks
+  if (dev->form_gui)
+  {
+    dt_masks_clear_form_gui(dev);
+    free(dev->form_gui);
+    dev->form_gui = NULL;
+    dev->form_visible = NULL;
+  }
+
   // take care of the overexposed window
   if(dev->overexposed.timeout > 0)
     g_source_remove(dev->overexposed.timeout);
