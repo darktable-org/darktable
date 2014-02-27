@@ -548,13 +548,13 @@ deflicker_callback (GtkToggleButton *button, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  autoexp_disable(self);
-
   if(!(self->dev->image_storage.flags & DT_IMAGE_RAW))
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), FALSE);
     return;
   }
+
+  autoexp_disable(self);
 
   p->deflicker = gtk_toggle_button_get_active(button);
 
