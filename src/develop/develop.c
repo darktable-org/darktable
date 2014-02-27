@@ -30,6 +30,7 @@
 #include "common/debug.h"
 #include "develop/masks.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 
 #include <glib/gprintf.h>
 #include <stdlib.h>
@@ -791,7 +792,7 @@ auto_apply_presets(dt_develop_t *dev)
            "?6 between exposure_min and exposure_max and "
            "?7 between aperture_min and aperture_max and "
            "?8 between focal_length_min and focal_length_max and "
-           "(isldr = 0 or isldr=?9) order by writeprotect desc, "
+           "(isldr = 0 or isldr&?9!=0) order by writeprotect desc, "
            "length(model), length(maker), length(lens)", preset_table[legacy]);
   // query for all modules at once:
   sqlite3_stmt *stmt;
@@ -805,7 +806,7 @@ auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, cimg->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, cimg->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(cimg));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
 
   if(sqlite3_step(stmt) == SQLITE_DONE)
   {
