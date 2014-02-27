@@ -40,7 +40,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {

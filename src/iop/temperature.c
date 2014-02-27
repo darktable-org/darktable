@@ -35,7 +35,7 @@
 #include "iop/wb_presets.c"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_temperature_params_t)
 
 #define DT_IOP_LOWEST_TEMPERATURE     2000
 #define DT_IOP_HIGHEST_TEMPERATURE   23000

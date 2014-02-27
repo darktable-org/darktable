@@ -40,7 +40,7 @@
 
 
 #define CLIP(x) (((x)>=0)?((x)<=1.0?(x):1.0):0.0)
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 #define MAX_ZONE_SYSTEM_SIZE	24
 
 /** gui params. */

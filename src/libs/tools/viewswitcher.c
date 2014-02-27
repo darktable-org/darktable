@@ -122,7 +122,7 @@ static void _lib_viewswitcher_enter_notify_callback(GtkWidget *w, GdkEventCrossi
   if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"),
              dt_view_manager_name(darktable.view_manager)))
   {
-    g_snprintf(label,512,LABEL_HIGHLIGHTED,
+    g_snprintf(label,sizeof(label),LABEL_HIGHLIGHTED,
                (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     gtk_label_set_markup(l,label);
   }
@@ -137,7 +137,7 @@ static void _lib_viewswitcher_leave_notify_callback(GtkWidget *w, GdkEventCrossi
   if (strcmp(g_object_get_data(G_OBJECT(w),"view-label"),
              dt_view_manager_name(darktable.view_manager)))
   {
-    g_snprintf(label,512,LABEL_DEFAULT,
+    g_snprintf(label,sizeof(label),LABEL_DEFAULT,
                (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     gtk_label_set_markup(l,label);
   }
@@ -165,10 +165,10 @@ static void _lib_viewswitcher_view_changed_callback(gpointer instance, gpointer 
     char label[512]= {0};
     /* check if current is the same as the one we iterate, then hilite */
     if(!strcmp(g_object_get_data(G_OBJECT(w),"view-label"),dt_view_manager_name(darktable.view_manager)))
-      g_snprintf(label,512,LABEL_SELECTED,
+      g_snprintf(label,sizeof(label),LABEL_SELECTED,
                  (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
     else
-      g_snprintf(label,512,LABEL_DEFAULT,
+      g_snprintf(label,sizeof(label),LABEL_DEFAULT,
                  (gchar *)g_object_get_data(G_OBJECT(w),"view-label"));
 
     /* set label */
@@ -183,7 +183,7 @@ static GtkWidget* _lib_viewswitcher_create_label(dt_view_t *v)
 {
   GtkWidget *eb = gtk_event_box_new();
   char label[512]= {0};
-  g_snprintf(label,512,LABEL_DEFAULT,v->name(v));
+  g_snprintf(label,sizeof(label),LABEL_DEFAULT,v->name(v));
   GtkWidget *b = gtk_label_new(label);
   gtk_container_add(GTK_CONTAINER(eb),b);
   /*setup label*/

@@ -43,7 +43,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-DT_MODULE(5)
+DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
 #define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
@@ -1543,7 +1543,7 @@ void gui_update(struct dt_iop_module_t *self)
   if (act == -1)
   {
     char str[128];
-    snprintf(str,128,"%d:%d",abs(p->ratio_d),p->ratio_n);
+    snprintf(str,sizeof(str),"%d:%d",abs(p->ratio_d),p->ratio_n);
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   if (dt_bauhaus_combobox_get(g->aspect_presets) == act) aspect_presets_changed(g->aspect_presets, self);

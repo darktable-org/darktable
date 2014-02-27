@@ -253,7 +253,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   //we create the new group
   dt_masks_form_t *grp = dt_masks_create(DT_MASKS_GROUP);
-  snprintf(grp->name,128,_("group #%d"),g_list_length(darktable.develop->forms));
+  snprintf(grp->name,sizeof(grp->name),_("group #%d"),g_list_length(darktable.develop->forms));
 
   //we add all selected forms to this group
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
@@ -299,13 +299,13 @@ static void _set_iter_name(dt_lib_masks_t *lm, dt_masks_form_t *form, int state,
   if (!form) return;
 
   char str[256] = "";
-  strcat(str,form->name);
+  g_strlcat(str, form->name, sizeof(str));
 
   if (opacity != 1.0f)
   {
     char str2[256] = "";
-    strcpy(str2,str);
-    snprintf(str,256,"%s %d%%",str2,(int)(opacity*100));
+    g_strlcpy(str2, str, sizeof(str2));
+    snprintf(str, sizeof(str), "%s %d%%", str2, (int)(opacity*100));
   }
 
   GdkPixbuf *icop = NULL;
@@ -961,7 +961,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
             continue;
           }
           char str[10000] = "";
-          strcat(str,form->name);
+          g_strlcat(str, form->name, sizeof(str));
           int nbuse = 0;
 
           //we search were this form is used
@@ -983,8 +983,8 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
                     nbuse = -1;
                     break;
                   }
-                  if (nbuse==0) strcat(str," (");
-                  strcat(str," ");
+                  if (nbuse==0) g_strlcat(str, " (", sizeof(str));
+                  g_strlcat(str, " ", sizeof(str));
                   g_strlcat(str,m->name(),sizeof(str));
                   nbuse++;
                 }
@@ -995,7 +995,7 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
           }
           if (nbuse != -1)
           {
-            if (nbuse>0) strcat(str," )");
+            if (nbuse>0) g_strlcat(str, " )", sizeof(str));
 
             //we add the menu entry
             item = gtk_menu_item_new_with_label(str);
@@ -1135,7 +1135,7 @@ static gboolean _tree_query_tooltip (GtkWidget *widget, gint x, gint y, gboolean
   gtk_tree_model_get (model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
   if (!show) return FALSE;
 
-  g_snprintf (buffer, 511, "%s", tmp);
+  g_strlcpy (buffer, tmp, sizeof(buffer));
   gtk_tooltip_set_markup (tooltip, buffer);
 
   gtk_tree_view_set_tooltip_row (tree_view, tooltip, path);
@@ -1146,7 +1146,7 @@ static gboolean _tree_query_tooltip (GtkWidget *widget, gint x, gint y, gboolean
   return TRUE;
 }
 
-static int _is_form_used(int formid, dt_masks_form_t *grp, char *text)
+static int _is_form_used(int formid, dt_masks_form_t *grp, char *text, size_t text_length)
 {
   int nb = 0;
   if (!grp)
@@ -1155,7 +1155,7 @@ static int _is_form_used(int formid, dt_masks_form_t *grp, char *text)
     while (forms)
     {
       dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
-      if (form->type & DT_MASKS_GROUP) nb += _is_form_used(formid,form,text);
+      if (form->type & DT_MASKS_GROUP) nb += _is_form_used(formid,form,text,text_length);
       forms = g_list_next(forms);
     }
   }
@@ -1171,10 +1171,10 @@ static int _is_form_used(int formid, dt_masks_form_t *grp, char *text)
         if (point->formid == formid)
         {
           nb++;
-          if (nb>1) strcat(text,"\n");
-          strcat(text,grp->name);
+          if (nb>1) g_strlcat(text, "\n", text_length);
+          g_strlcat(text, grp->name, text_length);
         }
-        if (form->type & DT_MASKS_GROUP) nb += _is_form_used(formid,form,text);
+        if (form->type & DT_MASKS_GROUP) nb += _is_form_used(formid,form,text,text_length);
       }
       points = g_list_next(points);
     }
@@ -1188,7 +1188,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
   if (form->type & DT_MASKS_CLONE) return;
   //we create the text entry
   char str[256] = "";
-  strcat(str,form->name);
+  g_strlcat(str, form->name, sizeof(str));
   //we get the right pixbufs
   GdkPixbuf *icop = NULL;
   GdkPixbuf *icinv = NULL;
@@ -1202,7 +1202,7 @@ static void _lib_masks_list_recurs(GtkTreeStore *treestore, GtkTreeIter *topleve
   int nbuse = 0;
   if (grp_id == 0)
   {
-    nbuse = _is_form_used(form->formid,NULL,str2);
+    nbuse = _is_form_used(form->formid,NULL,str2,sizeof(str2));
     if (nbuse>0) icuse = lm->ic_used;
   }
 

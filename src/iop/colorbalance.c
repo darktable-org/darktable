@@ -36,7 +36,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // these are not in a state to be useful. but they look nice. too bad i couldn't map the enhanced mode with negative values to the wheels :(
 // #define SHOW_COLOR_WHEELS
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colorbalance_params_t)
 
 /*
 

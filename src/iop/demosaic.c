@@ -34,7 +34,7 @@
 
 #define BLOCKSIZE  2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
 
 typedef struct dt_iop_demosaic_params_t
 {

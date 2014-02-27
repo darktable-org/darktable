@@ -53,7 +53,7 @@
  * - right click and apply the preset
  */
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colormapping_params_t)
 
 #define HISTN (1<<11)
 #define MAXN 5

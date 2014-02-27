@@ -54,7 +54,7 @@ extern "C"
 
 extern "C"
 {
-  DT_MODULE(1)
+  DT_MODULE_INTROSPECTION(1, dt_iop_tonemapping_params_t)
 
   typedef struct dt_iop_tonemapping_params_t
   {

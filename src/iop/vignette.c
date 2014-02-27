@@ -38,7 +38,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_vignette_params_t)
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8

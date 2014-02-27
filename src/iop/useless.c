@@ -28,7 +28,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_useless_params_t)
 
 // TODO: some build system to support dt-less compilation and translation!
 

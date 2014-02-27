@@ -36,7 +36,7 @@
 // #define DT_GUI_EQUALIZER_INSET 5
 // #define DT_GUI_CURVE_INFL .3f
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_equalizer_params_t)
 
 
 #define DT_IOP_EQUALIZER_RES 64

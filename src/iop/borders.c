@@ -41,7 +41,7 @@
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_COUNT 21
@@ -891,7 +891,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->aspect);
+      snprintf(text, sizeof(text), "%.3f:1", p->aspect);
       dt_bauhaus_combobox_set_text(g->aspect, text);
     }
     dt_bauhaus_combobox_set(g->aspect, -1);
@@ -918,7 +918,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->pos_h);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_h);
       dt_bauhaus_combobox_set_text(g->pos_h, text);
     }
     dt_bauhaus_combobox_set(g->pos_h, -1);
@@ -942,7 +942,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->pos_v);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_v);
       dt_bauhaus_combobox_set_text(g->pos_v, text);
     }
     dt_bauhaus_combobox_set(g->pos_v, -1);

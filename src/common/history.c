@@ -171,7 +171,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
 
   //  prepare SQL request
   char req[2048];
-  strcpy (req, "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority from history where imgid = ?3");
+  g_strlcpy (req, "insert into history (imgid, num, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority) select ?1, num+?2, module, operation, op_params, enabled, blendop_params, blendop_version, multi_name, multi_priority from history where imgid = ?3", sizeof(req));
 
   //  Add ops selection if any format: ... and num in (val1, val2)
   if (ops)
@@ -186,7 +186,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
       char v[30];
 
       if (!first) strcat (req, ",");
-      snprintf (v, 30, "%u", value);
+      snprintf (v, sizeof(v), "%u", value);
       strcat (req, v);
       first=0;
       l = g_list_next(l);
@@ -223,7 +223,7 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   }
 
   //let's copy now
-  strcpy (req, "insert into mask (imgid, formid, form, name, version, points, points_count, source) select ?1, formid, form, name, version, points, points_count, source from mask where imgid = ?2");
+  g_strlcpy (req, "insert into mask (imgid, formid, form, name, version, points, points_count, source) select ?1, formid, form, name, version, points, points_count, source from mask where imgid = ?2", sizeof(req));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), req, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
@@ -266,13 +266,13 @@ dt_history_get_items(int32_t imgid, gboolean enabled)
       mname = g_strdup((gchar *)sqlite3_column_text(stmt, 3));
       if (enabled)
       {
-        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
-        else g_snprintf(name,512,"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
+        if (strcmp(mname,"0") == 0) g_snprintf(name,sizeof(name),"%s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)));
+        else g_snprintf(name,sizeof(name),"%s %s",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)),(char*)sqlite3_column_text(stmt, 3));
       }
       else
       {
-        if (strcmp(mname,"0") == 0) g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
-        g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
+        if (strcmp(mname,"0") == 0) g_snprintf(name,sizeof(name),"%s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (is_active!=0)?_("on"):_("off"));
+        g_snprintf(name,sizeof(name),"%s %s (%s)",dt_iop_get_localized_name((char*)sqlite3_column_text(stmt, 1)), (char*)sqlite3_column_text(stmt, 3), (is_active!=0)?_("on"):_("off"));
       }
       item->name = g_strdup (name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));

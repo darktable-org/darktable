@@ -35,7 +35,7 @@
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 
 #define DT_IOP_LOWLIGHT_INSET 5
 #define DT_IOP_LOWLIGHT_RES 64

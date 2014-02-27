@@ -110,10 +110,10 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->hscroll_size = view->hscroll_viewport_size = 1.0;
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
-  g_strlcpy(view->module_name, module, 64);
+  g_strlcpy(view->module_name, module, sizeof(view->module_name));
   char plugindir[1024];
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/views", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!view->module)
@@ -325,7 +325,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         gboolean visible = dt_lib_is_visible(plugin);
         if (plugin->expandable())
         {
-          snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+          snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
 
           /* show expander if visible  */

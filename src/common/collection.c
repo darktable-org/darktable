@@ -640,17 +640,17 @@ dt_collection_serialize(char *buf, int bufsize)
   bufsize -= c;
   for(int k=0; k<num_rules; k++)
   {
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
     const int mode = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", mode);
     buf += c;
     bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
     const int item = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", item);
     buf += c;
     bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
     gchar *str = dt_conf_get_string(confname);
     if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
@@ -687,20 +687,20 @@ dt_collection_deserialize(char *buf)
       int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
       if(n == 3)
       {
-        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
         dt_conf_set_int(confname, mode);
-        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
         dt_conf_set_int(confname, item);
-        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
         dt_conf_set_string(confname, str);
       }
       else if(num_rules == 1)
       {
-        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
         dt_conf_set_string(confname, "%");
         break;
       }
@@ -730,12 +730,12 @@ dt_collection_update_query(const dt_collection_t *collection)
 
   for(int i=0; i<num_rules; i++)
   {
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     const int property = dt_conf_get_int(confname);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
     if(!text) break;
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
     gchar *escaped_text = dt_util_str_replace(text, "'", "''");
 
@@ -797,7 +797,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar message[1024];
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, 1024,
+  g_snprintf(message, sizeof(message),
              ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
 }

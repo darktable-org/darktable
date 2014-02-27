@@ -36,7 +36,7 @@
 #define INFL .3f
 
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_atrous_params_t)
 
 #define BANDS 6
 #define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8

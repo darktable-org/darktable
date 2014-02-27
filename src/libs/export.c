@@ -626,7 +626,7 @@ gui_init (dt_lib_module_t *self)
 
   gtk_combo_box_set_active(d->profile, 0);
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("output ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(d->profile), "tooltip-text", tooltip, (char *)NULL);
 
 

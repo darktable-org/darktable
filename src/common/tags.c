@@ -136,7 +136,7 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
     dest++;
   }
 
-  g_snprintf(query,1024,
+  g_snprintf(query,sizeof(query),
              "UPDATE tags SET name=REPLACE(name,'%s','%s%s') WHERE name LIKE '%s%%'",
              source, dest, tag, source);
 

@@ -46,7 +46,7 @@ extern "C"
    * permutohedral lattice, which they kindly provided online as c++ code, under new bsd license.
    */
 
-  DT_MODULE(1)
+  DT_MODULE_INTROSPECTION(1, dt_iop_bilateral_params_t)
 
   typedef struct dt_iop_bilateral_params_t
   {

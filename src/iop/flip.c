@@ -41,7 +41,7 @@
 #include "gui/draw.h"
 #include "gui/presets.h"
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_flip_params_t)
 
 typedef struct dt_iop_flip_params_t
 {

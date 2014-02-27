@@ -43,7 +43,7 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {
@@ -974,7 +974,7 @@ void init_global(dt_iop_module_so_t *module)
 #endif
   {
     char path[1024];
-    dt_loc_get_datadir(path, 1024);
+    dt_loc_get_datadir(path, sizeof(path));
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");
@@ -1013,7 +1013,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // init crop from db:
   char model[100];  // truncate often complex descriptions.
-  g_strlcpy(model, img->exif_model, 100);
+  g_strlcpy(model, img->exif_model, sizeof(model));
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {

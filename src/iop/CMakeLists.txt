@@ -3,7 +3,15 @@ cmake_minimum_required(VERSION 2.6)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
 macro (add_iop _lib _src)
-  add_library(${_lib} MODULE ${_src})
+  set(_input ${CMAKE_CURRENT_SOURCE_DIR}/${_src})
+  set(_output ${CMAKE_CURRENT_BINARY_DIR}/introspection_${_src}) # keep ${_src} in the end to keep the file extension (c vs. cc)
+  add_custom_command(
+    DEPENDS ${_input}
+    OUTPUT ${_output}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/introspection/
+    COMMAND ${perl_BIN} ${CMAKE_SOURCE_DIR}/tools/introspection/parser.pl ${_input} ${_output}
+  )
+  add_library(${_lib} MODULE ${_output})
   target_link_libraries(${_lib} ${LIBS})
   install(TARGETS  ${_lib} DESTINATION ${LIB_INSTALL}/darktable/plugins)
 endmacro (add_iop)

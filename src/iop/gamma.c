@@ -31,7 +31,7 @@
 #include "gui/gtk.h"
 #include "dtgtk/slider.h"
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_gamma_params_t)
 
 
 typedef struct dt_iop_gamma_params_t

@@ -28,7 +28,6 @@
 #include <tiffio.h>
 #include <inttypes.h>
 #include <strings.h>
-#include <assert.h>
 
 typedef struct tiff_t {
   TIFF *tiff;
@@ -219,7 +218,8 @@ dt_imageio_open_tiff(
   if (t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     fprintf(stderr, "[tiff_open] warning: planar config other than contig is not supported.\n");
-    assert(0);
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   int ok = 1;

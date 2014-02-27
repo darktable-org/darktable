@@ -39,7 +39,7 @@
 #define DT_IOP_TONECURVE_RES 64
 #define DT_IOP_TONECURVE_MAXNODES 20
 
-DT_MODULE(4)
+DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
@@ -993,7 +993,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
         cairo_line_to(cr, width*picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        snprintf(text, 256, "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);

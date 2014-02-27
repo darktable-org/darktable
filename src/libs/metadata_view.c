@@ -140,7 +140,7 @@ int position()
 
 Strings which are already in valid UTF-8 are retained.
 */
-static void _filter_non_printable(char *string, int length)
+static void _filter_non_printable(char *string, size_t length)
 {
   /* explicitly tell the validator to ignore the trailing nulls, otherwise this fails */
   if (g_utf8_validate(string, -1, 0))
@@ -200,8 +200,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
   if(mouse_over_id >= 0)
   {
-    const int vl = 512;
-    char value[vl];
+    char value[512];
     char pathname[DT_MAX_PATH_LEN];
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
@@ -213,26 +212,26 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* update all metadata */
 
-    dt_image_film_roll(img, value, vl);
+    dt_image_film_roll(img, value, sizeof(value));
     _metadata_update_value(d->metadata[md_internal_filmroll], value);
     const int tp = 512;
     char tooltip[tp];
     snprintf(tooltip, tp, _("double click to jump to film roll\n%s"), value);
     g_object_set(G_OBJECT(d->metadata[md_internal_filmroll]), "tooltip-text", tooltip, (char *)NULL);
 
-    snprintf(value,vl,"%d", img->id);
+    snprintf(value,sizeof(value),"%d", img->id);
     _metadata_update_value(d->metadata[md_internal_imgid], value);
 
     _metadata_update_value(d->metadata[md_internal_filename], img->filename);
 
-    snprintf(value,vl,"%d", img->version);
+    snprintf(value,sizeof(value),"%d", img->version);
     _metadata_update_value(d->metadata[md_internal_version], value);
 
     gboolean from_cache = FALSE;
     dt_image_full_path(img->id, pathname, DT_MAX_PATH_LEN, &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
 
-    snprintf(value, vl, "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));
+    snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));
     _metadata_update_value(d->metadata[md_internal_local_copy], value);
 
     /* EXIF */
@@ -240,14 +239,14 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value_end(d->metadata[md_exif_lens], img->exif_lens);
     _metadata_update_value_end(d->metadata[md_exif_maker], img->exif_maker);
 
-    snprintf(value, vl, "F/%.1f", img->exif_aperture);
+    snprintf(value, sizeof(value), "F/%.1f", img->exif_aperture);
     _metadata_update_value(d->metadata[md_exif_aperture], value);
 
-    if(img->exif_exposure <= 0.5) snprintf(value, vl, "1/%.0f", 1.0/img->exif_exposure);
-    else                          snprintf(value, vl, "%.1f''", img->exif_exposure);
+    if(img->exif_exposure <= 0.5) snprintf(value, sizeof(value), "1/%.0f", 1.0/img->exif_exposure);
+    else                          snprintf(value, sizeof(value), "%.1f''", img->exif_exposure);
     _metadata_update_value(d->metadata[md_exif_exposure], value);
 
-    snprintf(value, vl, "%.0f mm", img->exif_focal_length);
+    snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
     _metadata_update_value(d->metadata[md_exif_focal_length], value);
 
     if (isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
@@ -256,50 +255,50 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     }
     else
     {
-      snprintf(value, vl, "%.2f m", img->exif_focus_distance);
+      snprintf(value, sizeof(value), "%.2f m", img->exif_focus_distance);
       _metadata_update_value(d->metadata[md_exif_focus_distance], value);
     }
 
-    snprintf(value, vl, "%.0f", img->exif_iso);
+    snprintf(value, sizeof(value), "%.0f", img->exif_iso);
     _metadata_update_value(d->metadata[md_exif_iso], value);
 
     _metadata_update_value(d->metadata[md_exif_datetime], img->exif_datetime_taken);
 
-    snprintf(value, vl, "%d", img->height);
+    snprintf(value, sizeof(value), "%d", img->height);
     _metadata_update_value(d->metadata[md_exif_height], value);
-    snprintf(value, vl, "%d", img->width);
+    snprintf(value, sizeof(value), "%d", img->width);
     _metadata_update_value(d->metadata[md_exif_width], value);
 
     /* XMP */
     GList *res;
     if((res = dt_metadata_get(img->id, "Xmp.dc.title", NULL))!=NULL)
     {
-      snprintf(value, vl, "%s", (char*)res->data);
-      _filter_non_printable(value, vl);
+      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, vl, NODATA_STRING);
+      snprintf(value, sizeof(value), NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_title], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.creator", NULL))!=NULL)
     {
-      snprintf(value, vl, "%s", (char*)res->data);
-      _filter_non_printable(value, vl);
+      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, vl, NODATA_STRING);
+      snprintf(value, sizeof(value), NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_creator], value);
 
     if((res = dt_metadata_get(img->id, "Xmp.dc.rights", NULL))!=NULL)
     {
-      snprintf(value, vl, "%s", (char*)res->data);
-      _filter_non_printable(value, vl);
+      snprintf(value, sizeof(value), "%s", (char*)res->data);
+      _filter_non_printable(value, sizeof(value));
       g_list_free_full(res, &g_free);
     }
     else
-      snprintf(value, vl, NODATA_STRING);
+      snprintf(value, sizeof(value), NODATA_STRING);
     _metadata_update_value(d->metadata[md_xmp_rights], value);
 
     /* geotagging */
@@ -321,7 +320,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
 #endif
         gchar NS = img->latitude<0?'S':'N';
-        snprintf(value, vl, "%c %09.6f", NS, fabs(img->latitude));
+        snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->latitude));
         _metadata_update_value(d->metadata[md_geotagging_lat], value);
 #ifdef HAVE_MAP
       }
@@ -345,7 +344,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
 #endif
         gchar EW = img->longitude<0?'W':'E';
-        snprintf(value, vl, "%c %010.6f", EW, fabs(img->longitude));
+        snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->longitude));
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
 #ifdef HAVE_MAP
       }
@@ -389,7 +388,7 @@ _jump_to()
     dt_image_film_roll_directory(img, path, len);
     dt_image_cache_read_release(darktable.image_cache, img);
     char collect[1024];
-    snprintf(collect, 1024, "1:0:0:%s$", path);
+    snprintf(collect, sizeof(collect), "1:0:0:%s$", path);
     dt_collection_deserialize(collect);
   }
 }

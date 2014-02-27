@@ -44,7 +44,7 @@
 #define GRAIN_SCALE_FACTOR 213.2
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
 
 
 typedef enum _dt_iop_grain_channel_t

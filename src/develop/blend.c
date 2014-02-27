@@ -2071,12 +2071,8 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   
     if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-#if 0
-      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
       dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
+
       if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
@@ -2322,12 +2318,8 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
     if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-#if 0
-      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
       dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
+
       if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask

@@ -278,7 +278,7 @@ _add_property_button_clicked (GtkWidget *widget, gpointer user_data)
       g_signal_connect (G_OBJECT (prop->osd), "clicked", G_CALLBACK (_osd_button_clicked), prop);
 
       gchar key[256]= {"plugins/capture/tethering/properties/"};
-      g_strlcat(key, label, 256);
+      g_strlcat(key, label, sizeof(key));
       gchar *p = key;
       while( p++<key+strlen(key) ) if(*p==' ') *p='_';
       dt_conf_set_string(key,property);
@@ -350,13 +350,13 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
     dt_lib_camera_property_t *prop=(dt_lib_camera_property_t *)g_list_nth_data(lib->gui.properties,i);
     if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop->osd)) == TRUE )
     {
-      g_strlcat(center,"      ",1024);
-      g_strlcat(center,prop->name,1024);
-      g_strlcat(center,": ",1024);
-      g_strlcat(center,gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(prop->values)),1024);
+      g_strlcat(center,"      ", sizeof(center));
+      g_strlcat(center,prop->name, sizeof(center));
+      g_strlcat(center,": ", sizeof(center));
+      g_strlcat(center,gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(prop->values)), sizeof(center));
     }
   }
-  g_strlcat(center,"      ",1024);
+  g_strlcat(center,"      ", sizeof(center));
 
   // Now lets put it in center view...
   cairo_text_extents (cr, center, &te);

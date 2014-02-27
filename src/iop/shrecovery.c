@@ -39,7 +39,7 @@
 #define min(x,y) ((x<y)?x:y)
 #define max(x,y) ((x<y)?y:x)
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_shrecovery_params_t)
 
 
 inline float sqr(float x)

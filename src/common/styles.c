@@ -116,7 +116,7 @@ _dt_style_cleanup_multi_instance(int id)
     if (strncmp(last_operation,operation,128)!=0)
     {
       last_mi=0;
-      g_strlcpy(last_operation, operation, 128);
+      g_strlcpy(last_operation, operation, sizeof(last_operation));
     }
     else
       last_mi++;
@@ -183,7 +183,7 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
       // included and update set, we then need to update the corresponding style item
       if (GPOINTER_TO_INT(upd->data) != -1 && GPOINTER_TO_INT(list->data) != -1)
       {
-        strcpy(query, "update style_items set ");
+        g_strlcpy(query, "update style_items set ", sizeof(query));
 
         for (int k=0; fields[k]; k++)
         {
@@ -235,16 +235,16 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     GList *list=filter;
     char tmp[64];
     char include[2048] = {0};
-    g_strlcat(include,"num not in (", 2048);
+    g_strlcat(include, "num not in (", sizeof(include));
     do
     {
       if(list!=g_list_first(list))
-        g_strlcat(include, ",", 2048);
+        g_strlcat(include, ",", sizeof(include));
       sprintf(tmp, "%d", GPOINTER_TO_INT(list->data));
-      g_strlcat(include, tmp, 2048);
+      g_strlcat(include, tmp, sizeof(include));
     }
     while ((list=g_list_next(list)));
-    g_strlcat(include,")", 2048);
+    g_strlcat(include, ")", sizeof(include));
 
     char query[4096]= {0};
     sprintf(query,"delete from style_items where styleid=?1 and %s", include);
@@ -260,8 +260,8 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
 
   /* backup style to disk */
   char stylesdir[1024];
-  dt_loc_get_user_config_dir(stylesdir, 1024);
-  g_strlcat(stylesdir,"/styles",1024);
+  dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
+  g_strlcat(stylesdir, "/styles",sizeof(stylesdir));
   g_mkdir_with_parents(stylesdir,00755);
 
   dt_styles_save_to_file(newname,stylesdir,TRUE);
@@ -271,11 +271,11 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
   if (g_strcmp0(name, newname))
   {
     char tmp_accel[1024];
-    snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), name);
+    snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
 
     gchar* tmp_name = g_strdup(newname); // freed by _destroy_style_shortcut_callback
-    snprintf(tmp_accel, 1024, C_("accel", "styles/apply %s"), newname);
+    snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -307,16 +307,16 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       GList *list=filter;
       char tmp[64];
       char include[2048]= {0};
-      g_strlcat(include,"num in (", 2048);
+      g_strlcat(include,"num in (", sizeof(include));
       do
       {
         if(list!=g_list_first(list))
-          g_strlcat(include,",", 2048);
+          g_strlcat(include,",", sizeof(include));
         sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
-        g_strlcat(include,tmp, 2048);
+        g_strlcat(include,tmp, sizeof(include));
       }
       while ((list=g_list_next(list)));
-      g_strlcat(include,")", 2048);
+      g_strlcat(include,")", sizeof(include));
       char query[4096]= {0};
 
       sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2 and %s",include);
@@ -337,15 +337,15 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
 
     /* backup style to disk */
     char stylesdir[1024];
-    dt_loc_get_user_config_dir(stylesdir, 1024);
-    g_strlcat(stylesdir,"/styles",1024);
+    dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
+    g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
     g_mkdir_with_parents(stylesdir,00755);
 
     dt_styles_save_to_file(newname,stylesdir,FALSE);
 
     char tmp_accel[1024];
     gchar* tmp_name = g_strdup(newname); // freed by _destroy_style_shortcut_callback
-    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),newname);
+    snprintf(tmp_accel,sizeof(tmp_accel),C_("accel", "styles/apply %s"),newname);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -373,16 +373,16 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       GList *list=filter;
       char tmp[64];
       char include[2048]= {0};
-      g_strlcat(include,"num in (", 2048);
+      g_strlcat(include,"num in (", sizeof(include));
       do
       {
         if(list!=g_list_first(list))
-          g_strlcat(include,",", 2048);
+          g_strlcat(include,",", sizeof(include));
         sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
-        g_strlcat(include,tmp, 2048);
+        g_strlcat(include,tmp, sizeof(include));
       }
       while ((list=g_list_next(list)));
-      g_strlcat(include,")", 2048);
+      g_strlcat(include,")", sizeof(include));
       char query[4096]= {0};
       sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -398,15 +398,15 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
 
     /* backup style to disk */
     char stylesdir[1024];
-    dt_loc_get_user_config_dir(stylesdir, 1024);
-    g_strlcat(stylesdir,"/styles",1024);
+    dt_loc_get_user_config_dir(stylesdir, sizeof(stylesdir));
+    g_strlcat(stylesdir, "/styles", sizeof(stylesdir));
     g_mkdir_with_parents(stylesdir,00755);
 
     dt_styles_save_to_file(name,stylesdir,FALSE);
 
     char tmp_accel[1024];
     gchar* tmp_name = g_strdup(name); // freed by _destroy_style_shortcut_callback
-    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),name);
+    snprintf(tmp_accel,sizeof(tmp_accel),C_("accel", "styles/apply %s"),name);
     dt_accel_register_global( tmp_accel, 0, 0);
     GClosure *closure;
     closure = g_cclosure_new(
@@ -511,7 +511,7 @@ dt_styles_apply_to_image(const char *name,gboolean duplicate, int32_t imgid)
     /* add tag */
     guint tagid=0;
     gchar ntag[512]= {0};
-    g_snprintf(ntag,512,"darktable|style|%s",name);
+    g_snprintf(ntag,sizeof(ntag),"darktable|style|%s",name);
     if (dt_tag_new(ntag,&tagid))
       dt_tag_attach(tagid,newimgid);
 
@@ -557,7 +557,7 @@ dt_styles_delete_by_name(const char *name)
     sqlite3_finalize (stmt);
 
     char tmp_accel[1024];
-    snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),name);
+    snprintf(tmp_accel,sizeof(tmp_accel),C_("accel", "styles/apply %s"),name);
     dt_accel_deregister_global(tmp_accel);
   }
 }
@@ -605,9 +605,9 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
         const char *multi_name = (const char *)sqlite3_column_text (stmt, 5);
 
         if (!multi_name || (strlen(multi_name)==0))
-          g_snprintf(name,512,"%s",sqlite3_column_text (stmt, 1));
+          g_snprintf(name,sizeof(name),"%s",sqlite3_column_text (stmt, 1));
         else
-          g_snprintf(name,512,"%s %s",sqlite3_column_text (stmt, 1), multi_name);
+          g_snprintf(name,sizeof(name),"%s %s",sqlite3_column_text (stmt, 1), multi_name);
 
         const unsigned char *op_blob = sqlite3_column_blob(stmt, 3);
         const int32_t op_len = sqlite3_column_bytes(stmt, 3);
@@ -629,9 +629,9 @@ dt_styles_get_item_list (const char *name, gboolean params, int imgid)
           has_multi_name = TRUE;
 
         if (has_multi_name)
-          g_snprintf(name,512,"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),multi_name,(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+          g_snprintf(name,sizeof(name),"%s %s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),multi_name,(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
         else
-          g_snprintf(name,512,"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
+          g_snprintf(name,sizeof(name),"%s (%s)",dt_iop_get_localized_name((gchar *)sqlite3_column_text (stmt, 1)),(sqlite3_column_int (stmt, 2)!=0)?_("on"):_("off"));
 
         item->params = NULL;
         item->blendop_params = NULL;
@@ -706,7 +706,7 @@ dt_styles_save_to_file(const char *style_name,const char *filedir,gboolean overw
   char stylename[520];
   sqlite3_stmt *stmt;
 
-  snprintf(stylename,512,"%s/%s.dtstyle",filedir,style_name);
+  snprintf(stylename,sizeof(stylename),"%s/%s.dtstyle",filedir,style_name);
 
   // check if file exists
   if( g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE )
@@ -1068,7 +1068,7 @@ void init_styles_key_accels()
     {
       dt_style_t *style = (dt_style_t *)result->data;
       char tmp_accel[1024];
-      snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),style->name);
+      snprintf(tmp_accel,sizeof(tmp_accel),C_("accel", "styles/apply %s"),style->name);
       dt_accel_register_global( tmp_accel, 0, 0);
 
       g_free(style->name);
@@ -1092,7 +1092,7 @@ void connect_styles_key_accels()
                   G_CALLBACK(_apply_style_shortcut_callback),
                   style->name, _destroy_style_shortcut_callback);
       char tmp_accel[1024];
-      snprintf(tmp_accel,1024,C_("accel", "styles/apply %s"),style->name);
+      snprintf(tmp_accel,sizeof(tmp_accel),C_("accel", "styles/apply %s"),style->name);
       dt_accel_connect_global(tmp_accel, closure);
 
       //g_free(style->name); freed at closure destruction

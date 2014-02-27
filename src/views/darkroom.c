@@ -1223,7 +1223,7 @@ void enter(dt_view_t *self)
       dt_ui_container_add_widget(darktable.gui->ui,
                                  DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
 
-      snprintf(option, 1024, "plugins/darkroom/%s/expanded", module->op);
+      snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
       dt_iop_gui_set_expanded(module, dt_conf_get_bool(option), FALSE);
     }
 
@@ -1356,6 +1356,15 @@ void leave(dt_view_t *self)
   }
 
   dt_pthread_mutex_unlock(&dev->history_mutex);
+
+  //cleanup visible masks
+  if (dev->form_gui)
+  {
+    dt_masks_clear_form_gui(dev);
+    free(dev->form_gui);
+    dev->form_gui = NULL;
+    dev->form_visible = NULL;
+  }
 
   // take care of the overexposed window
   if(dev->overexposed.timeout > 0)
