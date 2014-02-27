@@ -630,7 +630,7 @@ static void _create_schema(dt_database_t *db)
                         "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
                         "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, exposure_min REAL, exposure_max REAL, "
                         "aperture_min REAL, aperture_max REAL, focal_length_min REAL, focal_length_max REAL, writeprotect INTEGER, "
-                        "autoapply INTEGER, filter INTEGER, def INTEGER, isldr INTEGER)", NULL, NULL, NULL);
+                        "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE UNIQUE INDEX presets_idx ON presets(name, operation, op_version)", NULL, NULL, NULL);
 
