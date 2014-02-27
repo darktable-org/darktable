@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <strings.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_rawdenoise_params_t)
 
 typedef struct dt_iop_rawdenoise_params_t
 {

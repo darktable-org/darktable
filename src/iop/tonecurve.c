@@ -39,7 +39,7 @@
 #define DT_IOP_TONECURVE_RES 64
 #define DT_IOP_TONECURVE_MAXNODES 20
 
-DT_MODULE(4)
+DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);

@@ -35,7 +35,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorzones_params_t)
 
 #define DT_IOP_COLORZONES_INSET 5
 #define DT_IOP_COLORZONES_CURVE_INFL .3f

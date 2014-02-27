@@ -36,7 +36,7 @@
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_exposure_params_t)
 
 
 typedef struct dt_iop_exposure_params_t

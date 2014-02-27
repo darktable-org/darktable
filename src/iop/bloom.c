@@ -39,7 +39,7 @@
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define LCLIP(x) ((x<0)?0.0:(x>100.0)?100.0:x)
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
 {

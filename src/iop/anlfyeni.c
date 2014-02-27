@@ -29,7 +29,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_anlfyeni_params_t)
 
 /* Description: This module implements a local contrast enhancement method
  * based on adaptive nonlinear filters. The algorithm is based on the article

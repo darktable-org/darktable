@@ -43,7 +43,7 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {

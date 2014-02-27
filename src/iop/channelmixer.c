@@ -52,7 +52,7 @@
 
 #define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_channelmixer_params_t)
 
 typedef  enum _channelmixer_output_t
 {

@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <string.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.

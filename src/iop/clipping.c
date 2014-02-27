@@ -43,7 +43,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-DT_MODULE(5)
+DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
 #define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 

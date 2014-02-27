@@ -36,7 +36,7 @@
 #define DT_GUI_CURVE_EDITOR_INSET 5
 #define DT_GUI_CURVE_INFL .3f
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_levels_params_t)
 
 static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);

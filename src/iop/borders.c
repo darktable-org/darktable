@@ -41,7 +41,7 @@
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_COUNT 21

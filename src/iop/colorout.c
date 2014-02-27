@@ -36,7 +36,7 @@
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorout_params_t)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
 static gchar *_get_display_profile_from_pos(GList *profiles, int pos);

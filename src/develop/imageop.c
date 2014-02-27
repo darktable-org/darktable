@@ -586,6 +586,17 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
+
+  // the introspection api
+  if(!g_module_symbol(module->module, "introspection_init",     (gpointer)&(module->introspection_init)))     module->introspection_init = NULL;
+  if(module->introspection_init && !module->introspection_init(DT_INTROSPECTION_VERSION))
+  {
+    // set the introspection related fields in module
+    if(!g_module_symbol(module->module, "get_p",                    (gpointer)&(module->get_p)))                    module->get_p = NULL;
+    if(!g_module_symbol(module->module, "get_introspection",        (gpointer)&(module->get_introspection)))        module->get_introspection = NULL;
+    if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) module->get_introspection_linear = NULL;
+  }
+
   if(module->init_global) module->init_global(module);
   return 0;
 error:
@@ -670,8 +681,12 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;
 
-  module->connect_key_accels = so->connect_key_accels;
+  module->connect_key_accels    = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
+
+  module->get_introspection        = so->get_introspection;
+  module->get_introspection_linear = so->get_introspection_linear;
+  module->get_p                    = so->get_p;
 
   module->accel_closures = NULL;
   module->accel_closures_local = NULL;

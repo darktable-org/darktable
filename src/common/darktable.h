@@ -102,6 +102,8 @@ int dt_module_mod_version() \
 }
 #endif
 
+#define DT_MODULE_INTROSPECTION(MODVER, PARAMSTYPE) DT_MODULE(MODVER)
+
 // ..to be able to compare it against this:
 static inline int dt_version()
 {

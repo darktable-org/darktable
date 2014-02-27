@@ -35,7 +35,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_sharpen_params_t)
 
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */

@@ -41,7 +41,7 @@
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 typedef __m128 (_find_nearest_color)(float *val, const float f, const float rf);
 

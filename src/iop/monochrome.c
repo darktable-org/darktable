@@ -34,7 +34,7 @@
 #include "gui/presets.h"
 #include "develop/imageop.h"
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.

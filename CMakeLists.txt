@@ -136,6 +136,12 @@ endif(NOT LIB_INSTALL)
 
 mark_as_advanced(LIB_INSTALL)
 
+# we need perl for introspection -- find it
+find_program(perl_BIN "perl")
+if(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
+  message(FATAL_ERROR "ERROR: perl not found, needed for iop introspection")
+endif(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
+
 #need to put here do setting LOCALE_DIR variable
 if(USE_NLS)
 find_package(Gettext)

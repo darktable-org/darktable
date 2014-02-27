@@ -34,7 +34,7 @@
 #include <inttypes.h>
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
 
 typedef enum dt_iop_highlights_mode_t
 {

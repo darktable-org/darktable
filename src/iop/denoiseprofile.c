@@ -42,7 +42,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_t
 {

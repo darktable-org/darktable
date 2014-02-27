@@ -40,7 +40,7 @@
 #include <string.h>
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
