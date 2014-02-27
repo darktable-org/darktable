@@ -26,7 +26,7 @@
 
 #define DT_INTROSPECTION_VERSION 1
 
-typedef union dt_introspection_field_t dt_introspection_field_t;
+union dt_introspection_field_t;
 
 typedef enum dt_introspection_type_t
 {
@@ -154,7 +154,7 @@ typedef struct dt_introspection_type_array_t
   dt_introspection_type_header_t      header;
   size_t                              count;        // number of elements in the array
   dt_introspection_type_t             type;         // type of the elements
-  dt_introspection_field_t           *field;        // the relevant data of the elements, depending on type
+  union dt_introspection_field_t     *field;        // the relevant data of the elements, depending on type
 } dt_introspection_type_array_t;
 
 typedef struct dt_introspection_type_enum_tuple_t
@@ -174,7 +174,7 @@ typedef struct dt_introspection_type_struct_t
 {
   dt_introspection_type_header_t      header;
   size_t                              entries;      // # entries in fields (without the closing NULL)
-  dt_introspection_field_t          **fields;       // the fields of the struct. NULL terminated
+  union dt_introspection_field_t    **fields;       // the fields of the struct. NULL terminated
 } dt_introspection_type_struct_t;
 
 // sorry for the camel case/Capitals, but we have to avoid reserved keywords
