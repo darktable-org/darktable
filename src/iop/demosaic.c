@@ -81,7 +81,8 @@ dt_iop_demosaic_data_t;
 typedef enum dt_iop_demosaic_method_t {
     DT_IOP_DEMOSAIC_PPG = 0,
     DT_IOP_DEMOSAIC_AMAZE = 1,
-    DT_IOP_DEMOSAIC_STAGGER = 2
+    DT_IOP_DEMOSAIC_IGV = 2,
+    DT_IOP_DEMOSAIC_STAGGER = 3
 }
 dt_iop_demosaic_method_t;
 
@@ -95,6 +96,9 @@ dt_iop_demosaic_greeneq_t;
 
 static void
 amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters);
+
+static void
+demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters);
 
 static void
 demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs);
@@ -628,6 +632,8 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             }
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
                 amaze_demosaic_RT(self, piece, in, (float *) o, &roi, &roo, data->filters);
+            else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
+                demosaic_igv_RT(self, piece, in, (float *) o, &roi, &roo, data->filters);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger((float *) o, in, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -636,6 +642,8 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
         } else {
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
                 amaze_demosaic_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters);
+            else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
+                demosaic_igv_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger((float *) o, pixels, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -674,6 +682,8 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             // wanted ppg or zoomed out a lot and quality is limited to 1
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
                 amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
+            else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
+                demosaic_igv_RT(self, piece, in, tmp, &roi, &roo, data->filters);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger(tmp, in, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -682,6 +692,8 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
         } else {
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
                 amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
+            else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
+                demosaic_igv_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -1107,8 +1119,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     piece->process_cl_ready = 1;
 
     // Demosaic mode AMAZE not implemented in OpenCL yet.
-   if(d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || d->demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
-    piece->process_cl_ready = 0;
+    if (d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE || d->demosaicing_method == DT_IOP_DEMOSAIC_IGV
+            || d->demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
+        piece->process_cl_ready = 0;
 
     // OpenCL can not (yet) green-equilibrate over full image.
     if (d->green_eq == DT_IOP_GREEN_EQ_FULL || d->green_eq == DT_IOP_GREEN_EQ_BOTH)
@@ -1179,19 +1192,21 @@ demosaic_method_callback(GtkWidget *combo, dt_iop_module_t *self) {
     dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *) self->params;
     int active = dt_bauhaus_combobox_get(combo);
 
- switch(active)
-  {
-    case DT_IOP_DEMOSAIC_AMAZE:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
-      break;
-    case DT_IOP_DEMOSAIC_STAGGER:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_STAGGER;
-      break;
-    default:
-    case DT_IOP_DEMOSAIC_PPG:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
-      break;
-  }
+    switch (active) {
+        case DT_IOP_DEMOSAIC_AMAZE:
+            p->demosaicing_method = DT_IOP_DEMOSAIC_AMAZE;
+            break;
+        case DT_IOP_DEMOSAIC_IGV:
+            p->demosaicing_method = DT_IOP_DEMOSAIC_IGV;
+            break;
+        case DT_IOP_DEMOSAIC_STAGGER:
+            p->demosaicing_method = DT_IOP_DEMOSAIC_STAGGER;
+            break;
+        default:
+        case DT_IOP_DEMOSAIC_PPG:
+            p->demosaicing_method = DT_IOP_DEMOSAIC_PPG;
+            break;
+    }
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1205,6 +1220,7 @@ void gui_init(struct dt_iop_module_t *self) {
     g->demosaic_method = dt_bauhaus_combobox_new(self);
     dt_bauhaus_combobox_add(g->demosaic_method, _("PPG (fast)"));
     dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
+    dt_bauhaus_combobox_add(g->demosaic_method, _("igv testing (slow)"));
     dt_bauhaus_combobox_add(g->demosaic_method, _("stagger testing (slow)"));
     dt_bauhaus_widget_set_label(g->demosaic_method, NULL, _("method"));
     gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
@@ -1252,6 +1268,7 @@ void gui_cleanup(struct dt_iop_module_t *self) {
 
 #include "iop/amaze_demosaic_RT.cc"
 #include "iop/demosaic_stagger.cc"
+#include "iop/demosaic_igv_RT.cc"
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
