@@ -91,14 +91,14 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
-  dt_loc_get_tmp_dir (tmpdir,4096);
+  dt_loc_get_tmp_dir (tmpdir, sizeof(tmpdir));
 
   char dirname[4096];
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, 1024, &from_cache);
   const gchar * filename = g_path_get_basename( dirname );
 
-  strcpy(dirname, filename);
+  g_strlcpy(dirname, filename, sizeof(dirname));
 
   dt_image_path_append_version(imgid, dirname, 4096);
 
@@ -106,7 +106,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   if (end) *end = '\0';
 
-  g_strlcat(dirname, format->extension(fdata), 4096);
+  g_strlcat(dirname, format->extension(fdata), sizeof(dirname));
 
   // set exported filename
 
@@ -203,7 +203,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
   }
 
   // build uri and launch before we quit...
-  g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
+  g_snprintf(uri, sizeof(uri),  uriFormat, subject, body, attachments );
 
   fprintf(stderr, "[email] launching `%s'\n", uri);
   if(system( uri ) < 0)

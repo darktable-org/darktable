@@ -58,7 +58,7 @@ int32_t dt_image_import_job_run(dt_job_t *job)
   t = (dt_image_import_t *)job->param;
   message[0] = 0;
 
-  snprintf(message, 512, _("importing image %s"), t->filename);
+  snprintf(message, sizeof(message), _("importing image %s"), t->filename);
   jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
 
   id = dt_image_import(t->film_id, t->filename, TRUE);

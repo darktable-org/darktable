@@ -108,10 +108,10 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(colstring, 512, "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
+        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
         break;
       case 1: // Lab
-        snprintf(colstring, 512, "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
+        snprintf(colstring, sizeof(colstring), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
         break;
     }
     gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
@@ -219,12 +219,12 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
-        snprintf(text, 1024, "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
+        snprintf(text, sizeof(text), "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
         break;
 
       case 1:
         // Lab
-        snprintf(text, 1024, "(%.03f, %.03f, %.03f)",
+        snprintf(text, sizeof(text), "(%.03f, %.03f, %.03f)",
                  lab[0], lab[1], lab[2]);
         break;
     }

@@ -99,7 +99,7 @@ dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, c
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
   char name[256];
-  snprintf(name, 256, "%s:%d (%s)", file, line, function);
+  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k=0; k<TOPN; k++)
   {
@@ -110,7 +110,7 @@ dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, const char *file, c
       return ret;
     }
   }
-  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, 256);
+  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, sizeof(mutex->top_wait_name[min_wait_slot]));
   mutex->top_wait_sum[min_wait_slot] = wait;
   return ret;
 }
@@ -126,7 +126,7 @@ dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
   char name[256];
-  snprintf(name, 256, "%s:%d (%s)", file, line, function);
+  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_wait_slot = 0;
   for(int k=0; k<TOPN; k++)
   {
@@ -137,7 +137,7 @@ dt_pthread_mutex_trylock_with_caller(dt_pthread_mutex_t *mutex, const char *file
       return ret;
     }
   }
-  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, 256);
+  g_strlcpy(mutex->top_wait_name[min_wait_slot], name, sizeof(mutex->top_wait_name[min_wait_slot]));
   mutex->top_wait_sum[min_wait_slot] = wait;
   return ret;
 }
@@ -151,7 +151,7 @@ dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
   mutex->time_sum_locked += locked;
 
   char name[256];
-  snprintf(name, 256, "%s:%d (%s)", file, line, function);
+  snprintf(name, sizeof(name), "%s:%d (%s)", file, line, function);
   int min_locked_slot = 0;
   for(int k=0; k<TOPN; k++)
   {
@@ -165,7 +165,7 @@ dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex, const char *file,
   }
   if(min_locked_slot >= 0)
   {
-    g_strlcpy(mutex->top_locked_name[min_locked_slot], name, 256);
+    g_strlcpy(mutex->top_locked_name[min_locked_slot], name, sizeof(mutex->top_locked_name[min_locked_slot]));
     mutex->top_locked_sum[min_locked_slot] = locked;
   }
 

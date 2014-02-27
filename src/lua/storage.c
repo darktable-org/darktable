@@ -353,7 +353,7 @@ static int register_storage(lua_State *L)
   lua_setfield(L,-2,plugin_name);
 
   char tmp[1024];
-  snprintf(tmp,1024,"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
+  snprintf(tmp,sizeof(tmp),"dt_imageio_module_data_pseudo_%s",storage->plugin_name);
   luaA_Type type_id = luaA_type_add(tmp,storage->params_size(storage));
   storage->parameter_lua_type = dt_lua_init_type_typeid(darktable.lua_state.state,type_id);
   luaA_struct_typeid(darktable.lua_state.state,type_id);

@@ -230,7 +230,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_set_font_size (cr, 11);
 
       char zoomline[5];
-      snprintf(zoomline, 5, "%.0f%%", cur_scale*100);
+      snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale*100);
 
       cairo_text_extents_t ext;
       cairo_text_extents(cr,zoomline,&ext);

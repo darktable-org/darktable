@@ -113,7 +113,7 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len
 }
 
 
-void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
+void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -830,7 +830,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   // add a tag with the file extension
   guint tagid = 0;
   char tagname[512];
-  snprintf(tagname, 512, "darktable|format|%s", ext);
+  snprintf(tagname, sizeof(tagname), "darktable|format|%s", ext);
   g_free(ext);
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid,id);
@@ -870,7 +870,7 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
   memset(img->filename, 0, sizeof(img->filename));
-  g_strlcpy(img->filename, "(unknown)", 10);
+  g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00",
             sizeof(img->exif_datetime_taken));
@@ -1427,7 +1427,7 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   if(datetime)
   {
     dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-    g_strlcpy(img->exif_datetime_taken, datetime, 20);
+    g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
 

@@ -82,7 +82,7 @@ int32_t dt_camera_capture_job_run(dt_job_t *job)
   double fraction=0;
 
   total = t->total = t->brackets ? t->count * t->brackets : t->count;
-  snprintf(message, 512, ngettext ("capturing %d image", "capturing %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("capturing %d image", "capturing %d images", total), total );
 
   pthread_mutex_init(&t->mutex, NULL);
   pthread_cond_init(&t->done, NULL);

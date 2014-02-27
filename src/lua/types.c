@@ -546,7 +546,7 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
 luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
 {
   char tmp_name[1024];
-  snprintf(tmp_name,1024,"dt_lua_singleton_%s",unique_name);
+  snprintf(tmp_name,sizeof(tmp_name),"dt_lua_singleton_%s",unique_name);
 
   luaA_Type type_id = luaA_type_add(tmp_name,sizeof(void*));
   init_metatable(L,type_id);

@@ -899,7 +899,7 @@ void *dt_control_expose(void *voidptr)
                             CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, tb/3);
     cairo_move_to (cr, width/2.0-10, height*0.85+2.*tb/3.);
-    snprintf(num, 10, "%d%%", (int)darktable.control->progress);
+    snprintf(num, sizeof(num), "%d%%", (int)darktable.control->progress);
     cairo_show_text (cr, num);
   }
   // draw log message, if any
@@ -1283,7 +1283,7 @@ int dt_control_key_pressed_override(guint key, guint state)
         // pop first.
         // the paths themselves are owned by bauhaus,
         // no free required.
-        snprintf(darktable.control->vimkey, 256, ":set %s", (char *)autocomplete->data);
+        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set %s", (char *)autocomplete->data);
         autocomplete = g_list_remove(autocomplete, autocomplete->data);
         darktable.control->vimkey_cnt = strlen(darktable.control->vimkey);
       }
@@ -1344,12 +1344,12 @@ int dt_control_key_pressed_override(guint key, guint state)
 
     /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
-    g_snprintf(key, 512, "%s/ui/panel_collaps_state",cv->module_name);
+    g_snprintf(key, sizeof(key), "%s/ui/panel_collaps_state",cv->module_name);
     if (dt_conf_get_int(key))
       return 0;
 
     /* toggle the header visibility state */
-    g_snprintf(key, 512, "%s/ui/show_header", cv->module_name);
+    g_snprintf(key, sizeof(key), "%s/ui/show_header", cv->module_name);
     gboolean header = !dt_conf_get_bool(key);
     dt_conf_set_bool(key, header);
 

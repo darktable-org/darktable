@@ -133,7 +133,7 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("merging %d image", "merging %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("merging %d image", "merging %d images", total), total );
 
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 1, message);
 
@@ -284,7 +284,7 @@ int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("duplicating %d image", "duplicating %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("duplicating %d image", "duplicating %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
@@ -310,7 +310,7 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
   int total = g_list_length(t);
   double fraction=0;
   char message[512]= {0};
-  snprintf(message, 512, ngettext ("flipping %d image", "flipping %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("flipping %d image", "flipping %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   while(t)
   {
@@ -338,7 +338,7 @@ static char *_get_image_list(GList *l)
   while(l)
   {
     imgid = GPOINTER_TO_INT(l->data);
-    snprintf(num,8,"%s%6d",first?"":",",imgid);
+    snprintf(num,sizeof(num),"%s%6d",first?"":",",imgid);
     strcat(buffer,num);
     l = g_list_next(l);
     first=FALSE;
@@ -380,7 +380,7 @@ int32_t dt_control_remove_images_job_run(dt_job_t *job)
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("removing %d image", "removing %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("removing %d image", "removing %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   sqlite3_stmt *stmt = NULL;
 
@@ -452,7 +452,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   int total = g_list_length(t);
   char message[512]= {0};
   double fraction=0;
-  snprintf(message, 512, ngettext ("deleting %d image", "deleting %d images", total), total );
+  snprintf(message, sizeof(message), ngettext ("deleting %d image", "deleting %d images", total), total );
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   sqlite3_stmt *stmt;
@@ -875,7 +875,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   gchar *newdir = (gchar *)job->user_data;
 
   /* create a cancellable bgjob ui template */
-  g_snprintf(message, 512, ngettext(desc, desc_pl, total), total);
+  g_snprintf(message, sizeof(message), ngettext(desc, desc_pl, total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
   dt_control_backgroundjobs_set_cancellable(darktable.control, jid, job);
 
@@ -900,7 +900,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   }
 
   char collect[1024];
-  snprintf(collect, 1024, "1:0:0:%s$", new_film.dirname);
+  snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
   dt_collection_deserialize(collect);
   dt_control_backgroundjobs_destroy(darktable.control, jid);
   dt_film_remove_empty();
@@ -1088,9 +1088,9 @@ int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   char message[512]= {0};
 
   if (is_copy)
-    snprintf(message, 512, ngettext ("creating local copy of %d image", "creating local copies of %d images", total), total);
+    snprintf(message, sizeof(message), ngettext ("creating local copy of %d image", "creating local copies of %d images", total), total);
   else
-    snprintf(message, 512, ngettext ("removing local copy of %d image", "removing local copies of %d images", total), total);
+    snprintf(message, sizeof(message), ngettext ("removing local copy of %d image", "removing local copies of %d images", total), total);
 
   dt_control_log(message);
 
@@ -1166,7 +1166,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   const int total = g_list_length(t);
   dt_control_log(ngettext ("exporting %d image..", "exporting %d images..", total), total);
   char message[512]= {0};
-  snprintf(message, 512, ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
+  snprintf(message, sizeof(message), ngettext ("exporting %d image to %s", "exporting %d images to %s", total), total, mstorage->name(mstorage) );
 
   /* create a cancellable bgjob ui template */
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message );
@@ -1194,7 +1194,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     fdata->max_height = settings->max_height;
     fdata->max_width = (w!=0 && fdata->max_width >w)?w:fdata->max_width;
     fdata->max_height = (h!=0 && fdata->max_height >h)?h:fdata->max_height;
-    strcpy(fdata->style,settings->style);
+    g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
     int num = 0;
     // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a sensible assumption?
     guint tagid = 0,
@@ -1311,7 +1311,7 @@ int32_t dt_control_time_offset_job_run(dt_job_t *job)
 
   if(total > 1)
   {
-    snprintf(message, 512, ngettext ("adding time offset to %d image", "adding time offset to %d images", total), total );
+    snprintf(message, sizeof(message), ngettext ("adding time offset to %d image", "adding time offset to %d images", total), total );
     jid = (guint *)dt_control_backgroundjobs_create(darktable.control, 0, message);
   }
 
