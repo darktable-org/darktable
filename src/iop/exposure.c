@@ -468,10 +468,11 @@ static float dt_iop_exposure_get_black(struct dt_iop_module_t *self)
 }
 
 static void
-autoexp_callback (GtkToggleButton *button, dt_iop_module_t *self)
+autoexp_callback (GtkToggleButton *button, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
-  if(darktable.gui->reset) return;
+  if(self->dt->gui->reset) return;
 
   deflicker_disable(self);
 
