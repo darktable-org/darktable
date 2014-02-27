@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 4
+#define CURRENT_DATABASE_VERSION 5
 
 typedef struct dt_database_t
 {
@@ -418,6 +418,64 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 4;
+  }
+  else if(version == 4)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if (sqlite3_exec(db->handle,
+                     "ALTER TABLE presets RENAME TO tmp_presets", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't rename table presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "CREATE TABLE presets (name VARCHAR, description VARCHAR, operation VARCHAR, op_params BLOB,"
+                     "enabled INTEGER, blendop_params BLOB, model VARCHAR, maker VARCHAR, lens VARCHAR,"
+                     "iso_min REAL, iso_max REAL, exposure_min REAL, exposure_max REAL, aperture_min REAL,"
+                     "aperture_max REAL, focal_length_min REAL, focal_length_max REAL, writeprotect INTEGER,"
+                     "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER, op_version INTEGER,"
+                     "blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+                     NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create new presets table\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "INSERT INTO presets (name, description, operation, op_params, enabled, blendop_params, model, maker, lens,"
+                     "                     iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
+                     "                     focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, format,"
+                     "                     op_version, blendop_version, multi_priority, multi_name)"
+                     "              SELECT name, description, operation, op_params, enabled, blendop_params, model, maker, lens,"
+                     "                     iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
+                     "                     focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr,"
+                     "                     op_version, blendop_version, multi_priority, multi_name"
+                     "              FROM   tmp_presets",
+                     NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't populate presets table from tmp_presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "DROP TABLE tmp_presets", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't delete table tmp_presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 5;
   }
 // maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)

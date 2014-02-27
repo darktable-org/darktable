@@ -782,7 +782,7 @@ add_profile() {
 	 "autoapply,"							\
 	 "filter,"							\
 	 "def,"								\
-	 "isldr,"							\
+	 "format,"							\
 	 "blendop_version"						\
 	 ") "								\
 	 "values ("							\
