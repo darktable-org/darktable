@@ -354,6 +354,11 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+#ifndef __WIN32__
+  if(getuid() == 0 || geteuid() == 0)
+    printf("WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
+#endif
+
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #if !defined __APPLE__ && !defined __WIN32__
