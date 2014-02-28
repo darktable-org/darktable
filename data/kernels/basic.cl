@@ -1373,6 +1373,27 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
   write_imagef(out, (int2)(x, y), o);
 }
 
+/* kernel for the unbreak input profile module */
+kernel void
+profilegamma (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height,
+        read_only image2d_t table, global const float *ta)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 o;
+
+  o.x = lookup_unbounded(table, i.x, ta);
+  o.y = lookup_unbounded(table, i.y, ta);
+  o.z = lookup_unbounded(table, i.z, ta);
+  o.w = i.w;
+
+  write_imagef(out, (int2)(x, y), o);
+}
+
 /* kernel for the interpolation resample helper */
 kernel void
 interpolation_resample (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
