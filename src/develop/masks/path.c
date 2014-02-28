@@ -2367,7 +2367,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
+static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
 {
   //segment length
   const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
@@ -2385,14 +2385,14 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
     const int x = (int)((float)i*lx/(float)l) + p0[0];
     const int y = (int)((float)i*ly/(float)l) + p0[1];
     const float op = 1.0-(float)i/(float)l;
-    size_t index = (size_t)y*bw+x;
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[index] = fmaxf((*buffer)[index],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[index+dx] = fmaxf((*buffer)[index+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dpy] = fmaxf((*buffer)[index+dpy],op); //this one is to avoid gap due to int rounding
+    float *buf = buffer + (size_t)y*bw+x;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       buf[0] = fmaxf(buf[0],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) buf[dx] = fmaxf(buf[dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) buf[dpy] = fmaxf(buf[dpy],op); //this one is to avoid gap due to int rounding
   }
 }
 
-static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if (!module) return 0;
   double start = dt_get_wtime();
@@ -2422,15 +2422,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
 
-  //we allocate the output buffer
-  *buffer = malloc((size_t)width*height*sizeof(float));
-  if (*buffer == NULL)
-  {
-    free(points);
-    free(border);
-    return 0;
-  }
-  memset(*buffer,0,(size_t)width*height*sizeof(float));
+  //empty the output buffer
+  memset(buffer,0,(size_t)width*height*sizeof(float));
 
   int nb_corner = g_list_length(form->points);
 
@@ -2574,7 +2567,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     if(path_encircles_roi)
     {
       // roi lies completely within path
-      for (size_t k=0; k < (size_t)width*height; k++) (*buffer)[k] = 1.0f;
+      for (size_t k=0; k < (size_t)width*height; k++) buffer[k] = 1.0f;
     }
     else
     {
@@ -2612,7 +2605,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
           size_t index = (size_t)yy*width+xx;
 
-          (*buffer)[index] = 1.0f - (*buffer)[index];
+          buffer[index] = 1.0f - buffer[index];
         }
       }
 
@@ -2632,9 +2625,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
         for (int xx=xmin ; xx<=xmax; xx++)
         {
           size_t index = (size_t)yy*width+xx;
-          float v = (*buffer)[index];
+          float v = buffer[index];
           if (v > 0.5f) state = !state;
-          if (state) (*buffer)[index] = 1.0f;
+          if (state) buffer[index] = 1.0f;
         }
       }
 

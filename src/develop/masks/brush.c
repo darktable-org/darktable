@@ -2517,7 +2517,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
+static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh, float hardness, float density)
 {
   //segment length (increase by 1 to avoid division-by-zero special case handling)
   const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1])) + 1;
@@ -2548,7 +2548,7 @@ static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, 
 
     if (x < 0 || x >= bw || y < 0 || y >= bh) continue;
 
-    float *buf = *buffer + (size_t)y*bw + x;
+    float *buf = buffer + (size_t)y*bw + x;
 
     *buf = fmaxf(*buf, op);
     if (x+dx >= 0 && x+dx < bw) buf[dpx] = fmaxf(buf[dpx], op);   //this one is to avoid gaps due to int rounding
@@ -2556,7 +2556,7 @@ static inline void _brush_falloff_roi(float **buffer, int *p0, int *p1, int bw, 
   }
 }
 
-static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if (!module) return 0;
   double start = dt_get_wtime();
@@ -2577,15 +2577,8 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
 
-  //we allocate the output buffer
-  *buffer = malloc((size_t)width*height*sizeof(float));
-  if (*buffer == NULL)
-  {
-    free(points);
-    free(border);
-    return 0;
-  }
-  memset(*buffer,0,(size_t)width*height*sizeof(float));
+  //empty the output buffer
+  memset(buffer,0,(size_t)width*height*sizeof(float));
 
   int nb_corner = g_list_length(form->points);
 
