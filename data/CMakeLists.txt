@@ -53,7 +53,7 @@ endif(USE_LUA)
 add_custom_command(
 		OUTPUT darktable.desktop
 		SOURCE darktable.desktop.in
-		COMMAND intltool-merge -d ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+		COMMAND ${intltool_merge_BIN} -d ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in
 		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po
 )
