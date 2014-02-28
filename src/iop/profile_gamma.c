@@ -49,7 +49,8 @@ typedef struct dt_iop_profilegamma_data_t
 {
   float linear;
   float gamma;
-  float table[0x10000];
+  float table[0x10000];        // precomputed look-up table
+  float unbounded_coeffs[3];   // approximation for extrapolation of curve
 }
 dt_iop_profilegamma_data_t;
 
@@ -100,9 +101,12 @@ process (dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void
 
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      out[0] = data->table[CLAMP((int)(in[0]*0x10000ul), 0, 0xffff)];
-      out[1] = data->table[CLAMP((int)(in[1]*0x10000ul), 0, 0xffff)];
-      out[2] = data->table[CLAMP((int)(in[2]*0x10000ul), 0, 0xffff)];
+      for(int i=0; i<3; i++)
+      {
+        // use base curve for values < 1, else use extrapolation.
+        if(in[i] < 1.0f) out[i] = data->table[CLAMP((int)(in[i]*0x10000ul), 0, 0xffff)];
+        else             out[i] = dt_iop_eval_exp(data->unbounded_coeffs, in[i]);
+      }
     }
   }
 
@@ -186,6 +190,15 @@ commit_params (dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *p
       }
     }
   }
+
+  // now the extrapolation stuff:
+  const float x[4] = {0.7f, 0.8f, 0.9f, 1.0f};
+  const float y[4] = {d->table[CLAMP((int)(x[0]*0x10000ul), 0, 0xffff)],
+    d->table[CLAMP((int)(x[1]*0x10000ul), 0, 0xffff)],
+    d->table[CLAMP((int)(x[2]*0x10000ul), 0, 0xffff)],
+    d->table[CLAMP((int)(x[3]*0x10000ul), 0, 0xffff)]
+  };
+  dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs);
 }
 
 void
