@@ -414,15 +414,19 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
 static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
 {
   double start2 = dt_get_wtime();
-  //we allocate buffers and values
-  if (*buffer == NULL) return 0;
   const int nb = g_list_length(form->points);
   if (nb == 0) return 0;
-  float* bufs;
   int nb_ok = 0;
 
   const int width = roi->width;
   const int height = roi->height;
+
+  //we might need to allocate a buffer if we haven't received one
+  if (*buffer == NULL)
+  {
+    *buffer = dt_alloc_align(64, (size_t)width*height*sizeof(float));
+  }
+  if (*buffer == NULL) return 0;
 
   memset(*buffer, 0, (size_t)width*height*sizeof(float));
 
@@ -436,6 +440,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 
     if (sel)
     {
+      float* bufs = NULL;
       const int ok = dt_masks_get_mask_roi(module,piece,sel,roi,&bufs);
       const float op = fpt->opacity;
       const int state = fpt->state;
@@ -548,14 +553,14 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
             }
         }
 
-        //and we free the buffer
-        free(bufs);
-
         if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime()-start2);
         start2 = dt_get_wtime();
 
         nb_ok++;
       }
+
+      //and we free the buffer
+      free(bufs);
     }
     fpts = g_list_next(fpts);
   }
