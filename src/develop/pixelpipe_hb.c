@@ -27,6 +27,7 @@
 #include "libs/lib.h"
 #include "libs/colorpicker.h"
 #include "iop/colorout.h"
+#include "common/colorspaces.h"
 
 #include <assert.h>
 #include <string.h>

@@ -42,6 +42,44 @@ static gchar *_get_profile_from_pos(GList *profiles, int pos);
 static gchar *_get_display_profile_from_pos(GList *profiles, int pos);
 
 
+typedef enum dt_iop_colorout_softproof_t
+{
+  DT_SOFTPROOF_DISABLED            = 0,
+  DT_SOFTPROOF_ENABLED             = 1,
+  DT_SOFTPROOF_GAMUTCHECK          = 2
+}
+dt_iop_colorout_softproof_t;
+
+typedef struct dt_iop_colorout_global_data_t
+{
+  int kernel_colorout;
+}
+dt_iop_colorout_global_data_t;
+
+typedef struct dt_iop_colorout_params_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  char displayprofile[DT_IOP_COLOR_ICC_LEN];
+
+  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t displayintent;
+
+  char softproof_enabled;
+  char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t softproofintent; /// NOTE: Not used for now but reserved for future use
+}
+dt_iop_colorout_params_t;
+
+typedef struct dt_iop_colorout_gui_data_t
+{
+  gint softproof_enabled;
+  GtkWidget *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
+  GList *profiles;
+
+}
+dt_iop_colorout_gui_data_t;
+
+
 const char
 *name()
 {
