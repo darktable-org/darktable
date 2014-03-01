@@ -34,14 +34,16 @@ our @EXPORT = qw( @token @comments
 
 ################# the scanner #################
 
+my %history; # we don't like cyclic includes
+
 my $lineno = 1;
 my $file;
+our $folder = "";
 my @tokens;
 our @token;
 our @comments;
 
 my @code;
-my $code_ptr = 0;
 
 # parser layout
 our $P_LINENO = 0;
@@ -125,47 +127,50 @@ our $O_EQUAL = $i++; push(@O_readable, '=');
 sub read_file
 {
   $file = shift;
-  open(IN, "<$file");
+
+  return if(defined($history{$file}));
+  $history{$file} = 1;
+
+  open(IN, "<$file") or return;
+  $lineno = 1;
   my @tmp = <IN>;
   close(IN);
   my $result = join('', @tmp);
-  @code = split(//, $result);
+  unshift(@code, split(//, $result));
 }
 
 # TODO: support something else than decimal numbers, i.e., octal and hex
 sub read_number
 {
-  my $c = shift;
-  my $start = $code_ptr;
+  my $c = shift(@code);
   my @buf;
   while($c =~ /[0-9]/)
   {
     push(@buf, $c);
-    $start++;
-    $c = $code[$start];
+    $c = shift(@code);
   }
+  unshift(@code, $c);
   return join('', @buf);
 }
 
 sub read_string
 {
-  my $c = shift;
-  my $start = $code_ptr;
+  my $c = shift(@code);
   my @buf;
-  while($c =~ /[a-zA-Z_0-9]/)
+  while(defined($c) && $c =~ /[a-zA-Z_0-9]/)
   {
     push(@buf, $c);
-    $start++;
-    $c = $code[$start];
+    $c = shift(@code);
   }
+  unshift(@code, $c);
   return join('', @buf);
 }
 
 sub handle_comment
 {
   my $_lineno = $lineno;
-  my $c = $code[$code_ptr];
-  my $start = $code_ptr;
+  shift(@code);
+  my $c = $code[0];
   my @buf;
   if($c eq '/')
   {
@@ -173,26 +178,25 @@ sub handle_comment
     while(defined($c) && $c ne "\n")
     {
       push(@buf, $c);
-      $start++;
-      $c = $code[$start];
+      $c = shift(@code);
     }
+    unshift(@code, $c);
     $lineno++;
   }
   elsif($c eq '*')
   {
     # a comment of the form '/*'. this goes till we find '*/'
-    while(defined($c) && ($c ne '*' || $code[$start+1] ne '/'))
+    while(defined($c) && ($c ne '*' || $code[0] ne '/'))
     {
       $lineno++ if($c eq "\n");
       push(@buf, $c);
-      $start++;
-      $c = $code[$start];
+      $c = shift(@code);
     }
     push(@buf, $c);
   }
   else
   {
-    print "comment error\n";
+    print STDERR "comment error\n";
   }
   my $comment = join('', @buf);
 
@@ -204,45 +208,88 @@ sub handle_comment
   {
     $comments[$_lineno]{raw}[0] = $comment;
   }
+}
 
-  return length($comment);
+# only #include is handled for now, and only for files in the current directory
+sub handle_preprocessor
+{
+  my $string = read_string();
+  return if($string ne "include");
+  my $c = ' ';
+  $c = shift(@code) while($c eq ' ');
+  my $end;
+  if($c eq '"') { $end = '"'; }
+#   elsif($c eq '<') { $end = '>'; }
+  else
+  {
+    unshift(@code, $c);
+    return;
+  }
+  $c = shift(@code);
+  my @buf;
+  while(defined($c) && $c ne $end)
+  {
+    if($c eq "\n") # no idea how to handle this, just ignore it
+    {
+      unshift(@code, $c);
+      ++$lineno;
+      return;
+    }
+    push(@buf, $c);
+    $c = shift(@code);
+  }
+  unshift(@code, $c);
+  return if(!defined($c));
+
+  my $filename = join('', @buf);
+
+  if($filename =~ /^iop|^common/)
+  {
+    # add the current filename and lineno to the code stream so we
+    # can reset these when the included file is scanned
+    # note that all entries in @code coming from the files are single characters,
+    # so we can safely add longer strings
+    unshift(@code, 'undo_include', $file, $lineno);
+    read_file($folder.$filename);
+  }
+
+  unshift(@code, ' ');
 }
 
 sub read_token
 {
-  for(; defined($code[$code_ptr]); $code_ptr++)
+  for(; defined($code[0]); shift(@code))
   {
-    my $c = $code[$code_ptr];
+    my $c = $code[0];
     if($c eq "\n") { ++$lineno;}
     elsif($c eq " " || $c eq "\t") { next; }
-    elsif($c eq "&") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_AMPERSAND); }
-    elsif($c eq "*") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_ASTERISK); }
-    elsif($c eq "/" && ($code[$code_ptr+1] eq "/" || $code[$code_ptr+1] eq "*" ))
+    elsif($c eq "#") { shift(@code); handle_preprocessor(); next; }
+    elsif($c eq "undo_include") { shift(@code); $file = shift(@code); $lineno = shift(@code); }
+    elsif($c eq "&") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_AMPERSAND); }
+    elsif($c eq "*") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_ASTERISK); }
+    elsif($c eq "/" && ($code[1] eq "/" || $code[1] eq "*" ))
     {
-      $code_ptr++;
-      $code_ptr += handle_comment();
+      handle_comment();
       next;
     }
-    elsif($c eq ";") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_SEMICOLON); }
-    elsif($c eq ",") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_COMMA); }
-    elsif($c eq "(") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_LEFTROUND); }
-    elsif($c eq ")") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_RIGHTROUND); }
-    elsif($c eq "{") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_LEFTCURLY); }
-    elsif($c eq "}") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_RIGHTCURLY); }
-    elsif($c eq "[") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_LEFTSQUARE); }
-    elsif($c eq "]") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_RIGHTSQUARE); }
-    elsif($c eq ":") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_COLON); }
-    elsif($c eq "=") { ++$code_ptr; return ($lineno, $file, $T_OPERATOR, $O_EQUAL); }
-    elsif($c =~ /[0-9]/)
+    elsif($c eq ";") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_SEMICOLON); }
+    elsif($c eq ",") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_COMMA); }
+    elsif($c eq "(") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_LEFTROUND); }
+    elsif($c eq ")") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_RIGHTROUND); }
+    elsif($c eq "{") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_LEFTCURLY); }
+    elsif($c eq "}") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_RIGHTCURLY); }
+    elsif($c eq "[") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_LEFTSQUARE); }
+    elsif($c eq "]") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_RIGHTSQUARE); }
+    elsif($c eq ":") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_COLON); }
+    elsif($c eq "=") { shift(@code); return ($lineno, $file, $T_OPERATOR, $O_EQUAL); }
+    elsif($c =~ /^[0-9]$/)
     {
-      my $number = read_number($c);
-      $code_ptr += length($number);
+      my $number = read_number();
       return ($lineno, $file, $T_INTEGER_LITERAL, $number);
     }
-    elsif($c =~ /[a-zA-Z_]/)
+    elsif($c =~ /^[a-zA-Z_]$/)
     {
-      my $string = read_string($c);
-      $code_ptr += length($string);
+      my $string = read_string();
       foreach(@keywords)
       {
         my @entry = @{$_};
@@ -256,7 +303,7 @@ sub read_token
     else {
       # we don't care that we can't understand every input symbol, we just read over them until we reach something we know.
       # everything we see from there on should be handled by the scanner/parser
-      # print "scanner error: ".$c."\n";
+      # print STDERR "scanner error: ".$c."\n";
     }
   }
   return ($lineno, $file, $T_NONE, 0);

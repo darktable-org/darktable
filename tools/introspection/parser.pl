@@ -25,14 +25,18 @@ use parser;
 use ast;
 use code_gen;
 
-my $input_file = $ARGV[0];
-my $output_file = $ARGV[1];
+my $base_dir = $ARGV[0];
+my $input_file = $ARGV[1];
+my $output_file = $ARGV[2];
 
-if(!defined($input_file) or !defined($output_file))
+if(!defined($base_dir) or !defined($input_file) or !defined($output_file))
 {
-  print "usage: parse.pl <input file> <output_file>\n";
+  print STDERR "usage: parse.pl <base dir> <input file> <output_file>\n";
   exit(1);
 }
+
+# set the directory where to look for #includes
+$scanner::folder = $base_dir;
 
 read_file($input_file);
 
@@ -97,7 +101,7 @@ else
 #   {
 #     my @token = get_token();
 #     last if($token[$P_TYPE] == $T_NONE);
-#     print $token[0]." : ".$token[1]." : ".$token[2]."\n";
+#     print $token[0]." : ".$token[1]." : ".$token[2]." : ".$token[3]."\n";
 #   }
 # }
 

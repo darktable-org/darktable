@@ -9,7 +9,7 @@ macro (add_iop _lib _src)
     DEPENDS ${_input}
     OUTPUT ${_output}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/introspection/
-    COMMAND ${perl_BIN} ${CMAKE_SOURCE_DIR}/tools/introspection/parser.pl ${_input} ${_output}
+    COMMAND ${perl_BIN} ${CMAKE_SOURCE_DIR}/tools/introspection/parser.pl ${CMAKE_CURRENT_SOURCE_DIR}/../ ${_input} ${_output}
   )
   add_library(${_lib} MODULE ${_output})
   target_link_libraries(${_lib} ${LIBS})
