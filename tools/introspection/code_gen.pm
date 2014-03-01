@@ -40,7 +40,7 @@ extern "C"
 
 static dt_introspection_field_t introspection_linear[] = {
   {.Opaque = { {DT_INTROSPECTION_TYPE_OPAQUE, (char*)"", (char*)"", (char*)"", sizeof($params_type), 0}, },},
-  { .header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0} }
+  {.header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0} }
 };
 
 static dt_introspection_t introspection = {
@@ -69,7 +69,12 @@ int introspection_init(int api_version)
   return 0;
 }
 
-void * get_p(void * param, const char * name)
+void * get_p(const void * param, const char * name)
+{
+  return NULL;
+}
+
+dt_introspection_field_t * get_f(const char * name)
 {
   return NULL;
 }
@@ -171,14 +176,27 @@ END
   return 0;
 }
 
-void * get_p(void * param, const char * name)
+void * get_p(const void * param, const char * name)
 {
   $params_type * p = ($params_type*)param;
 END
   print $OUT " ";
   foreach(@ast::varnames)
   {
-    print $OUT " if(!strcmp(name, \"$_\"))\n    return &(p->$_);\n  else";
+    print $OUT " if(!strcmp(name, \"@$_[1]\"))\n    return &(p->@$_[1]);\n  else";
+  }
+  print $OUT <<END;
+
+    return NULL;
+}
+
+dt_introspection_field_t * get_f(const char * name)
+{
+END
+  print $OUT " ";
+  foreach(@ast::varnames)
+  {
+    print $OUT " if(!strcmp(name, \"@$_[1]\"))\n    return &(introspection_linear[@$_[0]]);\n  else";
   }
   print $OUT <<END;
 

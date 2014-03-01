@@ -165,7 +165,8 @@ typedef struct dt_iop_module_so_t
   // introspection related callbacks
   dt_introspection_t*          (*get_introspection)        ();
   dt_introspection_field_t*    (*get_introspection_linear) ();
-  void*                        (*get_p)                    (void *param, const char *name);
+  void*                        (*get_p)                    (const void *param, const char *name);
+  dt_introspection_field_t*    (*get_f)                    (const char *name);
 
 }
 dt_iop_module_so_t;
@@ -348,7 +349,8 @@ typedef struct dt_iop_module_t
   // introspection related data
   dt_introspection_t*       (*get_introspection)        ();
   dt_introspection_field_t* (*get_introspection_linear) ();
-  void*                     (*get_p)                    (void *param, const char *name);
+  void*                     (*get_p)                    (const void *param, const char *name);
+  dt_introspection_field_t* (*get_f)                    (const char *name);
 
 }
 dt_iop_module_t;
