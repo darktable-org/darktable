@@ -196,6 +196,7 @@ sub handle_comment
   }
   else
   {
+    # can't happen
     print STDERR "comment error\n";
   }
   my $comment = join('', @buf);
@@ -210,11 +211,8 @@ sub handle_comment
   }
 }
 
-# only #include is handled for now, and only for files in the current directory
-sub handle_preprocessor
+sub handle_include
 {
-  my $string = read_string();
-  return if($string ne "include");
   my $c = ' ';
   $c = shift(@code) while($c eq ' ');
   my $end;
@@ -252,7 +250,21 @@ sub handle_preprocessor
     unshift(@code, 'undo_include', $file, $lineno);
     read_file($folder.$filename);
   }
+}
 
+sub handle_define
+{
+  # just read until the end of the line
+  my $c = ' ';
+  $c = shift(@code) while(defined($code[0]) && $c ne "\n");
+  unshift(@code, $c);
+}
+
+sub handle_preprocessor
+{
+  my $string = read_string();
+  if($string eq "include") { handle_include(); }
+  elsif($string eq "define") { handle_define(); }
   unshift(@code, ' ');
 }
 
