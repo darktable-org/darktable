@@ -1011,15 +1011,15 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
 
     if (!from_group && nb>0)
     {
-      item = gtk_menu_item_new_with_label(_("delete this shape"));
-      g_signal_connect(item, "activate",(GCallback) _tree_delete_shape, self);
-      gtk_menu_shell_append(menu, item);
       if (nb == 1)
       {
         item = gtk_menu_item_new_with_label(_("duplicate this shape"));
         g_signal_connect(item, "activate",(GCallback) _tree_duplicate_shape, self);
         gtk_menu_shell_append(menu, item);
       }
+      item = gtk_menu_item_new_with_label(_("delete this shape"));
+      g_signal_connect(item, "activate",(GCallback) _tree_delete_shape, self);
+      gtk_menu_shell_append(menu, item);
     }
     else if (nb>0 && depth < 3)
     {
