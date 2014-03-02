@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 Tobias Ellinghaus, johannes hanika, henrik andersson.
+    copyright (c) 2011 -- 2014 Tobias Ellinghaus, johannes hanika, henrik andersson.
 
     and the initial plugin `stuck pixels' was
     copyright (c) 2011 bruce guenter
