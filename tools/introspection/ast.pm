@@ -18,12 +18,11 @@ use scanner;
 
 package ast;
 
-my $DEBUG = 0;
 my $INDENT = 2;
 
 my $OUT = \*STDOUT;
 
-# ugly, not thread safe global variable:
+# ugly, not thread safe global variables:
 our @varnames;
 our @linear;
 our @arrays;
@@ -34,10 +33,7 @@ my $linearisation_pos;
 sub print_debug
 {
   my ($self, $message) = @_;
-  if($DEBUG == 1)
-  {
-    print $message;
-  }
+  print STDERR $message if($main::ERROR_LEVEL >= 3);
 }
 
 sub print_out
@@ -68,12 +64,12 @@ sub new
   my $lineno = $token->[$parser::P_LINENO];
   my $filename = $token->[$parser::P_FILENAME];
 
-  $self->print_debug("new ast_node (line $lineno)\n");
-
   bless($reference, $self);
   $reference->{lineno} = $lineno;
   $reference->{filename} = $filename;
   $reference->{location} = $filename.":".$lineno;
+
+  $self->print_debug("$filename:$lineno -- new ".(ref $reference)."\n");
 
   return $reference;
 }
@@ -81,13 +77,13 @@ sub new
 sub print_error
 {
   my ($self, $message) = @_;
-  print STDERR "error: ".$self->{location}.": $message\n";
+  print STDERR "error: ".$self->{location}.": $message\n" if($main::ERROR_LEVEL >= 1);
 }
 
 sub print_warning
 {
   my ($self, $message) = @_;
-  print STDERR "warning: ".$self->{location}.": $message\n";
+  print STDERR "warning: ".$self->{location}.": $message\n" if($main::ERROR_LEVEL >= 2);
 }
 
 sub print_tree
@@ -101,7 +97,7 @@ sub get_introspection_code
 {
   my $self = shift;
   my $t = ref $self;
-  print "FIXME: $t isn't handled in get_introspection_code\n";
+  $self->print_debug("FIXME: $t isn't handled in get_introspection_code\n");
 }
 
 sub get_description
@@ -132,8 +128,6 @@ package ast_typedef_node;
 sub new
 {
   my ($self, $token, $type, $name) = @_;
-
-  $self->print_debug("new ast_typedef_node ($name)\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -201,8 +195,6 @@ sub new
 {
   my ($self, $token) = @_;
 
-  $self->print_debug("new ast_type_node\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -250,7 +242,7 @@ sub check_tree
 
 sub get_type
 {
-  print "FIXME: ast_type_node -- this type shouldn't be instantiated\n";
+  $self->print_debug("FIXME: ast_type_node -- this type shouldn't be instantiated\n");
 }
 
 sub get_static_const
@@ -329,8 +321,6 @@ sub new
   my ($self, $token) = @_;
   my $name = $token->[$parser::P_VALUE];
 
-  $self->print_debug("new ast_type_typedef_node ($name)\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -366,8 +356,6 @@ package ast_type_char_node;
 sub new
 {
   my ($self, $token) = @_;
-
-  $self->print_debug("new ast_type_char_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -408,8 +396,6 @@ sub new
 {
   my ($self, $token) = @_;
 
-  $self->print_debug("new ast_type_short_node\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -448,8 +434,6 @@ package ast_type_int_node;
 sub new
 {
   my ($self, $token) = @_;
-
-  $self->print_debug("new ast_type_int_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -492,8 +476,6 @@ sub new
 {
   my ($self, $token) = @_;
 
-  $self->print_debug("new ast_type_void_node\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -527,8 +509,6 @@ package ast_type_long_node;
 sub new
 {
   my ($self, $token) = @_;
-
-  $self->print_debug("new ast_type_long_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -569,8 +549,6 @@ sub new
 {
   my ($self, $token) = @_;
 
-  $self->print_debug("new ast_type_float_node\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -594,8 +572,6 @@ package ast_type_double_node;
 sub new
 {
   my ($self, $token) = @_;
-
-  $self->print_debug("new ast_type_double_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -627,8 +603,6 @@ package ast_type_gboolean_node;
 sub new
 {
   my ($self, $token) = @_;
-
-  $self->print_debug("new ast_type_gboolean_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -670,8 +644,6 @@ sub new
 {
   my ($self, $token, $name, $decl_list) = @_;
 
-  $self->print_debug("new ast_type_struct_or_union_node\n");
-
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
@@ -704,7 +676,7 @@ sub check_tree
 
 sub get_type
 {
-  print "FIXME: ast_type_struct_or_union_node -- this type shouldn't be instantiated\n";
+  $self->print_debug("FIXME: ast_type_struct_or_union_node -- this type shouldn't be instantiated\n");
 }
 
 sub print_tree
@@ -749,8 +721,6 @@ sub new
 {
   my ($self, $token, $name, $decl_list) = @_;
 
-  $self->print_debug("new ast_type_struct_node\n");
-
   my $reference = $self->SUPER::new($token, $name, $decl_list);
   bless($reference, $self);
 
@@ -774,8 +744,6 @@ sub new
 {
   my ($self, $token, $name, $decl_list) = @_;
 
-  $self->print_debug("new ast_type_union_node\n");
-
   my $reference = $self->SUPER::new($token, $name, $decl_list);
   bless($reference, $self);
 
@@ -798,8 +766,6 @@ package ast_type_enum_node;
 sub new
 {
   my ($self, $token, $name, $enumerator_list) = @_;
-
-  $self->print_debug("new ast_type_enum_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -855,8 +821,6 @@ package ast_declaration_node;
 sub new
 {
   my ($self, $token, $type, $declaration) = @_;
-
-  $self->print_debug("new ast_declaration_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
@@ -941,8 +905,6 @@ package ast_declarator_node;
 sub new
 {
   my ($self, $token, $id, $dimension_list) = @_;
-
-  $self->print_debug("new ast_declarator_node\n");
 
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);

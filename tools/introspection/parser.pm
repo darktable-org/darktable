@@ -29,7 +29,7 @@ our @EXPORT = qw( parse parse_dt_module_introspection parse_comments get_typedef
 sub print_error
 {
   my $message = shift;
-  print STDERR "error: ".$token[$P_FILENAME].":".$token[$P_LINENO].": $message\n";
+  print STDERR "error: ".$token[$P_FILENAME].":".$token[$P_LINENO].": $message\n" if($main::ERROR_LEVEL >= 1);
 }
 
 ################# the exposed parser functions #################
