@@ -380,6 +380,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
             dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+          fclose(f);
           goto finally;
         }
 
