@@ -58,8 +58,8 @@ _read_planar_8(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       /* set rgb to first sample from scanline */
@@ -94,8 +94,8 @@ _read_planar_16(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       t->mipbuf[4 * idx + 0] =
@@ -126,8 +126,8 @@ _read_planar_f(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       t->mipbuf[4 * idx + 0] = t->mipbuf[4 * idx + 1] = t->mipbuf[4 * idx + 2] = buf[t->spp * i + 0];
