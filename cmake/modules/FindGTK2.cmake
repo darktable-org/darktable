@@ -44,7 +44,7 @@
 #       find_package(GTK2 2.8 COMPONENTS gtk gtkmm)
 #
 #   if(GTK2_FOUND)
-#      include_directories(${GTK2_INCLUDE_DIRS})
+#      include_directories(SYSTEM ${GTK2_INCLUDE_DIRS})
 #      add_executable(mygui mygui.cc)
 #      target_link_libraries(mygui ${GTK2_LIBRARIES})
 #   endif()
