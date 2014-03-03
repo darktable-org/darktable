@@ -24,8 +24,9 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 1
+#define DT_INTROSPECTION_VERSION 2
 
+struct dt_iop_module_so_t;
 union dt_introspection_field_t;
 
 typedef enum dt_introspection_type_t
@@ -56,6 +57,7 @@ typedef struct dt_introspection_type_header_t
   char                               *description;  // some human readable description taken from the comments
   size_t                              size;         // size of the field in bytes
   size_t                              offset;       // offset from the beginning of the start of params. TODO: use start of parent struct instead?
+  struct dt_iop_module_so_t          *so;           // a pointer to the dlopen'ed module
 } dt_introspection_type_header_t;
 
 typedef struct dt_introspection_type_opaque_t

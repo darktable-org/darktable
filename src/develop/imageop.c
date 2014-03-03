@@ -589,7 +589,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
 
   // the introspection api
   if(!g_module_symbol(module->module, "introspection_init",     (gpointer)&(module->introspection_init)))     module->introspection_init = NULL;
-  if(module->introspection_init && !module->introspection_init(DT_INTROSPECTION_VERSION))
+  if(module->introspection_init && !module->introspection_init(module, DT_INTROSPECTION_VERSION))
   {
     // set the introspection related fields in module
     if(!g_module_symbol(module->module, "get_p",                    (gpointer)&(module->get_p)))                    module->get_p = NULL;

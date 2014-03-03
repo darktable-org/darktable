@@ -108,7 +108,7 @@ typedef struct dt_iop_module_so_t
   /** called once per module, at shutdown. */
   void (*cleanup_global)       (struct dt_iop_module_so_t *self);
   /** called once per module, at startup. */
-  int (*introspection_init)    (int api_version);
+  int (*introspection_init)    (struct dt_iop_module_so_t *self, int api_version);
 
   /** callbacks, loaded once, referenced by the instances. */
   int (*version)               ();

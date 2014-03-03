@@ -179,7 +179,7 @@ sub get_introspection_code
 
   # we have to add the outermost struct here
   my $description = $self->get_description();
-  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0";
+  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0, NULL";
   my $specific = $self->{type}->get_introspection_code($name_prefix, $params_type);
   my $linear_line = ".Struct = {\n      { $header },\n      $specific\n    }";
   $self->{type}->add_to_linear("", $linear_line);
@@ -872,7 +872,7 @@ sub get_introspection_code
   my $type = "DT_INTROSPECTION_TYPE_".uc($union_type);
 
   my $description = $self->get_description();
-  my $header = "$type, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname)";
+  my $header = "$type, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
   my $specific = $self->{type}->get_introspection_code($inner_varname, $params_type);
   my $linear_line = ".$union_type = {\n      { $header },\n      $specific\n    }";
   $self->add_to_linear($inner_varname, $linear_line);
@@ -887,7 +887,7 @@ sub get_introspection_code
       $depth--;
       $inner_varname = $varname.("[0]"x$depth);
       $field_name = $self->{declaration}->{id}.("[0]"x$depth);
-      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname)";
+      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
       $specific = "/*count*/ $_, /*type*/ $subtype, /*field*/ &introspection_linear[".($linearisation_pos-1)."]";
       $linear_line = ".Array = {\n      { $header },\n      $specific\n    }";
       $self->add_to_linear($inner_varname, $linear_line);

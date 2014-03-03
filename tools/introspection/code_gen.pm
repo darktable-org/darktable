@@ -18,7 +18,7 @@ use ast;
 
 package code_gen;
 
-my $DT_INTROSPECTION_VERSION = 1;
+my $DT_INTROSPECTION_VERSION = 2;
 
 sub print_fallback
 {
@@ -39,8 +39,8 @@ extern "C"
 #include "common/introspection.h"
 
 static dt_introspection_field_t introspection_linear[] = {
-  {.Opaque = { {DT_INTROSPECTION_TYPE_OPAQUE, (char*)"", (char*)"", (char*)"", sizeof($params_type), 0}, },},
-  {.header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0} }
+  {.Opaque = { {DT_INTROSPECTION_TYPE_OPAQUE, (char*)"", (char*)"", (char*)"", sizeof($params_type), 0, NULL}, },},
+  {.header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0, NULL} }
 };
 
 static dt_introspection_t introspection = {
@@ -60,11 +60,14 @@ dt_introspection_t* get_introspection()
   return &introspection;
 }
 
-int introspection_init(int api_version)
+int introspection_init(struct dt_iop_module_so_t *self, int api_version)
 {
   // here we check that the generated code matches the api at compile time and also at runtime
   if(introspection.api_version != DT_INTROSPECTION_VERSION || api_version != DT_INTROSPECTION_VERSION)
     return 1;
+
+  for(int i = 0; i <= 1; i++)
+    introspection_linear[i].header.so = self;
 
   return 0;
 }
@@ -152,11 +155,14 @@ dt_introspection_t* get_introspection()
   return &introspection;
 }
 
-int introspection_init(int api_version)
+int introspection_init(struct dt_iop_module_so_t *self, int api_version)
 {
   // here we check that the generated code matches the api at compile time and also at runtime
   if(introspection.api_version != DT_INTROSPECTION_VERSION || api_version != DT_INTROSPECTION_VERSION)
     return 1;
+
+  for(int i = 0; i <= $max_linear+1; i++)
+    introspection_linear[i].header.so = self;
 
 END
 
