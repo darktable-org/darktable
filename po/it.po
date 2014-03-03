@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-01 15:00+0100\n"
+"POT-Creation-Date: 2014-03-03 19:25+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -818,7 +818,7 @@ msgstr "Abilitato"
 #: ../src/common/history.c:291 ../src/common/styles.c:632
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
 #: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1146
-#: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1095
+#: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1152
 #: ../src/iop/demosaic.c:1314 ../src/iop/vignette.c:1117
 #: ../src/libs/history.c:155 ../src/libs/live_view.c:404
 msgid "off"
@@ -851,7 +851,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copia locale è stata sincronizzata"
 msgstr[1] "%d copie locali sono state sincronizzate"
 
-#: ../src/common/imageio.c:669
+#: ../src/common/imageio.c:668
 #, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
@@ -860,23 +860,23 @@ msgstr ""
 "Fallita l'allocazione della memoria per %s, diminuisci il numero di thread "
 "usati per l'esportazione o aggiungi più memoria."
 
-#: ../src/common/imageio.c:669
+#: ../src/common/imageio.c:668
 msgid "thumbnail export"
 msgstr "Esportazione anteprima"
 
 #. Export button
 #. export button
-#: ../src/common/imageio.c:669 ../src/gui/preferences.c:615
+#: ../src/common/imageio.c:668 ../src/gui/preferences.c:615
 #: ../src/libs/export.c:668 ../src/libs/styles.c:408
 msgid "export"
 msgstr "Esporta"
 
-#: ../src/common/imageio.c:677 ../src/common/mipmap_cache.c:1163
+#: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1163
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "L'immagine '%s' non è disponibile!"
 
-#: ../src/common/imageio.c:693
+#: ../src/common/imageio.c:692
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr "Impossibile trovare lo stile '%s' da applicare per l'esportazione."
@@ -1684,41 +1684,41 @@ msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
 msgstr ""
 "Errore nella creazione dell'interfaccia, DT_SIMPLE_GUI_NONE non trovato"
 
-#: ../src/develop/imageop.c:1118
+#: ../src/develop/imageop.c:1120
 msgid "new instance"
 msgstr "Nuova istanza"
 
-#: ../src/develop/imageop.c:1123
+#: ../src/develop/imageop.c:1125
 msgid "duplicate instance"
 msgstr ""
 "Duplica questa istanza con\n"
 "le stesse impostazioni"
 
-#: ../src/develop/imageop.c:1128 ../src/libs/masks.c:1063
+#: ../src/develop/imageop.c:1130 ../src/libs/masks.c:1063
 msgid "move up"
 msgstr "Sposta su"
 
-#: ../src/develop/imageop.c:1134 ../src/libs/masks.c:1066
+#: ../src/develop/imageop.c:1136 ../src/libs/masks.c:1066
 msgid "move down"
 msgstr "Sposta giù"
 
 #. delete
-#: ../src/develop/imageop.c:1140 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:1142 ../src/libs/image.c:146
 #: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "Elimina"
 
-#: ../src/develop/imageop.c:1162 ../src/develop/imageop.c:2053
+#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
 #, c-format
 msgid "%s is switched on"
 msgstr "%s è abilitato"
 
-#: ../src/develop/imageop.c:1162 ../src/develop/imageop.c:2053
+#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
 #, c-format
 msgid "%s is switched off"
 msgstr "%s è disabilitato"
 
-#: ../src/develop/imageop.c:1432 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1434 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
@@ -1727,41 +1727,41 @@ msgstr "%s è disabilitato"
 msgid "preset"
 msgstr "Preimpostazione"
 
-#: ../src/develop/imageop.c:1475
+#: ../src/develop/imageop.c:1477
 msgctxt "accel"
 msgid "fusion"
 msgstr "Fusione"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1480
+#: ../src/develop/imageop.c:1482
 msgctxt "accel"
 msgid "show module"
 msgstr "Visualizza modulo"
 
-#: ../src/develop/imageop.c:1481
+#: ../src/develop/imageop.c:1483
 msgctxt "accel"
 msgid "enable module"
 msgstr "Abilita modulo"
 
-#: ../src/develop/imageop.c:1484 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1486 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Ripristina i parametri del modulo"
 
-#: ../src/develop/imageop.c:1486 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1488 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Mostra il menù dei preset"
 
-#: ../src/develop/imageop.c:2023
+#: ../src/develop/imageop.c:2025
 msgid "multiple instances actions"
 msgstr "Azioni delle istanze multiple"
 
-#: ../src/develop/imageop.c:2032 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2034 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "Ripristina parametri"
 
-#: ../src/develop/imageop.c:2041 ../src/gui/preferences.c:405
+#: ../src/develop/imageop.c:2043 ../src/gui/preferences.c:405
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "Preset"
@@ -1806,7 +1806,7 @@ msgstr[1] "%s sono stati importati con successo"
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiling fallito per il modulo '%s'. L'output potrebbe essere confuso."
 
-#: ../src/develop/pixelpipe_hb.c:2220
+#: ../src/develop/pixelpipe_hb.c:2221
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -1967,83 +1967,83 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "Usa il formato AAAA-MM-GG per sovrascrivere la data"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:901
+#: ../src/gui/gtk.c:902
 msgctxt "accel"
 msgid "capture view"
 msgstr "Vista modalità di acquisizione"
 
-#: ../src/gui/gtk.c:902
+#: ../src/gui/gtk.c:903
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "Vista Tavolo Luminoso"
 
-#: ../src/gui/gtk.c:903
+#: ../src/gui/gtk.c:904
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "Vista Camera Oscura"
 
-#: ../src/gui/gtk.c:904
+#: ../src/gui/gtk.c:905
 msgctxt "accel"
 msgid "map view"
 msgstr "Vista Mappa"
 
-#: ../src/gui/gtk.c:905
+#: ../src/gui/gtk.c:906
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "Vista presentazione"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:932
+#: ../src/gui/gtk.c:933
 msgctxt "accel"
 msgid "quit"
 msgstr "Chiudi"
 
 #. Contrast and brightness accelerators
-#: ../src/gui/gtk.c:939
+#: ../src/gui/gtk.c:940
 msgctxt "accel"
 msgid "increase brightness"
 msgstr "Aumenta luminosità"
 
-#: ../src/gui/gtk.c:941
+#: ../src/gui/gtk.c:942
 msgctxt "accel"
 msgid "decrease brightness"
 msgstr "Diminuisci luminosità"
 
-#: ../src/gui/gtk.c:943
+#: ../src/gui/gtk.c:944
 msgctxt "accel"
 msgid "increase contrast"
 msgstr "Aumenta contrasto"
 
-#: ../src/gui/gtk.c:945
+#: ../src/gui/gtk.c:946
 msgctxt "accel"
 msgid "decrease contrast"
 msgstr "Diminuisci contrasto"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:966
+#: ../src/gui/gtk.c:967
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Passa a schermo intero"
 
-#: ../src/gui/gtk.c:967
+#: ../src/gui/gtk.c:968
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "Chiudi schermo intero"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:979
+#: ../src/gui/gtk.c:980
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Nascondi bordi laterali"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:982
+#: ../src/gui/gtk.c:983
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Nascondi testata"
 
 #. View-switch
-#: ../src/gui/gtk.c:986
+#: ../src/gui/gtk.c:987
 msgctxt "accel"
 msgid "switch view"
 msgstr "Cambia vista"
@@ -3933,96 +3933,98 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Imposta la saturazione globale"
 
-#: ../src/iop/colorin.c:50
+#: ../src/iop/colorin.c:107
 msgid "input color profile"
 msgstr "Profilo colore di ingresso"
 
-#: ../src/iop/colorin.c:582
+#: ../src/iop/colorin.c:639
 msgid "input profile could not be generated!"
 msgstr "Il profilo in ingresso non può essere generato!"
 
-#: ../src/iop/colorin.c:640
+#: ../src/iop/colorin.c:697
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr ""
 "Il profilo di ingresso non supportato è stato sostituito con Rec709 RGB "
 "lineare!"
 
-#: ../src/iop/colorin.c:922 ../src/iop/colorin.c:954
+#: ../src/iop/colorin.c:979 ../src/iop/colorin.c:1011
 msgid "embedded ICC profile"
 msgstr "Profilo ICC incorporato"
 
-#: ../src/iop/colorin.c:924 ../src/iop/colorin.c:956
+#: ../src/iop/colorin.c:981 ../src/iop/colorin.c:1013
 msgid "DNG embedded matrix"
 msgstr "Matrice DNG incorporata"
 
-#: ../src/iop/colorin.c:926 ../src/iop/colorin.c:958
+#: ../src/iop/colorin.c:983 ../src/iop/colorin.c:1015
 msgid "standard color matrix"
 msgstr "Matrice colore standard"
 
-#: ../src/iop/colorin.c:928 ../src/iop/colorin.c:960
+#: ../src/iop/colorin.c:985 ../src/iop/colorin.c:1017
 msgid "enhanced color matrix"
 msgstr "Matrice colore potenziata"
 
-#: ../src/iop/colorin.c:930 ../src/iop/colorin.c:962
+#: ../src/iop/colorin.c:987 ../src/iop/colorin.c:1019
 msgid "vendor color matrix"
 msgstr "Matrice colore del produttore"
 
-#: ../src/iop/colorin.c:932 ../src/iop/colorin.c:964
+#: ../src/iop/colorin.c:989 ../src/iop/colorin.c:1021
 msgid "alternate color matrix"
 msgstr "Matrice colore alternativa"
 
-#: ../src/iop/colorin.c:934 ../src/iop/colorin.c:966
+#: ../src/iop/colorin.c:991 ../src/iop/colorin.c:1023
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (es. JPG)"
 
-#: ../src/iop/colorin.c:936 ../src/iop/colorin.c:968 ../src/iop/colorin.c:1097
-#: ../src/iop/colorout.c:919 ../src/iop/colorout.c:920
-#: ../src/iop/colorout.c:921 ../src/libs/export.c:558
+#: ../src/iop/colorin.c:993 ../src/iop/colorin.c:1025
+#: ../src/iop/colorin.c:1154 ../src/iop/colorout.c:957
+#: ../src/iop/colorout.c:958 ../src/iop/colorout.c:959
+#: ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibile)"
 
-#: ../src/iop/colorin.c:938 ../src/iop/colorin.c:970 ../src/iop/colorin.c:1098
-#: ../src/iop/colorout.c:907 ../src/iop/colorout.c:908
-#: ../src/iop/colorout.c:909 ../src/libs/export.c:570
+#: ../src/iop/colorin.c:995 ../src/iop/colorin.c:1027
+#: ../src/iop/colorin.c:1155 ../src/iop/colorout.c:945
+#: ../src/iop/colorout.c:946 ../src/iop/colorout.c:947
+#: ../src/libs/export.c:570
 msgid "linear Rec709 RGB"
 msgstr "Rec709 RGB lineare"
 
-#: ../src/iop/colorin.c:940 ../src/iop/colorin.c:972
+#: ../src/iop/colorin.c:997 ../src/iop/colorin.c:1029
 msgid "linear infrared BGR"
 msgstr "BGR lineare infrarosso "
 
-#: ../src/iop/colorin.c:942 ../src/iop/colorin.c:974
+#: ../src/iop/colorin.c:999 ../src/iop/colorin.c:1031
 msgid "linear XYZ"
 msgstr "XYZ lineare "
 
-#: ../src/iop/colorin.c:944 ../src/iop/colorin.c:976
+#: ../src/iop/colorin.c:1001 ../src/iop/colorin.c:1033
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:592
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1076 ../src/iop/denoiseprofile.c:1723
+#: ../src/iop/colorin.c:1133 ../src/iop/denoiseprofile.c:1723
 #: ../src/libs/export.c:609
 msgid "profile"
 msgstr "Profilo"
 
-#: ../src/iop/colorin.c:1085
+#: ../src/iop/colorin.c:1142
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "Profili ICC in %s/color/in o %s/color/in"
 
-#: ../src/iop/colorin.c:1093
+#: ../src/iop/colorin.c:1150
 msgid "gamut clipping"
 msgstr "Tosaggio gamma"
 
-#: ../src/iop/colorin.c:1096
+#: ../src/iop/colorin.c:1153
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1099
+#: ../src/iop/colorin.c:1156
 msgid "Beta RGB (compatible)"
 msgstr "Beta RGB (compatibile)"
 
-#: ../src/iop/colorin.c:1101
+#: ../src/iop/colorin.c:1158
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Confina i valori LAB nella gamma dello spazio colore RGB"
 
@@ -4132,98 +4134,98 @@ msgstr "Equalizzazione istogramma"
 msgid "level of histogram equalization"
 msgstr "Livello di equalizzazione dell'istogramma"
 
-#: ../src/iop/colorout.c:48
+#: ../src/iop/colorout.c:86
 msgid "output color profile"
 msgstr "Profilo colore di uscita"
 
-#: ../src/iop/colorout.c:614
+#: ../src/iop/colorout.c:652
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "Il profilo di uscita non supportato è stato sostituito con sRGB!"
 
-#: ../src/iop/colorout.c:754
+#: ../src/iop/colorout.c:792
 msgid "gamut check"
 msgstr "Controllo gamma"
 
-#: ../src/iop/colorout.c:754
+#: ../src/iop/colorout.c:792
 msgid "soft proof"
 msgstr "Prova colore a monitor"
 
-#: ../src/iop/colorout.c:866
+#: ../src/iop/colorout.c:904
 msgid "output intent"
 msgstr "Intento uscita"
 
-#: ../src/iop/colorout.c:867 ../src/iop/colorout.c:874
+#: ../src/iop/colorout.c:905 ../src/iop/colorout.c:912
 #: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "Percettivo"
 
-#: ../src/iop/colorout.c:868 ../src/iop/colorout.c:875
+#: ../src/iop/colorout.c:906 ../src/iop/colorout.c:913
 #: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "Colorimetrico relativo"
 
-#: ../src/iop/colorout.c:869 ../src/iop/colorout.c:876
+#: ../src/iop/colorout.c:907 ../src/iop/colorout.c:914
 #: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Saturazione"
 
-#: ../src/iop/colorout.c:870 ../src/iop/colorout.c:877
+#: ../src/iop/colorout.c:908 ../src/iop/colorout.c:915
 #: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "Colorimetrico assoluto"
 
-#: ../src/iop/colorout.c:872
+#: ../src/iop/colorout.c:910
 msgid "display intent"
 msgstr "Intento video"
 
-#: ../src/iop/colorout.c:890
+#: ../src/iop/colorout.c:928
 msgid "output profile"
 msgstr "Profilo di uscita"
 
-#: ../src/iop/colorout.c:891
+#: ../src/iop/colorout.c:929
 msgid "softproof profile"
 msgstr "Profilo prova a monitor"
 
-#: ../src/iop/colorout.c:892
+#: ../src/iop/colorout.c:930
 msgid "display profile"
 msgstr "Profilo monitor"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:903 ../src/libs/export.c:621
+#: ../src/iop/colorout.c:941 ../src/libs/export.c:621
 msgid "system display profile"
 msgstr "Profilo monitor di sistema"
 
-#: ../src/iop/colorout.c:913 ../src/iop/colorout.c:914
-#: ../src/iop/colorout.c:915 ../src/libs/export.c:551
+#: ../src/iop/colorout.c:951 ../src/iop/colorout.c:952
+#: ../src/iop/colorout.c:953 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (sicuro per il web)"
 
-#: ../src/iop/colorout.c:933
+#: ../src/iop/colorout.c:971
 msgid "rendering intent"
 msgstr "Intento di rendering"
 
-#: ../src/iop/colorout.c:934
+#: ../src/iop/colorout.c:972
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "Profili ICC in %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:936
+#: ../src/iop/colorout.c:974
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "Profili ICC dello schermo in %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:938
+#: ../src/iop/colorout.c:976
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "Profili ICC della prova a video in %s/color/out o %s/color/out"
 
-#: ../src/iop/colorout.c:976
+#: ../src/iop/colorout.c:1014
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "Cambia profilo prova a video"
 
-#: ../src/iop/colorout.c:979
+#: ../src/iop/colorout.c:1017
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "Cambia controllo gamma"
@@ -7805,37 +7807,37 @@ msgstr "Provino"
 #. setup rating key accelerators
 #. Initializing accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1892
+#: ../src/libs/tools/filmstrip.c:161 ../src/views/lighttable.c:1882
 msgctxt "accel"
 msgid "rate 0"
 msgstr "valuta 0"
 
-#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1893
+#: ../src/libs/tools/filmstrip.c:162 ../src/views/lighttable.c:1883
 msgctxt "accel"
 msgid "rate 1"
 msgstr "Valuta 1"
 
-#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1894
+#: ../src/libs/tools/filmstrip.c:163 ../src/views/lighttable.c:1884
 msgctxt "accel"
 msgid "rate 2"
 msgstr "Valuta 2"
 
-#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1895
+#: ../src/libs/tools/filmstrip.c:164 ../src/views/lighttable.c:1885
 msgctxt "accel"
 msgid "rate 3"
 msgstr "Valuta 3"
 
-#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1896
+#: ../src/libs/tools/filmstrip.c:165 ../src/views/lighttable.c:1886
 msgctxt "accel"
 msgid "rate 4"
 msgstr "Valuta 4"
 
-#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1897
+#: ../src/libs/tools/filmstrip.c:166 ../src/views/lighttable.c:1887
 msgctxt "accel"
 msgid "rate 5"
 msgstr "Valuta 5"
 
-#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1898
+#: ../src/libs/tools/filmstrip.c:167 ../src/views/lighttable.c:1888
 msgctxt "accel"
 msgid "rate reject"
 msgstr "Valuta rifiutato"
@@ -7873,27 +7875,27 @@ msgstr "Duplica immagine"
 
 #. setup color label accelerators
 #. Color keys
-#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1913
+#: ../src/libs/tools/filmstrip.c:187 ../src/views/lighttable.c:1901
 msgctxt "accel"
 msgid "color red"
 msgstr "Rosso"
 
-#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1914
+#: ../src/libs/tools/filmstrip.c:188 ../src/views/lighttable.c:1902
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Giallo"
 
-#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1915
+#: ../src/libs/tools/filmstrip.c:189 ../src/views/lighttable.c:1903
 msgctxt "accel"
 msgid "color green"
 msgstr "Verde"
 
-#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1916
+#: ../src/libs/tools/filmstrip.c:190 ../src/views/lighttable.c:1904
 msgctxt "accel"
 msgid "color blue"
 msgstr "Blu"
 
-#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1917
+#: ../src/libs/tools/filmstrip.c:191 ../src/views/lighttable.c:1905
 msgctxt "accel"
 msgid "color purple"
 msgstr "Viola"
@@ -7951,33 +7953,48 @@ msgstr "Tutte escluso le scartate"
 msgid "sort by"
 msgstr "Ordina per"
 
-#: ../src/libs/tools/global_toolbox.c:43
+#: ../src/libs/tools/global_toolbox.c:46
 msgid "preferences"
 msgstr "Preferenze"
 
-#: ../src/libs/tools/global_toolbox.c:79
-#: ../src/libs/tools/global_toolbox.c:113
+#: ../src/libs/tools/global_toolbox.c:82
+#: ../src/libs/tools/global_toolbox.c:129
 msgid "expand grouped images"
 msgstr "Espandi immagini raggruppate"
 
-#: ../src/libs/tools/global_toolbox.c:81
-#: ../src/libs/tools/global_toolbox.c:115
+#: ../src/libs/tools/global_toolbox.c:84
+#: ../src/libs/tools/global_toolbox.c:131
 msgid "collapse grouped images"
 msgstr "Nascondi immagini raggruppate"
 
-#: ../src/libs/tools/global_toolbox.c:91
+#: ../src/libs/tools/global_toolbox.c:95
+#: ../src/libs/tools/global_toolbox.c:141
+msgid "hide image overlays"
+msgstr "Nascondi sovrapposizioni immagine"
+
+#: ../src/libs/tools/global_toolbox.c:97
+#: ../src/libs/tools/global_toolbox.c:143
+msgid "show image overlays"
+msgstr "Mostra sovrapposizioni immagine"
+
+#: ../src/libs/tools/global_toolbox.c:107
 msgid "show global preferences"
 msgstr "Mostra preferenze globali"
 
-#: ../src/libs/tools/global_toolbox.c:123
+#: ../src/libs/tools/global_toolbox.c:150
 msgctxt "accel"
 msgid "grouping"
 msgstr "Raggruppa"
 
-#: ../src/libs/tools/global_toolbox.c:124
+#: ../src/libs/tools/global_toolbox.c:151
 msgctxt "accel"
 msgid "preferences"
 msgstr "Preferenze"
+
+#: ../src/libs/tools/global_toolbox.c:152
+msgctxt "accel"
+msgid "show overlays"
+msgstr "Mostra sovrapposizioni"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -8154,70 +8171,65 @@ msgstr "Prova a disattivare  le impostazioni del filtro dal pannello di sopra"
 msgid "or add images in the collection module in the left panel"
 msgstr "o aggiungi immagini alla raccolta nel pannello di sinistra"
 
-#: ../src/views/lighttable.c:1900
-msgctxt "accel"
-msgid "expose statuses"
-msgstr "Mostra stato"
-
 #. Navigation keys
-#: ../src/views/lighttable.c:1903
+#: ../src/views/lighttable.c:1891
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Navigazione sù"
 
-#: ../src/views/lighttable.c:1905
+#: ../src/views/lighttable.c:1893
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Navigazione giù"
 
-#: ../src/views/lighttable.c:1907
+#: ../src/views/lighttable.c:1895
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Pagina su"
 
-#: ../src/views/lighttable.c:1909
+#: ../src/views/lighttable.c:1897
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "Pagina giù"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:1920
+#: ../src/views/lighttable.c:1908
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Scorri in su"
 
-#: ../src/views/lighttable.c:1922
+#: ../src/views/lighttable.c:1910
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Scorri in giù"
 
-#: ../src/views/lighttable.c:1924
+#: ../src/views/lighttable.c:1912
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Scorri verso sinitra"
 
-#: ../src/views/lighttable.c:1926
+#: ../src/views/lighttable.c:1914
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Scorri verso destra"
 
-#: ../src/views/lighttable.c:1928
+#: ../src/views/lighttable.c:1916
 msgctxt "accel"
 msgid "scroll center"
 msgstr "Scorri verso il centro"
 
-#: ../src/views/lighttable.c:1930
+#: ../src/views/lighttable.c:1918
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Riallinea le immagini alla griglia"
 
 #. Preview key
-#: ../src/views/lighttable.c:1934
+#: ../src/views/lighttable.c:1922
 msgctxt "accel"
 msgid "preview"
 msgstr "Anteprima"
 
-#: ../src/views/lighttable.c:1935
+#: ../src/views/lighttable.c:1923
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Anteprima con rilevamento punti di messa a fuoco"
@@ -8357,13 +8369,13 @@ msgstr "Gestore maschere"
 msgid "group #%d"
 msgstr "Raggruppa #%d"
 
-#: ../src/libs/masks.c:1014
-msgid "delete this shape"
-msgstr "Elimina questa forma"
-
-#: ../src/libs/masks.c:1019
+#: ../src/libs/masks.c:1016
 msgid "duplicate this shape"
 msgstr "Duplica questa forma"
+
+#: ../src/libs/masks.c:1020
+msgid "delete this shape"
+msgstr "Elimina questa forma"
 
 #: ../src/libs/masks.c:1026
 msgid "remove from group"
@@ -8456,6 +8468,10 @@ msgstr "Fotografia"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "Grafica"
+
+#~ msgctxt "accel"
+#~ msgid "expose statuses"
+#~ msgstr "Mostra stato"
 
 #~ msgid ""
 #~ "couldn't expand to a unique filename for import, please check your import "
