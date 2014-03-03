@@ -2,10 +2,10 @@ if(USE_LUA)
 	if(LUA52_FOUND)
 		include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
 	else()
-		include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/../external/lua/src)
+		include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../external/lua/src)
 	endif(LUA52_FOUND)
 	# liblautoc for lua automated interface generation
-	include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/../external/LuaAutoC/include)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../external/LuaAutoC/include)
 endif(USE_LUA)
 
 include_directories(SYSTEM ${SDL_INCLUDE_DIR})
