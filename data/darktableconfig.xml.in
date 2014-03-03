@@ -985,6 +985,13 @@
     <shortdescription>expand a single lighttable module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in lighttable mode</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/expose_statuses</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>always show thumbnail overlays</shortdescription>
+    <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>darkroom/ui/single_module</name>
     <type>bool</type>

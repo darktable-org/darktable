@@ -958,6 +958,17 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr,gint x,gint y,gint w,gint h,gint 
   cairo_stroke (cr);
 }
 
+void dtgtk_cairo_paint_overlays(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
+{
+  gint s = (w<h?w:h);
+  cairo_translate(cr, x+(w/2.0)-(s/2.0), y+(h/2.0)-(s/2.0));
+  cairo_scale (cr,s,s);
+
+  cairo_set_line_width(cr, .3);
+  cairo_arc (cr, 0.5, 0.5, 0.4, 0., 2.0f*M_PI);
+  cairo_stroke (cr);
+}
+
 // TODO: Find better icon
 void dtgtk_cairo_paint_grouping(cairo_t *cr,gint x,gint y,gint w,gint h,gint flags)
 {

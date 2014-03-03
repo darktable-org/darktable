@@ -919,16 +919,8 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  int show_status;
-
-  if (v->view(v) == DT_VIEW_LIGHTTABLE)
-    show_status = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  else
-    show_status = 0;
-
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview || show_status)
+  if(imgsel == imgid || full_preview || darktable.gui->show_overlays)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
