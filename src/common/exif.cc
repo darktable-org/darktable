@@ -1610,9 +1610,9 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           /* check if we got blendop from xmp */
           unsigned char *blendop_params = NULL;
           int blendop_size = 0;
-          std::string blendop_str = blendop->toString(i);
-          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->count () > i && blendop_str.c_str() != NULL)
+          if(blendop != xmpData.end() && blendop->size() > 0 && blendop->count () > i && blendop->toString(i).c_str() != NULL)
           {
+            std::string blendop_str = blendop->toString(i);
             blendop_params = dt_exif_xmp_decode(blendop_str.c_str(), strlen(blendop_str.c_str()), &blendop_size);
             DT_DEBUG_SQLITE3_BIND_BLOB(stmt_upd_hist, 7, blendop_params, blendop_size, SQLITE_TRANSIENT);
           }
@@ -1631,10 +1631,10 @@ int dt_exif_xmp_read (dt_image_t *img, const char* filename, const int history_o
           int mprio = 0;
           if (multi_priority != xmpData.end() && multi_priority->count() > i)  mprio = multi_priority->toLong(i);
           DT_DEBUG_SQLITE3_BIND_INT(stmt_upd_hist, 9, mprio);
-          std::string multi_name_str = multi_name->toString(i);
           if(multi_name != xmpData.end() && multi_name->size() > 0 &&
-            multi_name->count() > i && multi_name_str.c_str() != NULL)
+            multi_name->count() > i && multi_name->toString(i).c_str() != NULL)
           {
+            std::string multi_name_str = multi_name->toString(i);
             const char *mname = multi_name_str.c_str();
             DT_DEBUG_SQLITE3_BIND_TEXT(stmt_upd_hist, 10, mname, strlen(mname), SQLITE_TRANSIENT);
           }
