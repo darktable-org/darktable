@@ -694,7 +694,7 @@ lock_again:
     fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
-    if(fd >= 0) // the lockfile was successfully created - write our PID into it
+    if(fd != -1) // the lockfile was successfully created - write our PID into it
     {
       gchar *pid = g_strdup_printf("%d", getpid());
       if(write(fd, pid, strlen(pid)+1) > -1)
@@ -706,7 +706,7 @@ lock_again:
       char buf[64];
       memset(buf, 0, sizeof(buf));
       fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
-      if(fd >= 0)
+      if(fd != -1)
       {
         if(read(fd, buf, sizeof(buf) - 1) > -1)
         {
