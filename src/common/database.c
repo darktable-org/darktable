@@ -137,7 +137,10 @@ lock_again:
             // the other process seems to no longer exist. unlink the .lock file and try again
             unlink(db->lockfile);
             if(lock_tries < 5)
+            {
+              close(fd);
               goto lock_again;
+            }
           }
         }
         close(fd);
