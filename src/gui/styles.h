@@ -24,6 +24,8 @@ void dt_gui_styles_dialog_new (int imgid);
 /** shows a dialog for editing existing style */
 void dt_gui_styles_dialog_edit (const char *name);
 
+void dt_gui_styles_upload (const char *name,int imgid);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

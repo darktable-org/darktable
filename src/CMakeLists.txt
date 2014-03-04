@@ -86,6 +86,7 @@ FILE(GLOB SOURCE_FILES
   "gui/preferences.c"
   "gui/presets.c"
   "gui/styles_dialog.c"
+  "gui/styles_upload.c"
   "libs/lib.c"
   "views/view.c"
   "views/undo.c"

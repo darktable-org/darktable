@@ -17,6 +17,7 @@
 */
 #include "common/darktable.h"
 #include "common/styles.h"
+#include "common/debug.h"
 #include "control/control.h"
 #include "control/conf.h"
 #include "control/jobs.h"
@@ -36,7 +37,7 @@ typedef struct dt_lib_styles_t
   GtkEntry *entry;
   GtkWidget *duplicate;
   GtkTreeView *list;
-  GtkWidget *delete_button, *import_button, *export_button, *edit_button;
+  GtkWidget *delete_button, *import_button, *export_button, *edit_button, *upload_button;
 }
 dt_lib_styles_t;
 
@@ -294,6 +295,36 @@ static void import_clicked (GtkWidget *w,gpointer user_data)
   gtk_widget_destroy (filechooser);
 }
 
+static void upload_clicked(GtkWidget *w,gpointer user_data)
+{
+  dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
+  char *name = get_style_name(d);
+  int imgid, selected = 0;
+  
+  /* determine selection somewhere else? */
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select * from selected_images", -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    imgid = sqlite3_column_int (stmt, 0);
+    selected++;
+  }
+  sqlite3_finalize(stmt);
+
+  if (name == NULL)
+    dt_control_log(_("no style selected!"));
+  else if (selected == 0)
+    dt_control_log(_("no image selected!"));
+  else if (selected > 1)
+    dt_control_log(_("select only one image!"));
+  else if (name)
+  {
+    dt_gui_styles_upload(name, imgid);
+    _gui_styles_update_view(d);
+  }
+
+}
+
 static gboolean
 entry_callback (GtkEntry *entry, gpointer user_data)
 {
@@ -410,6 +441,13 @@ gui_init (dt_lib_module_t *self)
   g_object_set (exportButton, "tooltip-text", _("export the selected style into a style file"), (char *)NULL);
   g_signal_connect (exportButton, "clicked", G_CALLBACK(export_clicked),d);
   gtk_box_pack_start(GTK_BOX (hbox2),exportButton,TRUE,TRUE,0);
+
+  // upload button
+  GtkWidget *uploadButton = gtk_button_new_with_label(C_("styles", "upload"));
+  d->upload_button = uploadButton;
+  g_object_set (uploadButton, "tooltip-text", _("upload style to the official darktable style collection"), (char *)NULL);
+  g_signal_connect (uploadButton, "clicked", G_CALLBACK(upload_clicked),d);
+  gtk_box_pack_start(GTK_BOX (hbox2),uploadButton,TRUE,TRUE,0);
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
