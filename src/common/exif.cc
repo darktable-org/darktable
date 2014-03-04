@@ -424,8 +424,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         std::ostringstream os;
         pos->write(os, &exifData);
-        std::string os_str = os.str();
-        const char * exifstr = os_str.c_str();
+        const char * exifstr = os.str().c_str();
         img->exif_iso = (float) std::atof( exifstr );
         // beware the following does not result in the same!:
         //img->exif_iso = (float) std::atof( pos->toString().c_str() );
@@ -506,8 +505,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
       if(ref != exifData.end() && ref->size())
       {
-        std::string sign_str = ref->toString();
-        const char *sign = sign_str.c_str();
+        const char *sign = ref->toString().c_str();
         double latitude = 0.0;
         if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
                                     pos->toRational(1).first, pos->toRational(1).second,
@@ -522,8 +520,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
       if(ref != exifData.end() && ref->size())
       {
-        std::string sign_str = ref->toString();
-        const char *sign = sign_str.c_str();
+        const char *sign = ref->toString().c_str();
         double longitude = 0.0;
         if(_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
                                     pos->toRational(1).first, pos->toRational(1).second,
