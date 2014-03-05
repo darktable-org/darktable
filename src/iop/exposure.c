@@ -677,19 +677,19 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->autoexpp), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  g->deflicker = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("Deflicker")));
+  g->deflicker = GTK_CHECK_BUTTON(gtk_check_button_new_with_label(_("deflicker")));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), p->deflicker);
 
   g->deflicker_percentile = dt_bauhaus_slider_new_with_range(self, 0, 100, .01, p->deflicker_percentile, 3);
-  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("Percentile"), (char *)NULL);
+  g_object_set(G_OBJECT(g->deflicker_percentile), "tooltip-text", _("percentile"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_percentile,"%.2f%%");
-  dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("Percentile"));
+  dt_bauhaus_widget_set_label(g->deflicker_percentile, NULL, _("percentile"));
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), p->deflicker);
 
   g->deflicker_level = dt_bauhaus_slider_new_with_range(self, -18.0, 18.0, .01, p->deflicker_level, 3);
-  g_object_set(G_OBJECT(g->deflicker_level), "tooltip-text", _("Target level"), (char *)NULL);
+  g_object_set(G_OBJECT(g->deflicker_level), "tooltip-text", _("target level"), (char *)NULL);
   dt_bauhaus_slider_set_format(g->deflicker_level,"%.2fEV");
-  dt_bauhaus_widget_set_label(g->deflicker_level, NULL, _("Target level"));
+  dt_bauhaus_widget_set_label(g->deflicker_level, NULL, _("target level"));
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
 
   GtkVBox *vbox = GTK_VBOX(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
