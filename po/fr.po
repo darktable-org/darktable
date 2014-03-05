@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-04 17:36+0100\n"
-"PO-Revision-Date: 2014-03-04 17:40+0100\n"
+"POT-Creation-Date: 2014-03-05 15:47+0100\n"
+"PO-Revision-Date: 2014-03-05 15:57+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2206,7 +2206,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:73 ../src/iop/exposure.c:437
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:80 ../src/iop/exposure.c:665
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
@@ -2226,7 +2226,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:443 ../src/iop/levels.c:345
+#: ../src/iop/exposure.c:669 ../src/iop/levels.c:345
 #: ../src/iop/tonecurve.c:756
 msgid "auto"
 msgstr "auto"
@@ -4532,36 +4532,71 @@ msgstr ""
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel égaliseur"
 
-#: ../src/iop/exposure.c:90
+#: ../src/iop/exposure.c:97
 msgctxt "accel"
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:91 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:98 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposition"
 
-#: ../src/iop/exposure.c:92
+#: ../src/iop/exposure.c:99
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "exposition auto"
 
-#: ../src/iop/exposure.c:430
+#: ../src/iop/exposure.c:100
+msgctxt "accel"
+msgid "deflicker"
+msgstr "deflicker"
+
+#: ../src/iop/exposure.c:101
+msgctxt "accel"
+msgid "deflicker-percentile"
+msgstr "percentile-deflicker"
+
+#: ../src/iop/exposure.c:102
+msgctxt "accel"
+msgid "deflicker-level"
+msgstr "valeur-deflicker"
+
+#: ../src/iop/exposure.c:151
+msgid "Magic Lantern Defaults"
+msgstr "défauts de Magic Lantern"
+
+#: ../src/iop/exposure.c:155
+msgid "Almost no clipping"
+msgstr "presque aucune troncature"
+
+#: ../src/iop/exposure.c:657
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:432
+#: ../src/iop/exposure.c:659
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:435
+#: ../src/iop/exposure.c:663
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:446
+#: ../src/iop/exposure.c:672
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
+
+#: ../src/iop/exposure.c:680
+msgid "Deflicker"
+msgstr "deflicker"
+
+#: ../src/iop/exposure.c:684 ../src/iop/exposure.c:686
+msgid "Percentile"
+msgstr "percentile"
+
+#: ../src/iop/exposure.c:690 ../src/iop/exposure.c:692
+msgid "Target level"
+msgstr "valeur cible"
 
 #: ../src/iop/flip.c:320
 msgid "flip horizontally"
