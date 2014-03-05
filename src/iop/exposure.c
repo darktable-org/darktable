@@ -383,7 +383,16 @@ autoexp_disable(dt_iop_module_t *self)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  gulong signal_id = g_signal_lookup("toggled", GTK_TYPE_CHECK_BUTTON);
+  gulong handler_id = g_signal_handler_find(G_OBJECT(g->autoexp),
+                                            G_SIGNAL_MATCH_ID,
+                                            signal_id,
+                                            0, NULL, NULL, NULL);
+
+  g_signal_handler_block(G_OBJECT (g->autoexp), handler_id);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoexp), FALSE);
+  g_signal_handler_unblock(G_OBJECT (g->autoexp), handler_id);
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 
   self->request_color_pick = 0;
@@ -395,7 +404,16 @@ deflicker_disable(dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
+  gulong signal_id = g_signal_lookup("toggled", GTK_TYPE_CHECK_BUTTON);
+  gulong handler_id = g_signal_handler_find(G_OBJECT(g->deflicker),
+                                      G_SIGNAL_MATCH_ID,
+                                      signal_id,
+                                      0, NULL, NULL, NULL);
+
+  g_signal_handler_block(G_OBJECT (g->deflicker), handler_id);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->deflicker), FALSE);
+  g_signal_handler_unblock(G_OBJECT (g->deflicker), handler_id);
+
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_percentile), FALSE);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), FALSE);
 
