@@ -288,7 +288,7 @@ int dt_film_import(const char *dirname)
   /* at last put import film job on queue */
   dt_job_t j;
   film->last_loaded = 0;
-  g_strlcpy(film->dirname, dirname, 512);
+  g_strlcpy(film->dirname, dirname, sizeof(film->dirname));
   film->dir = g_dir_open(film->dirname, 0, NULL);
   dt_film_import1_init(&j, film);
   dt_control_add_job(darktable.control, &j);
@@ -532,15 +532,6 @@ void dt_film_remove(const int id)
     return;
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = count - 1 where "
-                              "(id2 in (select tagid from tagged_images where imgid in "
-                              "(select id from images where film_id = ?1))) or (id1 in "
-                              "(select tagid from tagged_images where imgid in "
-                              "(select id from images where film_id = ?1)))", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "delete from tagged_images where imgid in "
                               "(select id from images where film_id = ?1)", -1, &stmt, NULL);

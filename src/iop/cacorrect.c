@@ -27,7 +27,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
 
 typedef struct dt_iop_cacorrect_params_t
 {

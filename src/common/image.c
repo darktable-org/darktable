@@ -113,7 +113,7 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len
 }
 
 
-void dt_image_film_roll(const dt_image_t *img, char *pathname, int len)
+void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -416,14 +416,6 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "update tagxtag set count = count + 1 where "
-                                "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
-                                "(id2 in (select tagid from tagged_images where imgid = ?1))",
-                                -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
 
     // set version of new entry and max_version of all involved duplicates (with same film_id and filename)
     int32_t version = (newversion != -1) ? newversion : max_version + 1;
@@ -481,14 +473,6 @@ void dt_image_remove(const int32_t imgid)
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "delete from images where id = ?1", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "update tagxtag set count = count - 1 where "
-                              "(id2 in (select tagid from tagged_images where imgid = ?1)) or "
-                              "(id1 in (select tagid from tagged_images where imgid = ?1))",
-                              -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -846,7 +830,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   // add a tag with the file extension
   guint tagid = 0;
   char tagname[512];
-  snprintf(tagname, 512, "darktable|format|%s", ext);
+  snprintf(tagname, sizeof(tagname), "darktable|format|%s", ext);
   g_free(ext);
   dt_tag_new(tagname, &tagid);
   dt_tag_attach(tagid,id);
@@ -886,7 +870,7 @@ void dt_image_init(dt_image_t *img)
   memset(img->exif_model, 0, sizeof(img->exif_model));
   memset(img->exif_lens, 0, sizeof(img->exif_lens));
   memset(img->filename, 0, sizeof(img->filename));
-  g_strlcpy(img->filename, "(unknown)", 10);
+  g_strlcpy(img->filename, "(unknown)", sizeof(img->filename));
   img->exif_model[0] = img->exif_maker[0] = img->exif_lens[0] = '\0';
   g_strlcpy(img->exif_datetime_taken, "0000:00:00 00:00:00",
             sizeof(img->exif_datetime_taken));
@@ -1116,14 +1100,6 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
                                     "tagged_images where imgid = ?2", -1, &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "update tagxtag set count = count + 1 where "
-                                    "(id1 in (select tagid from tagged_images where imgid = ?1)) or "
-                                    "(id2 in (select tagid from tagged_images where imgid = ?1))",
-                                    -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, newid);
         sqlite3_step(stmt);
         sqlite3_finalize(stmt);
 
@@ -1451,7 +1427,7 @@ void dt_image_add_time_offset(const int imgid, const long int offset)
   if(datetime)
   {
     dt_image_t *img = dt_image_cache_write_get(darktable.image_cache, cimg);
-    g_strlcpy(img->exif_datetime_taken, datetime, 20);
+    g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
   }
 

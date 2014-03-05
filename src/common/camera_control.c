@@ -281,12 +281,18 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
         char *output = g_build_filename (output_path,fname,(char *)NULL);
 
         int handle = open (output, O_CREAT | O_WRONLY,0666);
-        gp_file_new_from_fd (&destination , handle);
-        gp_camera_file_get (camera->gpcam, fp.folder , fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-        close (handle);
-
-        // Notify listeners of captured image
-        _dispatch_camera_image_downloaded (c,camera,output);
+        if(handle != -1)
+        {
+          gp_file_new_from_fd (&destination , handle);
+          if(gp_camera_file_get(camera->gpcam, fp.folder, fp.name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
+          {
+            // Notify listeners of captured image
+            _dispatch_camera_image_downloaded(c,camera,output);
+          } else
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
+          close (handle);
+        } else
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
         g_free (output);
       }
       else
@@ -813,18 +819,18 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
       // Now we have filenames lets download file and notify listener of image download
       CameraFile *destination;
       int handle = open( output, O_CREAT | O_WRONLY,0666);
-      if( handle > 0 )
+      if(handle != -1)
       {
         gp_file_new_from_fd( &destination , handle );
-        if( gp_camera_file_get( cam->gpcam, folder , filename, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext) == GP_OK)
+        if(gp_camera_file_get(cam->gpcam, folder, filename, GP_FILE_TYPE_NORMAL, destination, c->gpcontext) == GP_OK)
         {
           _dispatch_camera_image_downloaded(c,cam,output);
-        }
-        else
+        } else
           dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
-
         close( handle );
-      }
+      } else
+        dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
+      g_free (output);
     }
     while( (ifile=g_list_next(ifile)) );
 
@@ -879,7 +885,7 @@ int _camctl_recursive_get_previews(const dt_camctl_t *c,dt_camera_preview_flags_
             {
               int ret;
               char fullpath[512];
-              snprintf(fullpath,512,"%s/%s/%s",c->active_camera->port+5, path, filename);
+              snprintf(fullpath,sizeof(fullpath),"%s/%s/%s",c->active_camera->port+5, path, filename);
               libraw_data_t *raw = libraw_init(0);
               libraw_processed_image_t *image = NULL;
               ret = libraw_open_file(raw, fullpath);
@@ -1299,12 +1305,18 @@ void _camera_poll_events(const dt_camctl_t *c,const dt_camera_t *cam)
         char *output = g_build_filename(output_path,fname,(char *)NULL);
 
         int handle = open( output, O_CREAT | O_WRONLY,0666);
-        gp_file_new_from_fd( &destination , handle );
-        gp_camera_file_get( cam->gpcam, fp->folder , fp->name, GP_FILE_TYPE_NORMAL, destination,  c->gpcontext);
-        close( handle );
-
-        // Notify listeners of captured image
-        _dispatch_camera_image_downloaded(c,cam,output);
+        if(handle != -1)
+        {
+          gp_file_new_from_fd( &destination , handle );
+          if(gp_camera_file_get(cam->gpcam, fp->folder, fp->name, GP_FILE_TYPE_NORMAL, destination, c->gpcontext) == GP_OK)
+          {
+            // Notify listeners of captured image
+            _dispatch_camera_image_downloaded(c,cam,output);
+          } else
+            dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
+          close( handle );
+        } else
+          dt_print(DT_DEBUG_CAMCTL,"[camera_control] failed to download file %s\n",output);
         g_free(output);
       }
     }

@@ -391,14 +391,14 @@ static void on_export_image_tmpfile(gpointer instance,
   dt_lua_unlock(has_lock);
 }
 
-static void on_image_imported(gpointer instance,uint8_t id, gpointer user_data){
+static void on_image_imported(gpointer instance,uint32_t id, gpointer user_data){
   gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_image_t,&id);
   run_event("post-import-image",1);
   dt_lua_unlock(has_lock);
 }
 
-static void on_film_imported(gpointer instance,uint8_t id, gpointer user_data){
+static void on_film_imported(gpointer instance,uint32_t id, gpointer user_data){
   gboolean has_lock = dt_lua_lock();
   luaA_push(darktable.lua_state.state,dt_lua_film_t,&id);
   run_event("post-import-film",1);

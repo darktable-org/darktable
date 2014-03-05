@@ -514,7 +514,7 @@ dt_imageio_retval_t dt_imageio_open_rgbe(dt_image_t *img, const char *filename, 
   }
   fclose(f);
   // repair nan/inf etc
-  for(int i=img->width*img->height-1; i>=0; i--) for(int c=0; c<3; c++) buf[4*i+c] = fmaxf(0.0f, fminf(10000.0, buf[3*i+c]));
+  for(size_t i=(size_t)img->width*img->height; i>0; i--) for(int c=0; c<3; c++) buf[4*(i-1)+c] = fmaxf(0.0f, fminf(10000.0, buf[3*(i-1)+c]));
   return DT_IMAGEIO_OK;
 
 error_corrupt:

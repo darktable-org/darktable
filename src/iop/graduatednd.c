@@ -41,7 +41,7 @@
 
 #define CLIP(x) 		((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
 {
@@ -682,7 +682,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int y=0; y<roi_out->height; y++)
     {
-      int k=roi_out->width*y*ch;
+      size_t k = (size_t)roi_out->width*y*ch;
       const float *in = (float*)ivoid + k;
       float *out = (float*)ovoid + k;
 
@@ -728,7 +728,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int y=0; y<roi_out->height; y++)
     {
-      int k=roi_out->width*y*ch;
+      size_t k = (size_t)roi_out->width*y*ch;
       const float *in = (float*)ivoid + k;
       float *out = (float*)ovoid + k;
 

@@ -23,6 +23,7 @@
 #include "common/opencl.h"
 #include "common/bilateralcl.h"
 #include "common/gaussian.h"
+#include "common/interpolation.h"
 #include "common/dlopencl.h"
 #include "common/nvidia_gpus.h"
 #include "develop/pixelpipe.h"
@@ -379,6 +380,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
             dt_opencl_build_program(dev, prog, binname, cachedir, md5sum, loaded_cached, kerneldir) != CL_SUCCESS)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
+          fclose(f);
           goto finally;
         }
 
@@ -439,6 +441,7 @@ finally:
     dt_capabilities_add("opencl");
     cl->bilateral = dt_bilateral_init_cl_global();
     cl->gaussian = dt_gaussian_init_cl_global();
+    cl->interpolation = dt_interpolation_init_cl_global();
   }
   if(locale)
   {
@@ -454,6 +457,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
   {
     dt_bilateral_free_cl_global(cl->bilateral);
     dt_gaussian_free_cl_global(cl->gaussian);
+    dt_interpolation_free_cl_global(cl->interpolation);
     for(int i=0; i<cl->num_devs; i++)
     {
       dt_pthread_mutex_destroy(&cl->dev[i].lock);
@@ -935,7 +939,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
     if (linkedfile_len>0)
     {
       char link_dest[1024];
-      snprintf(link_dest, 1024, "%s/%s", cachedir, linkedfile);
+      snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, linkedfile);
       unlink(link_dest);
     }
     unlink(binname);
@@ -973,7 +977,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
   cl_program program = cl->dev[dev].program[prog];
   cl_int err;
   char options[1024];
-  snprintf(options, 1024, "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s", (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), cl->dev[dev].vendor, kerneldir);
+  snprintf(options, sizeof(options), "-cl-fast-relaxed-math -cl-strict-aliasing %s -D%s=1 -I%s", (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""), cl->dev[dev].vendor, kerneldir);
   err = (cl->dlocl->symbols->dt_clBuildProgram)(program, 1, &cl->dev[dev].devid, options, 0, 0);
 
   if(err != CL_SUCCESS)
@@ -1044,7 +1048,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
         {
           // save opencl compiled binary as md5sum-named file
           char link_dest[1024];
-          snprintf(link_dest, 1024, "%s/%s", cachedir, md5sum);
+          snprintf(link_dest, sizeof(link_dest), "%s/%s", cachedir, md5sum);
           FILE* f = fopen(link_dest, "w+");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
@@ -1326,7 +1330,7 @@ int dt_opencl_write_buffer_to_device(const int devid, void *host, void *device, 
 }
 
 
-void* dt_opencl_copy_host_to_device_constant(const int devid, const int size, void *host)
+void* dt_opencl_copy_host_to_device_constant(const int devid, const size_t size, void *host)
 {
   if(!darktable.opencl->inited || devid < 0) return NULL;
   cl_int err;
@@ -1470,7 +1474,7 @@ void* dt_opencl_alloc_device_use_host_pointer(const int devid, const int width, 
 }
 
 
-void* dt_opencl_alloc_device_buffer(const int devid, const int size)
+void* dt_opencl_alloc_device_buffer(const int devid, const size_t size)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;
@@ -1483,7 +1487,7 @@ void* dt_opencl_alloc_device_buffer(const int devid, const int size)
   return buf;
 }
 
-void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const int size, const int flags)
+void* dt_opencl_alloc_device_buffer_with_flags(const int devid, const size_t size, const int flags)
 {
   if(!darktable.opencl->inited) return NULL;
   cl_int err;

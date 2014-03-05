@@ -306,7 +306,7 @@ static void _update_collected_images(dt_view_t *self)
 
   char col_query[2048];
 
-  snprintf(col_query, 2048, "INSERT INTO memory.collected_images (imgid) %s", query);
+  snprintf(col_query, sizeof(col_query), "INSERT INTO memory.collected_images (imgid) %s", query);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
@@ -1290,16 +1290,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 }
 
 static gboolean
-expose_status_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                         guint keyval, GdkModifierType modifier, gpointer data)
-{
-  const gboolean status = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  dt_conf_set_bool("lighttable/ui/expose_statuses", status==TRUE?FALSE:TRUE);
-  dt_control_queue_redraw_center();
-  return TRUE;
-}
-
-static gboolean
 go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                          guint keyval, GdkModifierType modifier, gpointer data)
 {
@@ -1897,8 +1887,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "rate 5"), GDK_KEY_5, 0);
   dt_accel_register_view(self, NC_("accel", "rate reject"), GDK_KEY_r, 0);
 
-  dt_accel_register_view(self, NC_("accel", "expose statuses"), 0, 0);
-
   // Navigation keys
   dt_accel_register_view(self, NC_("accel", "navigate up"),
                          GDK_KEY_g, 0);
@@ -1968,12 +1956,6 @@ void connect_key_accels(dt_view_t *self)
               G_CALLBACK(star_key_accel_callback),
               GINT_TO_POINTER(DT_VIEW_REJECT), NULL);
   dt_accel_connect_view(self, "rate reject", closure);
-
-  // expose image status
-  closure = g_cclosure_new(
-              G_CALLBACK(expose_status_accel_callback),
-              (gpointer)self, NULL);
-  dt_accel_connect_view(self, "expose statuses", closure);
 
   // Navigation keys
   closure = g_cclosure_new(

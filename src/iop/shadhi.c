@@ -60,7 +60,7 @@
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(4)
+DT_MODULE_INTROSPECTION(4, dt_iop_shadhi_params_t)
 
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t
@@ -326,7 +326,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(out, roi_out) schedule(static)
 #endif
-  for(int j=0; j<roi_out->width*roi_out->height*4; j+=4)
+  for(size_t j=0; j<(size_t)roi_out->width*roi_out->height*4; j+=4)
   {
     out[j+0] = 100.0f - out[j+0];
     out[j+1] = 0.0f;
@@ -344,7 +344,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in, out) schedule(static)
 #endif
-  for(int j=0; j<width*height*ch; j+=ch)
+  for(size_t j=0; j<(size_t)width*height*ch; j+=ch)
   {
     float ta[3], tb[3];
     _Lab_scale(&in[j], ta);

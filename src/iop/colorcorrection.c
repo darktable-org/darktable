@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <string.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colorcorrection_params_t)
 
 #define DT_COLORCORRECTION_INSET 5
 #define DT_COLORCORRECTION_MAX 40.
@@ -127,7 +127,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *in  = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     out[0] = in[0];
     out[1] = d->saturation*(in[1] + in[0] * d->a_scale + d->a_base);

@@ -38,7 +38,7 @@
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
 typedef struct dt_iop_vibrance_params_t
 {
@@ -109,7 +109,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for (int k=0; k<roi_out->height; k++)
   {
-    int offs = k*roi_out->width*ch;
+    size_t offs = (size_t)k*roi_out->width*ch;
     for(int l=0; l<(roi_out->width*ch); l+=ch)
     {
       /* saturation weight 0 - 1 */

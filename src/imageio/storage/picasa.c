@@ -766,7 +766,7 @@ static PicasaAccountInfo *picasa_get_account_info(PicasaContext *ctx)
   accountinfo->token = g_strdup(ctx->token);
   accountinfo->refresh_token = g_strdup(ctx->refresh_token);
 
-  g_snprintf(ctx->userid, 1024, "%s", user_id);
+  g_snprintf(ctx->userid, sizeof(ctx->userid), "%s", user_id);
   g_free(name);
   return accountinfo;
 }
@@ -1090,7 +1090,7 @@ static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_pica
 
   ui->picasa_api->token = g_strdup(token);
   ui->picasa_api->refresh_token = g_strdup(refresh_token);
-  g_snprintf(ui->picasa_api->userid, 1024, "%s", userid);
+  g_snprintf(ui->picasa_api->userid, sizeof(ui->picasa_api->userid), "%s", userid);
 
   if (ui->picasa_api->token != NULL && picasa_test_auth_token(ui->picasa_api))
   {
@@ -1170,7 +1170,7 @@ static gboolean ui_authenticate(dt_storage_picasa_gui_data_t *ui)
   {
     ctx->token = g_strdup(uiselectedaccounttoken);
     ctx->refresh_token = g_strdup(uiselectedaccountrefreshtoken);
-    g_snprintf(ctx->userid, 1024, "%s", uiselecteduserid);
+    g_snprintf(ctx->userid, sizeof(ctx->userid), "%s", uiselecteduserid);
   }
   //check selected token if we already have one
   if (ctx->token != NULL && !picasa_test_auth_token(ctx))
@@ -1411,9 +1411,9 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
 
   const char *ext = format->extension(fdata);
   char fname[4096]= {0};
-  dt_loc_get_tmp_dir(fname,4096);
-  g_strlcat (fname,"/darktable.XXXXXX.",4096);
-  g_strlcat(fname,ext,4096);
+  dt_loc_get_tmp_dir(fname, sizeof(fname));
+  g_strlcat (fname, "/darktable.XXXXXX.", sizeof(fname));
+  g_strlcat(fname, ext, sizeof(fname));
 
   gint fd=g_mkstemp(fname);
   if(fd==-1)
@@ -1460,7 +1460,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
       result = 0;
       goto cleanup;
     }
-    g_snprintf (ctx->album_id, 1024, "%s", album_id);
+    g_snprintf (ctx->album_id, sizeof(ctx->album_id), "%s", album_id);
   }
 
   const char *photoid = picasa_upload_photo_to_album(ctx, ctx->album_id, fname, title, summary, imgid);
@@ -1541,16 +1541,16 @@ void *get_params(struct dt_imageio_module_storage_t *self)
     gchar *albumid = NULL;
     gtk_combo_box_get_active_iter(ui->comboBox_album, &iter);
     gtk_tree_model_get(model, &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);
-    g_snprintf(p->album_id, 1024, "%s", albumid);
+    g_snprintf(p->album_id, sizeof(p->album_id), "%s", albumid);
   }
 
-  g_snprintf(p->userid, 1024, "%s", ui->picasa_api->userid);
+  g_snprintf(p->userid, sizeof(p->userid), "%s", ui->picasa_api->userid);
 
   //recreate a new context for further usages
   ui->picasa_api = picasa_api_init();
   ui->picasa_api->token = g_strdup(p->token);
   ui->picasa_api->refresh_token = g_strdup(p->refresh_token);
-  g_snprintf(ui->picasa_api->userid, 1024, "%s", p->userid);
+  g_snprintf(ui->picasa_api->userid, sizeof(ui->picasa_api->userid), "%s", p->userid);
 
   return p;
 }
@@ -1569,8 +1569,8 @@ int set_params(struct dt_imageio_module_storage_t *self, const void *params, con
   PicasaContext *d = (PicasaContext *) params;
   dt_storage_picasa_gui_data_t *g = (dt_storage_picasa_gui_data_t *)self->gui_data;
 
-  g_snprintf(g->picasa_api->album_id, 1024, "%s", d->album_id);
-  g_snprintf(g->picasa_api->userid, 1024, "%s", d->userid);
+  g_snprintf(g->picasa_api->album_id, sizeof(g->picasa_api->album_id), "%s", d->album_id);
+  g_snprintf(g->picasa_api->userid, sizeof(g->picasa_api->userid), "%s", d->userid);
 
   GtkListStore *model =  GTK_LIST_STORE(gtk_combo_box_get_model(g->comboBox_username));
   GtkTreeIter iter;

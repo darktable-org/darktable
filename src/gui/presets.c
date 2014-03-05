@@ -24,6 +24,7 @@
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "gui/accelerators.h"
 #include "dtgtk/tristatebutton.h"
 #include <stdlib.h>
@@ -49,6 +50,10 @@ static const char* dt_gui_presets_aperture_value_str[] = {"f/0", "f/0.5", "f/0.7
     "f/2.8", "f/4", "f/5.6", "f/8", "f/11", "f/16", "f/22", "f/32", "f/45", "f/64", "f/90", "f/128", "f/+"
                                                          };
 
+// format string and corresponding flag stored into the database
+const char* dt_gui_presets_format_value_str[3] = { 0, 0, 0 };
+const int   dt_gui_presets_format_flag[3]      = { FOR_LDR, FOR_RAW, FOR_HDR };
+
 typedef struct dt_gui_presets_edit_dialog_t
 {
   dt_iop_module_t *module;
@@ -62,6 +67,7 @@ typedef struct dt_gui_presets_edit_dialog_t
   GtkSpinButton *focal_length_min, *focal_length_max;
   gchar *original_name;
   gint old_id;
+  GtkToggleButton *format_btn[3];
 }
 dt_gui_presets_edit_dialog_t;
 
@@ -89,7 +95,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT OR REPLACE INTO presets (name, description, operation, op_version, op_params, enabled, "
                               "blendop_params, blendop_version, multi_priority, multi_name, model, maker, lens, "
                               "iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, "
-                              "writeprotect, autoapply, filter, def, isldr) "
+                              "writeprotect, autoapply, filter, def, format) "
                               "VALUES (?1, '', ?2, ?3, ?4, ?5, ?6, ?7, 0, '', '%', '%', '%', 0, 51200, 0, 10000000, 0, 100000000, 0, 1000, 1, 0, 0, 0, 0)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
@@ -173,7 +179,7 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
     char tmp_path[1024];
-    snprintf(tmp_path,1024,"%s/%s",_("preset"),name);
+    snprintf(tmp_path,sizeof(tmp_path),"%s/%s",_("preset"),name);
     dt_accel_deregister_iop(module,tmp_path);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "delete from presets where name=?1 and operation=?2 and op_version=?3 and writeprotect=0", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
@@ -275,14 +281,14 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
     //rename accelerators
     char path[1024];
-    snprintf(path,1024,"%s/%s",_("preset"),g->original_name);
+    snprintf(path,sizeof(path),"%s/%s",_("preset"),g->original_name);
     dt_accel_rename_preset_iop(g->module,path,gtk_entry_get_text(g->name));
     // commit all the user input fields
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "insert into presets (name, description, operation, op_version, op_params, enabled, "
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "INSERT INTO presets (name, description, operation, op_version, op_params, enabled, "
                                 "blendop_params, blendop_version, multi_priority, multi_name, "
                                 "model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, "
-                                "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr) "
-                                "values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, '', ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, 0, ?20, ?21, 0, 0)", -1, &stmt, NULL);
+                                "focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, format) "
+                                "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 0, '', ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, 0, ?20, ?21, 0, ?22)", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, gtk_entry_get_text(g->name), strlen(gtk_entry_get_text(g->name)), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, gtk_entry_get_text(g->description), strlen(gtk_entry_get_text(g->description)), SQLITE_TRANSIENT);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, g->module->op, strlen(g->module->op), SQLITE_TRANSIENT);
@@ -304,6 +310,10 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, gtk_spin_button_get_value(g->focal_length_max));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 20, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->autoapply)));
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 21, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->filter)));
+    int format = 0;
+    for (int k=0; k<3; k++)
+      format += gtk_toggle_button_get_active(g->format_btn[k]) * dt_gui_presets_format_flag[k];
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, format);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
@@ -340,11 +350,19 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   }
   else name = g_strdup(name_in);
 
+  //  make sure the format values are initialized in the proper order: LDR, RAW, HDR
+  if (!dt_gui_presets_format_value_str[0])
+  {
+    dt_gui_presets_format_value_str[0] = _("normal images");
+    dt_gui_presets_format_value_str[1] = _("RAW");
+    dt_gui_presets_format_value_str[2] = _("HDR");
+  }
+
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
-  snprintf(title, 1024, _("edit `%s' for module `%s'"), name, module->name());
+  snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module->name());
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(window),
                                         GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -472,10 +490,29 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   gtk_spin_button_set_digits(g->focal_length_max, 0);
   gtk_box_pack_start(vbox4, GTK_WIDGET(g->focal_length_max), FALSE, FALSE, 0);
 
+  // raw/hdr/ldr
+  label = gtk_label_new(_("format"));
+  gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+  gtk_box_pack_start(vbox2, label, FALSE, FALSE, 0);
+
+  g->format_btn[0] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[0]));
+  gtk_box_pack_start(vbox3,GTK_WIDGET (g->format_btn[0]),TRUE,FALSE,0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+
+  g->format_btn[1] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[1]));
+  gtk_box_pack_start(vbox2, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox3,GTK_WIDGET (g->format_btn[1]),TRUE,FALSE,0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+
+  g->format_btn[2] = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(dt_gui_presets_format_value_str[2]));
+  gtk_box_pack_start(vbox2, gtk_label_new(""), FALSE, FALSE, 0);
+  gtk_box_pack_start(vbox3,GTK_WIDGET (g->format_btn[2]),TRUE,FALSE,0);
+  gtk_box_pack_start(vbox4, gtk_label_new(""), FALSE, FALSE, 0);
+
   gtk_widget_set_no_show_all(GTK_WIDGET(g->details), TRUE);
 
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select rowid, description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter from presets where name = ?1 and operation = ?2 and op_version = ?3", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT rowid, description, model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max, focal_length_min, focal_length_max, autoapply, filter, format FROM presets WHERE name = ?1 AND operation = ?2 AND op_version = ?3", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, module->op, strlen(module->op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, module->version() );
@@ -506,6 +543,9 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
     gtk_spin_button_set_value(g->focal_length_max, sqlite3_column_double(stmt, 12));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), sqlite3_column_int(stmt, 13));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    sqlite3_column_int(stmt, 14));
+    const int format = sqlite3_column_int(stmt, 15);
+    for (k=0; k<3; k++)
+      gtk_toggle_button_set_active(g->format_btn[k], format&(dt_gui_presets_format_flag[k]));
   }
   else
   {
@@ -533,6 +573,8 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
     gtk_spin_button_set_value(g->focal_length_max, 1000);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->autoapply), 0);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->filter),    0);
+    for (k=0; k<3; k++)
+      gtk_toggle_button_set_active(g->format_btn[k], TRUE);
   }
   sqlite3_finalize(stmt);
 
@@ -580,7 +622,7 @@ menuitem_new_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
   char path[1024];
-  snprintf(path,1024,"%s/%s",_("preset"),_("new preset"));
+  snprintf(path,sizeof(path),"%s/%s",_("preset"),_("new preset"));
   dt_accel_register_iop(module->so,FALSE,path,0,0);
   dt_accel_connect_preset_iop(module,_("new preset"));
   // then show edit dialog
@@ -718,7 +760,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
                                 "?6 between exposure_min and exposure_max and "
                                 "?7 between aperture_min and aperture_max and "
                                 "?8 between focal_length_min and focal_length_max and "
-                                "(isldr = 0 or isldr=?9)"
+                                "(format = 0 or format&?9!=0)"
                                 " ) )"
                                 "order by writeprotect desc, rowid", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, op, strlen(op), SQLITE_TRANSIENT);
@@ -729,7 +771,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 6, image->exif_exposure);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, image->exif_aperture);
     DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, image->exif_focal_length);
-    int ldr = dt_image_is_ldr(image) ? 1 : 2; // will match raw+hdr for 2, hdr might be just a converted high bit-depth raw, so we're on the safe side.
+    int ldr = dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, ldr);
   }
   else
@@ -855,11 +897,11 @@ void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const in
   char tmp[1024];
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set maker=?1, model=?2, lens=?3 where operation=?4 and op_version=?5 and name=?6", -1, &stmt, NULL);
-  snprintf(tmp, 1024, "%%%s%%", maker);
+  snprintf(tmp, sizeof(tmp), "%%%s%%", maker);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tmp, strlen(tmp), SQLITE_TRANSIENT);
-  snprintf(tmp, 1024, "%%%s%%", model);
+  snprintf(tmp, sizeof(tmp), "%%%s%%", model);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, tmp, strlen(tmp), SQLITE_TRANSIENT);
-  snprintf(tmp, 1024, "%%%s%%", lens);
+  snprintf(tmp, sizeof(tmp), "%%%s%%", lens);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tmp, strlen(tmp), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, op, strlen(op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, version);
@@ -923,7 +965,7 @@ void dt_gui_presets_update_fl(const char *name, dt_dev_operation_t op, const int
 void dt_gui_presets_update_ldr(const char *name, dt_dev_operation_t op, const int32_t version, const int ldrflag)
 {
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set isldr=?1 where operation=?2 and op_version=?3 and name=?4", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "update presets set format=?1 where operation=?2 and op_version=?3 and name=?4", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, ldrflag);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op, strlen(op), SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, version);

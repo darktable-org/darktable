@@ -17,13 +17,13 @@
 */
 
 #include "common/darktable.h"
-#include "iop/colorout.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/colormatrices.c"
+#include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/srgb_tone_curve_values.h"
-#include <lcms2.h>
+#include "develop/imageop.h"
 
 
 /** inverts the given 3x3 matrix */
@@ -542,7 +542,7 @@ dt_colorspaces_create_alternate_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "darktable alternate %s", makermodel);
+  snprintf(name, sizeof(name), "darktable alternate %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -596,7 +596,7 @@ dt_colorspaces_create_vendor_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "darktable vendor %s", makermodel);
+  snprintf(name, sizeof(name), "darktable vendor %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -650,7 +650,7 @@ dt_colorspaces_create_darktable_profile(const char *makermodel)
   if (hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, 512, "Darktable profiled %s", makermodel);
+  snprintf(name, sizeof(name), "Darktable profiled %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -794,31 +794,48 @@ dt_colorspaces_find_profile(char *filename, const int filename_len, const char *
 cmsHPROFILE
 dt_colorspaces_create_output_profile(const int imgid)
 {
+  // find the colorout module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *colorout = NULL;
+  if(colorout == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t*)(modules->data);
+      if(!strcmp(module->op, "colorout"))
+      {
+        colorout = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
   char profile[1024];
   profile[0] = '\0';
   // db lookup colorout params, and dt_conf_() for override
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  if(!overprofile || !strcmp(overprofile, "image"))
+  if(colorout && colorout->get_p && (!overprofile || !strcmp(overprofile, "image")))
   {
-    const dt_iop_colorout_params_t *params;
-    // sqlite:
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT op_params FROM history WHERE imgid=?1 AND operation='colorout' ORDER BY num DESC LIMIT 1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      params = sqlite3_column_blob(stmt, 0);
-      g_strlcpy(profile, params->iccprofile, 1024);
+      // use introspection to get the profile name from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      char *iccprofile = colorout->get_p(params, "iccprofile");
+      g_strlcpy(profile, iccprofile, sizeof(profile));
     }
     sqlite3_finalize(stmt);
   }
   if(!overprofile && profile[0] == '\0')
   {
-    g_strlcpy(profile, "sRGB", 1024);
+    g_strlcpy(profile, "sRGB", sizeof(profile));
   }
   else if(profile[0] == '\0')
   {
-    g_strlcpy(profile, overprofile, 1024);
+    g_strlcpy(profile, overprofile, sizeof(profile));
   }
 
   if(overprofile)

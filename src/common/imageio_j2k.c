@@ -276,12 +276,12 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // first try: ignore alpha.
   if(image->numcomps < 3) // 1, 2 => grayscale
   {
-    for(int i = 0; i < img->width * img->height; i++)
+    for(size_t i = 0; i < (size_t)img->width * img->height; i++)
       buf[i*4 + 0] = buf[i*4 + 1] = buf[i*4 + 2] = (float)(image->comps[0].data[i] + signed_offsets[0]) / float_divs[0];
   }
   else // 3, 4 => rgb
   {
-    for(int i = 0; i < img->width * img->height; i++)
+    for(size_t i = 0; i < (size_t)img->width * img->height; i++)
       for(int k = 0; k < 3; k++) buf[i*4 + k] = (float)(image->comps[k].data[i] + signed_offsets[k]) / float_divs[k];
   }
 
@@ -305,7 +305,7 @@ int dt_imageio_j2k_read_profile(const char *filename, uint8_t **out)
   opj_image_t *image = NULL;
   FILE *fsrc = NULL;
   unsigned char *src = NULL;
-  int file_length;
+  size_t file_length;
   opj_dinfo_t* dinfo = NULL;      /* handle to a decompressor */
   opj_cio_t *cio = NULL;
   OPJ_CODEC_FORMAT codec;
@@ -447,7 +447,8 @@ static void sycc444_to_rgb(opj_image_t *img)
 {
   int *d0, *d1, *d2, *r, *g, *b;
   const int *y, *cb, *cr;
-  int maxw, maxh, max, i, offset, upb;
+  size_t maxw, maxh, max;
+  int i, offset, upb;
 
   i = img->comps[0].prec;
   offset = 1<<(i - 1);
@@ -487,7 +488,8 @@ static void sycc422_to_rgb(opj_image_t *img)
 {
   int *d0, *d1, *d2, *r, *g, *b;
   const int *y, *cb, *cr;
-  int maxw, maxh, max, offset, upb;
+  size_t maxw, maxh, max;
+  int offset, upb;
   int i, j;
 
   i = img->comps[0].prec;
@@ -546,7 +548,8 @@ static void sycc420_to_rgb(opj_image_t *img)
 {
   int *d0, *d1, *d2, *r, *g, *b, *nr, *ng, *nb;
   const int *y, *cb, *cr, *ny;
-  int maxw, maxh, max, offset, upb;
+  size_t maxw, maxh, max;
+  int offset, upb;
   int i, j;
 
   i = img->comps[0].prec;

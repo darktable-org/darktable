@@ -30,6 +30,7 @@
 #include "common/debug.h"
 #include "develop/masks.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 
 #include <glib/gprintf.h>
 #include <stdlib.h>
@@ -524,7 +525,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
       hist->module = module;
       hist->params = malloc(module->params_size);
       hist->multi_priority = module->multi_priority;
-      snprintf(hist->multi_name,128,"%s",module->multi_name);
+      snprintf(hist->multi_name,sizeof(hist->multi_name),"%s",module->multi_name);
       /* allocate and set hist blend_params */
       hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
       memcpy(hist->params, module->params, module->params_size);
@@ -666,9 +667,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
       char label[128];
       if(module->multi_name && strcmp(module->multi_name,"0") == 0)
-        g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
       else
-        g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
       gtk_label_set_markup(GTK_LABEL(wlabel),label);
   
     }
@@ -783,7 +784,7 @@ auto_apply_presets(dt_develop_t *dev)
   const char *preset_table[2] = {"presets", "legacy_presets"};
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
-  snprintf(query, 1024,
+  snprintf(query, sizeof(query),
            "insert into memory.history select ?1, 0, op_version, operation, op_params, enabled, blendop_params, blendop_version, multi_priority, multi_name "
            "from %s where autoapply=1 and "
            "?2 like model and ?3 like maker and ?4 like lens and "
@@ -791,7 +792,7 @@ auto_apply_presets(dt_develop_t *dev)
            "?6 between exposure_min and exposure_max and "
            "?7 between aperture_min and aperture_max and "
            "?8 between focal_length_min and focal_length_max and "
-           "(isldr = 0 or isldr=?9) order by writeprotect desc, "
+           "(format = 0 or format&?9!=0) order by writeprotect desc, "
            "length(model), length(maker), length(lens)", preset_table[legacy]);
   // query for all modules at once:
   sqlite3_stmt *stmt;
@@ -805,7 +806,7 @@ auto_apply_presets(dt_develop_t *dev)
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 7, fmaxf(0.0f, fminf(1000000, cimg->exif_aperture)));
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 8, fmaxf(0.0f, fminf(1000000, cimg->exif_focal_length)));
   // 0: dontcare, 1: ldr, 2: raw
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, 2-dt_image_is_ldr(cimg));
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 9, dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
 
   if(sqlite3_step(stmt) == SQLITE_DONE)
   {
@@ -896,7 +897,7 @@ void dt_dev_read_history(dt_develop_t *dev)
         {
           hist->module = module;
           if(multi_name && strcmp(module->multi_name, multi_name))
-            snprintf(module->multi_name, 128, "%s", multi_name);
+            snprintf(module->multi_name, sizeof(module->multi_name), "%s", multi_name);
           break;
         }
         else if (multi_priority > 0)
@@ -915,7 +916,7 @@ void dt_dev_read_history(dt_develop_t *dev)
       {
         new_module->multi_priority = multi_priority;
 
-        snprintf(new_module->multi_name,128,"%s",multi_name);
+        snprintf(new_module->multi_name,sizeof(new_module->multi_name),"%s",multi_name);
 
         dev->iop = g_list_insert_sorted(dev->iop, new_module, sort_plugins);
 
@@ -941,7 +942,7 @@ void dt_dev_read_history(dt_develop_t *dev)
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-    snprintf(hist->multi_name,128,"%s",multi_name);
+    snprintf(hist->multi_name,sizeof(hist->multi_name),"%s",multi_name);
     hist->multi_priority = multi_priority;
 
     const void *blendop_params = sqlite3_column_blob(stmt, 6);
@@ -1313,7 +1314,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
   do
   {
-    snprintf(mname,128,"%d",pname);
+    snprintf(mname,sizeof(mname),"%d",pname);
     gboolean dup=FALSE;
 
     GList *modules = g_list_first(base->dev->iop);
@@ -1338,7 +1339,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   } while(1);
 
   //the multi instance name
-  strcpy(module->multi_name, mname);
+  g_strlcpy(module->multi_name, mname, sizeof(module->multi_name));
   //we insert this module into dev->iop
   base->dev->iop = g_list_insert_sorted(base->dev->iop, module, sort_plugins);
 
@@ -1440,16 +1441,16 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
   }
 }
 
-int dt_dev_distort_transform(dt_develop_t *dev, float *points, int points_count)
+int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)
 {
   return dt_dev_distort_transform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
 }
-int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, int points_count)
+int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count)
 {
   return dt_dev_distort_backtransform_plus(dev,dev->preview_pipe,0,99999,points,points_count);
 }
 
-int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count)
 {
   GList *modules = g_list_first(dev->iop);
   GList *pieces = g_list_first(pipe->nodes);
@@ -1468,7 +1469,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, i
   return 1;
 }
 
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, int points_count)
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, int pmin, int pmax, float *points, size_t points_count)
 {
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);

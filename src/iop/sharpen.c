@@ -35,7 +35,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_sharpen_params_t)
 
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
@@ -94,7 +94,7 @@ void init_presets (dt_iop_module_so_t *self)
   // add the preset.
   dt_gui_presets_add_generic(_("sharpen"), self->op, self->version(), &tmp, sizeof(dt_iop_sharpen_params_t), 1);
   // restrict to raw images
-  dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), 2);
+  dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
   // make it auto-apply for matching images:
   dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
 }
@@ -269,11 +269,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
-  float *const tmp = dt_alloc_align(16, sizeof(float)*roi_out->width*roi_out->height);
+  float *const tmp = dt_alloc_align(16, (size_t)sizeof(float)*roi_out->width*roi_out->height);
   if (tmp == NULL)
   {
     fprintf(stderr,"[sharpen] failed to allocate temporary buffer\n");
@@ -301,8 +301,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    const float *in = ((float *)ivoid) + ch*(j*roi_in->width + rad);
-    float *out = tmp + j*roi_out->width + rad;
+    const float *in = ((float *)ivoid) + (size_t)ch*(j*roi_in->width + rad);
+    float *out = tmp + (size_t)j*roi_out->width + rad;
     int i;
     for(i=rad; i<roi_out->width-wd4*4+rad; i++)
     {
@@ -341,8 +341,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=rad; j<roi_out->height-wd4*4+rad; j++)
   {
-    const float *in = tmp + j*roi_in->width;
-    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+    const float *in = tmp + (size_t)j*roi_in->width;
+    float *out = ((float *)ovoid) + (size_t)ch*j*roi_out->width;
 
     const int step = roi_in->width;
 
@@ -368,8 +368,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=roi_out->height-wd4*4+rad; j<roi_out->height-rad; j++)
   {
-    const float *in = tmp + j*roi_in->width;
-    float *out = ((float *)ovoid) + ch*j*roi_out->width;
+    const float *in = tmp + (size_t)j*roi_in->width;
+    float *out = ((float *)ovoid) + (size_t)ch*j*roi_out->width;
     const int step = roi_in->width;
 
     for(int i = 0; i<roi_out->width; i++)
@@ -389,9 +389,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // fill unsharpened border
   for(int j=0; j<rad; j++)
-    memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+    memcpy(((float*)ovoid) + (size_t)ch*j*roi_out->width, ((float*)ivoid) + (size_t)ch*j*roi_in->width, (size_t)ch*sizeof(float)*roi_out->width);
   for(int j=roi_out->height-rad; j<roi_out->height; j++)
-    memcpy(((float*)ovoid) + ch*j*roi_out->width, ((float*)ivoid) + ch*j*roi_in->width, ch*sizeof(float)*roi_out->width);
+    memcpy(((float*)ovoid) + (size_t)ch*j*roi_out->width, ((float*)ivoid) + (size_t)ch*j*roi_in->width, (size_t)ch*sizeof(float)*roi_out->width);
 
   dt_free_align(tmp);
 
@@ -400,8 +400,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=rad; j<roi_out->height-rad; j++)
   {
-    float *in = ((float*)ivoid) + ch*roi_out->width*j;
-    float *out = ((float*)ovoid) + ch*roi_out->width*j;
+    float *in = ((float*)ivoid) + (size_t)ch*roi_out->width*j;
+    float *out = ((float*)ovoid) + (size_t)ch*roi_out->width*j;
     for(int i=0; i<rad; i++)
       out[ch*i] = in[ch*i];
     for(int i=roi_out->width-rad; i<roi_out->width; i++)
@@ -414,8 +414,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // subtract blurred image, if diff > thrs, add *amount to original image
   for(int j=0; j<roi_out->height; j++)
   {
-    float *in  = (float *)ivoid + j*ch*roi_out->width;
-    float *out = (float *)ovoid + j*ch*roi_out->width;
+    float *in  = (float *)ivoid + (size_t)j*ch*roi_out->width;
+    float *out = (float *)ovoid + (size_t)j*ch*roi_out->width;
 
     for(int i=0; i<roi_out->width; i++)
     {

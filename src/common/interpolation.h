@@ -20,6 +20,7 @@
 #define INTERPOLATION_H
 
 #include "develop/pixelpipe_hb.h"
+#include "common/opencl.h"
 
 #include <xmmintrin.h>
 
@@ -151,6 +152,51 @@ dt_interpolation_resample(
   const float* const in,
   const dt_iop_roi_t* const roi_in,
   const int32_t in_stride);
+
+#ifdef HAVE_OPENCL
+typedef struct dt_interpolation_cl_global_t
+{
+  int kernel_interpolation_resample;
+}
+dt_interpolation_cl_global_t;
+
+dt_interpolation_cl_global_t *dt_interpolation_init_cl_global(void);
+
+void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g);
+
+
+/** Image resampler OpenCL version.
+ *
+ * Resamples the image "in" to "out" according to roi values. Here is the
+ * exact contract:
+ * <ul>
+ * <li>The resampling is isotropic (same for both x and y directions),
+ * represented by roi_out->scale</li>
+ * <li>It generates roi_out->width samples horizontally whose positions span
+ * from roi_out->x to roi_out->x + roi_out->width</li>
+ * <li>It generates roi_out->height samples vertically whose positions span
+ * from roi_out->y to roi_out->y + roi_out->height</li>
+ * </ul>
+ *
+ * @param itor [in] Interpolator to use
+ * @param devid [in] The device to run on
+ * @param dev_out [out] Will hold the resampled image
+ * @param roi_out [in] Region of interest of the resampled image
+ * @param out_stride [in] Output line stride in <strong>bytes</strong>
+ * @param dev_in [in] Will hold the resampled image
+ * @param roi_in [in] Region of interest of the original image
+ * @param in_stride [in] Input line stride in <strong>bytes</strong>
+ */
+int
+dt_interpolation_resample_cl(
+  const struct dt_interpolation* itor,
+  int devid,
+  cl_mem dev_out,
+  const dt_iop_roi_t* const roi_out,
+  cl_mem dev_in,
+  const dt_iop_roi_t* const roi_in);
+#endif
+
 
 #endif /* INTERPOLATION_H */
 

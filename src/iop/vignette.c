@@ -38,7 +38,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_vignette_params_t)
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
@@ -725,7 +725,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
   for(int j=0; j<roi_out->height; j++)
   {
-    const int k = ch*roi_out->width*j;
+    const size_t k = (size_t)ch*roi_out->width*j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();

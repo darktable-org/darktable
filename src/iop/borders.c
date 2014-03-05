@@ -41,7 +41,7 @@
 #include <inttypes.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 
 // Module constants
 #define DT_IOP_BORDERS_ASPECT_COUNT 21
@@ -204,7 +204,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "frame line size", GTK_WIDGET(g->frame_size));
 }
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -213,7 +213,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     points[i] += border_size_l;
     points[i+1] += border_size_t;
@@ -221,7 +221,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   return 1;
 }
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, int points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
@@ -230,7 +230,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_size_t = border_tot_height*d->pos_v;
   const int border_size_l = border_tot_width*d->pos_h;
 
-  for (int i=0; i<points_count*2; i+=2)
+  for (size_t i=0; i<points_count*2; i+=2)
   {
     points[i] -= border_size_l;
     points[i+1] -= border_size_t;
@@ -325,9 +325,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
 
   const int ch = piece->colors;
-  const int in_stride  = ch*roi_in->width;
-  const int out_stride = ch*roi_out->width;
-  const int cp_stride = in_stride*sizeof(float);
+  const size_t in_stride  = (size_t)ch*roi_in->width;
+  const size_t out_stride = (size_t)ch*roi_out->width;
+  const size_t cp_stride = in_stride*sizeof(float);
 
   const int border_tot_width  = (piece->buf_out.width  - piece->buf_in.width ) * roi_in->scale;
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
@@ -342,7 +342,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
   const float col[4] = {d->color[0], d->color[1], d->color[2], 1.0f};
   float *buf = (float *)ovoid;
-  for(int k=0; k<roi_out->width*roi_out->height; k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++, buf+=4) memcpy(buf, col, sizeof(float)*4);
 
   // Frame line draw
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
@@ -374,13 +374,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
     for(int r=frame_tl_out_y; r<=frame_br_out_y; r++)
     {
-      buf = (float *)ovoid + r*out_stride + frame_tl_out_x*ch;
+      buf = (float *)ovoid + ((size_t)r*out_stride + frame_tl_out_x*ch);
       for(int c=frame_tl_out_x; c<=frame_br_out_x; c++, buf+=4)
         memcpy(buf, col_frame, sizeof(float)*4);
     }
     for(int r=frame_tl_in_y; r<=frame_br_in_y; r++)
     {
-      buf = (float *)ovoid + r*out_stride + frame_tl_in_x*ch;
+      buf = (float *)ovoid + ((size_t)r*out_stride + frame_tl_in_x*ch);
       for(int c=frame_tl_in_x; c<=frame_br_in_x; c++, buf+=4)
         memcpy(buf, col, sizeof(float)*4);
     }
@@ -389,8 +389,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // blit image inside border and fill the output with previous processed out
   for(int j=0; j<roi_in->height; j++)
   {
-    float *out = ((float *)ovoid) + (j + border_in_y)*out_stride + ch * border_in_x;
-    const float *in  = ((float *)ivoid) + j*in_stride;
+    float *out = ((float *)ovoid) + (size_t)(j + border_in_y)*out_stride + ch * border_in_x;
+    const float *in  = ((float *)ivoid) + (size_t)j*in_stride;
     memcpy(out, in, cp_stride);
   }
 
@@ -891,7 +891,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->aspect);
+      snprintf(text, sizeof(text), "%.3f:1", p->aspect);
       dt_bauhaus_combobox_set_text(g->aspect, text);
     }
     dt_bauhaus_combobox_set(g->aspect, -1);
@@ -918,7 +918,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->pos_h);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_h);
       dt_bauhaus_combobox_set_text(g->pos_h, text);
     }
     dt_bauhaus_combobox_set(g->pos_h, -1);
@@ -942,7 +942,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, 128, "%.3f:1", p->pos_v);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_v);
       dt_bauhaus_combobox_set_text(g->pos_v, text);
     }
     dt_bauhaus_combobox_set(g->pos_v, -1);

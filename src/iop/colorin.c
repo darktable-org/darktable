@@ -19,7 +19,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include "iop/colorin.h"
+#include "iop/color.h"
 #include "develop/develop.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -40,9 +40,66 @@
 #include <string.h>
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
+
+typedef enum dt_iop_color_normalize_t
+{
+  DT_NORMALIZE_OFF,
+  DT_NORMALIZE_SRGB,
+  DT_NORMALIZE_ADOBE_RGB,
+  DT_NORMALIZE_LINEAR_RGB,
+  DT_NORMALIZE_BETA_RGB
+}
+dt_iop_color_normalize_t;
+
+typedef struct dt_iop_colorin_params1_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+}
+dt_iop_colorin_params1_t;
+
+typedef struct dt_iop_colorin_params_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t intent;
+  int normalize;
+}
+dt_iop_colorin_params_t;
+
+typedef struct dt_iop_colorin_gui_data_t
+{
+  GtkWidget *cbox1, *cbox2, *cbox3;
+  GList *image_profiles, *global_profiles;
+  int n_image_profiles;
+}
+dt_iop_colorin_gui_data_t;
+
+typedef struct dt_iop_colorin_global_data_t
+{
+  int kernel_colorin_unbound;
+  int kernel_colorin_clipping;
+}
+dt_iop_colorin_global_data_t;
+
+typedef struct dt_iop_colorin_data_t
+{
+  cmsHPROFILE input;
+  cmsHPROFILE Lab;
+  cmsHPROFILE nrgb;
+  cmsHTRANSFORM *xform_cam_Lab;
+  cmsHTRANSFORM *xform_cam_nrgb;
+  cmsHTRANSFORM *xform_nrgb_Lab;
+  float lut[3][LUT_SAMPLES];
+  float cmatrix[9];
+  float nmatrix[9];
+  float lmatrix[9];
+  float unbounded_coeffs[3][3];       // approximation for extrapolation of shaper curves
+}
+dt_iop_colorin_data_t;
+
 
 const char *
 name()
@@ -70,7 +127,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     const dt_iop_colorin_params1_t *old = old_params;
     dt_iop_colorin_params_t *new = new_params;
 
-    strncpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
+    g_strlcpy(new->iccprofile, old->iccprofile, DT_IOP_COLOR_ICC_LEN);
     new->intent = old->intent;
     new->normalize = 0;
     return 0;
@@ -294,8 +351,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int j=0; j<roi_out->height; j++)
     {
 
-      float *buf_in  = in + ch*roi_in->width *j;
-      float *buf_out = out + ch*roi_out->width*j;
+      float *buf_in  = in + (size_t)ch*roi_in->width *j;
+      float *buf_out = out + (size_t)ch*roi_out->width*j;
       float cam[3];
       const __m128 cm0 = _mm_set_ps(0.0f,cmat[6],cmat[3],cmat[0]);
       const __m128 cm1 = _mm_set_ps(0.0f,cmat[7],cmat[4],cmat[1]);
@@ -377,7 +434,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const int m=(k*(roi_out->width*ch));
+      const size_t m = (size_t)k*roi_out->width*ch;
 
       for (int l=0; l<roi_out->width; l++)
       {
@@ -1082,7 +1139,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->cbox2, 0);
 
   char tooltip[1024];
-  snprintf(tooltip, 1024, _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/in or %s/color/in"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox2), "value-changed",

@@ -18,6 +18,7 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <inttypes.h>
 #include <tiffio.h>
 #include "common/darktable.h"
@@ -53,10 +54,18 @@ dt_imageio_tiff_gui_t;
 int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const void *in_void, void *exif, int exif_len, int imgid)
 {
   dt_imageio_tiff_t *d=(dt_imageio_tiff_t*)d_tmp;
-  // Fetch colorprofile into buffer if wanted
-  uint8_t *profile = NULL;
+
+  uint8_t* profile = NULL;
   uint32_t profile_len = 0;
-  int rc = 0;
+
+  TIFF* tif = NULL;
+
+  void* rowdata = NULL;
+  uint32_t rowsize = 0;
+  uint32_t stripesize = 0;
+  uint32_t stripe = 0;
+
+  int rc = 1; // default to error
 
   if(imgid > 0)
   {
@@ -64,26 +73,23 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if (profile_len > 0)
     {
-      profile=malloc(profile_len);
+      profile = malloc(profile_len);
+      if (!profile)
+      {
+        rc = 1;
+        goto exit;
+      }
       cmsSaveProfileToMem(out_profile, profile, &profile_len);
     }
     dt_colorspaces_cleanup_profile(out_profile);
   }
 
   // Create little endian tiff image
-  TIFF *tif=TIFFOpen(filename,"wl");
-  if (d->bpp == 16)
+  tif = TIFFOpen(filename,"wl");
+  if (!tif)
   {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 16);
-  }
-  else if (d->bpp == 32)
-  {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
-    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
-  }
-  else // (d->bpp == 8)
-  {
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+    rc = 1;
+    goto exit;
   }
 
   // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
@@ -95,145 +101,173 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
   if (d->compress == 1)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, 1);
-    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)1);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)9);
   }
   else if (d->compress == 2)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)2);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)9);
   }
   else if (d->compress == 3)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
     if (d->bpp == 32)
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, 3);
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)3);
     else
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, 2);
-    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, 9);
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)2);
+    TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)9);
   }
   else // (d->compress == 0)
   {
     TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
   }
 
-  TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-  if(profile!=NULL)
-    TIFFSetField(tif, TIFFTAG_ICCPROFILE, profile_len, profile);
-  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, d->width);
-  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, d->height);
-  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
-  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, DT_TIFFIO_STRIPE);
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.0);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.0);
+  TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
+  if (profile != NULL)
+  {
+    TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32_t)profile_len, profile);
+  }
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
+  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)d->width);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.f);
+  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.f);
 
-  const uint8_t  *in8 =(const uint8_t  *)in_void;
-  const uint16_t *in16=(const uint16_t *)in_void;
-  const float *inf = (const float *)in_void;
+  rowsize = (d->width*3) * d->bpp / 8;
+  stripesize = rowsize * DT_TIFFIO_STRIPE;
+  stripe = 0;
+
+  rowdata = malloc(stripesize);
+  if (!rowdata)
+  {
+    rc = 1;
+    goto exit;
+  }
 
   if (d->bpp == 32)
   {
-    uint32_t rowsize = (d->width*3) * sizeof(float);
-    uint32_t stripesize = rowsize * DT_TIFFIO_STRIPE;
-    float *rowdata = (float *)malloc(stripesize);
-    float *wdata = rowdata;
-    uint32_t stripe = 0;
+    float* in = (float*)in_void;
+    float* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
       for (int x = 0; x < d->width; x++)
       {
-        wdata[0] = inf[x * 4 + 0];
-        wdata[1] = inf[x * 4 + 1];
-        wdata[2] = inf[x * 4 + 2];
+        wdata[0] = in[x * 4 + 0];
+        wdata[1] = in[x * 4 + 1];
+        wdata[2] = in[x * 4 + 2];
         wdata += 3;
       }
 
-      if (wdata - stripesize/sizeof(float) == rowdata)
+      if ((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
       {
-        TIFFWriteEncodedStrip(tif, stripe++, rowdata, rowsize * DT_TIFFIO_STRIPE);
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
         wdata = rowdata;
       }
 
-      inf += d->width * 4;
+      in += d->width * 4;
     }
-
-    TIFFClose(tif);
-    free(rowdata);
+    if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
+    {
+      TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+      wdata = rowdata;
+    }
   }
   else if (d->bpp == 16)
   {
-    uint32_t rowsize=(d->width*3)*sizeof(uint16_t);
-    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-    uint16_t *rowdata = (uint16_t *)malloc(stripesize);
-    uint16_t *wdata = rowdata;
-    uint32_t stripe=0;
-    // uint32_t insize=((d->width*d->height)*3)*sizeof(uint16_t);
-    // while(stripedata<(in8+insize)-(stripesize)) {
-    // TIFFWriteEncodedStrip(tif,stripe++,stripedata,stripesize);
-    // stripedata+=stripesize;
-    // }
+    uint16_t* in = (uint16_t*)in_void;
+    uint16_t* wdata = rowdata;
+
     for (int y = 0; y < d->height; y++)
     {
       for(int x=0; x<d->width; x++)
-        for(int k=0; k<3; k++)
-        {
-          (wdata)[0] = in16[4*d->width*y + 4*x + k];
-          wdata++;
-        }
-      if((wdata-stripesize/sizeof(uint16_t))==rowdata)
       {
-        TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
-        wdata=rowdata;
+        wdata[0] = in[4*x + 0];
+        wdata[1] = in[4*x + 1];
+        wdata[2] = in[4*x + 2];
+        wdata += 3;
       }
+
+      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      {
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
+        wdata = rowdata;
+      }
+
+      in += d->width*4;
     }
-    if((wdata-stripesize/sizeof(uint16_t))!=rowdata)
-      TIFFWriteEncodedStrip(tif,stripe,rowdata,(wdata-rowdata)*sizeof(uint16_t));
-    TIFFClose(tif);
-    free(rowdata);
+    if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
+    {
+      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+    }
   }
   else
   {
-    uint32_t rowsize=(d->width*3)*sizeof(uint8_t);
-    uint32_t stripesize=rowsize*DT_TIFFIO_STRIPE;
-    uint8_t *rowdata = (uint8_t *)malloc(stripesize);
-    uint8_t *wdata = rowdata;
-    uint32_t stripe=0;
+    uint8_t* in = (uint8_t*)in_void;
+    uint8_t* wdata = rowdata;
 
     for (int y = 0; y < d->height; y++)
     {
       for(int x=0; x<d->width; x++)
-        for(int k=0; k<3; k++)
-        {
-          (wdata)[0] = in8[4*d->width*y + 4*x + k];
-          wdata++;
-        }
-      if((wdata-stripesize)==rowdata)
       {
-        TIFFWriteEncodedStrip(tif,stripe++,rowdata,rowsize*DT_TIFFIO_STRIPE);
-        wdata=rowdata;
+        wdata[0] = in[4*x + 0];
+        wdata[1] = in[4*x + 1];
+        wdata[2] = in[4*x + 2];
+        wdata += 3;
       }
+
+      if((uintptr_t)wdata - (uintptr_t)rowdata == (uintptr_t)stripesize)
+      {
+        TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)(rowsize * DT_TIFFIO_STRIPE));
+        wdata = rowdata;
+      }
+
+      in += d->width*4;
     }
-    if((wdata-stripesize)!=rowdata)
-      TIFFWriteEncodedStrip(tif,stripe,rowdata,wdata-rowdata);
-    TIFFClose(tif);
-    free(rowdata);
+    if((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
+    {
+      TIFFWriteEncodedStrip(tif, stripe, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
+    }
   }
 
-  if(exif)
+  // success
+  rc = 0;
+
+exit:
+  // close the file before adding exif data
+  if (tif)
+  {
+    TIFFClose(tif);
+    tif = NULL;
+  }
+  if(!rc && exif)
+  {
     rc = dt_exif_write_blob(exif,exif_len,filename);
+    // Until we get symbolic error status codes, if rc is 1, return 0
+    rc = (rc == 1) ? 0 : 1;
+  }
+  if (profile)
+  {
+    free(profile);
+    profile = NULL;
+  }
+  if (rowdata)
+  {
+    free(rowdata);
+    rowdata = NULL;
+  }
 
-  free(profile);
-
-  /*
-   * Until we get symbolic error status codes, if rc is 1, return 0.
-   */
-  return ((rc == 1) ? 0 : 1);
+  return rc;
 }
 
 #if 0

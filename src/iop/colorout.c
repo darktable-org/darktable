@@ -36,10 +36,48 @@
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_colorout_params_t)
 
 static gchar *_get_profile_from_pos(GList *profiles, int pos);
 static gchar *_get_display_profile_from_pos(GList *profiles, int pos);
+
+
+typedef enum dt_iop_colorout_softproof_t
+{
+  DT_SOFTPROOF_DISABLED            = 0,
+  DT_SOFTPROOF_ENABLED             = 1,
+  DT_SOFTPROOF_GAMUTCHECK          = 2
+}
+dt_iop_colorout_softproof_t;
+
+typedef struct dt_iop_colorout_global_data_t
+{
+  int kernel_colorout;
+}
+dt_iop_colorout_global_data_t;
+
+typedef struct dt_iop_colorout_params_t
+{
+  char iccprofile[DT_IOP_COLOR_ICC_LEN];
+  char displayprofile[DT_IOP_COLOR_ICC_LEN];
+
+  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t displayintent;
+
+  char softproof_enabled;
+  char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+  dt_iop_color_intent_t softproofintent; /// NOTE: Not used for now but reserved for future use
+}
+dt_iop_colorout_params_t;
+
+typedef struct dt_iop_colorout_gui_data_t
+{
+  gint softproof_enabled;
+  GtkWidget *cbox1, *cbox2, *cbox3, *cbox4,*cbox5;
+  GList *profiles;
+
+}
+dt_iop_colorout_gui_data_t;
 
 
 const char
@@ -393,8 +431,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     for(int j=0; j<roi_out->height; j++)
     {
 
-      float *in  = (float*)ivoid + ch*roi_in->width *j;
-      float *out = (float*)ovoid + ch*roi_out->width*j;
+      float *in  = (float*)ivoid + (size_t)ch*roi_in->width *j;
+      float *out = (float*)ovoid + (size_t)ch*roi_out->width*j;
       const __m128 m0 = _mm_set_ps(0.0f,d->cmatrix[6],d->cmatrix[3],d->cmatrix[0]);
       const __m128 m1 = _mm_set_ps(0.0f,d->cmatrix[7],d->cmatrix[4],d->cmatrix[1]);
       const __m128 m2 = _mm_set_ps(0.0f,d->cmatrix[8],d->cmatrix[5],d->cmatrix[2]);
@@ -415,8 +453,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
     for(int j=0; j<roi_out->height; j++)
     {
 
-      float *in  = (float*)ivoid + ch*roi_in->width *j;
-      float *out = (float*)ovoid + ch*roi_out->width*j;
+      float *in  = (float*)ivoid + (size_t)ch*roi_in->width *j;
+      float *out = (float*)ovoid + (size_t)ch*roi_out->width*j;
 
       for(int i=0; i<roi_out->width; i++, in+=ch, out+=ch )
       {
@@ -443,7 +481,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
       float Lab[rowsize];
       float rgb[rowsize];
 
-      const int m=(k*(roi_out->width*ch));
+      const size_t m = (size_t)k*roi_out->width*ch;
       for (int l=0; l<roi_out->width; l++)
       {
         int li=3*l,ii=ch*l;
@@ -931,11 +969,11 @@ void gui_init(struct dt_iop_module_t *self)
 
   char tooltip[1024];
   g_object_set(G_OBJECT(g->cbox1), "tooltip-text", _("rendering intent"), (char *)NULL);
-  snprintf(tooltip, 1024, _("ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox2), "tooltip-text", tooltip, (char *)NULL);
-  snprintf(tooltip, 1024, _("display ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("display ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox3), "tooltip-text", tooltip, (char *)NULL);
-  snprintf(tooltip, 1024, _("softproof ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
+  snprintf(tooltip, sizeof(tooltip), _("softproof ICC profiles in %s/color/out or %s/color/out"), confdir, datadir);
   g_object_set(G_OBJECT(g->cbox5), "tooltip-text", tooltip, (char *)NULL);
 
   g_signal_connect (G_OBJECT (g->cbox1), "value-changed",

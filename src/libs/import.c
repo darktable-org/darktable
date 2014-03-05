@@ -666,7 +666,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
   extensions = g_strsplit(dt_supported_extensions, ",", 100);
   for(char **i=extensions; *i!=NULL; i++)
   {
-    snprintf(ext, 1024, "*.%s", *i);
+    snprintf(ext, sizeof(ext), "*.%s", *i);
     gtk_file_filter_add_pattern(filter, ext);
     gtk_file_filter_add_pattern(filter, cp=g_ascii_strup(ext, -1));
     g_free(cp);

@@ -160,11 +160,11 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
 
   int nb = g_list_length(darktable.develop->forms);
 
-  if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,128,_("circle #%d"),nb);
-  else if (form->type & DT_MASKS_PATH) snprintf(form->name,128,_("path #%d"),nb);
-  else if (form->type & DT_MASKS_GRADIENT) snprintf(form->name,128,_("gradient #%d"),nb);
-  else if (form->type & DT_MASKS_ELLIPSE) snprintf(form->name,128,_("ellipse #%d"),nb);
-  else if (form->type & DT_MASKS_BRUSH) snprintf(form->name,128,_("brush #%d"),nb);
+  if (form->type & DT_MASKS_CIRCLE) snprintf(form->name,sizeof(form->name),_("circle #%d"),nb);
+  else if (form->type & DT_MASKS_PATH) snprintf(form->name,sizeof(form->name),_("path #%d"),nb);
+  else if (form->type & DT_MASKS_GRADIENT) snprintf(form->name,sizeof(form->name),_("gradient #%d"),nb);
+  else if (form->type & DT_MASKS_ELLIPSE) snprintf(form->name,sizeof(form->name),_("ellipse #%d"),nb);
+  else if (form->type & DT_MASKS_BRUSH) snprintf(form->name,sizeof(form->name),_("brush #%d"),nb);
 
   dt_masks_write_form(form,darktable.develop);
 
@@ -178,7 +178,7 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
       //we create a new group
       if (form->type & DT_MASKS_CLONE) grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
       else grp = dt_masks_create(DT_MASKS_GROUP);
-      snprintf(grp->name,128,"grp %s %s",module->name(),module->multi_name);
+      snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
       _check_id(grp);
       darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
       module->blend_params->mask_id = grpid = grp->formid;
@@ -213,7 +213,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
   fdest->source[0] = fbase->source[0];
   fdest->source[1] = fbase->source[1];
   fdest->version = fbase->version;
-  snprintf(fdest->name,128,_("copy of %s"),fbase->name);
+  snprintf(fdest->name,sizeof(fdest->name),_("copy of %s"),fbase->name);
   
   darktable.develop->forms = g_list_append(dev->forms,fdest);
   
@@ -426,7 +426,7 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
   return 0;
 }
 
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if (form->type & DT_MASKS_CIRCLE)
   {
@@ -512,7 +512,7 @@ void dt_masks_read_forms(dt_develop_t *dev)
     form->formid = sqlite3_column_int(stmt, 1);
     form->type = sqlite3_column_int(stmt, 2);
     const char *name = (const char *)sqlite3_column_text(stmt, 3);
-    snprintf(form->name,128,"%s",name);
+    snprintf(form->name,sizeof(form->name),"%s",name);
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     int nb_points = sqlite3_column_int(stmt, 6);
@@ -1121,7 +1121,7 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,128,"grp %s",module->name());
+    snprintf(grp->name,sizeof(grp->name),"grp %s",module->name());
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -1159,7 +1159,7 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,128,"grp %s %s",module->name(),module->multi_name);
+    snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;

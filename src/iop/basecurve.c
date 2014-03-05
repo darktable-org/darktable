@@ -40,7 +40,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -227,7 +227,7 @@ void init_presets (dt_iop_module_so_t *self)
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].maker, basecurve_presets[k].model, "");
     dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
-    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), 2);
+    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), FOR_RAW);
     // make it auto-apply for matching images:
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].autoapply);
     // hide all non-matching presets in case the model string is set.
@@ -287,7 +287,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out,out,d,in) schedule(static)
 #endif
-  for(int k=0; k<roi_out->width*roi_out->height; k++)
+  for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
   {
     float *inp = in + ch*k;
     float *outp = out + ch*k;

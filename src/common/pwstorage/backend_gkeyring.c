@@ -90,7 +90,7 @@ dt_pwstorage_gkeyring_set(const gchar* slot, GHashTable* table)
   }
   else
   {
-    g_strlcat(name,slot, 256);
+    g_strlcat(name, slot, sizeof(name));
     /* create/update item with attributes */
     result = gnome_keyring_item_create_sync(DARKTABLE_KEYRING,
                                             GNOME_KEYRING_ITEM_GENERIC_SECRET,

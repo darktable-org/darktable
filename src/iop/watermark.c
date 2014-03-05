@@ -46,7 +46,7 @@
 #include "common/file_location.h"
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
 
@@ -291,7 +291,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
     // Current image ID
     gchar buffer[1024];
-    g_snprintf(buffer,1024,"%d",image->id);
+    g_snprintf(buffer,sizeof(buffer),"%d",image->id);
     svgdoc = _string_substitute(svgdata,"$(IMAGE.ID)",buffer);
     if( svgdoc != svgdata )
     {
@@ -591,7 +591,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   gchar *svgdoc = _watermark_get_svgdoc (self, data, &piece->pipe->image);
   if (!svgdoc)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -601,7 +601,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   g_free (svgdoc);
   if (!svg || error)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -610,13 +610,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* create cairo memory surface */
   guint8 *image= (guint8 *)g_malloc (stride*roi_out->height);
-  memset (image,0,stride*roi_out->height);
+  memset (image,0,(size_t)stride*roi_out->height);
   cairo_surface_t *surface = cairo_image_surface_create_for_data (image,CAIRO_FORMAT_ARGB32,roi_out->width,roi_out->height,stride);
   if (cairo_surface_status(surface)!=	CAIRO_STATUS_SUCCESS)
   {
 //   fprintf(stderr,"Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free (image);
-    memcpy(ovoid, ivoid, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(ovoid, ivoid, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
     return;
   }
 
@@ -782,8 +782,8 @@ watermark_callback(GtkWidget *tb, gpointer user_data)
 
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-  memset(p->filename,0,64);
-  snprintf(p->filename,64,"%s",gtk_combo_box_text_get_active_text(g->combobox1));
+  memset(p->filename, 0, sizeof(p->filename));
+  snprintf(p->filename,sizeof(p->filename),"%s",gtk_combo_box_text_get_active_text(g->combobox1));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -947,7 +947,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->yoffset= p->yoffset;
   d->alignment= p->alignment;
   d->sizeto = p->sizeto;
-  memset(d->filename,0,64);
+  memset(d->filename, 0, sizeof(d->filename));
   sprintf(d->filename,"%s",p->filename);
 
   //fprintf(stderr,"Commit params: %s...\n",d->filename);

@@ -39,7 +39,7 @@
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x)                 (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_velvia_params_t)
 
 typedef struct dt_iop_velvia_params_t
 {
@@ -137,13 +137,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // Apply velvia saturation
   if(strength <= 0.0)
-    memcpy(out, in, sizeof(float)*ch*roi_out->width*roi_out->height);
+    memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
   else
   {
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
-    for(int k=0; k<roi_out->width*roi_out->height; k++)
+    for(size_t k=0; k<(size_t)roi_out->width*roi_out->height; k++)
     {
       float *inp = in + ch*k;
       float *outp = out + ch*k;

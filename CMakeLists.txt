@@ -21,14 +21,13 @@ option(USE_DARKTABLE_PROFILING OFF)
 option(CUSTOM_CFLAGS "Don't override compiler optimization flags." OFF)
 option(DONT_USE_RAWSPEED "Don't compile rawspeed back-end." OFF)
 option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
-option(INSTALL_IOP_EXPERIMENTAL "Also install unstable, unfinished, broken, and likely-to-change-soon plugins." OFF)
-option(INSTALL_IOP_LEGACY "Also install old plugins we want to get rid of." OFF)
 option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
 option(APRIL_FOOLS "Add the \"file manager\" (a shell) to lighttable mode" OFF)
 option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
 option(USE_OPENJPEG "Enable JPEG 2000 support" ON)
 option(USE_WEBP "Enable WebP export support" ON)
 option(BUILD_CMSTEST "Build a test program to check your system's color management setup" OFF)
+option(USE_OPENEXR "Enable OpenEXR support" ON)
 if(APPLE)
 	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
 else(APPLE)
@@ -137,6 +136,64 @@ endif(NOT LIB_INSTALL)
 
 mark_as_advanced(LIB_INSTALL)
 
+
+# we need some external programs for building darktable
+message(STATUS "Looking for external programs")
+set(EXTERNAL_PROGRAMS_FOUND 1)
+
+# we need perl for introspection
+find_program(perl_BIN perl)
+if(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
+  message(STATUS "Missing perl")
+  set(EXTERNAL_PROGRAMS_FOUND 0)
+else(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
+  message(STATUS "Found perl")
+endif(${perl_BIN} STREQUAL "perl_BIN-NOTFOUND")
+
+# we need intltool-merge for darktable.desktop
+find_program(intltool_merge_BIN intltool-merge)
+if(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
+  message(STATUS "Missing intltool-merge")
+  set(EXTERNAL_PROGRAMS_FOUND 0)
+else(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
+  message(STATUS "Found intltool-merge")
+endif(${intltool_merge_BIN} STREQUAL "intltool_merge_BIN-NOTFOUND")
+
+# we need an xslt interpreter to generate preferences_gen.h and darktablerc
+find_program(Xsltproc_BIN xsltproc)
+if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  message(STATUS "Missing xsltproc")
+  find_program(Saxon_BIN saxon-xslt)
+  if(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    message(STATUS "Missing saxon-xslt")
+    message(STATUS "No xslt interpreter found")
+    set(EXTERNAL_PROGRAMS_FOUND 0)
+  else(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    message(STATUS "Found saxon-xslt")
+  endif(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+  message(STATUS "Found xsltproc")
+endif(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
+
+# do we have xmllint?
+if(USE_XMLLINT)
+  find_program(Xmllint_BIN xmllint)
+  if(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+    message(STATUS "Missing xmllint")
+    set(USE_XMLLINT OFF)
+  else(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+    message(STATUS "Found xmllint")
+  endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
+endif(USE_XMLLINT)
+
+# done with looking for programs
+if(NOT EXTERNAL_PROGRAMS_FOUND)
+  message(FATAL_ERROR "Some external programs couldn't be found")
+else(NOT EXTERNAL_PROGRAMS_FOUND)
+  message(STATUS "All external programs found")
+endif(NOT EXTERNAL_PROGRAMS_FOUND)
+
+
 #need to put here do setting LOCALE_DIR variable
 if(USE_NLS)
 find_package(Gettext)
@@ -225,30 +282,6 @@ if(NOT WIN32)
   add_definitions("-D_XOPEN_SOURCE=700")
   endif(CMAKE_SYSTEM MATCHES "SunOS.*")
 endif(NOT WIN32)
-
-# we need an xslt interpreter to generate preferences_gen.h and darktablerc
-find_program(Xsltproc_BIN xsltproc)
-if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-	message(STATUS "Missing xsltproc")
-	find_program(Saxon_BIN saxon-xslt)
-	if(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-		message(STATUS "Missing saxon-xslt")
-		message(FATAL_ERROR "No xslt interpreter found")
-	else(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-		message(STATUS "Found saxon-xslt")
-	endif(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-	message(STATUS "Found xsltproc")
-endif(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-
-# do we have xmllint?
-if(USE_XMLLINT)
-	find_program(Xmllint_BIN xmllint)
-	if(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
-		message(STATUS "Could NOT find xmllint")
-		set(USE_XMLLINT OFF)
-	endif(${Xmllint_BIN} STREQUAL "Xmllint_BIN-NOTFOUND")
-endif(USE_XMLLINT)
 
 # lets continue into build directories
 add_subdirectory(src)

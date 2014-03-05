@@ -69,7 +69,7 @@ dt_bilateral_singlebuffer_size(
 
 typedef struct dt_bilateral_t
 {
-  int size_x, size_y, size_z;
+  size_t size_x, size_y, size_z;
   int width, height;
   float sigma_s, sigma_r;
   float *buf;
@@ -138,7 +138,7 @@ dt_bilateral_splat(
 #endif
   for(int j=0; j<b->height; j++)
   {
-    int index = 4*j*b->width;
+    size_t index = 4*j*b->width;
     for(int i=0; i<b->width; i++)
     {
       float x, y, z;
@@ -151,14 +151,14 @@ dt_bilateral_splat(
       const float yf = y - yi;
       const float zf = z - zi;
       // nearest neighbour splatting:
-      const int grid_index = xi + b->size_x*(yi + b->size_y*zi);
+      const size_t grid_index = xi + b->size_x*(yi + b->size_y*zi);
       // sum up payload here, doesn't have to be same as edge stopping data
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
       // should not cause clipping here.
       for(int k=0; k<8; k++)
       {
-        const int ii = grid_index + ((k&1)?ox:0) + ((k&2)?oy:0) + ((k&4)?oz:0);
+        const size_t ii = grid_index + ((k&1)?ox:0) + ((k&2)?oy:0) + ((k&4)?oz:0);
         const float contrib = ((k&1)?xf:(1.0f-xf)) * ((k&2)?yf:(1.0f-yf)) * ((k&4)?zf:(1.0f-zf))
                               *100.0f/(b->sigma_s*b->sigma_s);
 #ifdef _OPENMP
@@ -188,7 +188,7 @@ blur_line_z(
 #endif
   for(int k=0; k<size1; k++)
   {
-    int index = k*offset1;
+    size_t index = (size_t)k*offset1;
     for(int j=0; j<size2; j++)
     {
       float tmp1 = buf[index];
@@ -235,7 +235,7 @@ blur_line(
 #endif
   for(int k=0; k<size1; k++)
   {
-    int index = k*offset1;
+    size_t index = (size_t)k*offset1;
     for(int j=0; j<size2; j++)
     {
       float tmp1 = buf[index];
@@ -298,7 +298,7 @@ dt_bilateral_slice(
 #endif
   for(int j=0; j<b->height; j++)
   {
-    int index = 4*j*b->width;
+    size_t index = 4*j*b->width;
     for(int i=0; i<b->width; i++)
     {
       float x, y, z;
@@ -311,7 +311,7 @@ dt_bilateral_slice(
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const int gi = xi + b->size_x*(yi + b->size_y*zi);
+      const size_t gi = xi + b->size_x*(yi + b->size_y*zi);
       const float Lout = L + norm * (
                            b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
                            b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +
@@ -348,7 +348,7 @@ dt_bilateral_slice_to_output(
 #endif
   for(int j=0; j<b->height; j++)
   {
-    int index = 4*j*b->width;
+    size_t index = 4*j*b->width;
     for(int i=0; i<b->width; i++)
     {
       float x, y, z;
@@ -361,7 +361,7 @@ dt_bilateral_slice_to_output(
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const int gi = xi + b->size_x*(yi + b->size_y*zi);
+      const size_t gi = xi + b->size_x*(yi + b->size_y*zi);
       const float Lout = norm * (
                            b->buf[gi]          * (1.0f - xf) * (1.0f - yf) * (1.0f - zf) +
                            b->buf[gi+ox]       * (       xf) * (1.0f - yf) * (1.0f - zf) +

@@ -354,6 +354,11 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+#ifndef __WIN32__
+  if(getuid() == 0 || geteuid() == 0)
+    printf("WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
+#endif
+
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #if !defined __APPLE__ && !defined __WIN32__
@@ -946,7 +951,7 @@ void dt_free_align(void *mem)
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
   dt_times_t end;
-  char buf[120];		/* Arbitrary size, should be lots big enough for everything used in DT */
+  char buf[160];		/* Arbitrary size, should be lots big enough for everything used in DT */
   int i;
 
   /* Skip all the calculations an everything if -d perf isn't on */

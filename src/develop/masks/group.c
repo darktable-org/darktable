@@ -188,24 +188,24 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   //we create a new buffer
   int wt = piece->iwidth;
   int ht = piece->iheight;
-  float *buf = malloc(ht*wt*sizeof(float));
+  float *buf = malloc((size_t)ht*wt*sizeof(float));
 
   //we fill this buffer
   for (int yy=0; yy<MIN(*posy,ht); yy++)
   {
-    for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
+    for (int xx=0; xx<wt; xx++) buf[(size_t)yy*wt+xx] = 1.0f;
   }
 
   for (int yy=MAX(*posy,0); yy<MIN(ht,(*posy)+(*height)); yy++)
   {
-    for (int xx=0; xx<MIN((*posx),wt); xx++) buf[yy*wt+xx] = 1.0f;
-    for (int xx=MAX((*posx),0); xx<MIN(wt,(*posx)+(*width)); xx++) buf[yy*wt+xx] = 1.0f-(*buffer)[(yy-(*posy))*(*width)+xx-(*posx)];
-    for (int xx=MAX((*posx)+(*width),0); xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
+    for (int xx=0; xx<MIN((*posx),wt); xx++) buf[(size_t)yy*wt+xx] = 1.0f;
+    for (int xx=MAX((*posx),0); xx<MIN(wt,(*posx)+(*width)); xx++) buf[(size_t)yy*wt+xx] = 1.0f-(*buffer)[((size_t)yy-(*posy))*(*width)+xx-(*posx)];
+    for (int xx=MAX((*posx)+(*width),0); xx<wt; xx++) buf[(size_t)yy*wt+xx] = 1.0f;
   }
 
   for (int yy=MAX((*posy)+(*height),0); yy<ht; yy++)
   {
-    for (int xx=0; xx<wt; xx++) buf[yy*wt+xx] = 1.0f;
+    for (int xx=0; xx<wt; xx++) buf[(size_t)yy*wt+xx] = 1.0f;
   }
 
   //we free the old buffer
@@ -411,24 +411,24 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   return 1;
 }
 
-static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   double start2 = dt_get_wtime();
-  //we allocate buffers and values
   const int nb = g_list_length(form->points);
   if (nb == 0) return 0;
-  float* bufs;
   int nb_ok = 0;
 
   const int width = roi->width;
   const int height = roi->height;
 
-  //we allocate the buffer
-  *buffer = malloc(sizeof(float)*width*height);
-  if(*buffer == NULL) return 0;
-  memset(*buffer, 0, width*height*sizeof(float));
+  // we need to allocate a temporary buffer for intermediate creation of individual shapes
+  float *bufs = dt_alloc_align(64, (size_t)width*height*sizeof(float));
+  if (bufs == NULL) return 0;
 
-  //and we get all masks
+  // empty the output buffer
+  memset(buffer, 0, (size_t)width*height*sizeof(float));
+
+  // and we get all masks
   GList *fpts = g_list_first(form->points);
 
   while(fpts)
@@ -438,12 +438,13 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 
     if (sel)
     {
-      const int ok = dt_masks_get_mask_roi(module,piece,sel,roi,&bufs);
+      const int ok = dt_masks_get_mask_roi(module,piece,sel,roi,bufs);
       const float op = fpt->opacity;
       const int state = fpt->state;
 
       if (ok) 
       {
+        //first see if we need to invert this shape
         if (state & DT_MASKS_STATE_INVERSE)
         {
 #ifdef _OPENMP
@@ -453,9 +454,12 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           #pragma omp parallel for shared(bufs)
 #endif
 #endif
-          for(int j=0; j<height; j++)
-            for(int i=0; i<width; i++)
-              bufs[j*width+i] = 1.0f - bufs[j*width+i];
+          for(int y=0; y<height; y++)
+            for(int x=0; x<width; x++)
+            {
+              size_t index = (size_t)y*width + x;
+              bufs[index] = 1.0f - bufs[index];
+            }
         }
 
         if (state & DT_MASKS_STATE_UNION)
@@ -469,7 +473,10 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #endif
           for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
-              (*buffer)[y*width+x] = fmaxf((*buffer)[y*width+x], bufs[y*width+x]*op);
+            {
+              size_t index = (size_t)y*width + x;
+              buffer[index] = fmaxf(buffer[index], bufs[index]*op);
+            }
         }
         else if (state & DT_MASKS_STATE_INTERSECTION)
         {
@@ -483,10 +490,11 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
             {
-              float b1 = (*buffer)[y*width+x];
-              float b2 = b2 = bufs[y*width+x];
-              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = fminf(b1,b2*op);
-              else (*buffer)[y*width+x] = 0.0f;
+              size_t index = (size_t)y*width + x;
+              float b1 = buffer[index];
+              float b2 = b2 = bufs[index];
+              if (b1>0.0f && b2>0.0f) buffer[index] = fminf(b1,b2*op);
+              else buffer[index] = 0.0f;
             }
         }
         else if (state & DT_MASKS_STATE_DIFFERENCE)
@@ -501,9 +509,10 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
             {
-              float b1 = (*buffer)[y*width+x];
-              float b2 = bufs[y*width+x]*op;
-              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = b1*(1.0f-b2);
+              size_t index = (size_t)y*width + x;
+              float b1 = buffer[index];
+              float b2 = bufs[index]*op;
+              if (b1>0.0f && b2>0.0f) buffer[index] = b1*(1.0f-b2);
             }
         }
         else if (state & DT_MASKS_STATE_EXCLUSION)
@@ -518,10 +527,11 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
             {
-              float b1 = (*buffer)[y*width+x];
-              float b2 = bufs[y*width+x]*op;
-              if (b1>0.0f && b2>0.0f) (*buffer)[y*width+x] = fmaxf((1.0f-b1)*b2,b1*(1.0f-b2));
-              else (*buffer)[y*width+x] = fmaxf(b1, b2);
+              size_t index = (size_t)y*width + x;
+              float b1 = buffer[index];
+              float b2 = bufs[index]*op;
+              if (b1>0.0f && b2>0.0f) buffer[index] = fmaxf((1.0f-b1)*b2,b1*(1.0f-b2));
+              else buffer[index] = fmaxf(b1, b2);
             }
         }
         else //if we are here, this mean that we just have to copy the shape and null other parts
@@ -535,11 +545,11 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #endif
           for (int y=0; y<height; y++)
             for (int x=0; x<width; x++)
-              (*buffer)[y*width+x] = bufs[y*width+x]*op;
+            {
+              size_t index = (size_t)y*width + x;
+              buffer[index] = bufs[index]*op;
+            }
         }
-
-        //and we free the buffer
-        free(bufs);
 
         if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime()-start2);
         start2 = dt_get_wtime();
@@ -550,10 +560,13 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     fpts = g_list_next(fpts);
   }
 
+  //and we free the intermediate buffer
+  dt_free_align(bufs);
+
   return (nb_ok != 0);
 }
 
-int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   double start2 = dt_get_wtime();
   if (!form) return 0;

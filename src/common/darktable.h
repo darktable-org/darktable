@@ -102,6 +102,8 @@ int dt_module_mod_version() \
 }
 #endif
 
+#define DT_MODULE_INTROSPECTION(MODVER, PARAMSTYPE) DT_MODULE(MODVER)
+
 // ..to be able to compare it against this:
 static inline int dt_version()
 {
@@ -312,7 +314,7 @@ static inline void dt_print_mem_usage()
   FILE *f;
 
   char pidstatus[128];
-  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+  snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
 
   f = fopen(pidstatus, "r");
   if (!f) return;

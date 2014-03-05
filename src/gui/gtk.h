@@ -66,6 +66,8 @@ typedef struct dt_gui_gtk_t
   gboolean grouping;
   int32_t expanded_group_id;
 
+  gboolean show_overlays;
+
   double dpi;
 
   // store which gtkrc we loaded:

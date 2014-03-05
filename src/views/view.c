@@ -110,10 +110,10 @@ int dt_view_load_module(dt_view_t *view, const char *module)
   view->hscroll_size = view->hscroll_viewport_size = 1.0;
   view->vscroll_pos = view->hscroll_pos = 0.0;
   view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
-  g_strlcpy(view->module_name, module, 64);
+  g_strlcpy(view->module_name, module, sizeof(view->module_name));
   char plugindir[1024];
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/views", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/views", sizeof(plugindir));
   gchar *libname = g_module_build_path(plugindir, (const gchar *)module);
   view->module = g_module_open(libname, G_MODULE_BIND_LAZY);
   if(!view->module)
@@ -325,7 +325,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
         gboolean visible = dt_lib_is_visible(plugin);
         if (plugin->expandable())
         {
-          snprintf(var, 1024, "plugins/lighttable/%s/expanded", plugin->plugin_name);
+          snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", plugin->plugin_name);
           expanded = dt_conf_get_bool(var);
 
           /* show expander if visible  */
@@ -919,16 +919,8 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
-  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  int show_status;
-
-  if (v->view(v) == DT_VIEW_LIGHTTABLE)
-    show_status = dt_conf_get_bool("lighttable/ui/expose_statuses");
-  else
-    show_status = 0;
-
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview || show_status)
+  if(imgsel == imgid || full_preview || darktable.gui->show_overlays)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
@@ -1176,19 +1168,20 @@ dt_view_image_expose(
       FILE *f = fopen(path, "rb");
       if(f)
       {
+        char line[2048];
         cairo_select_font_face (cr, "monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size (cr, .015*fscale);
         // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%[^\n]", path);
+          int read = fscanf(f, "%2048[^\n]", line);
           if(read != 1) break;
           fgetc(f); // munch \n
 
           cairo_move_to (cr, .02*fscale, .20*fscale + .017*fscale*k);
           cairo_set_source_rgb(cr, .7, .7, .7);
-          cairo_text_path(cr, path);
+          cairo_text_path(cr, line);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 1.0);
           cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);

@@ -36,7 +36,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 // these are not in a state to be useful. but they look nice. too bad i couldn't map the enhanced mode with negative values to the wheels :(
 // #define SHOW_COLOR_WHEELS
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colorbalance_params_t)
 
 /*
 
@@ -147,8 +147,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *in  = ((float *)i) + ch*roi_in->width *j;
-    float *out = ((float *)o) + ch*roi_out->width*j;
+    float *in  = ((float *)i) + (size_t)ch*roi_in->width *j;
+    float *out = ((float *)o) + (size_t)ch*roi_out->width*j;
     for(int i = 0; i < roi_out->width; i++)
     {
       // transform the pixel to sRGB:
