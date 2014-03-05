@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-04 12:00+0100\n"
-"PO-Revision-Date: 2014-03-04 12:05+0100\n"
+"POT-Creation-Date: 2014-03-05 21:58+0100\n"
+"PO-Revision-Date: 2014-03-05 22:06+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2190,7 +2190,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:73 ../src/iop/exposure.c:437
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:80 ../src/iop/exposure.c:665
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "belichting"
@@ -2210,7 +2210,7 @@ msgid "focal length"
 msgstr "brandpuntsafstand (mm)"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:443 ../src/iop/levels.c:345
+#: ../src/iop/exposure.c:669 ../src/iop/levels.c:345
 #: ../src/iop/tonecurve.c:756
 msgid "auto"
 msgstr "auto"
@@ -4509,36 +4509,71 @@ msgstr ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 
-#: ../src/iop/exposure.c:90
+#: ../src/iop/exposure.c:97
 msgctxt "accel"
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:91 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:98 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "belichting"
 
-#: ../src/iop/exposure.c:92
+#: ../src/iop/exposure.c:99
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "automatische belichting"
 
-#: ../src/iop/exposure.c:430
+#: ../src/iop/exposure.c:100
+msgctxt "accel"
+msgid "deflicker"
+msgstr "deflicker"
+
+#: ../src/iop/exposure.c:101
+msgctxt "accel"
+msgid "deflicker-percentile"
+msgstr "deflicker-percentiel"
+
+#: ../src/iop/exposure.c:102
+msgctxt "accel"
+msgid "deflicker-level"
+msgstr "deflicker-niveau"
+
+#: ../src/iop/exposure.c:151
+msgid "Magic Lantern Defaults"
+msgstr "Magic Lantern standaard"
+
+#: ../src/iop/exposure.c:155
+msgid "Almost no clipping"
+msgstr "bijna geen clipping"
+
+#: ../src/iop/exposure.c:657
 msgid "adjust the black level"
 msgstr "aanpassen zwartpunt"
 
-#: ../src/iop/exposure.c:432
+#: ../src/iop/exposure.c:659
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:435
+#: ../src/iop/exposure.c:663
 msgid "adjust the exposure correction"
 msgstr "aanpassen belichtingscorrectie (EV)"
 
-#: ../src/iop/exposure.c:446
+#: ../src/iop/exposure.c:672
 msgid "percentage of bright values clipped out"
 msgstr "percentage uitgeclipte hooglichten  "
+
+#: ../src/iop/exposure.c:680
+msgid "deflicker"
+msgstr "deflicker"
+
+#: ../src/iop/exposure.c:684 ../src/iop/exposure.c:686
+msgid "percentile"
+msgstr "percentiel"
+
+#: ../src/iop/exposure.c:690 ../src/iop/exposure.c:692
+msgid "target level"
+msgstr "doel niveau"
 
 #: ../src/iop/flip.c:320
 msgid "flip horizontally"
