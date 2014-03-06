@@ -18,7 +18,7 @@ use ast;
 
 package code_gen;
 
-my $DT_INTROSPECTION_VERSION = 2;
+my $DT_INTROSPECTION_VERSION = 3;
 
 sub print_fallback
 {
@@ -51,6 +51,7 @@ static dt_introspection_field_t introspection_linear[2]
 static dt_introspection_t introspection = {
   $DT_INTROSPECTION_VERSION,
   $version,
+  "$params_type",
   sizeof($params_type),
   &introspection_linear[0]
 };
@@ -155,6 +156,7 @@ END
 static dt_introspection_t introspection = {
   $DT_INTROSPECTION_VERSION,
   $version,
+  "$params_type",
   sizeof($params_type),
   &introspection_linear[$max_linear-1]
 };

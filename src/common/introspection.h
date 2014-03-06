@@ -24,7 +24,7 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 2
+#define DT_INTROSPECTION_VERSION 3
 
 struct dt_iop_module_so_t;
 union dt_introspection_field_t;
@@ -52,9 +52,9 @@ typedef enum dt_introspection_type_t
 typedef struct dt_introspection_type_header_t
 {
   dt_introspection_type_t             type;         // type of the field
-  char                               *name;         // variable name, possibly with the name of parent structs, separated with '.'
-  char                               *field_name;   // variable name without any parents
-  char                               *description;  // some human readable description taken from the comments
+  const char                         *name;         // variable name, possibly with the name of parent structs, separated with '.'
+  const char                         *field_name;   // variable name without any parents
+  const char                         *description;  // some human readable description taken from the comments
   size_t                              size;         // size of the field in bytes
   size_t                              offset;       // offset from the beginning of the start of params. TODO: use start of parent struct instead?
   struct dt_iop_module_so_t          *so;           // a pointer to the dlopen'ed module
@@ -161,7 +161,7 @@ typedef struct dt_introspection_type_array_t
 
 typedef struct dt_introspection_type_enum_tuple_t
 {
-  char                               *name;
+  const char                         *name;
   int                                 value;
 } dt_introspection_type_enum_tuple_t;
 
@@ -203,7 +203,8 @@ typedef union dt_introspection_field_t
 typedef struct dt_introspection_t
 {
   int                                 api_version;    // introspection API version
-  int                                 params_version; // the version of the params layout. taken from DT_MODULE()
+  int                                 params_version; // the version of the params layout. taken from DT_MODULE_INTROSPECTION()
+  const char                         *type_name;      // the typedef'ed name for this type as passed to DT_MODULE_INTROSPECTION()
   size_t                              size;           // size of the params struct
   dt_introspection_field_t           *field;          // the type of the params. should always be a DT_INTROSPECTION_TYPE_STRUCT
 } dt_introspection_t;
