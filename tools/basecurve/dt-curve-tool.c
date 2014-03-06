@@ -726,6 +726,32 @@ main(int argc, char** argv)
   }
 
   /* ------------------------------------------------------------------------
+   * Overflow test, we test for worst case scenario, all pixels would be
+   * concentrated on the sample with maximum histogram
+   * ----------------------------------------------------------------------*/
+
+  {
+    uint32_t maxhist = 0;
+
+    for (int i=0 ; i<6; i++)
+    {
+      for (int j=0; j<CURVE_RESOLUTION; j++)
+      {
+        if (maxhist < hist[i*CURVE_RESOLUTION + j])
+        {
+          maxhist = hist[i*CURVE_RESOLUTION + j];
+        }
+      }
+    }
+
+    if ((UINT32_MAX - maxhist) < (uint32_t)(jpeg_width*jpeg_height))
+    {
+      fprintf(stderr, "error: analyzing this image could overflow internal counters. Refusing to process\n");
+      goto exit;
+    }
+  }
+
+  /* ------------------------------------------------------------------------
    * Basecurve part
    * ----------------------------------------------------------------------*/
 
