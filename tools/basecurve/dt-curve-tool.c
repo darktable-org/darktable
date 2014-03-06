@@ -454,7 +454,7 @@ print_usage(
     "plot the results with `gnuplot plot.(basecurve|tonecurve) depending on target module'\n"
     "\n"
     "first do a pass over a few images to accumulate data in the save state file, and then\n"
-    "compute the fit curve using option -z",
+    "compute the fit curve using option -z\n",
     name);
 }
 
@@ -537,17 +537,20 @@ parse_arguments(
     }
   }
 
-  if (!opts->finalize)
+  if (!ex)
   {
-    if (optind < argc - 1)
+    if (!opts->finalize)
     {
-      opts->filename_raw = argv[optind];
-      opts->filename_jpeg = argv[optind+1];
-    }
-    else
-    {
-      print_usage(argv[0]);
-      ex = 1;
+      if (optind < argc - 1)
+      {
+        opts->filename_raw = argv[optind];
+        opts->filename_jpeg = argv[optind+1];
+      }
+      else
+      {
+        print_usage(argv[0]);
+        ex = 1;
+      }
     }
   }
 
