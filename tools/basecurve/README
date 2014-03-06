@@ -79,7 +79,9 @@ $ dt-curve-tool -s ~/tmp/mycamera.dat FILE-rawN.ppm FILE-jpegN.ppm
 
 Beware that dt-curve-tool uses 32bit counters internally to keep track of the number
 of times RGB/Lab samples have been encountered. As cameras these days have many pixels
-a photo, do not be zealous and do not run the tool on your complete catalog.
+a photo, do not be zealous and do not run the tool on your complete catalog. In the
+case too many pixels have been sampled already, an error is  be printed on the
+console and dt-curve-tool refuses to process the image.
 
 It may be smart to pick 20 to 50 pics covering the whole tonal range, no need for
 hundreds/thousands/millions of pictures.
