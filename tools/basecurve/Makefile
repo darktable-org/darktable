@@ -1,15 +1,15 @@
 PROGS = dt-curve-tool
 
-ifeq ($(BUILD_TYPE),Release)
-CCFLAGS += -O3
-else
+ifeq ($(BUILD_TYPE),Debug)
 CCFLAGS += -O0
+else
+CCFLAGS += -O3
 endif
 
 CCFLAGS += -g -Wall
 
 CFLAGS = $(CCFLAGS) -std=c99 -pedantic
-CXXCFLAGS=$(CFLAGS)
+CXXFLAGS=$(CFLAGS)
 
 DT_CURVE_TOOL_OBJS += exif-wrapper.o
 DT_CURVE_TOOL_OBJS += dt-curve-tool.o
