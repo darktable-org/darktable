@@ -106,7 +106,7 @@ __inline float xdivf( float d, int n)
 
 // void RawImageSource::amaze_demosaic_RT(int winx, int winy, int winw, int winh)
 static void
-amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters)
+amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int filters, const float thrs)
 {
 #define SQR(x) ((x)*(x))
   //#define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -322,6 +322,16 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+  float *inref;
+    const int median = thrs > 0.0f;
+    // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
+    if (median) {
+        float *med_in = (float *) dt_alloc_align(16, roi_in->height * roi_in->width * sizeof (float));
+        pre_median(med_in, in, roi_in, filters, 1, thrs);
+        inref = (float *) med_in;
+    }else{
+        inref = (float *) in;
+    }
 
     //determine GRBG coset; (ey,ex) is the offset of the R subarray
     if (FC(0,0,filters)==1)  //first pixel is G
@@ -494,7 +504,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             col = cc+left;
             c = FC(rr,cc,filters);
             indx1=rr*TS+cc;
-            rgb[indx1][c] = (in[row*width + col]);
+            rgb[indx1][c] = (inref[row*width + col]);
             //indx=row*width+col;
             //rgb[indx1][c] = image[indx][c]/65535.0f;//for dcraw implementation
 
@@ -518,7 +528,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=ccmin; cc<ccmax; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[(rrmax+rr)*TS+cc][c] = in[(winy+height-rr-2)*width+left+cc];
+              rgb[(rrmax+rr)*TS+cc][c] = inref[(winy+height-rr-2)*width+left+cc];
               //rgb[(rrmax+rr)*TS+cc][c] = (image[(height-rr-2)*width+left+cc][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+cc] = rgb[(rrmax+rr)*TS+cc][c];
             }
@@ -539,7 +549,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[rr*TS+ccmax+cc][c] = in[(top+rr)*width + (winx+width-cc-2)];
+              rgb[rr*TS+ccmax+cc][c] = inref[(top+rr)*width + (winx+width-cc-2)];
               //rgb[rr*TS+ccmax+cc][c] = (image[(top+rr)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[rr*TS+ccmax+cc] = rgb[rr*TS+ccmax+cc][c];
             }
@@ -552,7 +562,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[(rr)*TS+cc][c] = in[(winy+32-rr)*width + winx+32-cc];
+              rgb[(rr)*TS+cc][c] = inref[(winy+32-rr)*width + winx+32-cc];
               //rgb[(rr)*TS+cc][c] = (rgb[(32-rr)*TS+(32-cc)][c]);//for dcraw implementation
               cfa[(rr)*TS+cc] = rgb[(rr)*TS+cc][c];
             }
@@ -563,7 +573,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[(rrmax+rr)*TS+ccmax+cc][c] = in[(winy+height-rr-2)*width + (winx+width-cc-2)];
+              rgb[(rrmax+rr)*TS+ccmax+cc][c] = inref[(winy+height-rr-2)*width + (winx+width-cc-2)];
               //rgb[(rrmax+rr)*TS+ccmax+cc][c] = (image[(height-rr-2)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+ccmax+cc] = rgb[(rrmax+rr)*TS+ccmax+cc][c];
             }
@@ -574,7 +584,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[(rr)*TS+ccmax+cc][c] = in[(winy+32-rr)*width + (winx+width-cc-2)];
+              rgb[(rr)*TS+ccmax+cc][c] = inref[(winy+32-rr)*width + (winx+width-cc-2)];
               //rgb[(rr)*TS+ccmax+cc][c] = (image[(32-rr)*width+(width-cc-2)][c])/65535.0f;//for dcraw implementation
               cfa[(rr)*TS+ccmax+cc] = rgb[(rr)*TS+ccmax+cc][c];
             }
@@ -585,7 +595,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             for (cc=0; cc<16; cc++)
             {
               c=FC(rr,cc,filters);
-              rgb[(rrmax+rr)*TS+cc][c] = in[(winy+height-rr-2)*width + (winx+32-cc)];
+              rgb[(rrmax+rr)*TS+cc][c] = inref[(winy+height-rr-2)*width + (winx+32-cc)];
               //rgb[(rrmax+rr)*TS+cc][c] = (image[(height-rr-2)*width+(32-cc)][c])/65535.0f;//for dcraw implementation
               cfa[(rrmax+rr)*TS+cc] = rgb[(rrmax+rr)*TS+cc][c];
             }

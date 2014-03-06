@@ -169,7 +169,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
         //main body
 
 
- 
+
 
 #ifdef _OPENMP
 #pragma omp for
@@ -185,7 +185,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     float g = (in[1 + i + j * (winw)] + in[i + (j + 1)*(winw)]) / 2.0f;
 
                     float comp = 0.0f;
-                    if (thrs != 0.0f) {
+                    if (thrs != 0.0f && g > 0.01f) {
                         float g1, g2, g3, g4;
                         g4 = in[2 + i + (j - 1)* (winw)];
                         g3 = in[1 + i + j * (winw)];
@@ -199,7 +199,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     float b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j - 1)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
 
                     //scale comp for thrs
-                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    comp = 10.0f * thrs * g * comp; // / (r + g + b);
                     // extremes protection
                     float d = 0.0f;
                     float max = MAX(r * (1.0f + comp), g * (1.0f + comp));
@@ -222,7 +222,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g = (in[1 + i + j * (winw)] + in[i + 2 + (j + 1)*(winw)]) / 2.0f;
 
                     comp = 0.0f;
-                    if (thrs != 0.0f) {
+                    if (thrs != 0.0f && g > 0.01f) {
                         float g1, g2, g3, g4;
                         g4 = in[3 + i + (j + 2)* (winw)];
                         g3 = in[2 + i + (j + 1) * (winw)];
@@ -237,7 +237,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     b = (2.0f * in[1 + i + (1 + j)*(winw)] + in[i + 1 + (j - 1)*(winw)] + in[i + 3 + (j + 1)*(winw)]) / 4.0f;
 
                     //scale comp for thrs
-                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    comp = 10.0f * thrs * g * comp; // / (r + g + b);
                     // extremes protection
                     d = 0.0f;
                     max = MAX(r * (1.0f + comp), g * (1.0f + comp));
@@ -261,7 +261,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g = (in[i + (j + 1)*(winw)] + in[1 + i + (j + 2)*(winw)]) / 2.0f;
 
                     comp = 0.0f;
-                    if (thrs != 0.0f) {
+                    if (thrs != 0.0f && g > 0.01f) {
                         float g1, g2, g3, g4;
 
                         g4 = in[2 + i + (j + 3)* (winw)];
@@ -277,7 +277,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[i - 1 + (j + 1)*(winw)]) / 4.0f;
 
                     //scale comp for thrs
-                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    comp = 10.0f * thrs * g * comp; // / (r + g + b);
                     // extremes protection
                     d = 0.0f;
                     max = MAX(r * (1.0f + comp), g * (1.0f + comp));
@@ -301,7 +301,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     g = (in[1 + i + (j + 2)*(winw)] + in[2 + i + (j + 1)*(winw)]) / 2.0f;
 
                     comp = 0.0f;
-                    if (thrs != 0.0f) {
+                    if (thrs != 0.0f && g > 0.01f) {
                         float g1, g2, g3, g4;
                         g4 = in[3 + i + (j)* (winw)];
                         g3 = in[2 + i + (j + 1) * (winw)];
@@ -316,7 +316,7 @@ demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_io
                     b = (2.0f * in[1 + i + (j + 1)*(winw)] + in[1 + i + (j + 3)*(winw)] + in[3 + i + (j + 1)*(winw)]) / 4.0f;
 
                     //scale comp for thrs
-                    comp = 10.0f * thrs * g * comp / (r + g + b);
+                    comp = 10.0f * thrs * g * comp; // / (r + g + b);
                     // extremes protection
                     d = 0.0f;
                     max = MAX(r * (1.0f + comp), g * (1.0f + comp));
