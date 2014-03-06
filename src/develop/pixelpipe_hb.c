@@ -36,12 +36,18 @@
 #include <math.h>
 #include <unistd.h>
 
-#define PIXELPIPE_FLOW_NONE                     0
-#define PIXELPIPE_FLOW_PROCESSED_ON_CPU         1<<0
-#define PIXELPIPE_FLOW_PROCESSED_ON_GPU         1<<1
-#define PIXELPIPE_FLOW_PROCESSED_WITH_TILING    1<<2
-#define PIXELPIPE_FLOW_BLENDED_ON_CPU           1<<3
-#define PIXELPIPE_FLOW_BLENDED_ON_GPU           1<<4
+typedef enum dt_pixelpipe_flow_t
+{
+  PIXELPIPE_FLOW_NONE                  = 0,
+  PIXELPIPE_FLOW_PROCESSED_ON_CPU      = 1<<0,
+  PIXELPIPE_FLOW_PROCESSED_ON_GPU      = 1<<1,
+  PIXELPIPE_FLOW_PROCESSED_WITH_TILING = 1<<2,
+  PIXELPIPE_FLOW_BLENDED_ON_CPU        = 1<<3,
+  PIXELPIPE_FLOW_BLENDED_ON_GPU        = 1<<4,
+  PIXELPIPE_FLOW_HISTOGRAM_ON_CPU      = 1<<5,
+  PIXELPIPE_FLOW_HISTOGRAM_ON_GPU      = 1<<6
+}
+dt_pixelpipe_flow_t;
 
 // this is to ensure compatibility with pixelpipe_gegl.c, which does not need to build the other module:
 #include "develop/pixelpipe_cache.c"
@@ -879,7 +885,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
-    int pixelpipe_flow = PIXELPIPE_FLOW_NONE;
+    dt_pixelpipe_flow_t pixelpipe_flow = PIXELPIPE_FLOW_NONE;
 
     dt_develop_tiling_t tiling = { 0 };
     dt_develop_tiling_t tiling_blendop = { 0 };
@@ -1024,6 +1030,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               module->request_histogram)
           {
             histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1133,6 +1141,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               module->request_histogram)
           {
             histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1318,6 +1328,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               module->request_histogram)
           {
             histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1428,6 +1440,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             module->request_histogram)
         {
           histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+          pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1507,6 +1521,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           module->request_histogram)
       {
         histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+        pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1572,6 +1588,8 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         module->request_histogram)
     {
       histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+      pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1592,10 +1610,11 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
 #endif
 
-    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s, blending on %s [%s]", module->name(),
-                  pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "???",
+    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module->name(),
+                  pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
-                  pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "???",
+                  pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? ", collecting histogram on GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? ", collecting histogram on CPU" : "",
+                  pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
                   _pipe_type_to_str(pipe->type));
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
