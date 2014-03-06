@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-06 09:54+0100\n"
-"PO-Revision-Date: 2014-03-06 10:05+0100\n"
+"PO-Revision-Date: 2014-03-06 10:19+0100\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -4522,17 +4522,17 @@ msgstr "autoexponering"
 #: ../src/iop/exposure.c:100
 msgctxt "accel"
 msgid "deflicker"
-msgstr "flimmerborttagning"
+msgstr "flimmerbortt"
 
 #: ../src/iop/exposure.c:101
 msgctxt "accel"
 msgid "deflicker-percentile"
-msgstr "flimmerborttagning-percentil"
+msgstr "flimmerbortt-percentil"
 
 #: ../src/iop/exposure.c:102
 msgctxt "accel"
 msgid "deflicker-level"
-msgstr "flimmerborttagning-nivå"
+msgstr "flimmerbortt-nivå"
 
 #: ../src/iop/exposure.c:151
 msgid "Magic Lantern Defaults"
@@ -4562,7 +4562,7 @@ msgstr ""
 
 #: ../src/iop/exposure.c:680
 msgid "deflicker"
-msgstr "flimmerborttagning"
+msgstr "flimmerbortt"
 
 #: ../src/iop/exposure.c:684 ../src/iop/exposure.c:686
 msgid "percentile"
