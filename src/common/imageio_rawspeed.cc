@@ -157,7 +157,7 @@ dt_imageio_open_rawspeed(
     img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
     img->height = (orientation & 4) ? r->dim.x : r->dim.y;
 
-    /* needed in exposure iop for Deflicke */
+    /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
 
