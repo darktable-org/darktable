@@ -28,12 +28,19 @@ int dt_lua_init_modules(lua_State *L);
 
 void dt_lua_init_module_type(lua_State *L,const char* module_type_name);
 
+/// entry handling
 void dt_lua_register_module_entry(lua_State *L, int index, const char* module_type_name,const char* entry_name);
-
 void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name,const char* entry_name,void *entry);
-
 void dt_lua_module_push_entry(lua_State *L, const char* module_type_name,const char* entry_name);
 luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_name,const char* entry_name);
+
+/// preset handling
+#define dt_lua_register_module_presets(L,module,entry,type) \
+  dt_lua_register_module_presets_typeid(L,module,entry,luaA_type_id(type))
+void dt_lua_register_module_presets_typeid(lua_State*L, const char* module_type_name,const char* entry_name,luaA_Type preset_typeid);
+luaA_Type dt_lua_module_get_preset_typeid(lua_State *L, const char* module_type_name,const char* entry_name);
+void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, const char*entry_name, lua_CFunction pusher, lua_CFunction getter);
+
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

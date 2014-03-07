@@ -82,9 +82,44 @@ luaA_Type dt_lua_module_get_entry_typeid(lua_State *L, const char* module_type_n
 
 }
 
+void dt_lua_register_module_presets_typeid(lua_State*L, const char* module_type_name,const char* entry_name,luaA_Type preset_typeid)
+{
+  dt_lua_module_push_entry(L,module_type_name,entry_name);
+  lua_getmetatable(L,-1);
+
+  lua_pushinteger(L,preset_typeid);
+  lua_setfield(L,-2,"__preset_type");
+  lua_pop(L,2);
+
+}
+
+luaA_Type dt_lua_module_get_preset_typeid(lua_State *L, const char* module_type_name,const char* entry_name)
+{
+  dt_lua_module_push_entry(L,module_type_name,entry_name);
+  lua_getmetatable(L,-1);
+  lua_getfield(L,-1,"__preset_type");
+  luaA_Type entry_type = luaL_checkint(L,-1);
+  lua_pop(L,3);
+  return entry_type;
+
+}
+void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, const char*entry_name, lua_CFunction pusher, lua_CFunction getter) {
+  // stack usefull values
+  dt_lua_module_push_entry(L,module_type_name,entry_name);
+  void * entry =  *(void**)lua_touserdata(L,-1);
+  luaA_Type entry_type = dt_lua_module_get_entry_typeid(L,module_type_name,entry_name);
+  lua_pop(L,1);
+
+  char tmp_string[1024];
+  sprintf(tmp_string,"module_current_settings_%s_%s",module_type_name,entry_name);
+  dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
+  dt_lua_register_type_callback_stack_typeid(L,entry_type,"settings");
+}
+
+
+
 int dt_lua_init_modules(lua_State *L)
 {
-
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
