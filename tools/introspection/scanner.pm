@@ -201,14 +201,7 @@ sub handle_comment
   }
   my $comment = join('', @buf);
 
-  if(defined($comments[$_lineno]))
-  {
-    push($comments[$_lineno]{raw}, $comment);
-  }
-  else
-  {
-    $comments[$_lineno]{raw}[0] = $comment;
-  }
+  push(@{$comments[$_lineno]{raw}}, $comment);
 }
 
 sub handle_include
