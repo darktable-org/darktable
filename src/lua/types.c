@@ -574,6 +574,56 @@ luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name,void *data
   return type_id;
 }
 
+
+static int wrapped_index(lua_State * L)
+{
+  luaL_getmetafield(L,1,"__pusher");
+  lua_pushvalue(L,1);
+  lua_call(L,1,1);
+  lua_pushvalue(L,2);
+  lua_gettable(L,-2);
+  lua_remove(L,1);
+  lua_remove(L,1);
+  return 1;
+}
+
+static int wrapped_pairs(lua_State * L)
+{
+  luaL_getmetafield(L,1,"__pusher");
+  lua_pushvalue(L,1);
+  lua_call(L,1,1);
+  luaL_getmetafield(L,-1,"__pairs");
+  lua_pushvalue(L,-2);
+  lua_call(L,1,3);
+  return 3;
+}
+static int wrapped_newindex(lua_State * L){return luaL_error(L,"TBSL");}
+static int wrapped_ipairs(lua_State * L){return luaL_error(L,"TBSL");}
+static int wrapped_tostring(lua_State * L){return luaL_error(L,"TBSL");}
+
+
+luaA_Type dt_lua_init_wrapped_singleton(lua_State* L,lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data)
+{
+  luaA_Type result = dt_lua_init_singleton(L,unique_name,data);
+  lua_getmetatable(L,-1);
+  lua_pushcfunction(L,wrapped_index);
+  lua_setfield(L,-2,"__index");
+  lua_pushcfunction(L,wrapped_newindex);
+  lua_setfield(L,-2,"__newindex");
+  lua_pushcfunction(L,wrapped_pairs);
+  lua_setfield(L,-2,"__pairs");
+  lua_pushcfunction(L,wrapped_ipairs);
+  lua_setfield(L,-2,"__ipairs");
+  lua_pushcfunction(L,wrapped_tostring);
+  lua_setfield(L,-2,"__tostring");
+  lua_pushcfunction(L,pusher);
+  lua_setfield(L,-2,"__pusher");
+  lua_pushcfunction(L,getter);
+  lua_setfield(L,-2,"__getter");
+  lua_pop(L,1);
+  return result;
+}
+
 luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);

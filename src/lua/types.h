@@ -109,6 +109,12 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
  */
 luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
 
+/**
+ * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restor
+ * the lua object called on
+ */
+luaA_Type dt_lua_init_wrapped_singleton(lua_State* L, lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data);
+
 
 int dt_lua_init_types(lua_State *L);
 
