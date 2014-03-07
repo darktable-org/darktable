@@ -142,8 +142,20 @@ lock_again:
               goto lock_again;
             }
           }
+          else
+          {
+            fprintf(stderr, "[init] the database lock file contains a pid that seems to be alive in your system: %d\n", other_pid);
+          }
+        }
+        else
+        {
+          fprintf(stderr, "[init] the database lock file seems to be empty\n");
         }
         close(fd);
+      }
+      else
+      {
+        fprintf(stderr, "[init] error opening the database lock file for reading\n");
       }
     }
   }
