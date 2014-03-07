@@ -21,21 +21,28 @@
 #include <inttypes.h>
 #include <glib.h>
 
-#define COLLECTION_QUERY_SIMPLE                 0           // a query with only select and where statement
-#define COLLECTION_QUERY_USE_SORT               1           // if query should include order by statement
-#define COLLECTION_QUERY_USE_LIMIT              2           // if query should include "limit ?1,?2" part
-#define COLLECTION_QUERY_USE_WHERE_EXT          4           // if query should include extended where part
-#define COLLECTION_QUERY_USE_ONLY_WHERE_EXT     8           // if query should only use extended where part
-
+typedef enum dt_collection_query_t
+{
+  COLLECTION_QUERY_SIMPLE             = 0,    // a query with only select and where statement
+  COLLECTION_QUERY_USE_SORT           = 1<<0, // if query should include order by statement
+  COLLECTION_QUERY_USE_LIMIT          = 1<<1, // if query should include "limit ?1,?2" part
+  COLLECTION_QUERY_USE_WHERE_EXT      = 1<<2, // if query should include extended where part
+  COLLECTION_QUERY_USE_ONLY_WHERE_EXT = 1<<3  // if query should only use extended where part
+}
+dt_collection_query_t;
 #define COLLECTION_QUERY_FULL (COLLECTION_QUERY_USE_SORT|COLLECTION_QUERY_USE_LIMIT)
 
-
-#define COLLECTION_FILTER_FILM_ID               1             // use film_id in filter
-#define COLLECTION_FILTER_ATLEAST_RATING        2             // show all stars including and above selected star filter
-#define COLLECTION_FILTER_EQUAL_RATING          4             // show only selected star filter
-#define COLLECTION_FILTER_ALTERED               8             // show only altered images
-#define COLLECTION_FILTER_UNALTERED            16             // show only unaltered images
-#define COLLECTION_FILTER_CUSTOM_COMPARE       32             // use the comparator defined in the comparator field to filter stars
+typedef enum dt_collection_filter_comparator_t
+{
+  COLLECTION_FILTER_NONE           = 0,
+  COLLECTION_FILTER_FILM_ID        = 1<<0,  // use film_id in filter
+  COLLECTION_FILTER_ATLEAST_RATING = 1<<1,  // show all stars including and above selected star filter
+  COLLECTION_FILTER_EQUAL_RATING   = 1<<2,  // show only selected star filter
+  COLLECTION_FILTER_ALTERED        = 1<<3,  // show only altered images
+  COLLECTION_FILTER_UNALTERED      = 1<<4,  // show only unaltered images
+  COLLECTION_FILTER_CUSTOM_COMPARE = 1<<5   // use the comparator defined in the comparator field to filter stars
+}
+dt_collection_filter_comparator_t;
 
 typedef enum dt_collection_filter_t
 {
