@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-03 19:25+0100\n"
+"POT-Creation-Date: 2014-03-07 19:51+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Mauro Bartoccelli <bartokk@gmail.com>\n"
 "Language-Team: \n"
@@ -1708,17 +1708,17 @@ msgstr "Sposta giù"
 msgid "delete"
 msgstr "Elimina"
 
-#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
+#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2057
 #, c-format
 msgid "%s is switched on"
 msgstr "%s è abilitato"
 
-#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
+#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2057
 #, c-format
 msgid "%s is switched off"
 msgstr "%s è disabilitato"
 
-#: ../src/develop/imageop.c:1434 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1436 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
@@ -1727,41 +1727,41 @@ msgstr "%s è disabilitato"
 msgid "preset"
 msgstr "Preimpostazione"
 
-#: ../src/develop/imageop.c:1477
+#: ../src/develop/imageop.c:1479
 msgctxt "accel"
 msgid "fusion"
 msgstr "Fusione"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1482
+#: ../src/develop/imageop.c:1484
 msgctxt "accel"
 msgid "show module"
 msgstr "Visualizza modulo"
 
-#: ../src/develop/imageop.c:1483
+#: ../src/develop/imageop.c:1485
 msgctxt "accel"
 msgid "enable module"
 msgstr "Abilita modulo"
 
-#: ../src/develop/imageop.c:1486 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1488 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "Ripristina i parametri del modulo"
 
-#: ../src/develop/imageop.c:1488 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1490 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "Mostra il menù dei preset"
 
-#: ../src/develop/imageop.c:2025
+#: ../src/develop/imageop.c:2027
 msgid "multiple instances actions"
 msgstr "Azioni delle istanze multiple"
 
-#: ../src/develop/imageop.c:2034 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:2036 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "Ripristina parametri"
 
-#: ../src/develop/imageop.c:2043 ../src/gui/preferences.c:405
+#: ../src/develop/imageop.c:2045 ../src/gui/preferences.c:405
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "Preset"
@@ -1806,7 +1806,7 @@ msgstr[1] "%s sono stati importati con successo"
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "Tiling fallito per il modulo '%s'. L'output potrebbe essere confuso."
 
-#: ../src/develop/pixelpipe_hb.c:2221
+#: ../src/develop/pixelpipe_hb.c:2240
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2204,7 +2204,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:73 ../src/iop/exposure.c:437
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:81 ../src/iop/exposure.c:666
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "Esposizione"
@@ -2224,7 +2224,7 @@ msgid "focal length"
 msgstr "Lunghezza focale"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:443 ../src/iop/levels.c:345
+#: ../src/iop/exposure.c:670 ../src/iop/levels.c:345
 #: ../src/iop/tonecurve.c:756
 msgid "auto"
 msgstr "Auto"
@@ -4528,36 +4528,71 @@ msgstr ""
 "ed è presente così che tu possa disattivarlo\n"
 "e passare al nuovo equalizzatore."
 
-#: ../src/iop/exposure.c:90
+#: ../src/iop/exposure.c:98
 msgctxt "accel"
 msgid "black"
 msgstr "Nero "
 
-#: ../src/iop/exposure.c:91 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:99 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "Esposizione "
 
-#: ../src/iop/exposure.c:92
+#: ../src/iop/exposure.c:100
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "Auto esposizione"
 
-#: ../src/iop/exposure.c:430
+#: ../src/iop/exposure.c:101
+msgctxt "accel"
+msgid "deflicker"
+msgstr "Deflicker"
+
+#: ../src/iop/exposure.c:102
+msgctxt "accel"
+msgid "deflicker-percentile"
+msgstr "deflicker-percentile"
+
+#: ../src/iop/exposure.c:103
+msgctxt "accel"
+msgid "deflicker-level"
+msgstr "deflicker-livello"
+
+#: ../src/iop/exposure.c:152
+msgid "Magic Lantern Defaults"
+msgstr "Default Magic Lantern"
+
+#: ../src/iop/exposure.c:156
+msgid "Almost no clipping"
+msgstr "Quasi nessun tosaggio"
+
+#: ../src/iop/exposure.c:658
 msgid "adjust the black level"
 msgstr "Regola il livello del nero"
 
-#: ../src/iop/exposure.c:432
+#: ../src/iop/exposure.c:660
 msgid "black"
 msgstr "Nero"
 
-#: ../src/iop/exposure.c:435
+#: ../src/iop/exposure.c:664
 msgid "adjust the exposure correction"
 msgstr "Regola la correzione dell'esposizione"
 
-#: ../src/iop/exposure.c:446
+#: ../src/iop/exposure.c:673
 msgid "percentage of bright values clipped out"
 msgstr "Percentuale di luci tagliate fuori"
+
+#: ../src/iop/exposure.c:681
+msgid "deflicker"
+msgstr "Deflicker"
+
+#: ../src/iop/exposure.c:685 ../src/iop/exposure.c:687
+msgid "percentile"
+msgstr "Percentile"
+
+#: ../src/iop/exposure.c:691 ../src/iop/exposure.c:693
+msgid "target level"
+msgstr "Livello target"
 
 #: ../src/iop/flip.c:320
 msgid "flip horizontally"
