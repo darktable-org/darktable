@@ -34,16 +34,24 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-#define GUIDE_NONE     0
-#define GUIDE_GRID     1
-#define GUIDE_THIRD    2
-#define GUIDE_DIAGONAL 3
-#define GUIDE_TRIANGL  4
-#define GUIDE_GOLDEN   5
+typedef enum dt_lib_liveview_guide_t
+{
+  GUIDE_NONE = 0,
+  GUIDE_GRID,
+  GUIDE_THIRD,
+  GUIDE_DIAGONAL,
+  GUIDE_TRIANGL,
+  GUIDE_GOLDEN
+}
+dt_lib_liveview_guide_t;
 
-#define OVERLAY_NONE     0
-#define OVERLAY_SELECTED 1
-#define OVERLAY_ID       2
+typedef enum dt_lib_liveview_overlay_t
+{
+  OVERLAY_NONE = 0,
+  OVERLAY_SELECTED,
+  OVERLAY_ID
+}
+dt_lib_liveview_overlay_t;
 
 #define HANDLE_SIZE 0.02
 

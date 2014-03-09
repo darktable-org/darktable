@@ -2,9 +2,13 @@
 #define DT_GUI_PRESETS_H
 
 // format flags stored into the presets database
-#define FOR_LDR 1
-#define FOR_RAW 2
-#define FOR_HDR 4
+typedef enum dt_gui_presets_format_flag_t
+{
+  FOR_LDR = 1<<0,
+  FOR_RAW = 1<<1,
+  FOR_HDR = 1<<2
+}
+dt_gui_presets_format_flag_t;
 
 /** create a db table with presets for all operations. */
 void dt_gui_presets_init();
