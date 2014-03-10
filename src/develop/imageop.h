@@ -26,7 +26,6 @@
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
-#include "gui/simple_gui.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <sched.h>
@@ -144,7 +143,6 @@ typedef struct dt_iop_module_so_t
   void (*gui_reset)            (struct dt_iop_module_t *self);
   void (*gui_update)           (struct dt_iop_module_t *self);
   void (*gui_init)             (struct dt_iop_module_t *self);
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   void (*gui_cleanup)          (struct dt_iop_module_t *self);
   void (*gui_post_expose)      (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   void (*gui_focus)            (struct dt_iop_module_t *self, gboolean in);
@@ -306,8 +304,6 @@ typedef struct dt_iop_module_t
   void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
-  /** construct widget using the simple api. */
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   /** destroy widget. */
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
