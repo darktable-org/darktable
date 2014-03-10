@@ -94,7 +94,8 @@ endif()
 #
 if(NOT SOURCE_PACKAGE)
 	message("-- Determining version")
-	exec_program(git ${CMAKE_CURRENT_SOURCE_DIR} ARGS describe --tags HEAD | "sed 's,^release-,,;s,-,+,;s,-,~,;'" OUTPUT_VARIABLE PROJECT_VERSION)
+	EXECUTE_PROCESS(COMMAND git describe --tags HEAD #OUTPUT_VARIABLE PROJECT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE
+			COMMAND sed "s,^release-,,;s,-,+,;s,-,~,;" OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE PROJECT_VERSION)
 	configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake.cmake" "${CMAKE_CURRENT_BINARY_DIR}/version.cmake" @ONLY)
 else(NOT SOURCE_PACKAGE)
 	include(cmake/version.cmake)
@@ -103,7 +104,7 @@ endif()
 #
 # Initial cmake/debian/postinst and prerm script for debian package
 #
-make_directory(${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/packaging/debian)
 
 
 #
