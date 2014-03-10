@@ -120,11 +120,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // build gamma table in pipeline piece from committed params:
   dt_iop_gamma_data_t *d = (dt_iop_gamma_data_t *)piece->data;
   float a, b, c, g;
-  if(p->linear<1.0)
+  if(p->linear<1.0f)
   {
-    g = p->gamma*(1.0-p->linear)/(1.0-p->gamma*p->linear);
-    a = 1.0/(1.0+p->linear*(g-1));
-    b = p->linear*(g-1)*a;
+    g = p->gamma*(1.0f-p->linear)/(1.0f-p->gamma*p->linear);
+    a = 1.0f/(1.0f+p->linear*(g-1.0f));
+    b = p->linear*(g-1.0f)*a;
     c = powf(a*p->linear+b, g)/p->linear;
   }
   else

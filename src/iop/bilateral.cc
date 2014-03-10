@@ -113,14 +113,14 @@ extern "C"
     sigma[2] = data->sigma[2];
     sigma[3] = data->sigma[3];
     sigma[4] = data->sigma[4];
-    if(fmaxf(sigma[0], sigma[1]) < .1)
+    if(fmax(sigma[0], sigma[1]) < .1)
     {
       memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
       return;
     }
 
     // if rad <= 6 use naive version!
-    const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
+    const int rad = (int)(3.0f*fmaxf(sigma[0],sigma[1])+1.0f);
     if(rad <= 6 && (piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL))
     {
       // no use denoising the thumbnail. takes ages without permutohedral
@@ -292,8 +292,8 @@ extern "C"
     float sigma[5];
     sigma[0] = data->sigma[0] * roi_in->scale / piece->iscale;
     sigma[1] = data->sigma[1] * roi_in->scale / piece->iscale;
-    const int rad = (int)(3.0*fmaxf(sigma[0],sigma[1])+1.0);
-    tiling->factor = 2 + 50;
+    const int rad = (int)(3.0f*fmaxf(sigma[0],sigma[1])+1.0f);
+    tiling->factor = 2.0f + 50.0f;
     tiling->overhead = 0;
     tiling->overlap = rad;
     tiling->xalign = 1;

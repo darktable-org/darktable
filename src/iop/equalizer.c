@@ -128,7 +128,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // level 1 => full resolution
   int numl = 0;
   for(int k=MIN(width,height); k; k>>=1) numl++;
-  const int numl_cap = MIN(DT_IOP_EQUALIZER_MAX_LEVEL-l1+1.5, numl);
+  const int numl_cap = MIN(DT_IOP_EQUALIZER_MAX_LEVEL-l1+1.5f, numl);
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
@@ -178,7 +178,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   for(int l=1; l<numl_cap; l++)
   {
     const float lv = (lm-l1)*(l-1)/(float)(numl_cap-1) + l1; // appr level in real image.
-    const float band = CLAMP((1.0 - lv / d->num_levels), 0, 1.0);
+    const float band = CLAMP((1.0f - lv / d->num_levels), 0.0f, 1.0f);
     for(int ch=0; ch<3; ch++)
     {
       // coefficients in range [0, 2], 1 being neutral.

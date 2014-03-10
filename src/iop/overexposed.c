@@ -119,8 +119,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     return;
   }
 
-  const float lower  = dev->overexposed.lower / 100.0;
-  const float upper  = dev->overexposed.upper / 100.0;
+  const float lower  = dev->overexposed.lower / 100.0f;
+  const float upper  = dev->overexposed.upper / 100.0f;
   const int colorscheme = dev->overexposed.colorscheme;
 
   const float *upper_color  = dt_iop_overexposed_colors[colorscheme][0];

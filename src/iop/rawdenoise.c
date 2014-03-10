@@ -266,7 +266,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-  if (d->threshold > 0.0)
+  if (d->threshold > 0.0f)
     wavelet_denoise(ivoid, ovoid, roi_in, d->threshold, dt_image_flipped_filter(&piece->pipe->image));
   else
     memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));

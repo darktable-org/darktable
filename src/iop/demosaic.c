@@ -373,7 +373,7 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 {
   int oj = 0, oi = 0;
   //const float ratio_max = 1.1f;
-  double sum1 = 0.0, sum2 = 0.0, gr_ratio;
+  float sum1 = 0.0f, sum2 = 0.0f, gr_ratio;
 
   if( (FC(oj+y, oi+x, filters) & 1) != 1) oi++;
   int g2_offset = oi ? -1:1;
@@ -390,7 +390,7 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
     }
   }
 
-  if (sum1 > 0.0 && sum2 > 0.0)
+  if (sum1 > 0.0f && sum2 > 0.0f)
     gr_ratio = sum1/sum2;
   else
     return;
@@ -1108,12 +1108,12 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   tiling->factor = 1.0f + ioratio;
 
   if(roi_out->scale > 0.99999f && roi_out->scale < 1.00001f)
-    tiling->factor += fmax(0.25f, smooth);
+    tiling->factor += fmaxf(0.25f, smooth);
   else if(roi_out->scale > 0.5f ||
           (piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual > 0) || (piece->pipe->type == DT_DEV_PIXELPIPE_EXPORT))
-    tiling->factor += fmax(1.25f, smooth);
+    tiling->factor += fmaxf(1.25f, smooth);
   else
-    tiling->factor += fmax(0.25f, smooth);
+    tiling->factor += fmaxf(0.25f, smooth);
 
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;

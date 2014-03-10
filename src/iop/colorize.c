@@ -341,7 +341,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
   /* create Lab */
   float rgb[3]= {0}, XYZ[3]= {0}, Lab[3]= {0};
-  hsl2rgb(rgb,p->hue, p->saturation, p->lightness/100.0);
+  hsl2rgb(rgb,p->hue, p->saturation, p->lightness/100.0f);
 
   if(p->version == 1)
   {
@@ -475,7 +475,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
 
   // Additional paramters
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0, 2);
+  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.1, p->lightness*100.0f, 2);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f%%");
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("lightness"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);

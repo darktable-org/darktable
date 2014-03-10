@@ -34,14 +34,14 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15
+#define GRAIN_LIGHTNESS_STRENGTH_SCALE 0.15f
 // (m_pi/2)/4 = half hue colorspan
-#define GRAIN_HUE_COLORRANGE 0.392699082
-#define GRAIN_HUE_STRENGTH_SCALE 0.25
-#define GRAIN_SATURATION_STRENGTH_SCALE 0.25
-#define GRAIN_RGB_STRENGTH_SCALE 0.25
+#define GRAIN_HUE_COLORRANGE 0.392699082f
+#define GRAIN_HUE_STRENGTH_SCALE 0.25f
+#define GRAIN_SATURATION_STRENGTH_SCALE 0.25f
+#define GRAIN_RGB_STRENGTH_SCALE 0.25f
 
-#define GRAIN_SCALE_FACTOR 213.2
+#define GRAIN_SCALE_FACTOR 213.2f
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
@@ -106,30 +106,30 @@ static void _simplex_noise_init()
 {
   for(int i=0; i<512; i++) perm[i] = p[i & 255];
 }
-static double dot(int g[], double x, double y, double z)
+static float dot(int g[], float x, float y, float z)
 {
   return g[0]*x + g[1]*y + g[2]*z;
 }
 
 #define FASTFLOOR(x) ( x>0 ? (int)(x) : (int)(x)-1 )
 
-static double _simplex_noise(double xin, double yin, double zin)
+static float _simplex_noise(float xin, float yin, float zin)
 {
-  double n0, n1, n2, n3; // Noise contributions from the four corners
+  float n0, n1, n2, n3; // Noise contributions from the four corners
 // Skew the input space to determine which simplex cell we're in
-  double F3 = 1.0/3.0;
-  double s = (xin+yin+zin)*F3; // Very nice and simple skew factor for 3D
+  float F3 = 1.0/3.0;
+  float s = (xin+yin+zin)*F3; // Very nice and simple skew factor for 3D
   int i = FASTFLOOR(xin+s);
   int j = FASTFLOOR(yin+s);
   int k = FASTFLOOR(zin+s);
-  double G3 = 1.0/6.0; // Very nice and simple unskew factor, too
-  double t = (i+j+k)*G3;
-  double X0 = i-t; // Unskew the cell origin back to (x,y,z) space
-  double Y0 = j-t;
-  double Z0 = k-t;
-  double x0 = xin-X0; // The x,y,z distances from the cell origin
-  double y0 = yin-Y0;
-  double z0 = zin-Z0;
+  float G3 = 1.0/6.0; // Very nice and simple unskew factor, too
+  float t = (i+j+k)*G3;
+  float X0 = i-t; // Unskew the cell origin back to (x,y,z) space
+  float Y0 = j-t;
+  float Z0 = k-t;
+  float x0 = xin-X0; // The x,y,z distances from the cell origin
+  float y0 = yin-Y0;
+  float z0 = zin-Z0;
 // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
 // Determine which simplex we are in.
   int i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
@@ -198,15 +198,15 @@ static double _simplex_noise(double xin, double yin, double zin)
 //  a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
 //  a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
 //  c = 1/6.
-  double   x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
-  double   y1 = y0 - j1 + G3;
-  double   z1 = z0 - k1 + G3;
-  double   x2 = x0 - i2 + 2.0*G3; // Offsets for third corner in (x,y,z) coords
-  double   y2 = y0 - j2 + 2.0*G3;
-  double   z2 = z0 - k2 + 2.0*G3;
-  double   x3 = x0 - 1.0 + 3.0*G3; // Offsets for last corner in (x,y,z) coords
-  double   y3 = y0 - 1.0 + 3.0*G3;
-  double   z3 = z0 - 1.0 + 3.0*G3;
+  float   x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
+  float   y1 = y0 - j1 + G3;
+  float   z1 = z0 - k1 + G3;
+  float   x2 = x0 - i2 + 2.0f*G3; // Offsets for third corner in (x,y,z) coords
+  float   y2 = y0 - j2 + 2.0f*G3;
+  float   z2 = z0 - k2 + 2.0f*G3;
+  float   x3 = x0 - 1.0f + 3.0f*G3; // Offsets for last corner in (x,y,z) coords
+  float   y3 = y0 - 1.0f + 3.0f*G3;
+  float   z3 = z0 - 1.0f + 3.0f*G3;
   // Work out the hashed gradient indices of the four simplex corners
   int ii = i & 255;
   int jj = j & 255;
@@ -216,29 +216,29 @@ static double _simplex_noise(double xin, double yin, double zin)
   int gi2 = perm[ii+i2+perm[jj+j2+perm[kk+k2]]] % 12;
   int gi3 = perm[ii+1+perm[jj+1+perm[kk+1]]] % 12;
   // Calculate the contribution from the four corners
-  double t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
-  if(t0<0) n0 = 0.0;
+  float t0 = 0.6f - x0*x0 - y0*y0 - z0*z0;
+  if(t0<0) n0 = 0.0f;
   else
   {
     t0 *= t0;
     n0 = t0 * t0 * dot(grad3[gi0], x0, y0, z0);
   }
-  double t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
+  float t1 = 0.6f - x1*x1 - y1*y1 - z1*z1;
   if(t1<0) n1 = 0.0;
   else
   {
     t1 *= t1;
     n1 = t1 * t1 * dot(grad3[gi1], x1, y1, z1);
   }
-  double t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
-  if(t2<0) n2 = 0.0;
+  float t2 = 0.6f - x2*x2 - y2*y2 - z2*z2;
+  if(t2<0) n2 = 0.0f;
   else
   {
     t2 *= t2;
     n2 = t2 * t2 * dot(grad3[gi2], x2, y2, z2);
   }
-  double t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
-  if(t3<0) n3 = 0.0;
+  float t3 = 0.6f - x3*x3 - y3*y3 - z3*z3;
+  if(t3<0) n3 = 0.0f;
   else
   {
     t3 *= t3;
@@ -246,7 +246,7 @@ static double _simplex_noise(double xin, double yin, double zin)
   }
   // Add contributions from each corner to get the final noise value.
   // The result is scaled to stay just inside [-1,1]
-  return 32.0*(n0 + n1 + n2 + n3);
+  return 32.0f*(n0 + n1 + n2 + n3);
 }
 
 
@@ -257,7 +257,7 @@ static double _simplex_noise(double xin, double yin, double zin)
 //static uint64_t _low_primes[PRIME_LEVELS] ={ 12503,14029,15649, 11369 };
 //uint64_t _mid_primes[PRIME_LEVELS] ={ 784697,875783, 536461,639259};
 
-/*static double __value_noise(uint32_t level,uint32_t x,uint32_t y)
+/*static  __value_noise(uint32_t level,uint32_t x,uint32_t y)
 {
   //uint32_t lvl=level%PRIME_LEVELS;
   uint32_t n = x + y * 57;
@@ -307,9 +307,9 @@ static double _perlin_2d_noise(double x,double y,uint32_t octaves,double persist
   return total;
 }*/
 
-static double _simplex_2d_noise(double x,double y,uint32_t octaves,double persistance,double z)
+static float _simplex_2d_noise(float x, float y, uint32_t octaves, float persistance, float z)
 {
-  double f=1,a=1,total=0;
+  float f=1.0f,a=1.0f,total=0.0f;
 
   for(uint32_t o=0; o<octaves; o++)
   {
@@ -367,18 +367,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 {
   dt_iop_grain_data_t *data = (dt_iop_grain_data_t *)piece->data;
 
-  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)(roi_out->width * 0.3);
+  unsigned int hash = _hash_string(piece->pipe->image.filename) % (int)(roi_out->width * 0.3f);
 
   const int ch = piece->colors;
   // Apply grain to image
-  const double strength=(data->strength/100.0);
-  const double octaves=3;
+  const float strength=(data->strength/100.0f);
+  const float octaves=3.0f;
   // double zoom=1.0+(8*(data->scale/100.0));
-  const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
-  const double zoom=(1.0+8*data->scale/100)/800.0;
-  const int filter = fabsf(roi_out->scale - 1.0) > 0.01;
+  const float wd = fminf(piece->buf_in.width, piece->buf_in.height);
+  const float zoom=(1.0f+8.0f*data->scale/100.0f)/800.0f;
+  const int filter = fabsf(roi_out->scale - 1.0f) > 0.01f;
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
-  const double filtermul = piece->iscale/(roi_out->scale*wd);
+  const float filtermul = piece->iscale/(roi_out->scale*wd);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, roi_in, ovoid, ivoid, data, hash)
 #endif
@@ -390,14 +390,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       // calculate x, y in a resolution independent way:
       // wx,wy: worldspace in full image pixel coords:
-      double wx = (roi_out->x + i)/roi_out->scale;
-      double wy = (roi_out->y + j)/roi_out->scale;
+      float wx = (roi_out->x + i)/roi_out->scale;
+      float wy = (roi_out->y + j)/roi_out->scale;
       // x, y: normalized to shorter side of image, so with pixel aspect = 1.
       // printf("scale %f\n", wd);
-      double x = wx / wd;
-      double y = wy / wd;
+      float x = wx / wd;
+      float y = wy / wd;
       //  double noise=_perlin_2d_noise(x, y, octaves,0.25, zoom)*1.5;
-      double noise = 0.0;
+      float noise = 0.0f;
       if(filter)
       {
         // if zoomed out a lot, use rank-1 lattice downsampling
@@ -407,15 +407,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
           float px = l/fib2, py = l*(fib1/fib2);
           py -= (int)py;
           float dx = px*filtermul, dy = py*filtermul;
-          noise += (1.0/fib2) * _simplex_2d_noise(x+dx+hash, y+dy, octaves, 1.0, zoom);
+          noise += (1.0f/fib2) * _simplex_2d_noise(x+dx+hash, y+dy, octaves, 1.0f, zoom);
         }
       }
       else
       {
-        noise = _simplex_2d_noise(x+hash, y, octaves, 1.0, zoom);
+        noise = _simplex_2d_noise(x+hash, y, octaves, 1.0f, zoom);
       }
 
-      out[0] = in[0]+((100.0*(noise*(strength)))*GRAIN_LIGHTNESS_STRENGTH_SCALE);
+      out[0] = in[0]+(100.0f*noise*strength*GRAIN_LIGHTNESS_STRENGTH_SCALE);
       out[1] = in[1];
       out[2] = in[2];
       out[3] = in[3];
@@ -505,7 +505,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   dt_iop_grain_params_t tmp = (dt_iop_grain_params_t)
   {
-    DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0/GRAIN_SCALE_FACTOR, 25.0
+    DT_GRAIN_CHANNEL_LIGHTNESS, 1600.0f/GRAIN_SCALE_FACTOR, 25.0f
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_grain_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_grain_params_t));

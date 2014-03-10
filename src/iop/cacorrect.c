@@ -137,11 +137,11 @@ LinEqSolve(int nDim, float* pfMatr, float* pfVect, float* pfSolution)
   for(k=0; k<(nDim-1); k++)  // base row of matrix
   {
     // search of line with max element
-    fMaxElem = fabs( pfMatr[k*nDim + k] );
+    fMaxElem = fabsf( pfMatr[k*nDim + k] );
     m = k;
     for (i=k+1; i<nDim; i++)
     {
-      if(fMaxElem < fabs(pfMatr[i*nDim + k]) )
+      if(fMaxElem < fabsf(pfMatr[i*nDim + k]) )
       {
         fMaxElem = pfMatr[i*nDim + k];
         m = i;
@@ -162,7 +162,7 @@ LinEqSolve(int nDim, float* pfMatr, float* pfVect, float* pfSolution)
       pfVect[m] = fAcc;
     }
 
-    if( pfMatr[k*nDim + k] == 0.)
+    if( pfMatr[k*nDim + k] == 0.0f)
     {
       //linear system has no solution
       return 1; // needs improvement !!!
@@ -511,10 +511,10 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             if (c!=1)
             {
               //compute directional weights using image gradients
-              wtu=1/SQR(eps+fabs(rgb[(rr+1)*TS+cc][1]-rgb[(rr-1)*TS+cc][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr-2)*TS+cc][c])+fabs(rgb[(rr-1)*TS+cc][1]-rgb[(rr-3)*TS+cc][1]));
-              wtd=1/SQR(eps+fabs(rgb[(rr-1)*TS+cc][1]-rgb[(rr+1)*TS+cc][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr+2)*TS+cc][c])+fabs(rgb[(rr+1)*TS+cc][1]-rgb[(rr+3)*TS+cc][1]));
-              wtl=1/SQR(eps+fabs(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc-1][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc-2][c])+fabs(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc-3][1]));
-              wtr=1/SQR(eps+fabs(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc+1][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc+2][c])+fabs(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc+3][1]));
+              wtu=1/SQR(eps+fabsf(rgb[(rr+1)*TS+cc][1]-rgb[(rr-1)*TS+cc][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr-2)*TS+cc][c])+fabsf(rgb[(rr-1)*TS+cc][1]-rgb[(rr-3)*TS+cc][1]));
+              wtd=1/SQR(eps+fabsf(rgb[(rr-1)*TS+cc][1]-rgb[(rr+1)*TS+cc][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr+2)*TS+cc][c])+fabsf(rgb[(rr+1)*TS+cc][1]-rgb[(rr+3)*TS+cc][1]));
+              wtl=1/SQR(eps+fabsf(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc-1][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc-2][c])+fabsf(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc-3][1]));
+              wtr=1/SQR(eps+fabsf(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc+1][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc+2][c])+fabsf(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc+3][1]));
 
               //store in rgb array the interpolated G value at R/B grid points using directional weighted average
               rgb[indx][1]=(wtu*rgb[indx-v1][1]+wtd*rgb[indx+v1][1]+wtl*rgb[indx-1][1]+wtr*rgb[indx+1][1])/(wtu+wtd+wtl+wtr);
@@ -528,28 +528,28 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           {
 
 
-            rbhpfv[indx] = fabs(fabs((rgb[indx][1]-rgb[indx][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])) +
-                                fabs((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx][1]-rgb[indx][c])) -
-                                fabs((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])));
-            rbhpfh[indx] = fabs(fabs((rgb[indx][1]-rgb[indx][c])-(rgb[indx+4][1]-rgb[indx+4][c])) +
-                                fabs((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx][1]-rgb[indx][c])) -
-                                fabs((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx+4][1]-rgb[indx+4][c])));
+            rbhpfv[indx] = fabsf(fabsf((rgb[indx][1]-rgb[indx][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])) +
+                                fabsf((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx][1]-rgb[indx][c])) -
+                                fabsf((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])));
+            rbhpfh[indx] = fabsf(fabsf((rgb[indx][1]-rgb[indx][c])-(rgb[indx+4][1]-rgb[indx+4][c])) +
+                                fabsf((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx][1]-rgb[indx][c])) -
+                                fabsf((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx+4][1]-rgb[indx+4][c])));
 
-            /*ghpfv = fabs(fabs(rgb[indx][1]-rgb[indx+v4][1])+fabs(rgb[indx][1]-rgb[indx-v4][1]) -
-             fabs(rgb[indx+v4][1]-rgb[indx-v4][1]));
-             ghpfh = fabs(fabs(rgb[indx][1]-rgb[indx+4][1])+fabs(rgb[indx][1]-rgb[indx-4][1]) -
-             fabs(rgb[indx+4][1]-rgb[indx-4][1]));
-             rbhpfv[indx] = fabs(ghpfv - fabs(fabs(rgb[indx][c]-rgb[indx+v4][c])+fabs(rgb[indx][c]-rgb[indx-v4][c]) -
-             fabs(rgb[indx+v4][c]-rgb[indx-v4][c])));
-             rbhpfh[indx] = fabs(ghpfh - fabs(fabs(rgb[indx][c]-rgb[indx+4][c])+fabs(rgb[indx][c]-rgb[indx-4][c]) -
-             fabs(rgb[indx+4][c]-rgb[indx-4][c])));*/
+            /*ghpfv = fabsf(fabsf(rgb[indx][1]-rgb[indx+v4][1])+fabsf(rgb[indx][1]-rgb[indx-v4][1]) -
+             fabsf(rgb[indx+v4][1]-rgb[indx-v4][1]));
+             ghpfh = fabsf(fabsf(rgb[indx][1]-rgb[indx+4][1])+fabsf(rgb[indx][1]-rgb[indx-4][1]) -
+             fabsf(rgb[indx+4][1]-rgb[indx-4][1]));
+             rbhpfv[indx] = fabsf(ghpfv - fabsf(fabsf(rgb[indx][c]-rgb[indx+v4][c])+fabsf(rgb[indx][c]-rgb[indx-v4][c]) -
+             fabsf(rgb[indx+v4][c]-rgb[indx-v4][c])));
+             rbhpfh[indx] = fabsf(ghpfh - fabsf(fabsf(rgb[indx][c]-rgb[indx+4][c])+fabsf(rgb[indx][c]-rgb[indx-4][c]) -
+             fabsf(rgb[indx+4][c]-rgb[indx-4][c])));*/
 
-            glpfv = 0.25*(2*rgb[indx][1]+rgb[indx+v2][1]+rgb[indx-v2][1]);
-            glpfh = 0.25*(2*rgb[indx][1]+rgb[indx+2][1]+rgb[indx-2][1]);
-            rblpfv[indx] = eps+fabs(glpfv - 0.25*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]));
-            rblpfh[indx] = eps+fabs(glpfh - 0.25*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]));
-            grblpfv[indx] = glpfv + 0.25*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]);
-            grblpfh[indx] = glpfh + 0.25*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]);
+            glpfv = 0.25f*(2*rgb[indx][1]+rgb[indx+v2][1]+rgb[indx-v2][1]);
+            glpfh = 0.25f*(2*rgb[indx][1]+rgb[indx+2][1]+rgb[indx-2][1]);
+            rblpfv[indx] = eps+fabsf(glpfv - 0.25f*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]));
+            rblpfh[indx] = eps+fabsf(glpfh - 0.25f*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]));
+            grblpfv[indx] = glpfv + 0.25f*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]);
+            grblpfh[indx] = glpfh + 0.25f*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]);
           }
 
         // along line segments, find the point along each segment that minimizes the color variance
@@ -564,10 +564,10 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             //solve for the interpolation position that minimizes color difference variance over the tile
 
             //vertical
-            gdiff=0.3125*(rgb[indx+TS][1]-rgb[indx-TS][1])+0.09375*(rgb[indx+TS+1][1]-rgb[indx-TS+1][1]+rgb[indx+TS-1][1]-rgb[indx-TS-1][1]);
+            gdiff=0.3125f*(rgb[indx+TS][1]-rgb[indx-TS][1])+0.09375f*(rgb[indx+TS+1][1]-rgb[indx-TS+1][1]+rgb[indx+TS-1][1]-rgb[indx-TS-1][1]);
             deltgrb=(rgb[indx][c]-rgb[indx][1]);
 
-            gradwt=fabs(0.25*rbhpfv[indx]+0.125*(rbhpfv[indx+2]+rbhpfv[indx-2]) )*(grblpfv[indx-v2]+grblpfv[indx+v2])/(eps+0.1*grblpfv[indx-v2]+rblpfv[indx-v2]+0.1*grblpfv[indx+v2]+rblpfv[indx+v2]);
+            gradwt=fabsf(0.25f*rbhpfv[indx]+0.125f*(rbhpfv[indx+2]+rbhpfv[indx-2]) )*(grblpfv[indx-v2]+grblpfv[indx+v2])/(eps+0.1f*grblpfv[indx-v2]+rblpfv[indx-v2]+0.1f*grblpfv[indx+v2]+rblpfv[indx+v2]);
 
             coeff[0][0][c] += gradwt*deltgrb*deltgrb;
             coeff[0][1][c] += gradwt*gdiff*deltgrb;
@@ -576,10 +576,10 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
 
             //horizontal
-            gdiff=0.3125*(rgb[indx+1][1]-rgb[indx-1][1])+0.09375*(rgb[indx+1+TS][1]-rgb[indx-1+TS][1]+rgb[indx+1-TS][1]-rgb[indx-1-TS][1]);
+            gdiff=0.3125f*(rgb[indx+1][1]-rgb[indx-1][1])+0.09375f*(rgb[indx+1+TS][1]-rgb[indx-1+TS][1]+rgb[indx+1-TS][1]-rgb[indx-1-TS][1]);
             deltgrb=(rgb[indx][c]-rgb[indx][1]);
 
-            gradwt=fabs(0.25*rbhpfh[indx]+0.125*(rbhpfh[indx+v2]+rbhpfh[indx-v2]) )*(grblpfh[indx-2]+grblpfh[indx+2])/(eps+0.1*grblpfh[indx-2]+rblpfh[indx-2]+0.1*grblpfh[indx+2]+rblpfh[indx+2]);
+            gradwt=fabsf(0.25f*rbhpfh[indx]+0.125f*(rbhpfh[indx+v2]+rbhpfh[indx-v2]) )*(grblpfh[indx-2]+grblpfh[indx+2])/(eps+0.1f*grblpfh[indx-2]+rblpfh[indx-2]+0.1f*grblpfh[indx+2]+rblpfh[indx+2]);
 
             coeff[1][0][c] += gradwt*deltgrb*deltgrb;
             coeff[1][1][c] += gradwt*gdiff*deltgrb;
@@ -599,18 +599,18 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
         	for (cc=4+(FC(rr,2,filters)&1), indx=rr*TS+cc, c = FC(rr,cc,filters); cc < cc1-4; cc+=2, indx+=2) {
 
 
-        		rbhpfv[indx] = SQR(fabs((rgb[indx][1]-rgb[indx][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])) +
-        							fabs((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx][1]-rgb[indx][c])) -
-        							fabs((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])));
-        		rbhpfh[indx] = SQR(fabs((rgb[indx][1]-rgb[indx][c])-(rgb[indx+4][1]-rgb[indx+4][c])) +
-        							fabs((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx][1]-rgb[indx][c])) -
-        							fabs((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx+4][1]-rgb[indx+4][c])));
+        		rbhpfv[indx] = SQR(fabsf((rgb[indx][1]-rgb[indx][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])) +
+        							fabsf((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx][1]-rgb[indx][c])) -
+        							fabsf((rgb[indx-v4][1]-rgb[indx-v4][c])-(rgb[indx+v4][1]-rgb[indx+v4][c])));
+        		rbhpfh[indx] = SQR(fabsf((rgb[indx][1]-rgb[indx][c])-(rgb[indx+4][1]-rgb[indx+4][c])) +
+        							fabsf((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx][1]-rgb[indx][c])) -
+        							fabsf((rgb[indx-4][1]-rgb[indx-4][c])-(rgb[indx+4][1]-rgb[indx+4][c])));
 
 
         		glpfv = 0.25*(2*rgb[indx][1]+rgb[indx+v2][1]+rgb[indx-v2][1]);
         		glpfh = 0.25*(2*rgb[indx][1]+rgb[indx+2][1]+rgb[indx-2][1]);
-        		rblpfv[indx] = eps+fabs(glpfv - 0.25*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]));
-        		rblpfh[indx] = eps+fabs(glpfh - 0.25*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]));
+        		rblpfv[indx] = eps+fabsf(glpfv - 0.25*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]));
+        		rblpfh[indx] = eps+fabsf(glpfh - 0.25*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]));
         		grblpfv[indx] = glpfv + 0.25*(2*rgb[indx][c]+rgb[indx+v2][c]+rgb[indx-v2][c]);
         		grblpfh[indx] = glpfh + 0.25*(2*rgb[indx][c]+rgb[indx+2][c]+rgb[indx-2][c]);
         	}
@@ -631,7 +631,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
         		gdiff=0.3125*(rgb[indx+TS][1]-rgb[indx-TS][1])+0.09375*(rgb[indx+TS+1][1]-rgb[indx-TS+1][1]+rgb[indx+TS-1][1]-rgb[indx-TS-1][1]);
         		deltgrb=(rgb[indx][c]-rgb[indx][1])-0.5*((rgb[indx-v4][c]-rgb[indx-v4][1])+(rgb[indx+v4][c]-rgb[indx+v4][1]));
 
-        		gradwt=fabs(0.25*rbhpfv[indx]+0.125*(rbhpfv[indx+2]+rbhpfv[indx-2]) );// *(grblpfv[indx-v2]+grblpfv[indx+v2])/(eps+0.1*grblpfv[indx-v2]+rblpfv[indx-v2]+0.1*grblpfv[indx+v2]+rblpfv[indx+v2]);
+        		gradwt=fabsf(0.25*rbhpfv[indx]+0.125*(rbhpfv[indx+2]+rbhpfv[indx-2]) );// *(grblpfv[indx-v2]+grblpfv[indx+v2])/(eps+0.1*grblpfv[indx-v2]+rblpfv[indx-v2]+0.1*grblpfv[indx+v2]+rblpfv[indx+v2]);
         		if (gradwt>eps) {
         		coeff[0][0][c] += gradwt*deltgrb*deltgrb;
         		coeff[0][1][c] += gradwt*gdiff*deltgrb;
@@ -643,7 +643,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
         		gdiff=0.3125*(rgb[indx+1][1]-rgb[indx-1][1])+0.09375*(rgb[indx+1+TS][1]-rgb[indx-1+TS][1]+rgb[indx+1-TS][1]-rgb[indx-1-TS][1]);
         		deltgrb=(rgb[indx][c]-rgb[indx][1])-0.5*((rgb[indx-4][c]-rgb[indx-4][1])+(rgb[indx+4][c]-rgb[indx+4][1]));
 
-        		gradwt=fabs(0.25*rbhpfh[indx]+0.125*(rbhpfh[indx+v2]+rbhpfh[indx-v2]) );// *(grblpfh[indx-2]+grblpfh[indx+2])/(eps+0.1*grblpfh[indx-2]+rblpfh[indx-2]+0.1*grblpfh[indx+2]+rblpfh[indx+2]);
+        		gradwt=fabsf(0.25*rbhpfh[indx]+0.125*(rbhpfh[indx+v2]+rbhpfh[indx-v2]) );// *(grblpfh[indx-2]+grblpfh[indx+2])/(eps+0.1*grblpfh[indx-2]+rblpfh[indx-2]+0.1*grblpfh[indx+2]+rblpfh[indx+2]);
         		if (gradwt>eps) {
         		coeff[1][0][c] += gradwt*deltgrb*deltgrb;
         		coeff[1][1][c] += gradwt*gdiff*deltgrb;
@@ -684,7 +684,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             //offset[j][c]=floor(CAshift[j][c]);
             //offset gives NW corner of square containing the min; j=0=vert, 1=hor
 
-            if (fabs(CAshift[j][c])<2.0)
+            if (fabsf(CAshift[j][c])<2.0f)
             {
               blockave[j][c] += CAshift[j][c];
               blocksqave[j][c] += SQR(CAshift[j][c]);
@@ -815,7 +815,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
 
 
           //now prepare coefficient matrix; use only data points within two std devs of zero
-          if (SQR(blockshifts[(vblock)*hblsz+hblock][c][0])>4.0*blockvar[0][c] || SQR(blockshifts[(vblock)*hblsz+hblock][c][1])>4.0*blockvar[1][c]) continue;
+          if (SQR(blockshifts[(vblock)*hblsz+hblock][c][0])>4.0f*blockvar[0][c] || SQR(blockshifts[(vblock)*hblsz+hblock][c][1])>4.0f*blockvar[1][c]) continue;
           numblox[c] += 1;
           for (dir=0; dir<2; dir++)
           {
@@ -826,9 +826,9 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
                 for (m=0; m<polyord; m++)
                   for (n=0; n<polyord; n++)
                   {
-                    polymat[c][dir][numpar*(polyord*i+j)+(polyord*m+n)] += (float)pow((float)vblock,i+m)*pow((float)hblock,j+n)*blockwt[vblock*hblsz+hblock];
+                    polymat[c][dir][numpar*(polyord*i+j)+(polyord*m+n)] += powf((float)vblock,i+m)*powf((float)hblock,j+n)*blockwt[vblock*hblsz+hblock];
                   }
-                shiftmat[c][dir][(polyord*i+j)] += (float)pow((float)vblock,i)*pow((float)hblock,j)*blockshifts[(vblock)*hblsz+hblock][c][dir]*blockwt[vblock*hblsz+hblock];
+                shiftmat[c][dir][(polyord*i+j)] += powf((float)vblock,i)*powf((float)hblock,j)*blockshifts[(vblock)*hblsz+hblock][c][dir]*blockwt[vblock*hblsz+hblock];
               }
               //if (c==0 && dir==0) {printf("i= %d j= %d shiftmat= %f \n",i,j,shiftmat[c][dir][(polyord*i+j)]);}
             }//monomials
@@ -1045,10 +1045,10 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             if (c!=1)
             {
               //compute directional weights using image gradients
-              wtu=1/SQR(eps+fabs(rgb[(rr+1)*TS+cc][1]-rgb[(rr-1)*TS+cc][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr-2)*TS+cc][c])+fabs(rgb[(rr-1)*TS+cc][1]-rgb[(rr-3)*TS+cc][1]));
-              wtd=1/SQR(eps+fabs(rgb[(rr-1)*TS+cc][1]-rgb[(rr+1)*TS+cc][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr+2)*TS+cc][c])+fabs(rgb[(rr+1)*TS+cc][1]-rgb[(rr+3)*TS+cc][1]));
-              wtl=1/SQR(eps+fabs(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc-1][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc-2][c])+fabs(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc-3][1]));
-              wtr=1/SQR(eps+fabs(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc+1][1])+fabs(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc+2][c])+fabs(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc+3][1]));
+              wtu=1/SQR(eps+fabsf(rgb[(rr+1)*TS+cc][1]-rgb[(rr-1)*TS+cc][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr-2)*TS+cc][c])+fabsf(rgb[(rr-1)*TS+cc][1]-rgb[(rr-3)*TS+cc][1]));
+              wtd=1/SQR(eps+fabsf(rgb[(rr-1)*TS+cc][1]-rgb[(rr+1)*TS+cc][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr+2)*TS+cc][c])+fabsf(rgb[(rr+1)*TS+cc][1]-rgb[(rr+3)*TS+cc][1]));
+              wtl=1/SQR(eps+fabsf(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc-1][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc-2][c])+fabsf(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc-3][1]));
+              wtr=1/SQR(eps+fabsf(rgb[(rr)*TS+cc-1][1]-rgb[(rr)*TS+cc+1][1])+fabsf(rgb[(rr)*TS+cc][c]-rgb[(rr)*TS+cc+2][c])+fabsf(rgb[(rr)*TS+cc+1][1]-rgb[(rr)*TS+cc+3][1]));
 
               //store in rgb array the interpolated G value at R/B grid points using directional weighted average
               rgb[indx][1]=(wtu*rgb[indx-v1][1]+wtd*rgb[indx+v1][1]+wtl*rgb[indx-1][1]+wtr*rgb[indx+1][1])/(wtu+wtd+wtl+wtr);
@@ -1073,10 +1073,10 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           for (j=0; j<polyord; j++)
           {
             //printf("i= %d j= %d polycoeff= %f \n",i,j,fitparams[0][0][polyord*i+j]);
-            blockshifts[(vblock)*hblsz+hblock][0][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][0][polyord*i+j];
-            blockshifts[(vblock)*hblsz+hblock][0][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[0][1][polyord*i+j];
-            blockshifts[(vblock)*hblsz+hblock][2][0] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][0][polyord*i+j];
-            blockshifts[(vblock)*hblsz+hblock][2][1] += (float)pow((float)vblock,i)*pow((float)hblock,j)*fitparams[2][1][polyord*i+j];
+            blockshifts[(vblock)*hblsz+hblock][0][0] += powf((float)vblock,i)*powf((float)hblock,j)*fitparams[0][0][polyord*i+j];
+            blockshifts[(vblock)*hblsz+hblock][0][1] += powf((float)vblock,i)*powf((float)hblock,j)*fitparams[0][1][polyord*i+j];
+            blockshifts[(vblock)*hblsz+hblock][2][0] += powf((float)vblock,i)*powf((float)hblock,j)*fitparams[2][0][polyord*i+j];
+            blockshifts[(vblock)*hblsz+hblock][2][1] += powf((float)vblock,i)*powf((float)hblock,j)*fitparams[2][1][polyord*i+j];
           }
         blockshifts[(vblock)*hblsz+hblock][0][0] = CLAMPS(blockshifts[(vblock)*hblsz+hblock][0][0], -bslim, bslim);
         blockshifts[(vblock)*hblsz+hblock][0][1] = CLAMPS(blockshifts[(vblock)*hblsz+hblock][0][1], -bslim, bslim);
@@ -1152,9 +1152,9 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           //now determine R/B at grid points using interpolated color differences and interpolated G value at grid point
           RBint=rgb[indx][1]-grbdiffint;
 
-          if (fabs(RBint-rgb[indx][c])<0.25*(RBint+rgb[indx][c]))
+          if (fabsf(RBint-rgb[indx][c])<0.25f*(RBint+rgb[indx][c]))
           {
-            if (fabs(grbdiffold)>fabs(grbdiffint) )
+            if (fabsf(grbdiffold)>fabsf(grbdiffint) )
             {
               rgb[indx][c]=RBint;
             }
@@ -1163,16 +1163,16 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           {
 
             //gradient weights using difference from G at CA shift points and G at grid points
-            p[0]=1/(eps+fabs(rgb[indx][1]-gshift[indx]));
-            p[1]=1/(eps+fabs(rgb[indx][1]-gshift[indx-2*GRBdir[1][c]]));
-            p[2]=1/(eps+fabs(rgb[indx][1]-gshift[(rr-2*GRBdir[0][c])*TS+cc]));
-            p[3]=1/(eps+fabs(rgb[indx][1]-gshift[(rr-2*GRBdir[0][c])*TS+cc-2*GRBdir[1][c]]));
+            p[0]=1/(eps+fabsf(rgb[indx][1]-gshift[indx]));
+            p[1]=1/(eps+fabsf(rgb[indx][1]-gshift[indx-2*GRBdir[1][c]]));
+            p[2]=1/(eps+fabsf(rgb[indx][1]-gshift[(rr-2*GRBdir[0][c])*TS+cc]));
+            p[3]=1/(eps+fabsf(rgb[indx][1]-gshift[(rr-2*GRBdir[0][c])*TS+cc-2*GRBdir[1][c]]));
 
             grbdiffint = (p[0]*grbdiff[indx]+p[1]*grbdiff[indx-2*GRBdir[1][c]]+
                           p[2]*grbdiff[(rr-2*GRBdir[0][c])*TS+cc]+p[3]*grbdiff[(rr-2*GRBdir[0][c])*TS+cc-2*GRBdir[1][c]])/(p[0]+p[1]+p[2]+p[3]);
 
             //now determine R/B at grid points using interpolated color differences and interpolated G value at grid point
-            if (fabs(grbdiffold)>fabs(grbdiffint) )
+            if (fabsf(grbdiffold)>fabsf(grbdiffint) )
             {
               rgb[indx][c]=rgb[indx][1]-grbdiffint;
             }
@@ -1181,7 +1181,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
           //if color difference interpolation overshot the correction, just desaturate
           if (grbdiffold*grbdiffint<0)
           {
-            rgb[indx][c]=rgb[indx][1]-0.5*(grbdiffold+grbdiffint);
+            rgb[indx][c]=rgb[indx][1]-0.5f*(grbdiffold+grbdiffint);
           }
         }
 
