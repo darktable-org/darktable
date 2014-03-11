@@ -96,7 +96,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   char dirname[4096];
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, dirname, 1024, &from_cache);
-  const gchar * filename = g_path_get_basename( dirname );
+  gchar * filename = g_path_get_basename( dirname );
 
   g_strlcpy(dirname, filename, sizeof(dirname));
 
@@ -117,6 +117,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
     g_free(attachment);
+    g_free(filename);
     return 1;
   }
 
@@ -129,6 +130,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   #pragma omp critical
 #endif
   d->images = g_list_append( d->images, attachment );
+  
+  g_free(filename);
 
   return 0;
 }

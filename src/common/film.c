@@ -347,7 +347,12 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
 */
 int _film_filename_cmp(gchar *a, gchar *b)
 {
-  return g_strcmp0(g_path_get_basename(a), g_path_get_basename(b));
+  gchar *a_basename = g_path_get_basename(a);
+  gchar *b_basename = g_path_get_basename(b);
+  int ret = g_strcmp0(a_basename, b_basename);
+  g_free(a_basename);
+  g_free(b_basename);
+  return ret;
 }
 
 void dt_film_import1(dt_film_t *film)

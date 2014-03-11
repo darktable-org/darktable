@@ -73,6 +73,7 @@ on_match_select(GtkEntryCompletion *widget,
   gtk_editable_insert_text(e, addtext, -1, &p);
   gtk_editable_set_position(e, p);
   g_value_unset(&value);
+  g_free(addtext);
   return TRUE;
 }
 
