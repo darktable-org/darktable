@@ -201,7 +201,7 @@ commit_params (dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *p
   d->gamma  = p->gamma;
 
   float a, b, c, g;
-  if(gamma == 1.0)
+  if(gamma == 1.0f)
   {
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -210,7 +210,7 @@ commit_params (dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *p
   }
   else
   {
-    if(linear == 0.0)
+    if(linear == 0.0f)
     {
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(d) schedule(static)
@@ -220,17 +220,17 @@ commit_params (dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *p
     }
     else
     {
-      if(linear<1.0)
+      if(linear<1.0f)
       {
-        g = gamma*(1.0-linear)/(1.0-gamma*linear);
-        a = 1.0/(1.0+linear*(g-1));
-        b = linear*(g-1)*a;
+        g = gamma*(1.0f-linear)/(1.0f-gamma*linear);
+        a = 1.0f/(1.0f+linear*(g-1.0f));
+        b = linear*(g-1.0f)*a;
         c = powf(a*linear+b, g)/linear;
       }
       else
       {
-        a = b = g = 0.0;
-        c = 1.0;
+        a = b = g = 0.0f;
+        c = 1.0f;
       }
 #ifdef _OPENMP
       #pragma omp parallel for default(none) shared(d,a,b,c,g) schedule(static)

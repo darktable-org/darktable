@@ -76,7 +76,7 @@ typedef struct dt_iop_atrous_gui_data_t
   GtkDrawingArea *area;
   GtkNotebook* channel_tabs;
   double mouse_x, mouse_y, mouse_pick;
-  float mouse_radius;
+  double mouse_radius;
   dt_iop_atrous_params_t drag_params;
   int dragging;
   int x_move;
@@ -769,126 +769,126 @@ void init_presets (dt_iop_module_so_t *self)
 
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = fmaxf(.5f, .75f-.5f*k/(BANDS-1.0));
-    p.y[atrous_c][k] = fmaxf(.5f, .55f-.5f*k/(BANDS-1.0));
-    p.y[atrous_s][k] = fminf(.5f, .2f + .35f * k/(BANDS-1.0));
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
+    p.y[atrous_L][k] = fmaxf(.5f, .75f-.5f*k/(BANDS-1.0f));
+    p.y[atrous_c][k] = fmaxf(.5f, .55f-.5f*k/(BANDS-1.0f));
+    p.y[atrous_s][k] = fminf(.5f, .2f + .35f * k/(BANDS-1.0f));
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("enhance coarse"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
     p.y[atrous_ct][k] = .6f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("sharpen and denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f+.25f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("sharpen and denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f+.5f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("sharpen (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f+.25f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f*k/(float)BANDS) - 0.30f);
   }
   dt_gui_presets_add_generic(_("chroma denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = fmaxf(0.0f, (.30f*k/(float)BANDS) - 0.15f);
     p.y[atrous_ct][k] = .30f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f;//-.2f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.3f*k/(float)BANDS);
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = .2f*k/(float)BANDS;
     p.y[atrous_ct][k] = .3f*k/(float)BANDS;
   }
   dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = .5f;//-.4f*k/(float)BANDS;
     p.y[atrous_c][k] = .5f;//fmaxf(0.0f, .5f-.6f*k/(float)BANDS);
     p.y[atrous_s][k] = .5f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = .4f*k/(float)BANDS;
     p.y[atrous_ct][k] = fminf(.5f, .8f*k/(float)BANDS);
   }
@@ -897,14 +897,14 @@ void init_presets (dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("denoise (strong)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
-    p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0));
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
+    p.y[atrous_L][k] = fminf(.5f, .3f + .35f * k/(BANDS-1.0f));
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
@@ -912,28 +912,28 @@ void init_presets (dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = 0.55f;
     p.y[atrous_c][k] = .5f;
     p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
   dt_gui_presets_add_generic(_("clarity (subtle)"), self->op, self->version(), &p, sizeof(p), 1);
   for(int k=0; k<BANDS; k++)
   {
-    p.x[atrous_L][k] = k/(BANDS-1.0);
-    p.x[atrous_c][k] = k/(BANDS-1.0);
-    p.x[atrous_s][k] = k/(BANDS-1.0);
+    p.x[atrous_L][k] = k/(BANDS-1.0f);
+    p.x[atrous_c][k] = k/(BANDS-1.0f);
+    p.x[atrous_s][k] = k/(BANDS-1.0f);
     p.y[atrous_L][k] = 0.6f;
     p.y[atrous_c][k] = .55f;
     p.y[atrous_s][k] = .0f;
-    p.x[atrous_Lt][k] = k/(BANDS-1.0);
-    p.x[atrous_ct][k] = k/(BANDS-1.0);
+    p.x[atrous_Lt][k] = k/(BANDS-1.0f);
+    p.x[atrous_ct][k] = k/(BANDS-1.0f);
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
@@ -983,12 +983,13 @@ area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 
 // fills in new parameters based on mouse position (in 0,1)
 static void
-get_params(dt_iop_atrous_params_t *p, const int ch, const double mouse_x, const double mouse_y, const float rad)
+get_params(dt_iop_atrous_params_t *p, const int ch, const double mouse_x, const double mouse_y, const double rad)
 {
   for(int k=0; k<BANDS; k++)
   {
-    const float f = expf(-(mouse_x - p->x[ch][k])*(mouse_x - p->x[ch][k])/(rad*rad));
-    p->y[ch][k] = MAX(0.0f, MIN(1.0f, (1-f)*p->y[ch][k] + f*mouse_y));
+    const double f = expf(-(mouse_x - (double)p->x[ch][k])*(mouse_x - (double)p->x[ch][k])/(rad*rad));
+    const double V = (1-f) * (double)p->y[ch][k] + f*mouse_y;
+    p->y[ch][k] = CLAMP(V, 0.0f, 1.0f);
   }
 }
 
@@ -1100,7 +1101,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     // draw curves, selected last.
     int ch = ((int)c->channel+i+1)%(atrous_s+1);
     int ch2 = -1;
-    const float bgmul = i < atrous_s ? 0.5f : 1.0f;
+    const double bgmul = i < atrous_s ? 0.5 : 1.0;
     switch(ch)
     {
       case atrous_L:
@@ -1206,13 +1207,13 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_text_extents (cr, _("coarse"), &ext);
     cairo_move_to (cr, .02*width+ext.height, .14*height+ext.width);
     cairo_save (cr);
-    cairo_rotate (cr, -M_PI*.5f);
+    cairo_rotate (cr, -M_PI*.5);
     cairo_show_text(cr, _("coarse"));
     cairo_restore (cr);
     cairo_text_extents (cr, _("fine"), &ext);
     cairo_move_to (cr, .98*width, .14*height+ext.width);
     cairo_save (cr);
-    cairo_rotate (cr, -M_PI*.5f);
+    cairo_rotate (cr, -M_PI*.5);
     cairo_show_text(cr, _("fine"));
     cairo_restore (cr);
 
@@ -1254,9 +1255,9 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
-  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/(float)width;
-  c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+  gdouble height = allocation.height - 2*inset, width = allocation.width - 2*inset;
+  if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width)/width;
+  c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height)/height;
   int ch2 = c->channel;
   if(c->channel == atrous_L) ch2 = atrous_Lt;
   if(c->channel == atrous_c) ch2 = atrous_ct;
@@ -1266,7 +1267,7 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
     *p = c->drag_params;
     if(c->x_move >= 0)
     {
-      const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+      const float mx = CLAMP(event->x - inset, 0, width)/width;
       if(c->x_move > 0 && c->x_move < BANDS-1)
       {
         const float minx = p->x[c->channel][c->x_move-1] + 0.001f;
@@ -1284,10 +1285,10 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   {
     // move x-positions
     c->x_move = 0;
-    float dist = fabsf(p->x[c->channel][0] - c->mouse_x);
+    double dist = fabs((double)p->x[c->channel][0] - c->mouse_x);
     for(int k=1; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      double d2 = fabs((double)p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -1299,13 +1300,13 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   {
     // choose between bottom and top curve:
     int ch = c->channel;
-    float dist = 1000000.0f;
+    double dist = 1000000.0f;
     for(int k=0; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      double d2 = fabs((double)p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
-        if(fabsf(c->mouse_y - p->y[ch][k]) < fabsf(c->mouse_y - p->y[ch2][k])) c->channel2 = ch;
+        if(fabs(c->mouse_y - (double)p->y[ch][k]) < fabs(c->mouse_y - (double)p->y[ch2][k])) c->channel2 = ch;
         else c->channel2 = ch2;
         dist = d2;
       }
@@ -1346,9 +1347,9 @@ area_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
     const int inset = INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
-    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/(float)width);
-    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/(float)height;
+    gdouble height = allocation.height - 2*inset, width = allocation.width - 2*inset;
+    c->mouse_pick = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width)/width);
+    c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height)/height;
     c->dragging = 1;
     return TRUE;
   }

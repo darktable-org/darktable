@@ -40,7 +40,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) ((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
 DT_MODULE_INTROSPECTION(1, dt_iop_splittoning_params_t)
 
 typedef struct dt_iop_splittoning_params_t
@@ -172,7 +172,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out;
   const int ch = piece->colors;
 
-  const float compress=(data->compress/110.0)/2.0;  // Dont allow 100% compression..
+  const float compress=(data->compress/110.0f)/2.0f;  // Dont allow 100% compression..
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(ivoid,ovoid,roi_out,data) private(in,out) schedule(static)
 #endif
@@ -182,7 +182,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      double ra,la;
+      float ra,la;
       float mixrgb[3];
       float h,s,l;
       rgb2hsl(in,&h,&s,&l);
@@ -190,8 +190,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       {
         h=l<data->balance?data->shadow_hue:data->highlight_hue;
         s=l<data->balance?data->shadow_saturation:data->highlight_saturation;
-        ra=l<data->balance?CLIP((fabs(-data->balance+compress+l)*2.0)):CLIP((fabs(-data->balance-compress+l)*2.0));
-        la=(1.0-ra);
+        ra=l<data->balance?CLIP((fabsf(-data->balance+compress+l)*2.0f)):CLIP((fabsf(-data->balance-compress+l)*2.0f));
+        la=(1.0f-ra);
 
         hsl2rgb(mixrgb,h,s,l);
 
@@ -224,7 +224,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  const float compress = (d->compress/110.0)/2.0;  // Dont allow 100% compression..
+  const float compress = (d->compress/110.0f)/2.0f;  // Dont allow 100% compression..
   const float balance = d->balance;
   const float shadow_hue = d->shadow_hue;
   const float shadow_saturation = d->shadow_saturation;
@@ -299,10 +299,10 @@ update_colorpicker_fg(
 {
   float rgb[3];
   GdkColor c;
-  hsl2rgb(rgb, hue, sat, 0.5);
-  c.red = rgb[0]*65535.0;
-  c.green = rgb[1]*65535.0;
-  c.blue = rgb[2]*65535.0;
+  hsl2rgb(rgb, hue, sat, 0.5f);
+  c.red = rgb[0]*65535.0f;
+  c.green = rgb[1]*65535.0f;
+  c.blue = rgb[2]*65535.0f;
   gtk_widget_modify_fg(colorpicker,GTK_STATE_NORMAL,&c);
 }
 
@@ -516,7 +516,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->gslider3,p->highlight_hue);
   dt_bauhaus_slider_set(g->gslider4,p->highlight_saturation);
   dt_bauhaus_slider_set(g->gslider2,p->shadow_saturation);
-  dt_bauhaus_slider_set(g->scale1, p->balance*100.0);
+  dt_bauhaus_slider_set(g->scale1, p->balance*100.0f);
   dt_bauhaus_slider_set(g->scale2, p->compress);
 
   update_colorpicker_fg(GTK_WIDGET(g->colorpick1), p->shadow_hue, p->shadow_saturation);
@@ -619,7 +619,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(vbox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  g->scale1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0, 100.0, 0.1, p->balance*100.0, 2, 0);
+  g->scale1 = dt_bauhaus_slider_new_with_range_and_feedback(self, 0.0f, 100.0f, 0.1f, p->balance*100.0f, 2, 0);
   dt_bauhaus_slider_set_format(g->scale1, "%.2f");
   dt_bauhaus_slider_set_stop(g->scale1, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->scale1, 1.0f, 0.5f, 0.5f, 0.5f);

@@ -1228,7 +1228,7 @@ static void camera_set (dt_iop_module_t *self, const lfCamera *cam)
                           "mount:\t\t%s\n"
                           "crop factor:\t%.1f"),
                         maker, model, _variant,
-                        cam->Mount, cam->CropFactor);
+                        cam->Mount, (double)cam->CropFactor);
   g_object_set(G_OBJECT(g->camera_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
 }
@@ -1484,13 +1484,13 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   char focal [100], aperture [100], mounts [200];
 
   if (lens->MinFocal < lens->MaxFocal)
-    snprintf (focal, sizeof (focal), "%g-%gmm", lens->MinFocal, lens->MaxFocal);
+    snprintf (focal, sizeof (focal), "%g-%gmm", (double)lens->MinFocal, (double)lens->MaxFocal);
   else
-    snprintf (focal, sizeof (focal), "%gmm", lens->MinFocal);
+    snprintf (focal, sizeof (focal), "%gmm", (double)lens->MinFocal);
   if (lens->MinAperture < lens->MaxAperture)
-    snprintf (aperture, sizeof (aperture), "%g-%g", lens->MinAperture, lens->MaxAperture);
+    snprintf (aperture, sizeof (aperture), "%g-%g", (double)lens->MinAperture, (double)lens->MaxAperture);
   else
-    snprintf (aperture, sizeof (aperture), "%g", lens->MinAperture);
+    snprintf (aperture, sizeof (aperture), "%g", (double)lens->MinAperture);
 
   mounts [0] = 0;
   if (lens->Mounts)
@@ -1509,7 +1509,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
                           "type:\t\t%s\n"
                           "mounts:\t\t%s"),
                         maker ? maker : "?", model ? model : "?",
-                        focal, aperture, lens->CropFactor,
+                        focal, aperture, (double)lens->CropFactor,
                         lf_get_lens_type_desc (lens->Type, NULL), mounts);
   g_object_set(G_OBJECT(g->lens_model), "tooltip-text", fm, (char *)NULL);
   g_free (fm);
@@ -1521,21 +1521,21 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   int ffi = 1, fli = -1;
   for (i = 1; i < sizeof (focal_values) / sizeof (gdouble) - 1; i++)
   {
-    if (focal_values [i] < lens->MinFocal)
+    if (focal_values [i] < (double)lens->MinFocal)
       ffi = i + 1;
-    if (focal_values [i] > lens->MaxFocal && fli == -1)
+    if (focal_values [i] > (double)lens->MaxFocal && fli == -1)
       fli = i;
   }
-  if (focal_values [ffi] > lens->MinFocal)
+  if (focal_values [ffi] > (double)lens->MinFocal)
   {
     focal_values [ffi - 1] = lens->MinFocal;
     ffi--;
   }
   if (lens->MaxFocal == 0 || fli < 0)
     fli = sizeof (focal_values) / sizeof (gdouble) - 1;
-  if (focal_values [fli+1] < lens->MaxFocal)
+  if (focal_values [fli+1] < (double)lens->MaxFocal)
   {
-    focal_values [fli + 1] = lens->MaxFocal;
+    focal_values [fli + 1] = (double)lens->MaxFocal;
     ffi++;
   }
   if (fli < ffi)
@@ -1549,7 +1549,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   w = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(w, NULL, _("mm"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("focal length (mm)"), (char *)NULL);
-  snprintf(txt, sizeof (txt), "%.*f", precision(p->focal, 10.0), p->focal);
+  snprintf(txt, sizeof (txt), "%.*f", precision((double)p->focal, 10.0), (double)p->focal);
   dt_bauhaus_combobox_add(w, txt);
   for(int k=0; k<fli-ffi; k++)
   {
@@ -1566,9 +1566,9 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   // f-stop
   ffi = 1, fli = sizeof (aperture_values) / sizeof (gdouble) - 1;
   for (i = 1; i < sizeof (aperture_values) / sizeof (gdouble) - 1; i++)
-    if (aperture_values [i] < lens->MinAperture)
+    if (aperture_values [i] < (double)lens->MinAperture)
       ffi = i + 1;
-  if (aperture_values [ffi] > lens->MinAperture)
+  if (aperture_values [ffi] > (double)lens->MinAperture)
   {
     aperture_values [ffi - 1] = lens->MinAperture;
     ffi--;
@@ -1577,7 +1577,7 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   w = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(w, NULL, _("f/"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("f-number (aperture)"), (char *)NULL);
-  snprintf(txt, sizeof (txt), "%.*f", precision(p->aperture, 10.0), p->aperture);
+  snprintf(txt, sizeof (txt), "%.*f", precision((double)p->aperture, 10.0), (double)p->aperture);
   dt_bauhaus_combobox_add(w, txt);
   for(size_t k=0; k<fli-ffi; k++)
   {
@@ -1593,16 +1593,16 @@ static void lens_set (dt_iop_module_t *self, const lfLens *lens)
   w = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(w, NULL, _("d"));
   g_object_set(G_OBJECT(w), "tooltip-text", _("distance to subject"), (char *)NULL);
-  snprintf(txt, sizeof (txt), "%.*f", precision(p->distance, 10.0), p->distance);
+  snprintf(txt, sizeof (txt), "%.*f", precision((double)p->distance, 10.0), (double)p->distance);
   dt_bauhaus_combobox_add(w, txt);
-  float val = 0.25f;
+  double val = 0.25;
   for(int k=0; k<25; k++)
   {
-    if(val > 1000.0f) val = 1000.0f;
+    if(val > 1000.0) val = 1000.0;
     snprintf(txt, sizeof (txt), "%.*f", precision(val, 10.0), val);
     dt_bauhaus_combobox_add(w, txt);
-    if(val >= 1000.0f) break;
-    val *= sqrtf(2.0f);
+    if(val >= 1000.0) break;
+    val *= sqrt(2.0);
   }
   g_signal_connect (G_OBJECT(w), "value-changed",
                     G_CALLBACK(lens_comboentry_distance_update), self);
@@ -1775,7 +1775,7 @@ static void tca_changed(GtkWidget *slider, dt_iop_module_t *self)
   const float val = dt_bauhaus_slider_get(slider);
   if(slider == g->tca_r) p->tca_r = val;
   else                   p->tca_b = val;
-  if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
+  if(p->tca_r != 1.0f || p->tca_b != 1.0f) p->tca_override = 1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

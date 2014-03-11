@@ -145,13 +145,13 @@ static inline int dt_conf_get_int(const char *name)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
+  float new_value = dt_calculator_solve(1.0f, str);
+  if(isnan(new_value)) new_value = 0.0f;
   int val;
-  if (new_value > 0)
-    val = new_value + 0.5;
+  if (new_value > 0.0f)
+    val = new_value + 0.5f;
   else
-    val = new_value - 0.5;
+    val = new_value - 0.5f;
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
@@ -161,12 +161,12 @@ static inline int64_t dt_conf_get_int64(const char *name)
   dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
-  if(isnan(new_value)) new_value = 0.0;
+  if(isnan(new_value)) new_value = 0.0f;
   int64_t val;
-  if (new_value > 0)
-    val = new_value + 0.5;
+  if (new_value > 0.0f)
+    val = new_value + 0.5f;
   else
-    val = new_value - 0.5;
+    val = new_value - 0.5f;
   dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }

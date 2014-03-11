@@ -40,8 +40,8 @@
 #define BOX_ITERATIONS 8
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
-#define LCLIP(x)                ((x<0)?0.0:(x>100.0)?100.0:x)
+#define CLIP(x)                 ((x<0)?0.0f:(x>1.0f)?1.0f:x)
+#define LCLIP(x)                ((x<0)?0.0f:(x>100.0f)?100.0f:x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
@@ -114,7 +114,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
 
-  int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
+  int rad = MAX_RADIUS*(fminf(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
@@ -146,7 +146,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_in->height;
 
 
-  int rad = MAX_RADIUS*(fmin(100.0f,d->sharpness+1)/100.0f);
+  int rad = MAX_RADIUS*(fminf(100.0f,d->sharpness+1)/100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
@@ -366,7 +366,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   free(scanline);
 
-  const float contrast_scale=((data->contrast/100.0)*7.5);
+  const float contrast_scale=((data->contrast/100.0f)*7.5f);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
@@ -374,7 +374,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   {
     size_t index = ch*k;
     // Mix out and in
-    out[index] = out[index]*0.5 + in[index]*0.5;
+    out[index] = out[index]*0.5f + in[index]*0.5f;
     out[index] = LCLIP(50.0f+((out[index]-50.0f)*contrast_scale));
     out[index+1] = out[index+2] = 0.0f;		// desaturate a and b in Lab space
     out[index+3] = in[index+3];
