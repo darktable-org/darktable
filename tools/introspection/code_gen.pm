@@ -20,6 +20,9 @@ package code_gen;
 
 my $DT_INTROSPECTION_VERSION = 3;
 
+my $is_old_gplusplus = "defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406)";
+my $is_not_old_gplusplus = "!( defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406) )";
+
 sub print_fallback
 {
   my ($OUT, $input_file, $version, $params_type) = @_;
@@ -39,7 +42,7 @@ extern "C"
 #include "common/introspection.h"
 
 static dt_introspection_field_t introspection_linear[2]
-#ifndef __cplusplus
+#if $is_not_old_gplusplus
 = {
   { .Opaque = { {DT_INTROSPECTION_TYPE_OPAQUE, (char*)"", (char*)"", (char*)"", sizeof($params_type), 0, NULL}, } },
   { .header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0, NULL} }
@@ -72,7 +75,7 @@ int introspection_init(struct dt_iop_module_so_t *self, int api_version)
   if(introspection.api_version != DT_INTROSPECTION_VERSION || api_version != DT_INTROSPECTION_VERSION)
     return 1;
 
-#ifdef __cplusplus
+#if $is_old_gplusplus
   introspection_linear[0].Opaque = { {DT_INTROSPECTION_TYPE_OPAQUE, (char*)"", (char*)"", (char*)"", sizeof($params_type), 0, NULL}, };
   introspection_linear[1].header = {DT_INTROSPECTION_TYPE_NONE, NULL, NULL, NULL, 0, 0, NULL};
 #endif
@@ -139,7 +142,7 @@ extern "C"
 #include "common/introspection.h"
 
 static dt_introspection_field_t introspection_linear[$max_linear+1]
-#ifndef __cplusplus
+#if $is_not_old_gplusplus
 = {
 END
 
@@ -177,7 +180,7 @@ int introspection_init(struct dt_iop_module_so_t *self, int api_version)
   if(introspection.api_version != DT_INTROSPECTION_VERSION || api_version != DT_INTROSPECTION_VERSION)
     return 1;
 
-#ifdef __cplusplus
+#if $is_old_gplusplus
 END
   my $i = 0;
   foreach(@ast::linear)
