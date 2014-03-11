@@ -66,7 +66,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   char dirname[DT_MAX_PATH_LEN];
   dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
   dt_image_path_append_version(imgid, dirname, DT_MAX_PATH_LEN);
-  const gchar * filename = g_path_get_basename( dirname );
+  gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));
 
@@ -76,6 +76,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self),complete_name);
     g_free(complete_name);
+    g_free(filename);
     return 1;
   }
 
@@ -102,6 +103,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   if(lua_isnil(L,-1)) {
     lua_pop(L,3);
     dt_lua_unlock(has_lock);
+    g_free(filename);
     return 1;
   }
 
@@ -118,6 +120,7 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imag
   int result = lua_toboolean(L,-1);
   lua_pop(L,3);
   dt_lua_unlock(has_lock);
+  g_free(filename);
   return result;
 
 }

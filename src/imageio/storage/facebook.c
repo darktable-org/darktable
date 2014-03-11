@@ -324,7 +324,12 @@ static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
-  if (res != CURLE_OK) return NULL;
+  if (res != CURLE_OK)
+  {
+    g_string_free(url, TRUE);
+    g_string_free(response, TRUE);
+    return NULL;
+  }
 
   //parse the response
   JsonObject *respobj = fb_parse_response(ctx, response);

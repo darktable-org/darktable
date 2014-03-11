@@ -332,7 +332,10 @@ dt_import_session_path(struct dt_import_session_t *self, gboolean current)
 
   /* did the session path change ? */
   if (self->current_path && strcmp(self->current_path, new_path) == 0)
+  {
+    g_free(new_path);
     return self->current_path;
+  }
 
   /* we need to initialize a new filmroll for the new path */
   if (_import_session_initialize_filmroll(self, new_path) != 0)

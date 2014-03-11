@@ -680,7 +680,7 @@ dt_database_t *dt_database_init(char *alternative)
   db->lock_acquired = TRUE;
 #else
   mode_t old_mode;
-  int fd, lock_tries = 0;
+  int fd = 0, lock_tries = 0;
   if(!strcmp(dbfilename, ":memory:"))
   {
     db->lock_acquired = TRUE;

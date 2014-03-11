@@ -748,9 +748,9 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
       gchar *cc3 = other_basename + strlen(cother_img->filename);
       for (; *cc3!='.'&&cc3>other_basename; cc3--);
       ++cc3;
-      g_ascii_strdown(cc3, -1);
+      gchar *ext_lowercase = g_ascii_strdown(cc3, -1);
       // if the group representative is a jpg, change group representative to this new imported image
-      if (!strcmp(cc3, "jpg") || !strcmp(cc3, "jpeg"))
+      if (!strcmp(ext_lowercase, "jpg") || !strcmp(ext_lowercase, "jpeg"))
       {
         dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
         other_img->group_id = id;
@@ -777,6 +777,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
         dt_image_cache_read_release(darktable.image_cache, cother_img);
         group_id = other_id;
       }
+      g_free(ext_lowercase);
       g_free(other_basename);
     }
     else

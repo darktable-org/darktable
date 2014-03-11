@@ -762,6 +762,7 @@ _folder_tree ()
 
       level++;
     }
+    g_strfreev(pch);
   }
   return store;
 }
