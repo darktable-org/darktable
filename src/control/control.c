@@ -270,7 +270,7 @@ void dt_ctl_set_display_profile()
   if(profile_changed)
   {
     cmsHPROFILE profile = NULL;
-    char name[512];
+    char name[512] = { 0 };
     // thanks to ufraw for this!
     g_free(darktable.control->xprofile_data);
     darktable.control->xprofile_data = buffer;
