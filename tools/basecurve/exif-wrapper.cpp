@@ -48,7 +48,7 @@ exif_get_ascii_datafield(
       goto exit;
     }
 
-    if (val->size() >= buflen)
+    if ((size_t)val->size() >= buflen)
     {
       ret = val->size()+1;
       goto exit;
