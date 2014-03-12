@@ -267,10 +267,8 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line2 = dt_conf_get_string(confname);
     if(line2 && line2[0] != '\0')
-    {
       pretty_print(line2, str, 2048);
-      g_free(line2);
-    }
+    g_free(line2);
     g_object_set(G_OBJECT(d->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
     if (g_utf8_validate(str, -1, NULL))

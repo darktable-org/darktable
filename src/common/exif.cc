@@ -1198,6 +1198,7 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
       do_compress = TRUE;
     else
       do_compress = FALSE;
+    g_free(config);
   }
 
   if(do_compress)

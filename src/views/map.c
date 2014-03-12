@@ -134,7 +134,7 @@ void init(dt_view_t *self)
     lib->drop_filmstrip_activated = FALSE;
 
     OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
-    const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+    gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
     {
       // find the number of the stored map_source
@@ -151,6 +151,7 @@ void init(dt_view_t *self)
     }
     else
       dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
+    g_free(old_map_source);
 
     lib->map_source = map_source;
 

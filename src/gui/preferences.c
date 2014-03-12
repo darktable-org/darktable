@@ -212,6 +212,8 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
+
+  g_free(ui_lang);
 }
 */
 
