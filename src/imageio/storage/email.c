@@ -190,10 +190,11 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
   {
     gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
-    const gchar *filename = g_path_get_basename( attachment->file );
+    gchar *filename = g_path_get_basename( attachment->file );
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, attachment->imgid);
     dt_image_print_exif( img, exif, 256 );
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
+    g_free(filename);
 
     if( strlen( attachments ) )
       g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );

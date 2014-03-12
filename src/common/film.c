@@ -431,6 +431,8 @@ void dt_film_import1(dt_film_t *film)
       dt_film_new(cfr, cdn);
     }
 
+    g_free(cdn);
+
     /* import image */
     dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 

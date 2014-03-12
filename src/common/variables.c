@@ -157,12 +157,31 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
   else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		sprintf(value,"%d", exif_iso);
   else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->imgid);
   else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
-  else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(g_path_get_dirname(params->filename)));
-  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename)); // undocumented : backward compatibility
-  else if( g_strcmp0(variable,"$(FILE_FOLDER)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
+  else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    gchar* basename = g_path_get_basename(dirname);
+    sprintf(value,"%s",basename);
+    g_free(basename);
+    g_free(dirname);
+  }
+  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    sprintf(value,"%s",dirname);
+    g_free(dirname);
+  } // undocumented : backward compatibility
+  else if( g_strcmp0(variable,"$(FILE_FOLDER)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    sprintf(value,"%s",dirname);
+    g_free(dirname);
+  }
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )
   {
-    sprintf(value,"%s",g_path_get_basename(params->filename));
+    gchar* basename = g_path_get_basename(params->filename);
+    sprintf(value,"%s",basename);
+    g_free(basename);
     if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0;
   }
   else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
