@@ -99,6 +99,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
 
   /* cleanup and return gpx context */
   g_markup_parse_context_free(ctx);
+  g_mapped_file_unref(gpxmf);
 
   return gpx;
 
@@ -114,6 +115,9 @@ error:
 
   if (gpx)
     g_free(gpx);
+
+  if(gpxmf)
+    g_mapped_file_unref(gpxmf);
 
   return NULL;
 }
