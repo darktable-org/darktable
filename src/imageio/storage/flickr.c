@@ -180,7 +180,11 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     gchar auth_url[250];
     sprintf(auth_url,"http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
 
-    gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error);
+    if(!gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error))
+    {
+      fprintf(stderr, "[flickr] error opening browser: %s\n", error->message);
+      g_error_free(error);
+    }
 
     g_free(sign);
     g_free(sign_md5);
