@@ -597,12 +597,16 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
 {
   ///////////// open the authentication url in a browser
   GError *error = NULL;
-  gtk_show_uri(gdk_screen_get_default(),
+  if(!gtk_show_uri(gdk_screen_get_default(),
                FB_WS_BASE_URL"dialog/oauth?"
                "client_id=" FB_API_KEY
                "&redirect_uri="FB_WS_BASE_URL"connect/login_success.html"
                "&scope=user_photos,publish_stream"
-               "&response_type=token", gtk_get_current_event_time(), &error);
+               "&response_type=token", gtk_get_current_event_time(), &error))
+  {
+    fprintf(stderr, "[facebook] error opening browser: %s\n", error->message);
+    g_error_free(error);
+  }
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "

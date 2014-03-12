@@ -818,13 +818,17 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 {
   ///////////// open the authentication url in a browser
   GError *error = NULL;
-  gtk_show_uri(gdk_screen_get_default(),
+  if(!gtk_show_uri(gdk_screen_get_default(),
                GOOGLE_WS_BASE_URL"o/oauth2/auth?"
                "client_id=" GOOGLE_API_KEY
                "&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
                "&scope=https://picasaweb.google.com/data/ https://www.googleapis.com/auth/userinfo.profile"
                " https://www.googleapis.com/auth/userinfo.email"
-               "&response_type=code", gtk_get_current_event_time(), &error);
+               "&response_type=code", gtk_get_current_event_time(), &error))
+  {
+    fprintf(stderr, "[picasa] error opening browser: %s\n", error->message);
+    g_error_free(error);
+  }
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
