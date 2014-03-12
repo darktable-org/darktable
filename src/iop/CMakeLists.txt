@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+#no one should be forced to write 1.0f instead of 1.0, however since makes some sence i'd like to have this at least in commented state.
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wdouble-promotion -Werror=double-promotion")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion -Werror=double-promotion")
+
 macro (add_iop _lib _src)
   set(_input ${CMAKE_CURRENT_SOURCE_DIR}/${_src})
   set(_output ${CMAKE_CURRENT_BINARY_DIR}/introspection_${_src}) # keep ${_src} in the end to keep the file extension (c vs. cc)

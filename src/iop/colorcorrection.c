@@ -195,9 +195,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 {
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)p1;
   dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
-  d->a_scale = (p->hia - p->loa)/100.0;
+  d->a_scale = (p->hia - p->loa)/100.0f;
   d->a_base  = p->loa;
-  d->b_scale = (p->hib - p->lob)/100.0;
+  d->b_scale = (p->hib - p->lob)/100.0f;
   d->b_base  = p->lob;
   d->saturation = p->saturation;
 }
@@ -348,8 +348,8 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
       Lab.a = Lab.b = 0; // grey
       // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
       // printf("lab = %f %f %f\n", Lab[0], Lab[1], Lab[2]);
-      Lab.a = p->saturation*(Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
-      Lab.b = p->saturation*(Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
+      Lab.a = (double)p->saturation * (Lab.a + Lab.L * .05*DT_COLORCORRECTION_MAX*(i/(cells-1.0) - .5));
+      Lab.b = (double)p->saturation * (Lab.b + Lab.L * .05*DT_COLORCORRECTION_MAX*(j/(cells-1.0) - .5));
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       // dt_iop_Lab_to_sRGB(Lab, rgb, 0, 0, 1.0, 1, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
@@ -399,11 +399,11 @@ dt_iop_colorcorrection_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
   const int inset = DT_COLORCORRECTION_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width - 2*inset, height = allocation.height - 2*inset;
-  const float mouse_x = CLAMP(event->x - inset, 0, width);
-  const float mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
-  const float ma = (2.0*mouse_x - width) *DT_COLORCORRECTION_MAX/(float)width;
-  const float mb = (2.0*mouse_y - height)*DT_COLORCORRECTION_MAX/(float)height;
+  gdouble width = allocation.width - 2*inset, height = allocation.height - 2*inset;
+  const gdouble mouse_x = CLAMP(event->x - inset, 0, width);
+  const gdouble mouse_y = CLAMP(height - 1 - event->y + inset, 0, height);
+  const float ma = (2*mouse_x - width) *DT_COLORCORRECTION_MAX/width;
+  const float mb = (2*mouse_y - height)*DT_COLORCORRECTION_MAX/height;
   if(event->state & GDK_BUTTON1_MASK)
   {
     if(g->selected == 1)
@@ -477,8 +477,8 @@ dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScroll *event, gpoint
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
-  if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0) p->saturation += 0.1;
-  if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0) p->saturation -= 0.1;
+  if(event->direction == GDK_SCROLL_UP   && p->saturation > -3.0f) p->saturation += 0.1f;
+  if(event->direction == GDK_SCROLL_DOWN && p->saturation <  3.0f) p->saturation -= 0.1f;
   dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(widget);
   return TRUE;

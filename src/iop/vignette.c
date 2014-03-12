@@ -40,7 +40,7 @@
 
 DT_MODULE_INTROSPECTION(3, dt_iop_vignette_params_t)
 
-#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
+#define CLIP(x) ((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
 #define TEA_ROUNDS 8
 
 typedef enum dt_iop_dither_t
@@ -202,7 +202,7 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->brightness= -(1.0-MAX(old->bsratio,0.0))*old->strength/100.0;
     new->saturation= -(1.0+MIN(old->bsratio,0.0))*old->strength/100.0;
     if (old->invert_saturation)
-      new->saturation *= -2.0;	// Double effect for increasing saturation
+      new->saturation *= -2.0f;	// Double effect for increasing saturation
     if (old->invert_falloff)
       new->brightness = -new->brightness;
     new->center.x= old->center.x;
@@ -261,7 +261,7 @@ tpdf(unsigned int urandom)
 static int
 get_grab(float pointerx, float pointery, float startx, float starty, float endx, float endy, float zoom_scale)
 {
-  const float radius = 5.0/zoom_scale;
+  const float radius = 5.0f/zoom_scale;
 
   if(powf(pointerx-startx, 2)+powf(pointery, 2) <= powf(radius, 2)) return 2;    // x size
   if(powf(pointerx, 2)+powf(pointery-starty, 2) <= powf(radius, 2)) return 4;    // y size
@@ -276,8 +276,8 @@ static void
 draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float zoom_scale)
 {
   // half width/height of the crosshair
-  float crosshair_w = 10.0/zoom_scale;
-  float crosshair_h = 10.0/zoom_scale;
+  float crosshair_w = 10.0f/zoom_scale;
+  float crosshair_h = 10.0f/zoom_scale;
 
   // center crosshair
   cairo_move_to(cr, -crosshair_w, 0.0);
@@ -317,8 +317,8 @@ draw_overlay(cairo_t *cr, float x, float y, float fx, float fy, int grab, float 
   cairo_stroke(cr);
 
   // the handles
-  const float radius_sel = 6.0/zoom_scale;
-  const float radius_reg = 4.0/zoom_scale;
+  const float radius_sel = 6.0f/zoom_scale;
+  const float radius_reg = 4.0f/zoom_scale;
   if(grab ==  1) cairo_arc(cr, 0.0, 0.0, radius_sel, 0.0, M_PI*2.0);
   else           cairo_arc(cr, 0.0, 0.0, radius_reg, 0.0, M_PI*2.0);
   cairo_stroke(cr);
@@ -372,22 +372,22 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f*wd-zoom_x*wd, -.5f*ht-zoom_y*ht);
 
-  float vignette_x = (p->center.x+1.0)*0.5*wd;
-  float vignette_y = (p->center.y+1.0)*0.5*ht;
+  float vignette_x = (p->center.x+1.0f)*0.5f*wd;
+  float vignette_y = (p->center.y+1.0f)*0.5f*ht;
 
   cairo_translate(cr, vignette_x, vignette_y);
 
-  float vignette_w = p->scale*0.01*0.5*wd; // start of falloff
-  float vignette_h = p->scale*0.01*0.5*ht;
-  float vignette_fx = vignette_w + p->falloff_scale*0.01*0.5*wd; // end of falloff
-  float vignette_fy = vignette_h + p->falloff_scale*0.01*0.5*ht;
+  float vignette_w = p->scale*0.01f*0.5f*wd; // start of falloff
+  float vignette_h = p->scale*0.01f*0.5f*ht;
+  float vignette_fx = vignette_w + p->falloff_scale*0.01f*0.5f*wd; // end of falloff
+  float vignette_fy = vignette_h + p->falloff_scale*0.01f*0.5f*ht;
 
   if(p->autoratio == FALSE)
   {
     float factor1 = bigger_side/smaller_side;
     if(wd >= ht)
     {
-      float factor2 = (2.0-p->whratio)*factor1;
+      float factor2 = (2.0f-p->whratio)*factor1;
 
       if(p->whratio <= 1)
       {
@@ -414,19 +414,19 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
       else
       {
         vignette_w *= factor1;
-        vignette_h *= (2.0-p->whratio);
+        vignette_h *= (2.0f-p->whratio);
         vignette_fx *= factor1;
-        vignette_fy *= (2.0-p->whratio);
+        vignette_fy *= (2.0f-p->whratio);
       }
     }
   }
 
   int grab = get_grab(pzx*wd-vignette_x, pzy*ht-vignette_y, vignette_w, -vignette_h, vignette_fx, -vignette_fy, zoom_scale);
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  cairo_set_line_width(cr, 3.0/zoom_scale);
+  cairo_set_line_width(cr, 3.0f/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, 1.0f/zoom_scale);
   cairo_set_source_rgba(cr, .8, .8, .8, .8);
   draw_overlay(cr, vignette_w, vignette_h, vignette_fx, vignette_fy, grab, zoom_scale);
 
@@ -461,20 +461,20 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
   static int old_grab = -1;
   int grab = old_grab;
 
-  float vignette_x = (p->center.x+1.0)*0.5*wd;
-  float vignette_y = (p->center.y+1.0)*0.5*ht;
+  float vignette_x = (p->center.x+1.0f)*0.5f*wd;
+  float vignette_y = (p->center.y+1.0f)*0.5f*ht;
 
-  float vignette_w = p->scale*0.01*0.5*wd; // start of falloff
-  float vignette_h = p->scale*0.01*0.5*ht;
-  float vignette_fx = vignette_w + p->falloff_scale*0.01*0.5*wd; // end of falloff
-  float vignette_fy = vignette_h + p->falloff_scale*0.01*0.5*ht;
+  float vignette_w = p->scale*0.01f*0.5f*wd; // start of falloff
+  float vignette_h = p->scale*0.01f*0.5f*ht;
+  float vignette_fx = vignette_w + p->falloff_scale*0.01f*0.5f*wd; // end of falloff
+  float vignette_fy = vignette_h + p->falloff_scale*0.01f*0.5f*ht;
 
   if(p->autoratio == FALSE)
   {
     float factor1 = bigger_side/smaller_side;
     if(wd >= ht)
     {
-      float factor2 = (2.0-p->whratio)*factor1;
+      float factor2 = (2.0f-p->whratio)*factor1;
 
       if(p->whratio <= 1)
       {
@@ -501,9 +501,9 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
       else
       {
         vignette_w *= factor1;
-        vignette_h *= (2.0-p->whratio);
+        vignette_h *= (2.0f-p->whratio);
         vignette_fx *= factor1;
-        vignette_fy *= (2.0-p->whratio);
+        vignette_fy *= (2.0f-p->whratio);
       }
     }
   }
@@ -522,18 +522,18 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
     }
     else if(grab == 1) // move the center
     {
-      dt_bauhaus_slider_set(g->center_x, pzx*2.0 - 1.0);
-      dt_bauhaus_slider_set(g->center_y, pzy*2.0 - 1.0);
+      dt_bauhaus_slider_set(g->center_x, pzx*2.0f - 1.0f);
+      dt_bauhaus_slider_set(g->center_y, pzy*2.0f - 1.0f);
     }
     else if(grab ==  2) // change the width
     {
-      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
-      float new_vignette_w = MIN(bigger_side*0.5, MAX(0.1, pzx*wd - vignette_x));
+      float max = 0.5f*((p->whratio <= 1.0f)?bigger_side*p->whratio:bigger_side);
+      float new_vignette_w = MIN(bigger_side*0.5f, MAX(0.1f, pzx*wd - vignette_x));
       float ratio = new_vignette_w/vignette_h;
-      float new_scale = 100.0 * new_vignette_w / max;
+      float new_scale = 100.0f * new_vignette_w / max;
       // FIXME: When going over the 1.0 boundary from wide to narrow (>1.0 -> <=1.0) the height slightly changes, depending on speed.
       //        I guess we have to split the computation.
-      if(ratio <= 1.0)
+      if(ratio <= 1.0f)
       {
         if(which == GDK_CONTROL_MASK)
         {
@@ -550,38 +550,38 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
 
         if(which != GDK_CONTROL_MASK)
         {
-          float new_whratio = 2.0 - 1.0 / ratio;
+          float new_whratio = 2.0f - 1.0f / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
         }
       }
     }
     else if(grab ==  4) // change the height
     {
-      float new_vignette_h = MIN(bigger_side*0.5, MAX(0.1, vignette_y - pzy*ht));
+      float new_vignette_h = MIN(bigger_side*0.5f, MAX(0.1f, vignette_y - pzy*ht));
       float ratio = new_vignette_h/vignette_w;
-      float max = 0.5*((ratio <= 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
+      float max = 0.5f*((ratio <= 1.0f)?bigger_side*(2.0f-p->whratio):bigger_side);
       // FIXME: When going over the 1.0 boundary from narrow to wide (>1.0 -> <=1.0) the width slightly changes, depending on speed.
       //        I guess we have to split the computation.
-      if(ratio <= 1.0)
+      if(ratio <= 1.0f)
       {
         if(which == GDK_CONTROL_MASK)
         {
-          float new_scale = 100.0 * new_vignette_h / max;
+          float new_scale = 100.0f * new_vignette_h / max;
           dt_bauhaus_slider_set(g->scale, new_scale);
         }
         else
         {
-          dt_bauhaus_slider_set(g->whratio, 2.0-ratio);
+          dt_bauhaus_slider_set(g->whratio, 2.0f-ratio);
         }
       }
       else
       {
-        float new_scale = 100.0 * new_vignette_h / max;
+        float new_scale = 100.0f * new_vignette_h / max;
         dt_bauhaus_slider_set(g->scale, new_scale);
 
         if(which != GDK_CONTROL_MASK)
         {
-          float new_whratio = 1.0 / ratio;
+          float new_whratio = 1.0f / ratio;
           dt_bauhaus_slider_set(g->whratio, new_whratio);
         }
       }
@@ -589,17 +589,17 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
     else if(grab ==  8) // change the falloff on the right
     {
       float new_vignette_fx = pzx*wd - vignette_x;
-      float max = 0.5*((p->whratio <= 1.0)?bigger_side*p->whratio:bigger_side);
-      float delta_x = MIN(max, MAX(0.0, new_vignette_fx - vignette_w));
-      float new_falloff = 100.0 * delta_x / max;
+      float max = 0.5f*((p->whratio <= 1.0f)?bigger_side*p->whratio:bigger_side);
+      float delta_x = MIN(max, MAX(0.0f, new_vignette_fx - vignette_w));
+      float new_falloff = 100.0f * delta_x / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     else if(grab == 16) // change the falloff on the top
     {
       float new_vignette_fy = vignette_y - pzy*ht;
-      float max = 0.5*((p->whratio > 1.0)?bigger_side*(2.0-p->whratio):bigger_side);
-      float delta_y = MIN(max, MAX(0.0, new_vignette_fy - vignette_h));
-      float new_falloff = 100.0 * delta_y / max;
+      float max = 0.5f*((p->whratio > 1.0f)?bigger_side*(2.0f-p->whratio):bigger_side);
+      float delta_y = MIN(max, MAX(0.0f, new_vignette_fy - vignette_h));
+      float new_falloff = 100.0f * delta_y / max;
       dt_bauhaus_slider_set(g->falloff_scale, new_falloff);
     }
     dt_control_queue_redraw_center();
@@ -653,8 +653,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* Center coordinates of vignette center */
   const dt_iop_vector_2d_t vignette_center =
   {
-    buf_center.x + data->center.x * buf_in->width / 2.0,
-    buf_center.y + data->center.y * buf_in->height / 2.0
+    buf_center.x + data->center.x * buf_in->width / 2.0f,
+    buf_center.y + data->center.y * buf_in->height / 2.0f
   };
   /* Coordinates of vignette_center in terms of roi_in */
   const dt_iop_vector_2d_t roi_center =
@@ -668,14 +668,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   /* w/h ratio follows piece dimensions */
   if (data->autoratio)
   {
-    xscale=2.0/(buf_in->width*roi_out->scale);
-    yscale=2.0/(buf_in->height*roi_out->scale);
+    xscale=2.0f/(buf_in->width*roi_out->scale);
+    yscale=2.0f/(buf_in->height*roi_out->scale);
   }
   else				/* specified w/h ratio, scale proportional to longest side */
   {
-    const float basis = 2.0 / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
+    const float basis = 2.0f / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
     // w/h ratio from 0-1 use as-is
-    if (data->whratio <= 1.0)
+    if (data->whratio <= 1.0f)
     {
       yscale=basis;
       xscale=yscale/data->whratio;
@@ -685,16 +685,16 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     else
     {
       xscale=basis;
-      yscale=xscale/(2.0-data->whratio);
+      yscale=xscale/(2.0f-data->whratio);
     }
   }
-  const float dscale=data->scale/100.0;
+  const float dscale=data->scale/100.0f;
   // A minimum falloff is used, based on the image size, to smooth out aliasing artifacts
-  const float min_falloff=100.0/MIN(buf_in->width, buf_in->height);
-  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0;
-  const float shape=MAX(data->shape,0.001);
-  const float exp1=2.0/shape;
-  const float exp2=shape/2.0;
+  const float min_falloff=100.0f/MIN(buf_in->width, buf_in->height);
+  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0f;
+  const float shape=MAX(data->shape,0.001f);
+  const float exp1=2.0f/shape;
+  const float exp2=shape/2.0f;
   // Pre-scale the center offset
   const dt_iop_vector_2d_t roi_center_scaled =
   {
@@ -741,19 +741,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
       // Calculate the pixel weight in vignette
       const float cplen=powf(powf(pv.x,exp1)+powf(pv.y,exp1),exp2);  // Length from center to pv
-      float weight=0.0;
-      float dith=0.0;
+      float weight=0.0f;
+      float dith=0.0f;
 
       if( cplen>=dscale ) // pixel is outside the inner vignette circle, lets calculate weight of vignette
       {
         weight=((cplen-dscale)/fscale);
-        if (weight >= 1.0)
-          weight = 1.0;
-        else if (weight <= 0.0)
-          weight = 0.0;
+        if (weight >= 1.0f)
+          weight = 1.0f;
+        else if (weight <= 0.0f)
+          weight = 0.0f;
         else
         {
-          weight=0.5 - cosf( M_PI*weight )/2.0;
+          weight=0.5f - cosf( (float)M_PI*weight )/2.0f;
           encrypt_tea(tea_state);
           dith = dither * tpdf(tea_state[0]);
         }
@@ -764,13 +764,13 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       if( weight > 0 )
       {
         // Then apply falloff vignette
-        float falloff=(data->brightness<0)?(1.0+(weight*data->brightness)):(weight*data->brightness);
+        float falloff=(data->brightness<0)?(1.0f+(weight*data->brightness)):(weight*data->brightness);
         col0=CLIP( ((data->brightness<0)? col0*falloff+dith : col0+falloff+dith) );
         col1=CLIP( ((data->brightness<0)? col1*falloff+dith : col1+falloff+dith) );
         col2=CLIP( ((data->brightness<0)? col2*falloff+dith : col2+falloff+dith) );
 
         // apply saturation
-        float mv=(col0+col1+col2)/3.0;
+        float mv=(col0+col1+col2)/3.0f;
         float wss=weight*data->saturation;
         col0=CLIP( col0-((mv-col0)* wss) );
         col1=CLIP( col1-((mv-col1)* wss) );
@@ -808,8 +808,8 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   /* Center coordinates of vignette center */
   const dt_iop_vector_2d_t vignette_center =
   {
-    buf_center.x + data->center.x * buf_in->width / 2.0,
-    buf_center.y + data->center.y * buf_in->height / 2.0
+    buf_center.x + data->center.x * buf_in->width / 2.0f,
+    buf_center.y + data->center.y * buf_in->height / 2.0f
   };
   /* Coordinates of vignette_center in terms of roi_in */
   const dt_iop_vector_2d_t roi_center =
@@ -823,14 +823,14 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   /* w/h ratio follows piece dimensions */
   if (data->autoratio)
   {
-    xscale=2.0/(buf_in->width*roi_out->scale);
-    yscale=2.0/(buf_in->height*roi_out->scale);
+    xscale=2.0f/(buf_in->width*roi_out->scale);
+    yscale=2.0f/(buf_in->height*roi_out->scale);
   }
   else				/* specified w/h ratio, scale proportional to longest side */
   {
-    const float basis = 2.0 / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
+    const float basis = 2.0f / (MAX(buf_in->height, buf_in->width) * roi_out->scale);
     // w/h ratio from 0-1 use as-is
-    if (data->whratio <= 1.0)
+    if (data->whratio <= 1.0f)
     {
       yscale=basis;
       xscale=yscale/data->whratio;
@@ -840,16 +840,16 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
     else
     {
       xscale=basis;
-      yscale=xscale/(2.0-data->whratio);
+      yscale=xscale/(2.0f-data->whratio);
     }
   }
-  const float dscale=data->scale/100.0;
+  const float dscale=data->scale/100.0f;
   // A minimum falloff is used, based on the image size, to smooth out aliasing artifacts
-  const float min_falloff=100.0/MIN(buf_in->width, buf_in->height);
-  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0;
-  const float shape=MAX(data->shape,0.001);
-  const float exp1=2.0/shape;
-  const float exp2=shape/2.0;
+  const float min_falloff=100.0f/MIN(buf_in->width, buf_in->height);
+  const float fscale=MAX(data->falloff_scale,min_falloff)/100.0f;
+  const float shape=MAX(data->shape,0.001f);
+  const float exp1=2.0f/shape;
+  const float exp2=shape/2.0f;
   // Pre-scale the center offset
   const dt_iop_vector_2d_t roi_center_scaled =
   {

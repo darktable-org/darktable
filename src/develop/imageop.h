@@ -510,7 +510,7 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
     const float yy = y[k]/y0, xx = x[k]/x0;
     if(yy > 0.0f && xx > 0.0f)
     {
-      const float gg = logf(y[k]/y0)/log(x[k]/x0);
+      const float gg = logf(y[k]/y0)/logf(x[k]/x0);
       g += gg;
       cnt ++;
     }

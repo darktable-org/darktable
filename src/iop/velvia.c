@@ -136,7 +136,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float strength = data->strength/100.0f;
 
   // Apply velvia saturation
-  if(strength <= 0.0)
+  if(strength <= 0.0f)
     memcpy(out, in, (size_t)sizeof(float)*ch*roi_out->width*roi_out->height);
   else
   {

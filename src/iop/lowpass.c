@@ -477,7 +477,7 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
 
 
   // generate precomputed contrast curve
-  if(fabs(d->contrast) <= 1.0f)
+  if(fabsf(d->contrast) <= 1.0f)
   {
     // linear curve for contrast up to +/- 1
     for(int k=0; k<0x10000; k++) d->ctable[k] = d->contrast*(100.0f*k/0x10000 - 50.0f) + 50.0f;
@@ -487,8 +487,8 @@ commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpi
     // sigmoidal curve for contrast above +/-1 1
     // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
     const float boost = 5.0f;
-    const float contrastm1sq = boost*(fabs(d->contrast) - 1.0f)*(fabs(d->contrast) - 1.0f);
-    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+    const float contrastm1sq = boost*(fabsf(d->contrast) - 1.0f)*(fabsf(d->contrast) - 1.0f);
+    const float contrastscale = copysign(sqrtf(1.0f + contrastm1sq), d->contrast);
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(d) schedule(static)
 #endif

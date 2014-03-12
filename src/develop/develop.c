@@ -380,23 +380,23 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_invalidate(dev); // only invalidate image, preview will follow once it's loaded.
 }
 
-float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
+double dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_factor, int preview)
 {
-  float zoom_scale;
+  double zoom_scale;
 
   const float w = preview ? dev->preview_pipe->processed_width  : dev->pipe->processed_width;
   const float h = preview ? dev->preview_pipe->processed_height : dev->pipe->processed_height;
-  const float ps = dev->pipe->backbuf_width ?
-                   dev->pipe->processed_width/(float)dev->preview_pipe->processed_width :
+  const double ps = dev->pipe->backbuf_width ?
+                   dev->pipe->processed_width/dev->preview_pipe->processed_width :
                    dev->preview_pipe->iscale / dev->preview_downsampling;
 
   switch(zoom)
   {
     case DT_ZOOM_FIT:
-      zoom_scale = fminf(dev->width/w, dev->height/h);
+      zoom_scale = fmin(dev->width/w, dev->height/h);
       break;
     case DT_ZOOM_FILL:
-      zoom_scale = fmaxf(dev->width/w, dev->height/h);
+      zoom_scale = fmax(dev->width/w, dev->height/h);
       break;
     case DT_ZOOM_1:
       zoom_scale = closeup_factor;

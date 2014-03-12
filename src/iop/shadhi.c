@@ -283,11 +283,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int   order = data->order;
   const float radius = fmaxf(0.1f, fabsf(data->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
-  const float shadows = 2.0*fmin(fmax(-1.0,(data->shadows/100.0)), 1.0f);
-  const float highlights = 2.0*fmin(fmax(-1.0,(data->highlights/100.0)), 1.0f);
-  const float compress = fmin(fmax(0,(data->compress/100.0)), 0.99f);   // upper limit 0.99f to avoid division by zero later
-  const float shadows_ccorrect = (fmin(fmax(0,(data->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
-  const float highlights_ccorrect = (fmin(fmax(0,(data->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
+  const float shadows = 2.0f*fminf(fmax(-1.0f,(data->shadows/100.0f)), 1.0f);
+  const float highlights = 2.0f*fminf(fmax(-1.0f,(data->highlights/100.0f)), 1.0f);
+  const float compress = fminf(fmaxf(0,(data->compress/100.0f)), 0.99f);   // upper limit 0.99f to avoid division by zero later
+  const float shadows_ccorrect = (fminf(fmax(0.0f,(data->shadows_ccorrect/100.0f)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
+  const float highlights_ccorrect = (fminf(fmax(0.0f,(data->highlights_ccorrect/100.0f)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
   const unsigned int flags = data->flags;
   const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
   const float low_approximation = data->low_approximation;
@@ -336,9 +336,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float max[4] = {1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = {0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
-  const float lmax = max[0] + fabs(min[0]);
-  const float halfmax = lmax/2.0;
-  const float doublemax = lmax*2.0;
+  const float lmax = max[0] + fabsf(min[0]);
+  const float halfmax = lmax/2.0f;
+  const float doublemax = lmax*2.0f;
 
 
 #ifdef _OPENMP
@@ -359,14 +359,14 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights)*sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f/fabs(la) : 1.0f/low_approximation, la);
-      float href = copysignf(fabs(1.0f - la) > low_approximation ? 1.0f/fabs(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
+      float lref = copysignf(fabsf(la) > low_approximation ? 1.0f/fabsf(la) : 1.0f/low_approximation, la);
+      float href = copysignf(fabsf(1.0f - la) > low_approximation ? 1.0f/fabsf(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
 
       float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
       float optrans = chunk * highlights_xform;
       highlights2 -= 1.0f;
 
-      ta[0] = la * (1.0 - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
+      ta[0] = la * (1.0f - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
 
       ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
@@ -391,15 +391,15 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows)*sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f/fabs(la) : 1.0f/low_approximation, la);
-      float href = copysignf(fabs(1.0f - la) > low_approximation ? 1.0f/fabs(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
+      float lref = copysignf(fabsf(la) > low_approximation ? 1.0f/fabsf(la) : 1.0f/low_approximation, la);
+      float href = copysignf(fabsf(1.0f - la) > low_approximation ? 1.0f/fabsf(1.0f - la) : 1.0f/low_approximation, 1.0f - la);
 
 
       float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
       float optrans = chunk * shadows_xform;
       shadows2 -= 1.0f;
 
-      ta[0] = la * (1.0 - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
+      ta[0] = la * (1.0f - optrans) + ( la>halfmax  ?  lmax - (lmax - doublemax*(la-halfmax)) * (lmax-lb) : doublemax*la*lb ) * optrans;
 
       ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
@@ -442,11 +442,11 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int order = d->order;
   const float radius = fmaxf(0.1f, fabsf(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
-  const float shadows = 2.0*fmin(fmax(-1.0,(d->shadows/100.0f)), 1.0f);
-  const float highlights = 2.0*fmin(fmax(-1.0,(d->highlights/100.0f)), 1.0f);
-  const float compress = fmin(fmax(0,(d->compress/100.0)), 0.99f);  // upper limit 0.99f to avoid division by zero later
-  const float shadows_ccorrect = (fmin(fmax(0,(d->shadows_ccorrect/100.0)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
-  const float highlights_ccorrect = (fmin(fmax(0,(d->highlights_ccorrect/100.0)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
+  const float shadows = 2.0f*fminf(fmax(-1.0,(d->shadows/100.0f)), 1.0f);
+  const float highlights = 2.0f*fminf(fmax(-1.0,(d->highlights/100.0f)), 1.0f);
+  const float compress = fminf(fmax(0.0f,(d->compress/100.0f)), 0.99f);  // upper limit 0.99f to avoid division by zero later
+  const float shadows_ccorrect = (fminf(fmax(0.0f,(d->shadows_ccorrect/100.0f)), 1.0f) - 0.5f) * sign(shadows) + 0.5f;
+  const float highlights_ccorrect = (fminf(fmax(0.0f,(d->highlights_ccorrect/100.0f)), 1.0f) - 0.5f) * sign(-highlights) + 0.5f;
   const float low_approximation = d->low_approximation;
   const unsigned int flags = d->flags;
   const int unbound_mask = (use_bilateral && (flags & UNBOUND_BILATERAL)) || (!use_bilateral && (flags & UNBOUND_GAUSSIAN));
@@ -531,7 +531,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const float radius = fmax(0.1f, fabs(d->radius));
+  const float radius = fmax(0.1f, fabsf(d->radius));
   const float sigma = radius * roi_in->scale / piece ->iscale;
   const float sigma_r = 100.0f; // does not depend on scale
   const float sigma_s = sigma;
