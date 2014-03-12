@@ -610,12 +610,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
-    const char* str = dt_conf_get_string("ui_last/import_last_creator");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.creator", str);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
               != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
@@ -636,28 +631,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
 
-    str = dt_conf_get_string("ui_last/import_last_rights");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.rights", str);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
               != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
-    }
-
-    // some more metadata fields set in the import dialog
-    str = dt_conf_get_string("ui_last/import_last_publisher");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.publisher", str);
-    }
-    str = dt_conf_get_string("ui_last/import_last_tags");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_tag_attach_string_list(str, img->id);
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
@@ -779,6 +757,34 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   }
 }
 
+static void dt_exif_apply_global_overwrites(dt_image_t *img)
+{
+  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  {
+    char* str;
+
+    str = dt_conf_get_string("ui_last/import_last_creator");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.creator", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_rights");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.rights", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_publisher");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.publisher", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_tags");
+    if(str != NULL && str[0] != '\0')
+      dt_tag_attach_string_list(str, img->id);
+    g_free(str);
+  }
+}
+
 //TODO: can this blob also contain xmp and iptc data?
 int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 {
@@ -786,7 +792,9 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   {
     Exiv2::ExifData exifData;
     Exiv2::ExifParser::decode(exifData, blob, size);
-    return dt_exif_read_exif_data(img, exifData)?0:1;
+    bool res = dt_exif_read_exif_data(img, exifData);
+    dt_exif_apply_global_overwrites(img);
+    return res?0:1;
   }
   catch (Exiv2::AnyError& e)
   {
@@ -801,25 +809,39 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
  */
 int dt_exif_read(dt_image_t *img, const char* path)
 {
+  // at least set datetime taken to something useful in case there is no exif data in this file (pfm, png, ...)
+  struct stat statbuf;
+  stat(path, &statbuf);
+  struct tm result;
+  strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+
   try
   {
     Exiv2::Image::AutoPtr image;
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
-    bool res;
+    bool res = true;
 
     // EXIF metadata
     Exiv2::ExifData &exifData = image->exifData();
-    res = dt_exif_read_exif_data(img, exifData);
+    if(!exifData.empty())
+      res = dt_exif_read_exif_data(img, exifData);
+    else
+      img->exif_inited = 1;
+
+    // these get overwritten by IPTC and XMP. is that how it should work?
+    dt_exif_apply_global_overwrites(img);
 
     // IPTC metadata.
     Exiv2::IptcData &iptcData = image->iptcData();
-    res = dt_exif_read_iptc_data(img, iptcData) && res;
+    if(!iptcData.empty())
+      res = dt_exif_read_iptc_data(img, iptcData) && res;
 
     // XMP metadata
     Exiv2::XmpData &xmpData = image->xmpData();
-    res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
+    if(!xmpData.empty())
+      res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
 
     // Initialize size - don't wait for full raw to be loaded to get this
     // information. If use_embedded_thumbnail is set, it will take a
@@ -831,12 +853,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
   catch (Exiv2::AnyError& e)
   {
-    // at least set datetime taken to something useful in case there is no exif data in this file (pfm)
-    struct stat statbuf;
-    stat(path, &statbuf);
-    struct tm result;
-    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
-
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;
