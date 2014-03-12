@@ -380,7 +380,7 @@ void leave(dt_view_t *self)
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
-  d->oldprofile = 0;
+  d->oldprofile = NULL;
   dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);

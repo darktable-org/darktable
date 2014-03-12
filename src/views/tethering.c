@@ -312,8 +312,10 @@ void enter(dt_view_t *self)
 
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
   if (tmp != NULL)
+  {
     _capture_view_set_jobcode(self, tmp);
-  g_free(tmp);
+    g_free(tmp);
+  }
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)

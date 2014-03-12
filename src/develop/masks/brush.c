@@ -1258,6 +1258,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
           gui->pressure_sensitivity = DT_MASKS_PRESSURE_OPACITY_REL;
         else if(!strcmp(psens, "brush size (relative)"))
           gui->pressure_sensitivity = DT_MASKS_PRESSURE_BRUSHSIZE_REL;
+        g_free(psens);
       }
 
       dt_control_queue_redraw_center();

@@ -838,10 +838,7 @@ dt_colorspaces_create_output_profile(const int imgid)
     g_strlcpy(profile, overprofile, sizeof(profile));
   }
 
-  if(overprofile)
-  {
-    g_free(overprofile);
-  }
+  g_free(overprofile);
 
   cmsHPROFILE output = NULL;
 

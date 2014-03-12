@@ -197,8 +197,12 @@ static int read_pref(lua_State*L)
   switch(i)
   {
     case pref_string:
-      lua_pushstring(L,dt_conf_get_string(pref_name));
+    {
+      char *str = dt_conf_get_string(pref_name);
+      lua_pushstring(L,str);
+      g_free(str);
       break;
+    }
     case pref_bool:
       lua_pushboolean(L,dt_conf_get_bool(pref_name));
       break;
@@ -351,7 +355,9 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     {
       case pref_string:
         cur_elt->widget = gtk_entry_new();
-        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
+        gchar *str = dt_conf_get_string(pref_name);
+        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
+        g_free(str);
         g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
         snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);

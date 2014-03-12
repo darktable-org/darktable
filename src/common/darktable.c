@@ -582,7 +582,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   g_slist_free_full(config_override, g_free);
 
   // set the interface language
-  const gchar* lang = dt_conf_get_string("ui_last/gui_language");
+  const gchar* lang = dt_conf_get_string("ui_last/gui_language"); // we may not g_free 'lang' since it is owned by setlocale afterwards
   if(lang != NULL && lang[0] != '\0')
   {
     if(setlocale(LC_ALL, lang) != NULL)

@@ -79,12 +79,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "linear") == 0)
+  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
+  if(g_strcmp0(mode, "linear") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "logarithmic") == 0)
+  else if(g_strcmp0(mode, "logarithmic") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
-  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "waveform") == 0)
+  else if(g_strcmp0(mode, "waveform") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
+  g_free(mode);
 
   if(dev->gui_attached)
   {

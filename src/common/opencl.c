@@ -48,6 +48,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr);
 
 void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
 {
+  char *str;
   dt_pthread_mutex_init(&cl->lock, NULL);
   cl->inited = 0;
   cl->enabled = 0;
@@ -94,10 +95,14 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl related configuration options:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl: %d\n", dt_conf_get_bool("opencl"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", dt_conf_get_string("opencl_library"));
+  str = dt_conf_get_string("opencl_library");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_library: '%s'\n", str);
+  g_free(str);
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_requirement: %d\n", dt_conf_get_int("opencl_memory_requirement"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_memory_headroom: %d\n", dt_conf_get_int("opencl_memory_headroom"));
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", dt_conf_get_string("opencl_device_priority"));
+  str = dt_conf_get_string("opencl_device_priority");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_device_priority: '%s'\n", str);
+  g_free(str);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_size_roundup: %d\n", dt_conf_get_int("opencl_size_roundup"));
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl_async_pixelpipe: %d\n", dt_conf_get_bool("opencl_async_pixelpipe"));
@@ -113,19 +118,21 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] \n");
 
   // look for explicit definition of opencl_runtime library in preferences
-  const char *library = dt_conf_get_string("opencl_library");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: '%s'\n", library && strlen(library) != 0 ? library : "<system default>");
+  char *library = dt_conf_get_string("opencl_library");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_init] trying to load opencl library: '%s'\n", library && library[0] != '\0' ? library : "<system default>");
 
   // dynamically load opencl runtime
   if(!dt_dlopencl_init(library, &cl->dlocl))
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] no working opencl library found. Continue with opencl disabled\n");
+    g_free(library);
     goto finally;
   }
   else
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] opencl library '%s' found on your system and loaded\n", cl->dlocl->library);
   }
+  g_free(library);
 
   cl_int err;
   cl_platform_id all_platforms[DT_OPENCL_MAX_PLATFORMS];
@@ -414,7 +421,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
     assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
     // apply config settings for device priority
-    dt_opencl_priorities_parse(cl, dt_conf_get_string("opencl_device_priority"));
+    char *str = dt_conf_get_string("opencl_device_priority");
+    dt_opencl_priorities_parse(cl, str);
+    g_free(str);
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] here are the internal numbers and names of OpenCL devices available to darktable:\n");

@@ -126,12 +126,13 @@ _gcw_reset_callback (GtkDarktableButton *button, gpointer user_data)
 {
   _camera_gconf_widget_t *gcw=(_camera_gconf_widget_t*)user_data;
   gchar *configstring=g_object_get_data(G_OBJECT(gcw->widget),"gconf:string");
-  gchar *value=dt_conf_get_string(configstring);
+  gchar *value = dt_conf_get_string(configstring);
   if(value)
   {
-    gtk_entry_set_text( GTK_ENTRY( gcw->entry ),value);
-    if(gcw->value) g_free(gcw->value);
-    gcw->value=g_strdup(value);
+    gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
+    if(gcw->value)
+      g_free(gcw->value);
+    gcw->value = value;
   }
 }
 
@@ -170,12 +171,13 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
   gcw->dialog=dlg;
 
   gcw->entry=gtk_entry_new();
-  char* value = NULL;
-  if((value = dt_conf_get_string (confstring)))
+  char* value = dt_conf_get_string(confstring);
+  if(value)
   {
-    gtk_entry_set_text( GTK_ENTRY( gcw->entry ),dt_conf_get_string (confstring));
-    gcw->value=g_strdup(value);
-    g_free(value);
+    gtk_entry_set_text( GTK_ENTRY( gcw->entry ), value);
+    if(gcw->value)
+      g_free(gcw->value);
+    gcw->value = value;
   }
 
   gtk_box_pack_start(GTK_BOX(hbox),GTK_WIDGET(gcw->entry),TRUE,TRUE,0);
@@ -498,8 +500,11 @@ void _camera_import_dialog_run(_camera_import_dialog_t *data)
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)))
         data->params->time_override = parse_date_time(gtk_entry_get_text(GTK_ENTRY(data->settings.general.date_entry)));
 
-      if( data->params->jobcode == NULL || strlen(data->params->jobcode) <=0 )
+      if( data->params->jobcode == NULL || data->params->jobcode[0] == '\0' )
+      {
+        g_free(data->params->jobcode); // might just be a string of length 0
         data->params->jobcode = dt_conf_get_string("plugins/capture/camera/import/jobcode");
+      }
       else if( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->settings.general.date_override)) && data->params->time_override == 0)
       {
         GtkWidget *dialog=gtk_message_dialog_new(NULL,GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("please use YYYY-MM-DD format for date override"));

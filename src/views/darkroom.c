@@ -847,13 +847,14 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
   int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-  g_free(format_name);
-  g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
   dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, style);
+  g_free(format_name);
+  g_free(storage_name);
+  g_free(style);
   return TRUE;
 }
 

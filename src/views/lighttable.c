@@ -1701,6 +1701,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
               g_free(filename);
             }
           }
+          g_free(player);
         }
 
         break;
