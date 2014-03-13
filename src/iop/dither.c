@@ -38,6 +38,7 @@
 #include <inttypes.h>
 #include <xmmintrin.h>
 
+#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define TEA_ROUNDS 8
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
@@ -268,7 +269,7 @@ void process_floyd_steinberg (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   if(nearest_color == NULL) return;
 
   const float f = levels - 1;
-  const float rf = 1.0f/f;
+  const float rf = 1.0/f;
   __m128 err;
 
   // dither without error diffusion on very tiny images
@@ -397,9 +398,9 @@ void process_random (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
       encrypt_tea(tea_state);
       float dith = dither * tpdf(tea_state[0]);
 
-      out[0] = CLAMP(in[0] + dith, 0.0f, 1.0f);
-      out[1] = CLAMP(in[1] + dith, 0.0f, 1.0f);
-      out[2] = CLAMP(in[2] + dith, 0.0f, 1.0f);
+      out[0] = CLIP(in[0] + dith);
+      out[1] = CLIP(in[1] + dith);
+      out[2] = CLIP(in[2] + dith);
     }
   }
 

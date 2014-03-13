@@ -127,7 +127,7 @@ void init_presets (dt_iop_module_so_t *self)
 static float
 color_filter(const float ai, const float bi, const float a, const float b, const float size)
 {
-  return dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0f*size), 0.0f, 1.0f));
+  return dt_fast_expf(-CLAMPS(((ai-a)*(ai-a) + (bi-b)*(bi-b))/(2.0*size), 0.0f, 1.0f));
 }
 
 static float
@@ -154,7 +154,7 @@ envelope(const float L)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   dt_iop_monochrome_data_t *d = (dt_iop_monochrome_data_t *)piece->data;
-  const float sigma2 = (d->size*128.0f)*(d->size*128.0f);
+  const float sigma2 = (d->size*128.0)*(d->size*128.0f);
   // first pass: evaluate color filter:
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, i, o, d) schedule(static)
@@ -211,7 +211,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const float sigma2 = (d->size*128.0f)*(d->size*128.0f);
+  const float sigma2 = (d->size*128.0)*(d->size*128.0f);
 
   // TODO: alloc new buffer, bilat filter, and go on with that
   const float scale = piece->iscale/roi_in->scale;
@@ -402,9 +402,9 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
       Lab.L = 53.390011;
       Lab.a = Lab.b = 0; // grey
       // dt_iop_sRGB_to_Lab(rgb, Lab, 0, 0, 1.0, 1, 1); // get grey in Lab
-      Lab.a = PANEL_WIDTH*(i/(cells-1.0f) - 0.5f);
-      Lab.b = PANEL_WIDTH*(j/(cells-1.0f) - 0.5f);
-      const double f = color_filter(Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
+      Lab.a = PANEL_WIDTH*(i/(cells-1.0) - .5);
+      Lab.b = PANEL_WIDTH*(j/(cells-1.0) - .5);
+      const float f = color_filter(Lab.a, Lab.b, p->a, p->b, 40*40*p->size*p->size);
       Lab.L *= f*f; // exaggerate filter a little
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
@@ -507,8 +507,8 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  if(event->direction == GDK_SCROLL_UP   && p->size > 0.5f) p->size -= 0.1f;
-  if(event->direction == GDK_SCROLL_DOWN && p->size < 3.0f) p->size += 0.1f;
+  if(event->direction == GDK_SCROLL_UP   && p->size >   .5) p->size -= 0.1;
+  if(event->direction == GDK_SCROLL_DOWN && p->size <  3.0) p->size += 0.1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
   return TRUE;

@@ -630,7 +630,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
   const float ih = piece->buf_in.height;
-  const float uscale = data->scale / 100.0f;   // user scale, from GUI in percent
+  const float uscale = data->scale / 100.0;   // user scale, from GUI in percent
 
   // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
   // scale is the scale of the watermark itself and is used only to render it.
@@ -709,18 +709,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   // compute translation for the given alignment in image dimension
 
-  float ty=0.0f,tx=0.0f;
+  float ty=0,tx=0;
   if( data->alignment >=0 && data->alignment <3) // Align to verttop
     ty=0;
   else if( data->alignment >=3 && data->alignment <6) // Align to vertcenter
-    ty=(ih/2.0f)-(svg_height/2.0f);
+    ty=(ih/2.0)-(svg_height/2.0);
   else if( data->alignment >=6 && data->alignment <9) // Align to vertbottom
     ty=ih-svg_height;
 
   if( data->alignment == 0 ||  data->alignment == 3 || data->alignment==6 )
     tx=0;
   else if( data->alignment == 1 ||  data->alignment == 4 || data->alignment==7 )
-    tx=(iw/2.0f)-(svg_width/2.0f);
+    tx=(iw/2.0)-(svg_width/2.0);
   else if( data->alignment == 2 ||  data->alignment == 5 || data->alignment==8 )
     tx=iw-svg_width;
 
@@ -746,7 +746,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
   /* render surface on output */
   guint8 *sd = image;
-  float opacity = data->opacity/100.0f;
+  float opacity = data->opacity/100.0;
   /*
   #ifdef _OPENMP
   	#pragma omp parallel for default(none) shared(roi_out, in, out,sd,opacity) schedule(static)
@@ -754,11 +754,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   */
   for(int j=0; j<roi_out->height; j++) for(int i=0; i<roi_out->width; i++)
     {
-      float alpha = (sd[3]/255.0f)*opacity;
+      float alpha = (sd[3]/255.0)*opacity;
       /* svg uses a premultiplied alpha, so only use opacity for the blending */
-      out[0] = ((1.0f-alpha)*in[0]) + (opacity*(sd[2]/255.0f));
-      out[1] = ((1.0f-alpha)*in[1]) + (opacity*(sd[1]/255.0f));
-      out[2] = ((1.0f-alpha)*in[2]) + (opacity*(sd[0]/255.0f));
+      out[0] = ((1.0-alpha)*in[0]) + (opacity*(sd[2]/255.0));
+      out[1] = ((1.0-alpha)*in[1]) + (opacity*(sd[1]/255.0));
+      out[2] = ((1.0-alpha)*in[2]) + (opacity*(sd[0]/255.0));
       out[3] = in[3];
 
       out+=ch;

@@ -104,17 +104,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
   const int ch = piece->colors;
 
   // these are RGB values!
-  const float lift[3] = {2.0f - (d->lift[CHANNEL_RED]   * d->lift[CHANNEL_FACTOR]),
-                         2.0f - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
-                         2.0f - (d->lift[CHANNEL_BLUE]  * d->lift[CHANNEL_FACTOR])
+  const float lift[3] = {2.0 - (d->lift[CHANNEL_RED]   * d->lift[CHANNEL_FACTOR]),
+                         2.0 - (d->lift[CHANNEL_GREEN] * d->lift[CHANNEL_FACTOR]),
+                         2.0 - (d->lift[CHANNEL_BLUE]  * d->lift[CHANNEL_FACTOR])
                         },
               gamma[3] = {d->gamma[CHANNEL_RED]   * d->gamma[CHANNEL_FACTOR],
                           d->gamma[CHANNEL_GREEN] * d->gamma[CHANNEL_FACTOR],
                           d->gamma[CHANNEL_BLUE]  * d->gamma[CHANNEL_FACTOR]
                          },
-              gamma_inv[3] = {(gamma[0] != 0.0f) ? 1.0f / gamma[0] : 1000000.0f,
-                              (gamma[1] != 0.0f) ? 1.0f / gamma[1] : 1000000.0f,
-                              (gamma[2] != 0.0f) ? 1.0f / gamma[2] : 1000000.0f
+              gamma_inv[3] = {(gamma[0] != 0.0) ? 1.0 / gamma[0] : 1000000.0,
+                              (gamma[1] != 0.0) ? 1.0 / gamma[1] : 1000000.0,
+                              (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0
                              },
               gain[3] = {d->gain[CHANNEL_RED]   * d->gain[CHANNEL_FACTOR],
                          d->gain[CHANNEL_GREEN] * d->gain[CHANNEL_FACTOR],
@@ -162,7 +162,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
           rgb[r] += xyz_to_srgb[r][c] * XYZ[c];
       // linear sRGB -> gamma corrected sRGB
       for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
+        rgb[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
 
       // do the calculation in RGB space
       for(int c = 0; c < 3; c++)
@@ -178,7 +178,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *
       XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
       // gamma corrected sRGB -> linear sRGB
       for(int c = 0; c < 3; c++)
-        rgb[c] = rgb[c] <= 0.04045f ? rgb[c] / 12.92f : powf((rgb[c] + 0.055f) / (1 + 0.055f), 2.4);
+        rgb[c] = rgb[c] <= 0.04045 ? rgb[c] / 12.92 : powf((rgb[c] + 0.055) / (1 + 0.055), 2.4);
       for(int r = 0; r < 3; r++)
         for(int c = 0; c < 3; c++)
           XYZ[r] += srgb_to_xyz[r][c] * rgb[c];

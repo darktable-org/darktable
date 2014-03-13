@@ -37,7 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#define CLIP(x)                 ((x<0)?0.0f:(x>1.0f)?1.0f:x)
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_relight_params_t)
 
@@ -120,7 +120,7 @@ void connect_key_accels(dt_iop_module_t *self)
 }
 
 
-#define GAUSS(a,b,c,x) (a*powf(2.718281828f,(-powf((x-b),2)/(powf(c,2)))))
+#define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
@@ -128,9 +128,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int ch = piece->colors;
 
   // Precalculate parameters for gauss function
-  const float a = 1.0f;                                                                // Height of top
-  const float b = -1.0f+(data->center*2);                                 // Center of top
-  const float c = (data->width/10.0f)/2.0f;      				                    // Width
+  const float a = 1.0;                                                                // Height of top
+  const float b = -1.0+(data->center*2);                                 // Center of top
+  const float c = (data->width/10.0)/2.0;      				                    // Width
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, ivoid, ovoid, data) schedule(static)
@@ -141,19 +141,19 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
     for(int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      const float lightness = in[0]/100.0f;
-      const float x = -1.0f+(lightness*2.0f);
+      const float lightness = in[0]/100.0;
+      const float x = -1.0+(lightness*2.0);
       float gauss = GAUSS(a,b,c,x);
 
       if(isnan(gauss) || isinf(gauss))
         gauss = 0.0;
 
-      float relight = 1.0f / exp2f ( -data->ev * CLIP(gauss));
+      float relight = 1.0 / exp2f ( -data->ev * CLIP(gauss));
 
       if(isnan(relight) || isinf(relight))
-        relight = 1.0f;
+        relight = 1.0;
 
-      out[0] = 100.0f*CLIP (lightness*relight);
+      out[0] = 100.0*CLIP (lightness*relight);
       out[1] = in[1];
       out[2] = in[2];
       out[3] = in[3];

@@ -427,22 +427,22 @@ dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   // sign swapping for fluxbox
-  c->mouse_x = -fabs(c->mouse_x);
-  c->mouse_y = -fabs(c->mouse_y);
+  c->mouse_x = -fabsf(c->mouse_x);
+  c->mouse_y = -fabsf(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
 
-static double to_log(const double x, double base)
+static float to_log(const float x, float base)
 {
   if(base)
-    return log(x*(base-1.0) + 1.0)/log(base);
+    return logf(x*(base-1.0f) + 1.0f)/logf(base);
   else return x;
 }
-static double to_lin(const double x, double base)
+static float to_lin(const float x, float base)
 {
   if(base)
-    return (pow(base, x) - 1.0)/(base - 1.0);
+    return (powf(base, x) - 1.0f)/(base - 1.0f);
   else return x;
 }
 
@@ -598,8 +598,8 @@ gboolean dt_iop_basecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
-  const double mx = c->mouse_x/width;
-  const double my = 1.0 - c->mouse_y/height;
+  const float mx = c->mouse_x/(float)width;
+  const float my = 1.0f - c->mouse_y/(float)height;
   const float linx = to_lin(mx, c->loglogscale), liny = to_lin(my, c->loglogscale);
 
   if(event->state & GDK_BUTTON1_MASK)

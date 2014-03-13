@@ -125,9 +125,9 @@ extern "C"
     const float iw=piece->buf_in.width*roi_out->scale;
     const float ih=piece->buf_in.height*roi_out->scale;
 
-    inv_sigma_s=(data->Fsize/100.0f) * fminf(iw,ih);
-    if(inv_sigma_s<3.0f) inv_sigma_s=3.0f;
-    inv_sigma_s = 1.0f/inv_sigma_s;
+    inv_sigma_s=(data->Fsize/100.0) * fminf(iw,ih);
+    if(inv_sigma_s<3.0) inv_sigma_s=3.0;
+    inv_sigma_s = 1.0/inv_sigma_s;
 
     PermutohedralLattice<3,2> lattice(size, omp_get_max_threads());
 
@@ -143,8 +143,8 @@ extern "C"
       const float *in = (const float*)ivoid + (size_t)j*width*ch;
       for(int i=0; i<width; i++, index++, in+=ch)
       {
-        float L = 0.2126f*in[0]+ 0.7152f*in[1] + 0.0722f*in[2];
-        if(L<=0.0f) L=1e-6f;
+        float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
+        if(L<=0.0) L=1e-6;
         L = logf(L);
         float pos[3] = {i*inv_sigma_s, j*inv_sigma_s, L*inv_sigma_r};
         float val[2] = {L,  1.0};
@@ -177,7 +177,7 @@ extern "C"
     //  after compression we substract 2.0 to have an average intensity at middle tone.
     //
 
-    const float contr = 1.0f/data->contrast;
+    const float contr = 1./data->contrast;
 #ifdef _OPENMP
     #pragma omp parallel for
 #endif
@@ -190,8 +190,8 @@ extern "C"
       {
         float val[2];
         lattice.slice(val, index);
-        float L = 0.2126f*in[0]+ 0.7152f*in[1] + 0.0722f*in[2];
-        if(L<=0.0f) L=1e-6f;
+        float L = 0.2126*in[0]+ 0.7152*in[1] + 0.0722*in[2];
+        if(L<=0.0) L=1e-6;
         L = logf(L);
         const float B = val[0]/val[1];
         const float detail = L - B;
@@ -206,8 +206,8 @@ extern "C"
     // also process the clipping point, as good as we can without knowing
     // the local environment (i.e. assuming detail == 0)
     float *pmax = piece->pipe->processed_maximum;
-    float L = 0.2126f*pmax[0]+ 0.7152f*pmax[1] + 0.0722f*pmax[2];
-    if(L<=0.0f) L=1e-6f;
+    float L = 0.2126*pmax[0]+ 0.7152*pmax[1] + 0.0722*pmax[2];
+    if(L<=0.0) L=1e-6;
     L = logf(L);
     const float Ln = expf(L*(contr - 1.0f) - 1.0f);
     for(int k=0; k<3; k++) pmax[k] *= Ln;

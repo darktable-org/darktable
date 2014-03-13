@@ -185,7 +185,7 @@ capture_histogram(const float *col, const int width, const int height, int *hist
   memset(hist,0, HISTN*sizeof(int));
   for(int k=0; k<height; k++) for(int i=0; i<width; i++)
     {
-      const int bin = CLAMP(HISTN*col[4*(k*width+i)+0]/100.0f, 0, HISTN-1);
+      const int bin = CLAMP(HISTN*col[4*(k*width+i)+0]/100.0, 0, HISTN-1);
       hist[bin]++;
     }
 
@@ -210,12 +210,12 @@ invert_histogram(const int *hist, float *inv_hist)
       }
 #else
   int last = 31;
-  for(int i=0; i<=last; i++) inv_hist[i] = 100.0f*i/(float)HISTN;
+  for(int i=0; i<=last; i++) inv_hist[i] = 100.0*i/(float)HISTN;
   for(int i=last+1; i<HISTN; i++) for(int k=last; k<HISTN; k++)
       if(hist[k] >= i)
       {
         last = k;
-        inv_hist[i] = 100.0f*k/(float)HISTN;
+        inv_hist[i] = 100.0*k/(float)HISTN;
         break;
       }
 #endif
@@ -922,8 +922,8 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   height -= 2*inset;
 
 
-  const double sep = 2.0;
-  const double qwd = (width-(p->n-1)*sep)/(double)p->n;
+  const float sep = 2.0;
+  const float qwd = (width-(p->n-1)*sep)/(float)p->n;
   for(int cl=0; cl<p->n; cl++)
   {
     // draw cluster
@@ -938,7 +938,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
         Lab.L = 53.390011;
         cmsDoTransform(g->xform, &Lab, rgb, 1);
         cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-        cairo_rectangle(cr, qwd*(i+1.0)/3.0, height*(j+1.0)/3.0, qwd/3.0-.5, height/3.0-.5);
+        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-.5, height/3.0-.5);
         cairo_fill(cr);
       }
     cairo_translate (cr, qwd + sep, 0);

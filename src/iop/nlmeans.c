@@ -360,7 +360,7 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
   const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
   const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
 
-  tiling->factor = 2.0f + 1.0f + 0.25f*NUM_BUCKETS; // in + out + tmp
+  tiling->factor = 2.0f + 1.0f + 0.25*NUM_BUCKETS; // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = P+K;

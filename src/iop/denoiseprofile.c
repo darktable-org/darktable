@@ -237,7 +237,7 @@ precondition(
       for(int c=0; c<3; c++)
       {
         buf2[c] = in2[c] / a[c];
-        const float d = fmaxf(0.0f, buf2[c] + 3.0f/8.0f + sigma2[c]);
+        const float d = fmaxf(0.0f, buf2[c] + 3./8. + sigma2[c]);
         buf2[c] = 2.0f*sqrtf(d);
       }
       buf2 += 4;
@@ -275,7 +275,7 @@ backtransform(
         // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
         if(x < .5f) buf2[c] = 0.0f;
         else
-          buf2[c] = 1.0f/4.0f*x*x + 1.0f/4.0f*sqrtf(3.0f/2.0f)/x - 11.0f/8.0f*1.0f/(x*x) + 5.0f/8.0f*sqrtf(3.0f/2.0f)*1.0f/(x*x*x) - 1.0f/8.0f - sigma2[c];
+          buf2[c] = 1./4.*x*x + 1./4.*sqrtf(3./2.)/x - 11./8.*1.0/(x*x) + 5./8.*sqrtf(3./2.)*1.0/(x*x*x) - 1./8. - sigma2[c];
         // asymptotic form:
         // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
@@ -1604,7 +1604,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   memcpy(d, p, sizeof(*d));
 
   // compare if a[0] in params is set to "magic value" -1.0 for autodetection
-  if ( p->a[0] == -1.0f )
+  if ( p->a[0] == -1.0 )
   {
     // autodetect matching profile again, the same way as detecting their names,
     // this is partially duplicated code and data because we are not allowed to access
@@ -1687,7 +1687,7 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(g->radius, FALSE);
   else
     gtk_widget_set_visible(g->radius, TRUE);
-  if ( p->a[0] == -1.0f )
+  if ( p->a[0] == -1.0 )
   {
     dt_bauhaus_combobox_set(g->profile, 0);
   }

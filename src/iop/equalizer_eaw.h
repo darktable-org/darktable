@@ -17,7 +17,7 @@
 */
 
 // edge-avoiding wavelet:
-#define gweight(i, j, ii, jj) 1.0f/(fabsf(weight_a[l][(size_t)wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][(size_t)wd*((jj)>>(l-1)) + ((ii)>>(l-1))])+1.e-5f)
+#define gweight(i, j, ii, jj) 1.0/(fabsf(weight_a[l][(size_t)wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][(size_t)wd*((jj)>>(l-1)) + ((ii)>>(l-1))])+1.e-5)
 // #define gweight(i, j, ii, jj) 1.0/(powf(fabsf(weight_a[l][wd*((j)>>(l-1)) + ((i)>>(l-1))] - weight_a[l][wd*((jj)>>(l-1)) + ((ii)>>(l-1))]),0.8)+1.e-5)
 // std cdf(2,2) wavelet:
 // #define gweight(i, j, ii, jj) (wd ? 1.0 : 1.0) //1.0
@@ -54,7 +54,7 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
     for(ch=0; ch<3; ch++) gbuf(buf, 0, j) += gbuf(buf, st, j)*0.5f;
     for(i=step; i<width-st; i+=step) for(ch=0; ch<3; ch++)
         gbuf(buf, i, j) += (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
-                           /(2.0f*(tmp[i-st] + tmp[i]));
+                           /(2.0*(tmp[i-st] + tmp[i]));
     if(i < width) for(ch=0; ch<3; ch++) gbuf(buf, i, j) += gbuf(buf, i-st, j)*.5f;
   }
 #ifdef _OPENMP
@@ -73,10 +73,10 @@ void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, const int w
                            /(tmp[j-st] + tmp[j]);
     if(j < height) for(int ch=0; ch<3; ch++) gbuf(buf, i, j) -= gbuf(buf, i, j-st);
     // update
-    for(ch=0; ch<3; ch++) gbuf(buf, i, 0) += gbuf(buf, i, st)*0.5f;
+    for(ch=0; ch<3; ch++) gbuf(buf, i, 0) += gbuf(buf, i, st)*0.5;
     for(j=step; j<height-st; j+=step) for(ch=0; ch<3; ch++)
         gbuf(buf, i, j) += (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
-                           /(2.0f*(tmp[j-st] + tmp[j]));
+                           /(2.0*(tmp[j-st] + tmp[j]));
     if(j < height) for(int ch=0; ch<3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j-st)*.5f;
   }
 }
@@ -100,7 +100,7 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
     for(int ch=0; ch<3; ch++) gbuf(buf, i, 0) -= gbuf(buf, i, st)*0.5f;
     for(j=step; j<height-st; j+=step) for(int ch=0; ch<3; ch++)
         gbuf(buf, i, j) -= (tmp[j-st]*gbuf(buf, i, j-st) + tmp[j]*gbuf(buf, i, j+st))
-                           /(2.0f*(tmp[j-st] + tmp[j]));
+                           /(2.0*(tmp[j-st] + tmp[j]));
     if(j < height) for(int ch=0; ch<3; ch++) gbuf(buf, i, j) -= gbuf(buf, i, j-st)*.5f;
     // predict
     for(j=st; j<height-st; j+=step) for(int ch=0; ch<3; ch++)
@@ -121,7 +121,7 @@ void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int 
     for(int ch=0; ch<3; ch++) gbuf(buf, 0, j) -= gbuf(buf, st, j)*0.5f;
     for(i=step; i<width-st; i+=step) for(int ch=0; ch<3; ch++)
         gbuf(buf, i, j) -= (tmp[i-st]*gbuf(buf, i-st, j) + tmp[i]*gbuf(buf, i+st, j))
-                           /(2.0f*(tmp[i-st] + tmp[i]));
+                           /(2.0*(tmp[i-st] + tmp[i]));
     if(i < width) for(int ch=0; ch<3; ch++) gbuf(buf, i, j) -= gbuf(buf, i-st, j)*0.5f;
     // predict
     for(i=st; i<width-st; i+=step) for(int ch=0; ch<3; ch++)

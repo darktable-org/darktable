@@ -720,8 +720,8 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       p[0] -= d->tx*so;
       p[1] -= d->ty*so;
     }
-    p[0] *= 1.0f/so;
-    p[1] *= 1.0f/so;
+    p[0] *= 1.0/so;
+    p[1] *= 1.0/so;
     backtransform(p, o, d->m, d->k_h, d->k_v);
     o[0] *= so;
     o[1] *= so;
@@ -772,7 +772,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   assert(ch == 4);
 
   // only crop, no rot fast and sharp path:
-  if(!d->flags && d->angle == 0.0f && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
     #pragma omp parallel for schedule(static) default(none) shared(d,ovoid,ivoid,roi_in,roi_out)
@@ -859,7 +859,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int height = roi_out->height;
 
   // only crop, no rot fast and sharp path:
-  if(!d->flags && d->angle == 0.0f && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
+  if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
     size_t origin[] = {0, 0, 0};
     size_t region[] = {width, height, 1};
@@ -998,7 +998,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->k_apply = 0;
   d->enlarge_x = d->enlarge_y = 0.0f;
   d->flip = 0;
-  d->angle = M_PI/180.0 * (double)p->angle;
+  d->angle = M_PI/180.0 * p->angle;
 
   //image flip
   d->flags = (p->ch < 0 ? FLAG_FLIP_VERTICAL : 0) | (p->cw < 0 ? FLAG_FLIP_HORIZONTAL : 0);
@@ -1010,11 +1010,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     //this is for old keystoning
     d->k_apply = 0;
     d->all_off = 1;
-    if(fabsf(p->k_h) >= .0001f) d->all_off = 0;
-    if(p->k_h >= -1.0f && p->k_h <= 1.0f) d->ki_h = p->k_h;
+    if(fabsf(p->k_h) >= .0001) d->all_off = 0;
+    if(p->k_h >= -1.0 && p->k_h <= 1.0) d->ki_h = p->k_h;
     else d->ki_h = 0.0f;
-    if(fabsf(p->k_v) >= .0001f) d->all_off = 0;
-    if(p->k_v >= -1.0f && p->k_v <= 1.0f) d->ki_v = p->k_v;
+    if(fabsf(p->k_v) >= .0001) d->all_off = 0;
+    if(p->k_v >= -1.0 && p->k_v <= 1.0) d->ki_v = p->k_v;
     else d->ki_v = 0.0f;
   }
   else if (p->k_type >= 0 && p->k_apply==1)
@@ -1206,7 +1206,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
   // if we do not have yet computed the aspect ratio, let's do it now
   if (p->ratio_d == -2 && p->ratio_n == -2)
   {
-    if (fabsf(p->cw) == 1.0f && p->cx == 0.0f && fabsf(p->ch) == 1.0f && p->cy == 0.0f) p->ratio_d=-1, p->ratio_n=-1;
+    if (fabsf(p->cw) == 1.0 && p->cx == 0.0 && fabsf(p->ch) == 1.0 && p->cy == 0.0) p->ratio_d=-1, p->ratio_n=-1;
     else
     {
       const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -1254,11 +1254,11 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
   {
     // if only one side changed, force aspect by two adjacent in equal parts
     // 1 2 4 8 : x y w h
-    float clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
+    double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
 
     // if we only modified one dim, respectively, we wanted these values:
-    const float target_h = wd*g->clip_w/(ht*aspect);
-    const float target_w = ht*g->clip_h*aspect/wd;
+    const double target_h = (double)wd*g->clip_w/(double)(ht*aspect);
+    const double target_w = (double)ht*g->clip_h*aspect/(double)wd;
     // i.e. target_w/h = w/target_h = aspect
     // first fix aspect ratio:
 
@@ -1266,47 +1266,47 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     if     (grab == 1+2)
     {
       // move x y
-      clip_x = clip_x + clip_w - (target_w + clip_w)*.5f;
-      clip_y = clip_y + clip_h - (target_h + clip_h)*.5f;
-      clip_w = (target_w + clip_w)*.5f;
-      clip_h = (target_h + clip_h)*.5f;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 2+4) // move y w
     {
-      clip_y = clip_y + clip_h - (target_h + clip_h)*.5f;
-      clip_w = (target_w + clip_w)*.5f;
-      clip_h = (target_h + clip_h)*.5f;
+      clip_y = clip_y + clip_h - (target_h + clip_h)*.5;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 4+8) // move w h
     {
-      clip_w = (target_w + clip_w)*.5f;
-      clip_h = (target_h + clip_h)*.5f;
+      clip_w = (target_w + clip_w)*.5;
+      clip_h = (target_h + clip_h)*.5;
     }
     else if(grab == 8+1) // move h x
     {
-      clip_h = (target_h + clip_h)*.5f;
-      clip_x = clip_x + clip_w - (target_w + clip_w)*.5f;
-      clip_w = (target_w + clip_w)*.5f;
+      clip_h = (target_h + clip_h)*.5;
+      clip_x = clip_x + clip_w - (target_w + clip_w)*.5;
+      clip_w = (target_w + clip_w)*.5;
     }
     else if(grab & 5) // dragged either x or w (1 4)
     {
       // change h and move y, h equally
-      const float off = target_h - clip_h;
+      const double off = target_h - clip_h;
       clip_h = clip_h + off;
-      clip_y = clip_y - .5f*off;
+      clip_y = clip_y - .5*off;
     }
     else if(grab & 10) // dragged either y or h (2 8)
     {
       // change w and move x, w equally
-      const float off = target_w - clip_w;
+      const double off = target_w - clip_w;
       clip_w = clip_w + off;
-      clip_x = clip_x - .5f*off;
+      clip_x = clip_x - .5*off;
     }
 
     // now fix outside boxes:
     if(clip_x < g->clip_max_x)
     {
-      float prev_clip_h = clip_h;
+      double prev_clip_h = clip_h;
       clip_h *= (clip_w + clip_x - g->clip_max_x)/clip_w;
       clip_w  =  clip_w + clip_x - g->clip_max_x;
       clip_x  = g->clip_max_x;
@@ -1314,7 +1314,7 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     }
     if(clip_y < g->clip_max_y)
     {
-      float prev_clip_w = clip_w;
+      double prev_clip_w = clip_w;
       clip_w *= (clip_h + clip_y - g->clip_max_y)/clip_h;
       clip_h  =  clip_h + clip_y - g->clip_max_y;
       clip_y  =  g->clip_max_y;
@@ -1322,14 +1322,14 @@ apply_box_aspect(dt_iop_module_t *self, int grab)
     }
     if(clip_x + clip_w > g->clip_max_x + g->clip_max_w)
     {
-      float prev_clip_h = clip_h;
+      double prev_clip_h = clip_h;
       clip_h *= (g->clip_max_x + g->clip_max_w - clip_x)/clip_w;
       clip_w  =  g->clip_max_x + g->clip_max_w - clip_x;
       if (grab & 2) clip_y += prev_clip_h - clip_h;
     }
     if(clip_y + clip_h > g->clip_max_y + g->clip_max_h)
     {
-      float prev_clip_w = clip_w;
+      double prev_clip_w = clip_w;
       clip_w *= (g->clip_max_y + g->clip_max_h - clip_y)/clip_h;
       clip_h  =  g->clip_max_y + g->clip_max_h - clip_y;
       if (grab & 1) clip_x += prev_clip_w - clip_w;
@@ -1839,7 +1839,7 @@ void gui_draw_rounded_rectangle(cairo_t *cr,int width,int height,int x,int y)
   cairo_fill(cr);
 }
 // draw symmetry signs
-void gui_draw_sym(cairo_t *cr, double x, double y, gboolean active)
+void gui_draw_sym(cairo_t *cr, float x, float y, gboolean active)
 {
   cairo_text_extents_t extents;
   cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -1847,8 +1847,8 @@ void gui_draw_sym(cairo_t *cr, double x, double y, gboolean active)
   //VERIF : is there any pb to use such special char here ?
   cairo_text_extents (cr, "ꝏ", &extents);
   cairo_set_source_rgba(cr, .5,.5,.5, .7);
-  gui_draw_rounded_rectangle(cr, extents.width + 4.0, extents.height + 8.0, x - extents.width/2.0 - 2.0, y - extents.height/2.0 - 4.0);
-  cairo_move_to(cr, x - extents.width/2.0 - 1.0, y + extents.height/2.0 - 1.0);
+  gui_draw_rounded_rectangle(cr,extents.width+4,extents.height+8,x-extents.width/2.0f-2,y-extents.height/2.0f-4);
+  cairo_move_to(cr,x-extents.width/2.0f-1,y+extents.height/2.0f-1);
   if (active) cairo_set_source_rgba(cr, 1.0,0.0,0.0, .9);
   else cairo_set_source_rgba(cr, .2,.2,.2, .9);
   cairo_show_text(cr, "ꝏ");
@@ -1874,7 +1874,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  double zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
@@ -1913,13 +1913,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
     sprintf(dimensions, "%.0fx%.0f",
-            (double)procw * (double)g->clip_w, (double)proch * (double)g->clip_h);
+            (float)procw * g->clip_w, (float)proch * g->clip_h);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 16);
 
     cairo_text_extents (cr, dimensions, &extents);
-    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - (float)extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
+    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - extents.width * .5f, (g->clip_y + g->clip_h/2) * ht);
     cairo_show_text(cr, dimensions);
   }
 
@@ -1988,7 +1988,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   }
   else if (which == GUIDE_TRIANGL)
   {
-    int dst = (int)((cheight*cosf(atanf(cwidth/cheight)) / (cosf(atanf(cheight/cwidth)))));
+    int dst = (int)((cheight*cos(atan(cwidth/cheight)) / (cos(atan(cheight/cwidth)))));
     // Move coordinates to local center selection.
     cairo_translate(cr, ((right - left)/2+left), ((bottom - top)/2+top));
 
@@ -2079,7 +2079,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       dx = -dx;
       dy = -dy;
     }
-    double angle = atan2(dy, dx);
+    float angle = atan2f(dy, dx);
     angle = angle * 180 / M_PI;
     if (angle > 45.0) angle -= 90;
     if (angle < -45.0) angle += 90;
@@ -2289,8 +2289,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       cairo_text_extents (cr, "ok", &extents);
       int c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
       cairo_set_source_rgba(cr, .5,.5,.5, .9);
-      gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0-4,c[1]-extents.height/2.0-6);
-      cairo_move_to(cr,c[0]-extents.width/2.0,c[1]+extents.height/2.0);
+      gui_draw_rounded_rectangle(cr,extents.width+8,extents.height+12,c[0]-extents.width/2.0f-4,c[1]-extents.height/2.0f-6);
+      cairo_move_to(cr,c[0]-extents.width/2.0f,c[1]+extents.height/2.0f);
       cairo_set_source_rgba(cr, .2,.2,.2, .9);
       cairo_show_text(cr, "ok");
 
@@ -2354,7 +2354,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   pzy += 0.5f;
   static int old_grab = -1;
   _iop_clipping_set_max_clip(self);
-  int grab = get_grab (pzx, pzy, g, 30.0f/zoom_scale, wd, ht);
+  int grab = get_grab (pzx, pzy, g, 30.0/zoom_scale, wd, ht);
 
   if(darktable.control->button_down && darktable.control->button_down_which == 3 && g->k_show != 1)
   {
@@ -2496,8 +2496,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
           length = (fabs(xx) > fabs(yy)) ? xx : yy;
 
-          if ((g->prev_clip_w - (length+length)) < 0.1f ||
-              (g->prev_clip_h - (length+length)) < 0.1f)
+          if ((g->prev_clip_w - (length+length)) < 0.1 ||
+              (g->prev_clip_h - (length+length)) < 0.1)
             flag = TRUE;
 
           g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
@@ -2657,19 +2657,19 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
   if(g->straightening)
   {
-    double dx = x - (double)g->button_down_x, dy = y - (double)g->button_down_y;
-    if(dx < 0.0)
+    float dx = x - g->button_down_x, dy = y - g->button_down_y;
+    if(dx < 0)
     {
       dx = -dx;
       dy = - dy;
     }
-    double angle = atan2(dy, dx);
-    if(!(angle >= - M_PI/2.0 && angle <= M_PI/2.0)) angle = 0.0;
-    double close = angle;
+    float angle = atan2f(dy, dx);
+    if(!(angle >= - M_PI/2.0 && angle <= M_PI/2.0)) angle = 0.0f;
+    float close = angle;
     if     (close >  M_PI/4.0) close =  M_PI/2.0 - close;
     else if(close < -M_PI/4.0) close = -M_PI/2.0 - close;
     else close = - close;
-    double a = 180.0/M_PI*close + (double)g->button_down_angle;
+    float a = 180.0/M_PI*close + g->button_down_angle;
     if(a < -180.0) a += 360.0;
     if(a >  180.0) a -= 360.0;
     if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
@@ -2723,7 +2723,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     
         float xx=pzx*self->dev->preview_pipe->backbuf_width, yy=pzy*self->dev->preview_pipe->backbuf_height;
         float c[2] = {(MIN(pts[4],pts[2])+MAX(pts[0],pts[6]))/2.0f, (MIN(pts[5],pts[7])+MAX(pts[1],pts[3]))/2.0f};
-        float ext = 10.0f/(zoom_scale);
+        float ext = 10.0/(zoom_scale);
         //Apply button
         if (xx>c[0]-ext && xx<c[0]+ext && yy>c[1]-ext && yy<c[1]+ext)
         {
@@ -2787,8 +2787,8 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
                   if (g->k_selected_segment >=0)
                   {
                     dt_dev_get_pointer_zoom_pos(self->dev, x, y, &g->button_down_zoom_x, &g->button_down_zoom_y);
-                    g->button_down_zoom_x += 0.5f;
-                    g->button_down_zoom_y += 0.5f;
+                    g->button_down_zoom_x += 0.5;
+                    g->button_down_zoom_y += 0.5;
                     g->k_drag = TRUE;
                   }
                 }

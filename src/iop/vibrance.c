@@ -102,7 +102,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  const float amount = (d->amount*0.01f);
+  const float amount = (d->amount*0.01);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out) schedule(static)
@@ -113,9 +113,9 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     for(int l=0; l<(roi_out->width*ch); l+=ch)
     {
       /* saturation weight 0 - 1 */
-      float sw = sqrtf( (in[offs + l + 1]*in[offs + l + 1]) + (in[offs + l + 2]*in[offs + l + 2]) )/256.0f;
-      float ls = 1.0f - ((amount * sw)*.25f);
-      float ss = 1.0f + (amount * sw);
+      float sw = sqrt( (in[offs + l + 1]*in[offs + l + 1]) + (in[offs + l + 2]*in[offs + l + 2]) )/256.0;
+      float ls = 1.0 - ((amount * sw)*.25);
+      float ss = 1.0 + (amount * sw);
       out[offs + l + 0] = in[offs + l + 0] * ls;
       out[offs + l + 1] = in[offs + l + 1] * ss;
       out[offs + l + 2] = in[offs + l + 2] * ss;

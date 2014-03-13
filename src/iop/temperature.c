@@ -123,9 +123,8 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
 
 // ufraw for teh win:
 static void
-convert_k_to_rgb (float T_old, float *rgb)
+convert_k_to_rgb (float T, float *rgb)
 {
-  double T = T_old;
   if (T < DT_IOP_LOWEST_TEMPERATURE)  T = DT_IOP_LOWEST_TEMPERATURE;
   if (T > DT_IOP_HIGHEST_TEMPERATURE) T = DT_IOP_HIGHEST_TEMPERATURE;
 
@@ -143,8 +142,7 @@ convert_k_to_rgb (float T_old, float *rgb)
   };
 
   int c;
-  double xD, yD, X, Y, Z;
-  float max;
+  double xD, yD, X, Y, Z, max;
   // Fit for CIE Daylight illuminant
   if (T <= 4000)
   {
@@ -171,7 +169,7 @@ convert_k_to_rgb (float T_old, float *rgb)
   X = xD / yD;
   Y = 1;
   Z = (1 - xD - yD) / yD;
-  max = 0.0f;
+  max = 0;
   for (c = 0; c < 3; c++)
   {
     rgb[c] = X * XYZ_to_RGB[0][c] + Y * XYZ_to_RGB[1][c] + Z * XYZ_to_RGB[2][c];
@@ -407,7 +405,7 @@ void gui_update (struct dt_iop_module_t *self)
       }
     }
 
-  if(fabsf(p->coeffs[0]-fp->coeffs[0]) + fabsf(p->coeffs[1]-fp->coeffs[1]) + fabsf(p->coeffs[2]-fp->coeffs[2]) < 0.01f)
+  if(fabsf(p->coeffs[0]-fp->coeffs[0]) + fabsf(p->coeffs[1]-fp->coeffs[1]) + fabsf(p->coeffs[2]-fp->coeffs[2]) < 0.01)
     dt_bauhaus_combobox_set(g->presets, 0);
   else
     dt_bauhaus_combobox_set(g->presets, -1);
@@ -445,7 +443,7 @@ void reload_defaults(dt_iop_module_t *module)
       module->default_enabled = 1;
 
       for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.cam_mul[k];
-      if(tmp.coeffs[0] <= 0.0f)
+      if(tmp.coeffs[0] <= 0.0)
       {
         for(int k=0; k<3; k++) tmp.coeffs[k] = raw->color.pre_mul[k];
       }

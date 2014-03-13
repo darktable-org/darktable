@@ -35,7 +35,7 @@
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 
-#define ROUND_POSISTIVE(f) ((unsigned int)((f)+0.5f))
+#define ROUND_POSISTIVE(f) ((unsigned int)((f)+0.5))
 
 DT_MODULE(1)
 
@@ -104,7 +104,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
 
 
   // Params
-  const int rad=(float)data->radius*roi_in->scale/piece->iscale;
+  const int rad=data->radius*roi_in->scale/piece->iscale;
 
   const int bins=256;
   const float slope=data->slope;

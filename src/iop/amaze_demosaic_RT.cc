@@ -730,7 +730,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             					vcdalt[indx] = sgn*(Gintvha-cfa[indx]);
             					hcdalt[indx] = sgn*(Ginthha-cfa[indx]);
             */
-            if (cfa[indx] > 0.8f*clip_pt || Gintvha > 0.8f*clip_pt || Ginthha > 0.8f*clip_pt)
+            if (cfa[indx] > 0.8*clip_pt || Gintvha > 0.8*clip_pt || Ginthha > 0.8*clip_pt)
             {
               //use HA if highlights are (nearly) clipped
               guar=guha;
@@ -878,7 +878,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
             //if both agree on interpolation direction, choose the one with strongest directional discrimination;
             //otherwise, choose the u/d and l/r difference fluctuation weights
-            if ((0.5f-varwt)*(0.5f-diffwt)>0.0f && fabsf(0.5f-diffwt)<fabsf(0.5f-varwt))
+            if ((0.5-varwt)*(0.5-diffwt)>0 && fabsf(0.5-diffwt)<fabsf(0.5-varwt))
             {
               hvwt[indx>>1]=varwt;
             }
@@ -1000,7 +1000,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 //					hvwtalt = 0.25*(hvwt[(indx-m1)>>1]+hvwt[(indx+p1)>>1]+hvwt[(indx-p1)>>1]+hvwt[(indx+m1)>>1]);
 //					vo=fabsf(0.5-hvwt[indx>>1]);
 //					ve=fabsf(0.5-hvwtalt);
-            if (fabsf(0.5f-hvwt[indx>>1])<fabsf(0.5f-hvwtalt))
+            if (fabsf(0.5-hvwt[indx>>1])<fabsf(0.5-hvwtalt))
             {
               hvwt[indx>>1]=hvwtalt; //a better result was obtained from the neighbors
             }
@@ -1182,7 +1182,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             pmwtalt = xdivf(pmwt[(indx-m1)>>1]+pmwt[(indx+p1)>>1]+pmwt[(indx-p1)>>1]+pmwt[(indx+m1)>>1],2);
 //					vo=fabsf(0.5-pmwt[indx1]);
 //					ve=fabsf(0.5-pmwtalt);
-            if (fabsf(0.5f-pmwt[indx1])<fabsf(0.5f-pmwtalt))
+            if (fabsf(0.5-pmwt[indx1])<fabsf(0.5-pmwtalt))
             {
               pmwt[indx1]=pmwtalt; //a better result was obtained from the neighbors
             }
@@ -1195,16 +1195,16 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc,indx1=indx>>1; cc<cc1-12; cc+=2,indx+=2,indx1++)
           {
 
-            if (fabsf(0.5f-pmwt[indx>>1])<fabsf(0.5f-hvwt[indx>>1]) ) continue;
+            if (fabsf(0.5-pmwt[indx>>1])<fabsf(0.5-hvwt[indx>>1]) ) continue;
 
             //now interpolate G vertically/horizontally using R+B values
             //unfortunately, since G interpolation cannot be done diagonally this may lead to color shifts
             //color ratios for G interpolation
 
-            cru = cfa[indx-v1]*2.0f/(eps+rbint[indx1]+rbint[(indx1-v1)]);
-            crd = cfa[indx+v1]*2.0f/(eps+rbint[indx1]+rbint[(indx1+v1)]);
-            crl = cfa[indx-1]*2.0f/(eps+rbint[indx1]+rbint[(indx1-1)]);
-            crr = cfa[indx+1]*2.0f/(eps+rbint[indx1]+rbint[(indx1+1)]);
+            cru = cfa[indx-v1]*2.0/(eps+rbint[indx1]+rbint[(indx1-v1)]);
+            crd = cfa[indx+v1]*2.0/(eps+rbint[indx1]+rbint[(indx1+v1)]);
+            crl = cfa[indx-1]*2.0/(eps+rbint[indx1]+rbint[(indx1-1)]);
+            crr = cfa[indx+1]*2.0/(eps+rbint[indx1]+rbint[(indx1+1)]);
 
             //interpolated G via adaptive ratios or Hamilton-Adams in each cardinal direction
             if (fabsf(1.0f-cru)<arthresh)
@@ -1259,7 +1259,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
               }
               else
               {
-                vwt = 2.0f*(rbint[indx1]-Gintv)/(eps+Gintv+rbint[indx1]);
+                vwt = 2.0*(rbint[indx1]-Gintv)/(eps+Gintv+rbint[indx1]);
                 Gintv=vwt*Gintv + (1.0f-vwt)*ULIM(Gintv,cfa[indx-v1],cfa[indx+v1]);
               }
             }
@@ -1271,7 +1271,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
               }
               else
               {
-                hwt = 2.0f*(rbint[indx1]-Ginth)/(eps+Ginth+rbint[indx1]);
+                hwt = 2.0*(rbint[indx1]-Ginth)/(eps+Ginth+rbint[indx1]);
                 Ginth=hwt*Ginth + (1.0f-hwt)*ULIM(Ginth,cfa[indx-1],cfa[indx+1]);
               }
             }
@@ -1306,17 +1306,17 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         for (rr=12; rr<rr1-12; rr++)
           for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc,c=1-FC(rr,cc,filters)/2; cc<cc1-12; cc+=2,indx+=2)
           {
-            wtnw=1.0f/(eps+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
-            wtne=1.0f/(eps+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
-            wtsw=1.0f/(eps+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
-            wtse=1.0f/(eps+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
+            wtnw=1.0/(eps+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m1][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx-m3][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m3][c]));
+            wtne=1.0/(eps+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p1][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx+p3][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p3][c]));
+            wtsw=1.0/(eps+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+p1][c])+fabsf(Dgrb[indx-p1][c]-Dgrb[indx+m3][c])+fabsf(Dgrb[indx+p1][c]-Dgrb[indx-p3][c]));
+            wtse=1.0/(eps+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-m1][c])+fabsf(Dgrb[indx+m1][c]-Dgrb[indx-p3][c])+fabsf(Dgrb[indx-m1][c]-Dgrb[indx+m3][c]));
 
             //Dgrb[indx][c]=(wtnw*Dgrb[indx-m1][c]+wtne*Dgrb[indx+p1][c]+wtsw*Dgrb[indx-p1][c]+wtse*Dgrb[indx+m1][c])/(wtnw+wtne+wtsw+wtse);
 
-            Dgrb[indx][c]=(wtnw*(1.325f*Dgrb[indx-m1][c]-0.175f*Dgrb[indx-m3][c]-0.075f*Dgrb[indx-m1-2][c]-0.075f*Dgrb[indx-m1-v2][c] )+
-                           wtne*(1.325f*Dgrb[indx+p1][c]-0.175f*Dgrb[indx+p3][c]-0.075f*Dgrb[indx+p1+2][c]-0.075f*Dgrb[indx+p1+v2][c] )+
-                           wtsw*(1.325f*Dgrb[indx-p1][c]-0.175f*Dgrb[indx-p3][c]-0.075f*Dgrb[indx-p1-2][c]-0.075f*Dgrb[indx-p1-v2][c] )+
-                           wtse*(1.325f*Dgrb[indx+m1][c]-0.175f*Dgrb[indx+m3][c]-0.075f*Dgrb[indx+m1+2][c]-0.075f*Dgrb[indx+m1+v2][c] ))/(wtnw+wtne+wtsw+wtse);
+            Dgrb[indx][c]=(wtnw*(1.325*Dgrb[indx-m1][c]-0.175*Dgrb[indx-m3][c]-0.075*Dgrb[indx-m1-2][c]-0.075*Dgrb[indx-m1-v2][c] )+
+                           wtne*(1.325*Dgrb[indx+p1][c]-0.175*Dgrb[indx+p3][c]-0.075*Dgrb[indx+p1+2][c]-0.075*Dgrb[indx+p1+v2][c] )+
+                           wtsw*(1.325*Dgrb[indx-p1][c]-0.175*Dgrb[indx-p3][c]-0.075*Dgrb[indx-p1-2][c]-0.075*Dgrb[indx-p1-v2][c] )+
+                           wtse*(1.325*Dgrb[indx+m1][c]-0.175*Dgrb[indx+m3][c]-0.075*Dgrb[indx+m1+2][c]-0.075*Dgrb[indx+m1+v2][c] ))/(wtnw+wtne+wtsw+wtse);
           }
         for (rr=12; rr<rr1-12; rr++)
           for (cc=12+(FC(rr,1,filters)&1),indx=rr*TS+cc,c=FC(rr,cc+1,filters)/2; cc<cc1-12; cc+=2,indx+=2)

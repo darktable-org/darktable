@@ -128,7 +128,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     float *out = ((float *)o) + (size_t)k*ch*roi_out->width;
     for (int j=0; j<roi_out->width; j++,in+=ch,out+=ch)
     {
-      float L_in = in[0] / 100.0f;
+      float L_in = in[0] / 100.0;
 
       if(L_in <= d->in_low)
       {
@@ -227,7 +227,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1,
   // Building the lut for values in the [0,1] range
   d->in_low = p->levels[0];
   d->in_high = p->levels[2];
-  float delta = (p->levels[2] - p->levels[0]) / 2.0f;
+  float delta = (p->levels[2] - p->levels[0]) / 2.;
   float mid = p->levels[0] + delta;
   float tmp = (p->levels[1] - mid) / delta;
   d->in_inv_gamma = pow(10, tmp);
@@ -420,7 +420,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
-  float mean_picked_color = *self->picked_color / 100.0f;
+  float mean_picked_color = *self->picked_color / 100.0;
 
   /* we need to save the last picked color to prevent flickering when
    * changing from one picker to another, as the picked_color value does not
@@ -564,7 +564,7 @@ static gboolean dt_iop_levels_expose(GtkWidget *widget, GdkEventExpose *event, g
   {
     float *hist, hist_max;
     hist = self->histogram;
-    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[0]:logf(1.0f + self->histogram_max[0]);
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[0]:logf(1.0 + self->histogram_max[0]);
     if(hist && hist_max > 0)
     {
       cairo_save(cr);
@@ -614,23 +614,23 @@ static void dt_iop_levels_move_handle(dt_iop_module_t *self, int handle_move, fl
   switch(handle_move)
   {
     case 0:
-      max_x = fminf(levels[2] - (0.05f / drag_start_percentage),
-                    1.0f);
-      max_x = fminf((levels[2] * (1.0f - drag_start_percentage) - 0.05f)
-      / (1.0f - drag_start_percentage),
+      max_x = fminf(levels[2] - (0.05 / drag_start_percentage),
+                    1);
+      max_x = fminf((levels[2] * (1 - drag_start_percentage) - 0.05)
+                    / (1 - drag_start_percentage),
                     max_x);
       break;
 
     case 1:
-      min_x = levels[0] + 0.05f;
-      max_x = levels[2] - 0.05f;
+      min_x = levels[0] + 0.05;
+      max_x = levels[2] - 0.05;
       break;
 
     case 2:
-      min_x = fmaxf((0.05f / drag_start_percentage) + levels[0],
-                    0.0f);
-      min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05f)
-                    / (1.0f - drag_start_percentage),
+      min_x = fmaxf((0.05 / drag_start_percentage) + levels[0],
+                    0);
+      min_x = fmaxf((levels[0] * (1 - drag_start_percentage) + 0.05)
+                    / (1 - drag_start_percentage),
                     min_x);
       break;
   }
@@ -655,7 +655,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  double height = allocation.height - 2*inset, width = allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   if(!c->dragging)
   {
     c->mouse_x = CLAMP(event->x - inset, 0, width);
@@ -668,7 +668,7 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   {
     if(c->handle_move >= 0 && c->handle_move < 3)
     {
-      const float mx = CLAMP(event->x - inset, 0.0, width) / width;
+      const float mx = (CLAMP(event->x - inset, 0, width)) / (float)width;
 
       dt_iop_levels_move_handle(self, c->handle_move, mx, p->levels, c->drag_start_percentage);
     }
@@ -677,8 +677,8 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   else
   {
     c->handle_move = 0;
-    const float mx = CLAMP(event->x - inset, 0.0, width) / width;
-    float dist = fabs(p->levels[0] - mx);
+    const float mx = CLAMP(event->x - inset, 0, width)/(float)width;
+    float dist = fabsf(p->levels[0] - mx);
     for(int k=1; k<3; k++)
     {
       float d2 = fabsf(p->levels[k] - mx);

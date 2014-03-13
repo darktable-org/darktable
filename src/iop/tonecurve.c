@@ -380,18 +380,18 @@ void init_presets (dt_iop_module_so_t *self)
 
 
   // More useful low contrast curve (based on Samsung NX -2 Contrast)
-  p.tonecurve[ch_L][0].x = 0.000000f;
-  p.tonecurve[ch_L][1].x = 0.003862f;
-  p.tonecurve[ch_L][2].x = 0.076613f;
-  p.tonecurve[ch_L][3].x = 0.169355f;
-  p.tonecurve[ch_L][4].x = 0.774194f;
-  p.tonecurve[ch_L][5].x = 1.000000f;
-  p.tonecurve[ch_L][0].y = 0.000000f;
-  p.tonecurve[ch_L][1].y = 0.007782f;
-  p.tonecurve[ch_L][2].y = 0.156182f;
-  p.tonecurve[ch_L][3].y = 0.290352f;
-  p.tonecurve[ch_L][4].y = 0.773852f;
-  p.tonecurve[ch_L][5].y = 1.000000f;
+  p.tonecurve[ch_L][0].x = 0.000000;
+  p.tonecurve[ch_L][1].x = 0.003862;
+  p.tonecurve[ch_L][2].x = 0.076613;
+  p.tonecurve[ch_L][3].x = 0.169355;
+  p.tonecurve[ch_L][4].x = 0.774194;
+  p.tonecurve[ch_L][5].x = 1.000000;
+  p.tonecurve[ch_L][0].y = 0.000000;
+  p.tonecurve[ch_L][1].y = 0.007782;
+  p.tonecurve[ch_L][2].y = 0.156182;
+  p.tonecurve[ch_L][3].y = 0.290352;
+  p.tonecurve[ch_L][4].y = 0.773852;
+  p.tonecurve[ch_L][5].y = 1.000000;
   dt_gui_presets_add_generic(_("low contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].x = linear_L[k];
@@ -400,20 +400,20 @@ void init_presets (dt_iop_module_so_t *self)
 
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  p.tonecurve[ch_L][1].y -= 0.03f;
-  p.tonecurve[ch_L][4].y += 0.03f;
-  p.tonecurve[ch_L][2].y -= 0.03f;
-  p.tonecurve[ch_L][3].y += 0.03f;
+  p.tonecurve[ch_L][1].y -= 0.03;
+  p.tonecurve[ch_L][4].y += 0.03;
+  p.tonecurve[ch_L][2].y -= 0.03;
+  p.tonecurve[ch_L][3].y += 0.03;
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("med contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k=0; k<6; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  p.tonecurve[ch_L][1].y -= 0.06f;
-  p.tonecurve[ch_L][4].y += 0.06f;
-  p.tonecurve[ch_L][2].y -= 0.10f;
-  p.tonecurve[ch_L][3].y += 0.10f;
+  p.tonecurve[ch_L][1].y -= 0.06;
+  p.tonecurve[ch_L][4].y += 0.06;
+  p.tonecurve[ch_L][2].y -= 0.10;
+  p.tonecurve[ch_L][3].y += 0.10;
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
@@ -944,7 +944,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     raw_mean_output = self->picked_output_color;
 
     hist = self->histogram;
-    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[ch]:logf(1.0f + self->histogram_max[ch]);
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR?self->histogram_max[ch]:logf(1.0 + self->histogram_max[ch]);
     if(hist && hist_max > 0)
     {
       cairo_save(cr);
@@ -993,7 +993,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
         cairo_line_to(cr, width*picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        snprintf(text, sizeof(text), "%.1f → %.1f", (double)raw_mean[ch], (double)raw_mean_output[ch]);
+        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -1059,12 +1059,12 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  double height = allocation.height - 2*inset, width = allocation.width - 2*inset;
+  int height = allocation.height - 2*inset, width = allocation.width - 2*inset;
   c->mouse_x = CLAMP(event->x - inset, 0, width);
   c->mouse_y = CLAMP(event->y - inset, 0, height);
 
-  const float mx = c->mouse_x/width;
-  const float my = 1.0 - c->mouse_y/height;
+  const float mx = c->mouse_x/(float)width;
+  const float my = 1.0f - c->mouse_y/(float)height;
 
   if(event->state & GDK_BUTTON1_MASK)
   {

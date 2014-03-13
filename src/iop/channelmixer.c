@@ -50,6 +50,8 @@
   Ilford HP5		23		37		40		Generic B/W		24	68	8
 */
 
+#define CLIP(x)                 ((x<0)?0.0:(x>1.0)?1.0:x)
+
 DT_MODULE_INTROSPECTION(1, dt_iop_channelmixer_params_t)
 
 typedef  enum _channelmixer_output_t
@@ -148,7 +150,7 @@ void connect_key_accels(dt_iop_module_t *self)
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_channelmixer_data_t *data = (dt_iop_channelmixer_data_t *)piece->data;
-  const gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0f ||  data->green[CHANNEL_GRAY] !=0.0f ||  data->blue[CHANNEL_GRAY] !=0.0f)?TRUE:FALSE;
+  const gboolean gray_mix_mode = ( data->red[CHANNEL_GRAY] !=0.0 ||  data->green[CHANNEL_GRAY] !=0.0 ||  data->blue[CHANNEL_GRAY] !=0.0)?TRUE:FALSE;
   const int ch = piece->colors;
 
 #ifdef _OPENMP
@@ -162,29 +164,29 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     {
       float h,s,l, hmix,smix,lmix,rmix,gmix,bmix,graymix;
       // Calculate the HSL mix
-      hmix = CLAMP(in[0] * data->red[CHANNEL_HUE], 0.0f, 1.0f)+( in[1] * data->green[CHANNEL_HUE])+( in[2] * data->blue[CHANNEL_HUE]);
-      smix = CLAMP(in[0] * data->red[CHANNEL_SATURATION], 0.0f, 1.0f)+( in[1] * data->green[CHANNEL_SATURATION])+( in[2] * data->blue[CHANNEL_SATURATION]);
-      lmix = CLAMP(in[0] * data->red[CHANNEL_LIGHTNESS], 0.0f, 1.0f)+( in[1] * data->green[CHANNEL_LIGHTNESS])+( in[2] * data->blue[CHANNEL_LIGHTNESS]);
+      hmix = CLIP( in[0] * data->red[CHANNEL_HUE] )+( in[1] * data->green[CHANNEL_HUE])+( in[2] * data->blue[CHANNEL_HUE] );
+      smix = CLIP( in[0] * data->red[CHANNEL_SATURATION] )+( in[1] * data->green[CHANNEL_SATURATION])+( in[2] * data->blue[CHANNEL_SATURATION] );
+      lmix = CLIP( in[0] * data->red[CHANNEL_LIGHTNESS] )+( in[1] * data->green[CHANNEL_LIGHTNESS])+( in[2] * data->blue[CHANNEL_LIGHTNESS] );
 
       // If HSL mix is used apply to out[]
-      if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
+      if( hmix != 0.0 || smix != 0.0 || lmix != 0.0 )
       {
         // mix into HSL output channels
         rgb2hsl(in,&h,&s,&l);
-        h = (hmix != 0.0f)  ? hmix : h;
-        s = (smix != 0.0f)  ? smix : s;
-        l = (lmix != 0.0f)  ? lmix : l;
+        h = (hmix != 0.0 )  ? hmix : h;
+        s = (smix != 0.0 )  ? smix : s;
+        l = (lmix != 0.0 )  ? lmix : l;
         hsl2rgb(out,h,s,l);
       }
       else   // no HSL copt in[] to out[]
         for(int i=0; i<3; i++) out[i]=in[i];
 
       // Calculate graymix and RGB mix
-        graymix = CLAMP((out[0] * data->red[CHANNEL_GRAY])+(out[1] * data->green[CHANNEL_GRAY])+(out[2] * data->blue[CHANNEL_GRAY]), 0.0f, 1.0f);
+      graymix = CLIP(( out[0] * data->red[CHANNEL_GRAY] )+( out[1] * data->green[CHANNEL_GRAY])+( out[2] * data->blue[CHANNEL_GRAY] ));
 
-        rmix = CLAMP((out[0] * data->red[CHANNEL_RED])+(out[1] * data->green[CHANNEL_RED])+( out[2] * data->blue[CHANNEL_RED]), 0.0f, 1.0f);
-        gmix = CLAMP((out[0] * data->red[CHANNEL_GREEN])+(out[1] * data->green[CHANNEL_GREEN])+( out[2] * data->blue[CHANNEL_GREEN]), 0.0f, 1.0f);
-        bmix = CLAMP((out[0] * data->red[CHANNEL_BLUE])+(out[1] * data->green[CHANNEL_BLUE])+( out[2] * data->blue[CHANNEL_BLUE]), 0.0f, 1.0f);
+      rmix = CLIP(( out[0] * data->red[CHANNEL_RED] )+( out[1] * data->green[CHANNEL_RED])+( out[2] * data->blue[CHANNEL_RED] ));
+      gmix = CLIP(( out[0] * data->red[CHANNEL_GREEN] )+( out[1] * data->green[CHANNEL_GREEN])+( out[2] * data->blue[CHANNEL_GREEN] ));
+      bmix = CLIP(( out[0] * data->red[CHANNEL_BLUE] )+( out[1] * data->green[CHANNEL_BLUE])+( out[2] * data->blue[CHANNEL_BLUE] ));
 
 
       if (gray_mix_mode)  // Graymix is used...

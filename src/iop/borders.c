@@ -611,9 +611,9 @@ borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   }
 
   GdkColor c;
-  c.red   = self->picked_output_color[0]*65535.0f;
-  c.green = self->picked_output_color[1]*65535.0f;
-  c.blue  = self->picked_output_color[2]*65535.0f;
+  c.red   = self->picked_output_color[0]*65535.0;
+  c.green = self->picked_output_color[1]*65535.0;
+  c.blue  = self->picked_output_color[2]*65535.0;
   if (g->active_colorpick == g->frame_colorpick)
   {
     p->frame_color[0] = self->picked_output_color[0];
@@ -891,7 +891,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", (double)p->aspect);
+      snprintf(text, sizeof(text), "%.3f:1", p->aspect);
       dt_bauhaus_combobox_set_text(g->aspect, text);
     }
     dt_bauhaus_combobox_set(g->aspect, -1);
@@ -918,7 +918,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", (double)p->pos_h);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_h);
       dt_bauhaus_combobox_set_text(g->pos_h, text);
     }
     dt_bauhaus_combobox_set(g->pos_h, -1);
@@ -942,7 +942,7 @@ void gui_update(struct dt_iop_module_t *self)
     else
     {
       char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", (double)p->pos_v);
+      snprintf(text, sizeof(text), "%.3f:1", p->pos_v);
       dt_bauhaus_combobox_set_text(g->pos_v, text);
     }
     dt_bauhaus_combobox_set(g->pos_v, -1);
@@ -954,16 +954,16 @@ void gui_update(struct dt_iop_module_t *self)
 
   // ----- Border Color
   GdkColor c;
-  c.red   = p->color[0]*65535.0f;
-  c.green = p->color[1]*65535.0f;
-  c.blue  = p->color[2]*65535.0f;
+  c.red   = p->color[0]*65535.0;
+  c.green = p->color[1]*65535.0;
+  c.blue  = p->color[2]*65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpick), GTK_STATE_NORMAL, &c);
 
   // ----- Frame Color
   GdkColor fc;
-  fc.red   = p->frame_color[0]*65535.0f;
-  fc.green = p->frame_color[1]*65535.0f;
-  fc.blue  = p->frame_color[2]*65535.0f;
+  fc.red   = p->frame_color[0]*65535.0;
+  fc.green = p->frame_color[1]*65535.0;
+  fc.blue  = p->frame_color[2]*65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->frame_colorpick), GTK_STATE_NORMAL, &fc);
 }
 
@@ -1057,7 +1057,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
 
-  g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size*100.0f, 2);
+  g->size = dt_bauhaus_slider_new_with_range(self, 0.0, 50.0, 0.5, p->size*100.0, 2);
   dt_bauhaus_widget_set_label(g->size, NULL, _("border size"));
   dt_bauhaus_slider_set_format(g->size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->size), "value-changed", G_CALLBACK (size_callback), self);
@@ -1095,14 +1095,14 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->pos_v), "tooltip-text", _("select the vertical position ratio relative to left or right click and type your own (x:w)"), (char *)NULL);
   gui_init_positions(self);
 
-  g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size*100.0f, 2);
+  g->frame_size = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_size*100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_size, NULL, _("frame line size"));
   dt_bauhaus_slider_set_format(g->frame_size, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_size), "value-changed", G_CALLBACK (frame_size_callback), self);
   g_object_set(G_OBJECT(g->frame_size), "tooltip-text", _("size of the frame line in percent of min border width"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), g->frame_size, TRUE, TRUE, 0);
 
-  g->frame_offset = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_offset*100.0f, 2);
+  g->frame_offset = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->frame_offset*100.0, 2);
   dt_bauhaus_widget_set_label(g->frame_offset, NULL, _("frame line offset"));
   dt_bauhaus_slider_set_format(g->frame_offset, "%.2f%%");
   g_signal_connect (G_OBJECT (g->frame_offset), "value-changed", G_CALLBACK (frame_offset_callback), self);

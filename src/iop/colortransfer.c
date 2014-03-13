@@ -140,7 +140,7 @@ capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
   memset(hist,0, HISTN*sizeof(int));
   for(int k=0; k<roi->height; k++) for(int i=0; i<roi->width; i++)
     {
-      const int bin = CLAMP(HISTN*col[3*(k*roi->width+i)+0]/100.0f, 0, HISTN-1);
+      const int bin = CLAMP(HISTN*col[3*(k*roi->width+i)+0]/100.0, 0, HISTN-1);
       hist[bin]++;
     }
 
@@ -165,12 +165,12 @@ invert_histogram(const int *hist, float *inv_hist)
       }
 #else
   int last = 31;
-  for(int i=0; i<=last; i++) inv_hist[i] = 100.0f*i/(float)HISTN;
+  for(int i=0; i<=last; i++) inv_hist[i] = 100.0*i/(float)HISTN;
   for(int i=last+1; i<HISTN; i++) for(int k=last; k<HISTN; k++)
       if(hist[k] >= i)
       {
         last = k;
-        inv_hist[i] = 100.0f*k/(float)HISTN;
+        inv_hist[i] = 100.0*k/(float)HISTN;
         break;
       }
 #endif
@@ -356,7 +356,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       for(int i=0; i<roi_out->width; i++)
       {
         // L: match histogram
-        out[j] = data->hist[hist[(int)CLAMP(HISTN*in[j]/100.0f, 0, HISTN-1)]];
+        out[j] = data->hist[hist[(int)CLAMP(HISTN*in[j]/100.0, 0, HISTN-1)]];
         out[j] = CLAMP(out[j], 0, 100);
         j+=ch;
       }

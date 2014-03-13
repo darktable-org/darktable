@@ -204,11 +204,11 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *params, dt_de
   dt_iop_hotpixels_params_t *p = (dt_iop_hotpixels_params_t *)params;
   dt_iop_hotpixels_data_t *d = (dt_iop_hotpixels_data_t *)piece->data;
   d->filters = dt_image_flipped_filter(&pipe->image);
-  d->multiplier = p->strength/2.0f;
+  d->multiplier = p->strength/2.0;
   d->threshold = p->threshold;
   d->permissive = p->permissive;
   d->markfixed = p->markfixed && (pipe->type != DT_DEV_PIXELPIPE_EXPORT) && (pipe->type != DT_DEV_PIXELPIPE_THUMBNAIL);
-  if (!(pipe->image.flags & DT_IMAGE_RAW)|| dt_dev_pixelpipe_uses_downsampled_input(pipe) || p->strength == 0.0f)
+  if (!(pipe->image.flags & DT_IMAGE_RAW)|| dt_dev_pixelpipe_uses_downsampled_input(pipe) || p->strength == 0.0)
     piece->enabled = 0;
 }
 

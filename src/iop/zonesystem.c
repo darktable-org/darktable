@@ -129,7 +129,7 @@ _iop_zonesystem_calculate_zonemap (struct dt_iop_zonesystem_params_t *p, float *
     else
     {
       /* set 0 and 1.0 for first and last element in zonesystem size, or the actually parameter value */
-      zonemap[k] = k==0?0.0f:k==(p->size-1)?1.0f:p->zone[k];
+      zonemap[k] = k==0?0.0:k==(p->size-1)?1.0:p->zone[k];
 
       /* for each step from pk to k, calculate values
           for now this is linear distributed
@@ -144,7 +144,7 @@ _iop_zonesystem_calculate_zonemap (struct dt_iop_zonesystem_params_t *p, float *
   }
 }
 
-#define GAUSS(a,b,c,x) (a*powf(2.718281828f,(-powf((x-b),2)/(powf(c,2)))))
+#define GAUSS(a,b,c,x) (a*pow(2.718281828,(-pow((x-b),2)/(pow(c,2)))))
 void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   float *in;
@@ -181,7 +181,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
     const int wd = 2*rad+1;
     float mat[wd*wd];
     float *m;
-    const float sigma2 = (2.5f*2.5f)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
+    const float sigma2 = (2.5*2.5)*(radius*roi_in->scale/piece->iscale)*(radius*roi_in->scale/piece->iscale);
     float weight = 0.0f;
 
     memset(mat, 0, (size_t)wd*wd*sizeof(float));
@@ -493,8 +493,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 }
 
 #define DT_ZONESYSTEM_INSET 5
-#define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0f
-#define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30f
+#define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0
+#define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30
 static gboolean
 dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
@@ -536,7 +536,7 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
     /* draw zone mappings */
     cairo_rectangle (cr,
                      zonemap[i],DT_ZONESYSTEM_REFERENCE_SPLIT+DT_ZONESYSTEM_BAR_SPLIT_WIDTH,
-                     (zonemap[i+1]-zonemap[i]),1.0f-DT_ZONESYSTEM_REFERENCE_SPLIT);
+                     (zonemap[i+1]-zonemap[i]),1.0-DT_ZONESYSTEM_REFERENCE_SPLIT);
     cairo_set_source_rgb (cr, z, z, z);
     cairo_fill (cr);
 
@@ -561,8 +561,8 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
     float nzw=zonemap[k+1]-zonemap[k];
     float pzw=zonemap[k]-zonemap[k-1];
     if (
-      ( ((g->mouse_x/width) > (zonemap[k]-(pzw/2.0f))) &&
-        ((g->mouse_x/width) < (zonemap[k]+(nzw/2.0f))) ) ||
+      ( ((g->mouse_x/width) > (zonemap[k]-(pzw/2.0))) &&
+        ((g->mouse_x/width) < (zonemap[k]+(nzw/2.0))) ) ||
       p->zone[k] != -1)
     {
       gboolean is_under_mouse = ((width*zonemap[k]) - arrw*.5f < g->mouse_x &&  (width*zonemap[k]) + arrw*.5f > g->mouse_x);
@@ -701,8 +701,8 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
   else
   {
     /* decide which zone the mouse is over */
-    if(g->mouse_y >= height*(1.0f-DT_ZONESYSTEM_REFERENCE_SPLIT))
-      g->zone_under_mouse = (g->mouse_x/width) / (1.0f/(p->size-1));
+    if(g->mouse_y >= height*(1.0-DT_ZONESYSTEM_REFERENCE_SPLIT))
+      g->zone_under_mouse = (g->mouse_x/width) / (1.0/(p->size-1));
     else
     {
       float xpos = g->mouse_x/width;

@@ -43,7 +43,7 @@
 #define BOX_ITERATIONS 8
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-#define CLIP(x) ((x<0)?0.0f:(x>1.0f)?1.0f:x)
+#define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
 #define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
@@ -124,8 +124,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   float *out = (float *)ovoid;
   const int ch = piece->colors;
 
-  const float brightness = 1.0f / exp2f ( -data->brightness );
-  const float saturation = data->saturation/100.0f;
+  const float brightness = 1.0 / exp2f ( -data->brightness );
+  const float saturation = data->saturation/100.0;
   /* create overexpose image and then blur */
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(in,out,roi_out) schedule(static)
@@ -220,8 +220,8 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 
 
-  const __m128 amount = _mm_set1_ps(data->amount/100.0f);
-  const __m128 amount_1 = _mm_set1_ps(1-(data->amount)/100.0f);
+  const __m128 amount = _mm_set1_ps(data->amount/100.0);
+  const __m128 amount_1 = _mm_set1_ps(1-(data->amount)/100.0);
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(roi_out, in, out, data) schedule(static)
 #endif
@@ -255,9 +255,9 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const float w = piece->iwidth*piece->iscale;
   const float h = piece->iheight*piece->iscale;
-  int mrad = sqrtf( w*w + h*h) * 0.01f;
+  int mrad = sqrt( w*w + h*h) * 0.01f;
 
-  int rad = mrad*(fminf(100.0f, d->size+1)/100.0f);
+  int rad = mrad*(fmin(100.0f, d->size+1)/100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
@@ -395,13 +395,13 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 
   const float w = piece->iwidth*piece->iscale;
   const float h = piece->iheight*piece->iscale;
-  int mrad = sqrtf( w*w + h*h) * 0.01f;
+  int mrad = sqrt( w*w + h*h) * 0.01f;
 
-  int rad = mrad*(fminf(100.0f, d->size+1)/100.0f);
+  int rad = mrad*(fmin(100.0f, d->size+1)/100.0f);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but unproven. ask me if you need details. ulrich */
-  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
+  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2)/3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
   tiling->factor = 3.0f;   // in + out + tmp

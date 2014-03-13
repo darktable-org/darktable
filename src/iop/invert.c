@@ -129,9 +129,9 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   p->color[1] = self->picked_color[1];
   p->color[2] = self->picked_color[2];
   GdkColor c;
-  c.red   = p->color[0]*65535.0f;
-  c.green = p->color[1]*65535.0f;
-  c.blue  = p->color[2]*65535.0f;
+  c.red   = p->color[0]*65535.0;
+  c.green = p->color[1]*65535.0;
+  c.blue  = p->color[2]*65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -317,9 +317,9 @@ void gui_update(dt_iop_module_t *self)
   dtgtk_reset_label_set_text(g->label, _("color of film material"));
 
   GdkColor c;
-  c.red   = p->color[0]*65535.0f;
-  c.green = p->color[1]*65535.0f;
-  c.blue  = p->color[2]*65535.0f;
+  c.red   = p->color[0]*65535.0;
+  c.green = p->color[1]*65535.0;
+  c.blue  = p->color[2]*65535.0;
   gtk_widget_modify_fg(GTK_WIDGET(g->colorpicker), GTK_STATE_NORMAL, &c);
 }
 

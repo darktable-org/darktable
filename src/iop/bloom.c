@@ -121,11 +121,11 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   memset(blurlightness,0,((size_t)roi_out->width*roi_out->height*sizeof(float)));
   memcpy(out,in,(size_t)roi_out->width*roi_out->height*ch*sizeof(float));
 
-  int rad = 256.0f*(fminf(100.0f,data->size+1.0f)/100.0f);
+  int rad = 256.0f*(fmin(100.0f,data->size+1.0f)/100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
-  const float scale = 1.0f / exp2f ( -1.0f*(fminf(100.0f,data->strength+1.0f)/100.0f));
+  const float scale = 1.0f / exp2f ( -1.0f*(fmin(100.0f,data->strength+1.0f)/100.0f));
 
   /* get the thresholded lights into buffer */
 #ifdef _OPENMP
@@ -268,10 +268,10 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
 
   const float threshold = d->threshold;
 
-  const int rad = 256.0f*(fminf(100.0f,d->size+1.0f)/100.0f);
+  const int rad = 256.0f*(fmin(100.0f,d->size+1.0f)/100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
-  const float scale = 1.0f / exp2f (-1.0f*(fminf(100.0f,d->strength+1.0f)/100.0f));
+  const float scale = 1.0f / exp2f (-1.0f*(fmin(100.0f,d->strength+1.0f)/100.0f));
 
   size_t maxsizes[3] = { 0 };        // the maximum dimensions for a work group
   size_t workgroupsize = 0;          // the maximum number of items in a work group
@@ -389,7 +389,7 @@ void tiling_callback (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_
 {
   dt_iop_bloom_data_t *d = (dt_iop_bloom_data_t *)piece->data;
 
-  const int rad = 256.0f*(fminf(100.0f,d->size+1.0f)/100.0f);
+  const int rad = 256.0f*(fmin(100.0f,d->size+1.0f)/100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 

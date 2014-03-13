@@ -221,27 +221,27 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
                  };
   dt_dev_distort_backtransform_plus(self->dev,self->dev->preview_pipe,self->priority+1,9999999,pts,2);
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
-  pts[0] /= piece->buf_out.width;
-  pts[2] /= piece->buf_out.width;
-  pts[1] /= piece->buf_out.height;
-  pts[3] /= piece->buf_out.height;
+  pts[0] /= (float)piece->buf_out.width;
+  pts[2] /= (float)piece->buf_out.width;
+  pts[1] /= (float)piece->buf_out.height;
+  pts[3] /= (float)piece->buf_out.height;
 
   //we first need to find the rotation angle
   //weird dichotomic solution : we may use something more cool ...
-  double v1=-M_PI;
-  double v2=M_PI;
-  double sinv,cosv,r1,r2,v,r;
+  float v1=-M_PI;
+  float v2=M_PI;
+  float sinv,cosv,r1,r2,v,r;
 
-  sinv = sin(v1), cosv = cos(v1);
-  r1 = (double)pts[1]*cosv - (double)pts[0]*sinv + (double)pts[2]*sinv - (double)pts[3]*cosv;
+  sinv = sinf(v1), cosv = cosf(v1);
+  r1 = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
 
   //we search v2 so r2 as not the same sign as r1
-  double pas = M_PI/16.0;
+  float pas = M_PI/16.0;
   do
   {
     v2 += pas;
-    sinv = sin(v2), cosv = cos(v2);
-    r2 = (double)pts[1]*cosv - (double)pts[0]*sinv + (double)pts[2]*sinv - (double)pts[3]*cosv;
+    sinv = sinf(v2), cosv = cosf(v2);
+    r2 = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
     if (r1*r2 < 0) break;
   }
   while (v2 <= M_PI);
@@ -252,8 +252,8 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
   do
   {
     v = (v1+v2)/2.0;
-    sinv = sin(v), cosv = cos(v);
-    r = (double)pts[1]*cosv - (double)pts[0]*sinv + (double)pts[2]*sinv - (double)pts[3]*cosv;
+    sinv = sinf(v), cosv = cosf(v);
+    r = pts[1]*cosv - pts[0]*sinv + pts[2]*sinv - pts[3]*cosv;
 
     if (r < 0.01 && r > -0.01) break;
 
@@ -269,18 +269,18 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
   if (iter >= 1000) return 8;
 
   //be careful to the gnd direction
-  if (pts[2]-pts[0] > 0.0f && v>M_PI*0.5) v = v-M_PI;
-  if (pts[2]-pts[0] > 0.0f && v<-M_PI*0.5) v = M_PI+v;
+  if (pts[2]-pts[0] > 0 && v>M_PI*0.5) v = v-M_PI;
+  if (pts[2]-pts[0] > 0 && v<-M_PI*0.5) v = M_PI+v;
 
-  if (pts[2]-pts[0] <0.0f && v<M_PI*0.5 && v>=0) v = v-M_PI;
-  if (pts[2]-pts[0] <0.0f && v>-M_PI*0.5 && v<0) v = v+M_PI;
+  if (pts[2]-pts[0] <0 && v<M_PI*0.5 && v>=0) v = v-M_PI;
+  if (pts[2]-pts[0] <0 && v>-M_PI*0.5 && v<0) v = v+M_PI;
 
   *rotation = -v*180.0/M_PI;
 
   //and now we go for the offset (more easy)
-  sinv=sin(v);
-  cosv=cos(v);
-  double ofs = -2.0*sinv* (double)pts[0] + sinv - cosv + 1.0 + 2.0*cosv* (double)pts[1];
+  sinv=sinf(v);
+  cosv=cosf(v);
+  float ofs = -2.0*sinv*pts[0] + sinv - cosv + 1.0 + 2.0*cosv*pts[1];
   *offset = ofs*50.0;
 
   return 1;
@@ -289,8 +289,8 @@ static int set_grad_from_points(struct dt_iop_module_t *self,float xa,float ya,f
 static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya,float *xb,float *yb, float rotation, float offset)
 {
   //we get the extremities of the line
-  const double v=(-(double)rotation/180.0)*M_PI;
-  const float sinv=sinf(v);
+  const float v=(-rotation/180)*M_PI;
+  const float sinv=sin(v);
   float pts[4];
   
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev,self->dev->preview_pipe,self);
@@ -302,23 +302,23 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
   {
     if (v==0)
     {
-      pts[0] = wp*0.1f;
-      pts[2] = wp*0.9f;
-      pts[1] = pts[3] = hp*offset/100.0f;
+      pts[0] = wp*0.1;
+      pts[2] = wp*0.9;
+      pts[1] = pts[3] = hp*offset/100.0;
     }
     else
     {
-      pts[2] = wp*0.1f;
-      pts[0] = wp*0.9f;
-      pts[1] = pts[3] = hp*(1.0f-offset/100.0f);
+      pts[2] = wp*0.1;
+      pts[0] = wp*0.9;
+      pts[1] = pts[3] = hp*(1.0-offset/100.0);
     }
   }
   else
   {
     //otherwise we determine the extremities
     const float cosv=cos(v);
-    float xx1 = (sinv - cosv + 1.0f - offset/50.0f)*wp*0.5f/sinv;
-    float xx2 = (sinv + cosv + 1.0f - offset/50.0f)*wp*0.5f/sinv;
+    float xx1 = (sinv - cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
+    float xx2 = (sinv + cosv + 1.0 - offset/50.0)*wp*0.5/sinv;
     float yy1 = 0;
     float yy2 = hp;
     float a = hp/(xx2-xx1);
@@ -346,10 +346,10 @@ static int set_points_from_grad(struct dt_iop_module_t *self,float *xa,float *ya
     }
 
     //we want extremities not to be on image border
-    xx2 -= (xx2-xx1)*0.1f;
-    xx1 += (xx2-xx1)*0.1f;
-    yy2 -= (yy2-yy1)*0.1f;
-    yy1 += (yy2-yy1)*0.1f;
+    xx2 -= (xx2-xx1)*0.1;
+    xx1 += (xx2-xx1)*0.1;
+    yy2 -= (yy2-yy1)*0.1;
+    yy1 += (yy2-yy1)*0.1;
 
     //now we have to decide which point is where, depending of the angle
     /*xx1 /= wd;
@@ -410,13 +410,13 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p   = (dt_iop_graduatednd_params_t *)self->params;
 
-  int wd = dev->preview_pipe->backbuf_width;
-  int ht = dev->preview_pipe->backbuf_height;
+  float wd = dev->preview_pipe->backbuf_width;
+  float ht = dev->preview_pipe->backbuf_height;
   float zoom_y = dt_control_get_dev_zoom_y();
   float zoom_x = dt_control_get_dev_zoom_x();
   dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   int closeup = dt_control_get_dev_closeup();
-  double zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
+  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, closeup ? 2 : 1, 1);
 
   cairo_translate(cr, width/2.0, height/2.0f);
   cairo_scale(cr, zoom_scale, zoom_scale);
@@ -450,11 +450,11 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   //the extremities
   float x1,y1,x2,y2;
   float l = sqrt((xb-xa)*(xb-xa)+(yb-ya)*(yb-ya));
-  const float ext = wd* 0.01 / zoom_scale;
+  const float ext = wd* 0.01f / zoom_scale;
   x1 = xa+(xb-xa)*ext/l;
   y1 = ya+(yb-ya)*ext/l;
-  x2 = (xa+x1)/2.0f;
-  y2 = (ya+y1)/2.0f;
+  x2 = (xa+x1)/2.0;
+  y2 = (ya+y1)/2.0;
   y2 += (x1-xa);
   x2 -= (y1-ya);
   cairo_move_to(cr,xa,ya);
@@ -471,8 +471,8 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
 
   x1 = xb-(xb-xa)*ext/l;
   y1 = yb-(yb-ya)*ext/l;
-  x2 = (xb+x1)/2.0f;
-  y2 = (yb+y1)/2.0f;
+  x2 = (xb+x1)/2.0;
+  y2 = (yb+y1)/2.0;
   y2 += (xb-x1);
   x2 -= (yb-y1);
   cairo_move_to(cr,xb,yb);
@@ -539,7 +539,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
     {
       g->selected = 2;
     }
-    else if (dist_seg(g->xa,g->ya,g->xb,g->yb,pzx,pzy) < ext*ext*0.5f) g->selected = 3;
+    else if (dist_seg(g->xa,g->ya,g->xb,g->yb,pzx,pzy) < ext*ext*0.5) g->selected = 3;
   }
 
   dt_control_queue_redraw_center();
@@ -619,8 +619,8 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
     float dens;
-    if (up) dens = fminf(8.0,p->density+0.1f);
-    else dens = fmaxf(-8.0,p->density-0.1f);
+    if (up) dens = fminf(8.0,p->density+0.1);
+    else dens = fmaxf(-8.0,p->density-0.1);
     if (dens != p->density)
     {
       dt_bauhaus_slider_set(g->scale1,dens);
@@ -630,8 +630,8 @@ int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state)
   if ((state&GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
   {
     float comp;
-    if (up) comp = fminf(100.0,p->compression+1.0f);
-    else comp = fmaxf(0.0,p->compression-1.0f);
+    if (up) comp = fminf(100.0,p->compression+1.0);
+    else comp = fmaxf(0.0,p->compression-1.0);
     if (comp != p->compression)
     {
       dt_bauhaus_slider_set(g->scale2,comp);
@@ -650,28 +650,28 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int iy= (roi_in->y);
   const float iw=piece->buf_in.width*roi_out->scale;
   const float ih=piece->buf_in.height*roi_out->scale;
-  const float hw=iw/2.0f;
-  const float hh=ih/2.0f;
-  const float hw_inv=1.0f/hw;
-  const float hh_inv=1.0f/hh;
-  const float v=(-(double)data->rotation/180.0)*M_PI;
-  const float sinv=sinf(v);
-  const float cosv=cosf(v);
-  const float filter_radie=sqrtf((hh*hh)+(hw*hw))/hh;
-  const float offset=data->offset/100.0f*2;
+  const float hw=iw/2.0;
+  const float hh=ih/2.0;
+  const float hw_inv=1.0/hw;
+  const float hh_inv=1.0/hh;
+  const float v=(-data->rotation/180)*M_PI;
+  const float sinv=sin(v);
+  const float cosv=cos(v);
+  const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
+  const float offset=data->offset/100.0*2;
 
   float color[3];
-  hsl2rgb(color,data->hue,data->saturation,0.5f);
+  hsl2rgb(color,data->hue,data->saturation,0.5);
   if (data->density < 0)
     for ( int l=0; l<3; l++ )
-      color[l] = 1.0f-color[l];
+      color[l] = 1.0-color[l];
 
 #if 1
-  const float filter_compression = 1.0f/filter_radie/(1.0f-(0.5f+(data->compression/100.0f)*0.9f/2.0f))*0.5f;
+  const float filter_compression = 1.0/filter_radie/(1.0-(0.5+(data->compression/100.0)*0.9/2.0))*0.5;
 #else
   const float compression = data->compression/100.0f;
   const float t = 1.0f - .8f/(.8f + compression);
-  const float c = 1.0f + 1000.0f*powf(4.0f, compression);
+  const float c = 1.0f + 1000.0f*powf(4.0, compression);
 #endif
 
 
@@ -686,7 +686,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       const float *in = (float*)ivoid + k;
       float *out = (float*)ovoid + k;
 
-      float length = (sinv * (-1.0f+ix*hw_inv) - cosv * (-1.0f+(iy+y)*hh_inv) - 1.0f + offset) * filter_compression;
+      float length = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+(iy+y)*hh_inv) - 1.0 + offset) * filter_compression;
       const float length_inc = sinv * hw_inv * filter_compression;
 
       __m128 c = _mm_set_ps(0,color[2],color[1],color[0]);
@@ -788,32 +788,32 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   const int iy= (roi_in->y);
   const float iw=piece->buf_in.width*roi_out->scale;
   const float ih=piece->buf_in.height*roi_out->scale;
-  const float hw=iw/2.0f;
-  const float hh=ih/2.0f;
-  const float hw_inv=1.0f/hw;
-  const float hh_inv=1.0f/hh;
-  const float v=(-(double)data->rotation/180.0)*M_PI;
+  const float hw=iw/2.0;
+  const float hh=ih/2.0;
+  const float hw_inv=1.0/hw;
+  const float hh_inv=1.0/hh;
+  const float v=(-data->rotation/180)*M_PI;
   const float sinv=sin(v);
   const float cosv=cos(v);
-  const float filter_radie=sqrtf((hh*hh)+(hw*hw))/hh;
-  const float offset=data->offset/100.0f*2;
+  const float filter_radie=sqrt((hh*hh)+(hw*hw))/hh;
+  const float offset=data->offset/100.0*2;
   const float density=data->density;
 
   float color[4] = { 0.0f };
-  hsl2rgb(color,data->hue,data->saturation,0.5f);
+  hsl2rgb(color,data->hue,data->saturation,0.5);
   if (density < 0)
     for ( int l=0; l<3; l++ )
       color[l] = 1.0f - color[l];
 
 #if 1
-  const float filter_compression = 1.0f/filter_radie/(1.0f-(0.5f+(data->compression/100.0f)*0.9f/2.0f))*0.5f;
+  const float filter_compression = 1.0/filter_radie/(1.0-(0.5+(data->compression/100.0)*0.9/2.0))*0.5;
 #else
   const float compression = data->compression/100.0f;
   const float t = 1.0f - .8f/(.8f + compression);
   const float c = 1.0f + 1000.0f*powf(4.0, compression);
 #endif
 
-  const float length_base = (sinv * (-1.0f+ix*hw_inv) - cosv * (-1.0f+iy*hh_inv) - 1.0f + offset) * filter_compression;
+  const float length_base = (sinv * (-1.0+ix*hw_inv) - cosv * (-1.0+iy*hh_inv) - 1.0 + offset) * filter_compression;
   const float length_inc_y = -cosv * hh_inv * filter_compression;
   const float length_inc_x =  sinv * hw_inv * filter_compression;
 

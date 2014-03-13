@@ -44,11 +44,11 @@ dt_draw_curve_t;
 /** draws a rating star
    TODO: Use this instead of views/view.c dt_view_star in lightable expose.
 */
-static inline void dt_draw_star(cairo_t *cr, double x, double y, double r1, double r2)
+static inline void dt_draw_star(cairo_t *cr, float x, float y, float r1, float r2)
 {
-  const double d = 2.0*M_PI*0.1;
-  const double dx[10] = {sin(0.0), sin(d), sin(2*d), sin(3*d), sin(4*d), sin(5*d), sin(6*d), sin(7*d), sin(8*d), sin(9*d)};
-  const double dy[10] = {cos(0.0), cos(d), cos(2*d), cos(3*d), cos(4*d), cos(5*d), cos(6*d), cos(7*d), cos(8*d), cos(9*d)};
+  const float d = 2.0*M_PI*0.1f;
+  const float dx[10] = {sinf(0.0), sinf(d), sinf(2*d), sinf(3*d), sinf(4*d), sinf(5*d), sinf(6*d), sinf(7*d), sinf(8*d), sinf(9*d)};
+  const float dy[10] = {cosf(0.0), cosf(d), cosf(2*d), cosf(3*d), cosf(4*d), cosf(5*d), cosf(6*d), cosf(7*d), cosf(8*d), cosf(9*d)};
   cairo_move_to(cr, x+r1*dx[0], y-r1*dy[0]);
   for(int k=1; k<10; k++)
     if(k&1) cairo_line_to(cr, x+r2*dx[k], y-r2*dy[k]);
@@ -145,8 +145,8 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
                   -8., 0., -13., 0., -13, 3.,
                   -13., 8., -8., 8., 0., 0.
                 };
-  for(int k=0; k<14; k+=2) v[k] = v[k]*0.01f + 0.5f;
-  for(int k=1; k<14; k+=2) v[k] = v[k]*0.03f + 0.5f;
+  for(int k=0; k<14; k+=2) v[k] = v[k]*0.01 + 0.5;
+  for(int k=1; k<14; k+=2) v[k] = v[k]*0.03 + 0.5;
   for(int k=0; k<14; k+=2) v[k] *= width;
   for(int k=1; k<14; k+=2) v[k] *= height;
   if(left)
@@ -240,7 +240,7 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, float *hist, int32_t cha
 {
   cairo_move_to(cr, 0, 0);
   for(int k=0; k<64; k++)
-    cairo_line_to(cr, k, logf(1.0f + hist[4*k+channel]));
+    cairo_line_to(cr, k, logf(1.0 + hist[4*k+channel]));
   cairo_line_to(cr, 63, 0);
   cairo_close_path(cr);
   cairo_fill(cr);

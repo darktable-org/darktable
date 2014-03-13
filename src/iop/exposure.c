@@ -171,7 +171,7 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   cl_int err = -999;
   const float black = d->black;
   const float white = exposure2white(d->exposure);
-  const float scale = 1.0f/(white - black);
+  const float scale = 1.0/(white - black);
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -248,7 +248,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const float black = d->black;
   const float white = exposure2white(d->exposure);
   const int ch = piece->colors;
-  const float scale = 1.0f/(white - black);
+  const float scale = 1.0/(white - black);
   const __m128 blackv = _mm_set1_ps(black);
   const __m128 scalev = _mm_set1_ps(scale);
 #ifdef _OPENMP
@@ -431,7 +431,7 @@ static void exposure_set_white(struct dt_iop_module_t *self, const float white)
   if (p->exposure == exposure) return;
 
   p->exposure = exposure;
-  if (p->black >= white) exposure_set_black(self, white-0.01f);
+  if (p->black >= white) exposure_set_black(self, white-0.01);
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
@@ -464,7 +464,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black)
   p->black = b;
   if (p->black >= exposure2white(p->exposure))
   {
-    exposure_set_white(self, p->black+0.01f);
+    exposure_set_white(self, p->black+0.01);
   }
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
@@ -521,7 +521,7 @@ autoexpp_callback (GtkWidget* slider, gpointer user_data)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
-                      * (1.0f-dt_bauhaus_slider_get(g->autoexpp));
+                      * (1.0-dt_bauhaus_slider_get(g->autoexpp));
   exposure_set_white(self, white);
 }
 
@@ -627,7 +627,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
-                      * (1.0f-dt_bauhaus_slider_get(g->autoexpp));
+                      * (1.0-dt_bauhaus_slider_get(g->autoexpp));
   const float black = fminf(fminf(self->picked_color_min[0], self->picked_color_min[1]), self->picked_color_min[2]);
 
   exposure_set_white(self, white);
