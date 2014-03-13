@@ -25,6 +25,24 @@
 #include <omp.h>
 #endif
 
+
+//static inline
+//float clampnan(const float x, const float m, const float M)
+//{
+//  float r;
+//
+//  // clamp to [m, M] if x is infinite; return average of m and M if x is NaN; else just return x
+//
+//  if(isinf(x))
+//    r = (isless(x, m) ? m : (isgreater(x, M) ? M : x));
+//  else if(isnan(x))
+//    r = (m + M)/2.0f;
+//  else // normal number
+//    r = x;
+//
+//  return r;
+//}
+
 /**
  * border_interpolate2
  * 
@@ -39,137 +57,135 @@
  * @param lborders      border width to interpolate
  * @param filters       filters, required for used FC function
  */
-void igv_border_interpolate2(const float *const in, float *out, int winw, int winh, int wonw, int lborders, const int filters)
-{
-int bord=lborders;
-int width=winw;
-int height=winh;
-	for (int i=0; i<height; i++) {
+void igv_border_interpolate2(const float *const in, float *out, int winw, int winh, int wonw, int lborders, const int filters) {
+    int bord = lborders;
+    int width = winw;
+    int height = winh;
+    for (int i = 0; i < height; i++) {
 
         float sum[6];
 
-		for (int j=0; j<bord; j++) {//first few columns
-			for (int c=0; c<6; c++) sum[c]=0;
-			for (int i1=i-1; i1<i+2; i1++)
-				for (int j1=j-1; j1<j+2; j1++) {
-					if ((i1 > -1) && (i1 < height) && (j1 > -1)) {
-						int c = FC(i1,j1,filters);
-                                                //rawData[row,col]  <=> in[row * width + col]
-						//sum[c] += rawData[i1][j1];
-						sum[c] += in[i1 * width + j1];
-						sum[c+3]++;
-					}
-				}
-			int c=FC(i,j,filters);
-			if (c==1) {
-				out[(i*wonw + j)*4]=sum[0]/sum[3];
-				out[1+(i*wonw + j)*4]=in[i * width + j];
-				out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-			} else {
-				out[1+(i*wonw + j)*4]=sum[1]/sum[4];
-				if (c==0) {
-					out[(i*wonw + j)*4]=in[i * width + j];
-					out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-				} else {
-					out[(i*wonw + j)*4]=sum[0]/sum[3];
-					out[2+(i*wonw + j)*4]=in[i * width + j];
-				}
-			}
-		}//j
-		
-		for (int j=width-bord; j<width; j++) {//last few columns
-			for (int c=0; c<6; c++) sum[c]=0;
-			for (int i1=i-1; i1<i+2; i1++)
-				for (int j1=j-1; j1<j+2; j1++) {
-					if ((i1 > -1) && (i1 < height ) && (j1 < width)) {
-						int c = FC(i1,j1,filters);
-						sum[c] += in[i1 * width + j1];
-						sum[c+3]++;
-					}
-				}
-			int c=FC(i,j,filters);
-			if (c==1) {
-				out[(i*wonw + j)*4]=sum[0]/sum[3];
-				out[1+(i*wonw + j)*4]=in[i * width + j];
-				out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-			} else {
-				out[1+(i*wonw + j)*4]=sum[1]/sum[4];
-				if (c==0) {
-					out[(i*wonw + j)*4]=in[i * width + j];
-					out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-				} else {
-					out[(i*wonw + j)*4]=sum[0]/sum[3];
-					out[2+(i*wonw + j)*4]=in[i * width + j];
-				}
-			}
-		}//j
-	}//i
-	for (int i=0; i<bord; i++) {
+        for (int j = 0; j < bord; j++) {//first few columns
+            for (int c = 0; c < 6; c++) sum[c] = 0;
+            for (int i1 = i - 1; i1 < i + 2; i1++)
+                for (int j1 = j - 1; j1 < j + 2; j1++) {
+                    if ((i1 > -1) && (i1 < height) && (j1 > -1)) {
+                        int c = FC(i1, j1, filters);
+                        //rawData[row,col]  <=> in[row * width + col]
+                        //sum[c] += rawData[i1][j1];
+                        sum[c] += in[i1 * width + j1];
+                        sum[c + 3]++;
+                    }
+                }
+            int c = FC(i, j, filters);
+            if (c == 1) {
+                out[(i * wonw + j)*4] = sum[0] / sum[3];
+                out[1 + (i * wonw + j)*4] = in[i * width + j];
+                out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+            } else {
+                out[1 + (i * wonw + j)*4] = sum[1] / sum[4];
+                if (c == 0) {
+                    out[(i * wonw + j)*4] = in[i * width + j];
+                    out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+                } else {
+                    out[(i * wonw + j)*4] = sum[0] / sum[3];
+                    out[2 + (i * wonw + j)*4] = in[i * width + j];
+                }
+            }
+        }//j
+
+        for (int j = width - bord; j < width; j++) {//last few columns
+            for (int c = 0; c < 6; c++) sum[c] = 0;
+            for (int i1 = i - 1; i1 < i + 2; i1++)
+                for (int j1 = j - 1; j1 < j + 2; j1++) {
+                    if ((i1 > -1) && (i1 < height) && (j1 < width)) {
+                        int c = FC(i1, j1, filters);
+                        sum[c] += in[i1 * width + j1];
+                        sum[c + 3]++;
+                    }
+                }
+            int c = FC(i, j, filters);
+            if (c == 1) {
+                out[(i * wonw + j)*4] = sum[0] / sum[3];
+                out[1 + (i * wonw + j)*4] = in[i * width + j];
+                out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+            } else {
+                out[1 + (i * wonw + j)*4] = sum[1] / sum[4];
+                if (c == 0) {
+                    out[(i * wonw + j)*4] = in[i * width + j];
+                    out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+                } else {
+                    out[(i * wonw + j)*4] = sum[0] / sum[3];
+                    out[2 + (i * wonw + j)*4] = in[i * width + j];
+                }
+            }
+        }//j
+    }//i
+    for (int i = 0; i < bord; i++) {
 
         float sum[6];
 
-		for (int j=bord; j<width-bord; j++) {//first few rows
-			for (int c=0; c<6; c++) sum[c]=0;
-			for (int i1=i-1; i1<i+2; i1++)
-				for (int j1=j-1; j1<j+2; j1++) {
-					if ((i1 > -1) && (i1 < height) && (j1 > -1)) {
-						int c = FC(i1,j1,filters);
-						sum[c] += in[i1 * width + j1];
-						sum[c+3]++;
-					}
-				}
-			int c=FC(i,j,filters);
-			if (c==1) {
-				out[(i*wonw + j)*4]=sum[0]/sum[3];
-				out[1+(i*wonw + j)*4]=in[i * width + j];
-				out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-			} else {
-				out[1+(i*wonw + j)*4]=sum[1]/sum[4];
-				if (c==0) {
-					out[(i*wonw + j)*4]=in[i * width + j];
-					out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-				} else {
-					out[(i*wonw + j)*4]=sum[0]/sum[3];
-					out[2+(i*wonw + j)*4]=in[i * width + j];
-				}
-			}
-		}//j
-	}
-		
-	for (int i=height-bord; i<height; i++) {
+        for (int j = bord; j < width - bord; j++) {//first few rows
+            for (int c = 0; c < 6; c++) sum[c] = 0;
+            for (int i1 = i - 1; i1 < i + 2; i1++)
+                for (int j1 = j - 1; j1 < j + 2; j1++) {
+                    if ((i1 > -1) && (i1 < height) && (j1 > -1)) {
+                        int c = FC(i1, j1, filters);
+                        sum[c] += in[i1 * width + j1];
+                        sum[c + 3]++;
+                    }
+                }
+            int c = FC(i, j, filters);
+            if (c == 1) {
+                out[(i * wonw + j)*4] = sum[0] / sum[3];
+                out[1 + (i * wonw + j)*4] = in[i * width + j];
+                out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+            } else {
+                out[1 + (i * wonw + j)*4] = sum[1] / sum[4];
+                if (c == 0) {
+                    out[(i * wonw + j)*4] = in[i * width + j];
+                    out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+                } else {
+                    out[(i * wonw + j)*4] = sum[0] / sum[3];
+                    out[2 + (i * wonw + j)*4] = in[i * width + j];
+                }
+            }
+        }//j
+    }
+
+    for (int i = height - bord; i < height; i++) {
 
         float sum[6];
 
-		for (int j=bord; j<width-bord; j++) {//last few rows
-			for (int c=0; c<6; c++) sum[c]=0;
-			for (int i1=i-1; i1<i+2; i1++)
-				for (int j1=j-1; j1<j+2; j1++) {
-					if ((i1 > -1) && (i1 < height) && (j1 < width)) {
-						int c = FC(i1,j1,filters);
-						sum[c] += in[i1 * width + j1];
-						sum[c+3]++;
-					}
-				}
-			int c=FC(i,j,filters);
-			if (c==1) {
-				out[(i*wonw + j)*4]=sum[0]/sum[3];
-				out[1+(i*wonw + j)*4]=in[i * width + j];
-				out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-			} else {
-				out[1+(i*wonw + j)*4]=sum[1]/sum[4];
-				if (c==0) {
-					out[(i*wonw + j)*4]=in[i * width + j];
-					out[2+(i*wonw + j)*4]=sum[2]/sum[5];
-				} else {
-					out[(i*wonw + j)*4]=sum[0]/sum[3];
-					out[2+(i*wonw + j)*4]=in[i * width + j];
-				}
-			}
-		}//j
-	}
+        for (int j = bord; j < width - bord; j++) {//last few rows
+            for (int c = 0; c < 6; c++) sum[c] = 0;
+            for (int i1 = i - 1; i1 < i + 2; i1++)
+                for (int j1 = j - 1; j1 < j + 2; j1++) {
+                    if ((i1 > -1) && (i1 < height) && (j1 < width)) {
+                        int c = FC(i1, j1, filters);
+                        sum[c] += in[i1 * width + j1];
+                        sum[c + 3]++;
+                    }
+                }
+            int c = FC(i, j, filters);
+            if (c == 1) {
+                out[(i * wonw + j)*4] = sum[0] / sum[3];
+                out[1 + (i * wonw + j)*4] = in[i * width + j];
+                out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+            } else {
+                out[1 + (i * wonw + j)*4] = sum[1] / sum[4];
+                if (c == 0) {
+                    out[(i * wonw + j)*4] = in[i * width + j];
+                    out[2 + (i * wonw + j)*4] = sum[2] / sum[5];
+                } else {
+                    out[(i * wonw + j)*4] = sum[0] / sum[3];
+                    out[2 + (i * wonw + j)*4] = in[i * width + j];
+                }
+            }
+        }//j
+    }
 
 }
-
 
 /**
  *  demosaic_igv_RT algorithm from RawTherapee adapted for Darktable.
@@ -183,7 +199,10 @@ int height=winh;
  * @param filters       parameter for FC function to determine offset of Bayer R in input array
  */
 static void
-demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters) {
+demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+        const float *const in, float *out, const dt_iop_roi_t * const roi_in,
+        const dt_iop_roi_t * const roi_out, const int filters, const float thrs) {
+    
 #define SQR(x) ((x)*(x))
     //#define MIN(a,b) ((a) < (b) ? (a) : (b))
     //#define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -224,25 +243,36 @@ demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
     vdif = (float (*)) calloc(width * height / 2, sizeof *vdif);
     hdif = (float (*)) calloc(width * height / 2, sizeof *hdif);
 
-        igv_border_interpolate2(in, out, winw, winh, wonw, 7,filters);
+    igv_border_interpolate2(in, out, winw, winh, wonw, 7, filters);
+
+    float *inref;
+    const int median = thrs > 0.0f;
+    // if(median) fbdd_green(out, in, roi_out, roi_in, filters);
+    if (median) {
+        float *med_in = (float *) dt_alloc_align(16, roi_in->height * roi_in->width * sizeof (float));
+        pre_median(med_in, in, roi_in, filters, 1, thrs);
+        inref = (float *) med_in;
+    }else{
+        inref = (float *) in;
+    }
 
     //    if (plistener) {
     //        plistener->setProgressStr(Glib::ustring::compose(M("TP_RAW_DMETHOD_PROGRESSBAR"), RAWParams::methodstring[RAWParams::igv]));
     //        plistener->setProgress(0.0);
     //    }
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(rgb,vdif,hdif,chr,out,stdout)
+#pragma omp parallel default(none) shared(rgb,vdif,hdif,chr,out,stdout,inref)
 #endif
     {
 
         float ng, eg, wg, sg, nv, ev, wv, sv, nwg, neg, swg, seg, nwv, nev, swv, sev;
-//#ifdef _OPENMP
-//#pragma omp single
-//#endif
-//        {
-//            printf("Going to copy in");
-//            fflush(stdout);
-//        }
+        //#ifdef _OPENMP
+        //#pragma omp single
+        //#endif
+        //        {
+        //            printf("Going to copy in");
+        //            fflush(stdout);
+        //        }
 #ifdef _OPENMP
 #pragma omp for
 #endif
@@ -254,18 +284,14 @@ demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
 
                 //                rgb[c][indx] = CLIP(rawData[row][col]); //rawData = RT datas
                 //TODO what does FC in RT and such
-                rgb[c][indx] = in[indx]; //darktable input data                                        
+                rgb[c][indx] = inref[indx]; //darktable input data                                        
             }
         }
         //	border_interpolate2(7, rgb);
 
-#ifdef _OPENMP
-#pragma omp single
-#endif
-        {
-            printf("in copied, ready to rumble");
-            fflush(stdout);
-        }
+//#ifdef _OPENMP
+//#pragma omp single
+//#endif
         //        {
         //            if (plistener) plistener->setProgress(0.13);
         //       }
@@ -442,9 +468,9 @@ demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
                 //                red [row][col] = CLIP(rgb[1][indx] - 65535.f * chr[0][indx]);
                 //                green[row][col] = CLIP(rgb[1][indx]);
                 //                blue [row][col] = CLIP(rgb[1][indx] - 65535.f * chr[1][indx]);
-                out[(row * wonw + col)*4] = CLIP(rgb[1][indx] - 65535.f * chr[0][indx]);
-                out[1 + (row * wonw + col)*4] = CLIP(rgb[1][indx]);
-                out[2 + (row * wonw + col)*4] = CLIP(rgb[1][indx] - 65535.f * chr[1][indx]);
+                out[(row * wonw + col)*4] = clampnan(rgb[1][indx] - 65535.f * chr[0][indx], 0.0f, 1.0);
+                out[1 + (row * wonw + col)*4] = clampnan(rgb[1][indx], 0.0f, 1.0);
+                out[2 + (row * wonw + col)*4] = clampnan(rgb[1][indx] - 65535.f * chr[1][indx], 0.0f, 1.0);
             }
         //#ifdef _OPENMP
         //#pragma omp single

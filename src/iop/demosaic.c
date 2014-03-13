@@ -95,10 +95,10 @@ typedef enum dt_iop_demosaic_greeneq_t {
 dt_iop_demosaic_greeneq_t;
 
 static void
-amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters);
+amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters, const float thrs);
 
 static void
-demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters);
+demosaic_igv_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in, float *out, const dt_iop_roi_t * const roi_in, const dt_iop_roi_t * const roi_out, const int filters, const float thrs);
 
 static void
 demosaic_stagger(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs);
@@ -631,9 +631,9 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
                     break;
             }
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-                amaze_demosaic_RT(self, piece, in, (float *) o, &roi, &roo, data->filters);
+                amaze_demosaic_RT(self, piece, in, (float *) o, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
-                demosaic_igv_RT(self, piece, in, (float *) o, &roi, &roo, data->filters);
+                demosaic_igv_RT(self, piece, in, (float *) o, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger((float *) o, in, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -641,9 +641,9 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             dt_free_align(in);
         } else {
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-                amaze_demosaic_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters);
+                amaze_demosaic_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
-                demosaic_igv_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters);
+                demosaic_igv_RT(self, piece, pixels, (float *) o, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger((float *) o, pixels, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -681,9 +681,9 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             }
             // wanted ppg or zoomed out a lot and quality is limited to 1
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-                amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters);
+                amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
-                demosaic_igv_RT(self, piece, in, tmp, &roi, &roo, data->filters);
+                demosaic_igv_RT(self, piece, in, tmp, &roi, &roo, data->filters, threshold);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger(tmp, in, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -691,9 +691,9 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             dt_free_align(in);
         } else {
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
-                amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
+                amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
-                demosaic_igv_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
+                demosaic_igv_RT(self, piece, pixels, tmp, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -1266,7 +1266,7 @@ void gui_cleanup(struct dt_iop_module_t *self) {
     self->gui_data = NULL;
 }
 
-#include "iop/amaze_demosaic_RT.cc"
+#include "iop/demosaic_amaze_RT.cc"
 #include "iop/demosaic_stagger.cc"
 #include "iop/demosaic_igv_RT.cc"
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
