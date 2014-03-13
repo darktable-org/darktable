@@ -39,7 +39,6 @@
 
 #include <sys/time.h>
 #include <unistd.h>
-int usleep(useconds_t usec);
 #include <inttypes.h>
 #include <libintl.h>
 
