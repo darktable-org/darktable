@@ -331,7 +331,7 @@ int main(int argc, char *arg[])
     {
       update(k);
 
-      struct timespec time = {time.tv_sec = 0, time.tv_nsec = 10000000L};
+      struct timespec time = {0, 10000000L};
       nanosleep(&time,NULL);
     }
     for(int k=0; k<100; k++)
@@ -339,7 +339,7 @@ int main(int argc, char *arg[])
       pump_events();
       if(!running) break;
 
-      struct timespec time = {time.tv_sec = 0, time.tv_nsec = 35000000L};
+      struct timespec time = {0, 35000000L};
       nanosleep(&time,NULL);
     }
   }
