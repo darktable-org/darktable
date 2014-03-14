@@ -56,20 +56,21 @@ extern "C"
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define DT_XMP_KEYS_NUM 15 // the number of XmpBag XmpSeq keys that dt uses
-
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos);
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
-const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
+const char *dt_xmp_keys[] =
 {
-  "Xmp.dc.subject", "Xmp.darktable.colorlabels",
+  "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
   "Xmp.darktable.history_operation", "Xmp.darktable.history_params",
   "Xmp.darktable.blendop_params", "Xmp.darktable.blendop_version",
   "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
+
+static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
+
 
 /* a few helper functions inspired by
    https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp */
@@ -165,7 +166,7 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 //this should work because dt first reads all known keys
 static void dt_remove_known_keys(Exiv2::XmpData &xmp)
 {
-  for(int i=0; i<DT_XMP_KEYS_NUM; i++)
+  for(unsigned int i=0; i < dt_xmp_keys_n; i++)
   {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
     if(pos != xmp.end()) xmp.erase(pos);
@@ -1814,8 +1815,10 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     beg = next;
   }
 
-  xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
-  xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+  if(v1->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
+  if(v2->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
   /* TODO: Add tags to IPTC namespace as well */
 
   // color labels
@@ -1831,7 +1834,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     v->read(val);
   }
   sqlite3_finalize(stmt);
-  xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
+  if(v->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
 
   // masks:
   char key[1024];
