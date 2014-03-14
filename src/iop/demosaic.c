@@ -683,7 +683,7 @@ process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, vo
             if (demosaicing_method == DT_IOP_DEMOSAIC_AMAZE)
                 amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_IGV)
-                demosaic_igv_RT(self, piece, in, tmp, &roi, &roo, data->filters, threshold);
+                demosaic_igv_RT(self, piece, in, tmp, &roi, &roo, data->filters, data->median_thrs);
             else if (demosaicing_method == DT_IOP_DEMOSAIC_STAGGER)
                 demosaic_stagger(tmp, in, &roo, &roi, data->filters, data->median_thrs);
             else
@@ -1220,8 +1220,8 @@ void gui_init(struct dt_iop_module_t *self) {
     g->demosaic_method = dt_bauhaus_combobox_new(self);
     dt_bauhaus_combobox_add(g->demosaic_method, _("PPG (fast)"));
     dt_bauhaus_combobox_add(g->demosaic_method, _("amaze (slow)"));
-    dt_bauhaus_combobox_add(g->demosaic_method, _("igv testing (slow)"));
-    dt_bauhaus_combobox_add(g->demosaic_method, _("stagger testing (slow)"));
+    dt_bauhaus_combobox_add(g->demosaic_method, _("igv (high noise)"));
+//    dt_bauhaus_combobox_add(g->demosaic_method, _("stagger (very high noise)"));
     dt_bauhaus_widget_set_label(g->demosaic_method, NULL, _("method"));
     gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method, TRUE, TRUE, 0);
     g_object_set(G_OBJECT(g->demosaic_method), "tooltip-text", _("demosaicing raw data method"), (char *) NULL);

@@ -694,6 +694,7 @@
             <Elem>_REENTRANT=1</Elem>
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
           </preprocessorList>
           <undefinedList>
             <Elem>__NO_INLINE__</Elem>
@@ -751,6 +752,7 @@
             <Elem>_REENTRANT=1</Elem>
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
           </preprocessorList>
           <undefinedList>
             <Elem>__NO_INLINE__</Elem>
@@ -7705,6 +7707,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>copy_EXPORTS</Elem>
           </preprocessorList>
@@ -7790,6 +7793,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>jpeg_EXPORTS</Elem>
           </preprocessorList>
@@ -7851,6 +7855,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>pfm_EXPORTS</Elem>
           </preprocessorList>
@@ -7912,6 +7917,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>png_EXPORTS</Elem>
           </preprocessorList>
@@ -7973,6 +7979,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>ppm_EXPORTS</Elem>
           </preprocessorList>
@@ -8034,6 +8041,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>tiff_EXPORTS</Elem>
           </preprocessorList>
@@ -8115,6 +8123,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>disk_EXPORTS</Elem>
           </preprocessorList>
@@ -8176,6 +8185,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>email_EXPORTS</Elem>
           </preprocessorList>
@@ -8257,6 +8267,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>flickr_EXPORTS</Elem>
           </preprocessorList>
@@ -8318,6 +8329,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>gallery_EXPORTS</Elem>
           </preprocessorList>
@@ -8379,6 +8391,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>latex_EXPORTS</Elem>
           </preprocessorList>
@@ -9785,6 +9798,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>denoiseprofile_EXPORTS</Elem>
           </preprocessorList>
@@ -9846,6 +9860,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>dither_EXPORTS</Elem>
           </preprocessorList>
@@ -9907,6 +9922,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>equalizer_EXPORTS</Elem>
           </preprocessorList>
@@ -9968,6 +9984,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>exposure_EXPORTS</Elem>
           </preprocessorList>
@@ -10029,6 +10046,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>flip_EXPORTS</Elem>
           </preprocessorList>
@@ -10090,6 +10108,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>gamma_EXPORTS</Elem>
           </preprocessorList>
@@ -10151,6 +10170,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>globaltonemap_EXPORTS</Elem>
           </preprocessorList>
@@ -10212,6 +10232,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>graduatednd_EXPORTS</Elem>
           </preprocessorList>
@@ -10273,6 +10294,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>grain_EXPORTS</Elem>
           </preprocessorList>
@@ -10334,6 +10356,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>highlights_EXPORTS</Elem>
           </preprocessorList>
@@ -10395,6 +10418,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>highpass_EXPORTS</Elem>
           </preprocessorList>
@@ -10456,6 +10480,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>hotpixels_EXPORTS</Elem>
           </preprocessorList>
@@ -10517,6 +10542,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>invert_EXPORTS</Elem>
           </preprocessorList>
@@ -10578,6 +10604,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>lens_EXPORTS</Elem>
           </preprocessorList>
@@ -10639,6 +10666,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>levels_EXPORTS</Elem>
           </preprocessorList>
@@ -10700,6 +10728,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>lowlight_EXPORTS</Elem>
           </preprocessorList>
@@ -10761,6 +10790,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>lowpass_EXPORTS</Elem>
           </preprocessorList>
@@ -10822,6 +10852,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>monochrome_EXPORTS</Elem>
           </preprocessorList>
@@ -10883,6 +10914,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>nlmeans_EXPORTS</Elem>
           </preprocessorList>
@@ -10944,6 +10976,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>overexposed_EXPORTS</Elem>
           </preprocessorList>
@@ -11005,6 +11038,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>profile_gamma_EXPORTS</Elem>
           </preprocessorList>
@@ -11066,6 +11100,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>rawdenoise_EXPORTS</Elem>
           </preprocessorList>
@@ -11127,6 +11162,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>relight_EXPORTS</Elem>
           </preprocessorList>
@@ -11188,6 +11224,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>shadhi_EXPORTS</Elem>
           </preprocessorList>
@@ -11249,6 +11286,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>sharpen_EXPORTS</Elem>
           </preprocessorList>
@@ -11330,6 +11368,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>soften_EXPORTS</Elem>
           </preprocessorList>
@@ -11391,6 +11430,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>splittoning_EXPORTS</Elem>
           </preprocessorList>
@@ -11452,6 +11492,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>spots_EXPORTS</Elem>
           </preprocessorList>
@@ -11513,6 +11554,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>temperature_EXPORTS</Elem>
           </preprocessorList>
@@ -11574,6 +11616,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>tonecurve_EXPORTS</Elem>
           </preprocessorList>
@@ -11737,6 +11780,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>velvia_EXPORTS</Elem>
           </preprocessorList>
@@ -11798,6 +11842,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>vibrance_EXPORTS</Elem>
           </preprocessorList>
@@ -11859,6 +11904,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>vignette_EXPORTS</Elem>
           </preprocessorList>
@@ -11920,6 +11966,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>watermark_EXPORTS</Elem>
           </preprocessorList>
@@ -11989,6 +12036,7 @@
             <Elem>_XOPEN_SOURCE=700</Elem>
             <Elem>__GDK_KEYSYMS_COMPAT_H__</Elem>
             <Elem>__PIC__=2</Elem>
+            <Elem>__STDC_VERSION__=199901L</Elem>
             <Elem>__pic__=2</Elem>
             <Elem>zonesystem_EXPORTS</Elem>
           </preprocessorList>
