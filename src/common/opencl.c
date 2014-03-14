@@ -388,6 +388,7 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to compile program `%s'!\n", programname);
           fclose(f);
+          g_strfreev(tokens);
           goto finally;
         }
 

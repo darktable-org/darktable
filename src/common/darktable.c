@@ -195,7 +195,11 @@ gboolean dt_supported_image(const gchar *filename)
   gboolean supported = FALSE;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   char *ext = g_strrstr(filename,".");
-  if(!ext) return FALSE;
+  if(!ext)
+  {
+    g_strfreev(extensions);
+    return FALSE;
+  }
   ext++;
   for(char **i=extensions; *i!=NULL; i++)
     if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))

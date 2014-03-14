@@ -492,7 +492,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
             {
               size_t index = (size_t)y*width + x;
               float b1 = buffer[index];
-              float b2 = b2 = bufs[index];
+              float b2 = b2 = bufs[index]; //FIXME: is this line correct? what it supposed to be doing?
               if (b1>0.0f && b2>0.0f) buffer[index] = fminf(b1,b2*op);
               else buffer[index] = 0.0f;
             }
