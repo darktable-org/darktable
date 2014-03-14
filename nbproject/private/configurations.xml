@@ -369,6 +369,63 @@
               <df name="zonesystem.dir">
               </df>
             </df>
+            <in>introspection_atrous.c</in>
+            <in>introspection_basecurve.c</in>
+            <in>introspection_bilat.c</in>
+            <in>introspection_bilateral.cc</in>
+            <in>introspection_bloom.c</in>
+            <in>introspection_borders.c</in>
+            <in>introspection_cacorrect.c</in>
+            <in>introspection_channelmixer.c</in>
+            <in>introspection_clahe.c</in>
+            <in>introspection_clipping.c</in>
+            <in>introspection_colisa.c</in>
+            <in>introspection_colorbalance.c</in>
+            <in>introspection_colorcontrast.c</in>
+            <in>introspection_colorcorrection.c</in>
+            <in>introspection_colorin.c</in>
+            <in>introspection_colorize.c</in>
+            <in>introspection_colormapping.c</in>
+            <in>introspection_colorout.c</in>
+            <in>introspection_colortransfer.c</in>
+            <in>introspection_colorzones.c</in>
+            <in>introspection_demosaic.c</in>
+            <in>introspection_denoiseprofile.c</in>
+            <in>introspection_dither.c</in>
+            <in>introspection_equalizer.c</in>
+            <in>introspection_exposure.c</in>
+            <in>introspection_flip.c</in>
+            <in>introspection_gamma.c</in>
+            <in>introspection_globaltonemap.c</in>
+            <in>introspection_graduatednd.c</in>
+            <in>introspection_grain.c</in>
+            <in>introspection_highlights.c</in>
+            <in>introspection_highpass.c</in>
+            <in>introspection_hotpixels.c</in>
+            <in>introspection_invert.c</in>
+            <in>introspection_lens.c</in>
+            <in>introspection_levels.c</in>
+            <in>introspection_lowlight.c</in>
+            <in>introspection_lowpass.c</in>
+            <in>introspection_monochrome.c</in>
+            <in>introspection_nlmeans.c</in>
+            <in>introspection_overexposed.c</in>
+            <in>introspection_profile_gamma.c</in>
+            <in>introspection_rawdenoise.c</in>
+            <in>introspection_relight.c</in>
+            <in>introspection_shadhi.c</in>
+            <in>introspection_sharpen.c</in>
+            <in>introspection_soften.c</in>
+            <in>introspection_splittoning.c</in>
+            <in>introspection_spots.c</in>
+            <in>introspection_temperature.c</in>
+            <in>introspection_tonecurve.c</in>
+            <in>introspection_tonemap.cc</in>
+            <in>introspection_velvia.c</in>
+            <in>introspection_vibrance.c</in>
+            <in>introspection_vignette.c</in>
+            <in>introspection_watermark.c</in>
+            <in>introspection_zonesystem.c</in>
           </df>
           <df name="libs">
             <df name="CMakeFiles">
@@ -1238,7 +1295,6 @@
           <in>colortransfer.c</in>
           <in>colorzones.c</in>
           <in>demosaic.c</in>
-          <in>demosaic_algos_RT.cc</in>
           <in>demosaic_amaze_RT.cc</in>
           <in>demosaic_igv_RT.cc</in>
           <in>demosaic_stagger.cc</in>
