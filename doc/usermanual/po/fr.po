@@ -4,9 +4,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2014-01-16 20:06+0100\n"
-"PO-Revision-Date: 2014-03-03 14:25+0200\n"
+"PO-Revision-Date: 2014-03-08 14:19+0200\n"
 "Last-Translator: Michel Leblond <michel.leblond62@gmail.com>\n"
-"Language-Team: \n"
+"Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
 msgid "darktable 1.4"
-msgstr "Darktable 1.4"
+msgstr "darktable 1.4"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10(para)
 msgid ""
@@ -35,7 +35,12 @@ msgid ""
 "Siemerink, Igor Kuzmin, James C. McPherson, Jean-Sébastien Pédron, Jérémy "
 "Rosen, Jose Carlos Garcia Sogo, Olivier Toulouse, Pascal Obry, Robert "
 "Bieber, Simon Spannagel and many others."
-msgstr "\"Darktable a été développé avec les contributions majeures d’Aldric Renaudin, Alexandre Prokoudine, Bruce Guenter, Christian Tellefsen, Edouard Gomez, Ger Siemerink, Igor Kuzmin, James C. McPherson, Jean-Sébastien Pédron, Jérémy Rosen, Jose Carlos Garcia Sogo, Olivier Toulouse, Pascal Obry, Robert Bieber, Simon Spannagel et de beaucoup d’autres."
+msgstr ""
+"Darktable a été développé avec les contributions majeures d’Aldric Renaudin, "
+"Alexandre Prokoudine, Bruce Guenter, Christian Tellefsen, Edouard Gomez, "
+"Ger Siemerink, Igor Kuzmin, James C. McPherson, Jean-Sébastien Pédron, "
+"Jérémy Rosen, Jose Carlos Garcia Sogo, Olivier Toulouse, Pascal Obry, Robert "
+"Bieber, Simon Spannagel et de beaucoup d’autres."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:22(para)
 msgid ""
@@ -243,7 +248,7 @@ msgid ""
 "a zoomable lighttable and enables you to develop raw images and enhance them."
 msgstr ""
 "Il gère vos négatifs numériques dans une base de données, il les visualise "
-"grâce à une table lumineuse zoomable, et vous permet de développer et "
+"grâce à une table lumineuse zoomable et vous permet de développer, "
 "d'améliorer des images au format RAW."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:159(title)
@@ -315,7 +320,7 @@ msgstr ""
 "Un module de collection vous permet d’exécuter des requêtes de base de "
 "données flexibles, de rechercher vos images par mots-clés, par notes "
 "(étoiles), par étiquettes de couleur et de faire beaucoup plus. Filtrage et "
-"tri de vos collections par requête à la base de données ou simple marquage "
+"tri de vos collections par requêtes sur la base de données ou simple marquage "
 "par des mots-clés appropriés seront, tous les jours, des outils utiles dans "
 "le traitement de vos photos ;"
 
@@ -351,7 +356,7 @@ msgstr ""
 "le téléchargement Flickr, l’enregistrement sur disque, la copie 1:1, "
 "l’attachement à un courriel et il peut générer une galerie web simple basée "
 "sur html. Darktable vous permet d’exporter des images en faible plage "
-"dynamique (JPEG, JPEG2000, PNG, TIFF), en 16 bits (PPM, TIFF), ou en haute "
+"dynamique (JPEG, JPEG2000, PNG, TIFF), en 16 bits (PPM, TIFF) ou en haute "
 "plage dynamique linéaire (PFM, EXR) ;"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:222(para)
@@ -412,7 +417,7 @@ msgid ""
 "profiles contains parameters for over 100 popular camera models."
 msgstr ""
 "Darktable introduit un réducteur de bruit très efficace, pourtant simple "
-"<quote>clic</quote>, qui fonctionne toujours. Il est conçu sous forme de "
+"<quote>clic</quote> et qui fonctionne toujours. Il est conçu sous forme de "
 "module où les performances de la réduction de bruit ne dépendent que de "
 "l’appareil et de la sensibilité ISO. Une base de données de profils comporte "
 "les paramètres pour plus de 100 modèles d’appareils courants ;"
@@ -446,9 +451,9 @@ msgid ""
 msgstr ""
 "Darktable est fourni avec deux exécutables : la variante standard avec "
 "l’interface graphique (<quote>GUI</quote>) qui est lancée en appelant "
-"<filename moreinfo=\"none\">darktable</filename> et une variante "
-"avec une interface en ligne de commandes qui est lancée par<filename "
-"moreinfo=\"none\">darktable-cli</filename>."
+"<filename moreinfo=\"none\">darktable</filename> et une variante avec une "
+"interface en ligne de commandes qui est lancée par<filename moreinfo=\"none"
+"\">darktable-cli</filename>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:285(title)
 msgid "<filename moreinfo=\"none\">darktable</filename> binary"
@@ -459,9 +464,9 @@ msgid ""
 "This binary starts darktable with its GUI and full functionality; it is the "
 "standard way of using darktable."
 msgstr ""
-"Cet exécutable lance darktable avec son interface graphique (<quote>GUI</"
-"quote>) et ses pleines fonctionnalités. C’est la manière standard d’utiliser "
-"darktable."
+"Cet exécutable lance darktable avec son interface graphique "
+"(<quote>GUI</quote>) et toutes ses fonctionnalités. C’est la manière "
+"standard d’utiliser darktable."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:294(para)
 msgid ""
@@ -481,13 +486,14 @@ msgid ""
 "user cache directory&gt;] [--localedir &lt;locale directory&gt;] [--conf &lt;"
 "key&gt;=&lt;value&gt;]"
 msgstr ""
-"darktable [-d {all,cache,camctl,control,dev,fswatch, input,lighttable,masks,"
-"memory,nan,opencl, perf,pwstorage,sql}] [IMG_1234.{RAW,..}|dossier_images/] "
-"[--disable-opencl] [--library &lt;fichier de bibliothèque&gt;] [--datadir "
-"&lt;répertoire de données&gt;] [--moduledir &lt;répertoire des modules&gt;] "
-"[--tmpdir &lt;répertoire tmp &gt;] [--configdir &lt;répertoire de config "
-"utilisateur&gt;] [--cachedir &lt;répertoire de cache utilisateur&gt;] [--"
-"localedir &lt;répertoire de langues&gt;] [--conf &lt;clé&gt;=&lt;valeur&gt;]"
+"darktable [-d {all,cache,camctl,control,dev,fswatch, "
+"input,lighttable,masks,memory,nan,opencl, perf,pwstorage,sql}] "
+"[IMG_1234.{RAW,..}|dossier_images/] [--disable-opencl] [--library "
+"&lt;fichier de bibliothèque&gt;] [--datadir &lt;répertoire de données&gt;] "
+"[--moduledir &lt;répertoire des modules&gt;] [--tmpdir &lt;répertoire tmp "
+"&gt;] [--configdir &lt;répertoire de config utilisateur&gt;] [--cachedir "
+"&lt;répertoire de cache utilisateur&gt;] [--localedir &lt;répertoire de "
+"langues&gt;] [--conf &lt;clé&gt;=&lt;valeur&gt;]"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:320(term)
 msgid "-d"
@@ -501,13 +507,13 @@ msgid ""
 "output of more than one subsystem."
 msgstr ""
 "Cette option active la sortie de débogage vers le terminal. Il y a plusieurs "
-"sous-systèmes de darktable et le débogage de chacun d’eux peut être activé "
-"séparément. Vous pouvez utiliser cette option plusieurs fois si vous désirez "
-"déboguer la sortie de plus d’un sous-système."
+"sous-systèmes dans darktable et le débogage de chacun d’eux peut être "
+"activé séparément. Vous pouvez utiliser cette option plusieurs fois si vous "
+"désirez déboguer la sortie de plus d’un sous-système."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:333(term)
 msgid "IMG_1234.{RAW,..} | image_folder/"
-msgstr "IMG_1234.{RAW,..} | image_folder/"
+msgstr "IMG_1234.{RAW,..} | dossier_images/"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:335(para)
 msgid ""
@@ -516,11 +522,11 @@ msgid ""
 "view with that file opened. If a folder is given darktable starts in "
 "lighttable view with the content of that folder as the current collection."
 msgstr ""
-"Vous pouvez, de manière optionnelle,  indiquer le nom de fichier d’une image "
+"Vous pouvez, de manière optionnelle, indiquer le nom de fichier d’une image "
 "ou le nom d’un dossier contenant des fichiers d’images. Si un nom de fichier "
-"est indiqué, darktable démarre en mode chambre noire avec ce fichier ouvert. "
-"Si un dossier est indiqué, darktable démarre dans la vue de la table "
-"lumineuse avec le contenu de ce dossier comme collection actuelle."
+"est donné darktable démarre en mode chambre noire avec ce fichier ouvert. "
+"Si un nom dossier est donné darktable démarre en mode table lumineuse avec "
+"le contenu de ce dossier comme collection courante."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:346(term)
 msgid "--disable-opencl"
@@ -532,9 +538,9 @@ msgid ""
 "this option in case darktable crashes at startup due to a defective OpenCL "
 "implementation."
 msgstr ""
-"Cette option évite que darktable initialise le sous-système OpenCL. Utilisez "
-"cette option dans le cas où darktable se plante au démarrage en raison d’une "
-"implémentation défectueuse d’OpenCL."
+"Cette option empêche darktable d'initialiser le sous-système OpenCL. "
+"Utilisez cette option dans le cas de plantage de darktable au démarrage en "
+"raison d’une implémentation défectueuse d’OpenCL."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:358(term)
 msgid "--library &lt;library file&gt;"
@@ -550,15 +556,15 @@ msgid ""
 "give <quote>:memory:</quote> as a library file in which case the database is "
 "kept in system memory - all changes are discarded when darktable terminates."
 msgstr ""
-"Darktable conserve les informations de l’image dans une base de données "
-"sqlite afin d’y avoir un accès rapide. L’emplacement par défaut de la base "
-"de données est <quote>$HOME/.config/darktable/library.db</quote>. Vous "
-"pouvez donner un autre emplacement si, par exemple, vous désirez "
-"expérimenter sans polluer votre library.db. d’origine. Si le fichier de base "
-"de données n’existe pas, darktable va le créer pour vous. Vous pouvez aussi "
-"indiquer <quote>:memory:</quote> comme nom de fichier ; dans ce cas, la base "
-"de données résidera dans la mémoire système – toutes les modifications "
-"seront perdues à l’arrêt de darktable."
+"Afin d’y avoir un accès rapide, darktable conserve les informations de "
+"l’image dans une base de données sqlite. Son emplacement par défaut est "
+"<quote>$HOME/.config/darktable/library.db</quote>. Vous pouvez donner un "
+"autre emplacement si, par exemple, vous désirez expérimenter sans polluer "
+"votre library.db d’origine. Si le fichier de base de données n’existe pas, "
+"darktable va le créer pour vous. Vous pouvez aussi indiquer "
+"<quote>:memory:</quote> comme nom de fichier ; dans ce cas, la base de "
+"données résidera dans la mémoire système – toutes les modifications seront "
+"perdues à l’arrêt de darktable."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:375(term)
 msgid "--datadir &lt;data directory&gt;"
@@ -571,14 +577,14 @@ msgid ""
 "opt/darktable/share/darktable/</quote> and <quote>/usr/share/darktable/</"
 "quote>."
 msgstr ""
-"Cette option définit le répertoire où darktable recherche ses données lors "
-"de son fonctionnement. L’emplacement par défaut dépend de votre "
-"installation. Des emplacements typiques sont <quote>/opt/darktable/share/"
-"darktable/</quote> et <quote>/usr/share/darktable/</quote>."
+"Cette option définit le répertoire où darktable recherche ses données "
+"d'exécution. L’emplacement par défaut dépend de votre installation. Des "
+"emplacements typiques sont <quote>/opt/darktable/share/darktable/</quote> et "
+"<quote>/usr/share/darktable/</quote>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:388(term)
 msgid "--moduledir &lt;module directory&gt;"
-msgstr "--moduledir &lt;répertoire de module&gt;"
+msgstr "--moduledir &lt;répertoire des modules&gt;"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:390(para)
 msgid ""
@@ -588,13 +594,12 @@ msgid ""
 "installation; typical places are <quote>/opt/darktable/lib64/darktable/</"
 "quote> and <quote>/usr/lib64/darktable/</quote>."
 msgstr ""
-"Darktable possède une structure modulaire et organise ses modules sous forme "
-"d’une bibliothèque partagée afin de les charger lors de son fonctionnement. "
-"Avec cette option, vous indiquez à darktable où il doit rechercher les "
-"bibliothèques pour leur chargement lors de son fonctionnement. L’emplacement "
-"par défaut dépend de votre installation. Des emplacements typiques sont "
-"<quote>/opt/darktable/lib64/darktable/</quote> et <quote>/usr/lib64/"
-"darktable/</quote>."
+"Darktable a une structure modulaire et organise ses modules sous forme de "
+"bibliothèques partagées à charger lors de l'exécution. Avec cette option, "
+"vous indiquez à darktable où il doit les rechercher. L’emplacement par "
+"défaut dépend de votre installation. Des emplacements typiques sont "
+"<quote>/opt/darktable/lib64/darktable/</quote> et "
+"<quote>/usr/lib64/darktable/</quote>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:402(term)
 msgid "--tmpdir &lt;tmp directory&gt;"
@@ -605,8 +610,8 @@ msgid ""
 "The place where darktable stores its temporary files. If this option is not "
 "supplied darktable uses the system default."
 msgstr ""
-"Emplacement où darktable stocke ses fichiers temporaires. SI cette option "
-"n’est pas indiquée, darktable utilise la valeur par défaut du système."
+"Emplacement où darktable stocke ses fichiers temporaires. Si cette option "
+"n’est pas fournie, darktable utilise la valeur par défaut du système."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:413(term)
 msgid "--configdir &lt;config directory&gt;"
@@ -618,8 +623,8 @@ msgid ""
 "configuration. The default place is <quote>$HOME/.config/darktable/</quote>."
 msgstr ""
 "Cette option définit le répertoire où darktable enregistre la configuration "
-"spécifique à l’utilisateur. L’emplacement par défaut est <quote>$HOME/."
-"config/darktable/</quote>."
+"spécifique à l’utilisateur. L’emplacement par défaut est "
+"<quote>$HOME/.config/darktable/</quote>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:424(term)
 msgid "--cachedir &lt;cache directory&gt;"
@@ -632,11 +637,11 @@ msgid ""
 "located in <quote>$HOME/.cache/darktable/</quote>. There may exist multiple "
 "thumbnail caches in parallel - one for each library file."
 msgstr ""
-"Darktable conserve un cache des vignettes des images afin d’effectuer une "
-"prévisualisation rapide ainsi que des exécutables OpenCL précompilés pour un "
-"démarrage rapide. Par défaut, le cache est situé dans<quote>$HOME/.cache/"
-"darktable/</quote>. Il peut exister plusieurs cache de vignettes en "
-"parallèle – un pour chaque fichier de bibliothèques."
+"Darktable conserve un cache des vignettes des images pour une "
+"prévisualisation rapide et un cache des exécutables OpenCL précompilés pour "
+"un démarrage rapide. Par défaut, le cache est situé "
+"dans<quote>$HOME/.cache/darktable/</quote>. Il peut exister plusieurs caches "
+"de vignettes en parallèle – un pour chaque fichier de bibliothèque."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:437(term)
 msgid "--localedir &lt;locale directory&gt;"
@@ -648,10 +653,10 @@ msgid ""
 "default place depends on your installation. Typical places are <quote>/opt/"
 "darktable/share/locale/</quote> and <quote>/usr/share/locale/</quote>"
 msgstr ""
-"Emplacement où darktable recherche les chaînes de langues spécifiques. "
-"l’emplacement par défaut dépend de votre installation. Des emplacements "
-"typiques sont <quote>/opt/darktable/share/locale/</quote> et <quote>/usr/"
-"share/locale/</quote>"
+"Emplacement où darktable recherche ses chaînes de langues spécifiques. "
+"L’emplacement par défaut dépend de votre installation. Des emplacements "
+"typiques sont <quote>/opt/darktable/share/locale/</quote> et "
+"<quote>/usr/share/locale/</quote>"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:449(term)
 msgid "--conf &lt;key&gt;=&lt;value&gt;"
@@ -667,10 +672,10 @@ msgid ""
 msgstr ""
 "Darktable prend en charge un riche ensemble de paramètres de configuration "
 "que l’utilisateur peut définir dans <quote>darktablerc</quote> – fichier de "
-"configuration de darktable se trouvant dans le répertoire de config de "
+"configuration de darktable se trouvant dans le répertoire config de "
 "l’utilisateur. Vous pouvez écraser de manière temporaire des paramètres "
-"particuliers depuis la ligne de commandes à l’aide de cette option –"
-" cependant, ces paramètres ne seront pas enregistrés dans "
+"particuliers depuis la ligne de commandes à l’aide de cette option "
+"– cependant, ces paramètres ne seront pas enregistrés dans "
 "<quote>darktablerc</quote>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:313(para)
@@ -704,8 +709,8 @@ msgid ""
 "<filename moreinfo=\"none\">darktable-cli</filename> is called with the "
 "following command line parameters:"
 msgstr ""
-"<filenamemoreinfo=\"none\">darktable-cli</filename> est appelé avec "
-"les paramètres suivants de la ligne de commandes :"
+"<filename moreinfo=\"none\">darktable-cli</filename> est appelé avec les "
+"paramètres suivants de la ligne de commandes :"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:486(synopsis)
 msgid ""
@@ -714,9 +719,9 @@ msgid ""
 "[--hq &lt;0|1|true|false&gt;] [--verbose] [--core &lt;darktable options&gt;]"
 msgstr ""
 "darktable-cli &lt;fichier d’entrée&gt; [&lt;fichier xmp &gt;] &lt;fichier de "
-"sortie&gt; [--width &lt;largeur max&gt;] [--height &lt;hauteur max&gt;] [--"
-"bpp &lt;bpp&gt;] [--hq &lt;0|1|true|false&gt;] [--verbose] [--core &lt;"
-"options de darktable&gt;]"
+"sortie&gt; [--width &lt;largeur max&gt;] [--height &lt;hauteur max&gt;] "
+"[--bpp &lt;bpp&gt;] [--hq &lt;0|1|true|false&gt;] [--verbose] [--core "
+"&lt;options de darktable&gt;]"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:503(term)
 msgid "&lt;input file&gt;"
@@ -737,9 +742,9 @@ msgid ""
 "search for an XMP file that belongs to the given input file."
 msgstr ""
 "Nom optionnel d’un fichier lié XMP qui contient les données de l’historique "
-"de développement devant être appliqué lors de l’exportation. Si cette option "
-"n’est pas indiquée, darktable recherchera un fichier XMP appartenant au "
-"fichier d’entrée indiqué."
+"de développement devant être appliquées lors de l’exportation. Si cette "
+"option n’est pas indiquée, darktable recherchera un fichier XMP appartenant "
+"au fichier d’entrée indiqué."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:525(term)
 msgid "&lt;output file&gt;"
@@ -833,8 +838,8 @@ msgid ""
 "\"darktable_commandline_parameters\"/> for a detailed description."
 msgstr ""
 "Tous les paramètres de la ligne de commandes suivant <quote>--core</quote> "
-"sont passés au cœur de darktable et manipulé comme des paramètres standards. "
-"Voir <xref linkend=\"darktable_commandline_parameters\"/> pour une "
+"sont passés au cœur de darktable et manipulés comme des paramètres "
+"standards. Voir <xref linkend=\"darktable_commandline_parameters\"/> pour une "
 "description détaillée."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:496(para)
@@ -871,19 +876,18 @@ msgid ""
 "tethering </entry></row><row><entry><emphasis>m</emphasis></entry><entry> "
 "switches to map </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
-"Darktable est constitué de plusieurs vues ou modes. Quatre vues sont "
-"disponibles qui sont décrites dans cette section. Vous pouvez passer d’une "
-"vue à l’autre en cliquant le nom de la vue en haut du panneau de droite – la "
-"vue active est mise en évidence – ou en utilisant l’un des raccourcis "
-"clavier : <informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" "
-"colsep=\"0\" "
-"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/><tbody>"
-"<row><entry><emphasis>l</emphasis></entry><entry>passer à la table lumineuse<"
-"/entry></row><row><entry><emphasis>d</emphasis></"
-"entry><entry>passer à la chambre noire</entry></row><row><entry>"
-"<emphasis>t</emphasis></entry><entry>passer au mode connecté de "
-"l’appareil </entry></row><row><entry><emphasis>m</emphasis></entry>"
-"<entry>passer à la carte</entry></row></tbody></tgroup></informaltable>"
+"Darktable est constitué de plusieurs vues ou modes. Les quatre vues "
+"disponibles sont décrites dans cette section. Vous pouvez passer d’une vue à "
+"l’autre en cliquant le nom de la vue en haut du panneau de droite – la vue "
+"active est mise en évidence – ou en utilisant l’un des raccourcis clavier : "
+"<informaltable frame=\"none\" width=\"60%\"><tgroup cols=\"2\" colsep=\"0\" "
+"rowsep=\"0\"><colspec colwidth=\"1*\"/><colspec colwidth=\"9*\"/><tbody><row><entr"
+"y><emphasis>l</emphasis></entry><entry>passer à la table lumineuse</entry></"
+"row><row><entry><emphasis>d</emphasis></entry><entry>passer à la chambre "
+"noire</entry></row><row><entry><emphasis>t</emphasis></entry><entry>passer "
+"au mode connecté de l’appareil "
+"</entry></row><row><entry><emphasis>m</emphasis></entry><entry>passer à la "
+"carte</entry></row></tbody></tgroup></informaltable>"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:691(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1167(title)
@@ -897,10 +901,9 @@ msgid ""
 "other actions (see <xref linkend=\"lighttable_chapter\"/>)."
 msgstr ""
 "La table lumineuse est l’endroit où vous organisez les images et les "
-"pellicules. C’est dans cette vue que, parmi d’autres actions, vous évaluez "
-"les images, que vous leur ajoutez des étiquettes de couleur et des mots-"
-"clés, et que, entre autres actions, vous les exportez. (Voir <xref linkend="
-"\"lighttable_chapter\"/>)."
+"pellicules. C’est dans cette vue que vous évaluez les images, que vous leur "
+"ajoutez des mots-clés et des étiquettes de couleur et que, entre autres "
+"actions, vous les exportez. (Voir <xref linkend=\"lighttable_chapter\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:703(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:3730(title)
@@ -912,15 +915,15 @@ msgid ""
 "In the darkroom view you develop a single image using the available modules "
 "(see <xref linkend=\"darkroom_chapter\"/>)."
 msgstr ""
-"La chambre noire vous permet de développer une image spécifique en utilisant "
-"les modules disponibles. (Voir <xref linkend=\"darkroom_chapter\"/>)."
+"Dans la chambre noire vous développez une seule image en utilisant les "
+"modules disponibles (voir <xref linkend=\"darkroom_chapter\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:714(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:2062(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:13057(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:13105(title)
 msgid "Tethering"
-msgstr "Mode connecté"
+msgstr "Capture"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:716(para)
 msgid ""
@@ -928,9 +931,9 @@ msgid ""
 "remotely capturing images that will be downloaded and shown on computer "
 "screen (see <xref linkend=\"tethering_chapter\"/>)."
 msgstr ""
-"Cette vue vous permet de commander l’appareil photo raccordé à votre "
-"ordinateur. On peut le commander à distance pour l’acquisition des images "
-"qui seront chargées et affichées sur l’écran de l’ordinateur. (Voir <xref  "
+"Cette vue permet de photographier avec l’appareil photo raccordé à votre "
+"ordinateur. On peut le commander à distance pour l’acquisition d'images qui "
+"seront chargées et affichées sur l’écran de l’ordinateur (voir <xref "
 "linkend=\"tethering_chapter\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:726(title)
@@ -946,7 +949,7 @@ msgid ""
 msgstr ""
 "Cette vue permet d’afficher sur une carte des images ayant des données de "
 "géolocalisation et vous permet de géolocaliser vous-même les nouvelles "
-"images. (Voir <xref linkend=\"map_chapter\"/>)."
+"images (voir <xref linkend=\"map_chapter\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:739(title)
 msgid "Screen layout"
@@ -967,13 +970,12 @@ msgstr ""
 "a une zone centrale qui contient la plupart des informations dignes "
 "d’intérêt de cette vue. Il y a ensuite des panneaux à gauche, à droite, en "
 "haut et en bas de la zone centrale. Le panneau de gauche est typiquement "
-"destiné à afficher des informations. Le panneau de droite offre des fonctions "
-"destinées à modifier l’image. Les panneaux du haut et du bas donnent accès "
-"à différents paramètres et raccourcis. Chacun des ces panneaux peut être "
-"masqué ou affiché en pressant un triangle comme celui-ci <inlinegraphic "
-"fileref=\"images/general_icon_collapse.png\" scalefit=\"1\" width=\"2%\"/>, "
-"situé "
-"près du panneau."
+"destiné à afficher des informations. Le panneau de droite offre des "
+"fonctions destinées à modifier l’image. Les panneaux du haut et du bas "
+"donnent accès à différents paramètres et raccourcis. Chacun de ces panneaux "
+"peut être masqué ou affiché en pressant un triangle comme celui-ci "
+"<inlinegraphic fileref=\"images/general_icon_collapse.png\" scalefit=\"1\" "
+"width=\"2%\"/>, situé près du panneau."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:752(para)
 msgid ""
@@ -1005,7 +1007,7 @@ msgstr ""
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:772(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:6489(title)
 msgid "Filmstrip"
-msgstr "Bande de film"
+msgstr "Bandeau"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:774(para)
 msgid ""
@@ -1018,16 +1020,16 @@ msgid ""
 "double clicking the thumbnail in the filmstrip. You can also rate the images "
 "as you do in lighttable, copy/paste history stack, etc."
 msgstr ""
-"La bande de film affiche les mêmes images que celles de la table lumineuse "
-"en conservant les filtres et l’ordre du tri. Elle est activée ou désactivée "
-"par le raccourci <emphasis>Ctrl-f</emphasis>. Vous pouvez vous déplacer le "
-"long de la bande de film en la faisant défiler à l’aide de la molette de la "
-"souris. La bande de film vous permet d’interagir avec les images même si "
-"vous n’êtes pas sur la table lumineuse. Par exemple, vous pouvez, pendant "
-"que vous développez une image dans la chambre noire, passer à une autre "
-"image à développer en double cliquant la vignette de la bande de film. Vous "
-"pouvez aussi alors que vous n’êtes pas sur la table lumineuse, évaluer les "
-"images, copier/coller l’historique de développement, etc."
+"Le bandeau affiche les mêmes images que celles de la table lumineuse en "
+"conservant les filtres et l’ordre du tri. Il est activé ou désactivé par le "
+"raccourci <emphasis>Ctrl-f</emphasis>. Vous pouvez vous déplacer le long du "
+"bandeau en le faisant défiler à l’aide de la molette de la souris. Le "
+"bandeau vous permet d’interagir avec les images même si vous n’êtes pas dans "
+"le mode table lumineuse. Par exemple, pendant que vous développez une image "
+"dans la chambre noire, vous pouvez passer à une autre image à développer en "
+"double cliquant sa vignette dans le bandeau. Comme vous le faites en mode "
+"table lumineuse, vous pouvez aussi évaluer les images, copier/coller "
+"l’historique de développement, etc."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:792(title)
 msgid "Preferences"
@@ -1040,9 +1042,9 @@ msgid ""
 "to define various parameters which control darktable's behavior."
 msgstr ""
 "Un bouton <inlinegraphic fileref=\"images/darkroom_preferences.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> situé sur la panneau "
-"supérieur vous permet de définir divers paramètres qui contrôlent le "
-"comportement de darktable."
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> situé sur le panneau supérieur vous "
+"permet de définir divers paramètres qui contrôlent le comportement de "
+"darktable."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:801(para)
 msgid ""
@@ -1091,8 +1093,8 @@ msgstr ""
 "Pour commencer à travailler avec darktable, vous devez d’abord importer des "
 "images. Le module d’importation se trouve sur la panneau de gauche de la vue "
 "table lumineuse (<xref linkend=\"import\"/>). Vous pouvez soit importer les "
-"images depuis le système de fichiers, soit, si darktable prend en charge "
-"votre appareil, directement depuis celui-ci."
+"images depuis le système de fichiers, soit directement depuis votre appareil "
+"si darktable le prend en charge."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:837(title)
 msgid "Importing images from filesystem"
@@ -1125,7 +1127,7 @@ msgstr ""
 "Connectez votre appareil à votre ordinateur. Si votre distribution essaie de "
 "le monter automatiquement, sélectionnez l’option qui permet d’interrompre le "
 "montage. Sinon l’appareil sera verrouillé et inaccessible depuis darktable. "
-"Si vous ne voyez pas l’appareil sur le panneau d’importation, pressez le "
+"Si vous ne voyez pas l’appareil sur le panneau d’importation pressez le "
 "bouton <quote>rechercher des appareils</quote>. Votre appareil apparaîtra "
 "sur le même panneau avec des choix supplémentaires : <emphasis>importer</"
 "emphasis> et <emphasis>contrôler à distance</emphasis>."
@@ -1182,7 +1184,7 @@ msgstr ""
 "Les modifications sont enregistrées automatiquement, vous pouvez donc "
 "quitter sans risque le mode chambre noire ou darktable et revenir ensuite "
 "poursuivre votre travail. Ceci signifie que darktable n’a pas besoin d’un "
-"bouton<quote>enregistrer</quote> et il n’en a donc pas. <indexterm "
+"bouton <quote>enregistrer</quote> et il n’en a donc pas. <indexterm "
 "significance=\"normal\"><primary>bouton enregistrer</primary></indexterm>"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:898(para)
@@ -1217,7 +1219,7 @@ msgid ""
 "of the right panel, by clicking a module until a star is displayed in front "
 "of the icon."
 msgstr ""
-"Darktable est livré avec un certain nombre de modules, arrangés en groupes. "
+"Darktable est livré avec un certain nombre de modules arrangés en groupes. "
 "On peut accéder à ces groupes de modules par des boutons de basculement "
 "situés sur la panneau de droite, juste en dessous de l’histogramme. Il y a "
 "aussi deux groupes de modules spéciaux appelés <quote>Actifs</quote> et "
@@ -1269,7 +1271,7 @@ msgstr ""
 "finement soit en utilisant le curseur, soit en glissant avec la souris dans "
 "l’<link linkend=\"histogram\"><emphasis>histogramme</emphasis></link>. Vous "
 "pouvez aussi remonter le niveau de noir pour augmenter le contraste. Mais "
-"faites attention, utilisez de faibles valeurs, par exemple des pas de 0.005. "
+"faites attention: utilisez de faibles valeurs, par exemple des pas de 0.005. "
 "Il y a aussi une fonction de correction automatique."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:952(title)
@@ -1298,24 +1300,24 @@ msgid ""
 "treat color and luminance noise separately."
 msgstr ""
 "Le meilleur point de départ de la réduction de bruit est <link linkend="
-"\"denoise_profiled\"><emphasis>Réduire le bruit profilé</emphasis></link>. "
+"\"denoise_profiled\"><emphasis>réduction du bruit (profil)</emphasis></link>. "
 "Ce module offre une solution pratiquement <quote>en un clic</quote> pour "
-"lutter contre le bruit. Du point de vue de l’utilisateur, l’effet ne dépend "
+"lutter contre le bruit. Du point de vue de l’utilisateur l’effet ne dépend "
 "que du type d’appareil photo et de la sensibilité ISO. Ces deux valeurs "
 "proviennent des données EXIF. Tous les autres paramètres proviennent d’une "
 "base de données de profils de bruit qui a été réunie par l’équipe de "
 "darktable – elle couvre maintenant plus de 100 modèles d’appareils photo "
 "courants. De plus, vous avez dans darktable plusieurs autres options pour "
-"réduire le bruit. Il y a <link linkend=\"raw_denoise\"><emphasis>Réduire le "
-"bruit raw</emphasis></link>, <link linkend=\"denoise_bilateral"
-"\"><emphasis>Réduire le bruit basé sur un filtre bilatéral</emphasis></"
-"link>, <link linkend=\"denoise_non_local_means\"><emphasis>Réduire le bruit "
-"basé sur des moyennes non locales</emphasis></link>, et <link linkend="
+"réduire le bruit. Il y a <link linkend=\"raw_denoise\"><emphasis>réduction du bruit (raw)"
+"</emphasis></link>, <link linkend=\"denoise_bilateral"
+"\"><emphasis>réduction du bruit (bilatéral)</emphasis></"
+"link>, <link linkend=\"denoise_non_local_means\"><emphasis>réduction du bruit (non-local)"
+"</emphasis></link>, et <link linkend="
 "\"equalizer\"><emphasis>Égaliseur</emphasis></link>, qui est basé sur des "
 "ondelettes. Si votre appareil n’est pas encore pris en charge par <link "
-"linkend=\"denoise_profiled\"><emphasis>Réduire le bruit profilé</emphasis></"
-"link>, <link linkend=\"denoise_non_local_means\"><emphasis>Réduire le bruit "
-"basée sur des moyennes non locales</emphasis></link> est probablement le "
+"linkend=\"denoise_profiled\"><emphasis>réduction du bruit (profil)</emphasis></"
+"link>, <link linkend=\"denoise_non_local_means\"><emphasis>réduction du bruit "
+"(non-local)</emphasis></link> est probablement le "
 "plus pratique car il vous permet de traiter séparément la luminance et la "
 "couleur."
 
@@ -1337,14 +1339,14 @@ msgstr ""
 "sur le capteur. Le module <link linkend=\"spot_removal\"><emphasis>Supprimer "
 "les défauts</emphasis></link> est disponible et peut  aussi corriger des "
 "éléments gênants tels que des défauts de la peau. Si votre appareil a des "
-"pixels morts ou tend à produire des pixels chauds aux ISO élevés, ou lors "
+"pixels morts ou tend à produire des pixels chauds aux ISO élevés / lors "
 "des temps d’exposition longs, regardez le module <link linkend=\"hotpixels"
-"\"><emphasis>Pixels chauds</emphasis></link> qui en permet une correction  "
+"\"><emphasis>Pixels chauds</emphasis></link> qui permet une correction  "
 "automatique."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:993(title)
 msgid "Geometrical corrections"
-msgstr "Correction géométriques"
+msgstr "Corrections géométriques"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:995(para)
 msgid ""
@@ -1362,11 +1364,11 @@ msgstr ""
 "près des bords. Dans d’autres cas, l’horizon apparaissant sur l’image devra "
 "être mis de niveau ou des distorsions de perspectives devront être "
 "corrigées. Tout ceci peut être fait dans le module <link linkend="
-"\"crop_and_rotate\"><emphasis>Recadrage et rotation</emphasis></link>. Si "
+"\"crop_and_rotate\"><emphasis>Recadrer et pivoter</emphasis></link>. Si "
 "vous désirez corriger des défauts typiques d’un objectif particulier comme "
 "la distorsion en coussin, l’aberration chromatique transversale (TCA) ou le "
-"vignetage, il existe un module <link linkend=\"lens_correction"
-"\"><emphasis>Corrections de l’objectif</emphasis></link> destiné à cet usage."
+"vignetage il existe un module <link linkend=\"lens_correction"
+"\"><emphasis>Corrections des objectifs</emphasis></link> destiné à cet usage."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1009(title)
 msgid "Bringing back detail"
@@ -1389,11 +1391,11 @@ msgstr ""
 "y a de nombreux détails masqués. Le module <link linkend="
 "\"shadows_and_highlights\"><emphasis>Ombres et hautes lumières</emphasis></"
 "link> permet de vous aider à ramener ces données dans des valeurs tonales "
-"visibles. Les détails structuraux dans les hautes lumières brûlées, en "
-"raison de la nature-même du capteur numérique, ne peuvent pas être "
-"récupérées. Cependant, vous pouvez corriger des dérives de couleur "
+"visibles. En raison de la nature-même du capteur numérique les détails "
+"structuraux dans les hautes lumières brûlées ne peuvent pas être "
+"récupérés. Cependant vous pouvez corriger des dérives de couleur "
 "désagréables dans ces zones à l’aide du module <link linkend="
-"\"highlight_reconstruction\"><emphasis>Reconstruire les hautes lumières</"
+"\"highlight_reconstruction\"><emphasis>récupération des hautes lumières</"
 "emphasis></link>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1026(title)
@@ -1417,13 +1419,13 @@ msgstr ""
 "La plupart des flux de travail vont probablement inclure l’ajustement des "
 "valeurs tonales de l’image. Darktable propose différents modules permettant "
 "de le prendre en compte. Le plus simple d’entre-eux est le module <link "
-"linkend=\"contrast_brightness_saturation\"><emphasis>contraste luminosité "
-"saturation</emphasis></link>. Dans le module <link linkend=\"tone_curve"
-"\"><emphasis>Courbe des valeurs</emphasis></link>, les valeurs tonales sont "
-"ajustées en construisant une courbe en dégradé. Le module des <link linkend= "
-"\"levels\"><emphasis>Niveaux</emphasis></link> propose une interface "
-"concise, avec uniquement trois marqueurs sur un histogramme. De plus, il "
-"existe un module <link linkend=\"zone_system\"><emphasis>Zone system </"
+"linkend=\"contrast_brightness_saturation\"><emphasis>contraste luminance "
+"saturation</emphasis></link>. Les valeurs tonales sont ajustées dans le "
+"module <link linkend=\"tone_curve\"><emphasis>courbe des tonalités</emphasis></link> "
+"en construisant une courbe en dégradé. Le module des <link linkend= "
+"\"levels\"><emphasis>niveaux</emphasis></link> propose une interface "
+"concise, avec uniquement trois marqueurs sur un histogramme. De plus il "
+"existe un module <link linkend=\"zone_system\"><emphasis>zones</"
 "emphasis></link> qui permet de contrôler les valeurs tonales par zones, il "
 "est inspiré du travail d’Ansel Adams."
 
@@ -1444,15 +1446,15 @@ msgid ""
 "Knife\" for many adjustments where spatial dimension plays a role."
 msgstr ""
 "L’amélioration du contraste local peut accentuer les détails et la "
-"lisibilité de votre image. Soigneusement utilisée, elle peut donner à votre "
+"lisibilité de votre image. Soigneusement utilisée elle peut donner à votre "
 "photographie le bon éclat. Darktable propose plusieurs modules destinés à "
-"cette tâche. Le module <link linkend=\"local_contrast\"><emphasis>Contraste "
+"cette tâche. Le module <link linkend=\"local_contrast\"><emphasis>contraste "
 "local</emphasis></link> est facile à manipuler et ne comporte que quelques "
 "paramètres. Un module bien plus flexible mais aussi une technique plus "
 "complexe est offerte par le module <link linkend=\"equalizer"
-"\"><emphasis>Égaliseur</emphasis></link>. Voyez ses préréglages afin d’avoir "
-"une idée de la manière dont il fonctionne. L’Égaliseur est le <quote>Couteau "
-"de l’Armée Suisse</quote> de darktable pour de nombreux ajustements où la "
+"\"><emphasis>égaliseur</emphasis></link>. Voyez ses préréglages afin d’avoir "
+"une idée de la manière dont il fonctionne. L’égaliseur est le <quote>Couteau "
+"Suisse</quote> de darktable pour de nombreux ajustements où la "
 "dimension spatiale joue un rôle."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1061(title)
@@ -1479,24 +1481,24 @@ msgid ""
 msgstr ""
 "Darktable propose de nombreux modules qui permettent d’ajuster les couleurs "
 "dans l’image. Une technique très évidente est implémentée dans le module "
-"<link linkend=\"color_correction\"><emphasis>Corriger la couleur</emphasis></"
+"<link linkend=\"color_correction\"><emphasis>correction des couleurs</emphasis></"
 "link>. Utilisez-le pour donner à l’image une teinte globale ou pour ajuster "
 "la saturation de la couleur générale. Le module <link linkend=\"color_zones"
-"\"><emphasis>Zones de couleur</emphasis></link> propose un contrôle bien "
+"\"><emphasis>zones de couleur</emphasis></link> propose un contrôle bien "
 "plus fin pour ajuster la saturation ou la clarté et même la teinte, sur des "
 "zones définies par l’utilisateur. Le module <link linkend=\"tone_curve"
-"\"><emphasis>Courbe tonale</emphasis></link> de darktable – en plus des "
+"\"><emphasis>courbe des tonalités</emphasis></link> de darktable – en plus des "
 "ajustements classiques des valeurs tonales – vous donne un fin contrôle des "
-"couleurs de l’image. Enfin, si vous avez l’intention de convertir l’image en "
-"noir et blanc, un bon point de départ, avec une interface utilisateur "
-"intuitive et facile à utiliser, est proposé par le module <link linkend="
-"\"monochrome\"><emphasis>Monochrome</emphasis></link>. Vous pouvez aussi "
-"envisager d’utiliser le <link linkend=\"channel_mixer\"><emphasis>Mélangeur "
-"de couches</emphasis></link> de darktable."
+"couleurs de l’image. Enfin si vous avez l’intention de convertir l’image en "
+"noir et blanc, un bon point de départ avec une interface utilisateur "
+"intuitive et facile à utiliser est proposée par le module <link linkend="
+"\"monochrome\"><emphasis>monochrome</emphasis></link>. Vous pouvez aussi "
+"envisager d’utiliser le <link linkend=\"channel_mixer\"><emphasis>mixer "
+"de canaux</emphasis></link> de darktable."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1083(title)
 msgid "Sharpening"
-msgstr "Accentuer"
+msgstr "Renforcer la netteté"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1085(para)
 msgid ""
@@ -1510,11 +1512,11 @@ msgid ""
 msgstr ""
 "Si vous démarrez votre flux de travail à partir d’une image RAW, il vous "
 "sera nécessaire d’accentuer votre sortie finale. Le module <link linkend="
-"\"sharpen\"><emphasis>Accentuer</emphasis></link> peut le faire à l’aide de "
+"\"sharpen\"><emphasis>renforcer la netteté</emphasis></link> peut le faire à l’aide de "
 "la classique approche du masque de flou (<quote>USM : unsharp mask</quote>). "
 "Elle est disponible avec la plupart des logiciels de traitement d’images. "
 "Une autre manière très flexible d’accentuer les contours à l’intérieur d’une "
-"image est proposée par le module <link linkend=\"highpass\"><emphasis>Passe-"
+"image est proposée par le module <link linkend=\"highpass\"><emphasis>filtre passe-"
 "haut</emphasis></link>, en combinaison avec le jeu très riche des opérateurs "
 "de fusion de darktable."
 
@@ -1539,16 +1541,16 @@ msgid ""
 msgstr ""
 "Darktable est livré avec un jeu important de modules d’effets artistiques. "
 "Pour n’en nommer que quelques uns, avec le module <link linkend=\"watermark"
-"\"><emphasis>Filigrane</emphasis></link>, vous pourrez ajouter un filigrane "
-"individuel à vos images. Le module <link linkend=\"grain\"><emphasis>Grain</"
+"\"><emphasis>filigrane</emphasis></link>, vous pourrez ajouter un filigrane "
+"individuel à vos images. Le module <link linkend=\"grain\"><emphasis>grain</"
 "emphasis></link> simule le bruit typique d’une pellicule argentique. "
-"Utilisez le module <link linkend=\"color_mapping\"><emphasis>Transposer les "
+"Utilisez le module <link linkend=\"color_mapping\"><emphasis>mappage des "
 "couleurs</emphasis></link> pour transférer l’aspect de couleur d’une image "
 "vers une autre. Le module darktable de <link linkend=\"low_light"
-"\"><emphasis>Faible lumière</emphasis></link> permet de simuler la vision "
+"\"><emphasis>faible lumière</emphasis></link> permet de simuler la vision "
 "humaine pour que les images prises en faible lumière ressemblent davantage à "
-"la réalité. Le filtre <link linkend=\"graduated_density\"><emphasis>Densité "
-"dégradée</emphasis></link> ajoute un dégradé neutre ou coloré à votre image "
+"la réalité. Le filtre <link linkend=\"graduated_density\"><emphasis>filtre "
+"dégradé</emphasis></link> ajoute un dégradé neutre ou coloré à votre image "
 "afin de corriger l’exposition ou la couleur."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1120(title)
@@ -1564,7 +1566,7 @@ msgid ""
 "outside of darktable."
 msgstr ""
 "Les modifications apportées à une image ne sont pas sauvegardées comme avec "
-"un éditeur classique. Darktable est un éditeur non destructif, ce qui "
+"un éditeur classique. Darktable est un éditeur non destructif ce qui "
 "signifie que toutes les modifications sont enregistrées dans une base de "
 "données et que l’image d’origine n’est pas modifiée. Vous devez donc "
 "exporter les images afin de mettre en œuvre les options de traitement vers "
@@ -1578,7 +1580,7 @@ msgid ""
 "image as a JPEG."
 msgstr ""
 "Les images sont exportées depuis la vue de la table lumineuse, en utilisant "
-"le dialogue <emphasis>Exporter sélectionné</emphasis> du panneau de droite "
+"le dialogue <emphasis>exportation de la sélection</emphasis> du panneau de droite "
 "(<xref linkend=\"export_selected\"/>). En général, exporter signifiera "
 "<quote>enregistrer mon image RAW développée sous forme d’un JPEG</quote>."
 
@@ -1590,10 +1592,10 @@ msgid ""
 "<emphasis>flickr webalbum</emphasis> and more. Format modules are the actual "
 "image formats such as JPEG, PNG, TIFF, OpenEXR and more."
 msgstr ""
-"L’exportation est modularisée par <emphasis>Enregistrer</emphasis> et "
-"<emphasis>Format</emphasis>. Darktable fournit plusieurs modules "
-"d’enregistrement tels que <emphasis>Enregistrer sur disque</emphasis>, "
-"<emphasis>Picasa</emphasis> et <emphasis>Album web Flickr</emphasis> et "
+"L’exportation est modularisée par <emphasis>stockage cible</emphasis> et "
+"<emphasis>format de fichier</emphasis>. Darktable fournit plusieurs modules "
+"d’enregistrement tels que <emphasis>fichier sur disque</emphasis>, "
+"<emphasis>Picasa</emphasis> et <emphasis>album web Flickr</emphasis> et "
 "d’autres. Les modules de format sont des formats réels d’images comme JPEG, "
 "PNG, TIFF, OpenEXR et d’autres."
 
@@ -1608,8 +1610,8 @@ msgstr ""
 "Sélectionnez les images sur la table lumineuse, choisissez la cible "
 "d’enregistrement et son format et définissez les contraintes de largeur et "
 "de hauteur maximum de l’image. Ceci signifie qu’aucune des images ne sera "
-"plus grande que ces contraintes de largeur/hauteur, pressez le bouton "
-"d’exportation. Si vous désirez conserver la résolution d’origine, laissez "
+"plus grande que ces contraintes de largeur/hauteur puis pressez le bouton "
+"d’exportation. Si vous désirez conserver la résolution d’origine laissez "
 "les contraintes de hauteur et de largeur à zéro."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1162(keyword)
@@ -2408,7 +2410,7 @@ msgstr "Virage partiel <emphasis>(virage partiel)</emphasis>"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1829(para)
 msgid "grain <emphasis>(grain)</emphasis>"
-msgstr "Grain <emphasis>(grain)</emphasis>"
+msgstr "grain <emphasis>(grain)</emphasis>"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:1833(para)
 msgid "spot removal <emphasis>(spot removal)</emphasis>"
@@ -4051,7 +4053,7 @@ msgstr "Supprimer un mot-clé de la liste."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:3336(title)
 msgid "Export selected"
-msgstr "Exporter sélectionné"
+msgstr "Exportation de la sélection"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:3348(primary)
 msgid "file export"
@@ -4997,7 +4999,7 @@ msgid ""
 "quote> (see <xref linkend=\"blending_operators\"/>)."
 msgstr ""
 "Vous pourrez vouloir appliquer un module de réduction de bruit tel que "
-"<emphasis>Réduire le bruit (profilé)</emphasis> (<xref linkend="
+"<emphasis>réduction du bruit (profil)</emphasis> (<xref linkend="
 "\"denoise_profiled\"/>) avec deux jeux de paramètres différents. L’un pour "
 "effectuer la réduction de bruit de luminance et un autre jeu de paramètres "
 "pour réduire le bruit chromatique. Vous pouvez le faire en générant deux "
@@ -5020,8 +5022,8 @@ msgid ""
 msgstr ""
 "Dans un cas encore plus complexe, vous pourriez avoir un module qui agit sur "
 "différentes parties de votre image. Vous pouvez, à titre d’exemple, vouloir "
-"ajouter une certaine courbe de dégradé avec le module <emphasis>Courbe "
-"tonale</emphasis> (<xref linkend=\"tone_curve\"/>) à votre image complète et "
+"ajouter une certaine courbe de dégradé avec le module <emphasis>courbe des"
+"tonalités</emphasis> (<xref linkend=\"tone_curve\"/>) à votre image complète et "
 "avoir une seconde courbe appliquée spécifiquement aux tons chairs. Tous les "
 "contrôles proposés par les <emphasis>masques dessinés</emphasis> (<xref "
 "linkend=\"drawn_mask\"/>) et les <emphasis>masques paramétriques</emphasis> "
@@ -5706,7 +5708,7 @@ msgstr ""
 "Certains modules agissent principalement sur les valeur tonales d’une image "
 "mais effectuent aussi des ajustements de la saturation des couleurs, par "
 "exemple ; les modules <link linkend=\"levels\"><emphasis>Niveaux</emphasis></"
-"link> et <link linkend=\"tone_curve\"><emphasis>Courbe tonale</emphasis></"
+"link> et <link linkend=\"tone_curve\"><emphasis>Courbe des tonalités</emphasis></"
 "link>. Ce mode de fusion ne prend la clarté que depuis les données de sortie "
 "et mélange les couleurs depuis l’entrée et la sortie en activant le contrôle "
 "des ajustements de couleur du module."
@@ -7451,8 +7453,8 @@ msgid ""
 "Modules for processing colors, such as color correction, vibrance etc. (see "
 "<xref linkend=\"color_group\"/>)."
 msgstr ""
-"Modules pour le traitement des couleurs, tels que la Correction de la "
-"couleur, la Vibrance, etc. (voir <xref linkend=\"color_group\"/>)."
+"Modules pour le traitement des couleurs, tels que la correction des couleurs "
+", la vibrance, etc. (voir <xref linkend=\"color_group\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:6221(entry)
 msgid "Correction"
@@ -8174,7 +8176,7 @@ msgstr "Ombres et hautes lumières"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:6815(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:6819(primary)
 msgid "shadows and highlights"
-msgstr "Ombres et hautes lumières"
+msgstr "ombres et hautes lumières"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:6832(entry)
 msgid ""
@@ -8393,8 +8395,8 @@ msgid ""
 "Disable the <emphasis>base curve</emphasis> module in this case."
 msgstr ""
 "Astuce : si vous avez l’intention de prendre le contrôle total sur les "
-"valeurs tonales avec le module de <emphasis>courbe tonale</emphasis> ou le "
-"module de <emphasis>zone system</emphasis> (voir <xref linkend=\"tone_curve"
+"valeurs tonales avec le module de <emphasis>courbe des tonalités</emphasis> ou le "
+"module de <emphasis>zones</emphasis> (voir <xref linkend=\"tone_curve"
 "\"/> et <xref linkend=\"zone_system\"/>), il peut être plus facile de "
 "laisser l’image en mode RVB linéaire. Dans ce cas, désactivez alors le "
 "module <emphasis>Courbe de base</emphasis>."
@@ -8511,8 +8513,8 @@ msgstr ""
 "de gris foncé qui seront écrêtées vers un noir pur. Utilisez-le avec "
 "précautions car les valeurs qui auront été écrêtées ne pourront pas être "
 "récupérées ultérieurement dans d’autres modules situés plus bas dans le "
-"pipeline graphique. Veuillez aussi essayer le module de <emphasis>Courbe "
-"tonale</emphasis> (voir <xref linkend=\"tone_curve\"/>) et le module des "
+"pipeline graphique. Veuillez aussi essayer le module de <emphasis>courbe des"
+"tonalités</emphasis> (voir <xref linkend=\"tone_curve\"/>) et le module des "
 "<emphasis>Niveaux</emphasis> (voir <xref linkend=\"levels\"/>) qui peuvent "
 "produire des résultats similaires avec moins d’effets indésirables car ils "
 "sont appliqués plus tard dans le pipeline graphique."
@@ -8548,18 +8550,18 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7149(title)
 msgid "Contrast Brightness Saturation"
-msgstr "Contraste Luminosité Saturation"
+msgstr "Contraste Luminance Saturation"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7153(secondary)
 msgid "contrast brightness saturation"
-msgstr "Contraste Luminosité Saturation"
+msgstr "contraste luminance saturation"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7157(primary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7222(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8083(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11776(title)
 msgid "contrast"
-msgstr "Contraste"
+msgstr "contraste"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7158(seealso)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7164(seealso)
@@ -8567,14 +8569,14 @@ msgstr "Contraste"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7781(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7785(primary)
 msgid "tone curve"
-msgstr "Courbe tonale"
+msgstr "courbe des tonalités"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7159(seealso)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7165(seealso)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7705(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7709(primary)
 msgid "levels"
-msgstr "Niveaux"
+msgstr "niveaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7163(primary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7229(title)
@@ -8582,7 +8584,7 @@ msgstr "Niveaux"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11525(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11785(title)
 msgid "brightness"
-msgstr "Luminosité"
+msgstr "luminosité"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7169(primary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7236(title)
@@ -8593,19 +8595,19 @@ msgstr "Luminosité"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12152(title)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12492(title)
 msgid "saturation"
-msgstr "Saturation"
+msgstr "saturation"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7171(seealso)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9142(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9146(primary)
 msgid "color zones"
-msgstr "Zones de couleur"
+msgstr "zones de couleur"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7172(seealso)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8954(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8958(primary)
 msgid "color contrast"
-msgstr "Contraste de couleur"
+msgstr "contraste de couleur"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7185(entry)
 msgid ""
@@ -8641,7 +8643,7 @@ msgid ""
 msgstr ""
 "Bien plus de flexibilité pour l’ajustement du contraste et de la luminosité "
 "est offerte par les modules de <emphasis>courbe de tonalité</emphasis>, de "
-"<emphasis>niveaux</emphasis> et de <emphasis>zone system</emphasis> (voir "
+"<emphasis>niveaux</emphasis> et de <emphasis>zones</emphasis> (voir "
 "<xref linkend=\"tone_curve\"/>, <xref linkend=\"levels\"/> et <xref linkend="
 "\"zone_system\"/>). De la même manière, vous pouvez ajuster la saturation "
 "des couleurs d’une manière plus détaillée avec les modules de "
@@ -8806,12 +8808,12 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7362(title)
 msgid "Highlight reconstruction"
-msgstr "Reconstruire les hautes lumières"
+msgstr "Récuération des hautes lumières"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7366(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7370(primary)
 msgid "highlight reconstruction"
-msgstr "Reconstruire les hautes lumières"
+msgstr "Récupération des hautes lumières"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7383(entry)
 msgid ""
@@ -9159,7 +9161,7 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7777(title)
 msgid "Tone curve"
-msgstr "Courbe tonale"
+msgstr "Courbe des tonalités"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7798(entry)
 msgid ""
@@ -9322,12 +9324,12 @@ msgstr "Image résultante"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7929(title)
 msgid "Zone system"
-msgstr "Zone system"
+msgstr "Zones"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7933(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7937(primary)
 msgid "zone system"
-msgstr "Zone system"
+msgstr "zones"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:7950(entry)
 msgid ""
@@ -9691,12 +9693,12 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8370(title)
 msgid "Channel mixer"
-msgstr "Mélangeur de couches"
+msgstr "Mixeur de canaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8374(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8378(primary)
 msgid "channel mixer"
-msgstr "Mélangeur de couches"
+msgstr "Mixeur de canaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8391(entry)
 msgid ""
@@ -10220,7 +10222,7 @@ msgstr ""
 "Des valeurs élevées augmentent le contraste de couleur, des valeurs faibles "
 "le diminuent. L’effet des curseurs de ce module est semblable à "
 "l'application d’une courbe-a ou d’une courbe-b plate ou accentuée dans le "
-"module <emphasis>courbe tonale</emphasis> (voir <xref linkend=\"tone_curve\"/"
+"module <emphasis>courbe des tonalités</emphasis> (voir <xref linkend=\"tone_curve\"/"
 ">)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:8996(title)
@@ -10241,12 +10243,12 @@ msgstr "Modifie le contraste de couleur entre le bleu et le jaune."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9015(title)
 msgid "Color correction"
-msgstr "Correction de la couleur"
+msgstr "Correction des couleurs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9019(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9023(primary)
 msgid "color correction"
-msgstr "Correction de la couleur"
+msgstr "correction des couleurs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9036(entry)
 msgid ""
@@ -10681,13 +10683,13 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9528(title)
 msgid "Sharpen"
-msgstr "Accentuer"
+msgstr "Renforcer la netteté"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9532(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9536(primary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11692(title)
 msgid "sharpen"
-msgstr "Accentuer"
+msgstr "renforcer la netteté"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9549(entry)
 msgid ""
@@ -10888,11 +10890,11 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9784(title)
 msgid "Denoise - profiled"
-msgstr "Réduire le bruit - Profilé"
+msgstr "Réduction du bruit (profil)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9788(secondary)
 msgid "denoise - profiled"
-msgstr "Réduire le bruit - Profilé"
+msgstr "réduction du bruit (profil)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9793(secondary)
 msgid "profiled"
@@ -11021,11 +11023,11 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9892(title)
 msgid "Denoise - Non local means"
-msgstr "Réduire le bruit - Moyenne non locale"
+msgstr "Réduction du bruit (non local)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9896(secondary)
 msgid "denoise - non local means"
-msgstr "Réduire le bruit - Moyenne non locale"
+msgstr "réduction du bruit (non local)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9901(secondary)
 msgid "non local means"
@@ -11090,11 +11092,11 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9976(title)
 msgid "Denoise - bilateral"
-msgstr "Réduire le bruit - Bilatéral"
+msgstr "Réduction du bruit (bilatéral)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9980(secondary)
 msgid "denoise - bilateral"
-msgstr "Réduire le bruit - Bilatéral"
+msgstr "réduction du bruit (bilatéral)"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:9985(secondary)
 msgid "bilateral"
@@ -11164,13 +11166,13 @@ msgstr "Intensité du flou pour le canal bleu."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10060(title)
 msgid "Lens correction"
-msgstr "Corrections de l’objectif"
+msgstr "Correction des objectifs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10064(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10068(primary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10584(seealso)
 msgid "lens correction"
-msgstr "Corrections de l’objectif"
+msgstr "correction des objectifs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10081(entry)
 msgid ""
@@ -11482,15 +11484,15 @@ msgstr "Et voici l’image résultant de la suppression de défauts."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10346(title)
 msgid "Raw denoise"
-msgstr "Supprimer le bruit raw"
+msgstr "Réduction du bruit RAW"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10350(secondary)
 msgid "raw denoise"
-msgstr "Supprimer le bruit raw"
+msgstr "réduction du bruit RAW"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10355(secondary)
 msgid "raw"
-msgstr "Raw"
+msgstr "RAW"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10371(emphasis)
 msgid "dcraw"
@@ -11502,7 +11504,7 @@ msgid ""
 "ported from <ulink url=\"http://www.cybercom.net/~dcoffin/dcraw/"
 "\"><placeholder-1/></ulink>."
 msgstr ""
-"La suppression de bruit raw vous permet d’effectuer une réduction de bruit "
+"La suppression de bruit RAW vous permet d’effectuer une réduction de bruit "
 "sur des données pré-dématricées. Elle est portée depuis <ulink url=\"http://"
 "www.cybercom.net/~dcoffin/dcraw/\"><placeholder-1/></ulink>."
 
@@ -11749,7 +11751,7 @@ msgstr "Filigrane"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10647(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10651(primary)
 msgid "watermark"
-msgstr "Filigrane"
+msgstr "filigrane"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:10667(emphasis)
 msgid "Inkscape"
@@ -12475,7 +12477,7 @@ msgstr "Grain"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11590(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11594(primary)
 msgid "grain"
-msgstr "Grain"
+msgstr "grain"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11607(entry)
 msgid "This module is an artistic feature which simulates the grain of a film."
@@ -12498,7 +12500,7 @@ msgstr "Définit l’intensité de l’effet."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11648(title)
 msgid "Highpass"
-msgstr "Passe-haut"
+msgstr "Filtre passe-haut"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11671(quote)
 msgid "soft light"
@@ -12534,12 +12536,12 @@ msgstr "Définit l’accentuation du contraste."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11711(title)
 msgid "Lowpass"
-msgstr "Passe-bas"
+msgstr "Filtre passe-bas"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11715(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11719(primary)
 msgid "lowpass"
-msgstr "Passe bas"
+msgstr "filtre passe-bas"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:11735(emphasis)
 msgid "blending operator"
@@ -12840,12 +12842,12 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12179(title)
 msgid "Color mapping"
-msgstr "Transposer les couleurs"
+msgstr "Mappage des couleurs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12183(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12187(primary)
 msgid "color mapping"
-msgstr "Transposer les couleurs"
+msgstr "mappage des couleurs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12200(entry)
 msgid ""
@@ -12922,8 +12924,8 @@ msgstr ""
 "restreindre l’effet (voir <xref linkend=\"blending_operators\"/>). Comme le "
 "module de <emphasis>transposition de couleurs</emphasis> est pris en charge "
 "tôt dans le pipeline graphique, vous pouvez ajuster les couleurs avec des "
-"modules comme la <emphasis>courbe tonale</emphasis> (voir <xref linkend="
-"\"tone_curve\"/>) ou la <emphasis>correction de la couleur</emphasis> (voir "
+"modules comme la <emphasis>courbe des tonalités</emphasis> (voir <xref linkend="
+"\"tone_curve\"/>) ou la <emphasis>correction des couleurs</emphasis> (voir "
 "<xref linkend=\"color_correction\"/>). "
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12254(title)
@@ -13022,12 +13024,12 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12341(title)
 msgid "Graduated Density"
-msgstr "Densité dégradée"
+msgstr "Filtre dégradé"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12345(secondary)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12349(primary)
 msgid "graduated density"
-msgstr "Densité dégradée"
+msgstr "filtre dégradé"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12362(entry)
 msgid ""
@@ -13047,7 +13049,7 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12386(title)
 msgid "density"
-msgstr "Densité"
+msgstr "densité"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12387(para)
 msgid ""
@@ -13269,12 +13271,12 @@ msgid ""
 "module (<xref linkend=\"color_correction\"/>)."
 msgstr ""
 "Pour effectuer une telle conversion, nous utilisons le module de "
-"<emphasis>correction de la couleur</emphasis> (<xref linkend="
+"<emphasis>correction des couleurs</emphasis> (<xref linkend="
 "\"color_correction\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12695(para)
 msgid "Activate the color correction module"
-msgstr "Activez le module de correction de la couleur"
+msgstr "Activez le module de correction des couleurs"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12699(para)
 msgid "Use the bottom slider to set saturation to zero"
@@ -13334,19 +13336,19 @@ msgstr ""
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12747(title)
 msgid "The sophisticated way: channel mixer module"
-msgstr "La manière sophistiquée : le module mélangeur de couches"
+msgstr "La manière sophistiquée : le module mixeur de canaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12749(para)
 msgid ""
 "To perform the conversion we use the <emphasis>channel mixer</emphasis> "
 "module (<xref linkend=\"channel_mixer\"/>)."
 msgstr ""
-"Pour effectuer la conversion, nous utilisons le module <emphasis>mélangeur "
-"de couches</emphasis> (<xref linkend=\"channel_mixer\"/>)."
+"Pour effectuer la conversion, nous utilisons le module <emphasis>mixeur "
+"de canaux</emphasis> (<xref linkend=\"channel_mixer\"/>)."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12756(para)
 msgid "Activate the channel mixer module"
-msgstr "Activez le module mélangeur de couches"
+msgstr "Activez le module mixeur de canaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12760(para)
 msgid "Select the gray output channel"
@@ -13396,7 +13398,7 @@ msgstr "Procédure"
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12942(para)
 msgid "This procedure uses tone curve, channel mixer and splittoning modules."
 msgstr ""
-"Cette procédure utilise la courbe tonale, le mélangeur de couches et le "
+"Cette procédure utilise la courbe tonale, le mixeur de canaux et le "
 "module de virage partiel."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12820(para)
@@ -13424,7 +13426,7 @@ msgid ""
 "image. You might later return here to tune the curve for better result."
 msgstr ""
 "Sélectionnez le préréglage moyen de la courbe de contraste pour le module de "
-"<emphasis>courbe tonale</emphasis> (<xref linkend=\"tone_curve\"/>) afin de "
+"<emphasis>courbe des tonalités</emphasis> (<xref linkend=\"tone_curve\"/>) afin de "
 "pousser le contraste global de l’image. Vous pourrez revenir ici plus tard "
 "afin d’ajuster la courbe pour de meilleurs résultats."
 
@@ -13440,14 +13442,14 @@ msgid ""
 "final result."
 msgstr ""
 "Cette étape modifie la dominante de couleur comme base de l’effet en "
-"utilisant le module <emphasis>mélangeur de couches</emphasis> (<xref linkend="
+"utilisant le module <emphasis>mixeur de canaux</emphasis> (<xref linkend="
 "\"channel_mixer\"/>). Vous pourrez y revenir plus tard et affiner la "
 "dominante de couleur du résultat final"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12851(para)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12978(para)
 msgid "Enable the channel mixer module"
-msgstr "Activez le module mélangeur de couches"
+msgstr "Activez le module mixeur de canaux"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:12855(para)
 msgid "Select blue channel and set blue color value to 0.8"
@@ -13548,7 +13550,7 @@ msgid ""
 "but you can choose any tone that you like here."
 msgstr ""
 "Cette étape sélectionne le ton de base de l’image en utilisant le "
-"<emphasis>mélangeur de couches</emphasis> (<xref linkend=\"channel_mixer\"/"
+"<emphasis>mixeur de canaux</emphasis> (<xref linkend=\"channel_mixer\"/"
 ">), nous utilisons le ton cyan mais vous pouvez choisir le ton que vous "
 "désirez."
 
@@ -16813,7 +16815,7 @@ msgstr "types.dt_lua_image_t"
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:15245(para)
 msgid "The exported image object."
-msgstr "objet image exporté."
+msgstr "Objet image exporté."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:15250(link)
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:15328(link)
@@ -21545,11 +21547,11 @@ msgstr ""
 "de ressources pour que la différence puisse être remarquée. Afin de "
 "ressentir une vraie différence, prenez un module comme <link linkend="
 "\"shadows_and_highlights\"><emphasis>ombres et hautes lumières</emphasis></"
-"link>, <link linkend=\"sharpen\"><emphasis>accentuer</emphasis></link>, "
-"<link linkend=\"lowpass\"><emphasis>passe-bas</emphasis></link>, <link "
-"linkend=\"lowpass\"><emphasis>passe-haut</emphasis></link> ou même, à "
+"link>, <link linkend=\"sharpen\"><emphasis>renforcer la netteté</emphasis></link>, "
+"<link linkend=\"lowpass\"><emphasis>filtre passe-bas</emphasis></link>, <link "
+"linkend=\"lowpass\"><emphasis>filtre passe-haut</emphasis></link> ou même, à "
 "l’extrême, <link linkend=\"equalizer\"><emphasis>égaliseur</emphasis></link> "
-"et<link linkend=\"denoise_profiled\"><emphasis>réducteur de bruit profilé</"
+"et<link linkend=\"denoise_profiled\"><emphasis>réduction du bruit (profil)</"
 "emphasis></link>."
 
 #: /usr/local/src/darktable/darktable-1.4.0/doc/usermanual/po/darktable-usermanual_profiled.xml:19968(para)
