@@ -300,7 +300,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
     }
 
     // Current image
-    dt_image_print_exif(image,buffer,1024);
+    dt_image_print_exif(image,buffer,sizeof(buffer));
     svgdoc = _string_substitute(svgdata,"$(IMAGE.EXIF)",buffer);
     if( svgdoc != svgdata )
     {

@@ -204,7 +204,7 @@ dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_cache_alloc
 
   // work around 50D bug
   char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
+  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), img->exif_maker, img->exif_model);
 
   // actually we want to store full floats here:
   img->bpp = 4*sizeof(float);

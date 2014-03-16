@@ -1133,7 +1133,7 @@ _init_f(
   /* do not even try to process file if it isn't available */
   char filename[2048] = {0};
   gboolean from_cache = TRUE;
-  dt_image_full_path(imgid, filename, 2048, &from_cache);
+  dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;
