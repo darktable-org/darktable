@@ -389,7 +389,7 @@ void gui_update (struct dt_iop_module_t *self)
   const char *wb_name = NULL;
   char makermodel[1024];
   char *model = makermodel;
-  dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
+  dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   if(!dt_image_is_ldr(&self->dev->image_storage)) for(int i=0; i<wb_preset_count; i++)
     {
       if(g->preset_cnt >= 50) break;
@@ -452,7 +452,7 @@ void reload_defaults(dt_iop_module_t *module)
         // could not get useful info, try presets:
         char makermodel[1024];
         char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
+        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
                                             module->dev->image_storage.exif_maker,
                                             module->dev->image_storage.exif_model);
         for(int i=0; i<wb_preset_count; i++)
@@ -495,7 +495,7 @@ void reload_defaults(dt_iop_module_t *module)
           // we're normalising that to be D65
           char makermodel[1024];
           char *model = makermodel;
-          dt_colorspaces_get_makermodel_split(makermodel, 1024, &model,
+          dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model,
               module->dev->image_storage.exif_maker,
               module->dev->image_storage.exif_model);
           for(int i=0; i<wb_preset_count; i++)
@@ -705,7 +705,7 @@ apply_preset(dt_iop_module_t *self)
       {
         char makermodel[1024];
         char *model = makermodel;
-        dt_colorspaces_get_makermodel_split(makermodel, 1024, &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
+        dt_colorspaces_get_makermodel_split(makermodel, sizeof(makermodel), &model, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
         if(!strcmp(wb_preset[i].make,  makermodel) &&
             !strcmp(wb_preset[i].model, model) && wb_preset[i].tuning == tune)
         {

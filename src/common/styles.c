@@ -981,7 +981,7 @@ dt_styles_import_from_file(const char *style_path)
 
     while (!feof (style_file))
     {
-      num_read = fread (buf, sizeof(gchar), 1024, style_file);
+      num_read = fread (buf, sizeof(gchar), sizeof(buf), style_file);
 
       if (num_read == 0)
       {

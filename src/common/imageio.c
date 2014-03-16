@@ -895,7 +895,7 @@ int dt_imageio_export_with_flags(
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
     char pathname[1024];
     gboolean from_cache = TRUE;
-    dt_image_full_path(imgid, pathname, 1024, &from_cache);
+    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
     length = dt_exif_read_blob(exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
