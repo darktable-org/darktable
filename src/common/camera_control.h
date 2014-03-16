@@ -176,7 +176,6 @@ typedef struct dt_camctl_listener_t
   void (*camera_property_value_changed)(const dt_camera_t *camera,const char *name,const char *value,void *data);
   /** Invoked when accessibility of a property is changed. */
   void (*camera_property_accessibility_changed)(const dt_camera_t *camera,const char *name,gboolean read_only,void *data);
-  /** Invoked when fetching an image from the camera. */
 
   /** Invoked from dt_camctl_detect_cameras() when a new camera is connected */
   void (*camera_connected)(const dt_camera_t *camera,void *data);
