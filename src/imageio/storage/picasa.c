@@ -575,7 +575,6 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   GMappedFile *imgfile = g_mapped_file_new(fname,FALSE,NULL);
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
-  g_mapped_file_unref(imgfile);
 
   gchar *entry = g_markup_printf_escaped (
                    "<entry xmlns='http://www.w3.org/2005/Atom'>\n"
@@ -601,6 +600,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   memcpy( postdata, mpart1, mpart1size);
   memcpy( postdata+mpart1size, data, size);
   memcpy( postdata+mpart1size+size, "\n--END_OF_PART--",strlen("\n--END_OF_PART--") );
+
+  g_mapped_file_unref(imgfile);
 
   struct curl_slist *headers = NULL;
   headers = curl_slist_append(headers,"Content-Type: multipart/related; boundary=\"END_OF_PART\"");
