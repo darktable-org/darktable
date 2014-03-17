@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-10 19:21+0100\n"
-"PO-Revision-Date: 2014-03-10 22:14+0100\n"
+"POT-Creation-Date: 2014-03-17 18:47+0100\n"
+"PO-Revision-Date: 2014-03-17 18:50+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -15,7 +15,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1246
 msgid "GUI options"
-msgstr "gui opties"
+msgstr "GUI opties"
 
 #: ../build/src/preferences_gen.h:1249
 msgid "width of the side panels in pixels"
