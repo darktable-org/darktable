@@ -99,7 +99,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
 
 static void
-pretty_print(char *buf, char *out, int outsize)
+pretty_print(char *buf, char *out, size_t outsize)
 {
   memset(out, 0, outsize);
 
