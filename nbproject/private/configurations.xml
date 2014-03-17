@@ -1,0 +1,1517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="90">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="build">
+        <df name="CMakeFiles">
+          <df name="2.8.11.2">
+            <df name="CompilerIdC">
+              <in>CMakeCCompilerId.c</in>
+            </df>
+            <df name="CompilerIdCXX">
+              <in>CMakeCXXCompilerId.cpp</in>
+            </df>
+          </df>
+          <df name="CMakeTmp">
+          </df>
+          <df name="pkgsrc.dir">
+          </df>
+          <df name="uninstall.dir">
+          </df>
+        </df>
+        <df name="data">
+          <df name="CMakeFiles">
+            <df name="darktable.desktop.dir">
+            </df>
+            <df name="darktablerc.dir">
+            </df>
+          </df>
+          <df name="kernels">
+            <df name="CMakeFiles">
+            </df>
+          </df>
+          <df name="pixmaps">
+            <df name="CMakeFiles">
+            </df>
+          </df>
+        </df>
+        <df name="doc">
+          <df name="CMakeFiles">
+            <df name="darktablerc.html.dir">
+            </df>
+            <df name="manpages.dir">
+            </df>
+          </df>
+          <df name="usermanual">
+            <df name="CMakeFiles">
+              <df name="darktable-usermanual-html.dir">
+              </df>
+              <df name="darktable-usermanual-wordpress.dir">
+              </df>
+              <df name="darktable-usermanual.dir">
+              </df>
+              <df name="darktable_profile_xml.dir">
+              </df>
+              <df name="darktable_single_xml.dir">
+              </df>
+              <df name="target_media_images.dir">
+              </df>
+              <df name="usermanual.dir">
+              </df>
+            </df>
+            <df name="media">
+              <df name="images">
+                <df name="darkroom">
+                  <df name="concepts">
+                  </df>
+                  <df name="examples">
+                  </df>
+                  <df name="modules">
+                  </df>
+                </df>
+                <df name="lighttable">
+                  <df name="concepts">
+                  </df>
+                </df>
+                <df name="map">
+                </df>
+                <df name="overview">
+                </df>
+                <df name="preferences">
+                </df>
+                <df name="tethering">
+                </df>
+              </df>
+            </df>
+            <df name="po">
+              <df name="CMakeFiles">
+              </df>
+            </df>
+          </df>
+        </df>
+        <df name="po">
+          <df name="CMakeFiles">
+            <df name="locale_ca.dir">
+            </df>
+            <df name="locale_cs.dir">
+            </df>
+            <df name="locale_da.dir">
+            </df>
+            <df name="locale_de.dir">
+            </df>
+            <df name="locale_el.dir">
+            </df>
+            <df name="locale_es.dir">
+            </df>
+            <df name="locale_fi.dir">
+            </df>
+            <df name="locale_fr.dir">
+            </df>
+            <df name="locale_gl.dir">
+            </df>
+            <df name="locale_it.dir">
+            </df>
+            <df name="locale_ja.dir">
+            </df>
+            <df name="locale_nl.dir">
+            </df>
+            <df name="locale_pl.dir">
+            </df>
+            <df name="locale_pt_BR.dir">
+            </df>
+            <df name="locale_pt_PT.dir">
+            </df>
+            <df name="locale_ro.dir">
+            </df>
+            <df name="locale_ru.dir">
+            </df>
+            <df name="locale_sq.dir">
+            </df>
+            <df name="locale_sv.dir">
+            </df>
+            <df name="locale_th.dir">
+            </df>
+            <df name="locale_uk.dir">
+            </df>
+            <df name="locale_zh_CN.dir">
+            </df>
+          </df>
+        </df>
+        <df name="src">
+          <df name="cli">
+            <df name="CMakeFiles">
+              <df name="darktable-cli.dir">
+              </df>
+            </df>
+          </df>
+          <df name="cltest">
+            <df name="CMakeFiles">
+              <df name="darktable-cltest.dir">
+              </df>
+            </df>
+          </df>
+          <df name="CMakeFiles">
+            <df name="darktable.dir">
+            </df>
+            <df name="lib_darktable.dir">
+              <df name="bauhaus">
+              </df>
+              <df name="common">
+                <df name="pwstorage">
+                </df>
+              </df>
+              <df name="control">
+                <df name="jobs">
+                </df>
+              </df>
+              <df name="develop">
+                <df name="masks">
+                </df>
+              </df>
+              <df name="dtgtk">
+              </df>
+              <df name="gui">
+              </df>
+              <df name="libs">
+              </df>
+              <df name="views">
+              </df>
+            </df>
+            <df name="metadata_dummy.dir">
+            </df>
+          </df>
+          <df name="external">
+            <df name="colord-gtk">
+              <df name="CMakeFiles">
+                <df name="colord-gtk.dir">
+                  <df name="src">
+                    <df name="colord-gtk">
+                    </df>
+                  </df>
+                </df>
+              </df>
+            </df>
+            <df name="LibRaw">
+              <df name="CMakeFiles">
+                <df name="libraw_r.dir">
+                  <df name="internal">
+                  </df>
+                  <df name="src">
+                  </df>
+                </df>
+              </df>
+            </df>
+            <df name="rawspeed">
+              <df name="CMakeFiles">
+                <df name="rawspeed.dir">
+                  <df name="RawSpeed">
+                  </df>
+                </df>
+              </df>
+            </df>
+            <df name="squish">
+              <df name="CMakeFiles">
+                <df name="squish.dir">
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="imageio">
+            <df name="CMakeFiles">
+            </df>
+            <df name="format">
+              <df name="CMakeFiles">
+                <df name="copy.dir">
+                </df>
+                <df name="exr.dir">
+                </df>
+                <df name="jpeg.dir">
+                </df>
+                <df name="pfm.dir">
+                </df>
+                <df name="png.dir">
+                </df>
+                <df name="ppm.dir">
+                </df>
+                <df name="tiff.dir">
+                </df>
+              </df>
+            </df>
+            <df name="storage">
+              <df name="CMakeFiles">
+                <df name="disk.dir">
+                </df>
+                <df name="email.dir">
+                </df>
+                <df name="flickr.dir">
+                </df>
+                <df name="gallery.dir">
+                </df>
+                <df name="latex.dir">
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="iop">
+            <df name="CMakeFiles">
+              <df name="atrous.dir">
+              </df>
+              <df name="basecurve.dir">
+              </df>
+              <df name="bilat.dir">
+              </df>
+              <df name="bilateral.dir">
+              </df>
+              <df name="bloom.dir">
+              </df>
+              <df name="borders.dir">
+              </df>
+              <df name="cacorrect.dir">
+              </df>
+              <df name="channelmixer.dir">
+              </df>
+              <df name="clahe.dir">
+              </df>
+              <df name="clipping.dir">
+              </df>
+              <df name="colisa.dir">
+              </df>
+              <df name="colorbalance.dir">
+              </df>
+              <df name="colorcontrast.dir">
+              </df>
+              <df name="colorcorrection.dir">
+              </df>
+              <df name="colorin.dir">
+              </df>
+              <df name="colorize.dir">
+              </df>
+              <df name="colormapping.dir">
+              </df>
+              <df name="colorout.dir">
+              </df>
+              <df name="colortransfer.dir">
+              </df>
+              <df name="colorzones.dir">
+              </df>
+              <df name="demosaic.dir">
+              </df>
+              <df name="denoiseprofile.dir">
+              </df>
+              <df name="dither.dir">
+              </df>
+              <df name="equalizer.dir">
+              </df>
+              <df name="exposure.dir">
+              </df>
+              <df name="flip.dir">
+              </df>
+              <df name="gamma.dir">
+              </df>
+              <df name="globaltonemap.dir">
+              </df>
+              <df name="graduatednd.dir">
+              </df>
+              <df name="grain.dir">
+              </df>
+              <df name="highlights.dir">
+              </df>
+              <df name="highpass.dir">
+              </df>
+              <df name="hotpixels.dir">
+              </df>
+              <df name="invert.dir">
+              </df>
+              <df name="lens.dir">
+              </df>
+              <df name="levels.dir">
+              </df>
+              <df name="lowlight.dir">
+              </df>
+              <df name="lowpass.dir">
+              </df>
+              <df name="monochrome.dir">
+              </df>
+              <df name="nlmeans.dir">
+              </df>
+              <df name="overexposed.dir">
+              </df>
+              <df name="profile_gamma.dir">
+              </df>
+              <df name="rawdenoise.dir">
+              </df>
+              <df name="relight.dir">
+              </df>
+              <df name="shadhi.dir">
+              </df>
+              <df name="sharpen.dir">
+              </df>
+              <df name="soften.dir">
+              </df>
+              <df name="splittoning.dir">
+              </df>
+              <df name="spots.dir">
+              </df>
+              <df name="temperature.dir">
+              </df>
+              <df name="tonecurve.dir">
+              </df>
+              <df name="tonemap.dir">
+              </df>
+              <df name="velvia.dir">
+              </df>
+              <df name="vibrance.dir">
+              </df>
+              <df name="vignette.dir">
+              </df>
+              <df name="watermark.dir">
+              </df>
+              <df name="zonesystem.dir">
+              </df>
+            </df>
+            <in>introspection_atrous.c</in>
+            <in>introspection_basecurve.c</in>
+            <in>introspection_bilat.c</in>
+            <in>introspection_bilateral.cc</in>
+            <in>introspection_bloom.c</in>
+            <in>introspection_borders.c</in>
+            <in>introspection_cacorrect.c</in>
+            <in>introspection_channelmixer.c</in>
+            <in>introspection_clahe.c</in>
+            <in>introspection_clipping.c</in>
+            <in>introspection_colisa.c</in>
+            <in>introspection_colorbalance.c</in>
+            <in>introspection_colorcontrast.c</in>
+            <in>introspection_colorcorrection.c</in>
+            <in>introspection_colorin.c</in>
+            <in>introspection_colorize.c</in>
+            <in>introspection_colormapping.c</in>
+            <in>introspection_colorout.c</in>
+            <in>introspection_colortransfer.c</in>
+            <in>introspection_colorzones.c</in>
+            <in>introspection_demosaic.c</in>
+            <in>introspection_denoiseprofile.c</in>
+            <in>introspection_dither.c</in>
+            <in>introspection_equalizer.c</in>
+            <in>introspection_exposure.c</in>
+            <in>introspection_flip.c</in>
+            <in>introspection_gamma.c</in>
+            <in>introspection_globaltonemap.c</in>
+            <in>introspection_graduatednd.c</in>
+            <in>introspection_grain.c</in>
+            <in>introspection_highlights.c</in>
+            <in>introspection_highpass.c</in>
+            <in>introspection_hotpixels.c</in>
+            <in>introspection_invert.c</in>
+            <in>introspection_lens.c</in>
+            <in>introspection_levels.c</in>
+            <in>introspection_lowlight.c</in>
+            <in>introspection_lowpass.c</in>
+            <in>introspection_monochrome.c</in>
+            <in>introspection_nlmeans.c</in>
+            <in>introspection_overexposed.c</in>
+            <in>introspection_profile_gamma.c</in>
+            <in>introspection_rawdenoise.c</in>
+            <in>introspection_relight.c</in>
+            <in>introspection_shadhi.c</in>
+            <in>introspection_sharpen.c</in>
+            <in>introspection_soften.c</in>
+            <in>introspection_splittoning.c</in>
+            <in>introspection_spots.c</in>
+            <in>introspection_temperature.c</in>
+            <in>introspection_tonecurve.c</in>
+            <in>introspection_tonemap.cc</in>
+            <in>introspection_velvia.c</in>
+            <in>introspection_vibrance.c</in>
+            <in>introspection_vignette.c</in>
+            <in>introspection_watermark.c</in>
+            <in>introspection_zonesystem.c</in>
+          </df>
+          <df name="libs">
+            <df name="CMakeFiles">
+              <df name="backgroundjobs.dir">
+              </df>
+              <df name="camera.dir">
+              </df>
+              <df name="capture.dir">
+              </df>
+              <df name="collect.dir">
+              </df>
+              <df name="colorlabels.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="colorpicker.dir">
+              </df>
+              <df name="copy_history.dir">
+              </df>
+              <df name="darktable_label.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="export.dir">
+              </df>
+              <df name="filmstrip.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="filter.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="global_toolbox.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="hinter.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="histogram.dir">
+              </df>
+              <df name="history.dir">
+              </df>
+              <df name="image.dir">
+              </df>
+              <df name="import.dir">
+              </df>
+              <df name="lighttable_mode.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="live_view.dir">
+              </df>
+              <df name="masks.dir">
+              </df>
+              <df name="metadata.dir">
+              </df>
+              <df name="metadata_view.dir">
+              </df>
+              <df name="module_toolbox.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="modulegroups.dir">
+              </df>
+              <df name="modulelist.dir">
+              </df>
+              <df name="navigation.dir">
+              </df>
+              <df name="ratings.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="recentcollect.dir">
+              </df>
+              <df name="select.dir">
+              </df>
+              <df name="session.dir">
+              </df>
+              <df name="snapshots.dir">
+              </df>
+              <df name="styles.dir">
+              </df>
+              <df name="tagging.dir">
+              </df>
+              <df name="view_toolbox.dir">
+                <df name="tools">
+                </df>
+              </df>
+              <df name="viewswitcher.dir">
+                <df name="tools">
+                </df>
+              </df>
+            </df>
+          </df>
+          <df name="views">
+            <df name="CMakeFiles">
+              <df name="darkroom.dir">
+              </df>
+              <df name="lighttable.dir">
+              </df>
+              <df name="slideshow.dir">
+              </df>
+              <df name="tethering.dir">
+              </df>
+              <df name="views_capture.dir">
+              </df>
+            </df>
+          </df>
+          <in>config.h</in>
+          <in>metadata_gen.c</in>
+          <in>metadata_gen.h</in>
+          <in>preferences_gen.h</in>
+        </df>
+      </df>
+      <df name="cmake">
+        <df name="macosx">
+        </df>
+        <df name="modules">
+          <in>cpuid.asm</in>
+          <in>openjpeg_version.c</in>
+          <in>sse_test.c</in>
+        </df>
+      </df>
+      <df name="data">
+        <df name="js">
+        </df>
+        <df name="kernels">
+          <in>common.h</in>
+        </df>
+        <df name="latex">
+        </df>
+        <df name="lua">
+          <df name="darktable">
+          </df>
+        </df>
+        <df name="pixmaps">
+          <df name="16x16">
+          </df>
+          <df name="22x22">
+          </df>
+          <df name="24x24">
+          </df>
+          <df name="256x256">
+          </df>
+          <df name="32x32">
+          </df>
+          <df name="48x48">
+          </df>
+          <df name="64x64">
+          </df>
+          <df name="plugins">
+            <df name="darkroom">
+            </df>
+          </df>
+          <df name="scalable">
+          </df>
+        </df>
+        <df name="style">
+        </df>
+        <df name="watermarks">
+        </df>
+      </df>
+      <df name="doc">
+        <df name="pdf">
+          <df name="graphs">
+          </df>
+        </df>
+        <df name="usermanual">
+          <df name="darkroom">
+            <df name="concepts">
+              <df name="images">
+              </df>
+            </df>
+            <df name="examples">
+              <df name="images">
+              </df>
+            </df>
+            <df name="images">
+            </df>
+            <df name="modules">
+              <df name="basic">
+              </df>
+              <df name="color">
+              </df>
+              <df name="correction">
+              </df>
+              <df name="effect">
+              </df>
+              <df name="images">
+              </df>
+              <df name="tone">
+              </df>
+            </df>
+            <df name="panels">
+            </df>
+          </df>
+          <df name="dtd">
+          </df>
+          <df name="fonts">
+          </df>
+          <df name="images">
+          </df>
+          <df name="lighttable">
+            <df name="concepts">
+              <df name="images">
+              </df>
+            </df>
+            <df name="images">
+            </df>
+            <df name="panels">
+            </df>
+          </df>
+          <df name="lua">
+          </df>
+          <df name="map">
+            <df name="images">
+            </df>
+            <df name="panels">
+            </df>
+          </df>
+          <df name="overview">
+            <df name="images">
+            </df>
+          </df>
+          <df name="po">
+          </df>
+          <df name="preferences">
+            <df name="images">
+            </df>
+          </df>
+          <df name="tethering">
+            <df name="examples">
+            </df>
+            <df name="images">
+            </df>
+            <df name="panels">
+            </df>
+          </df>
+          <df name="topics">
+          </df>
+          <df name="xsl">
+          </df>
+        </df>
+      </df>
+      <df name="packaging">
+        <df name="arch">
+        </df>
+        <df name="debian">
+        </df>
+        <df name="gentoo">
+          <df name="media-gfx">
+            <df name="darktable">
+            </df>
+          </df>
+          <df name="metadata">
+          </df>
+          <df name="profiles">
+          </df>
+        </df>
+        <df name="macosx">
+        </df>
+        <df name="opensuse">
+        </df>
+        <df name="Solaris_11">
+        </df>
+        <df name="ubuntu">
+        </df>
+      </df>
+      <df name="po">
+      </df>
+      <df name="src">
+        <df name="bauhaus">
+          <in>bauhaus.c</in>
+          <in>bauhaus.h</in>
+        </df>
+        <df name="cli">
+          <in>main.c</in>
+        </df>
+        <df name="cltest">
+          <in>main.c</in>
+        </df>
+        <df name="cmstest">
+          <in>main.c</in>
+        </df>
+        <df name="common">
+          <df name="pwstorage">
+            <in>backend_gkeyring.c</in>
+            <in>backend_gkeyring.h</in>
+            <in>backend_kwallet.c</in>
+            <in>backend_kwallet.h</in>
+            <in>pwstorage.c</in>
+            <in>pwstorage.h</in>
+          </df>
+          <in>bilateral.h</in>
+          <in>bilateralcl.h</in>
+          <in>cache.c</in>
+          <in>cache.h</in>
+          <in>calculator.c</in>
+          <in>calculator.h</in>
+          <in>camera_control.c</in>
+          <in>camera_control.h</in>
+          <in>collection.c</in>
+          <in>collection.h</in>
+          <in>colorlabels.c</in>
+          <in>colorlabels.h</in>
+          <in>colormatrices.c</in>
+          <in>colorspaces.c</in>
+          <in>colorspaces.h</in>
+          <in>curve_tools.c</in>
+          <in>curve_tools.h</in>
+          <in>darktable.c</in>
+          <in>darktable.h</in>
+          <in>database.c</in>
+          <in>database.h</in>
+          <in>dbus.c</in>
+          <in>dbus.h</in>
+          <in>debug.h</in>
+          <in>dlopencl.c</in>
+          <in>dlopencl.h</in>
+          <in>dt_logo_128x128.h</in>
+          <in>dtpthread.h</in>
+          <in>dynload.c</in>
+          <in>dynload.h</in>
+          <in>exif.cc</in>
+          <in>exif.h</in>
+          <in>file_location.c</in>
+          <in>file_location.h</in>
+          <in>film.c</in>
+          <in>film.h</in>
+          <in>focus.h</in>
+          <in>fswatch.c</in>
+          <in>fswatch.h</in>
+          <in>gaussian.c</in>
+          <in>gaussian.h</in>
+          <in>gpx.c</in>
+          <in>gpx.h</in>
+          <in>grealpath.h</in>
+          <in>grouping.c</in>
+          <in>grouping.h</in>
+          <in>heap.h</in>
+          <in>history.c</in>
+          <in>history.h</in>
+          <in>image.c</in>
+          <in>image.h</in>
+          <in>image_cache.c</in>
+          <in>image_cache.h</in>
+          <in>image_compression.c</in>
+          <in>image_compression.h</in>
+          <in>imageio.c</in>
+          <in>imageio.h</in>
+          <in>imageio_dng.h</in>
+          <in>imageio_exr.cc</in>
+          <in>imageio_exr.h</in>
+          <in>imageio_exr.hh</in>
+          <in>imageio_format.h</in>
+          <in>imageio_gm.c</in>
+          <in>imageio_gm.h</in>
+          <in>imageio_j2k.c</in>
+          <in>imageio_j2k.h</in>
+          <in>imageio_jpeg.c</in>
+          <in>imageio_jpeg.h</in>
+          <in>imageio_module.c</in>
+          <in>imageio_module.h</in>
+          <in>imageio_pfm.c</in>
+          <in>imageio_pfm.h</in>
+          <in>imageio_png.c</in>
+          <in>imageio_png.h</in>
+          <in>imageio_rawspeed.cc</in>
+          <in>imageio_rawspeed.h</in>
+          <in>imageio_rgbe.c</in>
+          <in>imageio_rgbe.h</in>
+          <in>imageio_storage.h</in>
+          <in>imageio_tiff.c</in>
+          <in>imageio_tiff.h</in>
+          <in>import_session.c</in>
+          <in>import_session.h</in>
+          <in>interpolation.c</in>
+          <in>interpolation.h</in>
+          <in>matrices.c</in>
+          <in>metadata.c</in>
+          <in>metadata.h</in>
+          <in>mipmap_cache.c</in>
+          <in>mipmap_cache.h</in>
+          <in>noiseprofiles.h</in>
+          <in>nvidia_gpus.h</in>
+          <in>opencl.c</in>
+          <in>opencl.h</in>
+          <in>points.h</in>
+          <in>profiling.c</in>
+          <in>profiling.h</in>
+          <in>ratings.c</in>
+          <in>ratings.h</in>
+          <in>selection.c</in>
+          <in>selection.h</in>
+          <in>srgb_tone_curve_values.h</in>
+          <in>styles.c</in>
+          <in>styles.h</in>
+          <in>tags.c</in>
+          <in>tags.h</in>
+          <in>utility.c</in>
+          <in>utility.h</in>
+          <in>variables.c</in>
+          <in>variables.h</in>
+        </df>
+        <df name="control">
+          <df name="jobs">
+            <in>camera_jobs.c</in>
+            <in>camera_jobs.h</in>
+            <in>control_jobs.c</in>
+            <in>control_jobs.h</in>
+            <in>develop_jobs.c</in>
+            <in>develop_jobs.h</in>
+            <in>film_jobs.c</in>
+            <in>film_jobs.h</in>
+            <in>image_jobs.c</in>
+            <in>image_jobs.h</in>
+          </df>
+          <in>conf.h</in>
+          <in>control.c</in>
+          <in>control.h</in>
+          <in>crawler.c</in>
+          <in>crawler.h</in>
+          <in>jobs.h</in>
+          <in>settings.h</in>
+          <in>signal.c</in>
+          <in>signal.h</in>
+        </df>
+        <df name="develop">
+          <df name="masks">
+            <in>brush.c</in>
+            <in>circle.c</in>
+            <in>ellipse.c</in>
+            <in>gradient.c</in>
+            <in>group.c</in>
+            <in>masks.c</in>
+            <in>path.c</in>
+          </df>
+          <in>blend.c</in>
+          <in>blend.h</in>
+          <in>blend_gui.c</in>
+          <in>develop.c</in>
+          <in>develop.h</in>
+          <in>imageop.c</in>
+          <in>imageop.h</in>
+          <in>lightroom.c</in>
+          <in>lightroom.h</in>
+          <in>masks.h</in>
+          <in>pixelpipe.c</in>
+          <in>pixelpipe.h</in>
+          <in>pixelpipe_cache.c</in>
+          <in>pixelpipe_cache.h</in>
+          <in>pixelpipe_gegl.c</in>
+          <in>pixelpipe_gegl.h</in>
+          <in>pixelpipe_hb.c</in>
+          <in>pixelpipe_hb.h</in>
+          <in>tiling.c</in>
+          <in>tiling.h</in>
+        </df>
+        <df name="dtgtk">
+          <in>button.c</in>
+          <in>button.h</in>
+          <in>gradientslider.c</in>
+          <in>gradientslider.h</in>
+          <in>icon.c</in>
+          <in>icon.h</in>
+          <in>label.c</in>
+          <in>label.h</in>
+          <in>paint.c</in>
+          <in>paint.h</in>
+          <in>resetlabel.c</in>
+          <in>resetlabel.h</in>
+          <in>slider.c</in>
+          <in>slider.h</in>
+          <in>togglebutton.c</in>
+          <in>togglebutton.h</in>
+          <in>tristatebutton.c</in>
+          <in>tristatebutton.h</in>
+        </df>
+        <df name="dtview">
+          <in>main.c</in>
+        </df>
+        <df name="external">
+          <df name="CL">
+            <in>cl.h</in>
+            <in>cl.hpp</in>
+            <in>cl_d3d10.h</in>
+            <in>cl_ext.h</in>
+            <in>cl_gl.h</in>
+            <in>cl_gl_ext.h</in>
+            <in>cl_platform.h</in>
+            <in>opencl.h</in>
+          </df>
+          <df name="colord-gtk">
+            <df name="src">
+              <df name="colord-gtk">
+                <in>cd-window-sync.c</in>
+                <in>cd-window-sync.h</in>
+                <in>cd-window.c</in>
+                <in>cd-window.h</in>
+              </df>
+              <in>colord-gtk.h</in>
+            </df>
+          </df>
+          <df name="LibRaw">
+            <df name="dcraw">
+              <in>dcraw.c</in>
+            </df>
+            <df name="internal">
+              <in>dcraw_common.cpp</in>
+              <in>dcraw_fileio.cpp</in>
+              <in>defines.h</in>
+              <in>demosaic_packs.cpp</in>
+              <in>libraw_bytebuffer.h</in>
+              <in>libraw_internal_funcs.h</in>
+              <in>var_defines.h</in>
+            </df>
+            <df name="libraw">
+              <in>libraw.h</in>
+              <in>libraw_alloc.h</in>
+              <in>libraw_const.h</in>
+              <in>libraw_datastream.h</in>
+              <in>libraw_internal.h</in>
+              <in>libraw_types.h</in>
+              <in>libraw_version.h</in>
+            </df>
+            <df name="src">
+              <in>libraw_c_api.cpp</in>
+              <in>libraw_cxx.cpp</in>
+              <in>libraw_datastream.cpp</in>
+            </df>
+          </df>
+          <df name="lua">
+            <df name="doc">
+            </df>
+            <df name="src">
+              <in>lapi.c</in>
+              <in>lapi.h</in>
+              <in>lauxlib.c</in>
+              <in>lauxlib.h</in>
+              <in>lbaselib.c</in>
+              <in>lbitlib.c</in>
+              <in>lcode.c</in>
+              <in>lcode.h</in>
+              <in>lcorolib.c</in>
+              <in>lctype.c</in>
+              <in>lctype.h</in>
+              <in>ldblib.c</in>
+              <in>ldebug.c</in>
+              <in>ldebug.h</in>
+              <in>ldo.c</in>
+              <in>ldo.h</in>
+              <in>ldump.c</in>
+              <in>lfunc.c</in>
+              <in>lfunc.h</in>
+              <in>lgc.c</in>
+              <in>lgc.h</in>
+              <in>linit.c</in>
+              <in>liolib.c</in>
+              <in>llex.c</in>
+              <in>llex.h</in>
+              <in>llimits.h</in>
+              <in>lmathlib.c</in>
+              <in>lmem.c</in>
+              <in>lmem.h</in>
+              <in>loadlib.c</in>
+              <in>lobject.c</in>
+              <in>lobject.h</in>
+              <in>lopcodes.c</in>
+              <in>lopcodes.h</in>
+              <in>loslib.c</in>
+              <in>lparser.c</in>
+              <in>lparser.h</in>
+              <in>lstate.c</in>
+              <in>lstate.h</in>
+              <in>lstring.c</in>
+              <in>lstring.h</in>
+              <in>lstrlib.c</in>
+              <in>ltable.c</in>
+              <in>ltable.h</in>
+              <in>ltablib.c</in>
+              <in>ltm.c</in>
+              <in>ltm.h</in>
+              <in>lua.c</in>
+              <in>lua.h</in>
+              <in>lua.hpp</in>
+              <in>luac.c</in>
+              <in>luaconf.h</in>
+              <in>lualib.h</in>
+              <in>lundump.c</in>
+              <in>lundump.h</in>
+              <in>lvm.c</in>
+              <in>lvm.h</in>
+              <in>lzio.c</in>
+              <in>lzio.h</in>
+            </df>
+          </df>
+          <df name="LuaAutoC">
+            <df name="demos">
+              <in>demo_c99.c</in>
+              <in>demo_convert.c</in>
+              <in>demo_embed.c</in>
+              <in>demo_enum.c</in>
+              <in>demo_func.c</in>
+              <in>demo_mod.c</in>
+              <in>demo_struct.c</in>
+            </df>
+            <df name="include">
+              <in>lautoc.h</in>
+              <in>lautocfunc.h</in>
+            </df>
+            <df name="lua52">
+              <df name="include">
+                <in>lauxlib.h</in>
+                <in>lua.h</in>
+                <in>lua.hpp</in>
+                <in>luaconf.h</in>
+                <in>lualib.h</in>
+              </df>
+            </df>
+            <df name="src">
+              <in>lautoc.c</in>
+              <in>lautoc_call.c</in>
+              <in>lautoc_enum.c</in>
+              <in>lautoc_hashtable.c</in>
+              <in>lautoc_stack.c</in>
+              <in>lautoc_struct.c</in>
+              <in>lautoc_type.c</in>
+            </df>
+          </df>
+          <df name="OpenCL">
+            <in>cl_platform.h</in>
+          </df>
+          <df name="osm-gps-map">
+            <df name="src">
+              <in>converter.c</in>
+              <in>converter.h</in>
+              <in>osd-utils.c</in>
+              <in>osd-utils.h</in>
+              <in>osm-gps-map-compat.c</in>
+              <in>osm-gps-map-compat.h</in>
+              <in>osm-gps-map-image.c</in>
+              <in>osm-gps-map-image.h</in>
+              <in>osm-gps-map-layer.c</in>
+              <in>osm-gps-map-layer.h</in>
+              <in>osm-gps-map-osd.c</in>
+              <in>osm-gps-map-osd.h</in>
+              <in>osm-gps-map-point.c</in>
+              <in>osm-gps-map-point.h</in>
+              <in>osm-gps-map-source.c</in>
+              <in>osm-gps-map-source.h</in>
+              <in>osm-gps-map-track.c</in>
+              <in>osm-gps-map-track.h</in>
+              <in>osm-gps-map-widget.c</in>
+              <in>osm-gps-map-widget.h</in>
+              <in>osm-gps-map.h</in>
+              <in>private.h</in>
+            </df>
+          </df>
+          <df name="rawspeed">
+            <df name="data">
+            </df>
+            <df name="RawSpeed">
+              <in>ArwDecoder.cpp</in>
+              <in>ArwDecoder.h</in>
+              <in>BitPumpJPEG.cpp</in>
+              <in>BitPumpJPEG.h</in>
+              <in>BitPumpMSB.cpp</in>
+              <in>BitPumpMSB.h</in>
+              <in>BitPumpMSB32.cpp</in>
+              <in>BitPumpMSB32.h</in>
+              <in>BitPumpPlain.cpp</in>
+              <in>BitPumpPlain.h</in>
+              <in>BlackArea.cpp</in>
+              <in>BlackArea.h</in>
+              <in>ByteStream.cpp</in>
+              <in>ByteStream.h</in>
+              <in>ByteStreamSwap.cpp</in>
+              <in>ByteStreamSwap.h</in>
+              <in>Camera.cpp</in>
+              <in>Camera.h</in>
+              <in>CameraMetaData.cpp</in>
+              <in>CameraMetaData.h</in>
+              <in>CameraMetadataException.cpp</in>
+              <in>CameraMetadataException.h</in>
+              <in>CameraSensorInfo.cpp</in>
+              <in>CameraSensorInfo.h</in>
+              <in>ColorFilterArray.cpp</in>
+              <in>ColorFilterArray.h</in>
+              <in>Common.cpp</in>
+              <in>Common.h</in>
+              <in>Cr2Decoder.cpp</in>
+              <in>Cr2Decoder.h</in>
+              <in>DngDecoder.cpp</in>
+              <in>DngDecoder.h</in>
+              <in>DngDecoderSlices.cpp</in>
+              <in>DngDecoderSlices.h</in>
+              <in>DngOpcodes.cpp</in>
+              <in>DngOpcodes.h</in>
+              <in>FileIOException.cpp</in>
+              <in>FileIOException.h</in>
+              <in>FileMap.cpp</in>
+              <in>FileMap.h</in>
+              <in>FileReader.cpp</in>
+              <in>FileReader.h</in>
+              <in>IOException.cpp</in>
+              <in>IOException.h</in>
+              <in>LJpegDecompressor.cpp</in>
+              <in>LJpegDecompressor.h</in>
+              <in>LJpegPlain.cpp</in>
+              <in>LJpegPlain.h</in>
+              <in>NefDecoder.cpp</in>
+              <in>NefDecoder.h</in>
+              <in>NikonDecompressor.cpp</in>
+              <in>NikonDecompressor.h</in>
+              <in>OrfDecoder.cpp</in>
+              <in>OrfDecoder.h</in>
+              <in>PefDecoder.cpp</in>
+              <in>PefDecoder.h</in>
+              <in>PentaxDecompressor.cpp</in>
+              <in>PentaxDecompressor.h</in>
+              <in>Point.h</in>
+              <in>RawDecoder.cpp</in>
+              <in>RawDecoder.h</in>
+              <in>RawDecoderException.cpp</in>
+              <in>RawDecoderException.h</in>
+              <in>RawImage.cpp</in>
+              <in>RawImage.h</in>
+              <in>RawImageDataFloat.cpp</in>
+              <in>RawImageDataU16.cpp</in>
+              <in>RawParser.cpp</in>
+              <in>RawParser.h</in>
+              <in>RawSpeed.cpp</in>
+              <in>Rw2Decoder.cpp</in>
+              <in>Rw2Decoder.h</in>
+              <in>SrwDecoder.cpp</in>
+              <in>SrwDecoder.h</in>
+              <in>StdAfx.cpp</in>
+              <in>StdAfx.h</in>
+              <in>TiffEntry.cpp</in>
+              <in>TiffEntry.h</in>
+              <in>TiffEntryBE.cpp</in>
+              <in>TiffEntryBE.h</in>
+              <in>TiffIFD.cpp</in>
+              <in>TiffIFD.h</in>
+              <in>TiffIFDBE.cpp</in>
+              <in>TiffIFDBE.h</in>
+              <in>TiffParser.cpp</in>
+              <in>TiffParser.h</in>
+              <in>TiffParserException.cpp</in>
+              <in>TiffParserException.h</in>
+              <in>TiffParserHeaderless.cpp</in>
+              <in>TiffParserHeaderless.h</in>
+              <in>TiffParserOlympus.cpp</in>
+              <in>TiffParserOlympus.h</in>
+              <in>TiffTag.h</in>
+            </df>
+          </df>
+          <df name="squish">
+            <in>alpha.cpp</in>
+            <in>alpha.h</in>
+            <in>clusterfit.cpp</in>
+            <in>clusterfit.h</in>
+            <in>colourblock.cpp</in>
+            <in>colourblock.h</in>
+            <in>colourfit.cpp</in>
+            <in>colourfit.h</in>
+            <in>colourset.cpp</in>
+            <in>colourset.h</in>
+            <in>config.h</in>
+            <in>csquish.h</in>
+            <in>maths.cpp</in>
+            <in>maths.h</in>
+            <in>rangefit.cpp</in>
+            <in>rangefit.h</in>
+            <in>simd.h</in>
+            <in>simd_float.h</in>
+            <in>simd_sse.h</in>
+            <in>simd_ve.h</in>
+            <in>singlecolourfit.cpp</in>
+            <in>singlecolourfit.h</in>
+            <in>singlecolourlookup.inl</in>
+            <in>squish.cpp</in>
+            <in>squish.h</in>
+          </df>
+          <in>adobe_coeff.c</in>
+          <in>dcraw.c</in>
+        </df>
+        <df name="gegl-operations">
+          <in>config.h</in>
+          <in>dt-contrast-curve.c</in>
+          <in>dt-gamma.c</in>
+        </df>
+        <df name="gui">
+          <in>accelerators.c</in>
+          <in>accelerators.h</in>
+          <in>camera_import_dialog.c</in>
+          <in>camera_import_dialog.h</in>
+          <in>contrast.c</in>
+          <in>contrast.h</in>
+          <in>drag_and_drop.h</in>
+          <in>draw.h</in>
+          <in>gtk.c</in>
+          <in>gtk.h</in>
+          <in>gtkentry.c</in>
+          <in>gtkentry.h</in>
+          <in>guides.c</in>
+          <in>guides.h</in>
+          <in>hist_dialog.c</in>
+          <in>hist_dialog.h</in>
+          <in>legacy_presets.h</in>
+          <in>preferences.c</in>
+          <in>preferences.h</in>
+          <in>presets.c</in>
+          <in>presets.h</in>
+          <in>simple_gui.h</in>
+          <in>styles.h</in>
+          <in>styles_dialog.c</in>
+        </df>
+        <df name="imageio">
+          <df name="format">
+            <in>copy.c</in>
+            <in>exr.cc</in>
+            <in>j2k.c</in>
+            <in>jpeg.c</in>
+            <in>pfm.c</in>
+            <in>png.c</in>
+            <in>ppm.c</in>
+            <in>tiff.c</in>
+            <in>webp.c</in>
+          </df>
+          <df name="storage">
+            <in>disk.c</in>
+            <in>email.c</in>
+            <in>facebook.c</in>
+            <in>flickr.c</in>
+            <in>gallery.c</in>
+            <in>latex.c</in>
+            <in>picasa.c</in>
+          </df>
+        </df>
+        <df name="iop">
+          <in>Permutohedral.h</in>
+          <in>anlfyeni.c</in>
+          <in>atrous.c</in>
+          <in>basecurve.c</in>
+          <in>bilat.c</in>
+          <in>bilateral.cc</in>
+          <in>bloom.c</in>
+          <in>borders.c</in>
+          <in>cacorrect.c</in>
+          <in>channelmixer.c</in>
+          <in>clahe.c</in>
+          <in>clipping.c</in>
+          <in>colisa.c</in>
+          <in>colorbalance.c</in>
+          <in>colorcontrast.c</in>
+          <in>colorcorrection.c</in>
+          <in>colorin.c</in>
+          <in>colorin.h</in>
+          <in>colorize.c</in>
+          <in>colormapping.c</in>
+          <in>colorout.c</in>
+          <in>colorout.h</in>
+          <in>colortransfer.c</in>
+          <in>colorzones.c</in>
+          <in>demosaic.c</in>
+          <in>demosaic_amaze_RT.cc</in>
+          <in>demosaic_igv_RT.cc</in>
+          <in>demosaic_stagger.cc</in>
+          <in>denoiseprofile.c</in>
+          <in>dither.c</in>
+          <in>equalizer.c</in>
+          <in>equalizer.h</in>
+          <in>equalizer_eaw.h</in>
+          <in>exposure.c</in>
+          <in>exposure.h</in>
+          <in>flip.c</in>
+          <in>gamma.c</in>
+          <in>gamma.h</in>
+          <in>globaltonemap.c</in>
+          <in>graduatednd.c</in>
+          <in>grain.c</in>
+          <in>grain.h</in>
+          <in>highlights.c</in>
+          <in>highpass.c</in>
+          <in>hotpixels.c</in>
+          <in>invert.c</in>
+          <in>lens.c</in>
+          <in>lens.h</in>
+          <in>levels.c</in>
+          <in>levels.h</in>
+          <in>lowlight.c</in>
+          <in>lowpass.c</in>
+          <in>monochrome.c</in>
+          <in>nlmeans.c</in>
+          <in>overexposed.c</in>
+          <in>profile_gamma.c</in>
+          <in>rawdenoise.c</in>
+          <in>relight.c</in>
+          <in>shadhi.c</in>
+          <in>sharpen.c</in>
+          <in>shrecovery.c</in>
+          <in>soften.c</in>
+          <in>splittoning.c</in>
+          <in>spots.c</in>
+          <in>temperature.c</in>
+          <in>tonecurve.c</in>
+          <in>tonecurve.h</in>
+          <in>tonemap.cc</in>
+          <in>useless.c</in>
+          <in>useless_simple.c</in>
+          <in>velvia.c</in>
+          <in>vibrance.c</in>
+          <in>vignette.c</in>
+          <in>watermark.c</in>
+          <in>wb_presets.c</in>
+          <in>zonesystem.c</in>
+        </df>
+        <df name="libs">
+          <df name="tools">
+            <in>colorlabels.c</in>
+            <in>darktable.c</in>
+            <in>filmstrip.c</in>
+            <in>filter.c</in>
+            <in>global_toolbox.c</in>
+            <in>hinter.c</in>
+            <in>lighttable.c</in>
+            <in>module_toolbox.c</in>
+            <in>ratings.c</in>
+            <in>view_toolbox.c</in>
+            <in>viewswitcher.c</in>
+          </df>
+          <in>backgroundjobs.c</in>
+          <in>camera.c</in>
+          <in>collect.c</in>
+          <in>collect.h</in>
+          <in>colorpicker.c</in>
+          <in>colorpicker.h</in>
+          <in>copy_history.c</in>
+          <in>export.c</in>
+          <in>file_manager.c</in>
+          <in>geotagging.c</in>
+          <in>histogram.c</in>
+          <in>history.c</in>
+          <in>image.c</in>
+          <in>import.c</in>
+          <in>lib.c</in>
+          <in>lib.h</in>
+          <in>live_view.c</in>
+          <in>location.c</in>
+          <in>map_settings.c</in>
+          <in>masks.c</in>
+          <in>metadata.c</in>
+          <in>metadata_view.c</in>
+          <in>modulegroups.c</in>
+          <in>modulegroups.h</in>
+          <in>modulelist.c</in>
+          <in>navigation.c</in>
+          <in>recentcollect.c</in>
+          <in>select.c</in>
+          <in>session.c</in>
+          <in>snapshots.c</in>
+          <in>styles.c</in>
+          <in>tagging.c</in>
+        </df>
+        <df name="lua">
+          <in>call.c</in>
+          <in>call.h</in>
+          <in>configuration.c</in>
+          <in>configuration.h</in>
+          <in>database.c</in>
+          <in>database.h</in>
+          <in>events.c</in>
+          <in>events.h</in>
+          <in>film.c</in>
+          <in>film.h</in>
+          <in>glist.c</in>
+          <in>glist.h</in>
+          <in>gui.c</in>
+          <in>gui.h</in>
+          <in>image.c</in>
+          <in>image.h</in>
+          <in>init.c</in>
+          <in>init.h</in>
+          <in>lua.c</in>
+          <in>lua.h</in>
+          <in>modules.c</in>
+          <in>modules.h</in>
+          <in>preferences.c</in>
+          <in>preferences.h</in>
+          <in>print.c</in>
+          <in>print.h</in>
+          <in>storage.c</in>
+          <in>storage.h</in>
+          <in>styles.c</in>
+          <in>styles.h</in>
+          <in>tags.c</in>
+          <in>tags.h</in>
+          <in>types.c</in>
+          <in>types.h</in>
+        </df>
+        <df name="tests">
+          <in>cache.c</in>
+        </df>
+        <df name="views">
+          <in>darkroom.c</in>
+          <in>lighttable.c</in>
+          <in>map.c</in>
+          <in>slideshow.c</in>
+          <in>tethering.c</in>
+          <in>undo.c</in>
+          <in>undo.h</in>
+          <in>view.c</in>
+          <in>view.h</in>
+        </df>
+        <df name="win">
+          <in>getrusage.c</in>
+          <in>getrusage.h</in>
+          <in>win.h</in>
+        </df>
+        <in>config.cmake.h</in>
+        <in>main.c</in>
+      </df>
+      <df name="tools">
+        <df name="basecurve">
+          <in>basecurve.c</in>
+        </df>
+        <df name="lua_doc">
+        </df>
+        <df name="noise">
+          <in>floatdump.c</in>
+          <in>noiseprofile.c</in>
+        </df>
+      </df>
+    </df>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" --configdir /home/gert/dt-install/config --cachedir  /home/gert/dt-install/config</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}" --configdir /home/gert/dt-install/config --cachedir  /home/gert/dt-install/config</runcommand>
+        <rundir>.</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>

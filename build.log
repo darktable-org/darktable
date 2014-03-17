@@ -1,0 +1,186 @@
+Darktable build script
+
+Building directory:  ./build
+Installation prefix: /home/gert/dt-install/
+Build type:          Release
+Make program:        make
+Make tasks:          8
+
+
+-- multiarch triplet detected: x86_64-linux-gnu
+-- Determining version
+-- Found Gettext 
+-- Found msgfmt to convert language file. Translation enabled
+-- Found xsltproc
+-- Found Glib 
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found suitable version "2.9.1", minimum required is "2.6") 
+-- checking for module 'libwebp'
+--   package 'libwebp' not found
+-- Could NOT find WEBP (missing:  WEBP_LIBRARY WEBP_INCLUDE_DIR) (Required is at least version "0.3.0")
+-- Found GIO 
+-- Found Cairo 
+-- Found GDK-PixBuf 
+-- Found LibXml2: /usr/lib/x86_64-linux-gnu/libxml2.so (found version "2.9.1") 
+-- checking for one of the modules 'lua5.2;lua-5.2;lua'
+-- Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)
+-- Internationalization: Enabled
+-- checking for module 'json-glib-1.0'
+--   package 'json-glib-1.0' not found
+-- checking for module 'libopenjpeg1'
+--   package 'libopenjpeg1' not found
+-- Could NOT find OpenJPEG (missing:  OPENJPEG_LIBRARY OPENJPEG_INCLUDE_DIR) 
+-- checking for module 'GraphicsMagick'
+--   package 'GraphicsMagick' not found
+-- Could NOT find SDL (missing:  SDL_LIBRARY SDL_INCLUDE_DIR) 
+-- Checking for -march=native support
+-- checking for one of the modules 'libsoup-2.4;libsoup2'
+-- checking for one of the modules 'libsoup-2.2;libsoup2'
+-- Map mode: disabled, please install libsoup2
+-- 
+Missing xml2po. No localized usermanuals are build
+Missing xml2po
+Can NOT update usermanual
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/gert/NetBeansProjects/darktable-git/darktable/build
+[  0%] [  0%] Built target locale_cs
+Built target locale_ca
+[  0%] [  0%] [  0%] Built target locale_el
+[  1%] Built target locale_fi
+Built target locale_de
+Built target locale_fr
+[  1%] [  3%] Built target locale_es
+Built target locale_da
+[  3%] Built target locale_gl
+[  3%] [  3%] [  3%] [  3%] Built target locale_it
+Built target locale_ja
+Built target locale_pt_BR
+[  5%] Built target locale_nl
+Built target locale_pl
+[  5%] Built target locale_pt_PT
+[  5%] Built target locale_ro
+[  5%] Built target locale_ru
+[  5%] [  5%] Built target locale_sq
+Built target locale_th
+Built target locale_uk
+[  7%] [  7%] Built target locale_sv
+Built target locale_zh_CN
+[ 10%] Built target libraw_r
+[ 12%] [ 12%] Built target metadata_dummy
+Built target darktable.desktop
+[ 16%] [ 18%] Built target squish
+Built target darktablerc
+[ 18%] [ 18%] Built target manpages
+Built target darktablerc.html
+[ 20%] [ 34%] Built target rawspeed
+[ 63%] Built target lib_darktable
+[ 63%] Built target darktable
+[ 63%] Built target darkroom
+[ 65%] Built target tethering
+Built target lighttable
+[ 65%] Built target backgroundjobs
+[ 65%] Built target slideshow
+[ 65%] Built target collect
+[ 65%] Built target camera
+[ 67%] Built target colorlabels
+[ 67%] [ 67%] Built target colorpicker
+Built target copy_history
+[ 67%] Built target export
+[ 67%] [ 67%] Built target darktable_label
+Built target filter
+[ 67%] Built target filmstrip
+[ 67%] Built target global_toolbox
+[ 67%] Built target hinter
+[ 67%] Built target histogram
+[ 67%] Built target history
+[ 69%] Built target image
+[ 69%] Built target import
+[ 69%] [ 69%] Built target lighttable_mode
+Built target live_view
+[ 69%] Built target masks
+[ 69%] Built target metadata
+[ 69%] [ 69%] [ 69%] Built target module_toolbox
+Built target modulegroups
+[ 69%] [ 69%] [ 69%] Built target ratings
+Built target recentcollect
+[ 69%] Built target navigation
+[ 69%] Built target select
+[ 69%] [ 70%] Built target snapshots
+Built target session
+[ 70%] Built target styles
+[ 70%] Built target tagging
+[ 70%] Built target viewswitcher
+Built target view_toolbox
+[ 70%] Built target basecurve
+[ 70%] Built target atrous
+[ 70%] Built target bilat
+[ 70%] Built target bilateral
+[ 70%] Built target borders
+[ 72%] Built target bloom
+[ 72%] Built target cacorrect
+[ 72%] [ 72%] Built target clipping
+Built target channelmixer
+[ 74%] Built target clahe
+[ 74%] Built target colisa
+[ 74%] Built target colorbalance
+[ 74%] Built target colorcontrast
+[ 74%] Built target colorin
+[ 76%] [ 76%] Built target colorcorrection
+Built target colormapping
+[ 76%] [ 76%] Built target colorout
+Built target colorize
+[ 76%] Built target colortransfer
+[ 78%] Built target colorzones
+[ 78%] Built target denoiseprofile
+[ 78%] Built target demosaic
+[ 80%] Built target dither
+[ 80%] [ 80%] Built target equalizer
+Built target exposure
+[ 80%] [ 81%] Built target flip
+Built target gamma
+[ 81%] Built target globaltonemap
+[ 81%] Built target graduatednd
+[ 81%] Built target grain
+[ 83%] Built target highlights
+[ 83%] Built target highpass
+Built target hotpixels
+[ 83%] Built target invert
+[ 85%] Built target lens
+[ 85%] Built target levels
+[ 85%] Built target lowlight
+[ 89%] Built target lowpass
+[ 89%] Built target monochrome
+[ 89%] [ 89%] Built target overexposed
+Built target nlmeans
+[ 89%] [ 89%] Built target profile_gamma
+Built target rawdenoise
+[ 89%] Built target shadhi
+[ 89%] Built target relight
+[ 89%] Built target sharpen
+[ 90%] Built target soften
+[ 90%] Built target spots
+Built target splittoning
+[ 90%] Built target tonecurve
+[ 90%] [ 92%] Built target tonemap
+Built target vibrance
+[ 92%] Built target velvia
+Built target temperature
+Built target vignette
+[ 94%] Built target zonesystem
+[ 94%] [ 94%] Built target copy
+Built target watermark
+[ 94%] [ 96%] Built target jpeg
+[ 98%] Built target exr
+Built target pfm
+Built target png
+[ 98%] Built target ppm
+[ 98%] Built target tiff
+[ 98%] Built target disk
+[ 98%] Built target email
+[ 98%] Built target flickr
+[ 98%] Built target darktable-cli
+[ 98%] Built target gallery
+[ 98%] [100%] Built target latex
+Built target darktable-cltest
+Darktable finished building, to actually install darktable you need to type:
+# cd "./build"; sudo make install
