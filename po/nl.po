@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-05 21:58+0100\n"
-"PO-Revision-Date: 2014-03-05 22:06+0100\n"
+"POT-Creation-Date: 2014-03-17 18:47+0100\n"
+"PO-Revision-Date: 2014-03-17 18:50+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -15,7 +15,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1246
 msgid "GUI options"
-msgstr "gui opties"
+msgstr "GUI opties"
 
 #: ../build/src/preferences_gen.h:1249
 msgid "width of the side panels in pixels"
@@ -801,7 +801,7 @@ msgstr ""
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:632
 #: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1694
-#: ../src/develop/develop.c:1146 ../src/libs/live_view.c:405
+#: ../src/develop/develop.c:1146 ../src/libs/live_view.c:413
 msgid "on"
 msgstr "aan"
 
@@ -811,7 +811,7 @@ msgstr "aan"
 #: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1146
 #: ../src/imageio/format/j2k.c:640 ../src/iop/colorin.c:1152
 #: ../src/iop/demosaic.c:1314 ../src/iop/vignette.c:1117
-#: ../src/libs/history.c:155 ../src/libs/live_view.c:404
+#: ../src/libs/history.c:155 ../src/libs/live_view.c:412
 msgid "off"
 msgstr "uit"
 
@@ -934,11 +934,11 @@ msgstr "stijl bestand '%s' bestaat al"
 msgid "style %s was successfully imported"
 msgstr "stijl '%s' is geïmporteerd"
 
-#: ../src/common/variables.c:220 ../src/iop/clipping.c:1461
-#: ../src/iop/clipping.c:1703 ../src/iop/clipping.c:1721
-#: ../src/iop/clipping.c:1764 ../src/iop/clipping.c:1783
-#: ../src/iop/lens.c:1877 ../src/libs/export.c:642 ../src/libs/live_view.c:323
-#: ../src/libs/live_view.c:335 ../src/libs/live_view.c:353
+#: ../src/common/variables.c:220 ../src/iop/clipping.c:1474
+#: ../src/iop/clipping.c:1707 ../src/iop/clipping.c:1725
+#: ../src/iop/clipping.c:1768 ../src/iop/clipping.c:1787
+#: ../src/iop/lens.c:1877 ../src/libs/export.c:642 ../src/libs/live_view.c:331
+#: ../src/libs/live_view.c:343 ../src/libs/live_view.c:361
 #, c-format
 msgid "none"
 msgstr "geen"
@@ -1410,7 +1410,7 @@ msgid "add brush"
 msgstr "penseel toevoegen"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:376
+#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:384
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normaal"
@@ -1420,17 +1420,17 @@ msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "normaal begrensd"
 
-#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:385
+#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:393
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "ophelderen"
 
-#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:384
+#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:392
 msgctxt "blendmode"
 msgid "darken"
 msgstr "verdonkeren"
 
-#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:381
+#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:389
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "vermenigvuldigen"
@@ -1450,17 +1450,17 @@ msgctxt "blendmode"
 msgid "subtract"
 msgstr "aftrekken"
 
-#: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:390
+#: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:398
 msgctxt "blendmode"
 msgid "difference"
 msgstr "verschil"
 
-#: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:382
+#: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "screen"
 msgstr "scherm"
 
-#: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:383
+#: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:391
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "bedekken"
@@ -1661,48 +1661,39 @@ msgstr "toewijzen buffer t.g.v. mengen mislukt"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' versie komt niet overeen: %d != %d"
 
-#: ../src/develop/imageop.c:213 ../src/develop/imageop.c:221
-msgid "error creating GUI, see stderr"
-msgstr "foutmelding bij aanmaak GUI, zie stderr"
-
-#. should never happen
-#: ../src/develop/imageop.c:296
-msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
-msgstr "foutmelding bij aanmaak GUI, DT_SIMPLE_GUI_NONE niet gevonden"
-
-#: ../src/develop/imageop.c:1120
+#: ../src/develop/imageop.c:770
 msgid "new instance"
 msgstr "nieuw exemplaar"
 
-#: ../src/develop/imageop.c:1125
+#: ../src/develop/imageop.c:775
 msgid "duplicate instance"
 msgstr "dupliceer exemplaar"
 
-#: ../src/develop/imageop.c:1130 ../src/libs/masks.c:1063
+#: ../src/develop/imageop.c:780 ../src/libs/masks.c:1063
 msgid "move up"
 msgstr "eerder"
 
-#: ../src/develop/imageop.c:1136 ../src/libs/masks.c:1066
+#: ../src/develop/imageop.c:786 ../src/libs/masks.c:1066
 msgid "move down"
 msgstr "later"
 
 #. delete
-#: ../src/develop/imageop.c:1142 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:792 ../src/libs/image.c:146
 #: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
+#: ../src/develop/imageop.c:814 ../src/develop/imageop.c:1707
 #, c-format
 msgid "%s is switched on"
 msgstr "%s is ingeschakeld"
 
-#: ../src/develop/imageop.c:1164 ../src/develop/imageop.c:2055
+#: ../src/develop/imageop.c:814 ../src/develop/imageop.c:1707
 #, c-format
 msgid "%s is switched off"
 msgstr "%s is uitgeschakeld"
 
-#: ../src/develop/imageop.c:1434 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1086 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:284 ../src/gui/presets.c:625
@@ -1711,41 +1702,41 @@ msgstr "%s is uitgeschakeld"
 msgid "preset"
 msgstr "voorkeur"
 
-#: ../src/develop/imageop.c:1477
+#: ../src/develop/imageop.c:1129
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusie"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1482
+#: ../src/develop/imageop.c:1134
 msgctxt "accel"
 msgid "show module"
 msgstr "toon module"
 
-#: ../src/develop/imageop.c:1483
+#: ../src/develop/imageop.c:1135
 msgctxt "accel"
 msgid "enable module"
 msgstr "inschakelen module"
 
-#: ../src/develop/imageop.c:1486 ../src/libs/lib.c:545
+#: ../src/develop/imageop.c:1138 ../src/libs/lib.c:545
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "reset module"
 
-#: ../src/develop/imageop.c:1488 ../src/libs/lib.c:550
+#: ../src/develop/imageop.c:1140 ../src/libs/lib.c:550
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "toon vooraf ingesteld menu"
 
-#: ../src/develop/imageop.c:2025
+#: ../src/develop/imageop.c:1677
 msgid "multiple instances actions"
 msgstr "meerdere exemplaren"
 
-#: ../src/develop/imageop.c:2034 ../src/libs/lib.c:842
+#: ../src/develop/imageop.c:1686 ../src/libs/lib.c:842
 msgid "reset parameters"
 msgstr "reset"
 
-#: ../src/develop/imageop.c:2043 ../src/gui/preferences.c:405
+#: ../src/develop/imageop.c:1695 ../src/gui/preferences.c:405
 #: ../src/libs/lib.c:855
 msgid "presets"
 msgstr "voorkeuren"
@@ -1790,7 +1781,7 @@ msgstr[1] "%s zijn geïmporteerd"
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "tiling voor module '% s' mislukt, de uitvoer is nu mogelijk verminkt"
 
-#: ../src/develop/pixelpipe_hb.c:2221
+#: ../src/develop/pixelpipe_hb.c:2240
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2190,7 +2181,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:467 ../src/gui/preferences.c:1384
-#: ../src/gui/presets.c:451 ../src/iop/exposure.c:80 ../src/iop/exposure.c:665
+#: ../src/gui/presets.c:451 ../src/iop/exposure.c:81 ../src/iop/exposure.c:666
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "belichting"
@@ -2210,7 +2201,7 @@ msgid "focal length"
 msgstr "brandpuntsafstand (mm)"
 
 #: ../src/gui/preferences.c:488 ../src/iop/borders.c:1077
-#: ../src/iop/exposure.c:669 ../src/iop/levels.c:345
+#: ../src/iop/exposure.c:670 ../src/iop/levels.c:345
 #: ../src/iop/tonecurve.c:756
 msgid "auto"
 msgstr "auto"
@@ -3115,7 +3106,7 @@ msgstr "abscis: invoer, coördineer: uitvoer beïnvloedt de RGB kanalen"
 msgid "scale"
 msgstr "schaal"
 
-#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:125
+#: ../src/iop/basecurve.c:773 ../src/iop/profile_gamma.c:337
 #: ../src/iop/tonecurve.c:399
 msgid "linear"
 msgstr "lineair"
@@ -3279,7 +3270,7 @@ msgid "select frame line color"
 msgstr "kies frame kleur"
 
 #. add import single image buttons
-#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1741
+#: ../src/iop/borders.c:994 ../src/iop/clipping.c:1745
 #: ../src/libs/import.c:814
 msgid "image"
 msgstr "afbeelding"
@@ -3296,15 +3287,15 @@ msgstr "95:33"
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1750
+#: ../src/iop/borders.c:998 ../src/iop/clipping.c:1754
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1742
+#: ../src/iop/borders.c:999 ../src/iop/clipping.c:1746
 msgid "golden cut"
 msgstr "gulden snede"
 
-#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1744
+#: ../src/iop/borders.c:1000 ../src/iop/clipping.c:1748
 msgid "3:2"
 msgstr "3:2"
 
@@ -3312,15 +3303,15 @@ msgstr "3:2"
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1749
+#: ../src/iop/borders.c:1002 ../src/iop/clipping.c:1753
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1746
+#: ../src/iop/borders.c:1003 ../src/iop/clipping.c:1750
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1748
+#: ../src/iop/borders.c:1004 ../src/iop/clipping.c:1752
 msgid "square"
 msgstr "vierkant"
 
@@ -3358,7 +3349,7 @@ msgstr ""
 "de afmeting van de rand\n"
 "als percentage van de volledige afbeelding"
 
-#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1739
+#: ../src/iop/borders.c:1069 ../src/iop/clipping.c:1743
 msgid "aspect"
 msgstr "verhouding"
 
@@ -3550,194 +3541,194 @@ msgstr "te bewaren resultaat"
 msgid "strength of the effect"
 msgstr "sterkte van het effect"
 
-#: ../src/iop/clipping.c:285
+#: ../src/iop/clipping.c:298
 msgid "crop and rotate"
 msgstr "uitsnijden en rechttrekken"
 
-#: ../src/iop/clipping.c:1362
+#: ../src/iop/clipping.c:1375
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "ongeldige verhouding, dit moet zijn \"nummer:nummer\""
 
-#: ../src/iop/clipping.c:1462 ../src/iop/clipping.c:1705
-#: ../src/iop/clipping.c:1722
+#: ../src/iop/clipping.c:1475 ../src/iop/clipping.c:1709
+#: ../src/iop/clipping.c:1726
 msgid "vertical"
 msgstr "verticaal"
 
-#: ../src/iop/clipping.c:1463 ../src/iop/clipping.c:1704
-#: ../src/iop/clipping.c:1723
+#: ../src/iop/clipping.c:1476 ../src/iop/clipping.c:1708
+#: ../src/iop/clipping.c:1727
 msgid "horizontal"
 msgstr "horizontaal "
 
-#: ../src/iop/clipping.c:1464 ../src/iop/clipping.c:1724
+#: ../src/iop/clipping.c:1477 ../src/iop/clipping.c:1728
 msgid "full"
 msgstr "geheel"
 
-#: ../src/iop/clipping.c:1465
+#: ../src/iop/clipping.c:1478
 msgid "old system"
 msgstr "oud systeem"
 
-#: ../src/iop/clipping.c:1466
+#: ../src/iop/clipping.c:1479
 msgid "correction applied"
 msgstr "is gecorrigeerd"
 
-#: ../src/iop/clipping.c:1702 ../src/iop/clipping.c:1782
-#: ../src/libs/live_view.c:334
+#: ../src/iop/clipping.c:1706 ../src/iop/clipping.c:1786
+#: ../src/libs/live_view.c:342
 msgid "flip"
 msgstr "spiegelen"
 
-#: ../src/iop/clipping.c:1706 ../src/iop/clipping.c:1786
-#: ../src/libs/live_view.c:338
+#: ../src/iop/clipping.c:1710 ../src/iop/clipping.c:1790
+#: ../src/libs/live_view.c:346
 msgid "both"
 msgstr "beide"
 
-#: ../src/iop/clipping.c:1708
+#: ../src/iop/clipping.c:1712
 msgid "mirror image horizontally and/or vertically"
 msgstr "spiegel afbeelding horizontaal en/of verticaal"
 
-#: ../src/iop/clipping.c:1713
+#: ../src/iop/clipping.c:1717
 msgid "angle"
 msgstr "hoek"
 
-#: ../src/iop/clipping.c:1716
+#: ../src/iop/clipping.c:1720
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
 "NB: ook kan men een afbeelding recht zetten door\n"
 "de rechter muistoets te activeren\n"
 "en gelijktijdig een lijn over de afbeelding te trekken"
 
-#: ../src/iop/clipping.c:1720
+#: ../src/iop/clipping.c:1724
 msgid "keystone"
 msgstr "keystone"
 
-#: ../src/iop/clipping.c:1725
+#: ../src/iop/clipping.c:1729
 msgid "set perspective correction for your image"
 msgstr "corrigeer het perspectief van de afbeelding"
 
-#: ../src/iop/clipping.c:1730
+#: ../src/iop/clipping.c:1734
 msgid "automatic cropping"
 msgstr "automatisch groeperen"
 
-#: ../src/iop/clipping.c:1731 ../src/libs/metadata_view.c:234
+#: ../src/iop/clipping.c:1735 ../src/libs/metadata_view.c:234
 msgid "no"
 msgstr "nee"
 
-#: ../src/iop/clipping.c:1732 ../src/libs/metadata_view.c:234
+#: ../src/iop/clipping.c:1736 ../src/libs/metadata_view.c:234
 msgid "yes"
 msgstr "ja"
 
-#: ../src/iop/clipping.c:1733
+#: ../src/iop/clipping.c:1737
 msgid "automatically crop to avoid black edges"
 msgstr "automatisch uitsnijden om zwarte randen te voorkomen"
 
-#: ../src/iop/clipping.c:1740
+#: ../src/iop/clipping.c:1744
 msgid "free"
 msgstr "vrij"
 
-#: ../src/iop/clipping.c:1743
+#: ../src/iop/clipping.c:1747
 msgid "1:2"
 msgstr "1:2"
 
-#: ../src/iop/clipping.c:1745
+#: ../src/iop/clipping.c:1749
 msgid "7:5"
 msgstr "7:5"
 
-#: ../src/iop/clipping.c:1747
+#: ../src/iop/clipping.c:1751
 msgid "5:4"
 msgstr "5:4"
 
-#: ../src/iop/clipping.c:1751
+#: ../src/iop/clipping.c:1755
 msgid "16:10"
 msgstr "16:10"
 
-#: ../src/iop/clipping.c:1752
+#: ../src/iop/clipping.c:1756
 msgid "10:8 in print"
 msgstr "10:8 op papier"
 
-#: ../src/iop/clipping.c:1757
+#: ../src/iop/clipping.c:1761
 msgid "set the aspect ratio (w:h)"
 msgstr "bepaal de verhoudingen (w:h)"
 
-#: ../src/iop/clipping.c:1763 ../src/libs/live_view.c:322
+#: ../src/iop/clipping.c:1767 ../src/libs/live_view.c:330
 msgid "guides"
 msgstr "hulplijnen"
 
-#: ../src/iop/clipping.c:1765 ../src/libs/live_view.c:324
+#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:332
 msgid "grid"
 msgstr "raster"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1766 ../src/libs/live_view.c:325
+#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:333
 msgid "rules of thirds"
 msgstr "regel van derden"
 
-#: ../src/iop/clipping.c:1767
+#: ../src/iop/clipping.c:1771
 msgid "metering"
 msgstr "meting"
 
-#: ../src/iop/clipping.c:1768
+#: ../src/iop/clipping.c:1772
 msgid "perspective"
 msgstr "perspectief"
 
 #. TODO: make the number of lines configurable with a slider?
-#: ../src/iop/clipping.c:1769 ../src/libs/live_view.c:326
+#: ../src/iop/clipping.c:1773 ../src/libs/live_view.c:334
 msgid "diagonal method"
 msgstr "diagonaal methode"
 
-#: ../src/iop/clipping.c:1770 ../src/libs/live_view.c:327
+#: ../src/iop/clipping.c:1774 ../src/libs/live_view.c:335
 msgid "harmonious triangles"
 msgstr "harmonieuze driehoeken"
 
-#: ../src/iop/clipping.c:1771 ../src/libs/live_view.c:328
+#: ../src/iop/clipping.c:1775 ../src/libs/live_view.c:336
 msgid "golden mean"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:1777 ../src/libs/live_view.c:329
+#: ../src/iop/clipping.c:1781 ../src/libs/live_view.c:337
 msgid "display guide lines to help compose your photograph"
 msgstr "schakel hulplijnen in om de compositie te verbeteren. "
 
-#: ../src/iop/clipping.c:1784 ../src/libs/live_view.c:336
+#: ../src/iop/clipping.c:1788 ../src/libs/live_view.c:344
 msgid "horizontally"
 msgstr "horizontaal"
 
-#: ../src/iop/clipping.c:1785 ../src/libs/live_view.c:337
+#: ../src/iop/clipping.c:1789 ../src/libs/live_view.c:345
 msgid "vertically"
 msgstr "verticaal"
 
-#: ../src/iop/clipping.c:1787 ../src/libs/live_view.c:339
+#: ../src/iop/clipping.c:1791 ../src/libs/live_view.c:347
 msgid "flip guides"
 msgstr "verwissel hulplijnen"
 
-#: ../src/iop/clipping.c:1792 ../src/libs/live_view.c:343
+#: ../src/iop/clipping.c:1796 ../src/libs/live_view.c:351
 msgid "extra"
 msgstr "meer"
 
-#: ../src/iop/clipping.c:1793 ../src/libs/live_view.c:344
+#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:352
 msgid "golden sections"
 msgstr "gulden snede"
 
-#: ../src/iop/clipping.c:1794 ../src/libs/live_view.c:345
+#: ../src/iop/clipping.c:1798 ../src/libs/live_view.c:353
 msgid "golden spiral sections"
 msgstr "gulden snede secties"
 
-#: ../src/iop/clipping.c:1795 ../src/libs/live_view.c:346
+#: ../src/iop/clipping.c:1799 ../src/libs/live_view.c:354
 msgid "golden spiral"
 msgstr "gulden spiraal"
 
-#: ../src/iop/clipping.c:1796 ../src/iop/lens.c:1883
-#: ../src/libs/live_view.c:347 ../src/libs/tools/filter.c:122
+#: ../src/iop/clipping.c:1800 ../src/iop/lens.c:1883
+#: ../src/libs/live_view.c:355 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "alles"
 
-#: ../src/iop/clipping.c:1797 ../src/libs/live_view.c:348
+#: ../src/iop/clipping.c:1801 ../src/libs/live_view.c:356
 msgid "show some extra guides"
 msgstr "toon meer hulplijnen"
 
-#: ../src/iop/clipping.c:2822
+#: ../src/iop/clipping.c:2826
 msgctxt "accel"
 msgid "commit"
 msgstr "goedkeuren"
 
-#: ../src/iop/clipping.c:2824
+#: ../src/iop/clipping.c:2828
 msgctxt "accel"
 msgid "angle"
 msgstr "hoek"
@@ -3814,7 +3805,7 @@ msgstr "lift factor blauw"
 #. gamma
 #: ../src/iop/colorbalance.c:664 ../src/iop/colorbalance.c:670
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:688
-#: ../src/iop/colorbalance.c:697 ../src/iop/profile_gamma.c:139
+#: ../src/iop/colorbalance.c:697 ../src/iop/profile_gamma.c:338
 msgid "gamma"
 msgstr "gamma"
 
@@ -4509,69 +4500,69 @@ msgstr ""
 "and is only here so you can switch it off\n"
 "and move to the new equalizer."
 
-#: ../src/iop/exposure.c:97
+#: ../src/iop/exposure.c:98
 msgctxt "accel"
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:98 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:99 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "belichting"
 
-#: ../src/iop/exposure.c:99
+#: ../src/iop/exposure.c:100
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "automatische belichting"
 
-#: ../src/iop/exposure.c:100
+#: ../src/iop/exposure.c:101
 msgctxt "accel"
 msgid "deflicker"
 msgstr "deflicker"
 
-#: ../src/iop/exposure.c:101
+#: ../src/iop/exposure.c:102
 msgctxt "accel"
 msgid "deflicker-percentile"
 msgstr "deflicker-percentiel"
 
-#: ../src/iop/exposure.c:102
+#: ../src/iop/exposure.c:103
 msgctxt "accel"
 msgid "deflicker-level"
 msgstr "deflicker-niveau"
 
-#: ../src/iop/exposure.c:151
+#: ../src/iop/exposure.c:152
 msgid "Magic Lantern Defaults"
 msgstr "Magic Lantern standaard"
 
-#: ../src/iop/exposure.c:155
+#: ../src/iop/exposure.c:156
 msgid "Almost no clipping"
 msgstr "bijna geen clipping"
 
-#: ../src/iop/exposure.c:657
+#: ../src/iop/exposure.c:658
 msgid "adjust the black level"
 msgstr "aanpassen zwartpunt"
 
-#: ../src/iop/exposure.c:659
+#: ../src/iop/exposure.c:660
 msgid "black"
 msgstr "zwartpunt"
 
-#: ../src/iop/exposure.c:663
+#: ../src/iop/exposure.c:664
 msgid "adjust the exposure correction"
 msgstr "aanpassen belichtingscorrectie (EV)"
 
-#: ../src/iop/exposure.c:672
+#: ../src/iop/exposure.c:673
 msgid "percentage of bright values clipped out"
 msgstr "percentage uitgeclipte hooglichten  "
 
-#: ../src/iop/exposure.c:680
+#: ../src/iop/exposure.c:681
 msgid "deflicker"
 msgstr "deflicker"
 
-#: ../src/iop/exposure.c:684 ../src/iop/exposure.c:686
+#: ../src/iop/exposure.c:685 ../src/iop/exposure.c:687
 msgid "percentile"
 msgstr "percentiel"
 
-#: ../src/iop/exposure.c:690 ../src/iop/exposure.c:692
+#: ../src/iop/exposure.c:691 ../src/iop/exposure.c:693
 msgid "target level"
 msgstr "doel niveau"
 
@@ -4607,12 +4598,12 @@ msgstr "draai 90 graden tegen de klok richting in"
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
 
-#: ../src/iop/flip.c:454 ../src/libs/live_view.c:161
+#: ../src/iop/flip.c:454 ../src/libs/live_view.c:169
 msgctxt "accel"
 msgid "rotate 90 degrees CCW"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/iop/flip.c:456 ../src/libs/live_view.c:162
+#: ../src/iop/flip.c:456 ../src/libs/live_view.c:170
 msgctxt "accel"
 msgid "rotate 90 degrees CW"
 msgstr "draai 90 graden met de klok richting mee"
@@ -5333,15 +5324,25 @@ msgstr "de mate van afvlakking voor kleuren"
 msgid "overexposed"
 msgstr "overbelichting"
 
-#: ../src/iop/profile_gamma.c:36
+#: ../src/iop/profile_gamma.c:65
 msgid "unbreak input profile"
 msgstr "verbreek ingaand profiel"
 
-#: ../src/iop/profile_gamma.c:126
+#: ../src/iop/profile_gamma.c:81
+msgctxt "accel"
+msgid "linear"
+msgstr "lineair"
+
+#: ../src/iop/profile_gamma.c:82
+msgctxt "accel"
+msgid "gamma"
+msgstr "gamma"
+
+#: ../src/iop/profile_gamma.c:343
 msgid "linear part"
 msgstr "lineair deel"
 
-#: ../src/iop/profile_gamma.c:140
+#: ../src/iop/profile_gamma.c:344
 msgid "gamma exponential factor"
 msgstr "gamma exponentiële factor"
 
@@ -7077,173 +7078,173 @@ msgstr "importeer nieuwe map(pen)"
 msgid "edit `%s'"
 msgstr "bewerk `%s'"
 
-#: ../src/libs/live_view.c:133
+#: ../src/libs/live_view.c:141
 msgid "live view"
 msgstr "live view "
 
-#: ../src/libs/live_view.c:160
+#: ../src/libs/live_view.c:168
 msgctxt "accel"
 msgid "toggle live view"
 msgstr "live view aan/uit"
 
-#: ../src/libs/live_view.c:163
+#: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "flip horizontally"
 msgstr "horizontaal spiegelen"
 
-#: ../src/libs/live_view.c:164
+#: ../src/libs/live_view.c:172
 msgctxt "accel"
 msgid "move focus point in (big steps)"
 msgstr "verplaats focus punt naar binnen (snel)"
 
-#: ../src/libs/live_view.c:165
+#: ../src/libs/live_view.c:173
 msgctxt "accel"
 msgid "move focus point in (small steps)"
 msgstr "verplaats focus punt naar binnen (langzaam)"
 
-#: ../src/libs/live_view.c:166
+#: ../src/libs/live_view.c:174
 msgctxt "accel"
 msgid "move focus point out (small steps)"
 msgstr "verplaats focus punt naar buiten (langzaam)"
 
-#: ../src/libs/live_view.c:167
+#: ../src/libs/live_view.c:175
 msgctxt "accel"
 msgid "move focus point out (big steps)"
 msgstr "verplaats focus punt naar buiten (snel)"
 
-#: ../src/libs/live_view.c:284
+#: ../src/libs/live_view.c:292
 msgid "toggle live view"
 msgstr "live view aan/uit"
 
-#: ../src/libs/live_view.c:285
+#: ../src/libs/live_view.c:293
 msgid "zoom live view"
 msgstr "zoom live view"
 
-#: ../src/libs/live_view.c:286
+#: ../src/libs/live_view.c:294
 msgid "rotate 90 degrees ccw"
 msgstr "draai 90 graden tegen de klok richting in"
 
-#: ../src/libs/live_view.c:287
+#: ../src/libs/live_view.c:295
 msgid "rotate 90 degrees cw"
 msgstr "draai 90 graden met de klok richting mee"
 
-#: ../src/libs/live_view.c:288
+#: ../src/libs/live_view.c:296
 msgid "flip live view horizontally"
 msgstr "live view horizontaal spiegelen"
 
-#: ../src/libs/live_view.c:309
+#: ../src/libs/live_view.c:317
 msgid "move focus point in (big steps)"
 msgstr "verplaats focus punt naar binnen (snel)"
 
-#: ../src/libs/live_view.c:310
+#: ../src/libs/live_view.c:318
 msgid "move focus point in (small steps)"
 msgstr "verplaats focus punt naar binnen (langzaam)"
 
-#: ../src/libs/live_view.c:311
+#: ../src/libs/live_view.c:319
 msgid "move focus point out (small steps)"
 msgstr "verplaats focus punt naar buiten (langzaam)"
 
-#: ../src/libs/live_view.c:312
+#: ../src/libs/live_view.c:320
 msgid "move focus point out (big steps)"
 msgstr "verplaats focus punt naar buiten (snel)"
 
-#: ../src/libs/live_view.c:352
+#: ../src/libs/live_view.c:360
 msgid "overlay"
 msgstr "bedekken"
 
-#: ../src/libs/live_view.c:354
+#: ../src/libs/live_view.c:362
 msgid "selected image"
 msgstr "geselecteerde afbeelding"
 
-#: ../src/libs/live_view.c:355 ../src/libs/tools/filter.c:150
+#: ../src/libs/live_view.c:363 ../src/libs/tools/filter.c:150
 msgid "id"
 msgstr "id"
 
-#: ../src/libs/live_view.c:356
+#: ../src/libs/live_view.c:364
 msgid "overlay another image over the live view"
 msgstr "bedek de live view met een andere afbeelding"
 
-#: ../src/libs/live_view.c:361 ../src/libs/metadata_view.c:82
+#: ../src/libs/live_view.c:369 ../src/libs/metadata_view.c:82
 msgid "image id"
 msgstr "afbeeldings id"
 
-#: ../src/libs/live_view.c:365
+#: ../src/libs/live_view.c:373
 msgid "enter image id of the overlay manually"
 msgstr "bepaal afbeeldingskenmerk voor bedekken handmatig"
 
-#: ../src/libs/live_view.c:375
+#: ../src/libs/live_view.c:383
 msgid "overlay mode"
 msgstr "bedekken modus"
 
-#: ../src/libs/live_view.c:377
+#: ../src/libs/live_view.c:385
 msgctxt "blendmode"
 msgid "xor"
 msgstr "xor"
 
-#: ../src/libs/live_view.c:378
+#: ../src/libs/live_view.c:386
 msgctxt "blendmode"
 msgid "add"
 msgstr "optellen"
 
-#: ../src/libs/live_view.c:379
+#: ../src/libs/live_view.c:387
 msgctxt "blendmode"
 msgid "saturate"
 msgstr "verzadigen"
 
-#: ../src/libs/live_view.c:386
+#: ../src/libs/live_view.c:394
 msgctxt "blendmode"
 msgid "color dodge"
 msgstr "kleur tegenhouden"
 
-#: ../src/libs/live_view.c:387
+#: ../src/libs/live_view.c:395
 msgctxt "blendmode"
 msgid "color burn"
 msgstr "kleur doordrukken"
 
-#: ../src/libs/live_view.c:388
+#: ../src/libs/live_view.c:396
 msgctxt "blendmode"
 msgid "hard light"
 msgstr "hard licht"
 
-#: ../src/libs/live_view.c:389
+#: ../src/libs/live_view.c:397
 msgctxt "blendmode"
 msgid "soft light"
 msgstr "zacht light"
 
-#: ../src/libs/live_view.c:391
+#: ../src/libs/live_view.c:399
 msgctxt "blendmode"
 msgid "exclusion"
 msgstr "uitsluiten"
 
-#: ../src/libs/live_view.c:392
+#: ../src/libs/live_view.c:400
 msgctxt "blendmode"
 msgid "HSL hue"
 msgstr "HSL tint"
 
-#: ../src/libs/live_view.c:393
+#: ../src/libs/live_view.c:401
 msgctxt "blendmode"
 msgid "HSL saturation"
 msgstr "HSL verzadiging"
 
-#: ../src/libs/live_view.c:394
+#: ../src/libs/live_view.c:402
 msgctxt "blendmode"
 msgid "HSL color"
 msgstr "HSL kleur"
 
-#: ../src/libs/live_view.c:395
+#: ../src/libs/live_view.c:403
 msgctxt "blendmode"
 msgid "HSL luminosity"
 msgstr "HSL helderheid"
 
-#: ../src/libs/live_view.c:397
+#: ../src/libs/live_view.c:405
 msgid "mode of the overlay"
 msgstr "modus van bedekken"
 
-#: ../src/libs/live_view.c:403
+#: ../src/libs/live_view.c:411
 msgid "split line"
 msgstr "splitsing"
 
-#: ../src/libs/live_view.c:406
+#: ../src/libs/live_view.c:414
 msgid "only draw part of the overlay"
 msgstr "teken alleen op het deel van 'bedekken'"
 
@@ -8493,6 +8494,12 @@ msgstr "foto"
 msgid "graphic"
 msgstr "grafisch"
 
+#~ msgid "error creating GUI, see stderr"
+#~ msgstr "foutmelding bij aanmaak GUI, zie stderr"
+
+#~ msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
+#~ msgstr "foutmelding bij aanmaak GUI, DT_SIMPLE_GUI_NONE niet gevonden"
+
 #~ msgctxt "accel"
 #~ msgid "expose statuses"
 #~ msgstr "belichtings statussen"
@@ -9515,14 +9522,6 @@ msgstr "grafisch"
 
 #~ msgid "editable"
 #~ msgstr "bewerkbaar"
-
-#~ msgctxt "accel"
-#~ msgid "linear"
-#~ msgstr "lineair"
-
-#~ msgctxt "accel"
-#~ msgid "gamma"
-#~ msgstr "gamma"
 
 #~ msgctxt "gammaslider"
 #~ msgid "linear"
