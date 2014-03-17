@@ -136,23 +136,23 @@ int dt_image_is_raw(const dt_image_t *img);
 /** returns non-zero if the image contains float data. */
 int dt_image_is_hdr(const dt_image_t *img);
 /** returns the full path name where the image was imported from. from_cache=TRUE check and return local cached filename if any. */
-void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache);
+void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache);
 /** returns the full directory of the associated film roll. */
-void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len);
+void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, size_t pathname_len);
 /** returns the portion of the path used for the film roll name. */
 const char *dt_image_film_roll_name(const char *path);
 /** returns the film roll name, i.e. without the path. */
-void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len);
+void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_len);
 /** appends version numbering for duplicated images without querying the db. */
-void dt_image_path_append_version_no_db(const int version, char *pathname, const int len);
+void dt_image_path_append_version_no_db(int version, char *pathname, size_t pathname_len);
 /** appends version numbering for duplicated images. */
-void dt_image_path_append_version(int imgid, char *pathname, const int len);
+void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len);
 /** prints a one-line exif information string. */
-void dt_image_print_exif(const dt_image_t *img, char *line, int len);
+void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len);
 /** look for duplicate's xmp files and read them. */
-void dt_image_read_duplicates(const uint32_t id, const char *filename);
+void dt_image_read_duplicates(uint32_t id, const char *filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. */
-uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */
 void dt_image_remove(const int32_t imgid);
 /** duplicates the given image in the database with the duplicate getting the supplied version number. if that version
