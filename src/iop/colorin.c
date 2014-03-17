@@ -554,21 +554,21 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!strcmp(p->iccprofile, "darktable"))
   {
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "eprofile");
   }
   if(!strcmp(p->iccprofile, "vendor"))
   {
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "eprofile");
   }
   if(!strcmp(p->iccprofile, "alternate"))
   {
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
     if(!d->input) sprintf(p->iccprofile, "eprofile");
   }
@@ -590,7 +590,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     // color matrix
     char makermodel[1024];
-    dt_colorspaces_get_makermodel(makermodel, 1024, pipe->image.exif_maker, pipe->image.exif_model);
+    dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     float cam_xyz[12];
     cam_xyz[0] = NAN;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
@@ -911,7 +911,7 @@ static void update_profile_list(dt_iop_module_t *self)
   }
   // get color matrix from raw image:
   char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, 1024, self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
+  dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), self->dev->image_storage.exif_maker, self->dev->image_storage.exif_model);
   float cam_xyz[12];
   cam_xyz[0] = NAN;
   dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);

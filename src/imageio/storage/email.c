@@ -95,12 +95,12 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   char dirname[4096];
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, 1024, &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   gchar * filename = g_path_get_basename( dirname );
 
   g_strlcpy(dirname, filename, sizeof(dirname));
 
-  dt_image_path_append_version(imgid, dirname, 4096);
+  dt_image_path_append_version(imgid, dirname, sizeof(dirname));
 
   gchar * end = g_strrstr(dirname,".")+1;
 

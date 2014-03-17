@@ -1067,7 +1067,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char* binname, 
 
           // create link (e.g. basic.cl.bin -> f1430102c53867c162bb60af6c163328)
           char cwd[1024];
-          if (!getcwd(cwd, 1024)) goto ret;
+          if (!getcwd(cwd, sizeof(cwd))) goto ret;
           if (chdir(cachedir)!=0) goto ret;
           char dup[1024];
           g_strlcpy(dup, binname, sizeof(dup));

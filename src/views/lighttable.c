@@ -1162,7 +1162,7 @@ void expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     {
       gboolean from_cache = FALSE;
       char filename[2048];
-      dt_image_full_path(lib->full_preview_id, filename, 2048, &from_cache);
+      dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
       if(lib->full_res_thumb)
       {
         free(lib->full_res_thumb);

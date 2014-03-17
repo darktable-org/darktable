@@ -382,10 +382,9 @@ _jump_to()
   }
   if(imgid != -1)
   {
-    const int len = 512;
-    char path[len];
+    char path[512];
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, imgid);
-    dt_image_film_roll_directory(img, path, len);
+    dt_image_film_roll_directory(img, path, sizeof(path));
     dt_image_cache_read_release(darktable.image_cache, img);
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", path);
