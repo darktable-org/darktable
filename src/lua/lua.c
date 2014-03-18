@@ -92,7 +92,7 @@ gboolean dt_lua_lock()
   if(had_lock){
     dt_control_gdk_unlock();
   }
-  if(pthread_equal(darktable.control->gui_thread,pthread_self()) != 0) {
+  if(!darktable.lua_state.ending && pthread_equal(darktable.control->gui_thread,pthread_self()) != 0) {
     dt_print(DT_DEBUG_LUA,"LUA WARNING locking from the gui thread should be avoided\n");
   }
 

@@ -837,6 +837,9 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+#ifdef USE_LUA
+  dt_lua_finalize();
+#endif
   if(init_gui)
   {
     dt_ctl_switch_mode_to(DT_MODE_NONE);
@@ -848,14 +851,6 @@ void dt_cleanup()
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
   }
-#ifdef USE_LUA
-  if(darktable.lua_state.state)
-  {
-    lua_close(darktable.lua_state.state);
-    luaA_close();
-    darktable.lua_state.state = NULL;
-  }
-#endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
   if(init_gui)

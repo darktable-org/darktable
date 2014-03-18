@@ -117,7 +117,7 @@ static int lib_newindex(lua_State*L)
     case GET_VISIBLE:
       dt_lua_unlock(true);
       dt_lib_set_visible(module,lua_toboolean(L,3));
-      dt_lua_lock(true);
+      dt_lua_lock();
       return 0;
     default:
       return luaL_error(L,"unknown index for lib : ",lua_tostring(L,-2));
