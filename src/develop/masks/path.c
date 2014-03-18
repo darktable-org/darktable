@@ -155,7 +155,7 @@ static void _path_init_ctrl_points (dt_masks_form_t *form)
   //if we have less that 3 points, what to do ??
   if (g_list_length(form->points) < 2) return;
 
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
@@ -201,7 +201,7 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
   if (g_list_length(form->points) > 2)
   {
     float sum = 0.0f;
-    int nb = g_list_length(form->points);
+    guint nb = g_list_length(form->points);
     for(int k = 0; k < nb; k++)
     {
       int k2 = (k+1)%nb;
@@ -557,7 +557,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   //we store all points
   float dx,dy;
   dx=dy=0.0f;
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   if (source && nb>0)
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points,0);
@@ -920,7 +920,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     {
       float amount = 1.03;
       if (up) amount = 0.97;
-      int nb = g_list_length(form->points);
+      guint nb = g_list_length(form->points);
       if (gui->border_selected)
       {
         for(int k = 0; k < nb; k++)
@@ -1639,7 +1639,7 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   //are we near a point or feather ?
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
 
   pzx *= darktable.develop->preview_pipe->backbuf_width, pzy *= darktable.develop->preview_pipe->backbuf_height;
 
@@ -1927,7 +1927,7 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -1976,7 +1976,7 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2053,7 +2053,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2425,7 +2425,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   //empty the output buffer
   memset(buffer,0,(size_t)width*height*sizeof(float));
 
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
 
   //we shift and scale down path and border
   for (int i=nb_corner*3; i < border_count; i++)

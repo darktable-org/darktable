@@ -2191,7 +2191,7 @@ int dt_dev_pixelpipe_process(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, int x,
     dt_dev_pixelpipe_cache_print(&pipe->cache);
 
   //  go through list of modules from the end:
-  int pos = g_list_length(dev->iop);
+  guint pos = g_list_length(dev->iop);
   GList *modules = g_list_last(dev->iop);
   GList *pieces = g_list_last(pipe->nodes);
 

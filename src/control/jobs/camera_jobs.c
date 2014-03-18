@@ -291,7 +291,7 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     return 1;
   }
 
-  int total = g_list_length( t->images );
+  guint total = g_list_length( t->images );
   char message[512]= {0};
   sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
   t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);

@@ -294,7 +294,7 @@ static void _brush_init_ctrl_points (dt_masks_form_t *form)
   //we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points,k);
@@ -602,7 +602,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   //we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
 
   if (source && nb>0)
   {
@@ -1013,7 +1013,7 @@ static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, 
     we only need to find the minimum with a resolution of 1%, so we just do an exhaustive search without any frills */
 static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *form, int segment)
 {
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   int pos0 = segment;
   int pos1 = segment+1;
   int pos2 = segment+2;
@@ -1143,7 +1143,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      int nb = g_list_length(form->points);
+      guint nb = g_list_length(form->points);
       if (gui->border_selected)
       {
         float amount = 1.03f;
@@ -1338,7 +1338,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
     else if (gui->seg_selected >= 0)
     {
-      int nb = g_list_length(form->points);
+      guint nb = g_list_length(form->points);
       gui->point_edited = -1;
       if ((state&GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
@@ -1902,7 +1902,7 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   //are we near a point or feather ?
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
 
   pzx *= darktable.develop->preview_pipe->backbuf_width, pzy *= darktable.develop->preview_pipe->backbuf_height;
 
@@ -2346,7 +2346,7 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2389,7 +2389,7 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2462,7 +2462,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2582,7 +2582,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   //empty the output buffer
   memset(buffer,0,(size_t)width*height*sizeof(float));
 
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
 
   //we shift and scale down brush and border
   for (int i=nb_corner*3; i < border_count; i++)

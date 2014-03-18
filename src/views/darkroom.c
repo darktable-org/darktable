@@ -570,7 +570,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
 
-  int nb_iop = g_list_length(dev->iop);
+  guint nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   for (int i=nb_iop-1; i>0; i--)
@@ -578,7 +578,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop,i));
 
     // the base module is the one with the highest multi_priority
-    const int clen = g_list_length(dev->iop);
+    const guint clen = g_list_length(dev->iop);
     int mp_base = 0;
     for (int k=0; k<clen; k++)
     {

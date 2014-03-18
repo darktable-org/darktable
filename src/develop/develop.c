@@ -1356,9 +1356,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
-    int nb = g_list_length(dev->history);
     int pos = 0;
-    for (int i=0; i<nb; i++)
+    for (guint i=0; i<g_list_length(dev->history); i++)
     {
       GList *elem = g_list_nth(dev->history,pos);
 
