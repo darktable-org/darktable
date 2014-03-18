@@ -739,7 +739,7 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str, si
   gchar *data_str;
 
   // Start out with the base <Darktable>
-  strcpy(str, "<Darktable>");
+  g_strlcpy(str, "<Darktable>", str_len);
 
   // For each index in the path, append a '/' and that section of the path
   depth = gtk_tree_path_get_depth(path);

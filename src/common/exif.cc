@@ -1234,7 +1234,7 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
     output[1] = 'z';
     output[2] = factor / 10 + '0';
     output[3] = factor % 10 + '0';
-    strcpy(output+4, buffer2);
+    g_strlcpy(output+4, buffer2, outlen);
     g_free(buffer2);
 
     if(output_len) *output_len = outlen;
