@@ -1027,8 +1027,9 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
   float tmin = 0;
   float dmin = FLT_MAX;
 
-  for(float t = 0.0f; t <= 1.0f; t += 0.01f)
+  for(int i = 0; i <= 100; i++)
   {
+    float t = i / 100.0f;
     float sx, sy;
     _brush_get_XY(point0->corner[0], point0->corner[1], point1->corner[0], point1->corner[1],
                   point2->corner[0], point2->corner[1], point3->corner[0], point3->corner[1],
