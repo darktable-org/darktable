@@ -374,7 +374,7 @@ void dt_film_import1(dt_film_t *film)
   /* let's start import of images */
   gchar message[512] = {0};
   double fraction = 0;
-  uint32_t total = g_list_length(images);
+  guint total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1,
              ngettext("importing %d image","importing %d images", total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);

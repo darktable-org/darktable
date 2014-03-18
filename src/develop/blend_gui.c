@@ -1184,7 +1184,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
   {
     char txt[512];
-    int n = g_list_length(grp->points);
+    guint n = g_list_length(grp->points);
     snprintf(txt,sizeof(txt),ngettext("%d shape used", "%d shapes used", n), n);
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }

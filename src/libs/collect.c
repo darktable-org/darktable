@@ -271,8 +271,8 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
   gchar *query = NULL;
   sqlite3_stmt *stmt, *stmt2;
   GList *filelist = NULL;
-  int count_new = 0;
-  int count_found = 0;
+  guint count_new = 0;
+  guint count_found = 0;
 
   model = gtk_tree_view_get_model(treeview);
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
@@ -323,7 +323,7 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
     const gchar *name = g_dir_read_name(dir);
     while (name != NULL)
     {
-      for (int i=0; i<g_list_length(filelist); i++)
+      for (guint i=0; i<g_list_length(filelist); i++)
       {
         _image_t *tmp;
         tmp = g_list_nth_data(filelist, i);
@@ -357,7 +357,7 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
   }
 
   /* Call now the foreach function that gives the total data */
-  int count_missing = g_list_length(filelist) - count_new - count_found;
+  guint count_missing = g_list_length(filelist) - count_new - count_found;
 
   /* Produce the dialog */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -373,7 +373,7 @@ void view_popup_menu_onSync (GtkWidget *menuitem, gpointer userdata)
     /* TODO: Get dialog returned options so we can choose only adding or deleting*/
 
     /* Proceed with sync */
-    for (int j=0; j < g_list_length(filelist); j++)
+    for (guint j=0; j < g_list_length(filelist); j++)
     {
       _image_t *img;
       img = (_image_t *)g_list_nth_data(filelist, j);
