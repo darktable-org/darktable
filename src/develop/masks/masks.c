@@ -1221,8 +1221,8 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
       continue;
     }
     char str[256] = "";
-    strcat(str,form->name);
-    strcat(str,"   ");
+    g_strlcat(str, form->name, sizeof(str));
+    g_strlcat(str, "   ", sizeof(str));
     int used = 0;
 
     //we search were this form is used in the current module
@@ -1279,9 +1279,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
         }
         char str[256] = "";
         g_strlcat(str,m->name(),sizeof(str));
-        strcat(str," ");
-        strcat(str,m->multi_name);
-        strcat(str,"   ");
+        g_strlcat(str," ",sizeof(str));
+        g_strlcat(str,m->multi_name,sizeof(str));
+        g_strlcat(str,"   ",sizeof(str));
         dt_bauhaus_combobox_add(combo,str);
         cids[pos++] = -1*pos2;
         nb++;

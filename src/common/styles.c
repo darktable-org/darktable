@@ -187,12 +187,12 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
 
         for (int k=0; fields[k]; k++)
         {
-          if (k!=0) strcat(query, ",");
+          if (k!=0) g_strlcat(query, ",", sizeof(query));
           sprintf(tmp, "%s=(select %s from history where imgid=%d and num=%d)", fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
-          strcat(query, tmp);
+          g_strlcat(query, tmp, sizeof(query));
         }
         sprintf(tmp, " where styleid=%d and style_items.num=%d", id, GPOINTER_TO_INT(list->data));
-        strcat(query, tmp);
+        g_strlcat(query, tmp, sizeof(query));
       }
       // update only, so we want to insert the new style item
       else if (GPOINTER_TO_INT(upd->data) != -1)

@@ -462,7 +462,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     {
       char label[128];
       g_strlcpy(label, _("update preset"), sizeof(label));
-      strcat (label, " <span weight=\"bold\">%s</span>");
+      g_strlcat(label, " <span weight=\"bold\">%s</span>", sizeof(label));
       char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
       gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);

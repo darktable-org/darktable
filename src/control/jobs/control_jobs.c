@@ -317,9 +317,9 @@ int32_t dt_control_flip_images_job_run(dt_job_t *job)
 static char *_get_image_list(GList *l)
 {
   const guint size = g_list_length(l);
-  char *buffer = malloc (size*8);
-  int imgid;
   char num[8];
+  char *buffer = malloc (size*sizeof(num));
+  int imgid;
   gboolean first=TRUE;
 
   buffer[0]='\0';
@@ -328,7 +328,7 @@ static char *_get_image_list(GList *l)
   {
     imgid = GPOINTER_TO_INT(l->data);
     snprintf(num,sizeof(num),"%s%6d",first?"":",",imgid);
-    strcat(buffer,num);
+    g_strlcat(buffer, num, size*sizeof(num));
     l = g_list_next(l);
     first=FALSE;
   }
