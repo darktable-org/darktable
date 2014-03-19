@@ -499,6 +499,20 @@ void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,c
   lua_pop(L,4);
 }
 
+void dt_lua_register_type_callback_stack_entry_typeid(lua_State* L,luaA_Type type_id,const char* name)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getsubtable(L,-1,"__get");
+  lua_pushvalue(L,-3);
+  lua_setfield(L,-2,name);
+  lua_pop(L,1);
+
+  luaL_getsubtable(L,-1,"__set");
+  lua_pushvalue(L,-3);
+  lua_setfield(L,-2,name);
+  lua_pop(L,3);
+}
+
 void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id)
 {
   luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
