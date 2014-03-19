@@ -1453,7 +1453,7 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     char message[512];
 
     g_snprintf
-    (message, 512,
+    (message, sizeof(message),
      ngettext("%s has been imported", "%s have been imported", n_import), imported);
     dt_control_log(message);
 

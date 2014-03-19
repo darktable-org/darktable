@@ -747,7 +747,7 @@ gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
   if(!module->expander) return true;
   if(!module->widget) {
     char var[1024];
-    snprintf(var, 1024, "plugins/lighttable/%s/expanded", module->plugin_name);
+    snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
     return dt_conf_get_bool(var);
   }
   return gtk_widget_get_visible(module->widget);
