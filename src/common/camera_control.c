@@ -122,7 +122,7 @@ void _gphoto_log25(GPLogLevel level, const char *domain, const char *log, void *
 void _gphoto_log(GPLogLevel level, const char *domain, const char *format, va_list args, void *data)
 {
   char log[4096]= {0};
-  vsprintf(log,format,args);
+  vsnprintf(log, sizeof(log), format, args);
   _gphoto_log25(level, domain, log, data);
 }
 #endif
@@ -186,7 +186,7 @@ static void _message_func_dispatch25(GPContext *context, const char *text, void 
 static void _status_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
 {
   char buffer[4096];
-  vsprintf( buffer, format, args );
+  vsnprintf(buffer, sizeof(buffer), format, args);
 
   _status_func_dispatch25(context, buffer, data);
 }
@@ -194,7 +194,7 @@ static void _status_func_dispatch(GPContext *context, const char *format, va_lis
 static void _error_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
 {
   char buffer[4096];
-  vsprintf (buffer, format, args );
+  vsnprintf(buffer, sizeof(buffer), format, args);
 
   _error_func_dispatch25(context, buffer, data);
 }
@@ -202,7 +202,7 @@ static void _error_func_dispatch(GPContext *context, const char *format, va_list
 static void _message_func_dispatch(GPContext *context, const char *format, va_list args, void *data)
 {
   char buffer[4096];
-  vsprintf( buffer, format, args );
+  vsnprintf(buffer, sizeof(buffer), format, args);
   _message_func_dispatch25(context, buffer, data);
 }
 #endif
