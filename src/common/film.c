@@ -100,7 +100,7 @@ dt_film_open2 (dt_film_t *film)
     sprintf (film->dirname,"%s",(gchar *)sqlite3_column_text (stmt, 1));
     sqlite3_finalize (stmt);
     char datetime[20];
-    dt_gettime (datetime);
+    dt_gettime (datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
@@ -132,7 +132,7 @@ int dt_film_open(const int32_t id)
   {
     sqlite3_finalize(stmt);
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
@@ -164,7 +164,7 @@ int dt_film_open_recent(const int num)
     sqlite3_finalize(stmt);
     if(dt_film_open(id)) return 1;
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
                                 -1, &stmt, NULL);
@@ -197,7 +197,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
     // create a new filmroll
     sqlite3_stmt *stmt;
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) "
                                 "values (null, ?1, ?2)", -1, &stmt, NULL);
@@ -251,7 +251,7 @@ int dt_film_import(const char *dirname)
   if(film->id <= 0)
   {
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) values "

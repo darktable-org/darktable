@@ -399,7 +399,7 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
 
     // Current date
     // $(DATE) -- YYYY:
-    dt_gettime_t(datetime, t);
+    dt_gettime_t(datetime, sizeof(datetime), t);
     svgdoc = _string_substitute(svgdata,"$(DATE)",datetime);
     if( svgdoc != svgdata )
     {

@@ -226,8 +226,8 @@ extern const char dt_supported_extensions[];
 int dt_init(int argc, char *argv[], const int init_gui);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
-void dt_gettime_t(char *datetime, time_t t);
-void dt_gettime(char *datetime);
+void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
+void dt_gettime(char *datetime, size_t datetime_len);
 void *dt_alloc_align(size_t alignment, size_t size);
 #ifdef __WIN32__
   void dt_free_align(void *mem);

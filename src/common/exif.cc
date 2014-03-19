@@ -1148,7 +1148,7 @@ int dt_exif_read_blob(
       // According to the Exif specs DateTime is to be set to the last modification time while DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in the geotagging module.
       gchar new_datetime[20];
-      dt_gettime(new_datetime);
+      dt_gettime(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
       exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
       exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
