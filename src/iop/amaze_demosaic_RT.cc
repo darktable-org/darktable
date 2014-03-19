@@ -878,7 +878,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
             //if both agree on interpolation direction, choose the one with strongest directional discrimination;
             //otherwise, choose the u/d and l/r difference fluctuation weights
-            if ((0.5-varwt)*(0.5-diffwt)>0 && fabsf(0.5-diffwt)<fabsf(0.5-varwt))
+            if ((0.5-varwt)*(0.5-diffwt)>0 && fabsf(0.5f-diffwt)<fabsf(0.5f-varwt))
             {
               hvwt[indx>>1]=varwt;
             }
@@ -1000,7 +1000,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 //					hvwtalt = 0.25*(hvwt[(indx-m1)>>1]+hvwt[(indx+p1)>>1]+hvwt[(indx-p1)>>1]+hvwt[(indx+m1)>>1]);
 //					vo=fabsf(0.5-hvwt[indx>>1]);
 //					ve=fabsf(0.5-hvwtalt);
-            if (fabsf(0.5-hvwt[indx>>1])<fabsf(0.5-hvwtalt))
+            if (fabsf(0.5f-hvwt[indx>>1])<fabsf(0.5f-hvwtalt))
             {
               hvwt[indx>>1]=hvwtalt; //a better result was obtained from the neighbors
             }
@@ -1182,7 +1182,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
             pmwtalt = xdivf(pmwt[(indx-m1)>>1]+pmwt[(indx+p1)>>1]+pmwt[(indx-p1)>>1]+pmwt[(indx+m1)>>1],2);
 //					vo=fabsf(0.5-pmwt[indx1]);
 //					ve=fabsf(0.5-pmwtalt);
-            if (fabsf(0.5-pmwt[indx1])<fabsf(0.5-pmwtalt))
+            if (fabsf(0.5f-pmwt[indx1])<fabsf(0.5f-pmwtalt))
             {
               pmwt[indx1]=pmwtalt; //a better result was obtained from the neighbors
             }
@@ -1195,7 +1195,7 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           for (cc=12+(FC(rr,2,filters)&1),indx=rr*TS+cc,indx1=indx>>1; cc<cc1-12; cc+=2,indx+=2,indx1++)
           {
 
-            if (fabsf(0.5-pmwt[indx>>1])<fabsf(0.5-hvwt[indx>>1]) ) continue;
+            if (fabsf(0.5f-pmwt[indx>>1])<fabsf(0.5f-hvwt[indx>>1]) ) continue;
 
             //now interpolate G vertically/horizontally using R+B values
             //unfortunately, since G interpolation cannot be done diagonally this may lead to color shifts

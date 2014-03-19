@@ -848,10 +848,10 @@ colorzones_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user
   else if(event->y > height)
   {
     c->x_move = 0;
-    float dist = fabsf(p->equalizer_x[c->channel][0] - c->mouse_x);
+    float dist = fabs(p->equalizer_x[c->channel][0] - c->mouse_x);
     for(int k=1; k<DT_IOP_COLORZONES_BANDS; k++)
     {
-      float d2 = fabsf(p->equalizer_x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->equalizer_x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -921,7 +921,7 @@ colorzones_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer use
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-  c->mouse_y = fabsf(c->mouse_y);
+  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -932,7 +932,7 @@ colorzones_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer use
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   // for fluxbox
-  c->mouse_y = -fabsf(c->mouse_y);
+  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
