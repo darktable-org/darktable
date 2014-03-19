@@ -966,7 +966,7 @@ area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = fabsf(c->mouse_y);
+  if(!c->dragging) c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -976,7 +976,7 @@ area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = -fabsf(c->mouse_y);
+  if(!c->dragging) c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1284,10 +1284,10 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   {
     // move x-positions
     c->x_move = 0;
-    float dist = fabsf(p->x[c->channel][0] - c->mouse_x);
+    float dist = fabs(p->x[c->channel][0] - c->mouse_x);
     for(int k=1; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -1302,10 +1302,10 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
     float dist = 1000000.0f;
     for(int k=0; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
-        if(fabsf(c->mouse_y - p->y[ch][k]) < fabsf(c->mouse_y - p->y[ch2][k])) c->channel2 = ch;
+        if(fabs(c->mouse_y - p->y[ch][k]) < fabs(c->mouse_y - p->y[ch2][k])) c->channel2 = ch;
         else c->channel2 = ch2;
         dist = d2;
       }
