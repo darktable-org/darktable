@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct dt_lib_module_info_t
 {

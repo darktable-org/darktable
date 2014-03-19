@@ -67,8 +67,10 @@ static void _lib_backgroundjobs_destroy(dt_lib_module_t *self, const guint *key)
 static void _lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const guint *key, struct dt_job_t *job);
 /* proxy function for setting the progress of a ui bgjob plate */
 static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key, double progress);
+#ifdef USE_LUA
 /* function for getting the progress of a ui bgjob plate */
 static double _lib_backgroundjobs_get_progress(dt_lib_module_t *self, const guint *key);
+#endif
 /* callback when cancel job button is pushed  */
 static void _lib_backgroundjobs_cancel_callback(GtkWidget *w, gpointer user_data);
 
@@ -279,6 +281,8 @@ static void _lib_backgroundjobs_progress(dt_lib_module_t *self, const guint *key
   if(i_own_lock) dt_control_gdk_unlock();
 }
 
+#ifdef USE_LUA
+
 static double _lib_backgroundjobs_get_progress(dt_lib_module_t *self, const guint *key)
 {
   if(!darktable.control->running) return -1.0;
@@ -298,8 +302,6 @@ static double _lib_backgroundjobs_get_progress(dt_lib_module_t *self, const guin
   if(i_own_lock) dt_control_gdk_unlock();
   return result;
 }
-
-#ifdef USE_LUA
 
 typedef guint* dt_lua_backgroundjob_t;
 
