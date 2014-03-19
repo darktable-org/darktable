@@ -361,6 +361,35 @@ static void int_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
   memcpy(cout,udata,sizeof(int));
 }
 
+static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id));
+  luaL_getsubtable(L,-1,"__values");
+  gpointer singleton = *(gpointer*)cin;
+  lua_pushlightuserdata(L,singleton);
+  lua_gettable(L,-2);
+  if(lua_isnoneornil(L,-1)) {
+    lua_pop(L,1);
+    gpointer* udata = lua_newuserdata(L,sizeof(gpointer));
+    *udata = singleton;
+    luaL_setmetatable(L,luaA_type_name(type_id));
+    lua_pushlightuserdata(L,singleton);
+    lua_pushvalue(L,-2);
+    lua_settable(L,-4);
+    if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
+
+  }
+  lua_remove(L,-2);//__values
+  lua_remove(L,-2);//metatable
+  return 1;
+}
+
+static void gpointer_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
+{
+  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  memcpy(cout,udata,sizeof(gpointer));
+}
+
 void dt_lua_register_type_callback_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,...)
 {
   luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
@@ -642,9 +671,32 @@ luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);
   lua_newtable(L);
+  // metatable of __values 
+  lua_newtable(L);
+  lua_pushstring(L,"kv");
+  lua_setfield(L,-2,"__mode");
+  lua_setmetatable(L,-2);
+
   lua_setfield(L,-2,"__values");
   lua_pop(L,1);
   luaA_conversion_typeid(type_id,int_pushfunc,int_tofunc);
+  return type_id;
+}
+
+
+luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L, luaA_Type type_id)
+{
+  init_metatable(L,type_id);
+  lua_newtable(L);
+  // metatable of __values 
+  lua_newtable(L);
+  lua_pushstring(L,"kv");
+  lua_setfield(L,-2,"__mode");
+  lua_setmetatable(L,-2);
+
+  lua_setfield(L,-2,"__values");
+  lua_pop(L,1);
+  luaA_conversion_typeid(type_id,gpointer_pushfunc,gpointer_tofunc);
   return type_id;
 }
 

@@ -96,14 +96,18 @@ void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id
 void dt_lua_register_type_callback_stack_entry_typeid(lua_State* L,luaA_Type type_id,const char* name);
 
 /**
-  * similar to dt_lua_init_type but creates a type for int id
-  * the type must be an int and will guarentee a singleton per memory pointed
+  * similar to dt_lua_init_type but creates a type for int or gpointer singletons
+  * the type must match and will guarentee a singleton per value
   * i.e if you push the same int twice, you will push the same lua object 
   * not recreate a different one each time
+  * the singleton objects will still correctly be garbage collected
   */
 #define dt_lua_init_int_type(L,type_name) \
   dt_lua_init_int_type_typeid(L,luaA_type_id(type_name))
 luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
+#define dt_lua_init_gpointer_type(L,type_name) \
+  dt_lua_init_gpointer_type_typeid(L,luaA_type_id(type_name))
+luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L,luaA_Type type_id);
 
 /**
  * similar to dt_lua_init_type but creates a singleton type
