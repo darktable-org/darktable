@@ -355,6 +355,16 @@ while true do
   coroutine.yield("wait_ms",2000)
 end]]))
 darktable.modules.lib:add_version_info([[lib were added]])
+
+darktable.modules.lib.backgroundjobs:set_text([[The window displaying the currently running jobs]])
+darktable.modules.lib.backgroundjobs.create_job:set_text([[The window displaying the currently running jobs]])
+darktable.modules.lib.backgroundjobs.create_job:add_parameter("text","string",[[The text to display in the job entry]])
+darktable.modules.lib.backgroundjobs.create_job:add_parameter("percentage","boolean",[[Should a progress bar be displayed]]):set_attribute("optional",true)
+tmp = darktable.modules.lib.backgroundjobs.create_job:add_parameter("cancel_callback","function",[[A function called when the cancel button for that job is pressed]]..para().."note that the job won't be destroyed automatically. You need to set "..my_tostring(types.dt_lua_backgroundjob_t.valid).." to false for that")
+tmp:set_attribute("optional",true)
+tmp:add_parameter("job",my_tostring(types.dt_lua_backgroundjob_t),[[The job who is being cancelded]])
+darktable.modules.lib.backgroundjobs.create_job:add_return(my_tostring(types.dt_lua_backgroundjob_t),[[The newly created job object]])
+
 darktable.modules.lib.styles:set_text([[The style selection menu]])
 darktable.modules.lib.metadata_view:set_text([[The widget displaying metadata about the current image]])
 darktable.modules.lib.metadata:set_text([[The widget allowing modification of metadata fields on the current image]])
@@ -364,7 +374,6 @@ darktable.modules.lib.filmstrip:set_text([[The filmstrip at the bottom of some v
 darktable.modules.lib.viewswitcher:set_text([[The labels allowing to switch view]])
 darktable.modules.lib.darktable_label:set_text([[The darktable logo in the upper left corner]])
 darktable.modules.lib.tagging:set_text([[The tag manipulation UI]])
-darktable.modules.lib.backgroundjobs:set_text([[The window displaying the currently running jobs]])
 darktable.modules.lib.geotagging:set_text([[The geotagging time synchronisation UI]])
 darktable.modules.lib.recentcollect:set_text([[The recent collection UI element]])
 darktable.modules.lib.global_toolbox:set_text([[The common tools to all view (settings, grouping...)]])
@@ -580,6 +589,17 @@ types.dt_view_t:set_text([[A darktable view]])
 types.dt_view_t:add_version_info([[Type added]])
 types.dt_view_t.id:set_text([[A unique string identifying the view]])
 types.dt_view_t.name:set_text([[The name of the view]])
+
+
+types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]])
+local job = real_darktable.modules.lib.backgroundjobs.create_job("test job",true)
+doc.document_type_from_obj(job,types.dt_lua_backgroundjob_t)
+job.valid = false
+job = nil
+types.dt_lua_backgroundjob_t.percent:set_text([[The value of the progress bar. nil if there is no progress bar]])
+types.dt_lua_backgroundjob_t.valid:set_text([[True if the job is displayed, set it to false to destroy the entry]]..para().."An invalid job cannot be made valid again")
+
+
 ----------------------
 --  EVENTS          --
 ----------------------
