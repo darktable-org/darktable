@@ -66,8 +66,9 @@ on_match_select(GtkEntryCompletion *widget,
     del_end_pos = cur_pos;
   }
 
-  gchar *addtext = (gchar*) g_malloc(strlen(varname) + 2);
-  sprintf(addtext, "%s)", varname);
+  size_t text_len = strlen(varname) + 2;
+  gchar *addtext = (gchar*) g_malloc(text_len);
+  snprintf(addtext, text_len, "%s)", varname);
 
   gtk_editable_delete_text(e, p, del_end_pos);
   gtk_editable_insert_text(e, addtext, -1, &p);

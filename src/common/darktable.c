@@ -950,7 +950,7 @@ void dt_show_times(const dt_times_t *start, const char *prefix, const char *suff
   if (darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end);
-    i = sprintf(buf, "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock, end.user - start->user);
+    i = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock, end.user - start->user);
     if (suffix != NULL)
     {
       va_list ap;
