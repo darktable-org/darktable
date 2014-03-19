@@ -214,7 +214,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       }
       else
       {
-        sprintf(buffer,_("device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
+        snprintf(buffer, sizeof(buffer), _("device \"%s\" connected on port \"%s\"."), camera->model, camera->port);
         g_object_set(G_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
       }
 

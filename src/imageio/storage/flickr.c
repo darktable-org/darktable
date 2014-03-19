@@ -178,7 +178,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     char *sign = g_strdup_printf ("%sapi_key%sfrob%spermswrite", SHARED_SECRET, API_KEY, frob);
     char *sign_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, sign, strlen (sign));
     gchar auth_url[250];
-    sprintf(auth_url,"http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
+    snprintf(auth_url, sizeof(auth_url), "http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
 
     if(!gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error))
     {
@@ -317,7 +317,7 @@ void static set_status(dt_storage_flickr_gui_data_t *ui, gchar *message, gchar *
 {
   if( !color ) color="#ffffff";
   gchar mup[512]= {0};
-  sprintf( mup,"<span foreground=\"%s\" ><small>%s</small></span>",color,message);
+  snprintf(mup, sizeof(mup), "<span foreground=\"%s\" ><small>%s</small></span>",color,message);
   gtk_label_set_markup(ui->label4, mup);
 }
 
@@ -396,7 +396,7 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
     for(i=0; ui->albums[i]; i++)
     {
       char data[512]= {0};
-      sprintf(data,"%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
+      snprintf(data, sizeof(data), "%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
       gtk_combo_box_text_append_text(ui->comboBox1, g_strdup(data));
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 3);

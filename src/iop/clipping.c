@@ -1912,7 +1912,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    sprintf(dimensions, "%.0fx%.0f",
+    snprintf(dimensions, sizeof(dimensions), "%.0fx%.0f",
             (float)procw * g->clip_w, (float)proch * g->clip_h);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
@@ -2086,7 +2086,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     char view_angle[16];
     view_angle[0] = '\0';
-    sprintf(view_angle, "%.2f °", angle);
+    snprintf(view_angle, sizeof(view_angle), "%.2f °", angle);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);

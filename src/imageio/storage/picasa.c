@@ -504,7 +504,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
   headers = curl_slist_append(headers, authHeader);
 
-  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default");
+  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
@@ -591,7 +591,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   // Hack for nonform multipart post...
   gchar mpart1[4096]= {0};
   gchar *mpart_format="\nMedia multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: image/jpeg\n\n";
-  sprintf(mpart1,mpart_format,entry);
+  snprintf(mpart1, sizeof(mpart1), mpart_format, entry);
   g_free(entry);
 
   int mpart1size=strlen(mpart1);
@@ -610,7 +610,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   headers = curl_slist_append(headers,"GData-Version: 2");
   headers = curl_slist_append(headers, authHeader);
 
-  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
+  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);

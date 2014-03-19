@@ -556,34 +556,34 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_darktable_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "eprofile");
+    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
   }
   if(!strcmp(p->iccprofile, "vendor"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_vendor_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "eprofile");
+    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
   }
   if(!strcmp(p->iccprofile, "alternate"))
   {
     char makermodel[1024];
     dt_colorspaces_get_makermodel(makermodel, sizeof(makermodel), pipe->image.exif_maker, pipe->image.exif_model);
     d->input = dt_colorspaces_create_alternate_profile(makermodel);
-    if(!d->input) sprintf(p->iccprofile, "eprofile");
+    if(!d->input) snprintf(p->iccprofile, sizeof(p->iccprofile), "eprofile");
   }
   if(!strcmp(p->iccprofile, "eprofile"))
   {
     // embedded color profile
     const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, pipe->image.id);
-    if(cimg == NULL || cimg->profile == NULL) sprintf(p->iccprofile, "ematrix");
+    if(cimg == NULL || cimg->profile == NULL) snprintf(p->iccprofile, sizeof(p->iccprofile), "ematrix");
     else d->input = cmsOpenProfileFromMem(cimg->profile, cimg->profile_size);
     dt_image_cache_read_release(darktable.image_cache, cimg);
   }
   if(!strcmp(p->iccprofile, "ematrix"))
   {
     // embedded matrix, hopefully D65
-    if(isnan(pipe->image.d65_color_matrix[0])) sprintf(p->iccprofile, "cmatrix");
+    if(isnan(pipe->image.d65_color_matrix[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "cmatrix");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])pipe->image.d65_color_matrix);
   }
   if(!strcmp(p->iccprofile, "cmatrix"))
@@ -594,7 +594,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     float cam_xyz[12];
     cam_xyz[0] = NAN;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(isnan(cam_xyz[0])) sprintf(p->iccprofile, "linear_rgb");
+    if(isnan(cam_xyz[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rgb");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 

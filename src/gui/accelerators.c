@@ -415,7 +415,7 @@ static gboolean slider_edit_callback(GtkAccelGroup *accel_group,
   char sv[32]= {0};
   slider->is_entry_active=TRUE;
   gdouble value = gtk_adjustment_get_value(slider->adjustment);
-  sprintf(sv,"%.*f",slider->digits,value);
+  snprintf(sv, sizeof(sv), "%.*f",slider->digits,value);
   gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
   gtk_widget_show (GTK_WIDGET(slider->entry));
   gtk_widget_grab_focus (GTK_WIDGET(slider->entry));

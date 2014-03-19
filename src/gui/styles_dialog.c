@@ -290,7 +290,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
   if (edit)
   {
-    sprintf (title,_("edit style"));
+    snprintf(title, sizeof(title), _("edit style"));
     g_strlcat (title, " \"", sizeof(title));
     g_strlcat(title, name, sizeof(title));
     g_strlcat(title, "\"", sizeof(title));
@@ -299,7 +299,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   }
   else
   {
-    sprintf (title,"%s",_("create new style"));
+    snprintf(title, sizeof(title), "%s",_("create new style"));
     sd->duplicate = NULL;
   }
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);

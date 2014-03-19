@@ -36,7 +36,7 @@ void dt_lua_init_module_type(lua_State *L,const char* module_type_name)
 void dt_lua_register_module_entry_new(lua_State *L, const char* module_type_name,const char* entry_name,void *entry)
 {
   char tmp_string[1024];
-  sprintf(tmp_string,"module_%s_%s",module_type_name,entry_name);
+  snprintf(tmp_string, sizeof(tmp_string),"module_%s_%s",module_type_name,entry_name);
   dt_lua_init_singleton(L,tmp_string,entry);
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");
@@ -111,7 +111,7 @@ void dt_lua_register_current_preset(lua_State*L, const char* module_type_name, c
   lua_pop(L,1);
 
   char tmp_string[1024];
-  sprintf(tmp_string,"module_current_settings_%s_%s",module_type_name,entry_name);
+  snprintf(tmp_string, sizeof(tmp_string),"module_current_settings_%s_%s",module_type_name,entry_name);
   dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
   dt_lua_register_type_callback_stack_typeid(L,entry_type,"settings");
 }
