@@ -180,6 +180,7 @@ typedef struct dt_iop_module_so_t
   int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
 
   // introspection related callbacks
+  gboolean                     have_introspection;
   dt_introspection_t*          (*get_introspection)        ();
   dt_introspection_field_t*    (*get_introspection_linear) ();
   void*                        (*get_p)                    (const void *param, const char *name);
@@ -362,6 +363,7 @@ typedef struct dt_iop_module_t
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   // introspection related data
+  gboolean                  have_introspection;
   dt_introspection_t*       (*get_introspection)        ();
   dt_introspection_field_t* (*get_introspection_linear) ();
   void*                     (*get_p)                    (const void *param, const char *name);

@@ -177,6 +177,23 @@ default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   return 1;
 }
 
+static dt_introspection_field_t* default_get_introspection_linear()
+{
+  return NULL;
+}
+static dt_introspection_t* default_get_introspection()
+{
+  return NULL;
+}
+static void* default_get_p(const void * param, const char * name)
+{
+  return NULL;
+}
+static dt_introspection_field_t* default_get_f(const char * name)
+{
+  return NULL;
+}
+
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
   g_strlcpy(module->op, op, 20);
@@ -239,14 +256,20 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
 
   // the introspection api
+  module->have_introspection       = FALSE;
+  module->get_p                    = default_get_p;
+  module->get_f                    = default_get_f;
+  module->get_introspection_linear = default_get_introspection_linear;
+  module->get_introspection        = default_get_introspection;
   if(!g_module_symbol(module->module, "introspection_init",     (gpointer)&(module->introspection_init)))     module->introspection_init = NULL;
   if(module->introspection_init && !module->introspection_init(module, DT_INTROSPECTION_VERSION))
   {
     // set the introspection related fields in module
-    if(!g_module_symbol(module->module, "get_p",                    (gpointer)&(module->get_p)))                    module->get_p = NULL;
-    if(!g_module_symbol(module->module, "get_f",                    (gpointer)&(module->get_f)))                    module->get_f = NULL;
-    if(!g_module_symbol(module->module, "get_introspection",        (gpointer)&(module->get_introspection)))        module->get_introspection = NULL;
-    if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) module->get_introspection_linear = NULL;
+    module->have_introspection = TRUE;
+    if(!g_module_symbol(module->module, "get_p",                    (gpointer)&(module->get_p)))                    goto error;
+    if(!g_module_symbol(module->module, "get_f",                    (gpointer)&(module->get_f)))                    goto error;
+    if(!g_module_symbol(module->module, "get_introspection",        (gpointer)&(module->get_introspection)))        goto error;
+    if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) goto error;
   }
 
   if(module->init_global) module->init_global(module);
@@ -335,6 +358,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->connect_key_accels    = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
 
+  module->have_introspection       = so->have_introspection;
   module->get_introspection        = so->get_introspection;
   module->get_introspection_linear = so->get_introspection_linear;
   module->get_p                    = so->get_p;
