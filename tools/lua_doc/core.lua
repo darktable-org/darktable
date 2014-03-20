@@ -585,6 +585,9 @@ meta_node.__index.get_name = M.get_name
 meta_node.__tostring = function(node)
 	return node_to_string(node)
 end
+meta_node.__lt = function(a,b)
+	return tostring(a) < tostring(b)
+end
 
 --------------------------
 -- GENERATE DOCUMENTATION

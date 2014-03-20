@@ -591,7 +591,7 @@ types.dt_view_t.id:set_text([[A unique string identifying the view]])
 types.dt_view_t.name:set_text([[The name of the view]])
 
 
-types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]])
+types.dt_lua_backgroundjob_t:set_text([[A lua-managed entry in the backgroundjob lib]]):add_version_info("type added")
 local job = real_darktable.modules.lib.backgroundjobs.create_job("test job",true)
 doc.document_type_from_obj(job,types.dt_lua_backgroundjob_t)
 job.valid = false
