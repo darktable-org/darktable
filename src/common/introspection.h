@@ -24,7 +24,7 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 3
+#define DT_INTROSPECTION_VERSION 4
 
 struct dt_iop_module_so_t;
 union dt_introspection_field_t;
@@ -52,6 +52,7 @@ typedef enum dt_introspection_type_t
 typedef struct dt_introspection_type_header_t
 {
   dt_introspection_type_t             type;         // type of the field
+  const char                         *type_name;    // the type as specified in the source. mostly interesting for enum, struct and the like
   const char                         *name;         // variable name, possibly with the name of parent structs, separated with '.'
   const char                         *field_name;   // variable name without any parents
   const char                         *description;  // some human readable description taken from the comments
