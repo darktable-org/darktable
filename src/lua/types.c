@@ -316,6 +316,8 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
   size_t type_size= luaA_type_size(type_id);
   void* udata = lua_newuserdata(L,type_size);
+  lua_newtable(L);
+  lua_setuservalue(L,-2);
   if(cin) {
     memcpy(udata,cin,type_size);
   } else {

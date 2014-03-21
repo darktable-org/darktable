@@ -52,6 +52,17 @@ local function introspect_metatable(object,indent,name,known,ancestors)
 	table.remove(ancestors);
 	return result
 end
+local function introspect_uservalue(object,indent,name,known,ancestors)
+	if not M.debug then return "" end
+	if name == nil then name = "(unknown)" end
+	local uservalue = debug.getuservalue(object);
+	if uservalue ==  nil then return indent.."(no uservalue)\n" end
+	local result = indent..name..".uservalue"
+	table.insert(ancestors,name)
+	result = result..introspect_body(uservalue,indent..indent_string,"uservalue",known,ancestors)
+	table.remove(ancestors);
+	return result
+end
 
 
 introspect_body = function (object,indent,name,known,ancestors)
@@ -85,6 +96,7 @@ introspect_body = function (object,indent,name,known,ancestors)
 			table.remove(ancestors);
 		end
 		result = result..introspect_metatable(object,indent..indent_string,name,known,ancestors)
+		result = result..introspect_uservalue(object,indent..indent_string,name,known,ancestors)
 		return result;
 	elseif obj_expand_mode == "function" then
 		return "\n"
@@ -105,6 +117,7 @@ introspect_body = function (object,indent,name,known,ancestors)
 			end
 		end
 		result = result..introspect_metatable(object,indent..indent_string,name,known,ancestors)
+		result = result..introspect_uservalue(object,indent..indent_string,name,known,ancestors)
 		return result
 	end
 	error("unknown type of object")

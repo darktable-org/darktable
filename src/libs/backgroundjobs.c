@@ -346,10 +346,10 @@ static int lua_create_job(lua_State *L){
   dt_lua_lock();
   luaA_push(L,dt_lua_backgroundjob_t,&key);
   if(cancellable) {
-    lua_newtable(L);
+    lua_getuservalue(L,-1);
     lua_pushvalue(L,3);
     lua_setfield(L,-2,"cancel_callback");
-    lua_setuservalue(L,-2);
+    lua_pop(L,1);
   }
   return 1;
 }
