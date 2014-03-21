@@ -623,6 +623,18 @@ add_definitions("-Werror=implicit-function-declaration")
 
 ###### GTK+3 port ######
 
+###### Some good warnings ######
+# Clang-specific warnings:
+if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+# so far, this option is only avaliable on trunk clang, disabling it until next clang release
+#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=absolute-value")
+endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+
+# Generic (gcc) warnings:
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
+###### Some good warnings ######
+
+
 target_link_libraries(lib_darktable ${LIBS})
 
 if(WIN32)

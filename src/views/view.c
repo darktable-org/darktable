@@ -1016,7 +1016,7 @@ dt_view_image_expose(
         else x = (.04+8*0.04-1.9*.04)*fscale;
         dt_view_draw_audio(cr, x, y, s);
         // mouse is over the audio icon
-        if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s)
+        if(fabsf(px-x) <= 1.2*s && fabsf(-y) <= 1.2*s)
           *image_over = DT_VIEW_AUDIO;
       }
 #endif
@@ -1058,7 +1058,7 @@ dt_view_image_expose(
         dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
         cairo_restore(cr);
         // mouse is over the grouping icon
-        if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
+        if(img && fabs(px-_x-.5*s) <= .8*s && fabs(py-_y-.5*s) <= .8*s)
           *image_over = DT_VIEW_GROUP;
       }
 
@@ -1085,7 +1085,7 @@ dt_view_image_expose(
         else x = (.04+8*0.04)*fscale;
         dt_view_draw_altered(cr, x, y, s);
         //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-        if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+        if(img && fabsf(px-x) <= 1.2*s && fabsf(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
         {
           darktable.gui->center_tooltip = 1;
         }
