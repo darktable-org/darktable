@@ -276,16 +276,8 @@ void dt_lua_register_storage_typeid(lua_State* L, dt_imageio_module_storage_t* m
 
 };
 
-<<<<<<< HEAD
 int dt_lua_init_modules(lua_State *L)
 {
-=======
-  char tmp_string[1024];
-  snprintf(tmp_string, sizeof(tmp_string),"module_current_settings_%s_%s",module_type_name,entry_name);
-  dt_lua_init_wrapped_singleton(L,pusher,getter,tmp_string,entry);
-  dt_lua_register_type_callback_stack_typeid(L,entry_type,"settings");
-}
->>>>>>> ddcbf02... Ported first half of sprintf calls to snprintf
 
   dt_lua_push_darktable_lib(L);
   dt_lua_goto_subtable(L,"modules");
