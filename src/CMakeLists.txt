@@ -407,48 +407,38 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
+  if(NOT BINARY_PACKAGE_BUILD)
+    MESSAGE("-- Checking for -march=native support")
+    CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
+    if (MARCHNATIVE)
+      set(MARCH "-march=native")
+    else()
+      MESSAGE("-- Checking for -mtune=native support")
+      CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
+      if (MTUNENATIVE)
+        set(MARCH "-mtune=native")
+      else()
+        set(MARCH "-mtune=generic")
+      endif()
+    endif()
+  else()
+    set(MARCH "-mtune=generic")
+  endif()
 
-if(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  # apple build fails on deprecated warnings..
-  # and too many warnings reported by Clang for now
-  if(NOT SOURCE_PACKAGE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
-  endif(NOT SOURCE_PACKAGE)
-endif(NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-if(NOT BINARY_PACKAGE_BUILD)
-	MESSAGE("-- Checking for -march=native support")
-	CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
-	if (MARCHNATIVE)
-		set(MARCH "-march=native")
-	else()
-		MESSAGE("-- Checking for -mtune=native support")
-		CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
-		if (MTUNENATIVE)
-			set(MARCH "-mtune=native")
-		else()
-			set(MARCH "-mtune=generic")
-		endif()
-	endif()
-else()
- 	set(MARCH "-mtune=generic")
-endif()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
-if(CMAKE_COMPILER_IS_GNUCC)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
-endif()
-
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+  if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
+  endif()
+  if(CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
+  endif()
 endif(NOT CUSTOM_CFLAGS)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
@@ -460,26 +450,159 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/config.cmake.h" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
+#
+# Build external deps
+#
+
+#
+# the libraw part is a bit of a hack:
+# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
+# so we do a custom dependency and pretend an imported liblibraw_r.a so no other -l are
+# appended.
+#
+add_library(libraw_static STATIC IMPORTED)
+set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
+add_subdirectory(external/LibRaw)
+list(APPEND LIBS libraw_r)
+list(APPEND STATIC_LIBS ${LIBRAW_STATIC_LIBS} libraw_static)
+
+# same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
+if(NOT DONT_USE_RAWSPEED)
+  add_definitions("-DHAVE_RAWSPEED")
+  add_library(rawspeed_static STATIC IMPORTED)
+  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
+  # compile rawspeed
+  add_subdirectory(external/rawspeed)
+  list(APPEND LIBS rawspeed)
+  list(APPEND STATIC_LIBS rawspeed_static)
+endif(NOT DONT_USE_RAWSPEED)
+
+# osm gps map library
+if(USE_GEO)
+  find_package(LibSoup2)
+  if(LIBSOUP2_FOUND)
+    include_directories(SYSTEM ${LIBSOUP2_INCLUDE_DIRS})
+    add_definitions(${LIBSOUP2_DEFINITIONS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
+    add_library(osmgpsmap_static STATIC IMPORTED)
+    set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
+    add_subdirectory(external/osm-gps-map)
+    list(APPEND LIBS ${LIBSOUP2_LIBRARIES} osmgpsmap)
+    list(APPEND STATIC_LIBS osmgpsmap_static)
+    add_definitions("-DHAVE_MAP")
+    message(STATUS "Map mode: enabled")
+  else(LIBSOUP2_FOUND)
+    set(USE_GEO OFF)
+    message(STATUS "Map mode: disabled, please install libsoup2")
+  endif(LIBSOUP2_FOUND)
+else(USE_GEO)
+  message(STATUS "Map mode: disabled")
+endif(USE_GEO)
+
+# libcolord-gtk:
+if(USE_COLORD)
+  find_package(Colord)
+  if(COLORD_FOUND)
+    add_definitions("-DUSE_COLORDGTK")
+    include_directories(SYSTEM ${COLORD_INCLUDE_DIRS})
+    # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
+    add_library(colord-gtk_static STATIC IMPORTED)
+    set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
+    add_subdirectory(external/colord-gtk)
+    add_dependencies(colord-gtk colord)
+    list(APPEND LIBS ${COLORD_LIBRARIES} colord-gtk)
+    list(APPEND STATIC_LIBS colord-gtk_static)
+  else(COLORD_FOUND)
+    set(USE_COLORD OFF)
+  endif(COLORD_FOUND)
+endif(USE_COLORD)
+
+if(USE_SQUISH)
+  # libsquish for compressed thumbnails:
+  add_definitions("-DHAVE_SQUISH")
+  add_library(squish_static STATIC IMPORTED)
+  set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
+  add_subdirectory(external/squish)
+  list(APPEND LIBS squish)
+  list(APPEND STATIC_LIBS squish_static)
+endif(USE_SQUISH)
+
+if(USE_LUA)
+  if(NOT LUA52_FOUND)
+    list(APPEND LIBS liblua) # 2nd half of the uglyness :/
+  endif(NOT LUA52_FOUND)
+  # liblautoc for lua automated interface generation
+  add_library(lautoc_static STATIC IMPORTED)
+  set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
+  add_subdirectory(external/LuaAutoC)
+  list(APPEND LIBS lautoc)
+  list(APPEND STATIC_LIBS lautoc_static)
+endif(USE_LUA)
+
+#
+# set development flags for our code
+#
+if(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  # apple build fails on deprecated warnings..
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
+endif(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
+
+###### GTK+3 port ######
+#
+#  Do not include individual headers
+#
+add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
+
+#
+# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
+#
+add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
+
+#
+# Use accessor functions instead of direct access
+#
+add_definitions("-DGSEAL_ENABLE")
+
+#
+#  Do not use deprecated symbols
+#
+add_definitions("-DGDK_DISABLE_DEPRECATED")
+add_definitions("-DGTK_DISABLE_DEPRECATED")
+add_definitions("-Werror=implicit-function-declaration")
+###### GTK+3 port ######
+
+###### Some good warnings ######
+# Clang-specific warnings:
+if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+# so far, this option is only avaliable on trunk clang, disabling it until next clang release
+#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=absolute-value")
+endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+
+# Generic (gcc) warnings:
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
+###### Some good warnings ######
 
 #
 # Setup generation of preference dialog files..
 #
 if(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-	add_custom_command(
-		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
-		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-		COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-	)
+  add_custom_command(
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+    COMMAND ${Xsltproc_BIN} --stringparam HAVE_OPENCL ${HAVE_OPENCL} ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+  )
 else(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
-	if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-		add_custom_command(
-			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
-			OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-			COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
-		)
-	else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-		message(FATAL_ERROR "Don't know how to generate preferences")
-	endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+  if(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    add_custom_command(
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl ${CMAKE_CURRENT_SOURCE_DIR}/../data/darktableconfig.dtd ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+      COMMAND ${Saxon_BIN} ${CMAKE_CURRENT_BINARY_DIR}/../data/darktableconfig.xml ${CMAKE_CURRENT_SOURCE_DIR}/../tools/generate_prefs.xsl HAVE_OPENCL=${HAVE_OPENCL} > ${CMAKE_CURRENT_BINARY_DIR}/preferences_gen.h
+    )
+  else(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
+    message(FATAL_ERROR "Don't know how to generate preferences")
+  endif(NOT ${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
 endif(NOT ${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
 
 #
@@ -506,137 +629,16 @@ set_target_properties(lib_darktable PROPERTIES OUTPUT_NAME darktable)
 set_target_properties(lib_darktable PROPERTIES LINKER_LANGUAGE C)
 
 #
-# the libraw part is a bit of a hack:
-# the static linking didn't work since it was pulling -lstdc++ and -lm into linker flags.
-# so we do a custom dependency and pretend an imported liblibraw_r.a so no other -l are
-# appended.
+# Link external libs
 #
-add_dependencies(lib_darktable libraw_r)
-add_library(libraw_static STATIC IMPORTED)
-set_target_properties(libraw_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LibRaw/liblibraw_r.a)
-set(LIBRAW_STATIC_LIBS libraw_static)
 
-target_link_libraries(lib_darktable ${LIBRAW_STATIC_LIBS})
-list(APPEND STATIC_LIBS ${LIBRAW_STATIC_LIBS})
-
-# same for librawspeed (can switch it off with -DDONT_USE_RAWSPEED, for macs):
-if(NOT DONT_USE_RAWSPEED)
-  add_definitions("-DHAVE_RAWSPEED")
-  add_dependencies(lib_darktable rawspeed)
-  add_library(rawspeed_static STATIC IMPORTED)
-  set_target_properties(rawspeed_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/rawspeed/librawspeed.a)
-  target_link_libraries(lib_darktable rawspeed_static)
-  # compile rawspeed
-  add_subdirectory(external/rawspeed)
-  list(APPEND STATIC_LIBS rawspeed_static)
-endif(NOT DONT_USE_RAWSPEED)
-
-# osm gps map library
-if(USE_GEO)
-  find_package(LibSoup2)
-  if(LIBSOUP2_FOUND)
-    include_directories(SYSTEM ${LIBSOUP2_INCLUDE_DIRS})
-    list(APPEND LIBS ${LIBSOUP2_LIBRARIES})
-    add_definitions(${LIBSOUP2_DEFINITIONS})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/osm-gps-map/src)
-    add_dependencies(lib_darktable osmgpsmap)
-    add_library(osmgpsmap_static STATIC IMPORTED)
-    set_target_properties(osmgpsmap_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/osm-gps-map/libosmgpsmap.a)
-    target_link_libraries(lib_darktable osmgpsmap_static)
-    add_subdirectory(external/osm-gps-map)
-    list(APPEND STATIC_LIBS osmgpsmap_static)
-    add_definitions("-DHAVE_MAP")
-    message(STATUS "Map mode: enabled")
-  else(LIBSOUP2_FOUND)
-    set(USE_GEO OFF)
-    message(STATUS "Map mode: disabled, please install libsoup2")
-  endif(LIBSOUP2_FOUND)
-else(USE_GEO)
-  message(STATUS "Map mode: disabled")
-endif(USE_GEO)
-
-# libcolord-gtk:
-if(USE_COLORD)
-  find_package(Colord)
-  if(COLORD_FOUND)
-    include_directories(SYSTEM ${COLORD_INCLUDE_DIRS})
-    list(APPEND LIBS ${COLORD_LIBRARIES})
-    # we ship our own copy of libcolord-gtk - the one packaged in distros is linked against gtk3 :(
-    add_dependencies(lib_darktable colord-gtk)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/colord-gtk/src)
-    add_library(colord-gtk_static STATIC IMPORTED)
-    set_target_properties(colord-gtk_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/colord-gtk/libcolord-gtk.a)
-    target_link_libraries(lib_darktable colord-gtk_static)
-    add_subdirectory(external/colord-gtk)
-    list(APPEND STATIC_LIBS colord-gtk_static)
-    add_dependencies(colord-gtk colord)
-    add_definitions("-DUSE_COLORDGTK")
-  endif(COLORD_FOUND)
-endif(USE_COLORD)
-
-if(USE_SQUISH)
-  # libsquish for compressed thumbnails:
-  add_dependencies(lib_darktable squish)
-  add_library(squish_static STATIC IMPORTED)
-  set_target_properties(squish_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/squish/libsquish.a)
-  target_link_libraries(lib_darktable squish_static)
-  add_subdirectory(external/squish)
-  add_definitions("-DHAVE_SQUISH")
-endif(USE_SQUISH)
-
-if(USE_LUA)
-  if(NOT LUA52_FOUND)
-    add_dependencies(lib_darktable liblua) # 2nd half of the uglyness :/
-  endif(NOT LUA52_FOUND)
-	# liblautoc for lua automated interface generation
-	add_dependencies(lib_darktable lautoc)
-	add_library(lautoc_static STATIC IMPORTED)
-	set_target_properties(lautoc_static PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/external/LuaAutoC/liblautoc.a)
-	target_link_libraries(lib_darktable lautoc_static)
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/LuaAutoC/include)
-	add_subdirectory(external/LuaAutoC)
-endif(USE_LUA)
-
-###### GTK+3 port ######
-
-#
-#  Do not include individual headers
-#
-add_definitions("-DGTK_DISABLE_SINGLE_INCLUDES")
-
-#
-# Dirty hack to enforce GTK3 behaviour in GTK2: "Replace GDK_<keyname> with GDK_KEY_<keyname>"
-#
-add_definitions("-D__GDK_KEYSYMS_COMPAT_H__")
-
-#
-# Use accessor functions instead of direct access
-#
-add_definitions("-DGSEAL_ENABLE")
-
-#
-#  Do not use deprecated symbols
-#
-add_definitions("-DGDK_DISABLE_DEPRECATED")
-add_definitions("-DGTK_DISABLE_DEPRECATED")
-add_definitions("-Werror=implicit-function-declaration")
-
-###### GTK+3 port ######
-
-###### Some good warnings ######
-# Clang-specific warnings:
-if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-# so far, this option is only avaliable on trunk clang, disabling it until next clang release
-#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=absolute-value")
-endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-
-# Generic (gcc) warnings:
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
-###### Some good warnings ######
-
-
+add_dependencies(lib_darktable ${LIBS})
+target_link_libraries(lib_darktable ${STATIC_LIBS})
 target_link_libraries(lib_darktable ${LIBS})
 
+#
+# Install lib_darktable
+#
 if(WIN32)
   # Windows needs its DLLs in the same directory as the executable to find them.
   install(TARGETS lib_darktable DESTINATION bin)
@@ -646,9 +648,6 @@ endif(WIN32)
 
 # make sure static libs is first
 list(INSERT LIBS 0 lib_darktable ${STATIC_LIBS})
-
-# Compile libraw modules
-add_subdirectory(external/LibRaw)
 
 # Compile views modules
 add_subdirectory(views)
@@ -663,8 +662,8 @@ add_subdirectory(iop)
 add_subdirectory(imageio)
 
 if(HAVE_OPENCL)
-# have a small test program, to be run as root on some systems to enable the driver to run cl stuff
-add_subdirectory(cltest)
+  # have a small test program, to be run as root on some systems to enable the driver to run cl stuff
+  add_subdirectory(cltest)
 endif(HAVE_OPENCL)
 
 # have a command line interface
@@ -691,7 +690,3 @@ if(APPLE)
 endif(APPLE)
 target_link_libraries(darktable ${LIBS})
 install(TARGETS darktable DESTINATION bin)
-
-
-
-
