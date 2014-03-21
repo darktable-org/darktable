@@ -100,7 +100,6 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
 {
   const gchar *file_ext=NULL;
   gboolean got_value=FALSE;
-  //struct tm *tim=localtime(&params->data->time);
   struct tm tim;
   localtime_r(&params->data->time, &tim);
 
@@ -144,8 +143,6 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     dt_image_cache_read_release(darktable.image_cache, img);
   }
   else if (params->data->exif_time) {
-      //struct tm* ttmp = localtime(&params->data->exif_time);
-      //exif_tm = *ttmp;
       localtime_r(&params->data->exif_time, &exif_tm);
       have_exif_tm = TRUE;
   }
