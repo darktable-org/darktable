@@ -813,8 +813,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   char dtfilename[DT_MAX_PATH_LEN];
   g_strlcpy(dtfilename, filename, DT_MAX_PATH_LEN);
   //dt_image_path_append_version(id, dtfilename, DT_MAX_PATH_LEN);
-  char *c = dtfilename + strlen(dtfilename);
-  sprintf(c, ".xmp");
+  g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
 
   int res = dt_exif_xmp_read(img, dtfilename, 0);
 
@@ -1276,11 +1275,10 @@ void dt_image_write_sidecar_file(int imgid)
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     gboolean from_cache = TRUE;
-    char filename[DT_MAX_PATH_LEN+8];
+    char filename[DT_MAX_PATH_LEN];
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
+    g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
     if(!dt_exif_xmp_write(imgid, filename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
