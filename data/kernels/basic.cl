@@ -323,31 +323,38 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
   const float L = lookup_unbounded(table_L, L_in, coeffs_L);
-  if (autoscale_ab == 0 && unbound_ab == 0)
+
+  if (autoscale_ab == 0)
   {
     const float a_in = (pixel.y + 128.0f) / 256.0f;
     const float b_in = (pixel.z + 128.0f) / 256.0f;
-    pixel.y = lookup(table_a, a_in);
-    pixel.z = lookup(table_b, b_in);
-  }
-  if (autoscale_ab == 0 && unbound_ab == 1)
-  {
-    const float a_in = (pixel.y + 128.0f) / 256.0f;
-    const float b_in = (pixel.z + 128.0f) / 256.0f;
-    // use lut or two-sided extrapolation
-    pixel.y = lookup_unbounded_twosided(table_a, a_in, coeffs_ab);
-    pixel.z = lookup_unbounded_twosided(table_b, b_in, coeffs_ab + 6);
-  }
-  else if(pixel.x > 0.01f)
-  {
-    pixel.y *= L/pixel.x;
-    pixel.z *= L/pixel.x;
+
+    if (unbound_ab == 0)
+    {
+      pixel.y = lookup(table_a, a_in);
+      pixel.z = lookup(table_b, b_in);
+    }
+    else
+    {
+      // use lut or two-sided extrapolation
+      pixel.y = lookup_unbounded_twosided(table_a, a_in, coeffs_ab);
+      pixel.z = lookup_unbounded_twosided(table_b, b_in, coeffs_ab + 6);
+    }
   }
   else
   {
-    pixel.y *= low_approximation;
-    pixel.z *= low_approximation;
+    if(pixel.x > 0.01f)
+    {
+      pixel.y *= L/pixel.x;
+      pixel.z *= L/pixel.x;
+    }
+    else
+    {
+      pixel.y *= low_approximation;
+      pixel.z *= low_approximation;
+    }
   }
+
   pixel.x = L;
   write_imagef (out, (int2)(x, y), pixel);
 }

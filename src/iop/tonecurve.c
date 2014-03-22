@@ -317,37 +317,42 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
                 dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if (autoscale_ab == 0 && unbound_ab == 0)
+      if(autoscale_ab == 0)
       {
-        // old style handling of a/b curves: only lut lookup with clamping
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
-        out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
-      }
-      if (autoscale_ab == 0 && unbound_ab == 1)
-      {
-        // new style handling of a/b curves: lut lookup with two-sided extrapolation;
-        // mind the x-axis reversal for the left-handed side
-        const float a_in = (in[1] + 128.0f) / 256.0f;
-        const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
-                ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
-                 d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
-        out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
-                ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
-                 d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
-      }
-      // in Lab: correct compressed Luminance for saturation:
-      else if(L_in > 0.01f)
-      {
-        out[1] = in[1] * out[0]/in[0];
-        out[2] = in[2] * out[0]/in[0];
+
+        if(unbound_ab == 0)
+        {
+          // old style handling of a/b curves: only lut lookup with clamping
+          out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
+          out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
+        }
+        else
+        {
+          // new style handling of a/b curves: lut lookup with two-sided extrapolation;
+          // mind the x-axis reversal for the left-handed side
+          out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
+                  ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
+                   d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
+          out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
+                  ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
+                   d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
+        }
       }
       else
       {
-        out[1] = in[1] * low_approximation;
-        out[2] = in[2] * low_approximation;
+        // in Lab: correct compressed Luminance for saturation:
+        if(L_in > 0.01f)
+        {
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
+        }
+        else
+        {
+          out[1] = in[1] * low_approximation;
+          out[2] = in[2] * low_approximation;
+        }
       }
 
       out[3] = in[3];
