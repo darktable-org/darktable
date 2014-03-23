@@ -182,55 +182,6 @@ foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule Cairo PangoCairo PThread Rsv
   add_definitions(${${lib}_DEFINITIONS})
 endforeach(lib)
 
-if(USE_LUA)
-  find_package(Lua52 5.2) # add EXACT if 5.3 doesn't work for us
-  if(LUA52_FOUND)
-    message(STATUS "Lua support: Enabled")
-    include_directories(SYSTEM ${LUA52_INCLUDE_DIRS})
-    list(APPEND LIBS ${LUA52_LIBRARIES})
-  else()
-    if(DONT_USE_INTERNAL_LUA)
-	    message(STATUS "Lua support: System library not found (to use darktable's version use -DDONT_USE_INTERNAL_LUA=Off)")
-      set(USE_LUA OFF)
-    else(DONT_USE_INTERNAL_LUA)
-	    message(STATUS "Lua support: System library not found (using darktable's version)")
-      include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/lua/src)
-      add_subdirectory(external/lua)
-      list(APPEND LIBS lua)
-    endif(DONT_USE_INTERNAL_LUA)
-  endif(LUA52_FOUND)
-
-  if(USE_LUA)
-    add_definitions("-DUSE_LUA")
-    FILE(GLOB SOURCE_FILES_LUA
-      "lua/call.c"
-      "lua/configuration.c"
-      "lua/database.c"
-      "lua/events.c"
-      "lua/film.c"
-      "lua/format.c"
-      "lua/glist.c"
-      "lua/gui.c"
-      "lua/image.c"
-      "lua/init.c"
-      "lua/lib.c"
-      "lua/lua.c"
-      "lua/luastorage.c"
-      "lua/modules.c"
-      "lua/preferences.c"
-      "lua/print.c"
-      "lua/storage.c"
-      "lua/styles.c"
-      "lua/tags.c"
-      "lua/types.c"
-      "lua/view.c"
-      )
-    set(SOURCES ${SOURCES} ${SOURCE_FILES_LUA})
-  endif(USE_LUA)
-else(USE_LUA)
-  message(STATUS "Lua support: Disabled")
-endif(USE_LUA)
-
 if(USE_NLS)
   find_package(Gettext)
   if(Gettext_FOUND)
@@ -315,16 +266,6 @@ if(USE_GRAPHICSMAGICK)
     list(APPEND LIBS ${GraphicsMagick_LIBRARIES})
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
-
-
-# build opengl slideshow viewer?
-if(BUILD_SLIDESHOW)
-  find_package(SDL)
-  find_package(OpenGL)
-  if(SDL_FOUND AND OPENGL_FOUND)
-    add_subdirectory(dtview)
-  endif(SDL_FOUND AND OPENGL_FOUND)
-endif(BUILD_SLIDESHOW)
 
 # needed for the file manager
 if(APRIL_FOOLS)
