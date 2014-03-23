@@ -50,7 +50,6 @@ typedef struct dt_map_t
   struct
   {
     sqlite3_stmt *main_query;
-    sqlite3_stmt *coll_query;
   } statements;
   gboolean drop_filmstrip_activated;
   gboolean filter_images_drawn;
@@ -100,7 +99,6 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
 static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, gboolean record_undo);
 static void _get_image_location(dt_view_t *self, int imgid, float *longitude, float *latitude);
 
-static gboolean _view_map_is_imgid_in_collection(dt_map_t *lib, int imgid);
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
 
@@ -321,8 +319,6 @@ void init(dt_view_t *self)
   lib->statements.main_query = NULL;
   _view_map_build_main_query(lib);
 
-  lib->statements.coll_query = NULL;
-
 #ifdef USE_LUA
   int my_typeid = dt_lua_module_get_entry_typeid(darktable.lua_state.state,"view",self->module_name);
   dt_lua_register_type_callback_list_typeid(darktable.lua_state.state,my_typeid,map_index,map_newindex,map_fields_name);
@@ -345,8 +341,6 @@ void cleanup(dt_view_t *self)
   }
   if(lib->statements.main_query)
     sqlite3_finalize(lib->statements.main_query);
-  if(lib->statements.coll_query)
-    sqlite3_finalize(lib->statements.coll_query);
   free(self->data);
 }
 
@@ -430,8 +424,6 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   while(i<lib->max_images_drawn && sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
-    if(lib->filter_images_drawn && !_view_map_is_imgid_in_collection(lib, imgid))
-      continue;
     dt_mipmap_buffer_t buf;
     dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT);
 
@@ -823,11 +815,6 @@ static void _view_map_collection_change(gpointer instance, gpointer user_data)
 
   if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
   {
-    /* force build new query */
-    if(lib->statements.coll_query)
-      sqlite3_finalize(lib->statements.coll_query);
-    lib->statements.coll_query = NULL;
-
     /* only redraw when map mode is cuurently active, otherwise enter() does the magic */
     if(darktable.view_manager->proxy.map.view)
       g_signal_emit_by_name(lib->map, "changed");
@@ -1014,50 +1001,6 @@ static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext 
   return TRUE;
 }
 
-static gboolean _view_map_is_imgid_in_collection(dt_map_t *lib, int imgid)
-{
-  uint32_t count=1;
-  const dt_collection_t *collection = darktable.collection;
-  const gchar *query = dt_collection_get_query(collection);
-  gchar *count_query = NULL;
-
-  if(lib->statements.coll_query==NULL)
-  {
-    /* prepare new query */
-    gchar *fw = g_strstr_len(query, strlen(query), "where") + 6;
-    gchar *qq = NULL;
-    
-    qq = dt_util_dstrcat(qq, "id=?3 and %s", fw);
-
-    if ((collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-      count_query = dt_util_dstrcat(NULL, "select count(images.id) from images %s and id=?3", collection->where_ext);
-    else
-      count_query = dt_util_dstrcat(count_query, "select count(id) from images where %s", qq);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &lib->statements.coll_query, NULL);
-    g_free(qq);
-    g_free(count_query);
-  }
-  else
-  {
-    /* reuse existing query */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.coll_query);
-    DT_DEBUG_SQLITE3_RESET(lib->statements.coll_query);
-  }
-
-  if ((collection->params.query_flags&COLLECTION_QUERY_USE_LIMIT) &&
-      !(collection->params.query_flags&COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-  {
-    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 1, 0);
-    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 2, -1);
-  }
-  DT_DEBUG_SQLITE3_BIND_INT(lib->statements.coll_query, 3, imgid);
-
-  if(sqlite3_step(lib->statements.coll_query) == SQLITE_ROW)
-    count = sqlite3_column_int(lib->statements.coll_query, 0);
-  return count>0;
-}
-
 static gboolean _view_map_prefs_changed(dt_map_t *lib)
 {
   gboolean prefs_changed = FALSE;
@@ -1074,7 +1017,7 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib)
 
 static void _view_map_build_main_query(dt_map_t *lib)
 {
-  char *limit;
+  char *filter;
   char *geo_query;
 
   if(lib->statements.main_query)
@@ -1085,18 +1028,18 @@ static void _view_map_build_main_query(dt_map_t *lib)
     lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
   if(lib->filter_images_drawn)
-    limit = g_strdup("");
+    filter = g_strdup_printf("and id in (select imgid from memory.collected_images)");
   else
-    limit = g_strdup_printf("limit 0, %d", lib->max_images_drawn);
+    filter = g_strdup("");
   geo_query = g_strdup_printf("select * from (select id, latitude from images where \
               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-      and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
-      %s) order by (180 - latitude), id", limit);
+      and longitude not NULL and latitude not NULL %s order by abs(latitude - ?5), abs(longitude - ?6) \
+      limit 0, %d) order by (180 - latitude), id", filter, lib->max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
-  g_free(limit);
+  g_free(filter);
   g_free(geo_query);
 }
 
