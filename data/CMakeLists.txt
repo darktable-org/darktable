@@ -50,12 +50,13 @@ endif(USE_LUA)
 #
 # Install (and generate when necessary) other system shares
 #
+file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT darktable.desktop
 		SOURCE darktable.desktop.in
 		COMMAND ${intltool_merge_BIN} -d ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.desktop.in
-		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po
+		DEPENDS ${PO_FILES}
 )
 add_custom_target(darktable.desktop ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop DESTINATION ./share/applications)
