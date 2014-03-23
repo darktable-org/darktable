@@ -319,7 +319,6 @@ endif(GPHOTO2_FOUND)
 # Set default compile flags for GCC
 #
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fno-strict-aliasing")
-# c++ code doesn't like -Werror (libraw)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-strict-aliasing")
 
 if(NOT WIN32)
@@ -348,6 +347,9 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
+  #if cpu-type will be generic, we MUST specify our requred instruction set
+  set(DT_REQ_INSTRUCTIONS "-msse2")
+
   if(NOT BINARY_PACKAGE_BUILD)
     MESSAGE("-- Checking for -march=native support")
     CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
@@ -359,23 +361,27 @@ if(NOT CUSTOM_CFLAGS)
       if (MTUNENATIVE)
         set(MARCH "-mtune=native")
       else()
-        set(MARCH "-mtune=generic")
+        set(MARCH "-mtune=generic ${DT_REQ_INSTRUCTIONS}")
       endif()
     endif()
   else()
-    set(MARCH "-mtune=generic")
+    set(MARCH "-mtune=generic ${DT_REQ_INSTRUCTIONS}")
   endif()
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -g")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -g")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -g")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math ${MARCH}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g")
+  #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} -g")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math")
   if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
   endif()
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} -g")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math")
   if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fexpensive-optimizations")
@@ -536,6 +542,7 @@ endif(USE_LUA)
 if(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
 endif(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 ###### GTK+3 port ######
