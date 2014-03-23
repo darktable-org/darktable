@@ -497,11 +497,11 @@ static void _brush_points_recurs(float *p1, float *p2,
                          points_max,points_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<2 && (int)points_min[0]-(int)points_max[0]>-2 &&
-                               (int)points_min[1]-(int)points_max[1]<2 && (int)points_min[1]-(int)points_max[1]>-2 &&
+  if ((tmax-tmin < 0.0001f) || ((int)points_min[0]-(int)points_max[0]<1 && (int)points_min[0]-(int)points_max[0]>-1 &&
+                               (int)points_min[1]-(int)points_max[1]<1 && (int)points_min[1]-(int)points_max[1]>-1 &&
                                (!withborder || (
-                                  (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
-                                  (int)border_min[1]-(int)border_max[1]<2 && (int)border_min[1]-(int)border_max[1]>-2))))
+                                  (int)border_min[0]-(int)border_max[0]<1 && (int)border_min[0]-(int)border_max[0]>-1 &&
+                                  (int)border_min[1]-(int)border_max[1]<1 && (int)border_min[1]-(int)border_max[1]>-1))))
   {
     points[*pos_points] = points_max[0];
     points[*pos_points+1] = points_max[1];
