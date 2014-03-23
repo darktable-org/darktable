@@ -365,7 +365,6 @@ static gboolean _view_map_redraw(gpointer user_data)
 static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  int i=0;
 
   OsmGpsMapPoint bb[2];
 
@@ -421,7 +420,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   /* add  all images to the map */
   gboolean needs_redraw = FALSE;
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, thumb_size, thumb_size);
-  while(i<lib->max_images_drawn && sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
+  while(sqlite3_step(lib->statements.main_query) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(lib->statements.main_query, 0);
     dt_mipmap_buffer_t buf;
@@ -429,7 +428,6 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
     if(buf.buf)
     {
-      i++;
       GdkPixbuf *source = NULL, *thumb = NULL;
       uint8_t *scratchmem = dt_mipmap_cache_alloc_scratchmem(darktable.mipmap_cache);
       uint8_t *buf_decompressed = dt_mipmap_cache_decompress(&buf, scratchmem);
