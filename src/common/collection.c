@@ -292,7 +292,7 @@ dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t s
 {
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
 
-  if(sort != -1)
+  if(sort != DT_COLLECTION_SORT_NONE)
     params->sort = sort;
   if(reverse != -1)
     params->descending = reverse;
@@ -338,6 +338,10 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
       case DT_COLLECTION_SORT_COLOR:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename, version");
         break;
+
+      case DT_COLLECTION_SORT_NONE:
+        //shouldn't happen
+        break;
     }
   }
   else
@@ -362,6 +366,10 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_COLOR:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_NONE:
+        //shouldn't happen
         break;
     }
   }
