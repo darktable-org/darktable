@@ -95,8 +95,8 @@ dt_imageio_open_rawspeed(
   FileReader f(filen);
 #endif
 
-  std::auto_ptr<RawDecoder> d;
-  std::auto_ptr<FileMap> m;
+  std::unique_ptr<RawDecoder> d;
+  std::unique_ptr<FileMap> m;
 
   try
   {
@@ -115,10 +115,10 @@ dt_imageio_open_rawspeed(
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
 
-    m = auto_ptr<FileMap>(f.readFile());
+    m = unique_ptr<FileMap>(f.readFile());
 
     RawParser t(m.get());
-    d = auto_ptr<RawDecoder>(t.getDecoder());
+    d = unique_ptr<RawDecoder>(t.getDecoder());
 
     if(!d.get())
       return DT_IMAGEIO_FILE_CORRUPTED;
