@@ -347,7 +347,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
   parameters.cp_rsiz = STD_RSIZ;
 
   parameters.cod_format = j2k->format;
-  parameters.cp_cinema = j2k->preset;
+  parameters.cp_cinema = (OPJ_CINEMA_MODE)j2k->preset;
 
   if(parameters.cp_cinema)
   {

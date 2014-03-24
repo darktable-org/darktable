@@ -122,6 +122,7 @@ compressed_buffer_size(const int32_t compression_type, const int width, const in
     return width*height*sizeof(uint32_t);
 }
 
+#ifndef NDEBUG
 static inline int32_t
 buffer_is_broken(dt_mipmap_buffer_t *buf)
 {
@@ -133,6 +134,7 @@ buffer_is_broken(dt_mipmap_buffer_t *buf)
   if(buf->width*buf->height > dsc->size) return 3;
   return 0;
 }
+#endif
 
 static inline uint32_t
 get_key(const uint32_t imgid, const dt_mipmap_size_t size)
