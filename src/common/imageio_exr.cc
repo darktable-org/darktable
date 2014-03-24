@@ -50,8 +50,13 @@ extern "C"
 dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
   bool isTiled=false;
+#ifdef __APPLE__
+  std::auto_ptr<Imf::TiledInputFile> fileTiled;
+  std::auto_ptr<Imf::InputFile> file;
+#else
   std::unique_ptr<Imf::TiledInputFile> fileTiled;
   std::unique_ptr<Imf::InputFile> file;
+#endif
   const Imf::Header *header=NULL;
   Imath::Box2i dw;
   Imf::FrameBuffer frameBuffer;
@@ -67,14 +72,24 @@ dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, 
   {
     if(isTiled)
     {
+#ifdef __APPLE__
+      std::auto_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
+      fileTiled = temp;
+#else
       std::unique_ptr<Imf::TiledInputFile> temp(new Imf::TiledInputFile(filename));
       fileTiled = std::move(temp);
+#endif
       header = &(fileTiled->header());
     }
     else
     {
+#ifdef __APPLE__
+      std::auto_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
+      file = temp;
+#else
       std::unique_ptr<Imf::InputFile> temp(new Imf::InputFile(filename));
       file = std::move(temp);
+#endif
       header = &(file->header());
     }
   }
