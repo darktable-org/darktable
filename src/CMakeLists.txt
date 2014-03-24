@@ -629,7 +629,7 @@ add_definitions("-Werror=implicit-function-declaration")
 ###### Some good warnings ######
 # Clang-specific warnings:
 if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=absolute-value")
+#  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
 endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 # Generic (gcc) warnings:
