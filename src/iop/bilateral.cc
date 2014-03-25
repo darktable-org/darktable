@@ -172,8 +172,6 @@ extern "C"
         }
       }
       // fill unprocessed border
-      in  = (float *)ivoid;
-      out = (float *)ovoid;
       for(int j=0; j<rad; j++)
         memcpy(((float*)ovoid) + (size_t)ch*j*roi_out->width, ((float*)ivoid) + (size_t)ch*j*roi_in->width, (size_t)ch*sizeof(float)*roi_out->width);
       for(int j=roi_out->height-rad; j<roi_out->height; j++)
