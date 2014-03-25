@@ -320,7 +320,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 {
   int32_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
-  uint8_t *blob = NULL;
+  uint32_t *blob = NULL;
   FILE *f = NULL;
   int file_width[mip+1], file_height[mip+1];
 
@@ -415,7 +415,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   {
     int level = 0;
     rd = fread(&level, sizeof(int), 1, f);
-    if (level > mip) break;
+    if (rd != 1 || level > mip) break;
 
     int32_t key = 0;
     rd = fread(&key, sizeof(int32_t), 1, f);

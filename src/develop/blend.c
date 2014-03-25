@@ -625,9 +625,9 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *
     else
       for(int k=0; k<channels; k++)
       {
-        lmax = max[k]+fabs(min[k]);
-        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+//         lmax = max[k]+fabs(min[k]);
+//         la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+//         lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
 
         b[j+k] = CLAMP_RANGE( ((a[j+k] * (1.0f - local_opacity)) + ((a[j+k] * b[j+k]) * local_opacity)), min[k], max[k]);
       }

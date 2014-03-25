@@ -206,7 +206,6 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
-  gint dlg_ret;
   gint is_new = 0;
 
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -228,7 +227,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
         gtk_window_set_title(GTK_WINDOW (dlg_changename), _("unnamed preset"));
 
-        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_changename));
+        gtk_dialog_run (GTK_DIALOG (dlg_changename));
         gtk_widget_destroy (dlg_changename);
         return;
       }
@@ -254,7 +253,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
         gtk_window_set_title(GTK_WINDOW (dlg_overwrite), _("overwrite preset?"));
 
-        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
+        gint dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
         gtk_widget_destroy (dlg_overwrite);
 
         // if result is BUTTON_NO exit without destroy dialog, to permit other name
