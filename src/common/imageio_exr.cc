@@ -22,6 +22,19 @@
 #include "config.h"
 #endif
 
+#include <memory>
+#include <stdio.h>
+#include <inttypes.h>
+#include <string.h>
+#include <assert.h>
+
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfTestFile.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfTiledInputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStandardAttributes.h>
+
 extern "C"
 {
 #include "common/imageio_exr.h"
@@ -32,20 +45,7 @@ extern "C"
 #include "common/colorspaces.h"
 #include "control/conf.h"
 }
-
 #include "common/imageio_exr.hh"
-#include <memory>
-#include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <assert.h>
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTestFile.h>
-#include <OpenEXR/ImfInputFile.h>
-#include <OpenEXR/ImfTiledInputFile.h>
-#include <OpenEXR/ImfChannelList.h>
-#include <OpenEXR/ImfStandardAttributes.h>
-
 
 dt_imageio_retval_t dt_imageio_open_exr (dt_image_t *img, const char *filename, dt_mipmap_cache_allocator_t a)
 {
