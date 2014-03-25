@@ -370,9 +370,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
 #endif
 
 #ifndef __SSE2__
-  fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
-  fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-  return 1;
+  #error "Unfortunately we depend on SSE2 instructions at this time."
+  #error "Please contribute a backport patch (or buy a newer processor)."
 #endif
 
 #ifdef M_MMAP_THRESHOLD
