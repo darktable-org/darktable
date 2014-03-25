@@ -369,8 +369,8 @@ int dt_init(int argc, char *argv[], const int init_gui)
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
-#ifndef __SSE2__
-  #error "Unfortunately we depend on SSE2 instructions at this time."
+#ifndef __SSE3__
+  #error "Unfortunately we depend on SSE3 instructions at this time."
   #error "Please contribute a backport patch (or buy a newer processor)."
 #endif
 

@@ -347,7 +347,7 @@ endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
   #if cpu-type will be generic, we MUST specify our requred instruction set
-  set(DT_REQ_INSTRUCTIONS "-msse2")
+  set(DT_REQ_INSTRUCTIONS "-msse3")
 
   if(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
     MESSAGE("-- Checking for -march=native support")
