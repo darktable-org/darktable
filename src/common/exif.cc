@@ -488,13 +488,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       switch(pos->toLong())
       {
         case 76: // 90 cw
-          img->orientation = 6;
+          img->orientation = 4 | 2 | 0; // swap x/y, flip x
           break;
         case 82: // 270 cw
-          img->orientation = 7;
+          img->orientation = 4 | 0 | 1; // swap x/y, flip y
           break;
         default: // 72, horizontal
-          img->orientation = 0;
+          img->orientation = 0 | 0 | 0; // do nothing
       }
     }
 
