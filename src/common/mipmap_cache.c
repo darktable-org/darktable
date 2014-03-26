@@ -318,7 +318,7 @@ write_error:
 static int
 dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 {
-  int32_t rd = 0;
+  size_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
   uint32_t *blob = NULL;
   FILE *f = NULL;
