@@ -633,7 +633,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 endif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 
 # Generic (gcc) warnings:
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ")
+if(CMAKE_C_COMPILER_ID STREQUAL "GCC")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wold-style-declaration")
+endif(CMAKE_C_COMPILER_ID STREQUAL "GCC")
 ###### Some good warnings ######
 
 

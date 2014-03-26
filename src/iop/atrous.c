@@ -145,7 +145,7 @@ static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
 static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
-static __m128  inline
+static inline __m128
 dt_fast_expf_sse(const __m128 x)
 {
   __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
@@ -164,7 +164,7 @@ dt_fast_expf_sse(const __m128 x)
  * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
  *    = exp(-s*(d2+d3)) (as noted in code comments below)
  */
-static __m128  inline
+static inline __m128
 weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
   const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
