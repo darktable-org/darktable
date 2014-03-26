@@ -369,9 +369,25 @@ int dt_init(int argc, char *argv[], const int init_gui)
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
+#ifndef __has_builtin
+// http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+#define __has_builtin(x) false
+#endif
+
 #ifndef __SSE3__
   #error "Unfortunately we depend on SSE3 instructions at this time."
   #error "Please contribute a backport patch (or buy a newer processor)."
+#else
+#if ((defined(__GNUC__) &&__GNUC_PREREQ(4,8)) || __has_builtin(__builtin_cpu_supports))
+  //FIXME: check will work only in GCC 4.8+ !!! implement manual cpuid check !!!
+  //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  if (!__builtin_cpu_supports("sse3"))
+  {
+    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
+    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+    return 1;
+  }
+#endif
 #endif
 
 #ifdef M_MMAP_THRESHOLD
