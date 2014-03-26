@@ -346,7 +346,7 @@ if(WIN32)
 endif(WIN32)
 
 if(NOT CUSTOM_CFLAGS)
-  #if cpu-type will be generic, we MUST specify our requred instruction set
+  #we MUST always specify our requred instruction set, native might not detect it
   set(DT_REQ_INSTRUCTIONS "-msse3")
 
   if(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "Clang"))
@@ -360,15 +360,15 @@ if(NOT CUSTOM_CFLAGS)
       if (MTUNENATIVE)
         set(MARCH "-mtune=native")
       else()
-        set(MARCH "-mtune=generic ${DT_REQ_INSTRUCTIONS}")
+        set(MARCH "-mtune=generic")
       endif()
     endif()
   else()
-    set(MARCH "-mtune=generic ${DT_REQ_INSTRUCTIONS}")
+    set(MARCH "-mtune=generic")
   endif()
 
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} -g")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math")
@@ -377,7 +377,7 @@ if(NOT CUSTOM_CFLAGS)
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fexpensive-optimizations")
   endif()
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} -g")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math")
