@@ -971,7 +971,7 @@ dt_styles_import_from_file(const char *style_path)
   StyleData           *style;
   GMarkupParseContext	*parser;
   gchar				buf[1024];
-  int					num_read;
+  size_t			num_read;
 
   style = dt_styles_style_data_new();
   parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
@@ -987,8 +987,9 @@ dt_styles_import_from_file(const char *style_path)
       {
         break;
       }
-      else if (num_read < 0)
+      else if (num_read == -1)
       {
+        // FIXME: ferror?
         // ERROR !
         break;
       }

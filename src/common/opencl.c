@@ -917,7 +917,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
         size_t cached_filesize = cachedstat.st_size;
 
         unsigned char *cached_content = (unsigned char *)malloc(cached_filesize+1);
-        int rd = fread(cached_content, sizeof(char), cached_filesize, cached);
+        size_t rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if (rd != cached_filesize)
         {
           dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);

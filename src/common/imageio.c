@@ -507,7 +507,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
   if (fin)
   {
     /* read block from file */
-    int s = fread(block,16,1,fin);
+    size_t s = fread(block,16,1,fin);
     fclose(fin);
 
     /* compare magic's */
