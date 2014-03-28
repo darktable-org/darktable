@@ -554,11 +554,14 @@ endif()
 #
 # set development flags for our code
 #
-if(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE)
+if(NOT SOURCE_PACKAGE AND NOT APPLE)
   # apple build fails on deprecated warnings..
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=type-limits")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Werror=type-limits")
-endif(NOT SOURCE_PACKAGE AND NOT CUSTOM_CFLAGS AND NOT APPLE)
+elseif(SOURCE_PACKAGE)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_RELEASE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_RELEASE")
+endif()
 
 ###### GTK+3 port ######
 #

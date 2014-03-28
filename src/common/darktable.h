@@ -77,6 +77,10 @@ typedef	unsigned int	u_int;
 #define omp_get_thread_num() 0
 #endif
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
 #define DT_MODULE_VERSION 8   // version of dt's module interface
 
 // every module has to define this:
