@@ -667,13 +667,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     
       /* get arrow icon widget */
       wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
-      char label[128];
-      if(strcmp(module->multi_name,"0") == 0)
-        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
-      else
-        g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
-      gtk_label_set_markup(GTK_LABEL(wlabel),label);
-  
+      gchar *label = dt_history_item_get_name_html(module);
+      gtk_label_set_markup(GTK_LABEL(wlabel), label);
+      g_free(label);
     }
     modules = g_list_next(modules);
   }
@@ -1145,7 +1141,9 @@ void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float 
 
 void dt_dev_get_history_item_label(dt_dev_history_item_t *hist, char *label, const int cnt)
 {
-  g_snprintf(label, cnt, "%s (%s)", hist->module->name(), hist->enabled ? _("on") : _("off"));
+  gchar *module_label = dt_history_item_get_name(hist->module);
+  g_snprintf(label, cnt, "%s (%s)", module_label, hist->enabled ? _("on") : _("off"));
+  g_free(module_label);
 }
 
 int
@@ -1440,6 +1438,26 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
     dt_dev_module_update_multishow(dev,mod);
     modules = g_list_next(modules);
   }
+}
+gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
+{
+  gchar *label;
+  /* create a history button and add to box */
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    label = g_strdup_printf("%s", module->name());
+  else
+    label = g_strdup_printf("%s %s", module->name(), module->multi_name);
+  return label;
+}
+gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module)
+{
+  gchar *label;
+  /* create a history button and add to box */
+  if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
+    label = g_strdup_printf("<span size=\"larger\">%s</span>", module->name());
+  else
+    label = g_strdup_printf("<span size=\"larger\">%s</span> %s", module->name(), module->multi_name);
+  return label;
 }
 
 int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_count)

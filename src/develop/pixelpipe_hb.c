@@ -1508,12 +1508,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
                (pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? "CPU" : ""));
     }
 
-    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module->name(),
+    gchar *module_label = dt_history_item_get_name(module);
+    dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module_label,
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
                   (!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE) && (module->request_histogram & DT_REQUEST_ON)) ? histogram_log : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
                   _pipe_type_to_str(pipe->type));
+    g_free(module_label);
     // in case we get this buffer from the cache, also get the processed max:
     for(int k=0; k<3; k++) piece->processed_maximum[k] = pipe->processed_maximum[k];
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -1558,10 +1560,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             }
           }
         }
-        if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-        if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module->name(), _pipe_type_to_str(pipe->type));
-        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module->name(),
+        gchar *module_label = dt_history_item_get_name(module);
+        if(hasnan) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs NaNs! [%s]\n", module_label, _pipe_type_to_str(pipe->type));
+        if(hasinf) fprintf(stderr, "[dev_pixelpipe] module `%s' outputs non-finite floats! [%s]\n", module_label, _pipe_type_to_str(pipe->type));
+        fprintf(stderr, "[dev_pixelpipe] module `%s' min: (%f; %f; %f) max: (%f; %f; %f) [%s]\n", module_label,
                 min[0], min[1], min[2], max[0], max[1], max[2], _pipe_type_to_str(pipe->type));
+        g_free(module_label);
       }
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
     }

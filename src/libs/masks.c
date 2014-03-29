@@ -985,7 +985,9 @@ static int _tree_button_pressed (GtkWidget *treeview, GdkEventButton *event, dt_
                   }
                   if (nbuse==0) g_strlcat(str, " (", sizeof(str));
                   g_strlcat(str, " ", sizeof(str));
-                  g_strlcat(str,m->name(),sizeof(str));
+                  gchar *module_label = dt_history_item_get_name(m);
+                  g_strlcat(str, module_label, sizeof(str));
+                  g_free(module_label);
                   nbuse++;
                 }
                 pts = g_list_next(pts);

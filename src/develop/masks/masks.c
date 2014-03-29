@@ -178,7 +178,9 @@ void dt_masks_gui_form_save_creation(dt_iop_module_t *module, dt_masks_form_t *f
       //we create a new group
       if (form->type & DT_MASKS_CLONE) grp = dt_masks_create(DT_MASKS_GROUP | DT_MASKS_CLONE);
       else grp = dt_masks_create(DT_MASKS_GROUP);
-      snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
+      gchar *module_label = dt_history_item_get_name(module);
+      snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+      g_free(module_label);
       _check_id(grp);
       darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
       module->blend_params->mask_id = grpid = grp->formid;
@@ -1121,7 +1123,9 @@ static void _menu_add_exist(dt_iop_module_t *module, int formid)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,sizeof(grp->name),"grp %s",module->name());
+    gchar *module_label = dt_history_item_get_name(module);
+    snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+    g_free(module_label);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -1159,7 +1163,9 @@ void dt_masks_iop_use_same_as(dt_iop_module_t *module, dt_iop_module_t *src)
   {
     //we create a new group
     grp = dt_masks_create(DT_MASKS_GROUP);
-    snprintf(grp->name,sizeof(grp->name),"grp %s %s",module->name(),module->multi_name);
+    gchar *module_label = dt_history_item_get_name(module);
+    snprintf(grp->name,sizeof(grp->name),"grp %s",module_label);
+    g_free(module_label);
     _check_id(grp);
     darktable.develop->forms = g_list_append(darktable.develop->forms,grp);
     module->blend_params->mask_id = grpid = grp->formid;
@@ -1275,12 +1281,9 @@ void dt_masks_iop_combo_populate(struct dt_iop_module_t **m)
           dt_bauhaus_combobox_add(combo,str2);
           cids[pos++] = 0;  //nothing to do
         }
-        char str[256] = "";
-        g_strlcat(str,m->name(),sizeof(str));
-        g_strlcat(str," ",sizeof(str));
-        g_strlcat(str,m->multi_name,sizeof(str));
-        g_strlcat(str,"   ",sizeof(str));
-        dt_bauhaus_combobox_add(combo,str);
+        gchar *module_label = dt_history_item_get_name(m);
+        dt_bauhaus_combobox_add(combo, module_label);
+        g_free(module_label);
         cids[pos++] = -1*pos2;
         nb++;
       }
