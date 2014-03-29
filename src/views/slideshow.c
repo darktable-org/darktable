@@ -290,7 +290,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     default:
       // uh. should never happen. sanitize:
       d->state_waiting_for_user = 1;
-      d->state = s_image_loaded;
+      d->state = s_prefetching;
       break;
   }
   dt_pthread_mutex_unlock(&d->lock);

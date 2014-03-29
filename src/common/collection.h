@@ -60,6 +60,7 @@ dt_collection_filter_t;
 
 typedef enum dt_collection_sort_t
 {
+  DT_COLLECTION_SORT_NONE = -1,
   DT_COLLECTION_SORT_FILENAME = 0,
   DT_COLLECTION_SORT_DATETIME,
   DT_COLLECTION_SORT_RATING,

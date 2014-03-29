@@ -95,8 +95,13 @@ dt_imageio_open_rawspeed(
   FileReader f(filen);
 #endif
 
+#ifdef __APPLE__
   std::auto_ptr<RawDecoder> d;
   std::auto_ptr<FileMap> m;
+#else
+  std::unique_ptr<RawDecoder> d;
+  std::unique_ptr<FileMap> m;
+#endif
 
   try
   {
@@ -115,10 +120,18 @@ dt_imageio_open_rawspeed(
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
 
+#ifdef __APPLE__
     m = auto_ptr<FileMap>(f.readFile());
+#else
+    m = unique_ptr<FileMap>(f.readFile());
+#endif
 
     RawParser t(m.get());
-    d = auto_ptr<RawDecoder>(t.getDecoder());
+#ifdef __APPLE__
+  d = auto_ptr<RawDecoder>(t.getDecoder());
+#else
+    d = unique_ptr<RawDecoder>(t.getDecoder());
+#endif
 
     if(!d.get())
       return DT_IMAGEIO_FILE_CORRUPTED;

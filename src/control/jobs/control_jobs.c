@@ -85,8 +85,7 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     char dtfilename[DT_MAX_PATH_LEN+8];
     dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
     dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
-    char *c = dtfilename + strlen(dtfilename);
-    sprintf(c, ".xmp");
+    g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
     if(!dt_exif_xmp_write(imgid, dtfilename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -546,8 +545,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // just delete the xmp file of the duplicate selected.
 
       dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-      char *c = filename + strlen(filename);
-      sprintf(c, ".xmp");
+      g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
 
       dt_image_remove(imgid);
       (void)g_unlink(filename);

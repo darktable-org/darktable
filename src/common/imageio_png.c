@@ -50,10 +50,10 @@ int read_header(const char *filename, dt_imageio_png_t *png)
 
   if(!png->f) return 1;
 
-  const unsigned int NUM_BYTES_CHECK = 8;
+  const size_t NUM_BYTES_CHECK = 8;
   png_byte dat[NUM_BYTES_CHECK];
 
-  int cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
+  size_t cnt = fread(dat, 1, NUM_BYTES_CHECK, png->f);
 
   if (cnt != NUM_BYTES_CHECK || png_sig_cmp(dat, (png_size_t) 0, NUM_BYTES_CHECK))
   {

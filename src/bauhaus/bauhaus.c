@@ -30,8 +30,13 @@
 // define this to get boxes instead of arrow indicators, more like our previous version was:
 // #define DT_BAUHAUS_OLD
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+//to be removed when we will depend on glib-2.38+
+//see https://bugzilla.gnome.org/show_bug.cgi?id=723899
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
+#pragma GCC diagnostic pop
 
 // fwd declare
 static gboolean

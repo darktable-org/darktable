@@ -259,7 +259,6 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
     case CINEMA4K_24:
       for(i=0; i<parameters->tcp_numlayers; i++)
       {
-        temp_rate = 0;
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec)) /
@@ -286,7 +285,6 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters,opj_image_t *imag
     case CINEMA2K_48:
       for(i=0; i<parameters->tcp_numlayers; i++)
       {
-        temp_rate = 0;
         if(rates[i] == 0)
         {
           parameters->tcp_rates[0] = ((float) (image->numcomps * image->comps[0].w * image->comps[0].h * image->comps[0].prec))/
@@ -347,7 +345,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
   parameters.cp_rsiz = STD_RSIZ;
 
   parameters.cod_format = j2k->format;
-  parameters.cp_cinema = j2k->preset;
+  parameters.cp_cinema = (OPJ_CINEMA_MODE)j2k->preset;
 
   if(parameters.cp_cinema)
   {

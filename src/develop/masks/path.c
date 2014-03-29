@@ -351,11 +351,11 @@ static void _path_points_recurs(float *p1, float *p2,
                          path_max,path_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001) || ((int)path_min[0]-(int)path_max[0]<2 && (int)path_min[0]-(int)path_max[0]>-2 &&
-                               (int)path_min[1]-(int)path_max[1]<2 && (int)path_min[1]-(int)path_max[1]>-2 &&
+  if ((tmax-tmin < 0.0001) || ((int)path_min[0]-(int)path_max[0]<1 && (int)path_min[0]-(int)path_max[0]>-1 &&
+                               (int)path_min[1]-(int)path_max[1]<1 && (int)path_min[1]-(int)path_max[1]>-1 &&
                                (!withborder || (
-                                  (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
-                                  (int)border_min[1]-(int)border_max[1]<2 && (int)border_min[1]-(int)border_max[1]>-2))))
+                                  (int)border_min[0]-(int)border_max[0]<1 && (int)border_min[0]-(int)border_max[0]>-1 &&
+                                  (int)border_min[1]-(int)border_max[1]<1 && (int)border_min[1]-(int)border_max[1]>-1))))
   {
     path[*pos_path] = path_max[0];
     path[*pos_path+1] = path_max[1];

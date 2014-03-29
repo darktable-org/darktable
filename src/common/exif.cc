@@ -24,6 +24,25 @@
 #include "config.h"
 #endif
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cassert>
+#include <glib.h>
+#include <zlib.h>
+#include <string>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sqlite3.h>
+
+#include <exiv2/easyaccess.hpp>
+#include <exiv2/xmp.hpp>
+#include <exiv2/error.hpp>
+#include <exiv2/image.hpp>
+#include <exiv2/exif.hpp>
+
 extern "C"
 {
 #include "common/exif.h"
@@ -38,23 +57,6 @@ extern "C"
 #include "control/conf.h"
 #include "develop/imageop.h"
 }
-#include <exiv2/easyaccess.hpp>
-#include <exiv2/xmp.hpp>
-#include <exiv2/error.hpp>
-#include <exiv2/image.hpp>
-#include <exiv2/exif.hpp>
-#include <sqlite3.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cassert>
-#include <glib.h>
-#include <zlib.h>
-#include <string>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos);
 
@@ -490,13 +492,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       switch(pos->toLong())
       {
         case 76: // 90 cw
-          img->orientation = 6;
+          img->orientation = 4 | 2 | 0; // swap x/y, flip x
           break;
         case 82: // 270 cw
-          img->orientation = 7;
+          img->orientation = 4 | 0 | 1; // swap x/y, flip y
           break;
         default: // 72, horizontal
-          img->orientation = 0;
+          img->orientation = 0 | 0 | 0; // do nothing
       }
     }
 

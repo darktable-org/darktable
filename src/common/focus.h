@@ -284,7 +284,7 @@ void dt_focus_draw_clusters(
       dt_dev_pixelpipe_create_nodes(&pipe, &dev);
       dt_dev_pixelpipe_synch_all(&pipe, &dev);
       dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width, &pipe.processed_height);
-      res = dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, fs*3);
+      dt_dev_distort_transform_plus(&dev, &pipe, 0, 99999, pos, fs*3);
       dt_dev_pixelpipe_cleanup(&pipe);
       wd = pipe.processed_width;
       ht = pipe.processed_height;

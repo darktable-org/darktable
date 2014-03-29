@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 5
+#define CURRENT_DATABASE_VERSION 6
 
 typedef struct dt_database_t
 {
@@ -477,7 +477,22 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 5;
   }
-// maybe in the future, see commented out code elsewhere
+  else if(version == 5)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle,
+                      "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create index on image filename\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 6;
+  }// maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {
 //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL, NULL, NULL);
@@ -544,6 +559,8 @@ static void _create_schema(dt_database_t *db)
                         "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE INDEX images_film_id_index ON images (film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
+                        "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL);
   ////////////////////////////// selected_images
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE TABLE selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
