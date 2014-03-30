@@ -209,6 +209,9 @@ int main(int argc, char *arg[])
   if(!strcmp(ext, "jpg"))
     ext = "jpeg";
 
+  if(!strcmp(ext, "tif"))
+    ext = "tiff";
+
   // init the export data structures
   dt_imageio_module_format_t *format;
   dt_imageio_module_storage_t *storage;
