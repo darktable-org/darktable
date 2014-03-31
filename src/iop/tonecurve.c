@@ -360,6 +360,18 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   }
 }
 
+static const struct
+{
+  const char* name;
+  struct dt_iop_tonecurve_params_t preset;
+}
+presets_from_basecurve[] =
+{
+    // This is where you can paste the line provided by dt-curve-tool
+    // Here is a valid example for you to compare
+    //{"NIKON D7000 from source", {{{{0.000000, 0.006116}, {0.000296, 0.006028}, {0.002370, 0.007261}, {0.008000, 0.007445}, {0.018963, 0.010777}, {0.037037, 0.020175}, {0.064000, 0.035687}, {0.101630, 0.067279}, {0.151704, 0.134889}, {0.216000, 0.246140}, {0.296296, 0.405786}, {0.394370, 0.576875}, {0.512000, 0.724585}, {0.650963, 0.851117}, {0.813037, 0.957309}, {1.000000, 0.986196}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 0, 0, 0}},
+};
+
 void init_presets (dt_iop_module_so_t *self)
 {
   dt_iop_tonecurve_params_t p;
@@ -422,6 +434,11 @@ void init_presets (dt_iop_module_so_t *self)
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
+
+  for (int k=0; k<sizeof(presets_from_basecurve)/sizeof(presets_from_basecurve[0]); k++)
+  {
+    dt_gui_presets_add_generic(presets_from_basecurve[k].name, self->op, self->version(), &presets_from_basecurve[k].preset, sizeof(p), 1);
+  }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
