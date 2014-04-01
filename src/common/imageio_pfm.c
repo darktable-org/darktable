@@ -38,7 +38,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   if(strcasecmp(ext, ".pfm")) return DT_IMAGEIO_FILE_CORRUPTED;
   FILE *f = fopen(filename, "rb");
   if(!f) return DT_IMAGEIO_FILE_CORRUPTED;
-  size_t ret = 0;
+  int ret = 0;
   int cols = 3;
   char head[2] = {'X', 'X'};
   ret = fscanf(f, "%c%c\n", head, head+1);
@@ -48,9 +48,8 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
   else goto error_corrupt;
   ret = fscanf(f, "%d %d\n%*[^\n]", &img->width, &img->height);
   if(ret != 2) goto error_corrupt;
-  char testread = 0;
-  ret = fread(&testread, sizeof(char), 1, f);
-  if(testread != 1) goto error_corrupt;
+  ret = fread(&ret, sizeof(char), 1, f);
+  if(ret != 1) goto error_corrupt;
   ret = 0;
 
   float *buf = (float *)dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
