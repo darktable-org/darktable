@@ -1442,7 +1442,7 @@ static GtkWidget * _ui_init_panel_container_center(GtkWidget *container, gboolea
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget), left?GTK_CORNER_TOP_LEFT:GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_widget_set_size_request (widget,dt_conf_get_int("panel_width")-5-13, -1);
 
   /* create the scrolled viewport */
