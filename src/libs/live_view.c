@@ -587,8 +587,12 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
       if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-      cairo_operator_t mode = _overlay_modes[dt_bauhaus_combobox_get(lib->overlay_mode)];
-      cairo_set_operator(cr, mode);
+      int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);
+      if(overlay_modes_index >= 0)
+      {
+        cairo_operator_t mode = _overlay_modes[overlay_modes_index];
+        cairo_set_operator(cr, mode);
+      }
       cairo_fill(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_surface_destroy (surface);
