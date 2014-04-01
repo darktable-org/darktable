@@ -187,17 +187,17 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   // destroy old module list
   int error = 0;
-  dt_view_t *v = vm->view + vm->current_view;
 
   /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
   dt_undo_clear(darktable.undo, DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
-  if ( k==DT_MODE_NONE )
+  if (k==DT_MODE_NONE && vm->current_view >= 0)
   {
     /* leave the current view*/
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
+    dt_view_t *v = vm->view + vm->current_view;
+    if(v->leave) v->leave(v);
 
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
@@ -243,6 +243,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     if (vm->current_view >=0)
     {
       /* leave current view */
+      dt_view_t *v = vm->view + vm->current_view;
       if(v->leave) v->leave(v);
       dt_accel_disconnect_list(v->accel_closures);
       v->accel_closures = NULL;
