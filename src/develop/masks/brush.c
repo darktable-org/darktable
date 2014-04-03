@@ -2338,9 +2338,16 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,1)) return 0;
+  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,1))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2381,9 +2388,16 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,0)) return 0;
+  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,NULL,NULL,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2451,9 +2465,18 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   double start2;
 
   //we get buffers for all points
-  float *points, *border, *payload;
+  float *points = NULL, *border = NULL, *payload = NULL;
   int points_count,border_count,payload_count;
-  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0)) return 0;
+  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    if(payload)
+      free(payload);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2571,10 +2594,19 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   const float scale = roi->scale;
 
   //we get buffers for all points
-  float *points, *border, *payload;
+  float *points = NULL, *border = NULL, *payload = NULL;
 
   int points_count, border_count, payload_count;
-  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0)) return 0;
+  if (!_brush_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,&payload,&payload_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    if(payload)
+      free(payload);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();

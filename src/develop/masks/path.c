@@ -1919,9 +1919,16 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -1968,9 +1975,16 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2042,9 +2056,16 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   double start2;
 
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2414,10 +2435,16 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int path_encircles_roi = 0;
 
   //we get buffers for all points
-  float *points, *border, *cpoints = NULL;
+  float *points = NULL, *border = NULL, *cpoints = NULL;
   int points_count, border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
-  if (points_count <= 2) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0) || (points_count <= 2))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
