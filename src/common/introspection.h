@@ -211,6 +211,17 @@ typedef struct dt_introspection_t
 } dt_introspection_t;
 
 
+// helper function to access array elements -- make sure to cast the result correctly!
+static inline void *dt_introspection_access_array(void * params, dt_introspection_field_t * field, unsigned int element)
+{
+  if(! (params && field && field->header.type == DT_INTROSPECTION_TYPE_ARRAY && element < field->Array.count))
+    return NULL;
+
+  char *result = (char*)params + field->header.offset;
+  result += element * field->Array.field->header.size;
+  return (void*)result;
+}
+
 #endif // __INTROSPECTION_H__
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
