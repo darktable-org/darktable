@@ -746,7 +746,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
   int len = 0;
 
   // first get rid of all invalid characters
-  while(*configstr != '\0' && len < 2048)
+  while(*configstr != '\0' && len < sizeof(tmp)-1)
   {
     int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
