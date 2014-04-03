@@ -344,7 +344,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       while(!feof(f))
       {
         int prog = -1;
-        int rd = fscanf(f, "%[^\n]\n", confentry);
+        gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry)-1);
+        int rd = fscanf(f, confline_pattern, confentry);
+        g_free(confline_pattern);
         if(rd != 1) continue;
         // remove comments:
         for(size_t pos=0; pos<strlen(confentry); pos++)
