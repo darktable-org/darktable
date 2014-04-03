@@ -668,8 +668,8 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
   // cache these, can't change at runtime:
   cache->mip[DT_MIPMAP_F].max_width  = wd;
   cache->mip[DT_MIPMAP_F].max_height = ht;
-  cache->mip[DT_MIPMAP_F-1].max_width  = wd;
-  cache->mip[DT_MIPMAP_F-1].max_height = ht;
+  cache->mip[DT_MIPMAP_F-1].max_width  = MIN(640,wd);
+  cache->mip[DT_MIPMAP_F-1].max_height = MIN(480,ht);
   for(int k=DT_MIPMAP_F-2; k>=DT_MIPMAP_0; k--)
   {
     cache->mip[k].max_width  = cache->mip[k+1].max_width  / 2;
