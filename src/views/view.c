@@ -1179,7 +1179,9 @@ dt_view_image_expose(
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%2048[^\n]", line);
+          gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line)-1);
+          int read = fscanf(f, line_pattern, line);
+          g_free(line_pattern);
           if(read != 1) break;
           fgetc(f); // munch \n
 

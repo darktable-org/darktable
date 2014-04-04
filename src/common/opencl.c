@@ -578,7 +578,7 @@ static int _device_by_cname(const char *name)
   char tmp[2048] = { 0 };
   int result = -1;
 
-  _ascii_str_canonical(name, tmp, 2048);
+  _ascii_str_canonical(name, tmp, sizeof(tmp));
 
   for(int i=0; i < devs; i++)
   {
@@ -909,7 +909,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   if (cached)
   {
 
-    if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
+    if ((linkedfile_len=readlink(binname, linkedfile, sizeof(linkedfile)-1)) > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 
