@@ -1140,7 +1140,9 @@ dt_view_image_expose(
       int k = 0;
       while(!feof(f))
       {
-        int read = fscanf(f, "%[^\n]", path);
+        gchar *path_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(path)-1);
+        int read = fscanf(f, path_pattern, path);
+        g_free(path_pattern);
         if(read != 1) break;
         fgetc(f); // munch \n
 
