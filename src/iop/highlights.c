@@ -378,7 +378,7 @@ mode_changed (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
   p->mode = dt_bauhaus_combobox_get(combo);
-  if(p->mode < 0) p->mode = DT_IOP_HIGHLIGHTS_INPAINT;
+  if(p->mode > DT_IOP_HIGHLIGHTS_INPAINT) p->mode = DT_IOP_HIGHLIGHTS_INPAINT;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

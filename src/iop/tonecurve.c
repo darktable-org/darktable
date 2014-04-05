@@ -435,10 +435,11 @@ void init_presets (dt_iop_module_so_t *self)
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
 
-  for (int k=0; k<sizeof(presets_from_basecurve)/sizeof(presets_from_basecurve[0]); k++)
-  {
-    dt_gui_presets_add_generic(presets_from_basecurve[k].name, self->op, self->version(), &presets_from_basecurve[k].preset, sizeof(p), 1);
-  }
+  //uncomment this once presets_from_basecurve will contain something!
+//   for (int k=0; k<sizeof(presets_from_basecurve)/sizeof(presets_from_basecurve[0]); k++)
+//   {
+//     dt_gui_presets_add_generic(presets_from_basecurve[k].name, self->op, self->version(), &presets_from_basecurve[k].preset, sizeof(p), 1);
+//   }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
