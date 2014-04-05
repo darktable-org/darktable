@@ -387,6 +387,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   memcpy(d, p, sizeof(*p));
+
+  piece->process_cl_ready = 1;
+
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
+  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT)
+    piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
