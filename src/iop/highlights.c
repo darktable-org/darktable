@@ -203,9 +203,9 @@ static inline void _interpolate_color(
     }
     else
     {
-      if(in[0] < clip0)
+      if(in[0] < clip0 && in[0] > 1e-5f)
       { // both are not clipped
-        if(in[offs] < clip1)
+        if(in[offs] < clip1 && in[offs] > 1e-5f)
         { // update ratio, exponential decay. ratio = in[odd]/in[even]
           if(k & 1) ratio = (3.0f*ratio + in[0]/in[offs])/4.0f;
           else      ratio = (3.0f*ratio + in[offs]/in[0])/4.0f;
@@ -218,7 +218,7 @@ static inline void _interpolate_color(
         if(in[offs] >= clip1-1e-5f) add = fmaxf(clip0, clip1);
         else if(k & 1) add = in[offs] * ratio;
         else           add = in[offs] / ratio;
-        
+
         if(pass == 0) out[0] = add;
         else if(pass == 3) out[0] = (out[0] + add)/4.0f;
         else out[0] += add;
