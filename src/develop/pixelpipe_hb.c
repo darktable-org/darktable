@@ -991,6 +991,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // indirectly give gpu some air to breathe (and to do display related stuff)
           dt_iop_nap(darktable.opencl->micro_nap);
 
+          // histogram collection for module
+          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+          {
+            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* now call process_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl) {
             success_opencl = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
@@ -1012,27 +1033,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           {
             pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
-
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-            if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-            dt_pthread_mutex_lock(&pipe->busy_mutex);
-          }
-
-          if(pipe->shutdown)
-          {
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-            return 1;
-          }
-
-          // histogram collection for module
-          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-          {
-            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
-            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1103,6 +1103,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // indirectly give gpu some air to breathe (and to do display related stuff)
           dt_iop_nap(darktable.opencl->micro_nap);
 
+          // histogram collection for module
+          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+          {
+            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* now call process_tiling_cl of module; module should emit meaningful messages in case of error */
           if (success_opencl) {
             success_opencl = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
@@ -1123,27 +1144,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           {
             pixelpipe_picker(module, (float*)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker(module, (float*)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
-
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-            if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-            dt_pthread_mutex_lock(&pipe->busy_mutex);
-          }
-
-          if(pipe->shutdown)
-          {
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-            return 1;
-          }
-
-          // histogram collection for module
-          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-          {
-            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
-            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1283,6 +1283,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             return 1;
           }
 
+          // histogram collection for module
+          if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+          {
+            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+            if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+            dt_pthread_mutex_lock(&pipe->busy_mutex);
+          }
+
+          if(pipe->shutdown)
+          {
+            dt_pthread_mutex_unlock(&pipe->busy_mutex);
+            return 1;
+          }
+
           /* process module on cpu. use tiling if needed and possible. */
           if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
               !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
@@ -1322,29 +1343,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
             return 1;
           }
-
-
-          // histogram collection for module
-          if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-          {
-            histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
-            pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
-
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-            if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-            dt_pthread_mutex_lock(&pipe->busy_mutex);
-          }
-
-          if(pipe->shutdown)
-          {
-            dt_pthread_mutex_unlock(&pipe->busy_mutex);
-            return 1;
-          }
-
 
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
@@ -1396,6 +1394,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           return 1;
         }
 
+        // histogram collection for module
+        if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+          (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+        {
+          histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+          pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+          if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+          dt_pthread_mutex_lock(&pipe->busy_mutex);
+        }
+
+        if(pipe->shutdown)
+        {
+          dt_pthread_mutex_unlock(&pipe->busy_mutex);
+          return 1;
+        }
+
         /* process module on cpu. use tiling if needed and possible. */
         if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
             !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
@@ -1436,27 +1455,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           return 1;
         }
 
-        // histogram collection for module
-        if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-          (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-        {
-          histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
-          pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
-
-          dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-          if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-          dt_pthread_mutex_lock(&pipe->busy_mutex);
-        }
-
-        if(pipe->shutdown)
-        {
-          dt_pthread_mutex_unlock(&pipe->busy_mutex);
-          return 1;
-        }
-
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -1476,6 +1474,27 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     else
     {
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
+
+      // histogram collection for module
+      if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+        (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+      {
+        histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+        pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+        if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+        dt_pthread_mutex_lock(&pipe->busy_mutex);
+      }
+
+      if(pipe->shutdown)
+      {
+        dt_pthread_mutex_unlock(&pipe->busy_mutex);
+        return 1;
+      }
 
       /* process module on cpu. use tiling if needed and possible. */
       if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
@@ -1517,33 +1536,33 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         return 1;
       }
 
-      // histogram collection for module
-      if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-        (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-      {
-        histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
-        pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-        pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
-
-        dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-        if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-        dt_pthread_mutex_lock(&pipe->busy_mutex);
-      }
-
-      if(pipe->shutdown)
-      {
-        dt_pthread_mutex_unlock(&pipe->busy_mutex);
-        return 1;
-      }
-
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       pixelpipe_flow |=  (PIXELPIPE_FLOW_BLENDED_ON_CPU);
       pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
     }
 #else
+    // histogram collection for module
+    if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+      (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
+    {
+      histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
+      pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      if(module->widget) dt_control_queue_redraw_widget(module->widget);
+
+      dt_pthread_mutex_lock(&pipe->busy_mutex);
+    }
+
+    if(pipe->shutdown)
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+      return 1;
+    }
+
     /* process module on cpu. use tiling if needed and possible. */
     if((module->flags() & IOP_FLAGS_ALLOW_TILING) &&
         !dt_tiling_piece_fits_host_memory(MAX(roi_in.width, roi_out->width), MAX(roi_in.height, roi_out->height),
@@ -1570,27 +1589,6 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     {
       pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
       pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
-
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-      if(module->widget) dt_control_queue_redraw_widget(module->widget);
-
-      dt_pthread_mutex_lock(&pipe->busy_mutex);
-    }
-
-    if(pipe->shutdown)
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-      return 1;
-    }
-
-    // histogram collection for module
-    if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
-      (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
-    {
-      histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
-      pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-      pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
