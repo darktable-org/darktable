@@ -103,20 +103,6 @@ typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
-#ifndef DT_DEV_PIXELPIPE_TYPE_H
-#define DT_DEV_PIXELPIPE_TYPE_H
-//FIXME: copied from src/develop/pixelpipe_hb.h
-typedef enum dt_dev_pixelpipe_type_t
-{
-  DT_DEV_PIXELPIPE_NONE      = 0,
-  DT_DEV_PIXELPIPE_EXPORT    = 1<<0,
-  DT_DEV_PIXELPIPE_FULL      = 1<<1,
-  DT_DEV_PIXELPIPE_PREVIEW   = 1<<2,
-  DT_DEV_PIXELPIPE_THUMBNAIL = 1<<3
-}
-dt_dev_pixelpipe_type_t;
-#endif
-
 /** when to collect histogram */
 typedef enum dt_dev_request_flags_t
 {

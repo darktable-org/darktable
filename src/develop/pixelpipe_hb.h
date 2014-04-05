@@ -69,20 +69,6 @@ typedef enum dt_dev_pixelpipe_change_t
 }
 dt_dev_pixelpipe_change_t;
 
-#ifndef DT_DEV_PIXELPIPE_TYPE_H
-#define DT_DEV_PIXELPIPE_TYPE_H
-//FIXME: copied from src/develop/imageop.h
-typedef enum dt_dev_pixelpipe_type_t
-{
-  DT_DEV_PIXELPIPE_NONE      = 0,
-  DT_DEV_PIXELPIPE_EXPORT    = 1<<0,
-  DT_DEV_PIXELPIPE_FULL      = 1<<1,
-  DT_DEV_PIXELPIPE_PREVIEW   = 1<<2,
-  DT_DEV_PIXELPIPE_THUMBNAIL = 1<<3
-}
-dt_dev_pixelpipe_type_t;
-#endif
-
 /**
  * this encapsulates the gegl pixel pipeline.
  * a develop module will need several of these:
