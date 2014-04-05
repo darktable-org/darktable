@@ -39,13 +39,14 @@
 typedef enum dt_pixelpipe_flow_t
 {
   PIXELPIPE_FLOW_NONE                  = 0,
-  PIXELPIPE_FLOW_PROCESSED_ON_CPU      = 1<<0,
-  PIXELPIPE_FLOW_PROCESSED_ON_GPU      = 1<<1,
-  PIXELPIPE_FLOW_PROCESSED_WITH_TILING = 1<<2,
-  PIXELPIPE_FLOW_BLENDED_ON_CPU        = 1<<3,
-  PIXELPIPE_FLOW_BLENDED_ON_GPU        = 1<<4,
-  PIXELPIPE_FLOW_HISTOGRAM_ON_CPU      = 1<<5,
-  PIXELPIPE_FLOW_HISTOGRAM_ON_GPU      = 1<<6
+  PIXELPIPE_FLOW_HISTOGRAM_NONE        = 1<<0,
+  PIXELPIPE_FLOW_HISTOGRAM_ON_CPU      = 1<<1,
+  PIXELPIPE_FLOW_HISTOGRAM_ON_GPU      = 1<<2,
+  PIXELPIPE_FLOW_PROCESSED_ON_CPU      = 1<<3,
+  PIXELPIPE_FLOW_PROCESSED_ON_GPU      = 1<<4,
+  PIXELPIPE_FLOW_PROCESSED_WITH_TILING = 1<<5,
+  PIXELPIPE_FLOW_BLENDED_ON_CPU        = 1<<6,
+  PIXELPIPE_FLOW_BLENDED_ON_GPU        = 1<<7
 }
 dt_pixelpipe_flow_t;
 
@@ -885,7 +886,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     dt_times_t start;
     dt_get_times(&start);
 
-    dt_pixelpipe_flow_t pixelpipe_flow = PIXELPIPE_FLOW_NONE;
+    dt_pixelpipe_flow_t pixelpipe_flow = (PIXELPIPE_FLOW_NONE | PIXELPIPE_FLOW_HISTOGRAM_NONE);
 
     dt_develop_tiling_t tiling = { 0 };
     dt_develop_tiling_t tiling_blendop = { 0 };
@@ -1026,12 +1027,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           // histogram collection for module
-          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-              module->request_histogram)
+          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
           {
             histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
             pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1137,12 +1138,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           }
 
           // histogram collection for module
-          if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-              module->request_histogram)
+          if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
           {
             histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
             pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1324,12 +1325,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
 
 
           // histogram collection for module
-          if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-              module->request_histogram)
+          if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+            (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
           {
             histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
             pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+            pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1436,12 +1437,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         }
 
         // histogram collection for module
-        if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-            module->request_histogram)
+        if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+          (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
         {
           histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
           pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-          pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+          pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1517,12 +1518,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       }
 
       // histogram collection for module
-      if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-          module->request_histogram)
+      if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+        (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
       {
         histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
         pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-        pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+        pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1584,12 +1585,12 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     }
 
     // histogram collection for module
-    if(dev->gui_attached && pipe == dev->preview_pipe && // collect from preview pipe to get full histogram
-        module->request_histogram)
+    if((dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
+      (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
     {
       histogram_collect(module, (float*)input, &roi_in, &(module->histogram), module->histogram_max);
       pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
-      pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
+      pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
@@ -1610,10 +1611,17 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     pixelpipe_flow &= ~(PIXELPIPE_FLOW_BLENDED_ON_GPU);
 #endif
 
+    char histogram_log[32] = "";
+    if(!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE))
+    {
+      snprintf(histogram_log, sizeof(histogram_log), ", collecting histogram on %s",
+               (pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? "CPU" : ""));
+    }
+
     dt_show_times(&start, "[dev_pixelpipe]", "processing `%s' on %s%s%s, blending on %s [%s]", module->name(),
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_CPU ? "CPU" : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_WITH_TILING ? " with tiling" : "",
-                  pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_GPU ? ", collecting histogram on GPU" : pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_ON_CPU ? ", collecting histogram on CPU" : "",
+                  (!(pixelpipe_flow & PIXELPIPE_FLOW_HISTOGRAM_NONE) && (module->request_histogram & DT_REQUEST_ON)) ? histogram_log : "",
                   pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_GPU ? "GPU" : pixelpipe_flow & PIXELPIPE_FLOW_BLENDED_ON_CPU ? "CPU" : "",
                   _pipe_type_to_str(pipe->type));
     // in case we get this buffer from the cache, also get the processed max:

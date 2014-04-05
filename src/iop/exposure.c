@@ -326,7 +326,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1; //FIXME: only when deflicker is enabled maybe?
+  module->request_histogram |= (DT_REQUEST_ON); //FIXME: only when deflicker is enabled maybe?
   module->histogram_bins_count = 16384; // we neeed really maximally reliable histogrem
   module->histogram_step_rgb = 1; // only way do do so - analyze full-sized thumbnail
   module->priority = 175; // module order created by iop_dependencies.py, do not edit!
