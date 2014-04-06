@@ -1686,7 +1686,7 @@ static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, floa
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(&a[j], tta);
+      _RGB_2_HSL(ta, tta);
       _RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */
