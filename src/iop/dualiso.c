@@ -110,17 +110,42 @@ void process(
   const int ox = piece->pipe->image.black_offset_x;
   const int oy = piece->pipe->image.black_offset_y;
 
+  const float black = piece->pipe->image.raw_black_level;
+  const float white = piece->pipe->image.raw_white_point;
+
   // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  { // pre-downsampled buffer that needs black/white scaling
+#ifdef _OPENMP
+    #pragma omp parallel for default(none) shared(i,o,roi_in,roi_out) schedule(static)
+#endif
+    for(int j=0; j<roi_out->height; j++)
+    {
+      const __m128 w = _mm_set1_ps(1.0f/white);
+      const __m128 b = _mm_set1_ps(black);
+      const __m128 *in  = ((__m128*)i) + ((size_t)roi_in->width*(j+oy) + ox);
+      float *out = ((float*)o) + 4*(size_t)roi_out->width*j;
 
+      // process aligned pixels with SSE
+      for(int i=0 ; i < roi_out->width; i++,out+=4,in++)
+        _mm_stream_ps(out, _mm_max_ps(_mm_setzero_ps(), _mm_mul_ps(_mm_sub_ps(in[0], b), w)));
+    }
+    _mm_sfence();
+  }
+  else
+  { // raw mosaic
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out)
 #endif
-  for(int j=0; j<roi_out->height; j++)
-  {
-    uint16_t *in  = ((uint16_t *)i) + ((size_t)roi_in->width*(j+oy) + ox);
-    uint16_t *out = ((uint16_t *)o) + (size_t)roi_out->width*j;
-    memcpy(out, in, sizeof(uint16_t)*roi_out->width);
+    for(int j=0; j<roi_out->height; j++)
+    {
+      uint16_t *in  = ((uint16_t *)i) + ((size_t)roi_in->width*(j+oy) + ox);
+      uint16_t *out = ((uint16_t *)o) + (size_t)roi_out->width*j;
+      for(int i=0;i<roi_out->width;i++,out++,in++)
+        // out[0] = CLAMP(((int32_t)in[0] - black)/white, 0, 0xffff);
+        out[0] = CLAMP(((int32_t)in[0], 0, 0xffff);
+    }
   }
 }
 
@@ -131,7 +156,7 @@ void commit_params(
     dt_dev_pixelpipe_iop_t *piece)
 {
   memcpy(piece->data, params, sizeof(dt_iop_dualiso_params_t));
-  if(!(pipe->image.flags & DT_IMAGE_RAW) || dt_dev_pixelpipe_uses_downsampled_input(pipe))
+  if(!(pipe->image.flags & DT_IMAGE_RAW))// || dt_dev_pixelpipe_uses_downsampled_input(pipe))
     piece->enabled = 0;
 }
 

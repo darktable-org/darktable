@@ -155,7 +155,7 @@ dt_imageio_open_rawspeed(
 
     // only scale colors for sizeof(uint16_t) per pixel, not sizeof(float)
     // if(r->getDataType() != TYPE_FLOAT32) scale_black_white((uint16_t *)r->getData(), r->blackLevel, r->whitePoint, r->dim.x, r->dim.y, r->pitch/r->getBpp());
-    if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
+    // if(r->getDataType() != TYPE_FLOAT32) r->scaleBlackWhite();
     img->bpp = r->getBpp();
     img->filters = r->cfa.getDcrawFilter();
     if(img->filters)
@@ -175,6 +175,8 @@ dt_imageio_open_rawspeed(
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
+    fprintf(stderr, "b w : %d %d %d %s\n", img->raw_black_level, img->raw_white_point,
+        ((uint16_t*)r->getDataUncropped(200, 300))[0], filename);
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)

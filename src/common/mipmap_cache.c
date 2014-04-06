@@ -1156,8 +1156,6 @@ _init_f(
   roi_in.scale = 1.0f;
 
   roi_out.scale = fminf(wd/(float)image->width, ht/(float)image->height);
-  // init those without black border subtraction, demosaic_half_size_crop will
-  // do that for us.
   roi_out.x = roi_out.y = 0;
   roi_out.width  = roi_out.scale * roi_in.width;
   roi_out.height = roi_out.scale * roi_in.height;
@@ -1181,10 +1179,10 @@ _init_f(
         &roi_out, &roi_in, roi_out.width, roi_in.width,
         dt_image_flipped_filter(image), 1.0f);
     else
-      dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(
+      dt_iop_clip_and_zoom_demosaic_half_size(
         out, (const uint16_t *)buf.buf,
         &roi_out, &roi_in, roi_out.width, roi_in.width,
-        image);
+        dt_image_flipped_filter(image));
   }
   else
   {
