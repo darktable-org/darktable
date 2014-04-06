@@ -51,6 +51,7 @@ dt_image_cache_allocate(void *data, const uint32_t key, int32_t *cost, void **bu
     img->film_id = sqlite3_column_int(stmt, 2);
     img->width   = sqlite3_column_int(stmt, 3);
     img->height  = sqlite3_column_int(stmt, 4);
+    img->black_offset_x = img->black_offset_y = 0;
     img->filename[0] = img->exif_maker[0] = img->exif_model[0] = img->exif_lens[0] =
         img->exif_datetime_taken[0] = '\0';
     str = (char *)sqlite3_column_text(stmt, 5);

@@ -128,7 +128,7 @@ dt_imageio_open_rawspeed(
 
     RawParser t(m.get());
 #ifdef __APPLE__
-  d = auto_ptr<RawDecoder>(t.getDecoder());
+    d = auto_ptr<RawDecoder>(t.getDecoder());
 #else
     d = unique_ptr<RawDecoder>(t.getDecoder());
 #endif
@@ -166,9 +166,11 @@ dt_imageio_open_rawspeed(
     }
 
     // also include used override in orient:
-    const int orientation = dt_image_orientation(img);
-    img->width  = (orientation & 4) ? r->dim.y : r->dim.x;
-    img->height = (orientation & 4) ? r->dim.x : r->dim.y;
+    iPoint2D dim = r->getUncroppedDim(); // was = r->dim for cropped borders
+    img->width  = dim.x;
+    img->height = dim.y;
+    img->black_offset_x = dim.x - r->dim.x;
+    img->black_offset_y = dim.y - r->dim.y;
 
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
@@ -178,7 +180,16 @@ dt_imageio_open_rawspeed(
     if(!buf)
       return DT_IMAGEIO_CACHE_FULL;
 
-    dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+    // dt_imageio_flip_buffers((char *)buf, (char *)r->getData(), r->getBpp(), r->dim.x, r->dim.y, r->dim.x, r->dim.y, r->pitch, orientation);
+    // with black borders:
+
+    dt_imageio_flip_buffers((char *)buf,
+        (char *)r->getDataUncropped(0, 0),
+        r->getBpp(),
+        dim.x, dim.y,
+        dim.x, dim.y,
+        r->pitch,
+        0);
   }
   catch (const std::exception &exc)
   {

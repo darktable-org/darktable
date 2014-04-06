@@ -123,6 +123,7 @@ typedef struct dt_image_t
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
   uint16_t raw_white_point;
+  uint32_t black_offset_x, black_offset_y;
 }
 dt_image_t;
 
