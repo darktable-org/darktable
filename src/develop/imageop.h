@@ -457,6 +457,17 @@ dt_iop_clip_and_zoom_demosaic_half_size(
   const int32_t in_stride,
   const uint32_t filters);
 
+/** clip and zoom mosaiced from half size, crop away black borders. */
+void
+dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(
+  float *out,
+  const uint16_t *const in,
+  struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const dt_image_t *img);
+
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(
   float *out,
@@ -466,6 +477,17 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   const int32_t out_stride,
   const int32_t in_stride,
   const uint32_t filters,
+  const float clip);
+
+void
+dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks_f(
+  float *out,
+  const uint16_t *const in,
+  struct dt_iop_roi_t *const roi_out,
+  const struct dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const dt_image_t *img,
   const float clip);
 
 /** as dt_iop_clip_and_zoom, but for rgba 8-bit channels. */

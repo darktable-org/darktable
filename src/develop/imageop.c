@@ -2028,6 +2028,80 @@ dt_iop_clip_and_zoom_demosaic_half_size(
 #endif
 }
 
+void
+dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(
+  float *out,
+  const uint16_t *const in,
+  dt_iop_roi_t *const roi_out,
+  const dt_iop_roi_t *const roi_in,
+  const int32_t out_stride,
+  const int32_t in_stride,
+  const dt_image_t *img)
+{
+  const int bx = img->black_offset_x, by = img->black_offset_y;
+  roi_out->x = roi_out->scale * bx;
+  roi_out->y = roi_out->scale * by;
+  roi_out->width  = roi_out->scale * (roi_in->width - bx);
+  roi_out->height = roi_out->scale * (roi_in->height - by);
+
+  uint32_t filters = dt_image_flipped_filter(img);
+
+  // if black y offset is odd, need to switch pattern by one row:
+  // 0x16161616 <-> 0x61616161
+  // 0x49494949 <-> 0x94949494
+  if(img->black_offset_y & 1)
+  {
+    switch(filters)
+    {
+      case 0x16161616u:
+        filters = 0x61616161u;
+        break;
+      case 0x49494949u:
+        filters = 0x94949494u;
+        break;
+      case 0x61616161u:
+        filters = 0x16161616u;
+        break;
+      case 0x94949494u:
+        filters = 0x49494949u;
+        break;
+      default:
+        filters = 0;
+        break;
+    }
+  }
+  if(img->black_offset_x & 1)
+  {
+    switch(filters)
+    {
+      case 0x16161616u:
+        filters = 0x49494949u;
+        break;
+      case 0x49494949u:
+        filters = 0x16161616u;
+        break;
+      case 0x61616161u:
+        filters = 0x94949494u;
+        break;
+      case 0x94949494u:
+        filters = 0x61616161u;
+        break;
+      default:
+        filters = 0;
+        break;
+    }
+  }
+
+  dt_iop_clip_and_zoom_demosaic_half_size(
+      out,
+      in, 
+      roi_out,
+      roi_in,
+      roi_out->width,
+      in_stride,
+      filters);
+}
+
 #if 0 // gets rid of pink artifacts, but doesn't do sub-pixel sampling, so shows some staircasing artifacts.
 void
 dt_iop_clip_and_zoom_demosaic_half_size_f(

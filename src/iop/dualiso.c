@@ -110,8 +110,8 @@ void process(
   const int ox = piece->pipe->image.black_offset_x;
   const int oy = piece->pipe->image.black_offset_y;
 
-  fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
-  fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
+  // fprintf(stderr, "roi in %d %d %d %d\n", roi_in->x, roi_in->y, roi_in->width, roi_in->height);
+  // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(none) schedule(static) shared(i,o,roi_in,roi_out)
