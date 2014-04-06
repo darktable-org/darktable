@@ -68,6 +68,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <stdbool.h>
 #ifndef __WIN32__
   #include <sys/wait.h>
 #endif
@@ -978,6 +979,11 @@ void dt_free_align(void *mem)
   _aligned_free(mem);
 }
 #endif
+
+inline bool dt_is_aligned(const void *pointer, size_t byte_count)
+{
+  return (uintptr_t)pointer % byte_count == 0;
+}
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
