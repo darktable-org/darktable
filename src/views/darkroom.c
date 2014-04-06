@@ -1285,7 +1285,7 @@ void enter(dt_view_t *self)
                             self);
 
   // prefetch next few from first selected image on.
-  dt_view_filmstrip_prefetch();
+  // dt_view_filmstrip_prefetch();
 
   dt_collection_hint_message(darktable.collection);
 }
