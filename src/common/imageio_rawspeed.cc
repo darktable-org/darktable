@@ -175,8 +175,6 @@ dt_imageio_open_rawspeed(
     /* needed in exposure iop for Deflicker */
     img->raw_black_level = r->blackLevel;
     img->raw_white_point = r->whitePoint;
-    fprintf(stderr, "b w : %d %d %d %s\n", img->raw_black_level, img->raw_white_point,
-        ((uint16_t*)r->getDataUncropped(200, 300))[0], filename);
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)

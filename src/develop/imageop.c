@@ -2038,11 +2038,14 @@ dt_iop_clip_and_zoom_demosaic_half_size_crop_blacks(
   const int32_t in_stride,
   const dt_image_t *img)
 {
+  // XXX don't crop, but adjust filters to crop!
+#if 0
   const int bx = img->black_offset_x, by = img->black_offset_y;
   roi_out->x = roi_out->scale * bx;
   roi_out->y = roi_out->scale * by;
   roi_out->width  = roi_out->scale * (roi_in->width - bx);
   roi_out->height = roi_out->scale * (roi_in->height - by);
+#endif
 
   uint32_t filters = dt_image_flipped_filter(img);
 

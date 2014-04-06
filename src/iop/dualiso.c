@@ -67,7 +67,7 @@ int
 output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   if(!dt_dev_pixelpipe_uses_downsampled_input(pipe) &&
-     (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(float);
+     (pipe->image.flags & DT_IMAGE_RAW)) return sizeof(uint16_t);
   else return 4*sizeof(float);
 }
 
@@ -80,8 +80,17 @@ void modify_roi_out(
 {
   *roi_out = *roi_in;
   roi_out->x = roi_out->y = 0;
-  roi_out->width -= piece->pipe->image.black_offset_x;
-  roi_out->height -= piece->pipe->image.black_offset_y;
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    const float scale = roi_in->scale/piece->iscale;
+    roi_out->width -= piece->pipe->image.black_offset_x * scale;
+    roi_out->height -= piece->pipe->image.black_offset_y * scale;
+  }
+  else
+  {
+    roi_out->width -= piece->pipe->image.black_offset_x;
+    roi_out->height -= piece->pipe->image.black_offset_y;
+  }
 }
 
 void modify_roi_in(
@@ -92,8 +101,17 @@ void modify_roi_in(
 {
   // TODO: double check that shit for zoomed in roi (i.e. roi_out->x > 0)
   *roi_in = *roi_out;
-  roi_in->width += piece->pipe->image.black_offset_x;
-  roi_in->height += piece->pipe->image.black_offset_y;
+  if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
+  {
+    const float scale = roi_in->scale/piece->iscale;
+    roi_in->width += piece->pipe->image.black_offset_x * scale;
+    roi_in->height += piece->pipe->image.black_offset_y * scale;
+  }
+  else
+  {
+    roi_in->width += piece->pipe->image.black_offset_x;
+    roi_in->height += piece->pipe->image.black_offset_y;
+  }
 }
 
 /** process, all real work is done here. */
@@ -117,14 +135,16 @@ void process(
   // fprintf(stderr, "roi out %d %d %d %d\n", roi_out->x, roi_out->y, roi_out->width, roi_out->height);
   if(dt_dev_pixelpipe_uses_downsampled_input(piece->pipe))
   { // pre-downsampled buffer that needs black/white scaling
+    const int osx = roi_in->width - roi_out->width;
+    const int osy = roi_in->height - roi_out->height;
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(i,o,roi_in,roi_out) schedule(static)
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
-      const __m128 w = _mm_set1_ps(1.0f/white);
-      const __m128 b = _mm_set1_ps(black);
-      const __m128 *in  = ((__m128*)i) + ((size_t)roi_in->width*(j+oy) + ox);
+      const __m128 w = _mm_set1_ps((float)0x10000/white);
+      const __m128 b = _mm_set1_ps(black/(float)0x10000);
+      const __m128 *in  = ((__m128*)i) + ((size_t)roi_in->width*(j+osy) + osx);
       float *out = ((float*)o) + 4*(size_t)roi_out->width*j;
 
       // process aligned pixels with SSE
@@ -140,11 +160,12 @@ void process(
 #endif
     for(int j=0; j<roi_out->height; j++)
     {
+      const float s = 0x10000/(float)white;
       uint16_t *in  = ((uint16_t *)i) + ((size_t)roi_in->width*(j+oy) + ox);
       uint16_t *out = ((uint16_t *)o) + (size_t)roi_out->width*j;
       for(int i=0;i<roi_out->width;i++,out++,in++)
-        // out[0] = CLAMP(((int32_t)in[0] - black)/white, 0, 0xffff);
-        out[0] = CLAMP(((int32_t)in[0], 0, 0xffff);
+        // out[0] = fmaxf(0.0f, ((float)in[0] - black)/(float)white);
+        out[0] = CLAMP(((int32_t)in[0] - black)*s, 0, 0xffff);
     }
   }
 }
