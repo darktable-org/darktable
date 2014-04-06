@@ -103,6 +103,16 @@ typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
+/** when to collect histogram */
+typedef enum dt_dev_request_flags_t
+{
+  DT_REQUEST_NONE         = 0,
+  DT_REQUEST_ON           = 1<<0,
+  DT_REQUEST_ONLY_IN_GUI  = 1<<1
+}
+dt_dev_request_flags_t;
+
+
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
 struct dt_iop_module_t;
@@ -203,8 +213,10 @@ typedef struct dt_iop_module_t
   int32_t hide_enable_button;
   /** set to 1 if you want an input color picked during next eval. gui mode only. */
   int32_t request_color_pick;
-  /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
-  int32_t request_histogram;
+  /** (bitwise) set if you want an histogram generated during next eval */
+  dt_dev_request_flags_t request_histogram;
+  /** set to source for histogram */
+  dt_dev_pixelpipe_type_t request_histogram_source;
   /** count of histogram bins. 64 by default. gui mode only. */
   int32_t histogram_bins_count;
   /** histogram step for iop_cs_RAW */
