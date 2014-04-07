@@ -206,10 +206,11 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
       if (!plugin->views)
-        fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
-
+      {
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+      } else
       /* does this module belong to current view ?*/
-      if (plugin->views() & v->view(v) )
+      if (plugin->views() & v->view(v))
       {
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);

@@ -415,7 +415,10 @@ static gboolean picasa_test_auth_token(PicasaContext *ctx)
  */
 static GList *picasa_get_album_list(PicasaContext *ctx, gboolean* ok)
 {
-  if (ok) *ok = TRUE;
+  if (!ok)
+    return NULL;
+
+  *ok = TRUE;
   GList *album_list = NULL;
 
   JsonObject *reply = picasa_query_get(ctx, "data/feed/api/user/default", NULL, TRUE);
