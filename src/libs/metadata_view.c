@@ -158,22 +158,27 @@ static void _filter_non_printable(char *string, size_t length)
   }
 }
 
+#define NODATA_STRING "-"
+
 /* helper function for updating a metadata value */
 static void _metadata_update_value(GtkLabel *label, const char *value)
 {
-  gtk_label_set_text(GTK_LABEL(label), value);
+  gboolean validated = g_utf8_validate(value, -1, NULL);
+  const gchar *str = validated ? value : NODATA_STRING;
+  gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
-  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
 }
 
 static void _metadata_update_value_end(GtkLabel *label, const char *value)
 {
-  gtk_label_set_text(GTK_LABEL(label), value);
+  gboolean validated = g_utf8_validate(value, -1, NULL);
+  const gchar *str = validated ? value : NODATA_STRING;
+  gtk_label_set_text(GTK_LABEL(label), str);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  g_object_set(G_OBJECT(label), "tooltip-text", value, (char *)NULL);
+  g_object_set(G_OBJECT(label), "tooltip-text", str, (char *)NULL);
 }
 
-#define NODATA_STRING "-"
 
 /* update all values to reflect mouse over image id or no data at all */
 static void _metadata_view_update_values(dt_lib_module_t *self)
