@@ -440,7 +440,10 @@ static gboolean fb_test_auth_token(FBContext *ctx)
  */
 static GList *fb_get_album_list(FBContext *ctx, gboolean* ok)
 {
-  if (ok) *ok = TRUE;
+  if (!ok)
+    return NULL;
+
+  *ok = TRUE;
   GList *album_list = NULL;
 
   JsonObject *reply = fb_query_get(ctx, "me/albums", NULL);
