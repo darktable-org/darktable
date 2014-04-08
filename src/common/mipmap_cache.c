@@ -731,7 +731,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
     dt_cache_set_filebacked(&cache->mip[k].cache, 
-                            g_strdup_printf("%s/mipmap_disk/DT_MIPMAP_%d",cachedir,k), 
+                            g_strdup_printf("%s/DT_MIPMAP_%d",cachedir,k), 
                             cache->mip[k].buffer_size);
 
     // might have been rounded to power of two:
