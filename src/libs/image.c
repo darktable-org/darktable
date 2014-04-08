@@ -101,6 +101,97 @@ _ungroup_helper_function(void)
   dt_control_queue_redraw_center();
 }
 
+
+/**
+ * Shifts the leader to the next image in the group.
+ * If there is no next image, the first image will be choosen.
+ */
+static void
+_shift_leader(int *groupMembers, int groupsize, int currentLeaderIndex) {
+	if( groupsize <= 0 ) {
+		return;
+	}
+	// Find new leader and it's group
+	int newLeader = currentLeaderIndex+1;
+	if(newLeader == groupsize) {
+		newLeader = 0;
+	}
+	int newgroup = groupMembers[newLeader];
+	// First set the leader into it's own group
+	dt_grouping_add_to_group(newgroup, groupMembers[newLeader]);
+
+	for(int i = 0; i < groupsize; ++i) {
+		if( i != newLeader) { // Leader already set, don't set again
+			dt_grouping_add_to_group(newgroup, groupMembers[i]);
+		}
+	}
+}
+
+/**
+ * Shifts the leader to the next image in the group for all selected images/groups.
+ * If there is no next image, the first image will be choosen.
+ */
+static void
+_shift_leader_helper_function(void)
+{
+	sqlite3_stmt *stmt;
+	// Select all images, which are in a group with one of the selected_images
+	DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+				"select b.id, b.group_id "
+				"from selected_images s "
+				"INNER JOIN images a ON(a.id = s.imgid) "
+				"INNER JOIN images b ON(b.group_id = a.group_id) "
+				"order by b.group_id, b.filename"
+				,-1, &stmt, NULL);
+	int bufsize = 10; // Most likely there will be fewer than 10 images in a single group
+	int *groupMembers = malloc( bufsize * sizeof(int) );
+	int groupsize = 0;		// Current size of the group
+	int groupleader = -1; 	// The index of the group leader
+	int group = -1;			// the groupid of the current group
+
+	while(sqlite3_step(stmt) == SQLITE_ROW)
+	{
+	  int id = sqlite3_column_int(stmt, 0);
+	  int groupid = sqlite3_column_int(stmt, 1);
+	  if( groupid != group ) // New group begins, so finish the last
+	  {						 // We can now shift the leader as we know every member of the group
+		  _shift_leader(groupMembers, groupsize, groupleader);
+		  // reset group
+		  groupsize = 0;
+		  groupleader = -1;
+		  group = groupid;
+	  }
+	  // If the group is really big, we need to get more memory
+	  if( groupsize == bufsize) {
+		  bufsize *= 2;
+		  int *temp = realloc(groupMembers, bufsize);
+		  if(temp == NULL) { // Out of memory :(
+			  free( groupMembers );
+			  sqlite3_finalize(stmt);
+			  // error handling because out of memory
+			  fprintf(stderr, "out of memory while buffering the group");
+			  return;
+		  }
+		  groupMembers = temp;
+	  }
+	  // Add the current image to the current group
+	  groupMembers[groupsize++] = id;
+	  if( id == groupid) {
+		  groupleader = groupsize -1;
+	  }
+	}
+	// Shift the leader of the last group
+	_shift_leader(groupMembers, groupsize, groupleader);
+	// Cleanup
+	free(groupMembers);
+	sqlite3_finalize(stmt);
+	// Prepare for landing... ah redraw
+	darktable.gui->expanded_group_id = -1;
+	dt_collection_update_query(darktable.collection);
+	dt_control_queue_redraw_center();
+}
+
+
 static void
 button_clicked(GtkWidget *widget, gpointer user_data)
 {
@@ -119,6 +210,7 @@ button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 11) _ungroup_helper_function();
   else if(i == 12) dt_control_set_local_copy_images();
   else if(i == 13) dt_control_reset_local_copy_images();
+  else if(i == 14) _shift_leader_helper_function();
 }
 
 int
@@ -233,6 +325,12 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
 
+  button = gtk_button_new_with_label(_("shift leader"));
+  d->ungroup_button = button;
+  g_object_set(G_OBJECT(button), "tooltip-text", _("shifts the leadership to the next image in the group"), (char *)NULL);
+  gtk_box_pack_start(hbox, button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 }
 
@@ -246,20 +344,20 @@ gui_cleanup (dt_lib_module_t *self)
 void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "remove from collection"),
-                        GDK_KEY_Delete, 0);
-  dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, 0);
+                        GDK_KEY_Delete, (GdkModifierType)0);
+  dt_accel_register_lib(self, NC_("accel", "delete from disk"), 0, (GdkModifierType)0);
   dt_accel_register_lib(self,
                         NC_("accel", "rotate selected images 90 degrees CW"),
-                        0, 0);
+                        0, (GdkModifierType)0);
   dt_accel_register_lib(self,
                         NC_("accel", "rotate selected images 90 degrees CCW"),
-                        0, 0);
-  dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
+                        0, (GdkModifierType)0);
+  dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, (GdkModifierType)0);
   dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_KEY_d, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, (GdkModifierType)0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_KEY_g, (GdkModifierType)(GDK_CONTROL_MASK | GDK_SHIFT_MASK));
 }
 
 void connect_key_accels(dt_lib_module_t *self)
