@@ -6844,6 +6844,14 @@ msgstr "Gruppe auflösen"
 msgid "remove selected images from the group"
 msgstr "Ausgewählte Bilder aus der Gruppe entfernen"
 
+#: ../src/libs/image.c:328
+msgid "shift leader"
+msgstr "Gruppenbild wechseln"
+
+#: ../src/libs/image.c:232
+msgid "shifts the leadership to the next image in the group"
+msgstr "Wählt das nächste Bild der Gruppe als Stellvertreter"
+
 #: ../src/libs/image.c:248
 msgctxt "accel"
 msgid "remove from collection"
