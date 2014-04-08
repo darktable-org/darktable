@@ -33,6 +33,9 @@ typedef struct dt_cache_t
   struct dt_cache_segment_t *segments;
   struct dt_cache_bucket_t  *table;
 
+  char *path;
+  uint32_t obj_size;
+
   int32_t lru, mru;
   int cache_mask;
   int optimize_cacheline;
@@ -55,6 +58,8 @@ dt_cache_t;
 
 void dt_cache_init(dt_cache_t *cache, const int32_t capacity, const int32_t num_threads, size_t cache_line_size, size_t cost_quota);
 void dt_cache_cleanup(dt_cache_t *cache);
+
+void dt_cache_set_filebacked (dt_cache_t *cache, char *path, uint32_t obj_size);
 
 // don't do memory allocation, but assign static memory to the buckets, given
 // in this contiguous block of memory.

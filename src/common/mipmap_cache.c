@@ -725,6 +725,15 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
                   parallel,
                   64, 0.9f*thumbnails*cache->mip[k].buffer_size);
 
+
+    // Set the cache to spill over into disk
+    char cachedir[DT_MAX_PATH_LEN];
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
+
+    dt_cache_set_filebacked(&cache->mip[k].cache, 
+                            g_strdup_printf("%s/mipmap_disk/DT_MIPMAP_%d",cachedir,k), 
+                            cache->mip[k].buffer_size);
+
     // might have been rounded to power of two:
     thumbnails = dt_cache_capacity(&cache->mip[k].cache);
     max_mem -= thumbnails * cache->mip[k].buffer_size;
