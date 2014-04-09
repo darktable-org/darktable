@@ -197,6 +197,20 @@ lock_again:
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
 
+  /* now that we got a functional database we should make sure we won't be trampling on a
+     darktable 1.5+ schema */
+  sqlite3_stmt *stmt;
+  int rc = sqlite3_prepare_v2(db->handle, "select value from db_info where key = 'version'", -1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW) {
+    // We're in a darktable 1.5+ database, abandon ship
+    fprintf(stderr, "[init] You seem to be trying to run darktable 1.4 on a 1.5+ database, aborting\n");
+    sqlite3_close(db->handle);
+    g_free(dbname);
+    g_free(db->lockfile);
+    g_free(db);
+    return NULL;
+  }
+
   g_free(dbname);
   return db;
 }
