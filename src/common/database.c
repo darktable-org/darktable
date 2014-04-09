@@ -200,10 +200,10 @@ lock_again:
   /* now that we got a functional database we should make sure we won't be trampling on a
      darktable 1.5+ schema */
   sqlite3_stmt *stmt;
-  int rc = sqlite3_prepare_v2(db->handle, "select value from db_info where key = 'version'", -1, &stmt, NULL);
+  int rc = sqlite3_prepare_v2(db->handle, "select count(*) from db_info", -1, &stmt, NULL);
   if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW) {
     // We're in a darktable 1.5+ database, abandon ship
-    fprintf(stderr, "[init] You seem to be trying to run darktable 1.4 on a 1.5+ database, aborting\n");
+    fprintf(stderr, "[init] error: can't open new database schema\n");
     sqlite3_close(db->handle);
     g_free(dbname);
     g_free(db->lockfile);
