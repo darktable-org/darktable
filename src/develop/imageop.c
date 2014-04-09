@@ -291,7 +291,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->priority = 0;
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
-  module->request_histogram = 0;
+  module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
+  module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
   module->histogram_bins_count = 64;
   module->histogram_step_raw = 3;
   module->histogram_step_rgb = 4;

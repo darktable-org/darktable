@@ -3193,6 +3193,13 @@ const wb_data wb_preset[] =
   { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 0, { 2.445313, 1, 1.250000, 0 } },
   { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 6, { 2.324219, 1, 1.394531, 0 } },
 
+  { "NIKON", "D3300", DirectSunlight, 0,	{ 2.054688, 1, 1.394531, 0 } },
+  { "NIKON", "D3300", Flash, 0,			{ 2.289063, 1, 1.230469, 0 } },
+  { "NIKON", "D3300", Cloudy, 0,		{ 2.199219, 1, 1.277344, 0 } },
+  { "NIKON", "D3300", Shade, 0,			{ 2.527344, 1, 1.152344, 0 } },
+  { "NIKON", "D3300", Incandescent, 0,		{ 1.312500, 1, 2.214844, 0 } },
+  { "NIKON", "D3300", CoolWhiteFluorescent, 0,	{ 1.855469, 1, 2.023438, 0 } },
+
   { "NIKON", "D5000", DirectSunlight, 0,	{ 1.800781, 1, 1.308594, 0 } },
   { "NIKON", "D5000", Flash, 0,			{ 1.976562, 1, 1.152344, 0 } },
   { "NIKON", "D5000", Cloudy, 0,		{ 1.917969, 1, 1.187500, 0 } },

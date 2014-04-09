@@ -799,7 +799,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
 
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) &&
         !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
-    if(!memcmp(params, op_params, MIN(op_params_size, params_size)) &&
+    if(module && !memcmp(params, op_params, MIN(op_params_size, params_size)) &&
         !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
         module->enabled == enabled)
     {

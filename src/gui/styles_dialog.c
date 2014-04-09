@@ -326,7 +326,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   g_object_set (sd->description, "tooltip-text", _("enter a description for the new style, this description is searchable"), (char *)NULL);
 
   /*set values*/
-  if (edit)
+  if (edit && name)
   {
     /* name */
     gtk_entry_set_text(GTK_ENTRY(sd->name), name);

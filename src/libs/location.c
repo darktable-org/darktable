@@ -395,6 +395,8 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
 
   /* create new place */
   _lib_location_result_t *place = g_malloc(sizeof(_lib_location_result_t));
+  if(!place) return;
+
   memset(place, 0, sizeof(_lib_location_result_t));
   place->lon = NAN;
   place->lat = NAN;
@@ -407,8 +409,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     while (*aname)
     {
       if (strcmp(*aname, "display_name") == 0)
+      {
         place->name = g_strdup(*avalue);
-      else if (strcmp(*aname, "lon") == 0)
+        if(!(place->name)) goto bail_out;
+      } else if (strcmp(*aname, "lon") == 0)
         place->lon = g_strtod(*avalue, NULL);
       else if (strcmp(*aname, "lat") == 0)
         place->lat = g_strtod(*avalue, NULL);
@@ -443,10 +447,8 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   return;
 
 bail_out:
-  if (place && place->name)
+  if (place->name)
     g_free(place->name);
 
-  if (place)
-    g_free(place);
-
+  g_free(place);
 }

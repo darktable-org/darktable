@@ -271,7 +271,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_params = malloc(sizeof(dt_iop_levels_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1;
+  module->request_histogram |= (DT_REQUEST_ON);
   module->priority = 649; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_levels_params_t);
   module->gui_data = NULL;
