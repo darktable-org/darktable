@@ -290,7 +290,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
   if (edit)
   {
-    snprintf(title, sizeof(title), _("edit style"));
+    snprintf(title, sizeof(title), "%s", _("edit style"));
     g_strlcat (title, " \"", sizeof(title));
     g_strlcat(title, name, sizeof(title));
     g_strlcat(title, "\"", sizeof(title));
