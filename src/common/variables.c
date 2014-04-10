@@ -240,7 +240,21 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     }
     g_list_free(res);
   }
-
+  else if( g_strcmp0(variable,"$(TITLE)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    unsigned int count = 0;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", &count);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      snprintf(value, value_len, "%s", (char *) res->data);
+    }
+    else
+    {
+      snprintf(value, value_len,  _("none"));
+    }
+    g_list_free_full(res, &g_free);
+  }
 
   g_free(pictures_folder);
 
