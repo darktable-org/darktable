@@ -236,7 +236,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     }
     else
     {
-      snprintf(value, value_len,  _("none"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free(res);
   }
@@ -251,7 +251,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     }
     else
     {
-      snprintf(value, value_len,  _("none"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free_full(res, &g_free);
   }
