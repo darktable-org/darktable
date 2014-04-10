@@ -1293,13 +1293,13 @@ int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data
 void dt_cache_filebacked_save(dt_cache_t *cache, const uint32_t key, void *data) {
   if (cache->path) {
     char *filename = dt_cache_filebacked_getfilename(cache, key);
-    fprintf(stderr, "Filebacked cache: Trying to save %s\n", filename);
+    //fprintf(stderr, "Filebacked cache: Trying to save %s\n", filename);
     if (!g_file_test(filename, G_FILE_TEST_EXISTS)) {
       if (!g_file_set_contents(filename, data, cache->obj_size, NULL)) {
         fprintf(stderr, "Filebacked cache: Couldn't write %s\n", filename);
       }
     } else {
-      fprintf(stderr, "Filebacked cache: File %s already exists, skipping\n", filename);
+      //fprintf(stderr, "Filebacked cache: File %s already exists, skipping\n", filename);
     }
     g_free(filename);
   }
@@ -1308,7 +1308,7 @@ void dt_cache_filebacked_save(dt_cache_t *cache, const uint32_t key, void *data)
 void dt_cache_filebacked_remove(dt_cache_t *cache, const uint32_t key) {
   if (cache->path) {
     char *filename = dt_cache_filebacked_getfilename(cache, key);
-    fprintf(stderr, "Filebacked cache: Trying to remove %s\n", filename);
+    //fprintf(stderr, "Filebacked cache: Trying to remove %s\n", filename);
     if (unlink(filename)) {
       fprintf(stderr, "Filebacked cache: Couldn't remove %s, error %s\n", filename, strerror(errno));
     }
