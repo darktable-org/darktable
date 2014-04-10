@@ -1282,7 +1282,7 @@ int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data
       g_free(contents);
       return cache->obj_size;
     } else {
-      fprintf(stderr, "Filebacked cache: Couldn't get %s\n", filename);
+      //fprintf(stderr, "Filebacked cache: Couldn't get %s\n", filename);
       return 0;
     }
     g_free(filename);
