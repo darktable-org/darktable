@@ -1264,10 +1264,14 @@ void dt_cache_set_filebacked (dt_cache_t *cache, char *path, uint32_t obj_size) 
 }
 
 char *dt_cache_filebacked_getfilename(dt_cache_t *cache, const uint32_t key) {
+  /*TODO: We could allocate the string in the caller's stack, 
+          avoiding allocating memory from the heap*/
   return g_strdup_printf("%s/%d", cache->path, key);
 }
 
 int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data) {
+  /*TODO: We could read directly into *data, avoiding new memory allocations
+          (in g_file_get_contents) and the memcpy */
   if (cache->path) {
     char *filename = dt_cache_filebacked_getfilename(cache, key);
     char *contents;
@@ -1275,11 +1279,13 @@ int dt_cache_filebacked_tryget(dt_cache_t *cache, const uint32_t key, void *data
     if (g_file_get_contents(filename, &contents, &length, NULL)) {
       assert(length == cache->obj_size);
       memcpy(data, contents, cache->obj_size);
+      g_free(contents);
       return cache->obj_size;
     } else {
       fprintf(stderr, "Filebacked cache: Couldn't get %s\n", filename);
       return 0;
     }
+    g_free(filename);
   }
   return 0;
 }
@@ -1295,6 +1301,7 @@ void dt_cache_filebacked_save(dt_cache_t *cache, const uint32_t key, void *data)
     } else {
       fprintf(stderr, "Filebacked cache: File %s already exists, skipping\n", filename);
     }
+    g_free(filename);
   }
 }
 
@@ -1305,6 +1312,7 @@ void dt_cache_filebacked_remove(dt_cache_t *cache, const uint32_t key) {
     if (unlink(filename)) {
       fprintf(stderr, "Filebacked cache: Couldn't remove %s, error %s\n", filename, strerror(errno));
     }
+    g_free(filename);
   }
 }
 
