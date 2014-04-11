@@ -156,7 +156,7 @@ dt_imageio_open_tiff(
     (void) dt_exif_read(img, filename);
 
   tiff_t t;
-  uint32_t config;
+  uint16_t config;
 
   t.image = img;
 
