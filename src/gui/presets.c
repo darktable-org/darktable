@@ -353,7 +353,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   if (!dt_gui_presets_format_value_str[0])
   {
     dt_gui_presets_format_value_str[0] = _("normal images");
-    dt_gui_presets_format_value_str[1] = _("RAW");
+    dt_gui_presets_format_value_str[1] = _("raw");
     dt_gui_presets_format_value_str[2] = _("HDR");
   }
 
