@@ -1,7 +1,6 @@
-
 /*
     This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+    copyright (c) 2013 Jeremy Rosen
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,11 +15,23 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef DT_LUA_STORAGES_H
-#define DT_LUA_STORAGES_H
-#include "lua/lua.h"
+#ifndef DT_LUA_STORAGE_H
+#define DT_LUA_STORAGE_H
+#include <lua/lua.h>
+#include <common/imageio_module.h>
 
-int dt_lua_init_storages(lua_State *L);
+// forward declaration
+struct dt_imageio_module_storage_t;
+
+
+#define dt_lua_register_storage(L,storage,type_name) \
+  dt_lua_register_storage_typeid(L,storage,luaA_type_find(#type_name))
+void dt_lua_register_storage_typeid(lua_State* L, struct dt_imageio_module_storage_t* module,luaA_Type type_id);
+
+
+
+int dt_lua_init_storage(lua_State *L);
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

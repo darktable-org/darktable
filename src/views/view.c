@@ -153,6 +153,9 @@ int dt_view_load_module(dt_view_t *view, const char *module)
 
   view->accel_closures = NULL;
 
+#ifdef USE_LUA
+  dt_lua_register_view(darktable.lua_state.state,view);
+#endif
   if(view->init) view->init(view);
   if(view->init_key_accels) view->init_key_accels(view);
 
@@ -184,17 +187,17 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   // destroy old module list
   int error = 0;
-  dt_view_t *v = vm->view + vm->current_view;
 
   /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
   dt_undo_clear(darktable.undo, DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
-  if ( k==DT_MODE_NONE )
+  if (k==DT_MODE_NONE && vm->current_view >= 0)
   {
     /* leave the current view*/
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
+    dt_view_t *v = vm->view + vm->current_view;
+    if(v->leave) v->leave(v);
 
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
@@ -203,10 +206,11 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
       if (!plugin->views)
-        fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
-
+      {
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+      } else
       /* does this module belong to current view ?*/
-      if (plugin->views() & v->view(v) )
+      if (plugin->views() & v->view(v))
       {
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
@@ -240,6 +244,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     if (vm->current_view >=0)
     {
       /* leave current view */
+      dt_view_t *v = vm->view + vm->current_view;
       if(v->leave) v->leave(v);
       dt_accel_disconnect_list(v->accel_closures);
       v->accel_closures = NULL;
@@ -1013,7 +1018,7 @@ dt_view_image_expose(
         else x = (.04+8*0.04-1.9*.04)*fscale;
         dt_view_draw_audio(cr, x, y, s);
         // mouse is over the audio icon
-        if(abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s)
+        if(fabsf(px-x) <= 1.2*s && fabsf(-y) <= 1.2*s)
           *image_over = DT_VIEW_AUDIO;
       }
 #endif
@@ -1055,7 +1060,7 @@ dt_view_image_expose(
         dtgtk_cairo_paint_grouping(cr, _x, _y, s, s, 23);
         cairo_restore(cr);
         // mouse is over the grouping icon
-        if(img && abs(px-_x-.5*s) <= .8*s && abs(py-_y-.5*s) <= .8*s)
+        if(img && fabs(px-_x-.5*s) <= .8*s && fabs(py-_y-.5*s) <= .8*s)
           *image_over = DT_VIEW_GROUP;
       }
 
@@ -1082,7 +1087,7 @@ dt_view_image_expose(
         else x = (.04+8*0.04)*fscale;
         dt_view_draw_altered(cr, x, y, s);
         //g_print("px = %d, x = %.4f, py = %d, y = %.4f\n", px, x, py, y);
-        if(img && abs(px-x) <= 1.2*s && abs(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
+        if(img && fabsf(px-x) <= 1.2*s && fabsf(py-y) <= 1.2*s) // mouse hovers over the altered-icon -> history tooltip!
         {
           darktable.gui->center_tooltip = 1;
         }
@@ -1175,7 +1180,9 @@ dt_view_image_expose(
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%2048[^\n]", line);
+          gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line)-1);
+          int read = fscanf(f, line_pattern, line);
+          g_free(line_pattern);
           if(read != 1) break;
           fgetc(f); // munch \n
 

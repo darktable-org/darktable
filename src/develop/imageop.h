@@ -26,7 +26,6 @@
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
-#include "gui/simple_gui.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <sched.h>
@@ -37,35 +36,54 @@ struct dt_iop_roi_t;
 struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
 
-#define	IOP_GROUP_BASIC    1
-#define	IOP_GROUP_COLOR    2
-#define	IOP_GROUP_CORRECT  4
-#define	IOP_GROUP_EFFECT   8
-#define	IOP_GROUP_TONE    16
-#define	IOP_SPECIAL_GROUP_ACTIVE_PIPE  32
-#define	IOP_SPECIAL_GROUP_USER_DEFINED 64
+/** module group */
+typedef enum dt_iop_group_t
+{
+  IOP_GROUP_NONE                 = 0,
+  IOP_GROUP_BASIC                = 1<<0,
+  IOP_GROUP_COLOR                = 1<<1,
+  IOP_GROUP_CORRECT              = 1<<2,
+  IOP_GROUP_EFFECT               = 1<<3,
+  IOP_GROUP_TONE                 = 1<<4,
+  IOP_SPECIAL_GROUP_ACTIVE_PIPE  = 1<<5,
+  IOP_SPECIAL_GROUP_USER_DEFINED = 1<<6
+}
+dt_iop_group_t;
+#define IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
 
-#define IOP_TAG_DISTORT       1
-#define IOP_TAG_DECORATION    2
-// might be some other filters togglable by user?
-//#define IOP_TAG_SLOW        4
-//#define IOP_TAG_DETAIL_FIX  8
+/** module tags */
+typedef enum dt_iop_tags_t
+{
+  IOP_TAG_NONE         = 0,
+  IOP_TAG_DISTORT      = 1<<0,
+  IOP_TAG_DECORATION   = 1<<1,
 
+  // might be some other filters togglable by user?
+  //IOP_TAG_SLOW       = 1<<2,
+  //IOP_TAG_DETAIL_FIX = 1<<3,
+}
+dt_iop_tags_t;
 
-#define	IOP_GROUP_ALL (IOP_GROUP_BASIC|IOP_GROUP_COLOR|IOP_GROUP_CORRECT|IOP_GROUP_EFFECT)
+/** module tags */
+typedef enum dt_iop_flags_t
+{
+  IOP_FLAGS_NONE = 0,
 
-/** Flag for the iop module to be enabled/included by default when creating a style */
-#define IOP_FLAGS_INCLUDE_IN_STYLES     1
-#define IOP_FLAGS_SUPPORTS_BLENDING     2                       // Does provide blending modes
-#define IOP_FLAGS_DEPRECATED            4
-#define IOP_FLAGS_BLEND_ONLY_LIGHTNESS  8                       // Does only blend with L-channel in Lab space. Keeps a, b of original image.
-#define IOP_FLAGS_ALLOW_TILING         16                       // Does allow tile-wise processing (valid for CPU and GPU processing)
-#define IOP_FLAGS_HIDDEN               32                       // Hide the iop from userinterface
-#define IOP_FLAGS_TILING_FULL_ROI      64                       // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
-#define IOP_FLAGS_ONE_INSTANCE        128                       // The module doesn't support multiple instances
-#define IOP_FLAGS_PREVIEW_NON_OPENCL  256                       // Preview pixelpipe of this module must not run on GPU but always on CPU
-#define IOP_FLAGS_NO_HISTORY_STACK    512                       // This iop will never show up in the history stack
-#define IOP_FLAGS_NO_MASKS  1024    // The module doesn't support masks (used with SUPPORT_BLENDING)
+  /** Flag for the iop module to be enabled/included by default when creating a style */
+  IOP_FLAGS_INCLUDE_IN_STYLES    = 1<<0,
+  IOP_FLAGS_SUPPORTS_BLENDING    = 1<<1,   // Does provide blending modes
+  IOP_FLAGS_DEPRECATED           = 1<<2,
+  IOP_FLAGS_BLEND_ONLY_LIGHTNESS = 1<<3,   // Does only blend with L-channel in Lab space. Keeps a, b of original image.
+  IOP_FLAGS_ALLOW_TILING         = 1<<4,   // Does allow tile-wise processing (valid for CPU and GPU processing)
+  IOP_FLAGS_HIDDEN               = 1<<5,   // Hide the iop from userinterface
+  IOP_FLAGS_TILING_FULL_ROI      = 1<<6,   // Tiling code has to expect arbitrary roi's for this module (incl. flipping, mirroring etc.)
+  IOP_FLAGS_ONE_INSTANCE         = 1<<7,   // The module doesn't support multiple instances
+  IOP_FLAGS_PREVIEW_NON_OPENCL   = 1<<8,   // Preview pixelpipe of this module must not run on GPU but always on CPU
+  IOP_FLAGS_NO_HISTORY_STACK     = 1<<9,   // This iop will never show up in the history stack
+  IOP_FLAGS_NO_MASKS             = 1<<10   // The module doesn't support masks (used with SUPPORT_BLENDING)
+}
+dt_iop_flags_t;
+
 /** status of a module*/
 typedef enum dt_iop_module_state_t
 {
@@ -84,6 +102,16 @@ dt_iop_params_t;
 typedef void dt_iop_gui_data_t;
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
+
+/** when to collect histogram */
+typedef enum dt_dev_request_flags_t
+{
+  DT_REQUEST_NONE         = 0,
+  DT_REQUEST_ON           = 1<<0,
+  DT_REQUEST_ONLY_IN_GUI  = 1<<1
+}
+dt_dev_request_flags_t;
+
 
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
@@ -125,7 +153,6 @@ typedef struct dt_iop_module_so_t
   void (*gui_reset)            (struct dt_iop_module_t *self);
   void (*gui_update)           (struct dt_iop_module_t *self);
   void (*gui_init)             (struct dt_iop_module_t *self);
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   void (*gui_cleanup)          (struct dt_iop_module_t *self);
   void (*gui_post_expose)      (struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery);
   void (*gui_focus)            (struct dt_iop_module_t *self, gboolean in);
@@ -163,6 +190,7 @@ typedef struct dt_iop_module_so_t
   int (*distort_backtransform) (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count);
 
   // introspection related callbacks
+  gboolean                     have_introspection;
   dt_introspection_t*          (*get_introspection)        ();
   dt_introspection_field_t*    (*get_introspection_linear) ();
   void*                        (*get_p)                    (const void *param, const char *name);
@@ -185,8 +213,10 @@ typedef struct dt_iop_module_t
   int32_t hide_enable_button;
   /** set to 1 if you want an input color picked during next eval. gui mode only. */
   int32_t request_color_pick;
-  /** set to 1 if you want an input histogram generated during next eval. gui mode only. */
-  int32_t request_histogram;
+  /** (bitwise) set if you want an histogram generated during next eval */
+  dt_dev_request_flags_t request_histogram;
+  /** set to source for histogram */
+  dt_dev_pixelpipe_type_t request_histogram_source;
   /** count of histogram bins. 64 by default. gui mode only. */
   int32_t histogram_bins_count;
   /** histogram step for iop_cs_RAW */
@@ -287,8 +317,6 @@ typedef struct dt_iop_module_t
   void (*gui_reset)       (struct dt_iop_module_t *self);
   /** construct widget. */
   void (*gui_init)        (struct dt_iop_module_t *self);
-  /** construct widget using the simple api. */
-  dt_gui_simple_t* (*gui_init_simple) (struct dt_iop_module_so_t *self);
   /** destroy widget. */
   void (*gui_cleanup)     (struct dt_iop_module_t *self);
   /** optional method called after darkroom expose. */
@@ -347,6 +375,7 @@ typedef struct dt_iop_module_t
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
 
   // introspection related data
+  gboolean                  have_introspection;
   dt_introspection_t*       (*get_introspection)        ();
   dt_introspection_field_t* (*get_introspection_linear) ();
   void*                     (*get_p)                    (const void *param, const char *name);

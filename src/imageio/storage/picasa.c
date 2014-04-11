@@ -333,8 +333,12 @@ static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHa
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
-  if (res != CURLE_OK) return NULL;
-
+  if (res != CURLE_OK)
+  {
+    g_string_free(url, TRUE);
+    g_string_free(response, TRUE);
+    return NULL;
+  }
   //parse the response
   JsonObject *respobj = picasa_parse_response(ctx, response);
 
@@ -411,7 +415,10 @@ static gboolean picasa_test_auth_token(PicasaContext *ctx)
  */
 static GList *picasa_get_album_list(PicasaContext *ctx, gboolean* ok)
 {
-  if (ok) *ok = TRUE;
+  if (!ok)
+    return NULL;
+
+  *ok = TRUE;
   GList *album_list = NULL;
 
   JsonObject *reply = picasa_query_get(ctx, "data/feed/api/user/default", NULL, TRUE);
@@ -491,6 +498,8 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
                    "</entry>\n",
                    name, summary, private);
 
+  g_free(private);
+
   gchar *authHeader = NULL;
   authHeader = dt_util_dstrcat(authHeader, "Authorization: OAuth %s", ctx->token);
 
@@ -498,7 +507,7 @@ static const gchar *picasa_create_album(PicasaContext *ctx, gchar *name, gchar *
   headers = curl_slist_append(headers,"Content-Type: application/atom+xml");
   headers = curl_slist_append(headers, authHeader);
 
-  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default");
+  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default");
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
@@ -570,7 +579,6 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   int size = g_mapped_file_get_length( imgfile );
   gchar *data =g_mapped_file_get_contents( imgfile );
 
-
   gchar *entry = g_markup_printf_escaped (
                    "<entry xmlns='http://www.w3.org/2005/Atom'>\n"
                    "<title>%s</title>\n"
@@ -586,7 +594,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   // Hack for nonform multipart post...
   gchar mpart1[4096]= {0};
   gchar *mpart_format="\nMedia multipart posting\n--END_OF_PART\nContent-Type: application/atom+xml\n\n%s\n--END_OF_PART\nContent-Type: image/jpeg\n\n";
-  sprintf(mpart1,mpart_format,entry);
+  snprintf(mpart1, sizeof(mpart1), mpart_format, entry);
+  g_free(entry);
 
   int mpart1size=strlen(mpart1);
   int postdata_length=mpart1size+size+strlen("\n--END_OF_PART--");
@@ -595,6 +604,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   memcpy( postdata+mpart1size, data, size);
   memcpy( postdata+mpart1size+size, "\n--END_OF_PART--",strlen("\n--END_OF_PART--") );
 
+  g_mapped_file_unref(imgfile);
+
   struct curl_slist *headers = NULL;
   headers = curl_slist_append(headers,"Content-Type: multipart/related; boundary=\"END_OF_PART\"");
   headers = curl_slist_append(headers,"MIME-version: 1.0");
@@ -602,7 +613,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   headers = curl_slist_append(headers,"GData-Version: 2");
   headers = curl_slist_append(headers, authHeader);
 
-  sprintf(uri,"https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
+  snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
@@ -811,13 +822,17 @@ static int picasa_get_user_auth_token(dt_storage_picasa_gui_data_t *ui)
 {
   ///////////// open the authentication url in a browser
   GError *error = NULL;
-  gtk_show_uri(gdk_screen_get_default(),
+  if(!gtk_show_uri(gdk_screen_get_default(),
                GOOGLE_WS_BASE_URL"o/oauth2/auth?"
                "client_id=" GOOGLE_API_KEY
                "&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
                "&scope=https://picasaweb.google.com/data/ https://www.googleapis.com/auth/userinfo.profile"
                " https://www.googleapis.com/auth/userinfo.email"
-               "&response_type=code", gtk_get_current_event_time(), &error);
+               "&response_type=code", gtk_get_current_event_time(), &error))
+  {
+    fprintf(stderr, "[picasa] error opening browser: %s\n", error->message);
+    g_error_free(error);
+  }
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "
@@ -1181,7 +1196,7 @@ static gboolean ui_authenticate(dt_storage_picasa_gui_data_t *ui)
     ctx->token = ctx->refresh_token = NULL;
   }
 
-  int ret;
+  int ret = 0;
   if(ctx->token == NULL)
   {
     mustsaveaccount = TRUE;

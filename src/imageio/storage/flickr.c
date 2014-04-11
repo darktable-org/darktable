@@ -93,11 +93,11 @@ typedef struct dt_storage_flickr_params_t
 
 
 /** Authenticates and retrieves an initialized flickr api object */
-_flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
+static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
 
-flickcurl_upload_status static *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description, gint imgid);
+static flickcurl_upload_status *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data, char *caption, char *description, gint imgid);
 
-void static _flickr_api_free( _flickr_api_context_t *ctx )
+static void _flickr_api_free( _flickr_api_context_t *ctx )
 {
 
   g_free( ctx->album_title );
@@ -121,7 +121,7 @@ static void _flickr_api_error_handler(void *data, const char *message)
   }
 }
 
-_flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui)
+static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui)
 {
   char *perms = NULL, *frob;
   gchar *token;
@@ -178,9 +178,13 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     char *sign = g_strdup_printf ("%sapi_key%sfrob%spermswrite", SHARED_SECRET, API_KEY, frob);
     char *sign_md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, sign, strlen (sign));
     gchar auth_url[250];
-    sprintf(auth_url,"http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
+    snprintf(auth_url, sizeof(auth_url), "http://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob, sign_md5);
 
-    gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error);
+    if(!gtk_show_uri (gdk_screen_get_default(), auth_url, gtk_get_current_event_time (), &error))
+    {
+      fprintf(stderr, "[flickr] error opening browser: %s\n", error->message);
+      g_error_free(error);
+    }
 
     g_free(sign);
     g_free(sign_md5);
@@ -257,7 +261,7 @@ _flickr_api_context_t static *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 }
 
 
-flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, gint imgid )
+static flickcurl_upload_status *_flickr_api_upload_photo( dt_storage_flickr_params_t *p, char *fname, char *caption, char *description, gint imgid )
 {
 
   flickcurl_upload_params *params = g_malloc(sizeof(flickcurl_upload_params));
@@ -290,7 +294,7 @@ flickcurl_upload_status static *_flickr_api_upload_photo( dt_storage_flickr_para
 }
 
 
-char static *_flickr_api_create_photoset(_flickr_api_context_t *ctx, const char *photo_id )
+static char *_flickr_api_create_photoset(_flickr_api_context_t *ctx, const char *photo_id )
 {
   char *photoset;
   const char *title = ctx->album_title;
@@ -309,15 +313,15 @@ name (const struct dt_imageio_module_storage_t *self)
 }
 
 /** Set status connection text */
-void static set_status(dt_storage_flickr_gui_data_t *ui, gchar *message, gchar *color)
+static void set_status(dt_storage_flickr_gui_data_t *ui, gchar *message, gchar *color)
 {
   if( !color ) color="#ffffff";
   gchar mup[512]= {0};
-  sprintf( mup,"<span foreground=\"%s\" ><small>%s</small></span>",color,message);
+  snprintf(mup, sizeof(mup), "<span foreground=\"%s\" ><small>%s</small></span>",color,message);
   gtk_label_set_markup(ui->label4, mup);
 }
 
-void static flickr_entry_changed(GtkEntry *entry, gpointer data)
+static void flickr_entry_changed(GtkEntry *entry, gpointer data)
 {
   dt_storage_flickr_gui_data_t *ui=(dt_storage_flickr_gui_data_t *)data;
 
@@ -334,7 +338,7 @@ void static flickr_entry_changed(GtkEntry *entry, gpointer data)
   }
 }
 
-flickcurl_photoset static **_flickr_api_photosets( _flickr_api_context_t *ctx, const char *user)
+static flickcurl_photoset **_flickr_api_photosets( _flickr_api_context_t *ctx, const char *user)
 {
   flickcurl_photoset **photoset;
 //  char *nsid;
@@ -354,7 +358,7 @@ flickcurl_photoset static **_flickr_api_photosets( _flickr_api_context_t *ctx, c
 }
 
 /** Refresh albums */
-void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
+static void refresh_albums(dt_storage_flickr_gui_data_t *ui)
 {
   int i;
   gtk_widget_set_sensitive( GTK_WIDGET(ui->comboBox1), FALSE);
@@ -392,7 +396,7 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
     for(i=0; ui->albums[i]; i++)
     {
       char data[512]= {0};
-      sprintf(data,"%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
+      snprintf(data, sizeof(data), "%s (%i)", ui->albums[i]->title, ui->albums[i]->photos_count);
       gtk_combo_box_text_append_text(ui->comboBox1, g_strdup(data));
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(ui->comboBox1), 3);
@@ -409,7 +413,7 @@ void static refresh_albums(dt_storage_flickr_gui_data_t *ui)
 }
 
 
-void static flickr_album_changed(GtkComboBox *cb,gpointer data)
+static void flickr_album_changed(GtkComboBox *cb,gpointer data)
 {
   dt_storage_flickr_gui_data_t * ui=(dt_storage_flickr_gui_data_t *)data;
   gchar *value=gtk_combo_box_text_get_active_text(ui->comboBox1);
@@ -422,7 +426,7 @@ void static flickr_album_changed(GtkComboBox *cb,gpointer data)
     gtk_widget_hide(GTK_WIDGET(ui->hbox1));
 }
 
-gboolean static combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data)
+static gboolean combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointer data)
 {
   GValue value = { 0, };
   gtk_tree_model_get_value(model,iter,0,&value);
@@ -435,7 +439,7 @@ gboolean static combobox_separator(GtkTreeModel *model,GtkTreeIter *iter,gpointe
 }
 
 // Refresh button pressed...
-void static flickr_button1_clicked(GtkButton *button,gpointer data)
+static void flickr_button1_clicked(GtkButton *button,gpointer data)
 {
   dt_storage_flickr_gui_data_t * ui=(dt_storage_flickr_gui_data_t *)data;
   refresh_albums(ui);

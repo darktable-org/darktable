@@ -353,7 +353,7 @@ copy_res(const char *src, const char *dst)
   if(fin && fout)
   {
     fseek(fin,0,SEEK_END);
-    int end = ftell(fin);
+    size_t end = ftell(fin);
     rewind(fin);
     content = (char*)g_malloc(sizeof(char)*end);
     if(content == NULL)

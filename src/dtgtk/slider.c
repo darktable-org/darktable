@@ -174,7 +174,7 @@ static gboolean _slider_button_press(GtkWidget *widget, GdkEventButton *event)
     char sv[32]= {0};
     slider->is_entry_active=TRUE;
     gdouble value = gtk_adjustment_get_value(slider->adjustment);
-    sprintf(sv,"%.*f",slider->digits,value);
+    snprintf(sv, sizeof(sv), "%.*f",slider->digits,value);
     gtk_entry_set_text (GTK_ENTRY(slider->entry),sv);
     gtk_widget_show (GTK_WIDGET(slider->entry));
     gtk_widget_grab_focus (GTK_WIDGET(slider->entry));
@@ -561,9 +561,9 @@ static gboolean _slider_expose(GtkWidget *widget, GdkEventExpose *event)
   char sv[32]= {0};
 
   if (slider->force_sign)
-    sprintf(sv,"%+.*f",slider->digits,value);
+    snprintf(sv, sizeof(sv), "%+.*f",slider->digits,value);
   else
-    sprintf(sv,"%.*f",slider->digits,value);
+    snprintf(sv, sizeof(sv), "%.*f",slider->digits,value);
 
   cairo_set_font_size(cr,vr.height*0.5);
   cairo_text_extents(cr, sv, &ext);

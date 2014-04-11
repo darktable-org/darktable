@@ -56,7 +56,7 @@ int dt_dlopencl_init(const char *name, dt_dlopencl_t **ocl)
   }
 
   /* try to load library */
-  library = (name == NULL || strlen(name) == 0) ? DT_OPENCL_LIBRARY : name;
+  library = (name == NULL || name[0] == '\0') ? DT_OPENCL_LIBRARY : name;
   module = dt_gmodule_open(library);
 
   if (module == NULL)

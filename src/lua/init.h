@@ -22,6 +22,7 @@
 /** initialize lua stuff at DT start time */
 void dt_lua_init(lua_State*L,const int init_gui);
 void dt_lua_init_early(lua_State*L);
+void dt_lua_finalize();
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

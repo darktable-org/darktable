@@ -34,16 +34,24 @@
 #include <gdk/gdkkeysyms.h>
 #include "dtgtk/button.h"
 
-#define GUIDE_NONE     0
-#define GUIDE_GRID     1
-#define GUIDE_THIRD    2
-#define GUIDE_DIAGONAL 3
-#define GUIDE_TRIANGL  4
-#define GUIDE_GOLDEN   5
+typedef enum dt_lib_liveview_guide_t
+{
+  GUIDE_NONE = 0,
+  GUIDE_GRID,
+  GUIDE_THIRD,
+  GUIDE_DIAGONAL,
+  GUIDE_TRIANGL,
+  GUIDE_GOLDEN
+}
+dt_lib_liveview_guide_t;
 
-#define OVERLAY_NONE     0
-#define OVERLAY_SELECTED 1
-#define OVERLAY_ID       2
+typedef enum dt_lib_liveview_overlay_t
+{
+  OVERLAY_NONE = 0,
+  OVERLAY_SELECTED,
+  OVERLAY_ID
+}
+dt_lib_liveview_overlay_t;
 
 #define HANDLE_SIZE 0.02
 
@@ -579,8 +587,12 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
       if((buf.width <= 8 && buf.height <= 8) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
-      cairo_operator_t mode = _overlay_modes[dt_bauhaus_combobox_get(lib->overlay_mode)];
-      cairo_set_operator(cr, mode);
+      int overlay_modes_index = dt_bauhaus_combobox_get(lib->overlay_mode);
+      if(overlay_modes_index >= 0)
+      {
+        cairo_operator_t mode = _overlay_modes[overlay_modes_index];
+        cairo_set_operator(cr, mode);
+      }
       cairo_fill(cr);
       cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_surface_destroy (surface);
@@ -613,7 +625,7 @@ gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t heigh
         x1=width;
         y1=y0;
       }
-      gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabsf(sl_x-pointerx)<5):(fabsf(sl_y-pointery)<5);
+      gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabs(sl_x-pointerx)<5):(fabs(sl_y-pointery)<5);
       cairo_save(cr);
       cairo_set_source_rgb(cr, .7, .7, .7);
       cairo_set_line_width(cr, (mouse_over_control ? 2.0 : 0.5) );
@@ -799,10 +811,10 @@ int button_pressed (struct dt_lib_module_t *self, double x, double y, double pre
     double sl_x = lib->overlay_x0 + lib->splitline_x * width;
     double sl_y = lib->overlay_y0 + lib->splitline_y * height;
 
-    gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabsf(sl_x-x)<5):(fabsf(sl_y-y)<5);
+    gboolean mouse_over_control = (lib->splitline_rotation%2==0)?(fabs(sl_x-x)<5):(fabs(sl_y-y)<5);
 
     /* do the split rotating */
-    if(which==1 && fabsf(sl_x-x)<7 && fabsf(sl_y-y)<7)
+    if(which==1 && fabs(sl_x-x)<7 && fabs(sl_y-y)<7)
     {
       /* let's rotate */
       lib->splitline_rotation = (lib->splitline_rotation+1)%4;

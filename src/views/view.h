@@ -29,6 +29,11 @@
 #include <gmodule.h>
 #include <cairo.h>
 #include <sqlite3.h>
+#ifdef USE_LUA
+#include "lua/types.h"
+#include "lua/modules.h"
+#include "lua/view.h"
+#endif
 
 /** avilable views flags, a view should return it's type and
     is also used in modules flags available in src/libs to

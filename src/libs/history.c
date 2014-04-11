@@ -195,7 +195,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
     /* create a history button and add to box */
-    if(hitem->module->multi_name && strcmp(hitem->module->multi_name,"0") == 0)
+    if(strcmp(hitem->module->multi_name,"0") == 0)
       snprintf(label, sizeof(label), "%s", hitem->module->name());
     else
       snprintf(label, sizeof(label), "%s %s", hitem->module->name(), hitem->module->multi_name);

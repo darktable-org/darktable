@@ -113,7 +113,7 @@ sub get_description
 sub add_to_linear
 {
   my ($self, $varname, $line) = @_;
-  push(@linear, "/* $linearisation_pos */\n    ".$line);
+  push(@linear, $line);
   $self->{linearisation_pos} = $linearisation_pos;
   push(@varnames, [$linearisation_pos, $varname]) if($varname ne "");
   $linearisation_pos++;
@@ -179,9 +179,9 @@ sub get_introspection_code
 
   # we have to add the outermost struct here
   my $description = $self->get_description();
-  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0, NULL";
+  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0, NULL";
   my $specific = $self->{type}->get_introspection_code($name_prefix, $params_type);
-  my $linear_line = ".Struct = {\n      { $header },\n      $specific\n    }";
+  my $linear_line = ".Struct = {\n    { $header },\n    $specific\n  }";
   $self->{type}->add_to_linear("", $linear_line);
 }
 
@@ -243,6 +243,12 @@ sub check_tree
 sub get_type
 {
   $self->print_debug("FIXME: ast_type_node -- this type shouldn't be instantiated\n");
+}
+
+sub get_type_name
+{
+  my $self = shift;
+  return lc $self->get_type();
 }
 
 sub get_static_const
@@ -332,6 +338,12 @@ sub new
 sub get_type
 {
   return "Opaque";
+}
+
+sub get_type_name
+{
+  my $self = shift;
+  return $self->{name};
 }
 
 sub print_tree
@@ -679,6 +691,13 @@ sub get_type
   $self->print_debug("FIXME: ast_type_struct_or_union_node -- this type shouldn't be instantiated\n");
 }
 
+sub get_type_name
+{
+  my $self = shift;
+  return $self->{name};
+}
+
+
 sub print_tree
 {
   my ($self, $prefix, $indent) = @_;
@@ -781,6 +800,12 @@ sub get_type
   return "Enum";
 }
 
+sub get_type_name
+{
+  my $self = shift;
+  return $self->{name};
+}
+
 sub print_tree
 {
   my ($self, $prefix, $indent) = @_;
@@ -871,10 +896,12 @@ sub get_introspection_code
   my $union_type = $self->{type}->get_type();
   my $type = "DT_INTROSPECTION_TYPE_".uc($union_type);
 
+  my $type_name = $self->{type}->get_type_name();
+
   my $description = $self->get_description();
-  my $header = "$type, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
+  my $header = "$type, (char*)\"$type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
   my $specific = $self->{type}->get_introspection_code($inner_varname, $params_type);
-  my $linear_line = ".$union_type = {\n      { $header },\n      $specific\n    }";
+  my $linear_line = ".$union_type = {\n    { $header },\n    $specific\n  }";
   $self->add_to_linear($inner_varname, $linear_line);
 
   # is this an array?
@@ -886,10 +913,11 @@ sub get_introspection_code
     {
       $depth--;
       $inner_varname = $varname.("[0]"x$depth);
+      my $array_type_name = $type_name.("[]"x($dimensions - $depth));
       $field_name = $self->{declaration}->{id}.("[0]"x$depth);
-      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
+      $header = "DT_INTROSPECTION_TYPE_ARRAY, (char*)\"$array_type_name\", (char*)\"$inner_varname\", (char*)\"$field_name\", (char*)\"$description\", sizeof((($params_type*)NULL)->$inner_varname), G_STRUCT_OFFSET($params_type, $varname), NULL";
       $specific = "/*count*/ $_, /*type*/ $subtype, /*field*/ &introspection_linear[".($linearisation_pos-1)."]";
-      $linear_line = ".Array = {\n      { $header },\n      $specific\n    }";
+      $linear_line = ".Array = {\n    { $header },\n    $specific\n  }";
       $self->add_to_linear($inner_varname, $linear_line);
       $subtype = "DT_INTROSPECTION_TYPE_ARRAY";
     }

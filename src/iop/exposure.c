@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,11 +149,11 @@ void init_presets (dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "begin", NULL, NULL, NULL);
 
-  dt_gui_presets_add_generic(_("Magic Lantern Defaults"), self->op, self->version(), &(dt_iop_exposure_params_t)
+  dt_gui_presets_add_generic(_("magic lantern defaults"), self->op, self->version(), &(dt_iop_exposure_params_t)
   {
     0., 0., TRUE, 50., -4.
   } , sizeof(dt_iop_exposure_params_t), 1);
-  dt_gui_presets_add_generic(_("Almost no clipping"), self->op, self->version(), &(dt_iop_exposure_params_t)
+  dt_gui_presets_add_generic(_("almost no clipping"), self->op, self->version(), &(dt_iop_exposure_params_t)
   {
     0., 0., TRUE, 100., -1.
   } , sizeof(dt_iop_exposure_params_t), 1);
@@ -325,7 +326,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1; //FIXME: only when deflicker is enabled maybe?
+  module->request_histogram |= (DT_REQUEST_ON); //FIXME: only when deflicker is enabled maybe?
   module->histogram_bins_count = 16384; // we neeed really maximally reliable histogrem
   module->histogram_step_rgb = 1; // only way do do so - analyze full-sized thumbnail
   module->priority = 175; // module order created by iop_dependencies.py, do not edit!

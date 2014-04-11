@@ -39,7 +39,6 @@
 
 #include <sys/time.h>
 #include <unistd.h>
-int usleep(useconds_t usec);
 #include <inttypes.h>
 #include <libintl.h>
 
@@ -209,6 +208,9 @@ int main(int argc, char *arg[])
 
   if(!strcmp(ext, "jpg"))
     ext = "jpeg";
+
+  if(!strcmp(ext, "tif"))
+    ext = "tiff";
 
   // init the export data structures
   dt_imageio_module_format_t *format;

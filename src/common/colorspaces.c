@@ -777,7 +777,7 @@ dt_colorspaces_create_linear_infrared_profile(void)
 }
 
 int
-dt_colorspaces_find_profile(char *filename, const int filename_len, const char *profile, const char *inout)
+dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout)
 {
   char datadir[DT_MAX_PATH_LEN];
   dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
@@ -838,10 +838,7 @@ dt_colorspaces_create_output_profile(const int imgid)
     g_strlcpy(profile, overprofile, sizeof(profile));
   }
 
-  if(overprofile)
-  {
-    g_free(overprofile);
-  }
+  g_free(overprofile);
 
   cmsHPROFILE output = NULL;
 
@@ -953,7 +950,7 @@ dt_colorspaces_cleanup_profile(cmsHPROFILE p)
 }
 
 void
-dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *const maker, const char *const model)
+dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const char *const maker, const char *const model)
 {
   // if first word in maker == first word in model, use just model.
   const char *c, *d;
@@ -968,7 +965,7 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
     }
   if(match)
   {
-    snprintf(makermodel, size, "%s", model);
+    snprintf(makermodel, makermodel_len, "%s", model);
   }
   else
   {
@@ -981,11 +978,11 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
     // and continue with model.
     // replace MAXXUM with DYNAX for wb presets.
     if(!strcmp(maker, "MINOLTA") && !strncmp(model, "MAXXUM", 6))
-      snprintf(e, size - (d-maker), "DYNAX %s", model+7);
+      snprintf(e, makermodel_len - (d-maker), "DYNAX %s", model+7);
     // need FinePix gone from some fuji cameras to match dcraws description:
     else if(!strncmp(model, "FinePix", 7))
-      snprintf(e, size - (d-maker), "%s", model + 8);
-    else snprintf(e, size - (d-maker), "%s", model);
+      snprintf(e, makermodel_len - (d-maker), "%s", model + 8);
+    else snprintf(e, makermodel_len - (d-maker), "%s", model);
   }
   // strip trailing spaces
   e = makermodel + strlen(makermodel) - 1;
@@ -994,9 +991,9 @@ dt_colorspaces_get_makermodel(char *makermodel, const int size, const char *cons
 }
 
 void
-dt_colorspaces_get_makermodel_split(char *makermodel, const int size, char **modelo, const char *const maker, const char *const model)
+dt_colorspaces_get_makermodel_split(char *makermodel, size_t makermodel_len, char **modelo, const char *const maker, const char *const model)
 {
-  dt_colorspaces_get_makermodel(makermodel, size, maker, model);
+  dt_colorspaces_get_makermodel(makermodel, makermodel_len, maker, model);
   *modelo = makermodel;
   for(; **modelo != ' ' && *modelo < makermodel + strlen(makermodel); (*modelo)++);
   **modelo = '\0';

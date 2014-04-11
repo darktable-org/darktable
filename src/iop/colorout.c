@@ -1012,10 +1012,10 @@ void gui_cleanup(struct dt_iop_module_t *self)
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "toggle softproofing"),
-                        GDK_KEY_s, 0);
+                        GDK_KEY_s, GDK_CONTROL_MASK);
 
   dt_accel_register_iop(self, FALSE, NC_("accel", "toggle gamutcheck"),
-                        GDK_KEY_g, 0);
+                        GDK_KEY_g, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_iop_module_t *self)

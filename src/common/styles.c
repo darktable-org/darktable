@@ -187,16 +187,16 @@ static void _dt_style_update_from_image(int id, int imgid, GList *filter, GList 
 
         for (int k=0; fields[k]; k++)
         {
-          if (k!=0) strcat(query, ",");
-          sprintf(tmp, "%s=(select %s from history where imgid=%d and num=%d)", fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
-          strcat(query, tmp);
+          if (k!=0) g_strlcat(query, ",", sizeof(query));
+          snprintf(tmp, sizeof(tmp), "%s=(select %s from history where imgid=%d and num=%d)", fields[k], fields[k], imgid, GPOINTER_TO_INT(upd->data));
+          g_strlcat(query, tmp, sizeof(query));
         }
-        sprintf(tmp, " where styleid=%d and style_items.num=%d", id, GPOINTER_TO_INT(list->data));
-        strcat(query, tmp);
+        snprintf(tmp, sizeof(tmp), " where styleid=%d and style_items.num=%d", id, GPOINTER_TO_INT(list->data));
+        g_strlcat(query, tmp, sizeof(query));
       }
       // update only, so we want to insert the new style item
       else if (GPOINTER_TO_INT(upd->data) != -1)
-        sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%d",id,id,imgid,GPOINTER_TO_INT(upd->data));
+        snprintf(query, sizeof(query), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select %d,(select num+1 from style_items where styleid=%d order by num desc limit 1),module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=%d and num=%d",id,id,imgid,GPOINTER_TO_INT(upd->data));
 
       if (*query)
         DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), query, NULL, NULL, NULL);
@@ -240,14 +240,14 @@ dt_styles_update (const char *name, const char *newname, const char *newdescript
     {
       if(list!=g_list_first(list))
         g_strlcat(include, ",", sizeof(include));
-      sprintf(tmp, "%d", GPOINTER_TO_INT(list->data));
+      snprintf(tmp, sizeof(tmp), "%d", GPOINTER_TO_INT(list->data));
       g_strlcat(include, tmp, sizeof(include));
     }
     while ((list=g_list_next(list)));
     g_strlcat(include, ")", sizeof(include));
 
     char query[4096]= {0};
-    sprintf(query,"delete from style_items where styleid=?1 and %s", include);
+    snprintf(query, sizeof(query), "delete from style_items where styleid=?1 and %s", include);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
     sqlite3_step(stmt);
@@ -312,14 +312,14 @@ dt_styles_create_from_style (const char *name, const char *newname, const char *
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", sizeof(include));
-        sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
+        snprintf(tmp, sizeof(tmp),"%d", GPOINTER_TO_INT(list->data));
         g_strlcat(include,tmp, sizeof(include));
       }
       while ((list=g_list_next(list)));
       g_strlcat(include,")", sizeof(include));
       char query[4096]= {0};
 
-      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2 and %s",include);
+      snprintf(query, sizeof(query), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from style_items where styleid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
@@ -378,13 +378,13 @@ dt_styles_create_from_image (const char *name,const char *description,int32_t im
       {
         if(list!=g_list_first(list))
           g_strlcat(include,",", sizeof(include));
-        sprintf(tmp,"%d", GPOINTER_TO_INT(list->data));
+        snprintf(tmp, sizeof(tmp),"%d", GPOINTER_TO_INT(list->data));
         g_strlcat(include,tmp, sizeof(include));
       }
       while ((list=g_list_next(list)));
       g_strlcat(include,")", sizeof(include));
       char query[4096]= {0};
-      sprintf(query,"insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=?2 and %s",include);
+      snprintf(query, sizeof(query), "insert into style_items (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name) select ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,multi_priority,multi_name from history where imgid=?2 and %s",include);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     }
     else
@@ -674,7 +674,7 @@ dt_styles_get_list (const char *filter)
 {
   char filterstring[512]= {0};
   sqlite3_stmt *stmt;
-  sprintf (filterstring,"%%%s%%",filter);
+  snprintf(filterstring, sizeof(filterstring), "%%%s%%", filter);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "select name, description from styles where name like ?1 or description like ?1 order by name", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, filterstring, strlen(filterstring), SQLITE_TRANSIENT);
   GList *result = NULL;
@@ -971,7 +971,7 @@ dt_styles_import_from_file(const char *style_path)
   StyleData           *style;
   GMarkupParseContext	*parser;
   gchar				buf[1024];
-  int					num_read;
+  size_t			num_read;
 
   style = dt_styles_style_data_new();
   parser = g_markup_parse_context_new (&dt_style_parser, 0, style, NULL);
@@ -981,14 +981,15 @@ dt_styles_import_from_file(const char *style_path)
 
     while (!feof (style_file))
     {
-      num_read = fread (buf, sizeof(gchar), 1024, style_file);
+      num_read = fread (buf, sizeof(gchar), sizeof(buf), style_file);
 
       if (num_read == 0)
       {
         break;
       }
-      else if (num_read < 0)
+      else if (num_read == -1)
       {
+        // FIXME: ferror?
         // ERROR !
         break;
       }

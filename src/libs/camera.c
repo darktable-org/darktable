@@ -338,7 +338,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   // Draw right aligned battery value
   const char *battery_value=dt_camctl_camera_get_property(darktable.camctl,NULL,"batterylevel");
   char battery[4096]= {0};
-  sprintf(battery,"%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
+  snprintf(battery, sizeof(battery), "%s: %s", _("battery"), battery_value?battery_value:_("n/a"));
   cairo_text_extents (cr, battery, &te);
   cairo_move_to(cr,width-te.width-5, 1+BAR_HEIGHT - te.height / 2 );
   cairo_show_text(cr, battery);

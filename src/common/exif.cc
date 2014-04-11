@@ -24,6 +24,25 @@
 #include "config.h"
 #endif
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cassert>
+#include <glib.h>
+#include <zlib.h>
+#include <string>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sqlite3.h>
+
+#include <exiv2/easyaccess.hpp>
+#include <exiv2/xmp.hpp>
+#include <exiv2/error.hpp>
+#include <exiv2/image.hpp>
+#include <exiv2/exif.hpp>
+
 extern "C"
 {
 #include "common/exif.h"
@@ -38,38 +57,22 @@ extern "C"
 #include "control/conf.h"
 #include "develop/imageop.h"
 }
-#include <exiv2/easyaccess.hpp>
-#include <exiv2/xmp.hpp>
-#include <exiv2/error.hpp>
-#include <exiv2/image.hpp>
-#include <exiv2/exif.hpp>
-#include <sqlite3.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <cassert>
-#include <glib.h>
-#include <zlib.h>
-#include <string>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#define DT_XMP_KEYS_NUM 15 // the number of XmpBag XmpSeq keys that dt uses
 
 static void _exif_import_tags(dt_image_t *img,Exiv2::XmpData::iterator &pos);
 
 //this array should contain all XmpBag and XmpSeq keys used by dt
-const char *dt_xmp_keys[DT_XMP_KEYS_NUM] =
+const char *dt_xmp_keys[] =
 {
-  "Xmp.dc.subject", "Xmp.darktable.colorlabels",
+  "Xmp.dc.subject", "Xmp.lr.hierarchicalSubject", "Xmp.darktable.colorlabels",
   "Xmp.darktable.history_modversion", "Xmp.darktable.history_enabled",
   "Xmp.darktable.history_operation", "Xmp.darktable.history_params",
   "Xmp.darktable.blendop_params", "Xmp.darktable.blendop_version",
   "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name",
   "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights"
 };
+
+static const guint dt_xmp_keys_n = G_N_ELEMENTS(dt_xmp_keys); // the number of XmpBag XmpSeq keys that dt uses
+
 
 /* a few helper functions inspired by
    https://projects.kde.org/projects/kde/kdegraphics/libs/libkexiv2/repository/revisions/master/entry/libkexiv2/kexiv2gps.cpp */
@@ -165,7 +168,7 @@ static void dt_strlcpy_to_utf8(char *dest, size_t dest_max,
 //this should work because dt first reads all known keys
 static void dt_remove_known_keys(Exiv2::XmpData &xmp)
 {
-  for(int i=0; i<DT_XMP_KEYS_NUM; i++)
+  for(unsigned int i=0; i < dt_xmp_keys_n; i++)
   {
     Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(dt_xmp_keys[i]));
     if(pos != xmp.end()) xmp.erase(pos);
@@ -489,13 +492,13 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       switch(pos->toLong())
       {
         case 76: // 90 cw
-          img->orientation = 6;
+          img->orientation = 4 | 2 | 0; // swap x/y, flip x
           break;
         case 82: // 270 cw
-          img->orientation = 7;
+          img->orientation = 4 | 0 | 1; // swap x/y, flip y
           break;
         default: // 72, horizontal
-          img->orientation = 0;
+          img->orientation = 0 | 0 | 0; // do nothing
       }
     }
 
@@ -543,10 +546,12 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
+#if LF_VERSION>((0 << 24) | (2 << 16) | (8 << 8) | 0)
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensType"))) != exifData.end() && pos->size())
     {
       dt_strlcpy_to_utf8(img->exif_lens, sizeof(img->exif_lens), pos, exifData);
     }
+#endif
 #if EXIV2_MINOR_VERSION>20
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.OlympusEq.LensModel"))) != exifData.end() && pos->size())
     {
@@ -608,12 +613,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_strlcpy_to_utf8(img->exif_datetime_taken, 20, pos, exifData);
     }
 
-    const char* str = dt_conf_get_string("ui_last/import_last_creator");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.creator", str);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Artist")))
               != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
@@ -634,28 +634,11 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       dt_metadata_set(img->id, "Xmp.dc.description", str.c_str());
     }
 
-    str = dt_conf_get_string("ui_last/import_last_rights");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.rights", str);
-    }
-    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
+    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Copyright")))
               != exifData.end() && pos->size())
     {
       std::string str = pos->print(&exifData);
       dt_metadata_set(img->id, "Xmp.dc.rights", str.c_str());
-    }
-
-    // some more metadata fields set in the import dialog
-    str = dt_conf_get_string("ui_last/import_last_publisher");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_metadata_set(img->id, "Xmp.dc.publisher", str);
-    }
-    str = dt_conf_get_string("ui_last/import_last_tags");
-    if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE && str != NULL && str[0] != '\0')
-    {
-      dt_tag_attach_string_list(str, img->id);
     }
 
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.Rating")))
@@ -749,7 +732,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     // workaround for an exiv2 bug writing random garbage into exif_lens for this camera:
     // http://dev.exiv2.org/issues/779
-    if(!strcmp(img->exif_model, "DMC-GH2")) sprintf(img->exif_lens, "(unknown)");
+    if(!strcmp(img->exif_model, "DMC-GH2")) snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
 
     // Workaround for an issue on newer Sony NEX cams.
     // The default EXIF field is not used by Sony to store lens data
@@ -758,7 +741,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     // FIXME: This is still a workaround
     if(!strncmp(img->exif_model, "NEX", 3))
     {
-      sprintf(img->exif_lens, "(unknown)");
+      snprintf(img->exif_lens, sizeof(img->exif_lens), "(unknown)");
       if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Photo.LensModel"))) != exifData.end() && pos->size())
       {
         std::string str = pos->print(&exifData);
@@ -777,6 +760,34 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
   }
 }
 
+static void dt_exif_apply_global_overwrites(dt_image_t *img)
+{
+  if(dt_conf_get_bool("ui_last/import_apply_metadata") == TRUE)
+  {
+    char* str;
+
+    str = dt_conf_get_string("ui_last/import_last_creator");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.creator", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_rights");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.rights", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_publisher");
+    if(str != NULL && str[0] != '\0')
+      dt_metadata_set(img->id, "Xmp.dc.publisher", str);
+    g_free(str);
+
+    str = dt_conf_get_string("ui_last/import_last_tags");
+    if(str != NULL && str[0] != '\0')
+      dt_tag_attach_string_list(str, img->id);
+    g_free(str);
+  }
+}
+
 //TODO: can this blob also contain xmp and iptc data?
 int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
 {
@@ -784,7 +795,9 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   {
     Exiv2::ExifData exifData;
     Exiv2::ExifParser::decode(exifData, blob, size);
-    return dt_exif_read_exif_data(img, exifData)?0:1;
+    bool res = dt_exif_read_exif_data(img, exifData);
+    dt_exif_apply_global_overwrites(img);
+    return res?0:1;
   }
   catch (Exiv2::AnyError& e)
   {
@@ -799,25 +812,39 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
  */
 int dt_exif_read(dt_image_t *img, const char* path)
 {
+  // at least set datetime taken to something useful in case there is no exif data in this file (pfm, png, ...)
+  struct stat statbuf;
+  stat(path, &statbuf);
+  struct tm result;
+  strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+
   try
   {
     Exiv2::Image::AutoPtr image;
     image = Exiv2::ImageFactory::open(path);
     assert(image.get() != 0);
     image->readMetadata();
-    bool res;
+    bool res = true;
 
     // EXIF metadata
     Exiv2::ExifData &exifData = image->exifData();
-    res = dt_exif_read_exif_data(img, exifData);
+    if(!exifData.empty())
+      res = dt_exif_read_exif_data(img, exifData);
+    else
+      img->exif_inited = 1;
+
+    // these get overwritten by IPTC and XMP. is that how it should work?
+    dt_exif_apply_global_overwrites(img);
 
     // IPTC metadata.
     Exiv2::IptcData &iptcData = image->iptcData();
-    res = dt_exif_read_iptc_data(img, iptcData) && res;
+    if(!iptcData.empty())
+      res = dt_exif_read_iptc_data(img, iptcData) && res;
 
     // XMP metadata
     Exiv2::XmpData &xmpData = image->xmpData();
-    res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
+    if(!xmpData.empty())
+      res = dt_exif_read_xmp_data(img, xmpData, false, true) && res;
 
     // Initialize size - don't wait for full raw to be loaded to get this
     // information. If use_embedded_thumbnail is set, it will take a
@@ -829,12 +856,6 @@ int dt_exif_read(dt_image_t *img, const char* path)
   }
   catch (Exiv2::AnyError& e)
   {
-    // at least set datetime taken to something useful in case there is no exif data in this file (pfm)
-    struct stat statbuf;
-    stat(path, &statbuf);
-    struct tm result;
-    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
-
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
     return 1;
@@ -1133,7 +1154,7 @@ int dt_exif_read_blob(
       // According to the Exif specs DateTime is to be set to the last modification time while DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in the geotagging module.
       gchar new_datetime[20];
-      dt_gettime(new_datetime);
+      dt_gettime(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
       exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
       exifData["Exif.Photo.DateTimeOriginal"] = cimg->exif_datetime_taken;
@@ -1183,6 +1204,7 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
       do_compress = TRUE;
     else
       do_compress = FALSE;
+    g_free(config);
   }
 
   if(do_compress)
@@ -1218,7 +1240,7 @@ char *dt_exif_xmp_encode (const unsigned char *input, const int len, int *output
     output[1] = 'z';
     output[2] = factor / 10 + '0';
     output[3] = factor % 10 + '0';
-    strcpy(output+4, buffer2);
+    g_strlcpy(output+4, buffer2, outlen);
     g_free(buffer2);
 
     if(output_len) *output_len = outlen;
@@ -1795,8 +1817,10 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     beg = next;
   }
 
-  xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
-  xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+  if(v1->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
+  if(v2->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
   /* TODO: Add tags to IPTC namespace as well */
 
   // color labels
@@ -1812,7 +1836,8 @@ dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     v->read(val);
   }
   sqlite3_finalize(stmt);
-  xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
+  if(v->count() > 0)
+    xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
 
   // masks:
   char key[1024];
@@ -1979,7 +2004,7 @@ int dt_exif_xmp_attach (const int imgid, const char* filename)
   {
     char input_filename[1024];
     gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, input_filename, 1024, &from_cache);
+    dt_image_full_path(imgid, input_filename, sizeof(input_filename), &from_cache);
 
     Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(filename);
     // unfortunately it seems we have to read the metadata, to not erase the exif (which we just wrote).
@@ -2013,7 +2038,7 @@ int dt_exif_xmp_write (const int imgid, const char* filename)
   char imgfname[1024];
   gboolean from_cache = TRUE;
 
-  dt_image_full_path(imgid, imgfname, 1024, &from_cache);
+  dt_image_full_path(imgid, imgfname, sizeof(imgfname), &from_cache);
   if(!g_file_test(imgfname, G_FILE_TEST_IS_REGULAR)) return 1;
 
   try

@@ -507,7 +507,7 @@ gboolean dt_imageio_is_ldr(const char *filename)
   if (fin)
   {
     /* read block from file */
-    int s = fread(block,16,1,fin);
+    size_t s = fread(block,16,1,fin);
     fclose(fin);
 
     /* compare magic's */
@@ -665,7 +665,7 @@ int dt_imageio_export_with_flags(
   res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params));
   if(!res)
   {
-    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? _("thumbnail export") : _("export"));
+    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     dt_dev_cleanup(&dev);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return 1;
@@ -895,7 +895,7 @@ int dt_imageio_export_with_flags(
     uint8_t exif_profile[65535]; // C++ alloc'ed buffer is uncool, so we waste some bits here.
     char pathname[1024];
     gboolean from_cache = TRUE;
-    dt_image_full_path(imgid, pathname, 1024, &from_cache);
+    dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
     // last param is dng mode, it's false here
     length = dt_exif_read_blob(exif_profile, pathname, imgid, sRGB, processed_width, processed_height, 0);
 
@@ -928,21 +928,6 @@ int dt_imageio_export_with_flags(
 // =================================================
 //   combined reading
 // =================================================
-
-static inline int
-has_ldr_extension(const char *filename)
-{
-  // TODO: this is a bad, lazy hack to avoid me coding a true libmagic fix here!
-  int ret = 0;
-  const char *cc = filename + strlen(filename);
-  for(; *cc!='.'&&cc>filename; cc--);
-  gchar *ext = g_ascii_strdown(cc+1, -1);
-  if(!strcmp(ext, "jpg") || !strcmp(ext, "jpeg") ||
-      !strcmp(ext, "tif") || !strcmp(ext, "tiff"))
-    ret = 1;
-  g_free(ext);
-  return ret;
-}
 
 dt_imageio_retval_t
 dt_imageio_open(

@@ -104,7 +104,7 @@ export_button_clicked (GtkWidget *widget, gpointer user_data)
     g_strlcpy(style, tmp, sizeof(style));
     g_free(tmp);
   }
-  
+
   int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
 
@@ -174,10 +174,10 @@ gui_reset (dt_lib_module_t *self)
     rc = _combo_box_set_active_text(d->style, style);
     if (rc == FALSE)
       gtk_combo_box_set_active(d->style, 0);
+    g_free(style);
   }
   else
     gtk_combo_box_set_active(d->style, 0);
-  g_free(style);
 
   if(!iccfound) gtk_combo_box_set_active(d->profile, 0);
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();

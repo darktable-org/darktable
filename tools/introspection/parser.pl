@@ -23,7 +23,6 @@ our $ERROR_LEVEL = 0;
 
 use strict;
 use warnings;
-use File::Copy qw(copy); # as a fallback
 
 use scanner;
 use parser;
@@ -72,12 +71,12 @@ while()
   }
 }
 
+open my $OUT, '>', $output_file;
+
 if(defined($params_type))
 {
   # needed for variable metadata like min, max, default and description
   parse_comments();
-
-  open my $OUT, '>', $output_file;
 
   my $code_generated = 0;
   my $params = $types{$params_type};
@@ -91,14 +90,16 @@ if(defined($params_type))
     print STDERR "error: can't generate introspection data for type `$params_type'.\n";
     code_gen::print_fallback($OUT, $input_file, $version, $params_type);
   }
-
-  close $OUT;
 }
 else
 {
-  # copy input_file to output_file as a last resort. no introspection then
-  copy($input_file, $output_file);
+  my $source_file_name = $input_file;
+  if($input_file =~ /([^\/]*)$/) { $source_file_name = $1; }
+  print STDERR "no introspection requested for $source_file_name.\n";
+  print $OUT "/* no introspection requested for $source_file_name */\n#include \"$input_file\"\n";
 }
+
+close $OUT;
 
 ################# some debug functions #################
 

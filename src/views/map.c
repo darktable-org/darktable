@@ -103,6 +103,129 @@ uint32_t view(dt_view_t *self)
   return DT_VIEW_MAP;
 }
 
+#ifdef USE_LUA
+typedef enum
+{
+  GET_LAT,
+  GET_LONG,
+  GET_ZOOM,
+  LAST_LIB_FIELD
+} map_fields;
+static const char *map_fields_name[] =
+{
+  "latitude",
+  "longitude",
+  "zoom",
+  NULL
+};
+
+static int map_index(lua_State*L)
+{
+  int index = luaL_checkoption(L,2,NULL,map_fields_name);
+  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
+  dt_map_t *lib = (dt_map_t *)module->data;
+  switch(index)
+  {
+    case GET_LAT:
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        lua_pushnumber(L,dt_conf_get_float("plugins/map/latitude"));
+        return 1;
+      } else {
+        float value;
+        dt_lua_unlock(true);
+        g_object_get(G_OBJECT(lib->map), "latitude", &value, NULL);
+        dt_lua_lock();
+        lua_pushnumber(L,value);
+        return 1;
+      }
+    case GET_LONG:
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        lua_pushnumber(L,dt_conf_get_float("plugins/map/longitude"));
+        return 1;
+      } else {
+        float value;
+        dt_lua_unlock(true);
+        g_object_get(G_OBJECT(lib->map), "longitude", &value, NULL);
+        dt_lua_lock();
+        lua_pushnumber(L,value);
+        return 1;
+      }
+    case GET_ZOOM:
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        lua_pushnumber(L,dt_conf_get_float("plugins/map/zoom"));
+        return 1;
+      } else {
+        int value;
+        dt_lua_unlock(true);
+        g_object_get(G_OBJECT(lib->map), "zoom", &value, NULL);
+        dt_lua_lock();
+        lua_pushinteger(L,value);
+        return 1;
+      }
+    default:
+      return luaL_error(L,"should never happen %d",index);
+  }
+}
+
+static int map_newindex(lua_State*L)
+{
+  int index = luaL_checkoption(L,2,NULL,map_fields_name);
+  dt_view_t * module = *(dt_view_t**)lua_touserdata(L,1);
+  dt_map_t *lib = (dt_map_t *)module->data;
+  switch(index)
+  {
+    case GET_LAT:
+      luaL_checktype(L,3,LUA_TNUMBER);
+      float lat = lua_tonumber(L,3);
+      lat = CLAMP(lat, -90, 90);
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        dt_conf_set_float("plugins/map/latitude",lat);
+        return 0;
+      } else {
+        float value;
+        dt_lua_unlock(true);
+        g_object_get(G_OBJECT(lib->map), "longitude", &value, NULL);
+        osm_gps_map_set_center(lib->map,lat,value);
+        dt_lua_lock();
+        return 0;
+      }
+    case GET_LONG:
+      luaL_checktype(L,3,LUA_TNUMBER);
+      float longi = lua_tonumber(L,3);
+      longi = CLAMP(longi, -180, 180);
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        dt_conf_set_float("plugins/map/longitude",longi);
+        return 0;
+      } else {
+        float value;
+        dt_lua_unlock(true);
+        g_object_get(G_OBJECT(lib->map), "latitude", &value, NULL);
+        osm_gps_map_set_center(lib->map,value,longi);
+        dt_lua_lock();
+        return 0;
+      }
+    case GET_ZOOM:
+      // we rely on osm to correctly clamp zoom (checked in osm source
+      // lua can have temporarly false values but it will fix itself when entering map
+      // unfortunately we can't get the min max when lib->map doesn't exist
+      luaL_checktype(L,3,LUA_TNUMBER);
+      int zoom = luaL_checkint(L,3);
+      if(dt_view_manager_get_current_view(darktable.view_manager) != module){
+        dt_conf_set_int("plugins/map/zoom",zoom);
+        return 0;
+      } else {
+        dt_lua_unlock(true);
+        osm_gps_map_set_zoom(lib->map,zoom);
+        dt_lua_lock();
+        return 0;
+      }
+    default:
+      return luaL_error(L,"should never happen %d",index);
+  }
+}
+
+
+#endif //USE_LUA
 static GdkPixbuf *init_pin()
 {
   int w = thumb_size + 2*thumb_border, h = pin_size;
@@ -134,7 +257,7 @@ void init(dt_view_t *self)
     lib->drop_filmstrip_activated = FALSE;
 
     OsmGpsMapSource_t map_source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
-    const gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
+    gchar *old_map_source = dt_conf_get_string("plugins/map/map_source");
     if(old_map_source && old_map_source[0] != '\0')
     {
       // find the number of the stored map_source
@@ -151,6 +274,7 @@ void init(dt_view_t *self)
     }
     else
       dt_conf_set_string("plugins/map/map_source", osm_gps_map_source_get_friendly_name(map_source));
+    g_free(old_map_source);
 
     lib->map_source = map_source;
 
@@ -195,6 +319,11 @@ void init(dt_view_t *self)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
   g_free(geo_query);
+#ifdef USE_LUA
+  int my_typeid = dt_lua_module_get_entry_typeid(darktable.lua_state.state,"view",self->module_name);
+  dt_lua_register_type_callback_list_typeid(darktable.lua_state.state,my_typeid,map_index,map_newindex,map_fields_name);
+
+#endif //USE_LUA
 }
 
 void cleanup(dt_view_t *self)

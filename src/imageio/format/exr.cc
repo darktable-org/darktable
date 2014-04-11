@@ -15,27 +15,30 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
+#include <cstdlib>
+#include <cstdio>
+#include <memory>
+
+#include <OpenEXR/ImfFrameBuffer.h>
+#include <OpenEXR/ImfTiledOutputFile.h>
+#include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfStandardAttributes.h>
+
+extern "C"
+{
 #include "common/darktable.h"
 #include "common/exif.h"
 #include "common/colorspaces.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
 #include "common/imageio_exr.h"
-#include "common/imageio_exr.hh"
 #include "common/imageio_format.h"
-
-#include <cstdlib>
-#include <cstdio>
-#include <memory>
-#include <OpenEXR/ImfFrameBuffer.h>
-#include <OpenEXR/ImfTiledOutputFile.h>
-#include <OpenEXR/ImfChannelList.h>
-#include <OpenEXR/ImfStandardAttributes.h>
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+}
+#include "common/imageio_exr.hh"
 
 #ifdef __cplusplus
 extern "C"

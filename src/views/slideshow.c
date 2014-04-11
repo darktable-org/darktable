@@ -290,7 +290,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
     default:
       // uh. should never happen. sanitize:
       d->state_waiting_for_user = 1;
-      d->state = s_image_loaded;
+      d->state = s_prefetching;
       break;
   }
   dt_pthread_mutex_unlock(&d->lock);
@@ -380,7 +380,7 @@ void leave(dt_view_t *self)
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
   dt_conf_set_string("plugins/lighttable/export/iccprofile", d->oldprofile);
   g_free(d->oldprofile);
-  d->oldprofile = 0;
+  d->oldprofile = NULL;
   dt_pthread_mutex_lock(&d->lock);
   dt_free_align(d->buf1);
   dt_free_align(d->buf2);

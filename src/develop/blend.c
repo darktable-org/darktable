@@ -625,9 +625,9 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *
     else
       for(int k=0; k<channels; k++)
       {
-        lmax = max[k]+fabs(min[k]);
-        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+//         lmax = max[k]+fabs(min[k]);
+//         la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+//         lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
 
         b[j+k] = CLAMP_RANGE( ((a[j+k] * (1.0f - local_opacity)) + ((a[j+k] * b[j+k]) * local_opacity)), min[k], max[k]);
       }
@@ -1686,7 +1686,7 @@ static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, floa
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(&a[j], tta);
+      _RGB_2_HSL(ta, tta);
       _RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */

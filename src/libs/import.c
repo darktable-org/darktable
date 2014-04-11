@@ -208,13 +208,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start (GTK_BOX (d->devices),label,TRUE,TRUE,0);
 
       /* set camera summary if available */
-      if( camera->summary.text !=NULL && strlen(camera->summary.text) >0 )
+      if(*camera->summary.text)
       {
         g_object_set(G_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
       }
       else
       {
-        sprintf(buffer,_("device \"%s\" connected on port \"%s\"."),camera->model,camera->port);
+        snprintf(buffer, sizeof(buffer), _("device \"%s\" connected on port \"%s\"."), camera->model, camera->port);
         g_object_set(G_OBJECT(label), "tooltip-text", buffer, (char *)NULL);
       }
 
@@ -426,14 +426,25 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
 
   creator = gtk_entry_new();
   gtk_widget_set_size_request(creator, 300, -1);
-  gtk_entry_set_text(GTK_ENTRY(creator), dt_conf_get_string("ui_last/import_last_creator"));
+  gchar *str = dt_conf_get_string("ui_last/import_last_creator");
+  gtk_entry_set_text(GTK_ENTRY(creator), str);
+  g_free(str);
+
   publisher = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(publisher), dt_conf_get_string("ui_last/import_last_publisher"));
+  str = dt_conf_get_string("ui_last/import_last_publisher");
+  gtk_entry_set_text(GTK_ENTRY(publisher), str);
+  g_free(str);
+
   rights = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(rights), dt_conf_get_string("ui_last/import_last_rights"));
+  str = dt_conf_get_string("ui_last/import_last_rights");
+  gtk_entry_set_text(GTK_ENTRY(rights), str);
+  g_free(str);
+
   tags = gtk_entry_new();
+  str = dt_conf_get_string("ui_last/import_last_tags");
   g_object_set(tags, "tooltip-text", _("comma separated list of tags"), NULL);
-  gtk_entry_set_text(GTK_ENTRY(tags), dt_conf_get_string("ui_last/import_last_tags"));
+  gtk_entry_set_text(GTK_ENTRY(tags), str);
+  g_free(str);
 
   // presets from the metadata plugin
   GtkCellRenderer *renderer;
@@ -658,7 +669,10 @@ static void _lib_import_single_image_callback(GtkWidget *widget,gpointer user_da
 
   char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
   if(last_directory != NULL)
+  {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+    g_free(last_directory);
+  }
 
   char *cp, **extensions, ext[1024];
   GtkFileFilter *filter;
@@ -751,7 +765,10 @@ static void _lib_import_folder_callback(GtkWidget *widget,gpointer user_data)
 
   char *last_directory = dt_conf_get_string("ui_last/import_last_directory");
   if(last_directory != NULL)
+  {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+    g_free(last_directory);
+  }
 
   dt_lib_import_metadata_t metadata;
   gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER (filechooser), _lib_import_get_extra_widget(&metadata, TRUE));

@@ -324,7 +324,12 @@ static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
-  if (res != CURLE_OK) return NULL;
+  if (res != CURLE_OK)
+  {
+    g_string_free(url, TRUE);
+    g_string_free(response, TRUE);
+    return NULL;
+  }
 
   //parse the response
   JsonObject *respobj = fb_parse_response(ctx, response);
@@ -435,7 +440,10 @@ static gboolean fb_test_auth_token(FBContext *ctx)
  */
 static GList *fb_get_album_list(FBContext *ctx, gboolean* ok)
 {
-  if (ok) *ok = TRUE;
+  if (!ok)
+    return NULL;
+
+  *ok = TRUE;
   GList *album_list = NULL;
 
   JsonObject *reply = fb_query_get(ctx, "me/albums", NULL);
@@ -592,12 +600,16 @@ static gchar *facebook_get_user_auth_token(dt_storage_facebook_gui_data_t *ui)
 {
   ///////////// open the authentication url in a browser
   GError *error = NULL;
-  gtk_show_uri(gdk_screen_get_default(),
+  if(!gtk_show_uri(gdk_screen_get_default(),
                FB_WS_BASE_URL"dialog/oauth?"
                "client_id=" FB_API_KEY
                "&redirect_uri="FB_WS_BASE_URL"connect/login_success.html"
                "&scope=user_photos,publish_stream"
-               "&response_type=token", gtk_get_current_event_time(), &error);
+               "&response_type=token", gtk_get_current_event_time(), &error))
+  {
+    fprintf(stderr, "[facebook] error opening browser: %s\n", error->message);
+    g_error_free(error);
+  }
 
   ////////////// build & show the validation dialog
   gchar *text1 = _("step 1: a new window or tab of your browser should have been "

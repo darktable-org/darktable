@@ -316,8 +316,13 @@ static int full_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
 {
   size_t type_size= luaA_type_size(type_id);
   void* udata = lua_newuserdata(L,type_size);
-  memcpy(udata,cin,type_size);
+  if(cin) {
+    memcpy(udata,cin,type_size);
+  } else {
+    memset(udata,0,type_size);
+  }
   luaL_setmetatable(L,luaA_type_name(type_id));
+  if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
   return 1;
 }
 
@@ -342,6 +347,7 @@ static int int_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
     lua_pushinteger(L,singleton);
     lua_pushvalue(L,-2);
     lua_settable(L,-4);
+    if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
 
   }
   lua_remove(L,-2);//__values
@@ -353,6 +359,35 @@ static void int_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
 {
   void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
   memcpy(cout,udata,sizeof(int));
+}
+
+static int gpointer_pushfunc(lua_State *L, luaA_Type type_id, const void *cin)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id));
+  luaL_getsubtable(L,-1,"__values");
+  gpointer singleton = *(gpointer*)cin;
+  lua_pushlightuserdata(L,singleton);
+  lua_gettable(L,-2);
+  if(lua_isnoneornil(L,-1)) {
+    lua_pop(L,1);
+    gpointer* udata = lua_newuserdata(L,sizeof(gpointer));
+    *udata = singleton;
+    luaL_setmetatable(L,luaA_type_name(type_id));
+    lua_pushlightuserdata(L,singleton);
+    lua_pushvalue(L,-2);
+    lua_settable(L,-4);
+    if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
+
+  }
+  lua_remove(L,-2);//__values
+  lua_remove(L,-2);//metatable
+  return 1;
+}
+
+static void gpointer_tofunc(lua_State*L, luaA_Type type_id, void* cout, int index)
+{
+  void * udata = luaL_checkudata(L,index,luaA_type_name(type_id));
+  memcpy(cout,udata,sizeof(gpointer));
 }
 
 void dt_lua_register_type_callback_typeid(lua_State* L,luaA_Type type_id,lua_CFunction index, lua_CFunction newindex,...)
@@ -493,11 +528,26 @@ void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,c
   lua_pop(L,4);
 }
 
+void dt_lua_register_type_callback_stack_entry_typeid(lua_State* L,luaA_Type type_id,const char* name)
+{
+  luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
+  luaL_getsubtable(L,-1,"__get");
+  lua_pushvalue(L,-3);
+  lua_setfield(L,-2,name);
+  lua_pop(L,1);
+
+  luaL_getsubtable(L,-1,"__set");
+  lua_pushvalue(L,-3);
+  lua_setfield(L,-2,name);
+  lua_pop(L,3);
+}
+
 void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id)
 {
   luaL_getmetatable(L,luaA_type_name(type_id)); // gets the metatable since it's supposed to exist
   luaL_getmetatable(L,luaA_type_name(parent_type_id)); // gets the metatable since it's supposed to exist
   lua_setfield(L,-2,"__luaA_ParentMetatable");
+  lua_pop(L,1);
 }
 
 static void init_metatable(lua_State* L, luaA_Type type_id)
@@ -543,7 +593,7 @@ luaA_Type dt_lua_init_type_typeid(lua_State* L, luaA_Type type_id)
   return type_id;
 }
 
-luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
+luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name,void *data)
 {
   char tmp_name[1024];
   snprintf(tmp_name,sizeof(tmp_name),"dt_lua_singleton_%s",unique_name);
@@ -551,28 +601,134 @@ luaA_Type dt_lua_init_singleton(lua_State* L, const char* unique_name)
   luaA_Type type_id = luaA_type_add(tmp_name,sizeof(void*));
   init_metatable(L,type_id);
 
-  void* udata = lua_newuserdata(L,sizeof(void*));
-  memset(udata,0,sizeof(void*));
+  void** udata = lua_newuserdata(L,sizeof(void*));
+  if(!data) {
+    memset(udata,0,sizeof(void*));
+  }else{
+    *udata = data;
+  }
 
   lua_pushvalue(L,-1);
   luaL_setmetatable(L,tmp_name);
   lua_setfield(L,-3,"__singleton");
+  if(luaL_callmeta(L,-1,"__init")) lua_pop(L,1);
   lua_remove(L,-2);
 
   return type_id;
+}
+
+
+static int wrapped_index(lua_State * L)
+{
+  luaL_getmetafield(L,1,"__pusher");
+  lua_pushvalue(L,1);
+  lua_call(L,1,1);
+  lua_pushvalue(L,2);
+  lua_gettable(L,-2);
+  lua_remove(L,1);
+  lua_remove(L,1);
+  return 1;
+}
+
+static int wrapped_pairs(lua_State * L)
+{
+  luaL_getmetafield(L,1,"__pusher");
+  lua_pushvalue(L,1);
+  lua_call(L,1,1);
+  luaL_getmetafield(L,-1,"__pairs");
+  lua_pushvalue(L,-2);
+  lua_call(L,1,3);
+  return 3;
+}
+static int wrapped_newindex(lua_State * L){return luaL_error(L,"TBSL");}
+static int wrapped_ipairs(lua_State * L){return luaL_error(L,"TBSL");}
+static int wrapped_tostring(lua_State * L){return luaL_error(L,"TBSL");}
+
+
+luaA_Type dt_lua_init_wrapped_singleton(lua_State* L,lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data)
+{
+  luaA_Type result = dt_lua_init_singleton(L,unique_name,data);
+  lua_getmetatable(L,-1);
+  lua_pushcfunction(L,wrapped_index);
+  lua_setfield(L,-2,"__index");
+  lua_pushcfunction(L,wrapped_newindex);
+  lua_setfield(L,-2,"__newindex");
+  lua_pushcfunction(L,wrapped_pairs);
+  lua_setfield(L,-2,"__pairs");
+  lua_pushcfunction(L,wrapped_ipairs);
+  lua_setfield(L,-2,"__ipairs");
+  lua_pushcfunction(L,wrapped_tostring);
+  lua_setfield(L,-2,"__tostring");
+  lua_pushcfunction(L,pusher);
+  lua_setfield(L,-2,"__pusher");
+  lua_pushcfunction(L,getter);
+  lua_setfield(L,-2,"__getter");
+  lua_pop(L,1);
+  return result;
 }
 
 luaA_Type dt_lua_init_int_type_typeid(lua_State* L, luaA_Type type_id)
 {
   init_metatable(L,type_id);
   lua_newtable(L);
+  // metatable of __values 
+  lua_newtable(L);
+  lua_pushstring(L,"kv");
+  lua_setfield(L,-2,"__mode");
+  lua_setmetatable(L,-2);
+
   lua_setfield(L,-2,"__values");
   lua_pop(L,1);
   luaA_conversion_typeid(type_id,int_pushfunc,int_tofunc);
   return type_id;
 }
 
-void dt_lua_initialize_types(lua_State *L)
+
+luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L, luaA_Type type_id)
+{
+  init_metatable(L,type_id);
+  lua_newtable(L);
+  // metatable of __values 
+  lua_newtable(L);
+  lua_pushstring(L,"kv");
+  lua_setfield(L,-2,"__mode");
+  lua_setmetatable(L,-2);
+
+  lua_setfield(L,-2,"__values");
+  lua_pop(L,1);
+  luaA_conversion_typeid(type_id,gpointer_pushfunc,gpointer_tofunc);
+  return type_id;
+}
+
+
+gboolean dt_lua_isa_typeid(lua_State *L, int index, luaA_Type type_id)
+{
+  if(!luaL_getmetafield(L,index,"__luaA_Type")) return false;
+  int obj_typeid = luaL_checkinteger(L,-1);
+  lua_pop(L,1);
+  return dt_lua_typeisa_typeid(L,obj_typeid,type_id);
+
+
+}
+
+gboolean dt_lua_typeisa_typeid(lua_State *L, luaA_Type obj_type, luaA_Type type_id)
+{
+  if(obj_type == type_id) return true;
+  luaL_getmetatable(L,luaA_type_name(obj_type));
+  lua_getfield(L,-1,"__luaA_ParentMetatable");
+  if(lua_isnil(L,-1)) {
+    lua_pop(L,2);
+    return false;
+
+  }
+  lua_getfield(L,-1,"__luaA_Type");
+  int parent_typeid = luaL_checkinteger(L,-1);
+  lua_pop(L,3);
+  return dt_lua_typeisa_typeid(L,parent_typeid,type_id);
+
+}
+
+int dt_lua_init_types(lua_State *L)
 {
   luaA_conversion(char_20,push_char_array,to_char20);
   luaA_conversion_push(const char_20,push_char_array);
@@ -595,6 +751,8 @@ void dt_lua_initialize_types(lua_State *L)
   luaA_conversion(int32_t,luaA_push_int, luaA_to_int);
   luaA_conversion_push(const int32_t,luaA_push_int);
   luaA_conversion_push(const_string,luaA_push_const_char_ptr);
+
+  return 0;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

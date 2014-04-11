@@ -178,20 +178,20 @@ dt_history_copy_and_paste_on_image (int32_t imgid, int32_t dest_imgid, gboolean 
   {
     GList *l = ops;
     int first = 1;
-    strcat (req, " and num in (");
+    g_strlcat(req, " and num in (", sizeof(req));
 
     while (l)
     {
       unsigned int value = GPOINTER_TO_UINT(l->data);
       char v[30];
 
-      if (!first) strcat (req, ",");
+      if (!first) g_strlcat(req, ",", sizeof(req));
       snprintf (v, sizeof(v), "%u", value);
-      strcat (req, v);
+      g_strlcat(req, v, sizeof(req));
       first=0;
       l = g_list_next(l);
     }
-    strcat (req, ")");
+    g_strlcat(req, ")", sizeof(req));
   }
 
   /* add the history items to stack offest */

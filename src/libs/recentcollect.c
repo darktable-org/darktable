@@ -99,7 +99,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
 
 static void
-pretty_print(char *buf, char *out, int outsize)
+pretty_print(char *buf, char *out, size_t outsize)
 {
   memset(out, 0, outsize);
 
@@ -122,17 +122,17 @@ pretty_print(char *buf, char *out, int outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, _(" and "));
+            c = snprintf(out, outsize, "%s", _(" and "));
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, _(" or "));
+            c = snprintf(out, outsize, "%s", _(" or "));
             out += c;
             outsize -= c;
             break;
           default: //case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, _(" but not "));
+            c = snprintf(out, outsize, "%s", _(" but not "));
             out += c;
             outsize -= c;
             break;
@@ -267,10 +267,8 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line2 = dt_conf_get_string(confname);
     if(line2 && line2[0] != '\0')
-    {
-      pretty_print(line2, str, 2048);
-      g_free(line2);
-    }
+      pretty_print(line2, str, sizeof(str));
+    g_free(line2);
     g_object_set(G_OBJECT(d->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
     if (g_utf8_validate(str, -1, NULL))

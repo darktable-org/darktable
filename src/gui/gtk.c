@@ -632,9 +632,9 @@ configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
     cairo_surface_t *tmpsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, event->width, event->height);
     //copy the contents of the old pixmap to the new pixmap.  This keeps ugly uninitialized
     //pixmaps from being painted upon resize
-    int minw = oldw, minh = oldh;
-    if(event->width  < minw) minw = event->width;
-    if(event->height < minh) minh = event->height;
+//     int minw = oldw, minh = oldh;
+//     if(event->width  < minw) minw = event->width;
+//     if(event->height < minh) minh = event->height;
 
     cairo_t *cr = cairo_create (tmpsurface);
     cairo_set_source_surface (cr, darktable.gui->surface, 0, 0);

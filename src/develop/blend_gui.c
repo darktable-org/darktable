@@ -436,7 +436,7 @@ _blendop_blendif_upper_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
   for(int k=0; k < 4 ; k++)
   {
     char text[256];
-    (data->scale_print[tab])(parameters[k], text, 256);
+    (data->scale_print[tab])(parameters[k], text, sizeof(text));
     gtk_label_set_text(data->upper_label[k], text);
   }
 
@@ -467,7 +467,7 @@ _blendop_blendif_lower_callback (GtkDarktableGradientSlider *slider, dt_iop_gui_
   for(int k=0; k < 4 ; k++)
   {
     char text[256];
-    (data->scale_print[tab])(parameters[k], text, 256);
+    (data->scale_print[tab])(parameters[k], text, sizeof(text));
     gtk_label_set_text(data->lower_label[k], text);
   }
 
@@ -912,9 +912,9 @@ dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   for(int k=0; k < 4 ; k++)
   {
-    (data->scale_print[tab])(iparameters[k], text, 256);
+    (data->scale_print[tab])(iparameters[k], text, sizeof(text));
     gtk_label_set_text(data->lower_label[k], text);
-    (data->scale_print[tab])(oparameters[k], text, 256);
+    (data->scale_print[tab])(oparameters[k], text, sizeof(text));
     gtk_label_set_text(data->upper_label[k], text);
   }
 
@@ -1184,7 +1184,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
   {
     char txt[512];
-    int n = g_list_length(grp->points);
+    guint n = g_list_length(grp->points);
     snprintf(txt,sizeof(txt),ngettext("%d shape used", "%d shapes used", n), n);
     dt_bauhaus_combobox_add(bd->masks_combo,txt);
   }

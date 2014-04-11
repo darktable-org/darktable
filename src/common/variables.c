@@ -95,7 +95,7 @@ gchar *_string_get_next_variable(gchar *string,gchar *variable)
   return NULL;
 }
 
-gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gchar *value)
+gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gchar *value, size_t value_len)
 {
   const gchar *file_ext=NULL;
   gboolean got_value=FALSE;
@@ -141,38 +141,57 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     dt_image_cache_read_release(darktable.image_cache, img);
   }
 
-  if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.4d",tim->tm_year+1900);
-  else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   sprintf(value,"%.2d",tim->tm_mon+1);
-  else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_mday);
-  else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  sprintf(value,"%.2d",tim->tm_hour);
-  else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_min);
-  else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   sprintf(value,"%.2d",tim->tm_sec);
+  if( g_strcmp0(variable,"$(YEAR)") == 0 && (got_value=TRUE) )  snprintf(value, value_len, "%.4d",tim->tm_year+1900);
+  else if( g_strcmp0(variable,"$(MONTH)") == 0&& (got_value=TRUE)  )   snprintf(value, value_len, "%.2d",tim->tm_mon+1);
+  else if( g_strcmp0(variable,"$(DAY)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim->tm_mday);
+  else if( g_strcmp0(variable,"$(HOUR)") == 0 && (got_value=TRUE) )  snprintf(value, value_len, "%.2d",tim->tm_hour);
+  else if( g_strcmp0(variable,"$(MINUTE)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim->tm_min);
+  else if( g_strcmp0(variable,"$(SECOND)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.2d",tim->tm_sec);
 
-  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			sprintf(value,"%.4d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1900);
-  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
-  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
-  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
-  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
-  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		sprintf(value,"%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
-  else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		sprintf(value,"%d", exif_iso);
-  else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) sprintf(value,"%d", params->imgid);
-  else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",params->jobcode);
-  else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_basename(g_path_get_dirname(params->filename)));
-  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename)); // undocumented : backward compatibility
-  else if( g_strcmp0(variable,"$(FILE_FOLDER)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",g_path_get_dirname(params->filename));
+  else if( g_strcmp0(variable,"$(EXIF_YEAR)") == 0 && (got_value=TRUE)  )   			snprintf(value, value_len, "%.4d", (have_exif_tm?exif_tm.tm_year:tim->tm_year)+1900);
+  else if( g_strcmp0(variable,"$(EXIF_MONTH)") == 0 && (got_value=TRUE)  )  		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_mon:tim->tm_mon)+1);
+  else if( g_strcmp0(variable,"$(EXIF_DAY)") == 0 && (got_value=TRUE) )  			snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_mday:tim->tm_mday));
+  else if( g_strcmp0(variable,"$(EXIF_HOUR)") == 0 && (got_value=TRUE) )  			snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_hour:tim->tm_hour));
+  else if( g_strcmp0(variable,"$(EXIF_MINUTE)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_min:tim->tm_min));
+  else if( g_strcmp0(variable,"$(EXIF_SECOND)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%.2d", (have_exif_tm?exif_tm.tm_sec:tim->tm_sec));
+  else if( g_strcmp0(variable,"$(EXIF_ISO)") == 0 && (got_value=TRUE) )   		snprintf(value, value_len, "%d", exif_iso);
+  else if( g_strcmp0(variable,"$(ID)") == 0 && (got_value=TRUE) ) snprintf(value, value_len, "%d", params->imgid);
+  else if( g_strcmp0(variable,"$(JOBCODE)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",params->jobcode);
+  else if( g_strcmp0(variable,"$(ROLL_NAME)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    gchar* basename = g_path_get_basename(dirname);
+    snprintf(value, value_len, "%s",basename);
+    g_free(basename);
+    g_free(dirname);
+  }
+  else if( g_strcmp0(variable,"$(FILE_DIRECTORY)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    snprintf(value, value_len, "%s",dirname);
+    g_free(dirname);
+  } // undocumented : backward compatibility
+  else if( g_strcmp0(variable,"$(FILE_FOLDER)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    gchar* dirname = g_path_get_dirname(params->filename);
+    snprintf(value, value_len, "%s",dirname);
+    g_free(dirname);
+  }
   else if( g_strcmp0(variable,"$(FILE_NAME)") == 0 && params->filename && (got_value=TRUE) )
   {
-    sprintf(value,"%s",g_path_get_basename(params->filename));
+    gchar* basename = g_path_get_basename(params->filename);
+    snprintf(value, value_len, "%s",basename);
+    g_free(basename);
     if (g_strrstr(value,".")) *(g_strrstr(value,"."))=0;
   }
-  else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   sprintf(value,"%s",file_ext);
-  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   sprintf(value,"%.4d",params->sequence>=0?params->sequence:params->data->sequence);
-  else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_name());
-  else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir); // undocumented : backward compatibility
-  else if( g_strcmp0(variable,"$(HOME)") == 0 && (got_value=TRUE)  )    sprintf(value,"%s",homedir);
-  else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",pictures_folder);
-  else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP)); // undocumented : backward compatibility
-  else if( g_strcmp0(variable,"$(DESKTOP)") == 0 && (got_value=TRUE) )   sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+  else if( g_strcmp0(variable,"$(FILE_EXTENSION)") == 0 && params->filename && (got_value=TRUE) )   snprintf(value, value_len, "%s",file_ext);
+  else if( g_strcmp0(variable,"$(SEQUENCE)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%.4d",params->sequence>=0?params->sequence:params->data->sequence);
+  else if( g_strcmp0(variable,"$(USERNAME)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",g_get_user_name());
+  else if( g_strcmp0(variable,"$(HOME_FOLDER)") == 0 && (got_value=TRUE)  )    snprintf(value, value_len, "%s",homedir); // undocumented : backward compatibility
+  else if( g_strcmp0(variable,"$(HOME)") == 0 && (got_value=TRUE)  )    snprintf(value, value_len, "%s",homedir);
+  else if( g_strcmp0(variable,"$(PICTURES_FOLDER)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",pictures_folder);
+  else if( g_strcmp0(variable,"$(DESKTOP_FOLDER)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP)); // undocumented : backward compatibility
+  else if( g_strcmp0(variable,"$(DESKTOP)") == 0 && (got_value=TRUE) )   snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
 #if 0
   else if( g_strcmp0(variable,"$(VC)") == 0 && (got_value=TRUE) )
   {
@@ -186,7 +205,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       }
     }
     sqlite3_finalize(stmt);
-    sprintf(value,"%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
+    snprintf(value, value_len, "%s",g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   }
 #endif
   else if( g_strcmp0(variable,"$(STARS)") == 0 && (got_value=TRUE) )
@@ -195,7 +214,7 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
     int stars = (img->flags & 0x7);
     dt_image_cache_read_release(darktable.image_cache, img);
     if(stars == 6) stars = -1;
-    sprintf(value,"%d",stars);
+    snprintf(value, value_len, "%d",stars);
   }
   else if( g_strcmp0(variable,"$(LABELS)") == 0 && (got_value=TRUE) )
   {
@@ -212,16 +231,30 @@ gboolean _variable_get_value(dt_variables_params_t *params, gchar *variable,gcha
       }
       while((res=g_list_next(res)) != NULL);
       char* str = dt_util_glist_to_str(",", labels, count);
-      sprintf(value, "%s", str);
+      snprintf(value, value_len,  "%s", str);
       g_free(str);
     }
     else
     {
-      sprintf(value, _("none"));
+      snprintf(value, value_len, "%s", _("none"));
     }
     g_list_free(res);
   }
-
+  else if( g_strcmp0(variable,"$(TITLE)") == 0 && params->filename && (got_value=TRUE) )
+  {
+    unsigned int count = 0;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", &count);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      snprintf(value, value_len, "%s", (char *) res->data);
+    }
+    else
+    {
+      snprintf(value, value_len, "%s", _("none"));
+    }
+    g_list_free_full(res, &g_free);
+  }
 
   g_free(pictures_folder);
 
@@ -257,7 +290,7 @@ gchar *dt_variables_get_result(dt_variables_params_t *params)
 gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gboolean iterate)
 {
   gchar *variable=g_malloc(128);
-  gchar *value=g_malloc(1024);
+  gchar *value=g_malloc(1024*sizeof(gchar));
   gchar *token=NULL;
 
   // Let's free previous expanded result if any...
@@ -275,7 +308,7 @@ gboolean dt_variables_expand(dt_variables_params_t *params, gchar *string, gbool
     do
     {
       //fprintf(stderr,"var: %s\n",variable);
-      if( _variable_get_value(params,variable,value) )
+      if( _variable_get_value(params,variable,value, 1024*sizeof(gchar)))
       {
         //fprintf(stderr,"Substitute variable '%s' with value '%s'\n",variable,value);
         if( (result=dt_util_str_replace(params->data->result,variable,value)) != params->data->result && result != params->data->source)

@@ -92,10 +92,10 @@ dt_film_open2 (dt_film_t *film)
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     /* fill out the film dirname */
-    sprintf (film->dirname,"%s",(gchar *)sqlite3_column_text (stmt, 1));
+    snprintf(film->dirname,sizeof(film->dirname),"%s",(gchar *)sqlite3_column_text (stmt, 1));
     sqlite3_finalize (stmt);
     char datetime[20];
-    dt_gettime (datetime);
+    dt_gettime (datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
@@ -127,7 +127,7 @@ int dt_film_open(const int32_t id)
   {
     sqlite3_finalize(stmt);
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
@@ -159,7 +159,7 @@ int dt_film_open_recent(const int num)
     sqlite3_finalize(stmt);
     if(dt_film_open(id)) return 1;
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "update film_rolls set datetime_accessed = ?1 where id = ?2",
                                 -1, &stmt, NULL);
@@ -192,7 +192,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
     // create a new filmroll
     sqlite3_stmt *stmt;
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) "
                                 "values (null, ?1, ?2)", -1, &stmt, NULL);
@@ -246,7 +246,7 @@ int dt_film_import(const char *dirname)
   if(film->id <= 0)
   {
     char datetime[20];
-    dt_gettime(datetime);
+    dt_gettime(datetime, sizeof(datetime));
     /* insert a new film roll into database */
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "insert into film_rolls (id, datetime_accessed, folder) values "
@@ -347,7 +347,12 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive,GL
 */
 int _film_filename_cmp(gchar *a, gchar *b)
 {
-  return g_strcmp0(g_path_get_basename(a), g_path_get_basename(b));
+  gchar *a_basename = g_path_get_basename(a);
+  gchar *b_basename = g_path_get_basename(b);
+  int ret = g_strcmp0(a_basename, b_basename);
+  g_free(a_basename);
+  g_free(b_basename);
+  return ret;
 }
 
 void dt_film_import1(dt_film_t *film)
@@ -369,7 +374,7 @@ void dt_film_import1(dt_film_t *film)
   /* let's start import of images */
   gchar message[512] = {0};
   double fraction = 0;
-  uint32_t total = g_list_length(images);
+  guint total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1,
              ngettext("importing %d image","importing %d images", total), total);
   const guint *jid = dt_control_backgroundjobs_create(darktable.control, 0, message);
@@ -399,8 +404,10 @@ void dt_film_import1(dt_film_t *film)
               strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
           {
             gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-            dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
+            gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
+            dt_control_gpx_apply(gpx_file, cfr->id, tz);
             g_free(gpx_file);
+            g_free(tz);
           }
         }
       }
@@ -423,6 +430,8 @@ void dt_film_import1(dt_film_t *film)
       dt_film_init(cfr);
       dt_film_new(cfr, cdn);
     }
+
+    g_free(cdn);
 
     /* import image */
     dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
@@ -454,8 +463,10 @@ void dt_film_import1(dt_film_t *film)
           strcmp(dfn+strlen(dfn)-4,".GPX") == 0)
       {
         gchar *gpx_file = g_build_path (G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
-        dt_control_gpx_apply(gpx_file, cfr->id, dt_conf_get_string("plugins/lighttable/geotagging/tz"));
+        gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
+        dt_control_gpx_apply(gpx_file, cfr->id, tz);
         g_free(gpx_file);
+        g_free(tz);
       }
     }
   }

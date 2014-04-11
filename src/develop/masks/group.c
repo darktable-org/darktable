@@ -222,7 +222,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 {
   double start2;
   //we allocate buffers and values
-  const int nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
   if (nb == 0) return 0;
   float* bufs[nb];
   int w[nb];
@@ -414,7 +414,7 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
 static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   double start2 = dt_get_wtime();
-  const int nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
   if (nb == 0) return 0;
   int nb_ok = 0;
 
@@ -492,7 +492,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
             {
               size_t index = (size_t)y*width + x;
               float b1 = buffer[index];
-              float b2 = b2 = bufs[index];
+              float b2 = b2 = bufs[index]; //FIXME: is this line correct? what it supposed to be doing?
               if (b1>0.0f && b2>0.0f) buffer[index] = fminf(b1,b2*op);
               else buffer[index] = 0.0f;
             }

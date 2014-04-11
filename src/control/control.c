@@ -270,7 +270,7 @@ void dt_ctl_set_display_profile()
   if(profile_changed)
   {
     cmsHPROFILE profile = NULL;
-    char name[512];
+    char name[512] = { 0 };
     // thanks to ufraw for this!
     g_free(darktable.control->xprofile_data);
     darktable.control->xprofile_data = buffer;
@@ -1267,7 +1267,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       // auto complete:
       if(darktable.control->vimkey_cnt < 5)
       {
-        sprintf(darktable.control->vimkey, ":set ");
+        snprintf(darktable.control->vimkey, sizeof(darktable.control->vimkey), ":set ");
         darktable.control->vimkey_cnt = 5;
       }
       else if(!autocomplete)

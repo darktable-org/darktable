@@ -79,12 +79,14 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->histogram = NULL;
   dev->histogram_pre_tonecurve = NULL;
   dev->histogram_pre_levels = NULL;
-  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "linear") == 0)
+  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
+  if(g_strcmp0(mode, "linear") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "logarithmic") == 0)
+  else if(g_strcmp0(mode, "logarithmic") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_LOGARITHMIC;
-  else if(g_strcmp0(dt_conf_get_string("plugins/darkroom/histogram/mode"), "waveform") == 0)
+  else if(g_strcmp0(mode, "waveform") == 0)
     dev->histogram_type = DT_DEV_HISTOGRAM_WAVEFORM;
+  g_free(mode);
 
   if(dev->gui_attached)
   {
@@ -666,7 +668,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       /* get arrow icon widget */
       wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
       char label[128];
-      if(module->multi_name && strcmp(module->multi_name,"0") == 0)
+      if(strcmp(module->multi_name,"0") == 0)
         g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
       else
         g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
@@ -1354,9 +1356,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
-    int nb = g_list_length(dev->history);
     int pos = 0;
-    for (int i=0; i<nb; i++)
+    for (guint i=0; i<g_list_length(dev->history); i++)
     {
       GList *elem = g_list_nth(dev->history,pos);
 

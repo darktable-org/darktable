@@ -376,7 +376,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // double zoom=1.0+(8*(data->scale/100.0));
   const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
   const double zoom=(1.0+8*data->scale/100)/800.0;
-  const int filter = fabsf(roi_out->scale - 1.0) > 0.01;
+  const int filter = fabsf(roi_out->scale - 1.0f) > 0.01;
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
   const double filtermul = piece->iscale/(roi_out->scale*wd);
 #ifdef _OPENMP

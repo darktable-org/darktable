@@ -195,7 +195,6 @@ menuitem_delete_preset (GtkMenuItem *menuitem, dt_iop_module_t *module)
 static void
 edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_dialog_t *g)
 {
-  gint dlg_ret;
   gint is_new = 0;
 
   if(response_id == GTK_RESPONSE_ACCEPT)
@@ -217,7 +216,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
         gtk_window_set_title(GTK_WINDOW (dlg_changename), _("unnamed preset"));
 
-        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_changename));
+        gtk_dialog_run (GTK_DIALOG (dlg_changename));
         gtk_widget_destroy (dlg_changename);
         return;
       }
@@ -243,7 +242,7 @@ edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_presets_edit_di
 
         gtk_window_set_title(GTK_WINDOW (dlg_overwrite), _("overwrite preset?"));
 
-        dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
+        gint dlg_ret = gtk_dialog_run (GTK_DIALOG (dlg_overwrite));
         gtk_widget_destroy (dlg_overwrite);
 
         // if result is BUTTON_NO exit without destroy dialog, to permit other name
@@ -354,7 +353,7 @@ edit_preset (const char *name_in, dt_iop_module_t *module)
   if (!dt_gui_presets_format_value_str[0])
   {
     dt_gui_presets_format_value_str[0] = _("normal images");
-    dt_gui_presets_format_value_str[1] = _("RAW");
+    dt_gui_presets_format_value_str[1] = _("raw");
     dt_gui_presets_format_value_str[2] = _("HDR");
   }
 
@@ -800,7 +799,7 @@ dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32_t version, 
 
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size)) &&
         !memcmp(module->default_blendop_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))) isdefault = 1;
-    if(!memcmp(params, op_params, MIN(op_params_size, params_size)) &&
+    if(module && !memcmp(params, op_params, MIN(op_params_size, params_size)) &&
         !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t))) &&
         module->enabled == enabled)
     {

@@ -570,7 +570,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // make sure no signals propagate here:
   darktable.gui->reset = 1;
 
-  int nb_iop = g_list_length(dev->iop);
+  guint nb_iop = g_list_length(dev->iop);
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   for (int i=nb_iop-1; i>0; i--)
@@ -578,7 +578,7 @@ dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop,i));
 
     // the base module is the one with the highest multi_priority
-    const int clen = g_list_length(dev->iop);
+    const guint clen = g_list_length(dev->iop);
     int mp_base = 0;
     for (int k=0; k<clen; k++)
     {
@@ -770,6 +770,8 @@ dt_dev_jump_image(dt_develop_t *dev, int diff)
       if (!dev->image_loading)
       {
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
+        // record the imgid to display when going back to lighttable
+        dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
         dt_dev_change_image(dev, imgid);
       }
 
@@ -847,13 +849,14 @@ export_key_accel_callback(GtkAccelGroup *accel_group,
   char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
   int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
   int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-  g_free(format_name);
-  g_free(storage_name);
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *style = dt_conf_get_string("plugins/lighttable/export/style");
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
   dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, style);
+  g_free(format_name);
+  g_free(storage_name);
+  g_free(style);
   return TRUE;
 }
 

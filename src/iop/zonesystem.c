@@ -648,15 +648,15 @@ static gboolean
 dt_iop_zonesystem_bar_scrolled (GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
   dt_iop_zonesystem_params_t *p = (dt_iop_zonesystem_params_t *)self->params;
-  int cs = p->size;
+  int cs = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
+
   if(event->direction == GDK_SCROLL_UP)
     p->size+=1;
   else if(event->direction == GDK_SCROLL_DOWN)
     p->size-=1;
 
   /* sanity checks */
-  p->size = p->size>MAX_ZONE_SYSTEM_SIZE?MAX_ZONE_SYSTEM_SIZE:p->size;
-  p->size = p->size<4?4:p->size;
+  p->size = CLAMP(p->size, 4, MAX_ZONE_SYSTEM_SIZE);
 
   p->zone[cs] = -1;
   dt_dev_add_history_item(darktable.develop, self, TRUE);

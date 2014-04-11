@@ -299,7 +299,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     snprintf(subfilename, DT_MAX_PATH_LEN, "%s", d->cached_dirname);
     char* sc = subfilename + strlen(subfilename);
     sprintf(sc, "/img_%d.html", num);
-    sprintf(relsubfilename, "img_%d.html", num);
+    snprintf(relsubfilename, sizeof(relsubfilename), "img_%d.html", num);
 
     snprintf(pair->line, sizeof(pair->line),
              "\n"
@@ -308,10 +308,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
              "      %s</div>\n", title?title:relfilename, description?description:"&nbsp;", relfilename, relthumbfilename, num, title?title:"&nbsp;", description?description:"&nbsp;");
 
     char next[256];
-    sprintf(next, "img_%d.html", (num)%total+1);
+    snprintf(next, sizeof(next), "img_%d.html", (num)%total+1);
 
     char prev[256];
-    sprintf(prev, "img_%d.html", (num==1)?total:num-1);
+    snprintf(prev, sizeof(prev), "img_%d.html", (num==1)?total:num-1);
 
     pair->pos = num;
     if(res_title) g_list_free_full(res_title, &g_free);
@@ -370,7 +370,7 @@ copy_res(const char *src, const char *dst)
   if(fin && fout)
   {
     fseek(fin,0,SEEK_END);
-    int end = ftell(fin);
+    size_t end = ftell(fin);
     rewind(fin);
     content = (char*)g_malloc(sizeof(char)*end);
     if(content == NULL)

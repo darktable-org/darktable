@@ -66,13 +66,15 @@ on_match_select(GtkEntryCompletion *widget,
     del_end_pos = cur_pos;
   }
 
-  gchar *addtext = (gchar*) g_malloc(strlen(varname) + 2);
-  sprintf(addtext, "%s)", varname);
+  size_t text_len = strlen(varname) + 2;
+  gchar *addtext = (gchar*) g_malloc(text_len);
+  snprintf(addtext, text_len, "%s)", varname);
 
   gtk_editable_delete_text(e, p, del_end_pos);
   gtk_editable_insert_text(e, addtext, -1, &p);
   gtk_editable_set_position(e, p);
   g_value_unset(&value);
+  g_free(addtext);
   return TRUE;
 }
 
@@ -213,6 +215,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
     { "HOME", N_("$(HOME) - home folder") },
     { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
+    { "TITLE", N_("$(TITLE) - title from metadata") },
     { NULL, NULL }
   };
 

@@ -269,7 +269,9 @@ void _camera_import_image_downloaded(const dt_camera_t *camera,const char *filen
   dt_camera_import_t *t = (dt_camera_import_t *)data;
   dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE);
   dt_control_queue_redraw_center();
-  dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), g_path_get_basename(filename));
+  gchar* basename = g_path_get_basename(filename);
+  dt_control_log(_("%d/%d imported to %s"), t->import_count+1,g_list_length(t->images), basename);
+  g_free(basename);
 
   t->fraction+=1.0/g_list_length(t->images);
 
@@ -289,9 +291,9 @@ int32_t dt_camera_import_job_run(dt_job_t *job)
     return 1;
   }
 
-  int total = g_list_length( t->images );
+  guint total = g_list_length( t->images );
   char message[512]= {0};
-  sprintf(message, ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
+  snprintf(message, sizeof(message), ngettext ("importing %d image from camera", "importing %d images from camera", total), total );
   t->bgj = dt_control_backgroundjobs_create(darktable.control, 0, message);
 
   // Switch to new filmroll

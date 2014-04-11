@@ -25,6 +25,7 @@
 #include "control/control.h"
 #include "common/debug.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct dt_lib_module_info_t
 {
@@ -462,7 +463,7 @@ dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     {
       char label[128];
       g_strlcpy(label, _("update preset"), sizeof(label));
-      strcat (label, " <span weight=\"bold\">%s</span>");
+      g_strlcat(label, " <span weight=\"bold\">%s</span>", sizeof(label));
       char *markup = g_markup_printf_escaped (label, darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
       gtk_label_set_markup (GTK_LABEL (gtk_bin_get_child(GTK_BIN(mi))), markup);
@@ -510,6 +511,7 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
   if(!g_module_symbol(module->module, "views",                  (gpointer)&(module->views)))                  goto error;
   if(!g_module_symbol(module->module, "container",              (gpointer)&(module->container)))              goto error;
   if(!g_module_symbol(module->module, "expandable",             (gpointer)&(module->expandable)))             module->expandable = _lib_default_expandable;
+  if(!g_module_symbol(module->module, "init",                   (gpointer)&(module->init)))                   module->init = NULL;
 
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
   if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               goto error;
@@ -549,6 +551,10 @@ dt_lib_load_module (dt_lib_module_t *module, const char *libname, const char *pl
     dt_accel_register_lib(module,
                           NC_("accel", "show preset menu"), 0, 0);
   }
+#ifdef USE_LUA
+  dt_lua_register_lib(darktable.lua_state.state,module);
+#endif
+  if(module->init) module->init(module);
 
   return 0;
 error:
@@ -735,6 +741,17 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
   dt_conf_set_bool(var, gtk_widget_get_visible(module->widget));
 
+}
+gboolean dt_lib_gui_get_expanded(dt_lib_module_t *module)
+{
+  if(!module->expandable()) return true;
+  if(!module->expander) return true;
+  if(!module->widget) {
+    char var[1024];
+    snprintf(var, sizeof(var), "plugins/lighttable/%s/expanded", module->plugin_name);
+    return dt_conf_get_bool(var);
+  }
+  return gtk_widget_get_visible(module->widget);
 }
 
 static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
@@ -952,14 +969,15 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
   char key[512];
   g_snprintf(key,sizeof(key),"plugins/lighttable/%s/visible", module->plugin_name);
   dt_conf_set_bool(key, visible);
-  if (module->expander)
-    gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);
-  else if (module->widget)
-  {
-    if (visible)
-      gtk_widget_show_all(GTK_WIDGET(module->widget));
-    else
-      gtk_widget_hide(GTK_WIDGET(module->widget));
+  if(module->widget) {
+    if (module->expander){
+      gtk_widget_set_visible(GTK_WIDGET(module->expander), visible);
+    }else {
+      if (visible)
+        gtk_widget_show_all(GTK_WIDGET(module->widget));
+      else
+        gtk_widget_hide(GTK_WIDGET(module->widget));
+    }
   }
 }
 

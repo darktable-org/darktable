@@ -42,7 +42,7 @@
 #endif
 #include <glib/gstdio.h>
 
-static void _image_local_copy_full_path(const int imgid, char *pathname, int len);
+static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len);
 
 int dt_image_is_ldr(const dt_image_t *img)
 {
@@ -97,7 +97,7 @@ dt_image_film_roll_name(const char *path)
   return folder;
 }
 
-void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len)
+void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -106,14 +106,14 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, int len
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *f = (char *)sqlite3_column_text(stmt, 0);
-    snprintf(pathname, len, "%s", f);
+    snprintf(pathname, pathname_len, "%s", f);
   }
   sqlite3_finalize(stmt);
-  pathname[len-1] = '\0';
+  pathname[pathname_len-1] = '\0';
 }
 
 
-void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len)
+void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -123,14 +123,14 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t len)
   {
     char *f = (char *)sqlite3_column_text(stmt, 0);
     const char *c = dt_image_film_roll_name(f);
-    snprintf(pathname, len, "%s", c);
+    snprintf(pathname, pathname_len, "%s", c);
   }
   else
   {
-    snprintf(pathname, len, "%s", _("orphaned image"));
+    snprintf(pathname, pathname_len, "%s", _("orphaned image"));
   }
   sqlite3_finalize(stmt);
-  pathname[len-1] = '\0';
+  pathname[pathname_len-1] = '\0';
 }
 
 gboolean dt_image_safe_remove(const int32_t imgid)
@@ -155,7 +155,7 @@ gboolean dt_image_safe_remove(const int32_t imgid)
   }
 }
 
-void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from_cache)
+void dt_image_full_path(const int imgid, char *pathname, size_t pathname_len, gboolean *from_cache)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -164,20 +164,20 @@ void dt_image_full_path(const int imgid, char *pathname, int len, gboolean *from
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), len);
+    g_strlcpy(pathname, (char *)sqlite3_column_text(stmt, 0), pathname_len);
   }
   sqlite3_finalize(stmt);
 
   if (*from_cache && !g_file_test(pathname, G_FILE_TEST_EXISTS))
   {
-    _image_local_copy_full_path(imgid, pathname, len);
+    _image_local_copy_full_path(imgid, pathname, pathname_len);
     *from_cache = TRUE;
   }
   else
     *from_cache = FALSE;
 }
 
-static void _image_local_copy_full_path(const int imgid, char *pathname, int len)
+static void _image_local_copy_full_path(const int imgid, char *pathname, size_t pathname_len)
 {
   sqlite3_stmt *stmt;
   *pathname='\0';
@@ -189,7 +189,7 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, int len
   {
     char filename[DT_MAX_PATH_LEN];
     char cachedir[DT_MAX_PATH_LEN];
-    g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), len);
+    g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), pathname_len);
     char *md5_filename = g_compute_checksum_for_string (G_CHECKSUM_MD5, filename, strlen (filename));
     dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
 
@@ -198,14 +198,14 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, int len
     while(*c != '.' && c > filename) c--;
 
     // cache filename format: <cachedir>/imf-<id>-<MD5>.<ext>
-    snprintf(pathname, len, "%s/img-%d-%s%s", cachedir, imgid, md5_filename, c);
+    snprintf(pathname, pathname_len, "%s/img-%d-%s%s", cachedir, imgid, md5_filename, c);
 
     g_free(md5_filename);
   }
   sqlite3_finalize(stmt);
 }
 
-void dt_image_path_append_version_no_db(const int version, char *pathname, const int len)
+void dt_image_path_append_version_no_db(int version, char *pathname, size_t pathname_len)
 {
   // the "first" instance (version zero) does not get a version suffix
   if(version > 0)
@@ -215,16 +215,16 @@ void dt_image_path_append_version_no_db(const int version, char *pathname, const
 
     char *c = pathname + strlen(pathname);
     while(*c != '.' && c > pathname) c--;
-    snprintf(c, pathname + len - c, "_%02d", version);
+    snprintf(c, pathname + pathname_len - c, "_%02d", version);
     c = pathname + strlen(pathname);
     char *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
-    snprintf(c, pathname + len - c, "%s", c2);
+    snprintf(c, pathname + pathname_len - c, "%s", c2);
     g_free(filename);
   }
 }
 
-void dt_image_path_append_version(int imgid, char *pathname, const int len)
+void dt_image_path_append_version(int imgid, char *pathname, size_t pathname_len)
 {
   // get duplicate suffix
   int version = 0;
@@ -237,17 +237,17 @@ void dt_image_path_append_version(int imgid, char *pathname, const int len)
     version = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  dt_image_path_append_version_no_db(version, pathname, len);
+  dt_image_path_append_version_no_db(version, pathname, pathname_len);
 }
 
-void dt_image_print_exif(const dt_image_t *img, char *line, int len)
+void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
 {
   if(img->exif_exposure >= 0.1f)
-    snprintf(line, len, "%.1f'' f/%.1f %dmm iso %d",
+    snprintf(line, line_len, "%.1f'' f/%.1f %dmm iso %d",
              img->exif_exposure, img->exif_aperture, (int)img->exif_focal_length,
              (int)img->exif_iso);
   else
-    snprintf(line, len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure,
+    snprintf(line, line_len, "1/%.0f f/%.1f %dmm iso %d", 1.0/img->exif_exposure,
              img->exif_aperture, (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
@@ -748,9 +748,9 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
       gchar *cc3 = other_basename + strlen(cother_img->filename);
       for (; *cc3!='.'&&cc3>other_basename; cc3--);
       ++cc3;
-      g_ascii_strdown(cc3, -1);
+      gchar *ext_lowercase = g_ascii_strdown(cc3, -1);
       // if the group representative is a jpg, change group representative to this new imported image
-      if (!strcmp(cc3, "jpg") || !strcmp(cc3, "jpeg"))
+      if (!strcmp(ext_lowercase, "jpg") || !strcmp(ext_lowercase, "jpeg"))
       {
         dt_image_t *other_img = dt_image_cache_write_get(darktable.image_cache, cother_img);
         other_img->group_id = id;
@@ -777,6 +777,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
         dt_image_cache_read_release(darktable.image_cache, cother_img);
         group_id = other_id;
       }
+      g_free(ext_lowercase);
       g_free(other_basename);
     }
     else
@@ -812,8 +813,7 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
   char dtfilename[DT_MAX_PATH_LEN];
   g_strlcpy(dtfilename, filename, DT_MAX_PATH_LEN);
   //dt_image_path_append_version(id, dtfilename, DT_MAX_PATH_LEN);
-  char *c = dtfilename + strlen(dtfilename);
-  sprintf(c, ".xmp");
+  g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
 
   int res = dt_exif_xmp_read(img, dtfilename, 0);
 
@@ -1275,11 +1275,10 @@ void dt_image_write_sidecar_file(int imgid)
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     gboolean from_cache = TRUE;
-    char filename[DT_MAX_PATH_LEN+8];
+    char filename[DT_MAX_PATH_LEN];
     dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
     dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    char *c = filename + strlen(filename);
-    sprintf(c, ".xmp");
+    g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
     if(!dt_exif_xmp_write(imgid, filename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -1371,7 +1370,7 @@ void dt_image_local_copy_synch(void)
   {
     char message[128];
     g_snprintf
-      (message, 128,
+    (message, sizeof(message),
        ngettext("%d local copy has been synchronized", "%d local copies have been synchronized", count), count);
     dt_control_log(message);
   }

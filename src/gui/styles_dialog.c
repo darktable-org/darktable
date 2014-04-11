@@ -290,7 +290,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
 
   if (edit)
   {
-    sprintf (title,_("edit style"));
+    snprintf(title, sizeof(title), "%s", _("edit style"));
     g_strlcat (title, " \"", sizeof(title));
     g_strlcat(title, name, sizeof(title));
     g_strlcat(title, "\"", sizeof(title));
@@ -299,7 +299,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   }
   else
   {
-    sprintf (title,"%s",_("create new style"));
+    snprintf(title, sizeof(title), "%s",_("create new style"));
     sd->duplicate = NULL;
   }
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -326,7 +326,7 @@ _gui_styles_dialog_run (gboolean edit,const char *name,int imgid)
   g_object_set (sd->description, "tooltip-text", _("enter a description for the new style, this description is searchable"), (char *)NULL);
 
   /*set values*/
-  if (edit)
+  if (edit && name)
   {
     /* name */
     gtk_entry_set_text(GTK_ENTRY(sd->name), name);

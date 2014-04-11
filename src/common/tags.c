@@ -341,6 +341,7 @@ gchar* dt_tag_get_list(gint imgid, const gchar *separator)
     else if (!g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, g_strdup(value));
     g_free (t);
+    g_free (value);
   }
 
   g_list_free (taglist);

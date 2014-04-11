@@ -69,15 +69,6 @@ typedef enum dt_dev_pixelpipe_change_t
 }
 dt_dev_pixelpipe_change_t;
 
-typedef enum dt_dev_pixelpipe_type_t
-{
-  DT_DEV_PIXELPIPE_EXPORT,
-  DT_DEV_PIXELPIPE_FULL,
-  DT_DEV_PIXELPIPE_PREVIEW,
-  DT_DEV_PIXELPIPE_THUMBNAIL
-}
-dt_dev_pixelpipe_type_t;
-
 /**
  * this encapsulates the gegl pixel pipeline.
  * a develop module will need several of these:
