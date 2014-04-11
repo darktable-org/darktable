@@ -665,7 +665,7 @@ int dt_imageio_export_with_flags(
   res = thumbnail_export ? dt_dev_pixelpipe_init_thumbnail(&pipe, wd, ht) : dt_dev_pixelpipe_init_export(&pipe, wd, ht, format->levels(format_params));
   if(!res)
   {
-    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? _("thumbnail export") : _("export"));
+    dt_control_log(_("failed to allocate memory for %s, please lower the threads used for export or buy more memory."), thumbnail_export ? C_("noun", "thumbnail export") : C_("noun", "export"));
     dt_dev_cleanup(&dev);
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
     return 1;
