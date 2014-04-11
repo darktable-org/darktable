@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-05 11:14+0200\n"
-"PO-Revision-Date: 2014-04-05 11:16+0100\n"
+"POT-Creation-Date: 2014-04-11 18:17+0200\n"
+"PO-Revision-Date: 2014-04-11 18:21+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -770,7 +770,7 @@ msgstr "le fichier «%s» possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier «%s»"
 
-#: ../src/common/darktable.c:568
+#: ../src/common/darktable.c:579
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "ERREUR : répertoire temporaire invalide : %s\n"
@@ -852,15 +852,14 @@ msgstr ""
 "fils utilisés pour l'exportation ou d'acheter de la mémoire."
 
 #: ../src/common/imageio.c:668
+msgctxt "noun"
 msgid "thumbnail export"
 msgstr "la création des aperçus"
 
-#. Export button
-#. export button
-#: ../src/common/imageio.c:668 ../src/gui/preferences.c:617
-#: ../src/libs/export.c:668 ../src/libs/styles.c:408
+#: ../src/common/imageio.c:668
+msgctxt "noun"
 msgid "export"
-msgstr "exporter"
+msgstr "l'image"
 
 #: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1165
 #, c-format
@@ -936,12 +935,12 @@ msgstr "le fichier du style «%s» existe"
 msgid "style %s was successfully imported"
 msgstr "le style «%s» a été importé"
 
-#: ../src/common/variables.c:239 ../src/iop/clipping.c:1474
-#: ../src/iop/clipping.c:1707 ../src/iop/clipping.c:1725
-#: ../src/iop/clipping.c:1768 ../src/iop/clipping.c:1787
-#: ../src/iop/lens.c:1877 ../src/libs/export.c:642 ../src/libs/live_view.c:331
-#: ../src/libs/live_view.c:343 ../src/libs/live_view.c:361
-#, c-format
+#: ../src/common/variables.c:239 ../src/common/variables.c:254
+#: ../src/iop/clipping.c:1474 ../src/iop/clipping.c:1707
+#: ../src/iop/clipping.c:1725 ../src/iop/clipping.c:1768
+#: ../src/iop/clipping.c:1787 ../src/iop/lens.c:1878 ../src/libs/export.c:642
+#: ../src/libs/live_view.c:331 ../src/libs/live_view.c:343
+#: ../src/libs/live_view.c:361
 msgid "none"
 msgstr "sans"
 
@@ -1338,7 +1337,7 @@ msgstr ""
 "* intervalle entre 2 marqueurs adjacents interne/externe : fusion progressive"
 
 #: ../src/develop/blend_gui.c:1076 ../src/iop/colorzones.c:1041
-#: ../src/iop/tonecurve.c:737
+#: ../src/iop/tonecurve.c:738
 msgid "pick GUI color from image"
 msgstr "choisit une couleur dans l'image"
 
@@ -1673,41 +1672,41 @@ msgstr "impossible d'allouer la mémoire pour la fusion"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module «%s» version non cohérentes: %d != %d"
 
-#: ../src/develop/imageop.c:794
+#: ../src/develop/imageop.c:795
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:799
+#: ../src/develop/imageop.c:800
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:804 ../src/libs/masks.c:1063
+#: ../src/develop/imageop.c:805 ../src/libs/masks.c:1063
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:810 ../src/libs/masks.c:1066
+#: ../src/develop/imageop.c:811 ../src/libs/masks.c:1066
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:816 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:817 ../src/libs/image.c:146
 #: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1731
+#: ../src/develop/imageop.c:839 ../src/develop/imageop.c:1732
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:838 ../src/develop/imageop.c:1731
+#: ../src/develop/imageop.c:839 ../src/develop/imageop.c:1732
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1110 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1111 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:283 ../src/gui/presets.c:624
@@ -1716,41 +1715,41 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1153
+#: ../src/develop/imageop.c:1154
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1158
+#: ../src/develop/imageop.c:1159
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1159
+#: ../src/develop/imageop.c:1160
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1162 ../src/libs/lib.c:547
+#: ../src/develop/imageop.c:1163 ../src/libs/lib.c:547
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1164 ../src/libs/lib.c:552
+#: ../src/develop/imageop.c:1165 ../src/libs/lib.c:552
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1701
+#: ../src/develop/imageop.c:1702
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1710 ../src/libs/lib.c:859
+#: ../src/develop/imageop.c:1711 ../src/libs/lib.c:859
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1719 ../src/gui/preferences.c:407
+#: ../src/develop/imageop.c:1720 ../src/gui/preferences.c:407
 #: ../src/libs/lib.c:872
 msgid "presets"
 msgstr "pré-réglages"
@@ -1796,7 +1795,7 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
 "tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
 
-#: ../src/develop/pixelpipe_hb.c:2240
+#: ../src/develop/pixelpipe_hb.c:2246
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2153,6 +2152,10 @@ msgstr "$(HOME) - dossier personnel"
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - dossier 'bureau'"
 
+#: ../src/gui/gtkentry.c:218
+msgid "$(TITLE) - title from metadata"
+msgstr "$(TITLE) - titre des metadonnées"
+
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
 msgstr "préférences"
@@ -2216,7 +2219,7 @@ msgstr "focale"
 
 #: ../src/gui/preferences.c:490 ../src/iop/borders.c:1050
 #: ../src/iop/exposure.c:670 ../src/iop/levels.c:345
-#: ../src/iop/tonecurve.c:778
+#: ../src/iop/tonecurve.c:779
 msgid "auto"
 msgstr "auto"
 
@@ -2243,6 +2246,13 @@ msgstr "défaut"
 msgctxt "preferences"
 msgid "import"
 msgstr "importation"
+
+#. Export button
+#. export button
+#: ../src/gui/preferences.c:617 ../src/libs/export.c:668
+#: ../src/libs/styles.c:408
+msgid "export"
+msgstr "exporter"
 
 #: ../src/gui/preferences.c:917
 msgid "press key combination to remap..."
@@ -2387,8 +2397,8 @@ msgid "normal images"
 msgstr "images normales"
 
 #: ../src/gui/presets.c:356
-msgid "RAW"
-msgstr "RAW"
+msgid "raw"
+msgstr "raw"
 
 #: ../src/gui/presets.c:357
 msgid "HDR"
@@ -2430,7 +2440,6 @@ msgid "style %s was successfully saved"
 msgstr "le style «%s» a été sauvegardé"
 
 #: ../src/gui/styles_dialog.c:293
-#, c-format
 msgid "edit style"
 msgstr "modifier le style"
 
@@ -2616,9 +2625,9 @@ msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire %s !"
 
 #: ../src/imageio/storage/disk.c:258 ../src/imageio/storage/email.c:118
-#: ../src/imageio/storage/facebook.c:1203 ../src/imageio/storage/flickr.c:675
+#: ../src/imageio/storage/facebook.c:1206 ../src/imageio/storage/flickr.c:675
 #: ../src/imageio/storage/gallery.c:327 ../src/imageio/storage/gallery.c:346
-#: ../src/imageio/storage/picasa.c:1455
+#: ../src/imageio/storage/picasa.c:1458
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "impossible d'exporter le fichier %s !"
@@ -2643,7 +2652,7 @@ msgid "[facebook] unexpected URL format\n"
 msgstr "[facebook] format d'URL inconnu\n"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/facebook.c:612
+#: ../src/imageio/storage/facebook.c:615
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
@@ -2653,110 +2662,110 @@ msgstr ""
 "navigateur. connectez-vous à votre compte facebook et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/facebook.c:615 ../src/imageio/storage/picasa.c:838
+#: ../src/imageio/storage/facebook.c:618 ../src/imageio/storage/picasa.c:841
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr "étape 2 : coller l'URL du navigateur cliquez sur \"OK\""
 
-#: ../src/imageio/storage/facebook.c:623
+#: ../src/imageio/storage/facebook.c:626
 msgid "facebook authentication"
 msgstr "authentification facebook"
 
-#: ../src/imageio/storage/facebook.c:629 ../src/imageio/storage/picasa.c:852
+#: ../src/imageio/storage/facebook.c:632 ../src/imageio/storage/picasa.c:855
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:651 ../src/imageio/storage/picasa.c:874
+#: ../src/imageio/storage/facebook.c:654 ../src/imageio/storage/picasa.c:877
 msgid "please enter the validation URL"
 msgstr "entrer l'URL de validation"
 
-#: ../src/imageio/storage/facebook.c:662 ../src/imageio/storage/picasa.c:886
+#: ../src/imageio/storage/facebook.c:665 ../src/imageio/storage/picasa.c:889
 msgid "the given URL is not valid, it should look like: "
 msgstr "l'URL donnée n'est pas valide, elle devrait ressembler à :"
 
-#: ../src/imageio/storage/facebook.c:768 ../src/imageio/storage/picasa.c:1017
+#: ../src/imageio/storage/facebook.c:771 ../src/imageio/storage/picasa.c:1020
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:775 ../src/imageio/storage/picasa.c:1024
+#: ../src/imageio/storage/facebook.c:778 ../src/imageio/storage/picasa.c:1027
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:806 ../src/imageio/storage/picasa.c:1054
+#: ../src/imageio/storage/facebook.c:809 ../src/imageio/storage/picasa.c:1057
 msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
-#: ../src/imageio/storage/facebook.c:814 ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/picasa.c:1062
+#: ../src/imageio/storage/facebook.c:817 ../src/imageio/storage/flickr.c:392
+#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/picasa.c:1065
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:936 ../src/imageio/storage/picasa.c:1110
-#: ../src/imageio/storage/picasa.c:1270
+#: ../src/imageio/storage/facebook.c:939 ../src/imageio/storage/picasa.c:1113
+#: ../src/imageio/storage/picasa.c:1273
 msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
-#: ../src/imageio/storage/facebook.c:940 ../src/imageio/storage/facebook.c:953
-#: ../src/imageio/storage/facebook.c:980
-#: ../src/imageio/storage/facebook.c:1083 ../src/imageio/storage/flickr.c:530
-#: ../src/imageio/storage/picasa.c:1116 ../src/imageio/storage/picasa.c:1274
-#: ../src/imageio/storage/picasa.c:1287 ../src/imageio/storage/picasa.c:1353
+#: ../src/imageio/storage/facebook.c:943 ../src/imageio/storage/facebook.c:956
+#: ../src/imageio/storage/facebook.c:983
+#: ../src/imageio/storage/facebook.c:1086 ../src/imageio/storage/flickr.c:530
+#: ../src/imageio/storage/picasa.c:1119 ../src/imageio/storage/picasa.c:1277
+#: ../src/imageio/storage/picasa.c:1290 ../src/imageio/storage/picasa.c:1356
 msgid "login"
 msgstr "connexion"
 
-#: ../src/imageio/storage/facebook.c:1017
+#: ../src/imageio/storage/facebook.c:1020
 msgid "facebook webalbum"
 msgstr "album web facebook"
 
 #. create labels
 #. xmp
-#: ../src/imageio/storage/facebook.c:1030 ../src/imageio/storage/flickr.c:484
+#: ../src/imageio/storage/facebook.c:1033 ../src/imageio/storage/flickr.c:484
 #: ../src/imageio/storage/gallery.c:168 ../src/imageio/storage/latex.c:168
-#: ../src/imageio/storage/picasa.c:1315 ../src/libs/collect.h:38
+#: ../src/imageio/storage/picasa.c:1318 ../src/libs/collect.h:38
 #: ../src/libs/metadata.c:333 ../src/libs/metadata_view.c:102
 msgid "title"
 msgstr "titre"
 
-#: ../src/imageio/storage/facebook.c:1031 ../src/imageio/storage/flickr.c:485
-#: ../src/imageio/storage/picasa.c:1316
+#: ../src/imageio/storage/facebook.c:1034 ../src/imageio/storage/flickr.c:485
+#: ../src/imageio/storage/picasa.c:1319
 msgid "summary"
 msgstr "résumé"
 
-#: ../src/imageio/storage/facebook.c:1032
+#: ../src/imageio/storage/facebook.c:1035
 msgid "privacy"
 msgstr "vie privée"
 
-#: ../src/imageio/storage/facebook.c:1072
+#: ../src/imageio/storage/facebook.c:1075
 msgid "only me"
 msgstr "juste moi"
 
-#: ../src/imageio/storage/facebook.c:1074 ../src/imageio/storage/flickr.c:543
+#: ../src/imageio/storage/facebook.c:1077 ../src/imageio/storage/flickr.c:543
 msgid "friends"
 msgstr "amis"
 
-#: ../src/imageio/storage/facebook.c:1076
+#: ../src/imageio/storage/facebook.c:1079
 msgid "public"
 msgstr "public"
 
-#: ../src/imageio/storage/facebook.c:1078
+#: ../src/imageio/storage/facebook.c:1081
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1212 ../src/imageio/storage/picasa.c:1464
+#: ../src/imageio/storage/facebook.c:1215 ../src/imageio/storage/picasa.c:1467
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1219 ../src/imageio/storage/picasa.c:1471
+#: ../src/imageio/storage/facebook.c:1222 ../src/imageio/storage/picasa.c:1474
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:1229
+#: ../src/imageio/storage/facebook.c:1232
 msgid "unable to export photo to webalbum"
 msgstr "impossible d'exporter les photos vers l'album web"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1241
+#: ../src/imageio/storage/facebook.c:1244
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgstr "%d/%d exportée(s) vers l'album web facebook"
@@ -2882,7 +2891,7 @@ msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/picasa.c:835
+#: ../src/imageio/storage/picasa.c:838
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google+ account there and authorize darktable to "
@@ -2892,20 +2901,20 @@ msgstr ""
 "navigateur. connectez-vous à votre compte google+ et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/picasa.c:846
+#: ../src/imageio/storage/picasa.c:849
 msgid "google+ authentication"
 msgstr "authentification google+"
 
-#: ../src/imageio/storage/picasa.c:1302
+#: ../src/imageio/storage/picasa.c:1305
 msgid "google+ photos"
 msgstr "photos google+"
 
-#: ../src/imageio/storage/picasa.c:1481
+#: ../src/imageio/storage/picasa.c:1484
 msgid "unable to export photo to google+ album"
 msgstr "impossible d'exporter les photos vers l'album google+"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/picasa.c:1494
+#: ../src/imageio/storage/picasa.c:1497
 #, c-format
 msgid "%d/%d exported to google+ album"
 msgstr "%d/%d exportée(s) vers l'album google+"
@@ -3116,7 +3125,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:2029
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:2030
 #: ../src/iop/vignette.c:1123 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "échelle"
@@ -3625,11 +3634,11 @@ msgstr "règle la correction de perspective"
 msgid "automatic cropping"
 msgstr "recadrage"
 
-#: ../src/iop/clipping.c:1735 ../src/libs/metadata_view.c:234
+#: ../src/iop/clipping.c:1735 ../src/libs/metadata_view.c:239
 msgid "no"
 msgstr "non"
 
-#: ../src/iop/clipping.c:1736 ../src/libs/metadata_view.c:234
+#: ../src/iop/clipping.c:1736 ../src/libs/metadata_view.c:239
 msgid "yes"
 msgstr "oui"
 
@@ -3731,7 +3740,7 @@ msgstr "sections de spirale d'or"
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/iop/clipping.c:1800 ../src/iop/lens.c:1883
+#: ../src/iop/clipping.c:1800 ../src/iop/lens.c:1884
 #: ../src/libs/live_view.c:355 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "tout"
@@ -4320,7 +4329,7 @@ msgid "amaze (slow)"
 msgstr "amaze (lent)"
 
 #: ../src/iop/demosaic.c:1302 ../src/iop/dither.c:563
-#: ../src/iop/highlights.c:475
+#: ../src/iop/highlights.c:481
 msgid "method"
 msgstr "méthode"
 
@@ -4408,7 +4417,7 @@ msgstr "profil pour ISO %d trouvé"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:2038
+#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:2039
 msgid "mode"
 msgstr "mode"
 
@@ -4798,23 +4807,23 @@ msgstr "force du grain à appliquer"
 msgid "highlight reconstruction"
 msgstr "récupération des hautes lumières"
 
-#: ../src/iop/highlights.c:476
+#: ../src/iop/highlights.c:482
 msgid "clip highlights"
 msgstr "tronquer les hautes lumières"
 
-#: ../src/iop/highlights.c:477
+#: ../src/iop/highlights.c:483
 msgid "reconstruct in LCh"
 msgstr "mélanger LCh"
 
-#: ../src/iop/highlights.c:478
+#: ../src/iop/highlights.c:484
 msgid "reconstruct color"
 msgstr "reconstruire les couleurs"
 
-#: ../src/iop/highlights.c:479
+#: ../src/iop/highlights.c:485
 msgid "highlight reconstruction method"
 msgstr "méthode de récupération des hautes lumières"
 
-#: ../src/iop/highlights.c:482
+#: ../src/iop/highlights.c:488
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -4822,7 +4831,7 @@ msgstr ""
 "ajuste le seuil de troncature pour éviter les hautes lumières roses (vous ne "
 "devriez jamais avoir à modifier ce réglage)"
 
-#: ../src/iop/highlights.c:484
+#: ../src/iop/highlights.c:490
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -4948,7 +4957,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "sélectionne les corrections"
 
-#: ../src/iop/lens.c:1226
+#: ../src/iop/lens.c:1227
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4961,15 +4970,15 @@ msgstr ""
 "monture :\t\t%s\n"
 " facteur de recadrage :\t%.1f"
 
-#: ../src/iop/lens.c:1457
+#: ../src/iop/lens.c:1458
 msgid "camera/lens not found - please select manually"
 msgstr "boîtier/objectif introuvable  > sélection manuelle"
 
-#: ../src/iop/lens.c:1459
+#: ../src/iop/lens.c:1460
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "trouver votre boîtier/objectif dans les menus ci-dessus"
 
-#: ../src/iop/lens.c:1504
+#: ../src/iop/lens.c:1505
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4988,147 +4997,147 @@ msgstr ""
 "type:\t\t%s\n"
 "montures:\t\t%s"
 
-#: ../src/iop/lens.c:1550
+#: ../src/iop/lens.c:1551
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1551
+#: ../src/iop/lens.c:1552
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.c:1578
+#: ../src/iop/lens.c:1579
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1579
+#: ../src/iop/lens.c:1580
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.c:1594
+#: ../src/iop/lens.c:1595
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1595
+#: ../src/iop/lens.c:1596
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.c:1889
+#: ../src/iop/lens.c:1890
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.c:1895
+#: ../src/iop/lens.c:1896
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.c:1901
+#: ../src/iop/lens.c:1902
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.c:1907
+#: ../src/iop/lens.c:1908
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.c:1913
+#: ../src/iop/lens.c:1914
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.c:1919
+#: ../src/iop/lens.c:1920
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.c:1942
+#: ../src/iop/lens.c:1943
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.c:1959
+#: ../src/iop/lens.c:1960
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.c:1992
+#: ../src/iop/lens.c:1993
 msgid "corrections"
 msgstr "corrections"
 
-#: ../src/iop/lens.c:1994
+#: ../src/iop/lens.c:1995
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.c:2009
+#: ../src/iop/lens.c:2010
 msgid "geometry"
 msgstr "géométrie"
 
-#: ../src/iop/lens.c:2011
+#: ../src/iop/lens.c:2012
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.c:2012
+#: ../src/iop/lens.c:2013
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.c:2013
+#: ../src/iop/lens.c:2014
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2014
+#: ../src/iop/lens.c:2015
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.c:2015
+#: ../src/iop/lens.c:2016
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.c:2017
+#: ../src/iop/lens.c:2018
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.c:2018
+#: ../src/iop/lens.c:2019
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.c:2019
+#: ../src/iop/lens.c:2020
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.c:2020
+#: ../src/iop/lens.c:2021
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.c:2028
+#: ../src/iop/lens.c:2029
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.c:2040
+#: ../src/iop/lens.c:2041
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.c:2041
+#: ../src/iop/lens.c:2042
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.c:2042
+#: ../src/iop/lens.c:2043
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.c:2049
+#: ../src/iop/lens.c:2050
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.c:2050
+#: ../src/iop/lens.c:2051
 msgid "TCA red"
 msgstr "AC rouge"
 
-#: ../src/iop/lens.c:2055
+#: ../src/iop/lens.c:2056
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.c:2056
+#: ../src/iop/lens.c:2057
 msgid "TCA blue"
 msgstr "bleu"
 
-#: ../src/iop/lens.c:2063
+#: ../src/iop/lens.c:2064
 msgid "corrections done: "
 msgstr "corrections effectuées :"
 
-#: ../src/iop/lens.c:2064
+#: ../src/iop/lens.c:2065
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -5722,43 +5731,43 @@ msgstr "contraste moyen"
 msgid "high contrast"
 msgstr "contraste fort "
 
-#: ../src/iop/tonecurve.c:724
+#: ../src/iop/tonecurve.c:725
 msgid "  L  "
 msgstr "  L"
 
-#: ../src/iop/tonecurve.c:725
+#: ../src/iop/tonecurve.c:726
 msgid "tonecurve for L channel"
 msgstr "courbe des tonalités pour le canal L"
 
-#: ../src/iop/tonecurve.c:726
+#: ../src/iop/tonecurve.c:727
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:727
+#: ../src/iop/tonecurve.c:728
 msgid "tonecurve for a channel"
 msgstr "courbe des tonalités pour le canal a"
 
-#: ../src/iop/tonecurve.c:728
+#: ../src/iop/tonecurve.c:729
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:729
+#: ../src/iop/tonecurve.c:730
 msgid "tonecurve for b channel"
 msgstr "courbe des tonalités pour le canal b"
 
-#: ../src/iop/tonecurve.c:756
+#: ../src/iop/tonecurve.c:757
 msgid "double click to reset curve"
 msgstr "double-cliquer pour réinitialiser"
 
-#: ../src/iop/tonecurve.c:777
+#: ../src/iop/tonecurve.c:778
 msgid "scale chroma"
 msgstr "échelle des canaux a et b"
 
-#: ../src/iop/tonecurve.c:779
+#: ../src/iop/tonecurve.c:780
 msgid "manual"
 msgstr "manuelle"
 
-#: ../src/iop/tonecurve.c:781
+#: ../src/iop/tonecurve.c:782
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data."
@@ -7484,7 +7493,7 @@ msgstr "longitude"
 msgid "image information"
 msgstr "informations de l'image"
 
-#: ../src/libs/metadata_view.c:219
+#: ../src/libs/metadata_view.c:224
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -7493,7 +7502,7 @@ msgstr ""
 "double-cliquer pour aller à la pellicule\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:422
+#: ../src/libs/metadata_view.c:427
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -7564,18 +7573,15 @@ msgid "jump back to previous collection"
 msgstr "aller à la collection précédente"
 
 #: ../src/libs/recentcollect.c:125
-#, c-format
 msgid " and "
 msgstr "et"
 
 #: ../src/libs/recentcollect.c:130
-#, c-format
 msgid " or "
 msgstr "ou"
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:135
-#, c-format
 msgid " but not "
 msgstr "mais sans"
 
@@ -8594,6 +8600,9 @@ msgstr "photo"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "graphique"
+
+#~ msgid "RAW"
+#~ msgstr "RAW"
 
 #~ msgid "error creating GUI, see stderr"
 #~ msgstr "erreur lors de la création de l'interface, voir stderr"
