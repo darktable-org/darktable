@@ -36,7 +36,7 @@ msgstr "(erfordert Neustart)"
 
 #: ../build/src/preferences_gen.h:1123
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "Eingebettete Vorschau-JPEGs nicht nutzen, sondern RAW halber Größe"
+msgstr "Eingebettete Vorschau-JPEGs nicht nutzen, sondern Raw halber Größe"
 
 #: ../build/src/preferences_gen.h:1132 ../build/src/preferences_gen.h:1151
 #: ../build/src/preferences_gen.h:1170 ../build/src/preferences_gen.h:1189
@@ -69,8 +69,8 @@ msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"Diese Option auswählen, damit die in RAW-Dateien eingebetteten JPEG-"
-"Vorschauen nicht benutzt werden, sondern die RAW-Daten verarbeitet werden. "
+"Diese Option auswählen, damit die in Raw-Dateien eingebetteten JPEG-"
+"Vorschauen nicht benutzt werden, sondern die Raw-Daten verarbeitet werden. "
 "Das ist langsamer, bringt dafür aber Farbmanagement für Vorschaubilder."
 
 #: ../build/src/preferences_gen.h:1142
@@ -136,7 +136,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Wenn RAW+JPEG-Bilder zusammen in einem Verzeichnis liegen ist es nicht "
+"Wenn Raw+JPEG-Bilder zusammen in einem Verzeichnis liegen ist es nicht "
 "sinnvoll, beides zu importieren. Mit dieser Option können alle gefundenen "
 "JPEGs ignoriert werden."
 
@@ -933,12 +933,12 @@ msgstr[1] "%d Bilder zusammenfassen"
 
 #: ../src/control/jobs/control_jobs.c:146
 msgid "exposure bracketing only works on raw images"
-msgstr "Belichtungsreihen funktionieren nur mit RAW-Bildern"
+msgstr "Belichtungsreihen funktionieren nur mit Raw-Bildern"
 
 #: ../src/control/jobs/control_jobs.c:155
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "Fehler beim Laden der RAW-Daten für Bild ‚%s‘"
+msgstr "Fehler beim Laden der Raw-Daten für Bild ‚%s‘"
 
 #: ../src/control/jobs/control_jobs.c:174
 msgid "images have to be of same size!"
@@ -1835,7 +1835,7 @@ msgid ""
 "when there are raw+JPEG in a directory."
 msgstr ""
 "Lade keine Dateien mit der Endung .jpg oder .jpeg. Dies kann nützlich sein, "
-"wenn es RAW+JPEG im gleichen Ordner gibt."
+"wenn es Raw+JPEG im gleichen Ordner gibt."
 
 #: ../src/gui/camera_import_dialog.c:312
 msgid "override today's date"
@@ -3429,7 +3429,7 @@ msgid ""
 msgstr ""
 "Automatische Korrektur der\n"
 "chromatischen Aberration\n"
-"funktioniert nur bei RAW-Bildern."
+"funktioniert nur bei Raw-Bildern."
 
 #: ../src/iop/channelmixer.c:117
 msgid "channel mixer"
@@ -5276,7 +5276,7 @@ msgstr "Gamma-Exponent"
 
 #: ../src/iop/rawdenoise.c:60
 msgid "raw denoise"
-msgstr "RAW-Entrauschen"
+msgstr "Raw-Entrauschen"
 
 #: ../src/iop/rawdenoise.c:82
 msgctxt "accel"
@@ -9079,7 +9079,7 @@ msgstr "Grafik"
 #~ msgstr "Erweiterter Stil-Editor"
 
 #~ msgid "this doesn't work for raw/hdr images."
-#~ msgstr "Dies funktioniert nicht bei RAW/HDR-Bildern."
+#~ msgstr "Dies funktioniert nicht bei Raw/HDR-Bildern."
 
 #~ msgid "geolocation"
 #~ msgstr "Geotagging"
