@@ -26,7 +26,7 @@
 /** a poor man's memory management: just a sloppy monitoring of buffer usage with automatic reallocation */
 static gboolean _path_buffer_grow(float **buffer, int *buffer_count, int *buffer_max)
 {
-  const int stepsize = 300000;
+  const int stepsize = 1000000;
   const int reserve = 100000;
 
   //printf("buffer %p, buffer_count %d, buffer_max %d\n", *buffer, *buffer_count, *buffer_max);
@@ -155,7 +155,7 @@ static void _path_init_ctrl_points (dt_masks_form_t *form)
   //if we have less that 3 points, what to do ??
   if (g_list_length(form->points) < 2) return;
 
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points,k);
@@ -201,7 +201,7 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
   if (g_list_length(form->points) > 2)
   {
     float sum = 0.0f;
-    int nb = g_list_length(form->points);
+    guint nb = g_list_length(form->points);
     for(int k = 0; k < nb; k++)
     {
       int k2 = (k+1)%nb;
@@ -351,11 +351,11 @@ static void _path_points_recurs(float *p1, float *p2,
                          path_max,path_max+1,border_max,border_max+1);
   }
   //are the points near ?
-  if ((tmax-tmin < 0.0001) || ((int)path_min[0]-(int)path_max[0]<2 && (int)path_min[0]-(int)path_max[0]>-2 &&
-                               (int)path_min[1]-(int)path_max[1]<2 && (int)path_min[1]-(int)path_max[1]>-2 &&
+  if ((tmax-tmin < 0.0001) || ((int)path_min[0]-(int)path_max[0]<1 && (int)path_min[0]-(int)path_max[0]>-1 &&
+                               (int)path_min[1]-(int)path_max[1]<1 && (int)path_min[1]-(int)path_max[1]>-1 &&
                                (!withborder || (
-                                  (int)border_min[0]-(int)border_max[0]<2 && (int)border_min[0]-(int)border_max[0]>-2 &&
-                                  (int)border_min[1]-(int)border_max[1]<2 && (int)border_min[1]-(int)border_max[1]>-2))))
+                                  (int)border_min[0]-(int)border_max[0]<1 && (int)border_min[0]-(int)border_max[0]>-1 &&
+                                  (int)border_min[1]-(int)border_max[1]<1 && (int)border_min[1]-(int)border_max[1]>-1))))
   {
     path[*pos_path] = path_max[0];
     path[*pos_path+1] = path_max[1];
@@ -380,7 +380,7 @@ static void _path_points_recurs(float *p1, float *p2,
 }
 
 /** find all self intersections in a path */
-static int _path_find_self_intersection(int **inter, int nb_corners, float *border, int border_count)
+static int _path_find_self_intersection(int *inter, int nb_corners, float *border, int border_count)
 {
   int inter_count = 0;
 
@@ -426,15 +426,11 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   //we allocate the buffer
   const int ss = hb*wb;
   if (ss < 10) return 0;
-  *inter = malloc(sizeof(int)*nb_corners*8);
-  if(*inter == NULL) return 0;
 
   int *binter = malloc(sizeof(int)*ss);
-  if(binter == NULL) {
-    free(*inter);
-    *inter = NULL;
+  if(binter == NULL)
     return 0;
-  }
+
   memset(binter,0,sizeof(int)*ss);
   int lastx = border[(posextr[1]-1)*2];
   int lasty = border[(posextr[1]-1)*2+1];
@@ -447,8 +443,6 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
   if (!_path_buffer_grow(&extra, &extrap, &extra_max))
   {
     free(binter);
-    free(*inter);
-    *inter = NULL;
     return 0;
   }
 
@@ -467,8 +461,6 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
     if (!_path_buffer_grow(&extra, &extrap, &extra_max))
     {
       free(binter);
-      free(*inter);
-      *inter = NULL;
       return 0;
     }
 
@@ -500,22 +492,22 @@ static int _path_find_self_intersection(int **inter, int nb_corners, float *bord
           {
             if (inter_count > 0)
             {
-              if ((v[k]-i)*((*inter)[inter_count*2-2]-(*inter)[inter_count*2-1])>0 && (*inter)[inter_count*2-2] >= v[k] && (*inter)[inter_count*2-1] <= i)
+              if ((v[k]-i)*(inter[inter_count*2-2]-inter[inter_count*2-1])>0 && inter[inter_count*2-2] >= v[k] && inter[inter_count*2-1] <= i)
               {
-                (*inter)[inter_count*2-2] = v[k];
-                (*inter)[inter_count*2-1] = i;
+                inter[inter_count*2-2] = v[k];
+                inter[inter_count*2-1] = i;
               }
               else
               {
-                (*inter)[inter_count*2] = v[k];
-                (*inter)[inter_count*2+1] = i;
+                inter[inter_count*2] = v[k];
+                inter[inter_count*2+1] = i;
                 inter_count++;
               }
             }
             else
             {
-              (*inter)[inter_count*2] = v[k];
-              (*inter)[inter_count*2+1] = i;
+              inter[inter_count*2] = v[k];
+              inter[inter_count*2+1] = i;
               inter_count++;
             }
           }
@@ -565,7 +557,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   //we store all points
   float dx,dy;
   dx=dy=0.0f;
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
   if (source && nb>0)
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)g_list_nth_data(form->points,0);
@@ -598,7 +590,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
   pos = 6*nb;
   posb = 6*nb;
-  float *border_init = malloc(sizeof(float)*6*nb);
+  float border_init[6*nb];
   int cw = _path_is_clockwise(form);
   if (cw == 0) cw = -1;
 
@@ -629,22 +621,17 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     if (border)
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,*border,&pos,&posb,(nb>=3));
-      if (!_path_buffer_grow(points, &pos, &points_max)) {
-        free(border_init);
+      if (!_path_buffer_grow(points, &pos, &points_max))
         return 0;
-      }
-      if (!_path_buffer_grow(border, &posb, &border_max)) {
-        free(border_init);
+
+      if (!_path_buffer_grow(border, &posb, &border_max))
         return 0;
-      }
     }
     else
     {
       _path_points_recurs(p1,p2,0.0,1.0,cmin,cmax,bmin,bmax,rc,rb,*points,NULL,&pos,&posb,FALSE);
-        if (!_path_buffer_grow(points, &pos, &points_max)) {
-          free(border_init);
-          return 0;
-        }
+      if (!_path_buffer_grow(points, &pos, &points_max))
+        return 0;
     }
 
 
@@ -679,10 +666,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       (*border)[k*6] = border_init[k*6] = (*border)[pb];
       (*border)[k*6+1] = border_init[k*6+1] = (*border)[pb+1];
 
-      if (!_path_buffer_grow(border, &posb, &border_max)) {
-        free(border_init);
+      if (!_path_buffer_grow(border, &posb, &border_max))
         return 0;
-      }
     }
 
     //we first want to be sure that there are no gaps in border
@@ -698,14 +683,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
       {
         float bmin2[2] = {(*border)[posb-22],(*border)[posb-21]};
         _path_points_recurs_border_gaps(rc,rb,bmin2,bmax,*points,&pos,*border,&posb,_path_is_clockwise(form));
-        if (!_path_buffer_grow(points, &pos, &points_max)) {
-          free(border_init);
+        if (!_path_buffer_grow(points, &pos, &points_max))
           return 0;
-        }
-        if (!_path_buffer_grow(border, &posb, &border_max)) {
-          free(border_init);
+
+        if (!_path_buffer_grow(border, &posb, &border_max))
           return 0;
-        }
       }
     }
   }
@@ -716,15 +698,12 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
   start2 = dt_get_wtime();
 
   //we don't want the border to self-intersect
-  int *intersections = NULL;
+  int intersections[nb*8];
   int inter_count = 0;
   if (border)
   {
-    inter_count = _path_find_self_intersection(&intersections,nb,*border,*border_count);
-    if(!intersections) {
-      free(border_init);
-      return 0;
-    }
+    inter_count = _path_find_self_intersection(intersections,nb,*border,*border_count);
+
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points self-intersect took %0.04f sec\n", form->name, dt_get_wtime()-start2);
     start2 = dt_get_wtime();
   }
@@ -766,17 +745,12 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
 
       if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name, dt_get_wtime()-start2);
       start2 = dt_get_wtime();
-
-      free(border_init);
-      free(intersections);
       return 1;
     }
   }
 
   //if we failed, then free all and return
   free(*points);
-  free(border_init);
-  free(intersections);
   *points = NULL;
   *points_count = 0;
   if (border) free(*border);
@@ -946,7 +920,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     {
       float amount = 1.03;
       if (up) amount = 0.97;
-      int nb = g_list_length(form->points);
+      guint nb = g_list_length(form->points);
       if (gui->border_selected)
       {
         for(int k = 0; k < nb; k++)
@@ -1665,7 +1639,7 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   //are we near a point or feather ?
-  int nb = g_list_length(form->points);
+  guint nb = g_list_length(form->points);
 
   pzx *= darktable.develop->preview_pipe->backbuf_width, pzy *= darktable.develop->preview_pipe->backbuf_height;
 
@@ -1945,15 +1919,22 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -1994,15 +1975,22 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2068,9 +2056,16 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   double start2;
 
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2079,7 +2074,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
   for (int i=nb_corner*3; i < border_count; i++)
   {
     //we look at the borders
@@ -2393,7 +2388,7 @@ static int _path_crop_to_roi(float *path, const int point_count, float xmin, flo
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
+static void _path_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh)
 {
   //segment length
   const int l = sqrt((p1[0]-p0[0])*(p1[0]-p0[0])+(p1[1]-p0[1])*(p1[1]-p0[1]))+1;
@@ -2411,14 +2406,14 @@ static void _path_falloff_roi(float **buffer, int *p0, int *p1, int bw, int bh)
     const int x = (int)((float)i*lx/(float)l) + p0[0];
     const int y = (int)((float)i*ly/(float)l) + p0[1];
     const float op = 1.0-(float)i/(float)l;
-    size_t index = (size_t)y*bw+x;
-    if (x >= 0 && x < bw && y >= 0 && y < bh)       (*buffer)[index] = fmaxf((*buffer)[index],op);
-    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) (*buffer)[index+dx] = fmaxf((*buffer)[index+dx],op); //this one is to avoid gap due to int rounding
-    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) (*buffer)[index+dpy] = fmaxf((*buffer)[index+dpy],op); //this one is to avoid gap due to int rounding
+    float *buf = buffer + (size_t)y*bw+x;
+    if (x >= 0 && x < bw && y >= 0 && y < bh)       buf[0] = fmaxf(buf[0],op);
+    if (x+dx >= 0 && x+dx < bw && y >= 0 && y < bh) buf[dx] = fmaxf(buf[dx],op); //this one is to avoid gap due to int rounding
+    if (x >= 0 && x < bw && y+dy >= 0 && y+dy < bh) buf[dpy] = fmaxf(buf[dpy],op); //this one is to avoid gap due to int rounding
   }
 }
 
-static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if (!module) return 0;
   double start = dt_get_wtime();
@@ -2440,25 +2435,24 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int path_encircles_roi = 0;
 
   //we get buffers for all points
-  float *points, *border, *cpoints = NULL;
+  float *points = NULL, *border = NULL, *cpoints = NULL;
   int points_count, border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
-  if (points_count <= 2) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0) || (points_count <= 2))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
 
-  //we allocate the output buffer
-  *buffer = malloc((size_t)width*height*sizeof(float));
-  if (*buffer == NULL)
-  {
-    free(points);
-    free(border);
-    return 0;
-  }
-  memset(*buffer,0,(size_t)width*height*sizeof(float));
+  //empty the output buffer
+  memset(buffer,0,(size_t)width*height*sizeof(float));
 
-  int nb_corner = g_list_length(form->points);
+  guint nb_corner = g_list_length(form->points);
 
   //we shift and scale down path and border
   for (int i=nb_corner*3; i < border_count; i++)
@@ -2519,14 +2513,6 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
   }
 
-  //if path and feather completely lie outside of roi -> we're done/mask remains empty
-  if(!path_in_roi && !feather_in_roi)
-  {
-    free(points);
-    free(border);
-    return 1;
-  }
-
   //now check if feather is at least partially within roi
   for (int i=nb_corner*3; i < border_count; i++)
   {
@@ -2543,6 +2529,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       feather_in_roi = 1;
       break;
     }
+  }
+
+  //if path and feather completely lie outside of roi -> we're done/mask remains empty
+  if(!path_in_roi && !feather_in_roi)
+  {
+    free(points);
+    free(border);
+    return 1;
   }
 
   // now get min/max values
@@ -2590,8 +2584,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
     memcpy(cpoints, points, 2*points_count*sizeof(float));
 
-    //now we clip cpoints to roi -> catch special case when roi lies completely within path
-    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1);
+    // now we clip cpoints to roi -> catch special case when roi lies completely within path.
+    // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling
+    // of the last roi line in the following edge-flag polygon fill algorithm.
+    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width-1, 0, height);
     path_encircles_roi = path_encircles_roi || !crop_success;
 
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
@@ -2600,7 +2596,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     if(path_encircles_roi)
     {
       // roi lies completely within path
-      for (size_t k=0; k < (size_t)width*height; k++) (*buffer)[k] = 1.0f;
+      for (size_t k=0; k < (size_t)width*height; k++) buffer[k] = 1.0f;
     }
     else
     {
@@ -2627,18 +2623,18 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
         const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
 
-        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
+        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)  // this would normally never touch the last roi line => see comment further above
         {
           const float xcross = xstart + m * (yy - ystart);
           
           int xx = floorf(xcross);
           if ((float)xx + 0.5f <= xcross) xx++;
 
-          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
+          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // sanity check just to be on the safe side
 
           size_t index = (size_t)yy*width+xx;
 
-          (*buffer)[index] = 1.0f - (*buffer)[index];
+          buffer[index] = 1.0f - buffer[index];
         }
       }
 
@@ -2658,9 +2654,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
         for (int xx=xmin ; xx<=xmax; xx++)
         {
           size_t index = (size_t)yy*width+xx;
-          float v = (*buffer)[index];
+          float v = buffer[index];
           if (v > 0.5f) state = !state;
-          if (state) (*buffer)[index] = 1.0f;
+          if (state) buffer[index] = 1.0f;
         }
       }
 
@@ -2671,7 +2667,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   //deal with feather if it does not lie outside of roi
-  if(feather_in_roi)
+  if(!path_encircles_roi)
   {
     int p0[2], p1[2];
     int last0[2] = {-100,-100};

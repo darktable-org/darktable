@@ -1,0 +1,63 @@
+#!/bin/sh 
+
+_raw=""
+_keep=0
+_rotate=0
+_quiet=0
+
+while [ $# -gt 0 ] ; do
+	case $1 in
+	-k)
+		_keep=1
+		;;
+	-r)
+		shift
+		_rotate=$1
+		;;
+	-q)
+		_quiet=1
+		;;
+	*)
+		_raw="$1"
+		;;
+	esac
+	shift
+done
+
+_base=$(printf "$_raw"| sed s,'\(.*\)\..*$','\1',g)
+TMPPPM="${_base}.ppm"
+TMPJPG="${_base}.jpg"
+PPM16="${_base}-16.ppm"
+PPM8="${_base}-8.ppm"
+MAGIC=""
+_rotate=$(($_rotate % 360))
+if [ $_rotate -ne 0 ] ; then
+	MAGIC="-rotate $_rotate"
+fi
+
+dcraw -6 -W -g 1 1 -w "$_raw"
+mv "$TMPPPM" "$PPM16"
+_make=$(exiftool -Make -t "$_raw"|cut -d "$(printf '\t')" -f 2)
+case "$_make" in
+[Nn][Ii][Kk][Oo][Nn]*)
+	exiftool -b -JpgFromRaw "$_raw" > "$TMPJPG"
+	;;
+[Cc][Aa][Nn][Oo][Nn]*)
+	exiftool -b -PreviewImage "$_raw" > "$TMPJPG"
+	;;
+*)
+	echo "unknown camera manufacturer $_make, please inform darktable developers"
+	exit 1
+	;;
+esac
+convert $MAGIC "$TMPJPG" "$PPM8"
+rm -f "$TMPJPG"
+dt-curve-tool "$PPM16" "$PPM8"
+if [ $_keep -eq 0 ] ; then
+	rm "$PPM16" "$PPM8"
+fi
+
+if [ "$_quiet" -eq 0 ] ; then
+	echo "if you accumulated enough data, you can now output the curves with"
+	echo "dt-curve-tool -z -e "$_raw" -n 16"
+fi

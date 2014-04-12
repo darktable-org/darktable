@@ -734,7 +734,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
 }
 
 
-static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float **buffer)
+static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   double start2 = dt_get_wtime();
 
@@ -812,16 +812,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     }
 
 
-  //we allocate the buffer
-  *buffer = malloc((size_t)w*h*sizeof(float));
-  if(*buffer == NULL)
-  {
-    free(points);
-    return 0;
-  }
-  memset(*buffer,0,(size_t)w*h*sizeof(float));
-
-  //we fill the mask buffer by interpolation
+  //we fill the output buffer by interpolation
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
       #pragma omp parallel for default(none) shared(points,buffer)
@@ -838,10 +829,10 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
       int ii = i % mesh;
       int mi = i / mesh;
       size_t mindex = (size_t)mj*mw + mi;
-      (*buffer)[(size_t)j*w+i] = (  points[mindex*2]          * (mesh-ii)*(mesh-jj) +
-                                    points[(mindex+1)*2]      * ii*(mesh-jj)        +
-                                    points[(mindex+mw)*2]     * (mesh-ii)*jj        +
-                                    points[(mindex+mw+1)*2]   * ii*jj                 ) / (mesh*mesh);
+      buffer[(size_t)j*w+i] = (  points[mindex*2]          * (mesh-ii)*(mesh-jj) +
+                                 points[(mindex+1)*2]      * ii*(mesh-jj)        +
+                                 points[(mindex+mw)*2]     * (mesh-ii)*jj        +
+                                 points[(mindex+mw+1)*2]   * ii*jj                 ) / (mesh*mesh);
     }
   }
 

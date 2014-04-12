@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <xmmintrin.h>
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
 typedef struct dt_iop_colorcontrast_params1_t
 {

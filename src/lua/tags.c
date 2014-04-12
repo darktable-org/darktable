@@ -67,7 +67,7 @@ static int tag_index(lua_State *L)
   int index = luaL_checkinteger(L,-1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  sprintf(query,"select imgid from tagged_images order by imgid limit 1 offset %d",index -1);
+  snprintf(query,sizeof(query),"select imgid from tagged_images order by imgid limit 1 offset %d",index -1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -102,7 +102,7 @@ static int tag_lib_index(lua_State *L)
   int index = luaL_checkinteger(L,-1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  sprintf(query,"SELECT id from tags order by id limit 1 offset %d",index -1);
+  snprintf(query,sizeof(query),"SELECT id from tags order by id limit 1 offset %d",index -1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -219,7 +219,7 @@ int dt_lua_init_tags(lua_State*L)
 
   /* tags */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table");
+  luaA_Type type_id = dt_lua_init_singleton(L,"tag_table",NULL);
   lua_setfield(L,-2,"tags");
   lua_pop(L,1);
 

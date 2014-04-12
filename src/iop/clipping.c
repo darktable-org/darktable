@@ -43,7 +43,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <assert.h>
 
-DT_MODULE(5)
+DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
 #define CLAMPF(a, mn, mx)       ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
@@ -77,6 +77,19 @@ typedef enum dt_iop_clipping_ratios_flags_t
   RATIO_COUNT //should always be the last entry
 }
 dt_iop_clipping_ratios_flags_t;
+
+typedef enum dt_iop_clipping_guide_t
+{
+  GUIDE_NONE = 0,
+  GUIDE_GRID,
+  GUIDE_THIRD,
+  GUIDE_METERING,
+  GUIDE_PERSPECTIVE,
+  GUIDE_DIAGONAL,
+  GUIDE_TRIANGL,
+  GUIDE_GOLDEN
+}
+dt_iop_clipping_guide_t;
 
 typedef struct dt_iop_clipping_params_t
 {
@@ -1543,7 +1556,7 @@ void gui_update(struct dt_iop_module_t *self)
   if (act == -1)
   {
     char str[128];
-    snprintf(str,128,"%d:%d",abs(p->ratio_d),p->ratio_n);
+    snprintf(str,sizeof(str),"%d:%d",abs(p->ratio_d),p->ratio_n);
     dt_bauhaus_combobox_set_text(g->aspect_presets, str);
   }
   if (dt_bauhaus_combobox_get(g->aspect_presets) == act) aspect_presets_changed(g->aspect_presets, self);
@@ -1623,15 +1636,6 @@ aspect_flip(GtkWidget *button, dt_iop_module_t *self)
 {
   key_swap_callback(NULL, NULL, 0, 0, self);
 }
-
-#define GUIDE_NONE 0
-#define GUIDE_GRID 1
-#define GUIDE_THIRD 2
-#define GUIDE_METERING 3
-#define GUIDE_PERSPECTIVE 4
-#define GUIDE_DIAGONAL 5
-#define GUIDE_TRIANGL 6
-#define GUIDE_GOLDEN 7
 
 static void
 guides_presets_changed (GtkWidget *combo, dt_iop_module_t *self)
@@ -1908,7 +1912,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    sprintf(dimensions, "%.0fx%.0f",
+    snprintf(dimensions, sizeof(dimensions), "%.0fx%.0f",
             (float)procw * g->clip_w, (float)proch * g->clip_h);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
@@ -2082,7 +2086,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     char view_angle[16];
     view_angle[0] = '\0';
-    sprintf(view_angle, "%.2f °", angle);
+    snprintf(view_angle, sizeof(view_angle), "%.2f °", angle);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
                            CAIRO_FONT_WEIGHT_BOLD);
@@ -2838,14 +2842,6 @@ void connect_key_accels(dt_iop_module_t *self)
 
 #undef PHI
 #undef INVPHI
-#undef GUIDE_NONE
-#undef GUIDE_GRID
-#undef GUIDE_THIRD
-#undef GUIDE_DIAGONAL
-#undef GUIDE_TRIANGL
-#undef GUIDE_GOLDEN
-
-#undef NUM_RATIOS
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -36,7 +36,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colisa_params_t)
 
 typedef struct dt_iop_colisa_params_t
 {

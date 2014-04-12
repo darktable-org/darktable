@@ -256,7 +256,11 @@ _lib_geotagging_offset_focus_out(GtkWidget *widget, GdkEvent *event, dt_lib_modu
   if(_lib_geotagging_parse_offset(value, NULL))
     dt_conf_set_string("plugins/lighttable/geotagging/offset", value);
   else
-    gtk_entry_set_text(GTK_ENTRY(d->offset_entry), dt_conf_get_string("plugins/lighttable/geotagging/offset"));
+  {
+    gchar *str = dt_conf_get_string("plugins/lighttable/geotagging/offset");
+    gtk_entry_set_text(GTK_ENTRY(d->offset_entry), str);
+    g_free(str);
+  }
   return FALSE;
 }
 
@@ -439,7 +443,10 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 
   char *last_directory = dt_conf_get_string("ui_last/gpx_last_directory");
   if(last_directory != NULL)
+  {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER (filechooser), last_directory);
+    g_free(last_directory);
+  }
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -474,6 +481,7 @@ _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
     }
     while( (iter = g_list_next(iter)) != NULL);
   }
+  g_free(old_tz);
 
   gtk_box_pack_start(GTK_BOX(extra_box), label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(extra_box), tz_selection, FALSE, FALSE, 0);

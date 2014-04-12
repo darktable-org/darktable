@@ -122,6 +122,7 @@ compressed_buffer_size(const int32_t compression_type, const int width, const in
     return width*height*sizeof(uint32_t);
 }
 
+#ifndef NDEBUG
 static inline int32_t
 buffer_is_broken(dt_mipmap_buffer_t *buf)
 {
@@ -133,6 +134,7 @@ buffer_is_broken(dt_mipmap_buffer_t *buf)
   if(buf->width*buf->height > dsc->size) return 3;
   return 0;
 }
+#endif
 
 static inline uint32_t
 get_key(const uint32_t imgid, const dt_mipmap_size_t size)
@@ -318,9 +320,9 @@ write_error:
 static int
 dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
 {
-  int32_t rd = 0;
+  size_t rd = 0;
   const dt_mipmap_size_t mip = DT_MIPMAP_2;
-  uint8_t *blob = NULL;
+  uint32_t *blob = NULL;
   FILE *f = NULL;
   int file_width[mip+1], file_height[mip+1];
 
@@ -415,7 +417,7 @@ dt_mipmap_cache_deserialize(dt_mipmap_cache_t *cache)
   {
     int level = 0;
     rd = fread(&level, sizeof(int), 1, f);
-    if (level > mip) break;
+    if (rd != 1 || level > mip) break;
 
     int32_t key = 0;
     rd = fread(&key, sizeof(int32_t), 1, f);
@@ -1133,7 +1135,7 @@ _init_f(
   /* do not even try to process file if it isn't available */
   char filename[2048] = {0};
   gboolean from_cache = TRUE;
-  dt_image_full_path(imgid, filename, 2048, &from_cache);
+  dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
   if (strlen(filename) == 0 || !g_file_test(filename, G_FILE_TEST_EXISTS))
   {
     *width = *height = 0;

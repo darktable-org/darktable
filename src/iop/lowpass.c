@@ -45,7 +45,7 @@
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_lowpass_params_t)
 
 
 /* legacy version 1 params */

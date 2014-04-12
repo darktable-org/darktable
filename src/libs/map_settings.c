@@ -109,7 +109,7 @@ gui_init (dt_lib_module_t *self)
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(d->map_source_dropdown), renderer, "text", 0, NULL);
 
-  const gchar* map_source = dt_conf_get_string("plugins/map/map_source");
+  gchar* map_source = dt_conf_get_string("plugins/map/map_source");
   int selection = OSM_GPS_MAP_SOURCE_OPENSTREETMAP-1, entry = 0;
   GtkTreeIter iter;
   for(int i = 1; i < OSM_GPS_MAP_SOURCE_LAST; i++)
@@ -132,6 +132,7 @@ gui_init (dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
   g_object_unref(model);
+  g_free(map_source);
 }
 
 void

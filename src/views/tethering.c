@@ -312,8 +312,10 @@ void enter(dt_view_t *self)
 
   char* tmp = dt_conf_get_string("plugins/capture/jobcode");
   if (tmp != NULL)
+  {
     _capture_view_set_jobcode(self, tmp);
-  g_free(tmp);
+    g_free(tmp);
+  }
 }
 
 void dt_lib_remove_child(GtkWidget *widget, gpointer data)
@@ -373,7 +375,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     lib->live_view_zoom_cursor_x = x;
     lib->live_view_zoom_cursor_y = y;
     gchar str[20];
-    sprintf(str, "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
+    snprintf(str, sizeof(str), "%u,%u", cam->live_view_zoom_x, cam->live_view_zoom_y);
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();

@@ -82,7 +82,7 @@ dt_imageio_dng_write_tiff_header ( FILE *fp, uint32_t xs, uint32_t ys, float Tv,
   uint8_t  buf[1024];
   uint8_t  cnt = 0;
 
-  memset(buf, 0, 1024);
+  memset(buf, 0, sizeof(buf));
   /* TIFF file header.  */
   buf[0] = 0x4d;
   buf[1] = 0x4d;

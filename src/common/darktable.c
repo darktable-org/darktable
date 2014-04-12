@@ -195,7 +195,11 @@ gboolean dt_supported_image(const gchar *filename)
   gboolean supported = FALSE;
   char **extensions = g_strsplit(dt_supported_extensions, ",", 100);
   char *ext = g_strrstr(filename,".");
-  if(!ext) return FALSE;
+  if(!ext)
+  {
+    g_strfreev(extensions);
+    return FALSE;
+  }
   ext++;
   for(char **i=extensions; *i!=NULL; i++)
     if(!g_ascii_strncasecmp(ext, *i,strlen(*i)))
@@ -354,16 +358,47 @@ int dt_load_from_string(const gchar* input, gboolean open_image_in_dr)
 
 int dt_init(int argc, char *argv[], const int init_gui)
 {
+#ifndef __WIN32__
+  if(getuid() == 0 || geteuid() == 0)
+    printf("WARNING: either your user id or the effective user id are 0. are you running darktable as root?\n");
+#endif
+
   // make everything go a lot faster.
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #if !defined __APPLE__ && !defined __WIN32__
   _dt_sigsegv_old_handler = signal(SIGSEGV,&_dt_sigsegv_handler);
 #endif
 
-#ifndef __SSE2__
-  fprintf(stderr, "[dt_init] unfortunately we depend on SSE2 instructions at this time.\n");
-  fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
-  return 1;
+#ifndef __GNUC_PREREQ
+  // on OSX, gcc-4.6 and clang chokes if this is not here.
+  #if defined __GNUC__ && defined __GNUC_MINOR__
+  # define __GNUC_PREREQ(maj, min) \
+  ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+  #else
+  # define __GNUC_PREREQ(maj, min) 0
+  #endif
+#endif
+#ifndef __has_builtin
+// http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+  #define __has_builtin(x) false
+#endif
+
+#ifndef __SSE3__
+  #error "Unfortunately we depend on SSE3 instructions at this time."
+  #error "Please contribute a backport patch (or buy a newer processor)."
+#else
+  #if (__GNUC_PREREQ(4,8) || __has_builtin(__builtin_cpu_supports))
+  //FIXME: check will work only in GCC 4.8+ !!! implement manual cpuid check !!!
+  //NOTE: _may_i_use_cpu_feature() looks better, but only avaliable in ICC
+  if (!__builtin_cpu_supports("sse3"))
+  {
+    fprintf(stderr, "[dt_init] unfortunately we depend on SSE3 instructions at this time.\n");
+    fprintf(stderr, "[dt_init] please contribute a backport patch (or buy a newer processor).\n");
+    return 1;
+  }
+  #else
+  //FIXME: no way to check for SSE3 in runtime, implement manual cpuid check !!!
+  #endif
 #endif
 
 #ifdef M_MMAP_THRESHOLD
@@ -441,7 +476,13 @@ int dt_init(int argc, char *argv[], const int init_gui)
       }
       else if(!strcmp(argv[k], "--version"))
       {
-        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n");
+        printf("this is "PACKAGE_STRING"\ncopyright (c) 2009-2014 johannes hanika\n"PACKAGE_BUGREPORT"\n"
+#ifdef _OPENMP
+        "OpenMP support enabled\n"
+#else
+        "OpenMP support disabled\n"
+#endif
+        );
         return 1;
       }
       else if(!strcmp(argv[k], "--library"))
@@ -577,7 +618,7 @@ int dt_init(int argc, char *argv[], const int init_gui)
   g_slist_free_full(config_override, g_free);
 
   // set the interface language
-  const gchar* lang = dt_conf_get_string("ui_last/gui_language");
+  const gchar* lang = dt_conf_get_string("ui_last/gui_language"); // we may not g_free 'lang' since it is owned by setlocale afterwards
   if(lang != NULL && lang[0] != '\0')
   {
     if(setlocale(LC_ALL, lang) != NULL)
@@ -828,6 +869,9 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+#ifdef USE_LUA
+  dt_lua_finalize();
+#endif
   if(init_gui)
   {
     dt_ctl_switch_mode_to(DT_MODE_NONE);
@@ -839,14 +883,6 @@ void dt_cleanup()
     dt_lib_cleanup(darktable.lib);
     free(darktable.lib);
   }
-#ifdef USE_LUA
-  if(darktable.lua_state.state)
-  {
-    lua_close(darktable.lua_state.state);
-    luaA_close();
-    darktable.lua_state.state = NULL;
-  }
-#endif
   dt_view_manager_cleanup(darktable.view_manager);
   free(darktable.view_manager);
   if(init_gui)
@@ -911,16 +947,16 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...)
   }
 }
 
-void dt_gettime_t(char *datetime, time_t t)
+void dt_gettime_t(char *datetime, size_t datetime_len, time_t t)
 {
   struct tm tt;
   (void)localtime_r(&t, &tt);
-  strftime(datetime, 20, "%Y:%m:%d %H:%M:%S", &tt);
+  strftime(datetime, datetime_len, "%Y:%m:%d %H:%M:%S", &tt);
 }
 
-void dt_gettime(char *datetime)
+void dt_gettime(char *datetime, size_t datetime_len)
 {
-  dt_gettime_t(datetime, time(NULL));
+  dt_gettime_t(datetime, datetime_len, time(NULL));
 }
 
 void *dt_alloc_align(size_t alignment, size_t size)
@@ -946,14 +982,14 @@ void dt_free_align(void *mem)
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
   dt_times_t end;
-  char buf[120];		/* Arbitrary size, should be lots big enough for everything used in DT */
+  char buf[160];		/* Arbitrary size, should be lots big enough for everything used in DT */
   int i;
 
   /* Skip all the calculations an everything if -d perf isn't on */
   if (darktable.unmuted & DT_DEBUG_PERF)
   {
     dt_get_times(&end);
-    i = sprintf(buf, "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock, end.user - start->user);
+    i = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock, end.user - start->user);
     if (suffix != NULL)
     {
       va_list ap;

@@ -106,6 +106,7 @@ static gchar* char2qstring(const gchar* in, gsize* size)
   memcpy(result, &BE_bytes, sizeof(guint));
   memcpy(result+sizeof(guint), out, bytes);
 
+  g_free(out);
   return result;
 }
 

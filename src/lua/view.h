@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011--2012 henrik andersson.
-    copyright (c) 2012 ulrich pegelow.
+    copyright (c) 2013 Jeremy Rosen
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,25 +15,21 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef DT_LUA_VIEW_H
+#define DT_LUA_VIEW_H
+#include <lua/lua.h>
+#include "views/view.h"
 
-#ifndef DT_GRAIN_H
-#define DT_GRAIN_H
 
-typedef enum _dt_iop_grain_channel_t
-{
-  DT_GRAIN_CHANNEL_HUE=0,
-  DT_GRAIN_CHANNEL_SATURATION,
-  DT_GRAIN_CHANNEL_LIGHTNESS,
-  DT_GRAIN_CHANNEL_RGB
-}
-_dt_iop_grain_channel_t;
 
-typedef struct dt_iop_grain_params_t
-{
-  _dt_iop_grain_channel_t channel;
-  float scale;
-  float strength;
-}
-dt_iop_grain_params_t;
+struct dt_view_t;
+void dt_lua_register_view(lua_State* L,struct dt_view_t* self);
+
+
+
+int dt_lua_init_view(lua_State *L);
 
 #endif
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

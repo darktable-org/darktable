@@ -61,6 +61,7 @@ void dt_lua_debug_table_internal(lua_State * L,int t,const char* function,int li
 typedef struct {
   lua_State* state;
   dt_pthread_mutex_t mutex;
+  bool ending;
 
 } dt_lua_state_t;
 

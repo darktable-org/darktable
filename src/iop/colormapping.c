@@ -53,7 +53,7 @@
  * - right click and apply the preset
  */
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_colormapping_params_t)
 
 #define HISTN (1<<11)
 #define MAXN 5
@@ -1132,9 +1132,6 @@ gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
-#undef HISTN
-#undef MAXN
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

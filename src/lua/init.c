@@ -28,10 +28,14 @@
 #include "lua/types.h"
 #include "lua/tags.h"
 #include "lua/modules.h"
-#include "lua/storage.h"
+#include "lua/luastorage.h"
 #include "lua/events.h"
 #include "lua/styles.h"
 #include "lua/film.h"
+#include "lua/format.h"
+#include "lua/storage.h"
+#include "lua/lib.h"
+#include "lua/view.h"
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/jobs.h"
@@ -49,34 +53,23 @@ static int dt_luacleanup(lua_State*L)
 }
 
 
-/**
-  hardcoded list of types to register
-  other types can be added dynamically
- */
-static lua_CFunction init_funcs[] =
+static lua_CFunction early_init_funcs[] =
 {
-  dt_lua_init_glist,
-  dt_lua_init_image,
-  dt_lua_init_styles,
-  dt_lua_init_print,
-  dt_lua_init_configuration,
-  dt_lua_init_preferences,
-  dt_lua_init_database,
-  dt_lua_init_gui,
-  dt_lua_init_storages,
-  dt_lua_init_tags,
-  dt_lua_init_events,
-  dt_lua_init_film,
-  dt_lua_init_call,
+  dt_lua_init_types,
+  dt_lua_init_modules,
+  dt_lua_init_format,
+  dt_lua_init_storage,
+  dt_lua_init_lib,
+  dt_lua_init_view,
   NULL
 };
-
 
 void dt_lua_init_early(lua_State*L)
 {
   if(!L)
     L= luaL_newstate();
   darktable.lua_state.state= L;
+  darktable.lua_state.ending = false;
   dt_lua_init_lock();
   luaL_openlibs(darktable.lua_state.state);
   luaA_open();
@@ -89,10 +82,12 @@ void dt_lua_init_early(lua_State*L)
 
   lua_pop(L,1);
 
-  /* types need to be initialized early */
-  dt_lua_initialize_types(L);
-  /* modules need to be initialized before the are used */
-  dt_lua_init_modules(L);
+  lua_CFunction* cur_type = early_init_funcs;
+  while(*cur_type)
+  {
+    (*cur_type)(L);
+    cur_type++;
+  }
 
 }
 
@@ -112,6 +107,24 @@ static int32_t run_early_script(struct dt_job_t *job) {
   return 0;
 }
 
+
+static lua_CFunction init_funcs[] =
+{
+  dt_lua_init_glist,
+  dt_lua_init_image,
+  dt_lua_init_styles,
+  dt_lua_init_print,
+  dt_lua_init_configuration,
+  dt_lua_init_preferences,
+  dt_lua_init_database,
+  dt_lua_init_gui,
+  dt_lua_init_luastorages,
+  dt_lua_init_tags,
+  dt_lua_init_events,
+  dt_lua_init_film,
+  dt_lua_init_call,
+  NULL
+};
 
 
 void dt_lua_init(lua_State*L,const int init_gui)
@@ -169,6 +182,17 @@ void dt_lua_init(lua_State*L,const int init_gui)
 
 }
 
+
+void dt_lua_finalize() 
+{
+  darktable.lua_state.ending = true;
+  if(darktable.lua_state.state)
+  {
+    lua_close(darktable.lua_state.state);
+    luaA_close();
+    darktable.lua_state.state = NULL;
+  }
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;

@@ -625,9 +625,9 @@ static void _blend_multiply(dt_iop_colorspace_type_t cst,const float *a, float *
     else
       for(int k=0; k<channels; k++)
       {
-        lmax = max[k]+fabs(min[k]);
-        la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
+//         lmax = max[k]+fabs(min[k]);
+//         la = CLAMP_RANGE(a[j+k]+fabs(min[k]), lmin, lmax);
+//         lb = CLAMP_RANGE(b[j+k]+fabs(min[k]), lmin, lmax);
 
         b[j+k] = CLAMP_RANGE( ((a[j+k] * (1.0f - local_opacity)) + ((a[j+k] * b[j+k]) * local_opacity)), min[k], max[k]);
       }
@@ -1686,7 +1686,7 @@ static void _blend_coloradjust(dt_iop_colorspace_type_t cst,const float *a, floa
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(&a[j], tta);
+      _RGB_2_HSL(ta, tta);
       _RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */
@@ -2071,12 +2071,8 @@ void dt_develop_blend_process (struct dt_iop_module_t *self, struct dt_dev_pixel
   
     if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-#if 0
-      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
-      dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
+      dt_masks_group_render_roi(self,piece,form,roi_out,mask);
+
       if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
@@ -2322,12 +2318,8 @@ dt_develop_blend_process_cl (struct dt_iop_module_t *self, struct dt_dev_pixelpi
     dt_masks_form_t *form = dt_masks_get_from_id(self->dev,d->mask_id);
     if (form && (!(self->flags()&IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
     {
-#if 0
-      int roi[4] = {roi_out->x,roi_out->y,roi_out->width,roi_out->height};
-      dt_masks_group_render(self,piece,form,&mask,roi,roi_in->scale);
-#else
-      dt_masks_group_render_roi(self,piece,form,roi_out,&mask);
-#endif
+      dt_masks_group_render_roi(self,piece,form,roi_out,mask);
+
       if (d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
@@ -2506,18 +2498,7 @@ dt_develop_blend_version(void)
 void
 tiling_callback_blendop (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out, struct dt_develop_tiling_t *tiling)
 {
-  dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)piece->blendop_data;
-
-  if (d && (d->mask_mode & DEVELOP_MASK_BOTH))
-  {
-    /* blending enabled */
-    tiling->factor = 2.25f;                                      // in + out + one quarter buffer for mask
-    float blurincrement = fabs(d->radius) >= 0.1f ? 0.5f : 0.0f; // plus two quarter buffers for blur
-    tiling->factor += blurincrement;
-  }
-  else
-    tiling->factor = 2.0f;   // nothing special, in and out are always there with factor 2.0
-
+  tiling->factor = 2.5f;   // in + out + two quarter buffers for mask creation and blur
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;

@@ -139,7 +139,7 @@ static void update(dt_lib_module_t *user_data, gboolean early_bark_out)
   else     // single image under mouse cursor
   {
     char query[1024];
-    snprintf(query, 1024, "select key, value from meta_data where id = %d group by key, value order by value", imgsel);
+    snprintf(query, sizeof(query), "select key, value from meta_data where id = %d group by key, value order by value", imgsel);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   }
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -499,16 +499,34 @@ void* get_params(dt_lib_module_t *self, int *size)
 // WARNING: also change src/libs/import.c when changing this!
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
+  if(!params)
+    return 1;
+
   char *buf         = (char* )params;
-  char *title       = buf;
+
+  char *title = buf;
+  if(!title)
+    return 1;
+
   buf += strlen(title) + 1;
   char *description = buf;
+  if(!description)
+    return 1;
+
   buf += strlen(description) + 1;
-  char *rights     = buf;
+  char *rights = buf;
+  if(!rights)
+    return 1;
+
   buf += strlen(rights) + 1;
-  char *creator     = buf;
+  char *creator = buf;
+  if(!creator)
+    return 1;
+
   buf += strlen(creator) + 1;
-  char *publisher   = buf;
+  char *publisher = buf;
+  if(!publisher)
+    return 1;
 
   if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5) return 1;
 

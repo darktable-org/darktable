@@ -29,7 +29,6 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "control/control.h"
-#include "iop/grain.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include <gtk/gtk.h>
@@ -45,7 +44,25 @@
 #define GRAIN_SCALE_FACTOR 213.2
 
 #define CLIP(x) ((x<0)?0.0:(x>1.0)?1.0:x)
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_grain_params_t)
+
+
+typedef enum _dt_iop_grain_channel_t
+{
+  DT_GRAIN_CHANNEL_HUE=0,
+  DT_GRAIN_CHANNEL_SATURATION,
+  DT_GRAIN_CHANNEL_LIGHTNESS,
+  DT_GRAIN_CHANNEL_RGB
+}
+_dt_iop_grain_channel_t;
+
+typedef struct dt_iop_grain_params_t
+{
+  _dt_iop_grain_channel_t channel;
+  float scale;
+  float strength;
+}
+dt_iop_grain_params_t;
 
 typedef struct dt_iop_grain_gui_data_t
 {
@@ -359,7 +376,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // double zoom=1.0+(8*(data->scale/100.0));
   const double wd = fminf(piece->buf_in.width, piece->buf_in.height);
   const double zoom=(1.0+8*data->scale/100)/800.0;
-  const int filter = fabsf(roi_out->scale - 1.0) > 0.01;
+  const int filter = fabsf(roi_out->scale - 1.0f) > 0.01;
   // filter width depends on world space (i.e. reverse wd norm and roi->scale, as well as buffer input to pixelpipe iscale)
   const double filtermul = piece->iscale/(roi_out->scale*wd);
 #ifdef _OPENMP

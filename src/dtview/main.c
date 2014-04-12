@@ -34,7 +34,6 @@ double drand48(void);
 void srand48(long int);
 #include <sys/time.h>
 #include <unistd.h>
-int usleep(useconds_t usec);
 #include <inttypes.h>
 
 int running;
@@ -331,13 +330,17 @@ int main(int argc, char *arg[])
     for(int k=0; k<=18; k++)
     {
       update(k);
-      usleep(10000);
+
+      struct timespec time = {0, 10000000L};
+      nanosleep(&time,NULL);
     }
     for(int k=0; k<100; k++)
     {
       pump_events();
       if(!running) break;
-      usleep(35000);
+
+      struct timespec time = {0, 35000000L};
+      nanosleep(&time,NULL);
     }
   }
   if(oldprofile)

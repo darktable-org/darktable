@@ -35,7 +35,7 @@
 #include "gui/presets.h"
 #include "bauhaus/bauhaus.h"
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_lowlight_params_t)
 
 #define DT_IOP_LOWLIGHT_INSET 5
 #define DT_IOP_LOWLIGHT_RES 64
@@ -681,10 +681,10 @@ lowlight_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
   else if(event->y > height)
   {
     c->x_move = 0;
-    float dist = fabsf(p->transition_x[0] - c->mouse_x);
+    float dist = fabs(p->transition_x[0] - c->mouse_x);
     for(int k=1; k<DT_IOP_LOWLIGHT_BANDS; k++)
     {
-      float d2 = fabsf(p->transition_x[k] - c->mouse_x);
+      float d2 = fabs(p->transition_x[k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;

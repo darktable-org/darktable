@@ -40,7 +40,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -227,7 +227,7 @@ void init_presets (dt_iop_module_so_t *self)
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].maker, basecurve_presets[k].model, "");
     dt_gui_presets_update_iso(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].iso_min, basecurve_presets[k].iso_max);
-    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), 2);
+    dt_gui_presets_update_ldr(_(basecurve_presets[k].name), self->op, self->version(), FOR_RAW);
     // make it auto-apply for matching images:
     dt_gui_presets_update_autoapply(_(basecurve_presets[k].name), self->op, self->version(), basecurve_presets[k].autoapply);
     // hide all non-matching presets in case the model string is set.
@@ -415,8 +415,8 @@ dt_iop_basecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabsf(c->mouse_x);
-  c->mouse_y = fabsf(c->mouse_y);
+  c->mouse_x = fabs(c->mouse_x);
+  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -427,8 +427,8 @@ dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpoint
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   // sign swapping for fluxbox
-  c->mouse_x = -fabsf(c->mouse_x);
-  c->mouse_y = -fabsf(c->mouse_y);
+  c->mouse_x = -fabs(c->mouse_x);
+  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }

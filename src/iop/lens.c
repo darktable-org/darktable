@@ -25,6 +25,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 #include <ctype.h>
+#include <lensfun.h>
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
@@ -37,13 +38,118 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/draw.h"
-#include "iop/lens.h"
 
 #if LF_VERSION < ((0 << 24) | (2 << 16) | (9 << 8) | 0)
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_lensfun_params_t)
+
+typedef enum dt_iop_lensfun_modflag_t
+{
+  LENSFUN_MODFLAG_NONE        = 0,
+  LENSFUN_MODFLAG_ALL         = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_DIST_TCA    = LF_MODIFY_DISTORTION | LF_MODIFY_TCA,
+  LENSFUN_MODFLAG_DIST_VIGN   = LF_MODIFY_DISTORTION | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_TCA_VIGN    = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_DIST        = LF_MODIFY_DISTORTION,
+  LENSFUN_MODFLAG_TCA         = LF_MODIFY_TCA,
+  LENSFUN_MODFLAG_VIGN        = LF_MODIFY_VIGNETTING,
+  LENSFUN_MODFLAG_MASK        = LF_MODIFY_DISTORTION | LF_MODIFY_TCA | LF_MODIFY_VIGNETTING
+}
+dt_iop_lensfun_modflag_t;
+
+typedef struct dt_iop_lensfun_modifier_t
+{
+  char name[40];
+  int  pos;           // position in combo box
+  int  modflag;
+}
+dt_iop_lensfun_modifier_t;
+
+// legacy params of version 2; version 1 comes from ancient times and seems to be forgotten by now
+typedef struct dt_iop_lensfun_params2_t
+{
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
+  char camera[52];
+  char lens[52];
+  int tca_override;
+  float tca_r, tca_b;
+}
+dt_iop_lensfun_params2_t;
+
+typedef struct dt_iop_lensfun_params_t
+{
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
+  char camera[128];
+  char lens[128];
+  int tca_override;
+  float tca_r, tca_b;
+}
+dt_iop_lensfun_params_t;
+
+
+typedef struct dt_iop_lensfun_gui_data_t
+{
+  const lfCamera *camera;
+  GtkWidget *lens_param_box;
+  GtkWidget *detection_warning;
+  GtkWidget *cbe[3];
+  GtkButton *camera_model;
+  GtkMenu *camera_menu;
+  GtkButton *lens_model;
+  GtkMenu *lens_menu;
+  GtkWidget *modflags, *target_geom, *reverse, *tca_r, *tca_b, *scale;
+  GtkWidget *find_lens_button;
+  GtkWidget *find_camera_button;
+  GList *modifiers;
+  GtkLabel *message;
+  int corrections_done;
+}
+dt_iop_lensfun_gui_data_t;
+
+typedef struct dt_iop_lensfun_global_data_t
+{
+  lfDatabase *db;
+  int kernel_lens_distort_bilinear;
+  int kernel_lens_distort_bicubic;
+  int kernel_lens_distort_lanczos2;
+  int kernel_lens_distort_lanczos3;
+  int kernel_lens_vignette;
+}
+dt_iop_lensfun_global_data_t;
+
+typedef struct dt_iop_lensfun_data_t
+{
+  lfLens *lens;
+  float *tmpbuf;
+  float *tmpbuf2;
+  size_t tmpbuf_len;
+  size_t tmpbuf2_len;
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
+}
+dt_iop_lensfun_data_t;
 
 const char*
 name()
@@ -868,7 +974,7 @@ void init_global(dt_iop_module_so_t *module)
 #endif
   {
     char path[1024];
-    dt_loc_get_datadir(path, 1024);
+    dt_loc_get_datadir(path, sizeof(path));
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);
     sprintf(c, "/lensfun");
@@ -899,7 +1005,8 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
                      LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-  tmp.distance = img->exif_focus_distance;
+  //if we did not find focus_distance in EXIF, lets default to 1000
+  tmp.distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
   tmp.tca_r = 1.0;
@@ -907,7 +1014,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // init crop from db:
   char model[100];  // truncate often complex descriptions.
-  g_strlcpy(model, img->exif_model, 100);
+  g_strlcpy(model, img->exif_model, sizeof(model));
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {

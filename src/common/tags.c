@@ -136,7 +136,7 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
     dest++;
   }
 
-  g_snprintf(query,1024,
+  g_snprintf(query,sizeof(query),
              "UPDATE tags SET name=REPLACE(name,'%s','%s%s') WHERE name LIKE '%s%%'",
              source, dest, tag, source);
 
@@ -341,6 +341,7 @@ gchar* dt_tag_get_list(gint imgid, const gchar *separator)
     else if (!g_str_has_prefix(value, "darktable|"))
       tags = g_list_prepend(tags, g_strdup(value));
     g_free (t);
+    g_free (value);
   }
 
   g_list_free (taglist);

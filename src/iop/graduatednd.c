@@ -41,7 +41,7 @@
 
 #define CLIP(x) 		((x<0.0f)?0.0f:(x>1.0f)?1.0f:x)
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
 typedef struct dt_iop_graduatednd_params_t
 {

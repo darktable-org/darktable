@@ -23,25 +23,120 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
-#include "iop/tonecurve.h"
-#include "gui/presets.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "control/control.h"
 #include "bauhaus/bauhaus.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
+#include "gui/presets.h"
 #include "common/opencl.h"
 #include "libs/colorpicker.h"
 
 #define DT_GUI_CURVE_EDITOR_INSET 1
 #define DT_GUI_CURVE_INFL .3f
 
-DT_MODULE(4)
+#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 20
+
+DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
+
+
+#define DT_IOP_TONECURVE_RES 64
+#define DT_IOP_TONECURVE_MAXNODES 20
+
+typedef enum tonecurve_channel_t
+{
+  ch_L    = 0,
+  ch_a    = 1,
+  ch_b    = 2,
+  ch_max  = 3
+}
+tonecurve_channel_t;
+
+typedef struct dt_iop_tonecurve_node_t
+{
+  float x;
+  float y;
+}
+dt_iop_tonecurve_node_t;
+
+
+// parameter structure of tonecurve 1st version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_params1_t
+{
+  float tonecurve_x[6], tonecurve_y[6];
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_params1_t;
+
+// parameter structure of tonecurve 3rd version, needed for use in legacy_params()
+typedef struct dt_iop_tonecurve_params3_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+}
+dt_iop_tonecurve_params3_t;
+
+typedef struct dt_iop_tonecurve_params_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES];  // three curves (L, a, b) with max number of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+  int tonecurve_unbound_ab;
+}
+dt_iop_tonecurve_params_t;
+
+
+typedef struct dt_iop_tonecurve_gui_data_t
+{
+  dt_draw_curve_t *minmax_curve[3];        // curves for gui to draw
+  int minmax_curve_nodes[3];
+  int minmax_curve_type[3];
+  GtkHBox *hbox;
+  GtkDrawingArea *area;
+  GtkSizeGroup *sizegroup;
+  GtkWidget *autoscale_ab;
+  GtkNotebook* channel_tabs;
+  tonecurve_channel_t channel;
+  double mouse_x, mouse_y;
+  int selected;
+  float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
+  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
+  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+}
+dt_iop_tonecurve_gui_data_t;
+
+typedef struct dt_iop_tonecurve_data_t
+{
+  dt_draw_curve_t *curve[3];     // curves for gegl nodes and pixel processing
+  int curve_nodes[3];            // number of nodes
+  int curve_type[3];             // curve style (e.g. CUBIC_SPLINE)
+  float table[3][0x10000];       // precomputed look-up tables for tone curve
+  float unbounded_coeffs_L[3];   // approximation for extrapolation of L
+  float unbounded_coeffs_ab[12]; // approximation for extrapolation of ab (left and right)
+  int autoscale_ab;
+  int unbound_ab;
+}
+dt_iop_tonecurve_data_t;
+
+typedef struct dt_iop_tonecurve_global_data_t
+{
+  int kernel_tonecurve;
+}
+dt_iop_tonecurve_global_data_t;
+
 
 const char *name()
 {
@@ -222,43 +317,60 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
       out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in*0xfffful), 0, 0xffff)] :
                 dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
 
-      if (autoscale_ab == 0 && unbound_ab == 0)
+      if(autoscale_ab == 0)
       {
-        // old style handling of a/b curves: only lut lookup with clamping
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
-        out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
-      }
-      if (autoscale_ab == 0 && unbound_ab == 1)
-      {
-        // new style handling of a/b curves: lut lookup with two-sided extrapolation;
-        // mind the x-axis reversal for the left-handed side
-        const float a_in = (in[1] + 128.0f) / 256.0f;
-        const float b_in = (in[2] + 128.0f) / 256.0f;
-        out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
-                ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
-                 d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
-        out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
-                ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
-                 d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
-      }
-      // in Lab: correct compressed Luminance for saturation:
-      else if(L_in > 0.01f)
-      {
-        out[1] = in[1] * out[0]/in[0];
-        out[2] = in[2] * out[0]/in[0];
+
+        if(unbound_ab == 0)
+        {
+          // old style handling of a/b curves: only lut lookup with clamping
+          out[1] = d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)];
+          out[2] = d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)];
+        }
+        else
+        {
+          // new style handling of a/b curves: lut lookup with two-sided extrapolation;
+          // mind the x-axis reversal for the left-handed side
+          out[1] = (a_in > xm_ar) ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in) : 
+                  ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+3, 1.0f - a_in) :
+                   d->table[ch_a][CLAMP((int)(a_in*0xfffful), 0, 0xffff)]);
+          out[2] = (b_in > xm_br) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+6, b_in) : 
+                  ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab+9, 1.0f - b_in) :
+                   d->table[ch_b][CLAMP((int)(b_in*0xfffful), 0, 0xffff)]);
+        }
       }
       else
       {
-        out[1] = in[1] * low_approximation;
-        out[2] = in[2] * low_approximation;
+        // in Lab: correct compressed Luminance for saturation:
+        if(L_in > 0.01f)
+        {
+          out[1] = in[1] * out[0]/in[0];
+          out[2] = in[2] * out[0]/in[0];
+        }
+        else
+        {
+          out[1] = in[1] * low_approximation;
+          out[2] = in[2] * low_approximation;
+        }
       }
 
       out[3] = in[3];
     }
   }
 }
+
+static const struct
+{
+  const char* name;
+  struct dt_iop_tonecurve_params_t preset;
+}
+presets_from_basecurve[] =
+{
+    // This is where you can paste the line provided by dt-curve-tool
+    // Here is a valid example for you to compare
+    //{"NIKON D7000 from source", {{{{0.000000, 0.006116}, {0.000296, 0.006028}, {0.002370, 0.007261}, {0.008000, 0.007445}, {0.018963, 0.010777}, {0.037037, 0.020175}, {0.064000, 0.035687}, {0.101630, 0.067279}, {0.151704, 0.134889}, {0.216000, 0.246140}, {0.296296, 0.405786}, {0.394370, 0.576875}, {0.512000, 0.724585}, {0.650963, 0.851117}, {0.813037, 0.957309}, {1.000000, 0.986196}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 0, 0, 0}},
+};
 
 void init_presets (dt_iop_module_so_t *self)
 {
@@ -322,6 +434,12 @@ void init_presets (dt_iop_module_so_t *self)
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k=1; k<5; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
   dt_gui_presets_add_generic(_("high contrast"), self->op, self->version(), &p, sizeof(p), 1);
+
+  //uncomment this once presets_from_basecurve will contain something!
+//   for (int k=0; k<sizeof(presets_from_basecurve)/sizeof(presets_from_basecurve[0]); k++)
+//   {
+//     dt_gui_presets_add_generic(presets_from_basecurve[k].name, self->op, self->version(), &presets_from_basecurve[k].preset, sizeof(p), 1);
+//   }
 }
 
 void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -449,7 +567,7 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_params = malloc(sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1;
+  module->request_histogram |= (DT_REQUEST_ON);
   module->priority = 631; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
@@ -686,8 +804,8 @@ static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossin
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  c->mouse_x = fabsf(c->mouse_x);
-  c->mouse_y = fabsf(c->mouse_y);
+  c->mouse_x = fabs(c->mouse_x);
+  c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -697,8 +815,8 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   // weird sign dance for fluxbox:
-  c->mouse_x = -fabsf(c->mouse_x);
-  c->mouse_y = -fabsf(c->mouse_y);
+  c->mouse_x = -fabs(c->mouse_x);
+  c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -898,7 +1016,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
         cairo_line_to(cr, width*picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        snprintf(text, 256, "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);

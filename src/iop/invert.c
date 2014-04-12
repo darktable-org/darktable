@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Tobias Ellinghaus, johannes hanika.
+    copyright (c) 2011 -- 2014 Tobias Ellinghaus, johannes hanika, henrik andersson.
 
     and the initial plugin `stuck pixels' was
     copyright (c) 2011 bruce guenter
@@ -31,7 +31,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_invert_params_t)
 
 typedef struct dt_iop_invert_params_t
 {
@@ -98,7 +98,7 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 
   if(self->request_color_pick)
   {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
   }
   else

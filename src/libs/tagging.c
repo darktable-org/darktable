@@ -151,7 +151,7 @@ set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
     if(*beg == ',') beg++;
     if(*beg == ' ') beg++;
   }
-  sprintf(d->keyword,"%s", beg);
+  snprintf(d->keyword, sizeof(d->keyword),"%s", beg);
   update (self, 1);
 }
 

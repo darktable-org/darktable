@@ -27,7 +27,7 @@
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
 
 typedef struct dt_iop_cacorrect_params_t
 {
@@ -402,7 +402,7 @@ CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const fl
             c = FC(rr,cc,filters);
             indx=row*width+col;
             indx1=rr*TS+cc;
-            rgb[indx1][c] = in[row*width + col];//(rawData[row][col])/65535.0f;
+            rgb[indx1][c] = in[indx];//(rawData[row][col])/65535.0f;
             //rgb[indx1][c] = image[indx][c]/65535.0f;//for dcraw implementation
           }
 

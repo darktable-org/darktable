@@ -91,22 +91,22 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
   /* construct a temporary file name */
   char tmpdir[4096]= {0};
-  dt_loc_get_tmp_dir (tmpdir,4096);
+  dt_loc_get_tmp_dir (tmpdir, sizeof(tmpdir));
 
   char dirname[4096];
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, 1024, &from_cache);
-  const gchar * filename = g_path_get_basename( dirname );
+  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  gchar * filename = g_path_get_basename( dirname );
 
-  strcpy(dirname, filename);
+  g_strlcpy(dirname, filename, sizeof(dirname));
 
-  dt_image_path_append_version(imgid, dirname, 4096);
+  dt_image_path_append_version(imgid, dirname, sizeof(dirname));
 
   gchar * end = g_strrstr(dirname,".")+1;
 
   if (end) *end = '\0';
 
-  g_strlcat(dirname, format->extension(fdata), 4096);
+  g_strlcat(dirname, format->extension(fdata), sizeof(dirname));
 
   // set exported filename
 
@@ -117,6 +117,7 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);
     g_free(attachment);
+    g_free(filename);
     return 1;
   }
 
@@ -129,6 +130,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   #pragma omp critical
 #endif
   d->images = g_list_append( d->images, attachment );
+  
+  g_free(filename);
 
   return 0;
 }
@@ -187,10 +190,11 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
   {
     gchar exif[256]= {0};
     _email_attachment_t *attachment=( _email_attachment_t *)d->images->data;
-    const gchar *filename = g_path_get_basename( attachment->file );
+    gchar *filename = g_path_get_basename( attachment->file );
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, attachment->imgid);
-    dt_image_print_exif( img, exif, 256 );
+    dt_image_print_exif(img, exif, sizeof(exif));
     g_snprintf(body+strlen(body),4096-strlen(body), imageBodyFormat, filename, exif );
+    g_free(filename);
 
     if( strlen( attachments ) )
       g_snprintf(attachments+strlen(attachments),4096-strlen(attachments), "%s", attachmentSeparator );
@@ -203,7 +207,7 @@ finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *para
   }
 
   // build uri and launch before we quit...
-  g_snprintf( uri, 4096,  uriFormat, subject, body, attachments );
+  g_snprintf(uri, sizeof(uri),  uriFormat, subject, body, attachments );
 
   fprintf(stderr, "[email] launching `%s'\n", uri);
   if(system( uri ) < 0)

@@ -35,7 +35,7 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_sharpen_params_t)
 
 #define MAXR 12
 #define BLOCKSIZE 2048		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
@@ -94,7 +94,7 @@ void init_presets (dt_iop_module_so_t *self)
   // add the preset.
   dt_gui_presets_add_generic(_("sharpen"), self->op, self->version(), &tmp, sizeof(dt_iop_sharpen_params_t), 1);
   // restrict to raw images
-  dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), 2);
+  dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
   // make it auto-apply for matching images:
   dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), 1);
 }

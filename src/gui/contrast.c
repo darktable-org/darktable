@@ -46,7 +46,7 @@ _gui_contrast_apply ()
   float brightness = (1.0 + ((-0.2 + dt_conf_get_float ("ui_brightness")) * BRIGHTNESS_AMOUNT) );
 
   gchar rc[4096]= {0};
-  g_snprintf (rc,4096,"\
+  g_snprintf (rc,sizeof(rc),"\
 style \"clearlooks-default\" \
 { \
   text[NORMAL] = \"#%.2x%.2x%.2x\" \

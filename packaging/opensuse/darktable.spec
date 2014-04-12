@@ -68,8 +68,7 @@ export CFLAGS="$CXXFLAGS"
 cmake \
         -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIB_INSTALL=%{_lib} \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBINARY_PACKAGE_BUILD=1 \
-        -DINSTALL_IOP_EXPERIMENTAL=Off -DINSTALL_IOP_LEGACY=Off .. 
+        -DBINARY_PACKAGE_BUILD=1 .. 
 %__make %{_smp_mflags} VERBOSE=1
 
 %install

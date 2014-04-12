@@ -81,10 +81,10 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
                             const gchar *accel_path,
                             const gchar *translated_path,
                             guint accel_key, GdkModifierType accel_mods);
-static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str);
+static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str, size_t str_len);
 static void update_accels_model(gpointer widget, gpointer data);
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
-                                    gchar *path);
+                                    gchar *path, size_t path_len);
 static void delete_matching_accels(gpointer path, gpointer key_event);
 static void import_export(GtkButton *button, gpointer data);
 static void restore_defaults(GtkButton *button, gpointer data);
@@ -212,6 +212,8 @@ static void hardcoded_gui(GtkWidget *vbox1, GtkWidget *vbox2)
   gtk_box_pack_start(GTK_BOX(vbox1), labelev, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
+
+  g_free(ui_lang);
 }
 */
 
@@ -728,7 +730,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent,
   }
 }
 
-static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
+static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str, size_t str_len)
 {
   gint depth;
   gint *indices;
@@ -738,20 +740,20 @@ static void path_to_accel(GtkTreeModel *model, GtkTreePath *path, gchar *str)
   gchar *data_str;
 
   // Start out with the base <Darktable>
-  strcpy(str, "<Darktable>");
+  g_strlcpy(str, "<Darktable>", str_len);
 
   // For each index in the path, append a '/' and that section of the path
   depth = gtk_tree_path_get_depth(path);
   indices = gtk_tree_path_get_indices(path);
   for(i = 0; i < depth; i++)
   {
-    strcat(str, "/");
+    g_strlcat(str, "/", str_len);
     gtk_tree_model_iter_nth_child(model, &child,  i == 0 ? NULL : &parent,
                                   indices[i]);
     gtk_tree_model_get(model, &child,
                        A_ACCEL_COLUMN, &data_str,
                        -1);
-    strcat(str, data_str);
+    g_strlcat(str, data_str, str_len);
     g_free(data_str);
     parent = child;
   }
@@ -765,20 +767,20 @@ static void update_accels_model(gpointer widget, gpointer data)
   gchar *end;
   gint i;
 
-  strcpy(path, "<Darktable>");
+  g_strlcpy(path, "<Darktable>", sizeof(path));
   end = path + strlen(path);
 
   for(i = 0; i < gtk_tree_model_iter_n_children(model, NULL); i++)
   {
     gtk_tree_model_iter_nth_child(model, &iter, NULL, i);
-    update_accels_model_rec(model, &iter, path);
+    update_accels_model_rec(model, &iter, path, sizeof(path));
     *end = '\0'; // Trimming the string back to the base for the next iteration
   }
 
 }
 
 static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
-                                    gchar *path)
+                                    gchar *path, size_t path_len)
 {
   GtkAccelKey key;
   GtkTreeIter iter;
@@ -787,9 +789,9 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
   gint i;
 
   // First concatenating this part of the key
-  strcat(path, "/");
+  g_strlcat(path, "/", path_len);
   gtk_tree_model_get(model, parent, A_ACCEL_COLUMN, &str_data, -1);
-  strcat(path, str_data);
+  g_strlcat(path, str_data, path_len);
   g_free(str_data);
 
   if(gtk_tree_model_iter_has_child(model, parent))
@@ -800,7 +802,7 @@ static void update_accels_model_rec(GtkTreeModel *model, GtkTreeIter *parent,
     for(i = 0; i < gtk_tree_model_iter_n_children(model, parent); i++)
     {
       gtk_tree_model_iter_nth_child(model, &iter, parent, i);
-      update_accels_model_rec(model, &iter, path);
+      update_accels_model_rec(model, &iter, path, path_len);
       *end = '\0';
     }
   }
@@ -908,7 +910,7 @@ static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path,
     // For leaf nodes, enter remapping mode
 
     // Assembling the full accelerator path
-    path_to_accel(model, path, accel_path);
+    path_to_accel(model, path, accel_path, sizeof(accel_path));
 
     // Setting the notification text
     gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
@@ -967,8 +969,8 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
   if(event->is_modifier)
     return FALSE;
 
-  dt_loc_get_user_config_dir(datadir, 1024);
-  snprintf(accelpath, 1024, "%s/keyboardrc", datadir);
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
+  snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", datadir);
 
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.control->accel_remap_str)
@@ -1016,9 +1018,9 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event,
       return FALSE;
 
     // Otherwise, construct the proper accelerator path and delete its entry
-    strcpy(accel, "<Darktable>");
+    g_strlcpy(accel, "<Darktable>", sizeof(accel));
     path = gtk_tree_model_get_path(model, &iter);
-    path_to_accel(model, path, accel);
+    path_to_accel(model, path, accel, sizeof(accel));
     gtk_tree_path_free(path);
 
     gtk_accel_map_change_entry(accel, 0, 0, TRUE);
@@ -1168,8 +1170,8 @@ static void import_export(GtkButton *button, gpointer data)
           gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)));
 
         // Saving to the permanent keyboardrc
-        dt_loc_get_user_config_dir(confdir, 1024);
-        snprintf(accelpath, 1024, "%s/keyboardrc", confdir);
+        dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+        snprintf(accelpath, sizeof(accelpath), "%s/keyboardrc", confdir);
         gtk_accel_map_save(accelpath);
 
         dt_conf_set_string(
@@ -1198,8 +1200,8 @@ static void restore_defaults(GtkButton *button, gpointer data)
   if(gtk_dialog_run(GTK_DIALOG(message)) == GTK_RESPONSE_OK)
   {
     // First load the default keybindings for immediate effect
-    dt_loc_get_user_config_dir(dir, 1024);
-    snprintf(path, 1024, "%s/keyboardrc_default", dir);
+    dt_loc_get_user_config_dir(dir, sizeof(dir));
+    snprintf(path, sizeof(path), "%s/keyboardrc_default", dir);
     gtk_accel_map_load(path);
 
     // Now deleting any iop show shortcuts
@@ -1207,15 +1209,15 @@ static void restore_defaults(GtkButton *button, gpointer data)
     while(ops)
     {
       op = (dt_iop_module_so_t*)ops->data;
-      snprintf(accelpath, 256, "<Darktable>/darkroom/modules/%s/show", op->op);
+      snprintf(accelpath, sizeof(accelpath), "<Darktable>/darkroom/modules/%s/show", op->op);
       gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
       ops = g_list_next(ops);
     }
 
     // Then delete any changes to the user's keyboardrc so it gets reset
     // on next startup
-    dt_loc_get_user_config_dir(dir, 1024);
-    snprintf(path, 1024, "%s/keyboardrc", dir);
+    dt_loc_get_user_config_dir(dir, sizeof(dir));
+    snprintf(path, sizeof(path), "%s/keyboardrc", dir);
 
     GFile *gpath = g_file_new_for_path(path);
     g_file_delete(gpath, NULL, NULL);
@@ -1301,7 +1303,7 @@ edit_preset (GtkTreeView * tree, const gint rowid, const gchar * name, const gch
   GtkWidget *dialog;
   /* Create the widgets */
   char title[1024];
-  snprintf(title, 1024, _("edit `%s' for module `%s'"), name, module);
+  snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module);
   dialog = gtk_dialog_new_with_buttons (title,
                                         GTK_WINDOW(_preferences_dialog),
                                         GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,

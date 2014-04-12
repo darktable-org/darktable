@@ -137,7 +137,7 @@ static int register_pref(lua_State*L)
   cur_param++;
 
   char pref_name[1024];
-  get_pref_name(pref_name,1024,built_elt->script,built_elt->name);
+  get_pref_name(pref_name,sizeof(pref_name),built_elt->script,built_elt->name);
   switch(built_elt->type)
   {
     case pref_string:
@@ -193,12 +193,16 @@ static int read_pref(lua_State*L)
   if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
 
   char pref_name[1024];
-  get_pref_name(pref_name,1024,script,name);
+  get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
     case pref_string:
-      lua_pushstring(L,dt_conf_get_string(pref_name));
+    {
+      char *str = dt_conf_get_string(pref_name);
+      lua_pushstring(L,str);
+      g_free(str);
       break;
+    }
     case pref_bool:
       lua_pushboolean(L,dt_conf_get_bool(pref_name));
       break;
@@ -223,7 +227,7 @@ static int write_pref(lua_State*L)
   if(!pref_type_name[i]) luaL_argerror(L,3,NULL);
 
   char pref_name[1024];
-  get_pref_name(pref_name,1024,script,name);
+  get_pref_name(pref_name,sizeof(pref_name),script,name);
   switch(i)
   {
     case pref_string:
@@ -244,19 +248,19 @@ static int write_pref(lua_State*L)
 static void callback_string(GtkWidget *widget, pref_element*cur_elt )
 {
   char pref_name[1024];
-  get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
   dt_conf_set_string(pref_name,gtk_entry_get_text(GTK_ENTRY(widget)));
 }
 static void callback_bool(GtkWidget *widget, pref_element*cur_elt )
 {
   char pref_name[1024];
-  get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
   dt_conf_set_bool(pref_name,gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
 }
 static void callback_int(GtkWidget *widget, pref_element*cur_elt )
 {
   char pref_name[1024];
-  get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
   dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
@@ -265,7 +269,7 @@ static void response_callback_string(GtkDialog *dialog, gint response_id, pref_e
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     dt_conf_set_string(pref_name,gtk_entry_get_text(GTK_ENTRY(cur_elt->widget)));
   }
 }
@@ -274,7 +278,7 @@ static void response_callback_bool(GtkDialog *dialog, gint response_id, pref_ele
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     dt_conf_set_bool(pref_name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cur_elt->widget)));
   }
 }
@@ -283,7 +287,7 @@ static void response_callback_int(GtkDialog *dialog, gint response_id, pref_elem
   if(response_id == GTK_RESPONSE_ACCEPT)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
   }
 }
@@ -293,7 +297,7 @@ static gboolean reset_widget_string (GtkWidget *label, GdkEventButton *event, pr
   if(event->type == GDK_2BUTTON_PRESS)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
     return TRUE;
   }
@@ -304,7 +308,7 @@ static gboolean reset_widget_bool (GtkWidget *label, GdkEventButton *event, pref
   if(event->type == GDK_2BUTTON_PRESS)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), cur_elt->type_data.string_data.default_value);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), cur_elt->type_data.bool_data.default_value);
     return TRUE;
@@ -316,7 +320,7 @@ static gboolean reset_widget_int (GtkWidget *label, GdkEventButton *event, pref_
   if(event->type == GDK_2BUTTON_PRESS)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.int_data.default_value);
     return TRUE;
   }
@@ -341,7 +345,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
   while(cur_elt)
   {
     char pref_name[1024];
-    get_pref_name(pref_name,1024,cur_elt->script,cur_elt->name);
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     label = gtk_label_new(cur_elt->label);
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     labelev = gtk_event_box_new();
@@ -351,9 +355,11 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
     {
       case pref_string:
         cur_elt->widget = gtk_entry_new();
-        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), dt_conf_get_string(pref_name));
+        gchar *str = dt_conf_get_string(pref_name);
+        gtk_entry_set_text(GTK_ENTRY(cur_elt->widget), str);
+        g_free(str);
         g_signal_connect(G_OBJECT(cur_elt->widget), "activate", G_CALLBACK(callback_string), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.string_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_string), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_string), cur_elt);
         break;
@@ -361,7 +367,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         cur_elt->widget = gtk_check_button_new();
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(cur_elt->widget), dt_conf_get_bool(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "toggled", G_CALLBACK(callback_bool), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%s'"), cur_elt->type_data.bool_data.default_value?"true":"false");
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%s'"), cur_elt->type_data.bool_data.default_value?"true":"false");
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_bool), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_bool), cur_elt);
         break;
@@ -370,7 +376,7 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_int(pref_name));
         g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_int), cur_elt);
-        snprintf(tooltip, 1024, _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
         break;

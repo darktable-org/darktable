@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <string.h>
 
-DT_MODULE(2)
+DT_MODULE_INTROSPECTION(2, dt_iop_colorize_params_t)
 
 // legacy parameters of version 1 of module
 typedef struct dt_iop_colorize_params1_t

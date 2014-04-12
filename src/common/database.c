@@ -35,7 +35,7 @@
 #include <errno.h>
 
 // whenever _create_schema() gets changed you HAVE to bump this version and add an update path to _upgrade_schema_step()!
-#define CURRENT_DATABASE_VERSION 4
+#define CURRENT_DATABASE_VERSION 6
 
 typedef struct dt_database_t
 {
@@ -419,7 +419,80 @@ static int _upgrade_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 4;
   }
-// maybe in the future, see commented out code elsewhere
+  else if(version == 4)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if (sqlite3_exec(db->handle,
+                     "ALTER TABLE presets RENAME TO tmp_presets", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't rename table presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "CREATE TABLE presets (name VARCHAR, description VARCHAR, operation VARCHAR, op_params BLOB,"
+                     "enabled INTEGER, blendop_params BLOB, model VARCHAR, maker VARCHAR, lens VARCHAR,"
+                     "iso_min REAL, iso_max REAL, exposure_min REAL, exposure_max REAL, aperture_min REAL,"
+                     "aperture_max REAL, focal_length_min REAL, focal_length_max REAL, writeprotect INTEGER,"
+                     "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER, op_version INTEGER,"
+                     "blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+                     NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create new presets table\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "INSERT INTO presets (name, description, operation, op_params, enabled, blendop_params, model, maker, lens,"
+                     "                     iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
+                     "                     focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, format,"
+                     "                     op_version, blendop_version, multi_priority, multi_name)"
+                     "              SELECT name, description, operation, op_params, enabled, blendop_params, model, maker, lens,"
+                     "                     iso_min, iso_max, exposure_min, exposure_max, aperture_min, aperture_max,"
+                     "                     focal_length_min, focal_length_max, writeprotect, autoapply, filter, def, isldr,"
+                     "                     op_version, blendop_version, multi_priority, multi_name"
+                     "              FROM   tmp_presets",
+                     NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't populate presets table from tmp_presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    if (sqlite3_exec(db->handle,
+                     "DROP TABLE tmp_presets", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't delete table tmp_presets\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 5;
+  }
+  else if(version == 5)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    if(sqlite3_exec(db->handle,
+                      "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL) != SQLITE_OK)
+    {
+      fprintf(stderr, "[init] can't create index on image filename\n");
+      fprintf(stderr, "[init]   %s\n", sqlite3_errmsg(db->handle));
+      sqlite3_exec(db->handle, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      return version;
+    }
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 6;
+  }// maybe in the future, see commented out code elsewhere
 //   else if(version == XXX)
 //   {
 //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL, NULL, NULL);
@@ -486,6 +559,8 @@ static void _create_schema(dt_database_t *db)
                         "CREATE INDEX images_group_id_index ON images (group_id)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE INDEX images_film_id_index ON images (film_id)", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle,
+                        "CREATE INDEX images_filename_index ON images (filename)", NULL, NULL, NULL);
   ////////////////////////////// selected_images
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE TABLE selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
@@ -572,7 +647,7 @@ static void _create_schema(dt_database_t *db)
                         "enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
                         "model VARCHAR, maker VARCHAR, lens VARCHAR, iso_min REAL, iso_max REAL, exposure_min REAL, exposure_max REAL, "
                         "aperture_min REAL, aperture_max REAL, focal_length_min REAL, focal_length_max REAL, writeprotect INTEGER, "
-                        "autoapply INTEGER, filter INTEGER, def INTEGER, isldr INTEGER)", NULL, NULL, NULL);
+                        "autoapply INTEGER, filter INTEGER, def INTEGER, format INTEGER)", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(db->handle,
                         "CREATE UNIQUE INDEX presets_idx ON presets(name, operation, op_version)", NULL, NULL, NULL);
 
@@ -622,7 +697,7 @@ dt_database_t *dt_database_init(char *alternative)
   db->lock_acquired = TRUE;
 #else
   mode_t old_mode;
-  int fd, lock_tries = 0;
+  int fd = 0, lock_tries = 0;
   if(!strcmp(dbfilename, ":memory:"))
   {
     db->lock_acquired = TRUE;
@@ -636,7 +711,7 @@ lock_again:
     fd = open(db->lockfile, O_RDWR | O_CREAT | O_EXCL, 0666);
     umask(old_mode);
 
-    if(fd >= 0) // the lockfile was successfully created - write our PID into it
+    if(fd != -1) // the lockfile was successfully created - write our PID into it
     {
       gchar *pid = g_strdup_printf("%d", getpid());
       if(write(fd, pid, strlen(pid)+1) > -1)
@@ -648,7 +723,7 @@ lock_again:
       char buf[64];
       memset(buf, 0, sizeof(buf));
       fd = open(db->lockfile, O_RDWR | O_CREAT, 0666);
-      if(fd >= 0)
+      if(fd != -1)
       {
         if(read(fd, buf, sizeof(buf) - 1) > -1)
         {
@@ -658,10 +733,25 @@ lock_again:
             // the other process seems to no longer exist. unlink the .lock file and try again
             unlink(db->lockfile);
             if(lock_tries < 5)
+            {
+              close(fd);
               goto lock_again;
+            }
+          }
+          else
+          {
+            fprintf(stderr, "[init] the database lock file contains a pid that seems to be alive in your system: %d\n", other_pid);
           }
         }
+        else
+        {
+          fprintf(stderr, "[init] the database lock file seems to be empty\n");
+        }
         close(fd);
+      }
+      else
+      {
+        fprintf(stderr, "[init] error opening the database lock file for reading\n");
       }
     }
   }
@@ -685,7 +775,7 @@ lock_again:
     if(dbname) fprintf(stderr, "`%s'!\n", dbname);
     else       fprintf(stderr, "\n");
     fprintf(stderr, "[init] maybe your %s/darktablerc is corrupt?\n",datadir);
-    dt_loc_get_datadir(dbfilename, 512);
+    dt_loc_get_datadir(dbfilename, sizeof(dbfilename));
     fprintf(stderr, "[init] try `cp %s/darktablerc %s/darktablerc'\n", dbfilename,datadir);
     sqlite3_close(db->handle);
     g_free(dbname);

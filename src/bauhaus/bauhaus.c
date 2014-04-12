@@ -30,8 +30,13 @@
 // define this to get boxes instead of arrow indicators, more like our previous version was:
 // #define DT_BAUHAUS_OLD
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+//to be removed when we will depend on glib-2.38+
+//see https://bugzilla.gnome.org/show_bug.cgi?id=723899
 // new type dt_bauhaus_widget_t, gtk functions start with dt_bh (so they don't collide with ours), we inherit from drawing area
 G_DEFINE_TYPE (DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
+#pragma GCC diagnostic pop
 
 // fwd declare
 static gboolean
@@ -903,7 +908,7 @@ dt_bauhaus_slider_new_with_range_and_feedback(dt_iop_module_t *self, float min, 
   d->oldpos = d->defpos;
   d->scale = 5.0f*step/(max-min);
   d->digits = digits;
-  snprintf(d->format, 24, "%%.0%df", digits);
+  snprintf(d->format, sizeof(d->format), "%%.0%df", digits);
 
   d->grad_cnt = 0;
 
@@ -1500,7 +1505,7 @@ dt_bauhaus_popup_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
       cairo_save(cr);
       char text[256];
       const float f = d->min + (d->oldpos+mouse_off)*(d->max-d->min);
-      snprintf(text, 256, d->format, f);
+      snprintf(text, sizeof(text), d->format, f);
       show_pango_text(cr, text, wd-4-ht, 0, 0, TRUE, TRUE, FALSE);
 
       cairo_restore(cr);
@@ -1644,7 +1649,7 @@ dt_bauhaus_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
         // TODO: merge that text with combo
         char text[256];
         const float f = d->min + d->pos*(d->max-d->min);
-        snprintf(text, 256, d->format, f);
+        snprintf(text, sizeof(text), d->format, f);
         show_pango_text(cr, text, width-4-height, 0, 0, TRUE, TRUE, FALSE);
       }
       // label on top of marker:
@@ -1686,7 +1691,7 @@ dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
     dt_bauhaus_hide_popup();
   darktable.bauhaus->current = w;
   darktable.bauhaus->keys_cnt = 0;
-  memset(darktable.bauhaus->keys, 0, 64);
+  memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
   darktable.bauhaus->change_active = 0;
   darktable.bauhaus->mouse_line_distance = 0.0f;
   _stop_cursor();
@@ -1983,14 +1988,14 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         if(isfinite(new_value))
           dt_bauhaus_slider_set_soft(GTK_WIDGET(darktable.bauhaus->current), new_value);
         darktable.bauhaus->keys_cnt = 0;
-        memset(darktable.bauhaus->keys, 0, 64);
+        memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_hide_popup();
       }
       else if(event->keyval == GDK_KEY_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
-        memset(darktable.bauhaus->keys, 0, 64);
+        memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_hide_popup();
       }
       else return FALSE;
@@ -2030,14 +2035,14 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         dt_bauhaus_widget_accept(darktable.bauhaus->current);
         darktable.bauhaus->keys_cnt = 0;
-        memset(darktable.bauhaus->keys, 0, 64);
+        memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_hide_popup();
       }
       else if(event->keyval == GDK_KEY_Escape)
       {
         // discard input and close popup
         darktable.bauhaus->keys_cnt = 0;
-        memset(darktable.bauhaus->keys, 0, 64);
+        memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_hide_popup();
       }
       else if(event->keyval == GDK_KEY_Up)
@@ -2054,7 +2059,7 @@ dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_
         darktable.bauhaus->end_mouse_y = -1; // negative will use currently highlighted instead.
         darktable.bauhaus->keys[darktable.bauhaus->keys_cnt] = 0;
         darktable.bauhaus->keys_cnt = 0;
-        memset(darktable.bauhaus->keys, 0, 64);
+        memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
         dt_bauhaus_widget_accept(darktable.bauhaus->current);
         dt_bauhaus_hide_popup();
       }

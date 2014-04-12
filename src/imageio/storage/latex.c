@@ -308,9 +308,9 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     for(; c>filename && *c != '/' ; c--);
     if(*c == '/') c++;
     if(c <= filename) c = filename;
-    snprintf(relfilename, 256, "%s", c);
+    snprintf(relfilename, sizeof(relfilename), "%s", c);
 
-    snprintf(pair->line, 4096,
+    snprintf(pair->line, sizeof(pair->line),
              "\\begin{minipage}{\\imgwidth}%%\n"
              "\\drawtrimcorners%%\n"
              "\\vskip0pt plus 1filll\n"
@@ -353,7 +353,7 @@ copy_res(const char *src, const char *dst)
   if(fin && fout)
   {
     fseek(fin,0,SEEK_END);
-    int end = ftell(fin);
+    size_t end = ftell(fin);
     rewind(fin);
     content = (char*)g_malloc(sizeof(char)*end);
     if(content == NULL)

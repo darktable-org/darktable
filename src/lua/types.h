@@ -88,30 +88,49 @@ void dt_lua_register_type_callback_number_typeid(lua_State* L,luaA_Type type_id,
 void dt_lua_register_type_callback_stack_typeid(lua_State* L,luaA_Type type_id,const char* name);
 // use an other type as a fallback (inheritence
 #define dt_lua_register_type_callback_inherit(L,type_name,parent_type_name) \
-  dt_lua_register_type_callback_inherit_typeid(L,luaA_type_find(#type_name),luaA_type_find(#parent_type_name)
+  dt_lua_register_type_callback_inherit_typeid(L,luaA_type_find(#type_name),luaA_type_find(#parent_type_name))
 void dt_lua_register_type_callback_inherit_typeid(lua_State* L,luaA_Type type_id,luaA_Type parent_type_id);
+/// pop the top of the stack, register it as a an index and newindex for the entry
+#define dt_lua_register_type_callback_stack_entry(L,type_name,name) \
+  dt_lua_register_type_callback_stack_entry_typeid(L,luaA_type_find(#type_name),name)
+void dt_lua_register_type_callback_stack_entry_typeid(lua_State* L,luaA_Type type_id,const char* name);
 
 /**
-  * similar to dt_lua_init_type but creates a type for int id
-  * the type must be an int and will guarentee a singleton per memory pointed
+  * similar to dt_lua_init_type but creates a type for int or gpointer singletons
+  * the type must match and will guarentee a singleton per value
   * i.e if you push the same int twice, you will push the same lua object 
   * not recreate a different one each time
+  * the singleton objects will still correctly be garbage collected
   */
 #define dt_lua_init_int_type(L,type_name) \
   dt_lua_init_int_type_typeid(L,luaA_type_id(type_name))
 luaA_Type dt_lua_init_int_type_typeid(lua_State* L,luaA_Type type_id);
+#define dt_lua_init_gpointer_type(L,type_name) \
+  dt_lua_init_gpointer_type_typeid(L,luaA_type_id(type_name))
+luaA_Type dt_lua_init_gpointer_type_typeid(lua_State* L,luaA_Type type_id);
 
 /**
  * similar to dt_lua_init_type but creates a singleton type
- * that is : a type who has only one instance (which is a null pointer)
+ * that is : a type who has only one instance (which is a void* pointer)
  * returns the associated luaA_Type so it can be decorated
  * push the single instance of the object on the stack
  */
-luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name);
+luaA_Type dt_lua_init_singleton(lua_State* L,const char * unique_name,void* data);
+
+/**
+ * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restor
+ * the lua object called on
+ */
+luaA_Type dt_lua_init_wrapped_singleton(lua_State* L, lua_CFunction pusher, lua_CFunction getter, const char* unique_name,void *data);
 
 
-void dt_lua_initialize_types(lua_State *L);
+int dt_lua_init_types(lua_State *L);
 
+#define dt_lua_isa(L,index,type) \
+  dt_lua_isa_typeid(L,index,luaA_type_id(type))
+
+gboolean dt_lua_isa_typeid(lua_State*L,int index, luaA_Type type_id);
+gboolean dt_lua_typeisa_typeid(lua_State*L,luaA_Type obj_type, luaA_Type type_id);
 
 
 #endif

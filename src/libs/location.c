@@ -150,7 +150,7 @@ static GtkWidget *_lib_location_place_widget_new(_lib_location_result_t *place)
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
   /* add location coord */
-  g_snprintf(location, 512, "lat: %.4f lon: %.4f", place->lat, place->lon);
+  g_snprintf(location, sizeof(location), "lat: %.4f lon: %.4f", place->lat, place->lon);
   w = gtk_label_new(location);
   gtk_label_set_line_wrap(GTK_LABEL(w), TRUE);
   gtk_misc_set_alignment(GTK_MISC(w), 0.0, 0.5);
@@ -395,6 +395,8 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
 
   /* create new place */
   _lib_location_result_t *place = g_malloc(sizeof(_lib_location_result_t));
+  if(!place) return;
+
   memset(place, 0, sizeof(_lib_location_result_t));
   place->lon = NAN;
   place->lat = NAN;
@@ -407,8 +409,10 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
     while (*aname)
     {
       if (strcmp(*aname, "display_name") == 0)
+      {
         place->name = g_strdup(*avalue);
-      else if (strcmp(*aname, "lon") == 0)
+        if(!(place->name)) goto bail_out;
+      } else if (strcmp(*aname, "lon") == 0)
         place->lon = g_strtod(*avalue, NULL);
       else if (strcmp(*aname, "lat") == 0)
         place->lat = g_strtod(*avalue, NULL);
@@ -443,10 +447,8 @@ static void _lib_location_parser_start_element(GMarkupParseContext *cxt,
   return;
 
 bail_out:
-  if (place && place->name)
+  if (place->name)
     g_free(place->name);
 
-  if (place)
-    g_free(place);
-
+  g_free(place);
 }

@@ -14,41 +14,41 @@ HOMEPAGE="http://www.darktable.org/"
 LICENSE="GPL-3"
 SLOT="0"
 IUSE="cmstest colord flickr geo gnome-keyring gphoto2 graphicsmagick jpeg2k kde
-lua nls opencl openmp pax_kernel +rawspeed +slideshow +squish web-services webp"
+lua nls opencl openexr openmp pax_kernel +rawspeed +slideshow +squish web-services webp"
 
 CDEPEND="
 	dev-db/sqlite:3
 	dev-libs/glib:2
 	dev-libs/libxml2:2
-	colord? ( x11-misc/colord )
+	gnome-base/librsvg:2
+	media-gfx/exiv2:0=[xmp]
+	media-libs/lcms:2
+	media-libs/lensfun
+	media-libs/libpng:0=
+	media-libs/openexr:0=
+	media-libs/tiff:0
+	net-misc/curl
+	virtual/jpeg
+	x11-libs/cairo
+	x11-libs/gdk-pixbuf:2
+	x11-libs/gtk+:2
+	x11-libs/pango
+	colord? ( x11-misc/colord:0= )
 	flickr? ( media-libs/flickcurl )
 	geo? ( net-libs/libsoup:2.4 )
 	gnome-keyring? ( gnome-base/gnome-keyring )
-	gnome-base/librsvg:2
-	gphoto2? ( media-libs/libgphoto2 )
+	gphoto2? ( media-libs/libgphoto2:= )
 	graphicsmagick? ( media-gfx/graphicsmagick )
 	jpeg2k? ( media-libs/openjpeg:0 )
 	lua? ( >=dev-lang/lua-5.2 )
-	media-gfx/exiv2[xmp]
-	media-libs/lcms:2
-	media-libs/lensfun
-	media-libs/libpng:0
-	media-libs/openexr
-	media-libs/tiff:0
-	net-misc/curl
 	opencl? ( virtual/opencl )
 	slideshow? (
 		media-libs/libsdl
 		virtual/glu
 		virtual/opengl
 	)
-	virtual/jpeg
 	web-services? ( dev-libs/json-glib )
-	webp? ( >=media-libs/libwebp-0.3.0 )
-	x11-libs/cairo
-	x11-libs/gdk-pixbuf:2
-	x11-libs/gtk+:2
-	x11-libs/pango"
+	webp? ( >=media-libs/libwebp-0.3.0:0= )"
 RDEPEND="${CDEPEND}
 	kde? ( kde-base/kwalletd )"
 DEPEND="${CDEPEND}
@@ -63,10 +63,11 @@ pkg_pretend() {
 
 src_prepare() {
 	sed -e "s:\(/share/doc/\)darktable:\1${PF}:" \
+		-e "s:\(\${SHARE_INSTALL}/doc/\)darktable:\1${PF}:" \
 		-e "s:LICENSE::" \
 		-i doc/CMakeLists.txt || die
 
-	epatch_user
+	cmake-utils_src_prepare
 }
 
 src_configure() {
@@ -82,6 +83,7 @@ src_configure() {
 		$(cmake-utils_use_use lua LUA)
 		$(cmake-utils_use_use nls NLS)
 		$(cmake-utils_use_use opencl OPENCL)
+		$(cmake-utils_use_use openexr OPENEXR)
 		$(cmake-utils_use_use openmp OPENMP)
 		$(cmake-utils_use !rawspeed DONT_USE_RAWSPEED)
 		$(cmake-utils_use_use squish SQUISH)
@@ -89,8 +91,6 @@ src_configure() {
 		$(cmake-utils_use_use web-services GLIBJSON)
 		$(cmake-utils_use_use webp WEBP)
 		-DCUSTOM_CFLAGS=ON
-		-DINSTALL_IOP_EXPERIMENTAL=ON
-		-DINSTALL_IOP_LEGACY=ON
 	)
 	cmake-utils_src_configure
 }

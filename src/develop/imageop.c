@@ -166,34 +166,6 @@ default_cleanup(dt_iop_module_t *module)
 }
 
 
-static void
-default_simple_slider_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
-{
-  if(darktable.gui->reset) return;
-  int *p = (int*)data->self->params;
-  float *f = (float*)(&p[data->index]);
-  *f = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
-}
-
-static void
-default_simple_combobox_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
-{
-  if(darktable.gui->reset) return;
-  int *p = (int*)data->self->params;
-  p[data->index] = dt_bauhaus_combobox_get(w);
-  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
-}
-
-static void
-default_simple_togglebutton_callback(GtkWidget *w, dt_iop_gui_simple_callback_t *data)
-{
-  if(darktable.gui->reset) return;
-  int *p = (int*)data->self->params;
-  p[data->index] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w));
-  dt_dev_add_history_item(darktable.develop, data->self, TRUE);
-}
-
 static int
 default_distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
@@ -205,295 +177,25 @@ default_distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   return 1;
 }
 
-static void
-gui_init_simple_wrapper(dt_iop_module_t *self)
+static dt_introspection_field_t* default_get_introspection_linear()
 {
-  if(!self->gui_init_simple)
-  {
-    self->widget = gtk_label_new(_("error creating GUI, see stderr"));
-    gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
-    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the GUI of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
-    return;
-  }
-  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
-  if(!gui)
-  {
-    self->widget = gtk_label_new(_("error creating GUI, see stderr"));
-    gtk_label_set_justify(GTK_LABEL(self->widget), GTK_JUSTIFY_LEFT);
-    fprintf(stderr, "[iop_simple_gui] something went wrong while initializing the GUI of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
-    return;
-  }
-
-  size_t size = (self->params_size/sizeof(float))*sizeof(void*);
-  // allocate the storage structures
-  self->gui_data = g_malloc(size);
-  GtkWidget **g = (GtkWidget**)self->gui_data;
-
-  // build the gui
-  self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
-  dt_gui_simple_element_t *it = gui->elements;
-  int i=0;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    switch(it->common.type)
-    {
-      case DT_SIMPLE_GUI_SLIDER:
-        g[i] = dt_bauhaus_slider_new_with_range(self, it->slider.min, it->slider.max, it->slider.step, it->slider.defval, it->slider.digits);
-        if(it->slider.format)
-          dt_bauhaus_slider_set_format(g[i], it->slider.format);
-        dt_bauhaus_widget_set_label(g[i], NULL, _(it->slider.label));
-        if(it->slider.value_changed)
-          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->slider.value_changed), it->slider.parameter?it->slider.parameter:self);
-        else
-        {
-          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
-          param->self = self;
-          param->index = i;
-          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(default_simple_slider_callback), param);
-        }
-        break;
-      case DT_SIMPLE_GUI_COMBOBOX:
-        g[i] = dt_bauhaus_combobox_new(self);
-        for(char** combo_iter = it->combobox.entries; *combo_iter != NULL; combo_iter++)
-          dt_bauhaus_combobox_add(g[i], *combo_iter);
-        dt_bauhaus_widget_set_label(g[i], NULL, _(it->combobox.label));
-        dt_bauhaus_combobox_set(g[i], it->combobox.defval);
-        if(it->combobox.value_changed)
-          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(it->combobox.value_changed), it->combobox.parameter?it->combobox.parameter:self);
-        else
-        {
-          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
-          param->self = self;
-          param->index = i;
-          g_signal_connect(G_OBJECT(g[i]), "value-changed", G_CALLBACK(default_simple_combobox_callback), param);
-        }
-        break;
-      case DT_SIMPLE_GUI_BUTTON:
-        if(it->button.label != NULL)
-          g[i] = dtgtk_button_new_with_label(_(it->button.label), it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-        else
-          g[i] = dtgtk_button_new(it->button.paint, it->button.paintflags);
-        if(it->button.clicked != NULL)
-          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
-        break;
-      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
-        if(it->button.label != NULL)
-          g[i] = dtgtk_togglebutton_new_with_label(_(it->button.label), it->button.paint, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
-        else
-          g[i] = dtgtk_togglebutton_new(it->button.paint, it->button.paintflags);
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g[i]), it->button.defval);
-        if(it->button.clicked != NULL)
-          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(it->button.clicked), it->button.parameter?it->button.parameter:self);
-        else
-        {
-          dt_iop_gui_simple_callback_t *param = malloc(sizeof(dt_iop_gui_simple_callback_t));
-          param->self = self;
-          param->index = i;
-          g_signal_connect(G_OBJECT(g[i]), "clicked", G_CALLBACK(default_simple_togglebutton_callback), param);
-        }
-        break;
-      case DT_SIMPLE_GUI_NONE: // should never happen
-        g[i] = gtk_label_new(_("error creating GUI, DT_SIMPLE_GUI_NONE could not be found"));
-        gtk_label_set_justify(GTK_LABEL(g[i]), GTK_JUSTIFY_LEFT);
-        break;
-    }
-    if(it->common.tooltip)
-      g_object_set(G_OBJECT(g[i]), "tooltip-text", _(it->common.tooltip), (char *)NULL);
-    gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g[i]), TRUE, TRUE, 0);
-
-    // every control needs to have an ID. if it's missing we have to generate it :(
-    if(it->common.id == NULL)
-    {
-      it->common.id = g_strdup_printf("%s_control_%d", self->op, i);
-      fprintf(stderr, "[iop_simple_gui] control %d in `%s' doesn't have an id, using `%s' for now\n", i, self->name(), it->common.id);
-    }
-
-    i++;
-    it++;
-  }
+  return NULL;
 }
-
-// general gui_update for use with the simple gui api.
-static void simple_gui_update(dt_iop_module_t *self)
+static dt_introspection_t* default_get_introspection()
 {
-  if(!self->gui_init_simple)
-  {
-    fprintf(stderr, "[iop_simple_gui_update] something went wrong while updating the gui of `%s' using the simple api: cannot find gui_init_simple()\n", self->name());
-    return;
-  }
-  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
-  if(!gui)
-  {
-    fprintf(stderr, "[iop_simple_gui] something went wrong while updating the gui of `%s' using the simple api: gui_init_simple() returned NULL\n", self->name());
-    return;
-  }
-
-  GtkWidget **g = (GtkWidget**)self->gui_data;
-  int *p = (int*)self->params;
-
-  dt_gui_simple_element_t *it = gui->elements;
-  int i=0;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    switch(it->common.type)
-    {
-      case DT_SIMPLE_GUI_SLIDER:
-      {
-        float *f = (float*)(&p[i]);
-        dt_bauhaus_slider_set(g[i], *f);
-        break;
-      }
-      case DT_SIMPLE_GUI_COMBOBOX:
-        dt_bauhaus_combobox_set(g[i], p[i]);
-        break;
-      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g[i]), p[i]);
-        break;
-      case DT_SIMPLE_GUI_BUTTON:
-      case DT_SIMPLE_GUI_NONE: // should never happen
-        // nothing to do.
-        break;
-    }
-    i++;
-    it++;
-  }
+  return NULL;
 }
-
-static void
-simple_init(dt_iop_module_t *self)
+static void* default_get_p(const void * param, const char * name)
 {
-  self->params = NULL;
-  self->default_params = NULL;
-  self->params_size = 0;
-
-  if(!self->gui_init_simple) return;
-  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
-  if(!gui) return;
-
-  int elements = 0;
-  dt_gui_simple_element_t *it = gui->elements;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    elements++;
-    it++;
-  }
-  size_t size = elements*sizeof(int);
-
-  self->data = NULL;
-  self->params = malloc(size);
-  self->default_params = malloc(size);
-  self->default_enabled = 0;
-  self->params_size = size;
-  self->gui_data = NULL;
-
-  // init defaults:
-  int *p = (int*)self->default_params;
-  it = gui->elements;
-  int i=0;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    switch(it->common.type)
-    {
-      case DT_SIMPLE_GUI_SLIDER:
-      {
-        float *f = (float*)(&p[i]);
-        *f = it->slider.defval;
-        break;
-      }
-      case DT_SIMPLE_GUI_COMBOBOX:
-        p[i] = it->combobox.defval;
-        break;
-      case DT_SIMPLE_GUI_BUTTON:
-      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
-        p[i] = it->button.defval;
-        break;
-      case DT_SIMPLE_GUI_NONE: // should never happen
-        fprintf(stderr, "[iop_init_simple] DT_SIMPLE_GUI_NONE found. that should be impossible\n");
-        break;
-    }
-    i++;
-    it++;
-  }
-  memcpy(self->params, self->default_params, size);
-
-  if(self->original_init)
-    self->original_init(self);
+  return NULL;
 }
-
-
-static void
-simple_init_key_accels(dt_iop_module_so_t *self)
+static dt_introspection_field_t* default_get_f(const char * name)
 {
-  if(!self->gui_init_simple) return;
-  dt_gui_simple_t *gui = self->gui_init_simple(self);
-  if(!gui) return;
-
-  dt_gui_simple_element_t *it = gui->elements;
-  int i=0;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    char *l = it->common.label?it->common.label:it->common.id;
-    switch(it->common.type)
-    {
-      case DT_SIMPLE_GUI_SLIDER:
-        dt_accel_register_slider_iop(self, FALSE, NC_("accel", l));
-        break;
-      case DT_SIMPLE_GUI_COMBOBOX:
-        // TODO: can we connect a combobox to an key accel?
-        break;
-      case DT_SIMPLE_GUI_BUTTON:
-      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
-        dt_accel_register_iop(self, FALSE, NC_("accel", l), 0, 0);
-        break;
-      case DT_SIMPLE_GUI_NONE: // should never happen
-        break;
-    }
-    i++;
-    it++;
-  }
-  if(self->original_init_key_accels)
-    self->original_init_key_accels(self);
-}
-
-static void
-simple_connect_key_accels(dt_iop_module_t *self)
-{
-  GtkWidget **g = (GtkWidget**)self->gui_data;
-
-  if(!self->gui_init_simple) return;
-  dt_gui_simple_t *gui = self->gui_init_simple(self->so);
-  if(!gui) return;
-
-  dt_gui_simple_element_t *it = gui->elements;
-  int i=0;
-  while(it->common.type != DT_SIMPLE_GUI_NONE)
-  {
-    char *l = it->common.label?it->common.label:it->common.id;
-    switch(it->common.type)
-    {
-      case DT_SIMPLE_GUI_SLIDER:
-        dt_accel_connect_slider_iop(self, l, g[i]);
-        break;
-      case DT_SIMPLE_GUI_COMBOBOX:
-        // TODO: can we connect a combobox to an key accel?
-        break;
-      case DT_SIMPLE_GUI_BUTTON:
-      case DT_SIMPLE_GUI_TOGGLE_BUTTON:
-        dt_accel_connect_button_iop(self, l, g[i]);
-        break;
-      case DT_SIMPLE_GUI_NONE: // should never happen
-        break;
-    }
-    i++;
-    it++;
-  }
-  if(self->original_connect_key_accels)
-    self->original_connect_key_accels(self);
+  return NULL;
 }
 
 int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const char *op)
 {
-  gboolean use_simple_api = FALSE;
   g_strlcpy(module->op, op, 20);
   module->data = NULL;
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY);
@@ -514,42 +216,16 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "output_bpp",             (gpointer)&(module->output_bpp)))             module->output_bpp = default_output_bpp;
   if(!g_module_symbol(module->module, "tiling_callback",        (gpointer)&(module->tiling_callback)))        module->tiling_callback = default_tiling_callback;
   if(!g_module_symbol(module->module, "gui_reset",              (gpointer)&(module->gui_reset)))              module->gui_reset = NULL;
-  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))
-  {
-    if(!g_module_symbol(module->module, "gui_init_simple",        (gpointer)&(module->gui_init_simple)))
-    {
-      module->gui_init = NULL;
-      module->gui_init_simple = NULL;
-    }
-    else
-    {
-      module->gui_init = &gui_init_simple_wrapper;
-      use_simple_api = TRUE;
-    }
-  }
-  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))
-  {
-    if(use_simple_api)
-      module->gui_update = simple_gui_update;
-    else
-      module->gui_update = NULL;
-  }
+  if(!g_module_symbol(module->module, "gui_init",               (gpointer)&(module->gui_init)))               module->gui_init = NULL;
+  if(!g_module_symbol(module->module, "gui_update",             (gpointer)&(module->gui_update)))             module->gui_update = NULL;
   if(!g_module_symbol(module->module, "gui_cleanup",            (gpointer)&(module->gui_cleanup)))            module->gui_cleanup = default_gui_cleanup;
 
   if(!g_module_symbol(module->module, "gui_post_expose",        (gpointer)&(module->gui_post_expose)))        module->gui_post_expose = NULL;
   if(!g_module_symbol(module->module, "gui_focus",              (gpointer)&(module->gui_focus)))              module->gui_focus = NULL;
-  if(use_simple_api)
-  {
-    module->init_key_accels = &simple_init_key_accels;
-    module->connect_key_accels = &simple_connect_key_accels;
-    if(!g_module_symbol(module->module, "init_key_accels",      (gpointer)&(module->original_init_key_accels))) module->original_init_key_accels = NULL;
-    if(!g_module_symbol(module->module, "connect_key_accels",   (gpointer)&(module->original_connect_key_accels))) module->original_connect_key_accels= NULL;
-  }
-  else
-  {
-    if(!g_module_symbol(module->module, "init_key_accels",      (gpointer)&(module->init_key_accels)))        module->init_key_accels = NULL;
-    if(!g_module_symbol(module->module, "connect_key_accels",   (gpointer)&(module->connect_key_accels)))     module->connect_key_accels = NULL;
-  }
+
+  if(!g_module_symbol(module->module, "init_key_accels",       (gpointer)&(module->init_key_accels)))         module->init_key_accels = NULL;
+  if(!g_module_symbol(module->module, "connect_key_accels",    (gpointer)&(module->connect_key_accels)))      module->connect_key_accels = NULL;
+
   if(!g_module_symbol(module->module, "disconnect_key_accels",  (gpointer)&(module->disconnect_key_accels)))  module->disconnect_key_accels = NULL;
   if(!g_module_symbol(module->module, "mouse_leave",            (gpointer)&(module->mouse_leave)))            module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved",            (gpointer)&(module->mouse_moved)))            module->mouse_moved = NULL;
@@ -558,15 +234,7 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "configure",              (gpointer)&(module->configure)))              module->configure = NULL;
   if(!g_module_symbol(module->module, "scrolled",               (gpointer)&(module->scrolled)))               module->scrolled = NULL;
 
-  if(use_simple_api)
-  {
-    module->init = &simple_init;
-    if(!g_module_symbol(module->module, "init",                 (gpointer)&(module->original_init)))          module->original_init = NULL;
-  }
-  else
-  {
-    if(!g_module_symbol(module->module, "init",                 (gpointer)&(module->init)))                   goto error;
-  }
+  if(!g_module_symbol(module->module, "init",                 (gpointer)&(module->init)))                   goto error;
   if(!g_module_symbol(module->module, "cleanup",                (gpointer)&(module->cleanup)))                module->cleanup = &default_cleanup;
   if(!g_module_symbol(module->module, "init_global",            (gpointer)&(module->init_global)))            module->init_global = NULL;
   if(!g_module_symbol(module->module, "cleanup_global",         (gpointer)&(module->cleanup_global)))         module->cleanup_global = NULL;
@@ -586,6 +254,24 @@ int dt_iop_load_module_so(dt_iop_module_so_t *module, const char *libname, const
   if(!g_module_symbol(module->module, "modify_roi_in",          (gpointer)&(module->modify_roi_in)))          module->modify_roi_in = dt_iop_modify_roi_in;
   if(!g_module_symbol(module->module, "modify_roi_out",         (gpointer)&(module->modify_roi_out)))         module->modify_roi_out = dt_iop_modify_roi_out;
   if(!g_module_symbol(module->module, "legacy_params",          (gpointer)&(module->legacy_params)))          module->legacy_params = NULL;
+
+  // the introspection api
+  module->have_introspection       = FALSE;
+  module->get_p                    = default_get_p;
+  module->get_f                    = default_get_f;
+  module->get_introspection_linear = default_get_introspection_linear;
+  module->get_introspection        = default_get_introspection;
+  if(!g_module_symbol(module->module, "introspection_init",     (gpointer)&(module->introspection_init)))     module->introspection_init = NULL;
+  if(module->introspection_init && !module->introspection_init(module, DT_INTROSPECTION_VERSION))
+  {
+    // set the introspection related fields in module
+    module->have_introspection = TRUE;
+    if(!g_module_symbol(module->module, "get_p",                    (gpointer)&(module->get_p)))                    goto error;
+    if(!g_module_symbol(module->module, "get_f",                    (gpointer)&(module->get_f)))                    goto error;
+    if(!g_module_symbol(module->module, "get_introspection",        (gpointer)&(module->get_introspection)))        goto error;
+    if(!g_module_symbol(module->module, "get_introspection_linear", (gpointer)&(module->get_introspection_linear))) goto error;
+  }
+
   if(module->init_global) module->init_global(module);
   return 0;
 error:
@@ -605,7 +291,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->priority = 0;
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
-  module->request_histogram = 0;
+  module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
+  module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
   module->histogram_bins_count = 64;
   module->histogram_step_raw = 3;
   module->histogram_step_rgb = 4;
@@ -641,7 +328,6 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->gui_update  = so->gui_update;
   module->gui_reset  = so->gui_reset;
   module->gui_init    = so->gui_init;
-  module->gui_init_simple = so->gui_init_simple;
   module->gui_cleanup = so->gui_cleanup;
 
   module->gui_post_expose = so->gui_post_expose;
@@ -670,8 +356,14 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->modify_roi_out  = so->modify_roi_out;
   module->legacy_params   = so->legacy_params;
 
-  module->connect_key_accels = so->connect_key_accels;
+  module->connect_key_accels    = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
+
+  module->have_introspection       = so->have_introspection;
+  module->get_introspection        = so->get_introspection;
+  module->get_introspection_linear = so->get_introspection_linear;
+  module->get_p                    = so->get_p;
+  module->get_f                    = so->get_f;
 
   module->accel_closures = NULL;
   module->accel_closures_local = NULL;
@@ -684,12 +376,12 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   {
     /* set button state */
     char option[1024];
-    snprintf(option, 1024, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_iop_module_state_t state=dt_iop_state_HIDDEN;
     if(dt_conf_get_bool (option))
     {
       state = dt_iop_state_ACTIVE;
-      snprintf(option, 1024, "plugins/darkroom/%s/favorite", module->op);
+      snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
       if(dt_conf_get_bool (option)) state = dt_iop_state_FAVORITE;
     }
     dt_iop_gui_set_state(module,state);
@@ -1144,7 +836,7 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
@@ -1153,8 +845,8 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   gboolean is_hidden = TRUE;
   if ( !(module->flags() & IOP_FLAGS_HIDDEN) )
   {
-    if(!module->gui_init && !module->gui_init_simple)
-      g_debug("Module '%s' is not hidden and lacks implementation of gui_init() and gui_init_simple()...", module->op);
+    if(!module->gui_init)
+      g_debug("Module '%s' is not hidden and lacks implementation of gui_init()...", module->op);
     else if (!module->gui_cleanup)
       g_debug("Module '%s' is not hidden and lacks implementation of gui_cleanup()...", module->op);
     else
@@ -1163,14 +855,32 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module)
   return is_hidden;
 }
 
+gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
+{
+  uint32_t additional_flags = 0;
+
+  if(group == DT_MODULEGROUP_NONE)
+    return TRUE;
+
+  /* add special group flag for module in active pipe */
+  if(module->enabled)
+    additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
+
+  /* add special group flag for favorite */
+  if(module->state == dt_iop_state_FAVORITE)
+    additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
+
+  return dt_dev_modulegroups_test(module->dev, group, module->groups()|additional_flags);
+}
+
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   char label[128];
   // if multi_name is emptry or "0"
   if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,128,"<span size=\"larger\">%s</span>  ",module->name());
+    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
   else
-    g_snprintf(label,128,"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
+    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   gtk_widget_set_name(lab, "panel_label");
   gtk_label_set_markup(GTK_LABEL(lab),label);
 }
@@ -1296,8 +1006,10 @@ init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
+      module->reload_defaults(module);
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
+      memset(new_params, 0, new_params_size);
 
       // convert the old params to new
       if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
@@ -1396,7 +1108,7 @@ static void init_key_accels(dt_iop_module_so_t *module)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char path[1024];
-    snprintf(path,1024,"%s/%s",_("preset"),(const char *)sqlite3_column_text(stmt, 0));
+    snprintf(path,sizeof(path),"%s/%s",_("preset"),(const char *)sqlite3_column_text(stmt, 0));
     dt_accel_register_iop(module, FALSE, NC_("accel", path), 0, 0);
 
   }
@@ -1410,8 +1122,8 @@ void dt_iop_load_modules_so()
   darktable.iop = NULL;
   char plugindir[1024], op[20];
   const gchar *d_name;
-  dt_loc_get_plugindir(plugindir, 1024);
-  g_strlcat(plugindir, "/plugins", 1024);
+  dt_loc_get_plugindir(plugindir, sizeof(plugindir));
+  g_strlcat(plugindir, "/plugins", sizeof(plugindir));
   GDir *dir = g_dir_open(plugindir, 0, NULL);
   if(!dir) return;
   const int name_offset = strlen(SHARED_MODULE_PREFIX),
@@ -1780,7 +1492,7 @@ static void dt_iop_gui_set_single_expanded(dt_iop_module_t *module, gboolean exp
    * and undo our changes right away. */
   module->expanded = expanded;
   char var[1024];
-  snprintf(var, 1024, "plugins/darkroom/%s/expanded", module->op);
+  snprintf(var, sizeof(var), "plugins/darkroom/%s/expanded", module->op);
   dt_conf_set_bool(var, expanded);
 
   /* show / hide plugin widget */
@@ -1825,17 +1537,8 @@ void dt_iop_gui_set_expanded(dt_iop_module_t *module, gboolean expanded, gboolea
     while(iop)
     {
       dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-      uint32_t additional_flags = 0;
 
-      /* add special group flag for module in active pipe */
-      if(module->enabled)
-        additional_flags |= IOP_SPECIAL_GROUP_ACTIVE_PIPE;
-
-      /* add special group flag for favorite */
-      if(module->state == dt_iop_state_FAVORITE)
-        additional_flags |= IOP_SPECIAL_GROUP_USER_DEFINED;
-
-      if(m != module && (current_group == DT_MODULEGROUP_NONE || dt_dev_modulegroups_test(module->dev, current_group, m->groups()|additional_flags)))
+      if(m != module && dt_iop_shown_in_group(m, current_group))
       {
         all_other_closed = all_other_closed && !m->expanded;
         dt_iop_gui_set_single_expanded(m, FALSE);
@@ -2026,7 +1729,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_no_show_all(hw[idx],TRUE);
-  snprintf(tooltip, 512, module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",
@@ -2713,7 +2416,12 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group,
     dt_iop_gui_set_state(module,dt_iop_state_ACTIVE);
   }
 
-  dt_dev_modulegroups_switch(darktable.develop,module);
+  uint32_t current_group = dt_dev_modulegroups_get(module->dev);
+  if(!dt_iop_shown_in_group(module, current_group))
+  {
+    dt_dev_modulegroups_switch(darktable.develop,module);
+  }
+
   dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
   dt_iop_request_focus(module);
   return TRUE;
@@ -2816,9 +2524,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_hide(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, FALSE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
   }
   else if(state==dt_iop_state_ACTIVE)
@@ -2833,9 +2541,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, FALSE);
   }
   else if(state==dt_iop_state_FAVORITE)
@@ -2850,9 +2558,9 @@ void dt_iop_gui_set_state(dt_iop_module_t *module,dt_iop_module_state_t state)
       if (mod->so == module->so && mod->expander) gtk_widget_show(GTK_WIDGET(mod->expander));
       mods = g_list_next(mods);
     }
-    snprintf(option, 512, "plugins/darkroom/%s/visible", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool (option, TRUE);
-    snprintf(option, 512, "plugins/darkroom/%s/favorite", module->op);
+    snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool (option, TRUE);
   }
 

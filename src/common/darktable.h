@@ -77,6 +77,10 @@ typedef	unsigned int	u_int;
 #define omp_get_thread_num() 0
 #endif
 
+#ifndef _RELEASE
+#include "common/poison.h"
+#endif
+
 #define DT_MODULE_VERSION 8   // version of dt's module interface
 
 // every module has to define this:
@@ -101,6 +105,8 @@ int dt_module_mod_version() \
   return MODVER; \
 }
 #endif
+
+#define DT_MODULE_INTROSPECTION(MODVER, PARAMSTYPE) DT_MODULE(MODVER)
 
 // ..to be able to compare it against this:
 static inline int dt_version()
@@ -224,8 +230,8 @@ extern const char dt_supported_extensions[];
 int dt_init(int argc, char *argv[], const int init_gui);
 void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...);
-void dt_gettime_t(char *datetime, time_t t);
-void dt_gettime(char *datetime);
+void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
+void dt_gettime(char *datetime, size_t datetime_len);
 void *dt_alloc_align(size_t alignment, size_t size);
 #ifdef __WIN32__
   void dt_free_align(void *mem);
@@ -312,7 +318,7 @@ static inline void dt_print_mem_usage()
   FILE *f;
 
   char pidstatus[128];
-  snprintf(pidstatus, 128, "/proc/%u/status", (uint32_t)getpid());
+  snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
 
   f = fopen(pidstatus, "r");
   if (!f) return;

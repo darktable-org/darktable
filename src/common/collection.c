@@ -292,7 +292,7 @@ dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sort_t s
 {
   dt_collection_params_t *params=(dt_collection_params_t *)&collection->params;
 
-  if(sort != -1)
+  if(sort != DT_COLLECTION_SORT_NONE)
     params->sort = sort;
   if(reverse != -1)
     params->descending = reverse;
@@ -338,6 +338,10 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
       case DT_COLLECTION_SORT_COLOR:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color, filename, version");
         break;
+
+      case DT_COLLECTION_SORT_NONE:
+        //shouldn't happen
+        break;
     }
   }
   else
@@ -362,6 +366,10 @@ dt_collection_get_sort_query(const dt_collection_t *collection)
 
       case DT_COLLECTION_SORT_COLOR:
         sq = dt_util_dstrcat(sq, ORDER_BY_QUERY, "color desc, filename, version");
+        break;
+
+      case DT_COLLECTION_SORT_NONE:
+        //shouldn't happen
         break;
     }
   }
@@ -517,25 +525,25 @@ dt_collection_split_operator_number (const gchar *input, char **number, char **o
 
 
 static void
-get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query)
+get_query_string(const dt_collection_properties_t property, const gchar *escaped_text, char *query, size_t query_len)
 {
   switch(property)
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
       if (strlen(escaped_text) == 0)
-        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
       else
-        snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
+        snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s'))", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      snprintf(query, 1024, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
+      snprintf(query, query_len, "(film_id in (select id from film_rolls where folder like '%s%%'))", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       int color = 0;
-      if(strlen(escaped_text)==0 || strcmp(escaped_text, "%")==0) snprintf(query, 1024, "(id in (select imgid from color_labels where color IS NOT NULL))");
+      if(strlen(escaped_text)==0 || strcmp(escaped_text, "%")==0) snprintf(query, query_len, "(id in (select imgid from color_labels where color IS NOT NULL))");
       else
       {
         if     (strcmp(escaped_text,_("red")   )==0) color=0;
@@ -543,47 +551,47 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
         else if(strcmp(escaped_text,_("green") )==0) color=2;
         else if(strcmp(escaped_text,_("blue")  )==0) color=3;
         else if(strcmp(escaped_text,_("purple"))==0) color=4;
-        snprintf(query, 1024, "(id in (select imgid from color_labels where color=%d))", color);
+        snprintf(query, query_len, "(id in (select imgid from color_labels where color=%d))", color);
       }
     }
     break;
 
     case DT_COLLECTION_PROP_HISTORY: // history
-      snprintf(query, 1024, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
+      snprintf(query, query_len, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
       break;
 
     case DT_COLLECTION_PROP_CAMERA: // camera
-      snprintf(query, 1024, "(maker || ' ' || model like '%%%s%%')", escaped_text);
+      snprintf(query, query_len, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      snprintf(query, 1024, "(id in (select imgid from tagged_images as a join "
+      snprintf(query, query_len, "(id in (select imgid from tagged_images as a join "
                "tags as b on a.tagid = b.id where name like '%s'))", escaped_text);
       break;
 
       // TODO: How to handle images without metadata? In the moment they are not shown.
       // TODO: Autogenerate this code?
     case DT_COLLECTION_PROP_TITLE: // title
-      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_TITLE, escaped_text);
       break;
     case DT_COLLECTION_PROP_DESCRIPTION: // description
-      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_DESCRIPTION, escaped_text);
       break;
     case DT_COLLECTION_PROP_CREATOR: // creator
-      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_CREATOR, escaped_text);
       break;
     case DT_COLLECTION_PROP_PUBLISHER: // publisher
-      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_PUBLISHER, escaped_text);
       break;
     case DT_COLLECTION_PROP_RIGHTS: // rights
-      snprintf(query, 1024, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
+      snprintf(query, query_len, "(id in (select id from meta_data where key = %d and value like '%%%s%%'))",
                DT_METADATA_XMP_DC_RIGHTS, escaped_text);
       break;
     case DT_COLLECTION_PROP_LENS: // lens
-      snprintf(query, 1024, "(lens like '%%%s%%')", escaped_text);
+      snprintf(query, query_len, "(lens like '%%%s%%')", escaped_text);
       break;
     case DT_COLLECTION_PROP_ISO: // iso
     {
@@ -591,11 +599,11 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator && number)
-        snprintf(query, 1024, "(iso %s %s)", operator, number);
+        snprintf(query, query_len, "(iso %s %s)", operator, number);
       else if(number)
-        snprintf(query, 1024, "(iso = %s)", number);
+        snprintf(query, query_len, "(iso = %s)", number);
       else
-        snprintf(query, 1024, "(iso like '%%%s%%')", escaped_text);
+        snprintf(query, query_len, "(iso like '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -608,11 +616,11 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       dt_collection_split_operator_number(escaped_text, &number, &operator);
 
       if(operator && number)
-        snprintf(query, 1024, "(aperture %s %s)", operator, number);
+        snprintf(query, query_len, "(aperture %s %s)", operator, number);
       else if(number)
-        snprintf(query, 1024, "(aperture = %s)", number);
+        snprintf(query, query_len, "(aperture = %s)", number);
       else
-        snprintf(query, 1024, "(aperture like '%%%s%%')", escaped_text);
+        snprintf(query, query_len, "(aperture like '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number);
@@ -620,11 +628,11 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
     break;
 
     case DT_COLLECTION_PROP_FILENAME: // filename
-      snprintf(query, 1024, "(filename like '%%%s%%')", escaped_text);
+      snprintf(query, query_len, "(filename like '%%%s%%')", escaped_text);
       break;
 
     default: // day or time
-      snprintf(query, 1024, "(datetime_taken like '%%%s%%')", escaped_text);
+      snprintf(query, query_len, "(datetime_taken like '%%%s%%')", escaped_text);
       break;
   }
 }
@@ -640,17 +648,17 @@ dt_collection_serialize(char *buf, int bufsize)
   bufsize -= c;
   for(int k=0; k<num_rules; k++)
   {
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
     const int mode = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", mode);
     buf += c;
     bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
     const int item = dt_conf_get_int(confname);
     c = snprintf(buf, bufsize, "%d:", item);
     buf += c;
     bufsize -= c;
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
     gchar *str = dt_conf_get_string(confname);
     if(str && (str[0] != '\0'))
       c = snprintf(buf, bufsize, "%s$", str);
@@ -687,20 +695,20 @@ dt_collection_deserialize(char *buf)
       int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
       if(n == 3)
       {
-        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
         dt_conf_set_int(confname, mode);
-        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
         dt_conf_set_int(confname, item);
-        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
         dt_conf_set_string(confname, str);
       }
       else if(num_rules == 1)
       {
-        snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, 200, "plugins/lighttable/collect/item%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", k);
         dt_conf_set_int(confname, 0);
-        snprintf(confname, 200, "plugins/lighttable/collect/string%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", k);
         dt_conf_set_string(confname, "%");
         break;
       }
@@ -730,16 +738,16 @@ dt_collection_update_query(const dt_collection_t *collection)
 
   for(int i=0; i<num_rules; i++)
   {
-    snprintf(confname, 200, "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
     const int property = dt_conf_get_int(confname);
-    snprintf(confname, 200, "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
     gchar *text = dt_conf_get_string(confname);
     if(!text) break;
-    snprintf(confname, 200, "plugins/lighttable/collect/mode%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
     const int mode = dt_conf_get_int(confname);
     gchar *escaped_text = dt_util_str_replace(text, "'", "''");
 
-    get_query_string(property, escaped_text, query);
+    get_query_string(property, escaped_text, query, sizeof(query));
 
     if(i > 0)
       complete_query = dt_util_dstrcat(complete_query, " %s %s", conj[mode], query);
@@ -797,7 +805,7 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar message[1024];
   int c = dt_collection_get_count(collection);
   int cs = dt_collection_get_selected_count(collection);
-  g_snprintf(message, 1024,
+  g_snprintf(message, sizeof(message),
              ngettext("%d image of %d in current collection is selected", "%d images of %d in current collection are selected", cs), cs, c);
   dt_control_hinter_message(darktable.control, message);
 }

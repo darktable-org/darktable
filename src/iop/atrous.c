@@ -36,7 +36,7 @@
 #define INFL .3f
 
 
-DT_MODULE(1)
+DT_MODULE_INTROSPECTION(1, dt_iop_atrous_params_t)
 
 #define BANDS 6
 #define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8
@@ -145,7 +145,7 @@ static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
 static const __m128 ooo1 ALIGNED(16) = {0.f, 0.f, 0.f, 1.f};
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
-static __m128  inline
+static inline __m128
 dt_fast_expf_sse(const __m128 x)
 {
   __m128  f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
@@ -164,7 +164,7 @@ dt_fast_expf_sse(const __m128 x)
  * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
  *    = exp(-s*(d2+d3)) (as noted in code comments below)
  */
-static __m128  inline
+static inline __m128
 weight_sse(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
   const __m128 vsharpen = _mm_set1_ps(-sharpen);  // (-s, -s, -s, -s)
@@ -966,7 +966,7 @@ area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = fabsf(c->mouse_y);
+  if(!c->dragging) c->mouse_y = fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -976,7 +976,7 @@ area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  if(!c->dragging) c->mouse_y = -fabsf(c->mouse_y);
+  if(!c->dragging) c->mouse_y = -fabs(c->mouse_y);
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1284,10 +1284,10 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
   {
     // move x-positions
     c->x_move = 0;
-    float dist = fabsf(p->x[c->channel][0] - c->mouse_x);
+    float dist = fabs(p->x[c->channel][0] - c->mouse_x);
     for(int k=1; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -1302,10 +1302,10 @@ area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
     float dist = 1000000.0f;
     for(int k=0; k<BANDS; k++)
     {
-      float d2 = fabsf(p->x[c->channel][k] - c->mouse_x);
+      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
-        if(fabsf(c->mouse_y - p->y[ch][k]) < fabsf(c->mouse_y - p->y[ch2][k])) c->channel2 = ch;
+        if(fabs(c->mouse_y - p->y[ch][k]) < fabs(c->mouse_y - p->y[ch2][k])) c->channel2 = ch;
         else c->channel2 = ch2;
         dist = d2;
       }

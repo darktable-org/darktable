@@ -41,7 +41,7 @@
 
 // NaN-safe clip: NaN compares false and will result in 0.0
 #define CLIP(x) (((x)>=0.0)?((x)<=1.0?(x):1.0):0.0)
-DT_MODULE(3)
+DT_MODULE_INTROSPECTION(3, dt_iop_global_tonemap_params_t)
 
 typedef enum _iop_operator_t
 {

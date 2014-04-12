@@ -84,7 +84,7 @@ static int import_images(lua_State *L)
   char* full_name= g_realpath(luaL_checkstring(L,-1));
   int result;
 
-  if (!g_file_test(full_name, G_FILE_TEST_EXISTS))
+  if (!full_name || !g_file_test(full_name, G_FILE_TEST_EXISTS))
   {
       g_free(full_name);
       return luaL_error(L,"no such file or directory");
@@ -154,7 +154,7 @@ static int database_index(lua_State*L)
   int index = luaL_checkinteger(L,-1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  sprintf(query,"select images.id from images order by images.id limit 1 offset %d",index -1);
+  snprintf(query, sizeof(query), "select images.id from images order by images.id limit 1 offset %d", index-1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -175,7 +175,7 @@ int dt_lua_init_database(lua_State * L)
 
   /* database type */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"image_database");
+  luaA_Type type_id = dt_lua_init_singleton(L,"image_database",NULL);
   lua_setfield(L,-2,"database");
   lua_pop(L,1);
 

@@ -60,7 +60,7 @@
 
 #define BLOCKSIZE 64		/* maximum blocksize. must be a power of 2 and will be automatically reduced if needed */
 
-DT_MODULE(4)
+DT_MODULE_INTROSPECTION(4, dt_iop_shadhi_params_t)
 
 /* legacy version 1 params */
 typedef struct dt_iop_shadhi_params1_t

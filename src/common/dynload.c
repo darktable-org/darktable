@@ -43,7 +43,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 {
   dt_gmodule_t *module = NULL;
   GModule *gmodule;
-  const char *name;
+  char *name;
 
   if (strchr(library, '/') == NULL)
   {
@@ -51,7 +51,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
   }
   else
   {
-    name = library;
+    name = g_strdup(library);
   }
 
   gmodule = g_module_open(name, G_MODULE_BIND_LAZY);
@@ -60,8 +60,10 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
   {
     module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
-    module->library = g_strdup(name);
+    module->library = name;
   }
+  else
+    g_free(name);
 
   return module;
 }

@@ -132,7 +132,7 @@ static int film_getnum(lua_State*L)
   luaA_to(L,dt_lua_film_t,&film_id,-2);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  sprintf(query,"select id from images where film_id = ?1 order by id limit 1 offset %d",index -1);
+  snprintf(query,sizeof(query),"select id from images where film_id = ?1 order by id limit 1 offset %d",index -1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -166,7 +166,7 @@ static int films_index(lua_State*L)
   int index = luaL_checkinteger(L,-1);
   sqlite3_stmt *stmt = NULL;
   char query[1024];
-  sprintf(query,"select id from film_rolls order by id limit 1 offset %d",index -1);
+  snprintf(query,sizeof(query),"select id from film_rolls order by id limit 1 offset %d",index -1);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -224,7 +224,7 @@ int dt_lua_init_film(lua_State * L)
 
   /* film table */
   dt_lua_push_darktable_lib(L);
-  luaA_Type type_id = dt_lua_init_singleton(L,"film_database");
+  luaA_Type type_id = dt_lua_init_singleton(L,"film_database",NULL);
   lua_setfield(L,-2,"films");
   lua_pop(L,1);
 

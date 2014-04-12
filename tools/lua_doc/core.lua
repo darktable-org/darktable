@@ -121,6 +121,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__associated_object"
 			or field == "__gc"
 			or field == "__values"
+			or field == "__init"
 			)	then
 			-- nothing
 		else
@@ -156,6 +157,15 @@ local function document_type(node,parent,prev_name)
 	return result
 end
 
+local function is_known(node)
+	if nojoin[node] then return false end
+	return known[node] ~= nil
+end
+local function document_known(node,parent,prev_name)
+	table.insert(known[node]._luadoc_parents,{parent , prev_name})
+	return known[node]
+end
+
 local function is_dt_singleton(node)
 	local obj_type = type(node)
 	if obj_type ~= "userdata" then return false end
@@ -163,6 +173,16 @@ local function is_dt_singleton(node)
 	return mt and mt.__singleton
 end
 local function document_dt_singleton(node,parent,prev_name)
+	if(is_known(node)) then
+		local result = document_known(node,parent,prev_name);
+		local cur_parent = parent;
+		while cur_parent do
+			if is_type(cur_parent) then return result end
+			cur_parent = M.get_main_parent(cur_parent)
+		end
+		result:set_main_parent(parent)
+		return result
+	end
 	local result = create_empty_node(node,"dt_singleton",parent,prev_name);
 	local mt = getmetatable(node)
 	document_type_sub(mt,result,parent,prev_name)
@@ -230,15 +250,6 @@ local function document_nil(node,parent,prev_name)
 	return result
 end
 
-local function is_known(node)
-	if nojoin[node] then return false end
-	return known[node] ~= nil
-end
-local function document_known(node,parent,prev_name)
-	table.insert(known[node]._luadoc_parents,{parent , prev_name})
-	return known[node]
-end
-
 local function document_event(node,parent,prev_name)
 	local result = create_empty_node(node,"event",parent,prev_name);
 	result.callback = document_function(nil,result,"callback");
@@ -252,11 +263,11 @@ end
 local type_matcher ={
 	{is_nil , document_nil},
 	{is_value , document_value},
+	{is_dt_singleton , document_dt_singleton},
 	{is_known , document_known},
 	{is_type , document_type},
 	{is_table , document_table},
 	{is_function , document_function},
-	{is_dt_singleton , document_dt_singleton},
 	{is_dt_userdata , document_dt_userdata},
 }
 
@@ -437,6 +448,7 @@ function M.set_text(node,text)
 	for k,v in ipairs(node._luadoc_parents) do
 		set_forced_next(v[1],v[2])
 	end
+	return node
 
 end
 
@@ -572,6 +584,9 @@ meta_node.__index.get_version_info = M.get_version_info
 meta_node.__index.get_name = M.get_name
 meta_node.__tostring = function(node)
 	return node_to_string(node)
+end
+meta_node.__lt = function(a,b)
+	return tostring(a) < tostring(b)
 end
 
 --------------------------

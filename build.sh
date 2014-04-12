@@ -23,7 +23,6 @@ OPT_OPENMP=-1
 OPT_OPENCL=-1
 OPT_UNITY=-1
 OPT_TETHERING=-1
-OPT_EXPERIMENTAL_IOP=-1
 OPT_GEO=-1
 OPT_LUA=-1
 OPT_OPENEXR=-1
@@ -59,9 +58,6 @@ parse_feature()
 		;;
 	tethering)
 		OPT_TETHERING=$value
-		;;
-	experimental)
-		OPT_EXPERIMENTAL_IOP=$value
 		;;
 	lua)
 		OPT_LUA=$value
@@ -145,7 +141,6 @@ so that the cmake script autodetects features.
    --enable-opencl
    --enable-unity
    --enable-tethering
-   --enable-experimental
    --enable-geo
    --enable-lua
    --enable-openexr
@@ -219,7 +214,6 @@ cmake_boolean_option USE_OPENMP $OPT_OPENMP
 cmake_boolean_option USE_OPENCL $OPT_OPENCL
 cmake_boolean_option USE_UNITY $OPT_UNITY
 cmake_boolean_option USE_CAMERA_SUPPORT $OPT_TETHERING
-cmake_boolean_option INSTALL_IOP_EXPERIMENTAL $OPT_EXPERIMENTAL_IOP
 cmake_boolean_option USE_GEO $OPT_GEO
 cmake_boolean_option USE_LUA $OPT_LUA
 cmake_boolean_option USE_OPENEXR $OPT_OPENEXR

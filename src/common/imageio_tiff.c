@@ -28,7 +28,6 @@
 #include <tiffio.h>
 #include <inttypes.h>
 #include <strings.h>
-#include <assert.h>
 
 typedef struct tiff_t {
   TIFF *tiff;
@@ -59,8 +58,8 @@ _read_planar_8(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       /* set rgb to first sample from scanline */
@@ -95,8 +94,8 @@ _read_planar_16(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       t->mipbuf[4 * idx + 0] =
@@ -127,8 +126,8 @@ _read_planar_f(tiff_t *t)
     for (uint32_t i=0; i < t->width; i++)
     {
       size_t idx = dt_imageio_write_pos(i, row,
-                                        t->image->width, t->image->height,
-                                        t->image->width, t->image->height,
+                                        t->width, t->height,
+                                        t->width, t->height,
                                         t->orientation);
 
       t->mipbuf[4 * idx + 0] = t->mipbuf[4 * idx + 1] = t->mipbuf[4 * idx + 2] = buf[t->spp * i + 0];
@@ -157,7 +156,7 @@ dt_imageio_open_tiff(
     (void) dt_exif_read(img, filename);
 
   tiff_t t;
-  uint32_t config;
+  uint16_t config;
 
   t.image = img;
 
@@ -219,7 +218,8 @@ dt_imageio_open_tiff(
   if (t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
     fprintf(stderr, "[tiff_open] warning: planar config other than contig is not supported.\n");
-    assert(0);
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   int ok = 1;

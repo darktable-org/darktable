@@ -180,7 +180,6 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
     if ((uintptr_t)wdata - (uintptr_t)rowdata != (uintptr_t)stripesize)
     {
       TIFFWriteEncodedStrip(tif, stripe++, rowdata, (size_t)((uintptr_t)wdata - (uintptr_t)rowdata));
-      wdata = rowdata;
     }
   }
   else if (d->bpp == 16)

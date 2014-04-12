@@ -99,7 +99,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
 
 static void
-pretty_print(char *buf, char *out, int outsize)
+pretty_print(char *buf, char *out, size_t outsize)
 {
   memset(out, 0, outsize);
 
@@ -122,17 +122,17 @@ pretty_print(char *buf, char *out, int outsize)
       if(k > 0) switch(mode)
         {
           case DT_LIB_COLLECT_MODE_AND:
-            c = snprintf(out, outsize, _(" and "));
+            c = snprintf(out, outsize, "%s", _(" and "));
             out += c;
             outsize -= c;
             break;
           case DT_LIB_COLLECT_MODE_OR:
-            c = snprintf(out, outsize, _(" or "));
+            c = snprintf(out, outsize, "%s", _(" or "));
             out += c;
             outsize -= c;
             break;
           default: //case DT_LIB_COLLECT_MODE_AND_NOT:
-            c = snprintf(out, outsize, _(" but not "));
+            c = snprintf(out, outsize, "%s", _(" but not "));
             out += c;
             outsize -= c;
             break;
@@ -168,7 +168,7 @@ button_pressed (GtkButton *button, gpointer user_data)
   }
   if(n < 0) return;
   char confname[200];
-  snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", n);
+  snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", n);
   gchar *line = dt_conf_get_string(confname);
   if(line)
   {
@@ -209,12 +209,12 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
   for(int k=0; k<CLAMPS(dt_conf_get_int("plugins/lighttable/recentcollect/num_items"), 0, NUM_LINES); k++)
   {
     // is it already in the current list?
-    snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line = dt_conf_get_string(confname);
     if(!line) continue;
     if(!strcmp(line, buf))
     {
-      snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
       new_pos = dt_conf_get_int(confname);
       n = k;
       break;
@@ -241,15 +241,15 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     // sort n to the top
     for(int k=n; k>0; k--)
     {
-      snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k-1);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k-1);
       gchar *line1 = dt_conf_get_string(confname);
-      snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k-1);
+      snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k-1);
       uint32_t pos1 = dt_conf_get_int(confname);
       if(line1 && line1[0] != '\0')
       {
-        snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
         dt_conf_set_string(confname, line1);
-        snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+        snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
         dt_conf_set_int(confname, pos1);
       }
       g_free(line1);
@@ -264,20 +264,18 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     char str_cut[200] = {0};
     char str_pretty[200] = {0};
 
-    snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     gchar *line2 = dt_conf_get_string(confname);
     if(line2 && line2[0] != '\0')
-    {
-      pretty_print(line2, str, 2048);
-      g_free(line2);
-    }
+      pretty_print(line2, str, sizeof(str));
+    g_free(line2);
     g_object_set(G_OBJECT(d->item[k].button), "tooltip-text", str, (char *)NULL);
     const int cut = 45;
     if (g_utf8_validate(str, -1, NULL))
     {
       if (g_utf8_strlen(str, -1) > cut) {
         g_utf8_strncpy(str_cut, str, cut);
-        snprintf(str_pretty, 200, "%s...", str_cut);
+        snprintf(str_pretty, sizeof(str_pretty), "%s...", str_cut);
         gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
       } else {
         gtk_button_set_label(GTK_BUTTON(d->item[k].button), str);
@@ -285,8 +283,8 @@ static void _lib_recentcollection_updated(gpointer instance, gpointer user_data)
     }
     else if (strlen(str) > cut)
     {
-      strncpy(str_cut, str, cut);
-      snprintf(str_pretty, 200, "%s...", str_cut);
+      g_strlcpy(str_cut, str, cut);
+      snprintf(str_pretty, sizeof(str_pretty), "%s...", str_cut);
       gtk_button_set_label(GTK_BUTTON(d->item[k].button), str_pretty);
     }
     else
@@ -311,9 +309,9 @@ gui_reset (dt_lib_module_t *self)
   char confname[200];
   for(int k=0; k<NUM_LINES; k++)
   {
-    snprintf(confname, 200, "plugins/lighttable/recentcollect/line%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/line%1d", k);
     dt_conf_set_string(confname, "");
-    snprintf(confname, 200, "plugins/lighttable/recentcollect/pos%1d", k);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/recentcollect/pos%1d", k);
     dt_conf_set_int(confname, 0);
   }
   _lib_recentcollection_updated(NULL,self);
