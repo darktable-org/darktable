@@ -150,27 +150,23 @@ struct dt_undo_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1,
-  DT_DEBUG_CONTROL = 2,
-  DT_DEBUG_DEV = 4,
-  DT_DEBUG_FSWATCH = 8,
-  DT_DEBUG_PERF = 16,
-  DT_DEBUG_CAMCTL = 32,
-  DT_DEBUG_PWSTORAGE = 64,
-  DT_DEBUG_OPENCL = 128,
-  DT_DEBUG_SQL = 256,
-  DT_DEBUG_MEMORY = 512,
-  DT_DEBUG_LIGHTTABLE = 1024,
-  DT_DEBUG_NAN = 2048,
-  DT_DEBUG_MASKS = 4096,
-  DT_DEBUG_LUA = 8192,
-  DT_DEBUG_INPUT = 16384
+  DT_DEBUG_CACHE      = 1<<0,
+  DT_DEBUG_CONTROL    = 1<<1,
+  DT_DEBUG_DEV        = 1<<2,
+  DT_DEBUG_FSWATCH    = 1<<3,
+  DT_DEBUG_PERF       = 1<<4,
+  DT_DEBUG_CAMCTL     = 1<<5,
+  DT_DEBUG_PWSTORAGE  = 1<<6,
+  DT_DEBUG_OPENCL     = 1<<7,
+  DT_DEBUG_SQL        = 1<<8,
+  DT_DEBUG_MEMORY     = 1<<9,
+  DT_DEBUG_LIGHTTABLE = 1<<10,
+  DT_DEBUG_NAN        = 1<<11,
+  DT_DEBUG_MASKS      = 1<<12,
+  DT_DEBUG_LUA        = 1<<13,
+  DT_DEBUG_INPUT      = 1<<14
 }
 dt_debug_thread_t;
-
-#define DT_CPU_FLAG_SSE    1
-#define DT_CPU_FLAG_SSE2   2
-#define DT_CPU_FLAG_SSE3   4
 
 typedef struct darktable_t
 {
