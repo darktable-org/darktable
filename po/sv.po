@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-08 21:02+0200\n"
-"PO-Revision-Date: 2014-04-08 21:03+0200\n"
+"POT-Creation-Date: 2014-04-13 04:30+0200\n"
+"PO-Revision-Date: 2014-04-13 04:34+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -778,7 +778,7 @@ msgstr "`%s' är av okänt format!"
 msgid "error loading file `%s'"
 msgstr "fel uppstod vid läsning av fil '%s'"
 
-#: ../src/common/darktable.c:568
+#: ../src/common/darktable.c:579
 #, c-format
 msgid "ERROR : invalid temporary directory : %s\n"
 msgstr "FEL : ogiltig temporär katalog : %s\n"
@@ -856,13 +856,12 @@ msgstr ""
 "trådar som används för export eller köp mer minne."
 
 #: ../src/common/imageio.c:668
+msgctxt "noun"
 msgid "thumbnail export"
 msgstr "export av miniatyrbild"
 
-#. Export button
-#. export button
-#: ../src/common/imageio.c:668 ../src/gui/preferences.c:617
-#: ../src/libs/export.c:668 ../src/libs/styles.c:408
+#: ../src/common/imageio.c:668
+msgctxt "noun"
 msgid "export"
 msgstr "export"
 
@@ -940,12 +939,12 @@ msgstr "stil fil med namn '%s' existerar redan"
 msgid "style %s was successfully imported"
 msgstr "importerade stilen '%s'"
 
-#: ../src/common/variables.c:239 ../src/iop/clipping.c:1474
-#: ../src/iop/clipping.c:1707 ../src/iop/clipping.c:1725
-#: ../src/iop/clipping.c:1768 ../src/iop/clipping.c:1787
-#: ../src/iop/lens.c:1877 ../src/libs/export.c:642 ../src/libs/live_view.c:331
-#: ../src/libs/live_view.c:343 ../src/libs/live_view.c:361
-#, c-format
+#: ../src/common/variables.c:239 ../src/common/variables.c:254
+#: ../src/iop/clipping.c:1474 ../src/iop/clipping.c:1707
+#: ../src/iop/clipping.c:1725 ../src/iop/clipping.c:1768
+#: ../src/iop/clipping.c:1787 ../src/iop/lens.c:1878 ../src/libs/export.c:642
+#: ../src/libs/live_view.c:331 ../src/libs/live_view.c:343
+#: ../src/libs/live_view.c:361
 msgid "none"
 msgstr "ingen"
 
@@ -2138,6 +2137,10 @@ msgstr "$(HOME) - hemkatalog"
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) - skrivbordet"
 
+#: ../src/gui/gtkentry.c:218
+msgid "$(TITLE) - title from metadata"
+msgstr "$(TITLE) - titel från metadata"
+
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
 msgstr "darktable inställningar"
@@ -2228,6 +2231,13 @@ msgstr "standard"
 msgctxt "preferences"
 msgid "import"
 msgstr "importera"
+
+#. Export button
+#. export button
+#: ../src/gui/preferences.c:617 ../src/libs/export.c:668
+#: ../src/libs/styles.c:408
+msgid "export"
+msgstr "export"
 
 #: ../src/gui/preferences.c:917
 msgid "press key combination to remap..."
@@ -2372,8 +2382,8 @@ msgid "normal images"
 msgstr "normala bilder"
 
 #: ../src/gui/presets.c:356
-msgid "RAW"
-msgstr "RÅ"
+msgid "raw"
+msgstr "rå"
 
 #: ../src/gui/presets.c:357
 msgid "HDR"
@@ -2415,7 +2425,6 @@ msgid "style %s was successfully saved"
 msgstr "exporterade stilen '%s'"
 
 #: ../src/gui/styles_dialog.c:293
-#, c-format
 msgid "edit style"
 msgstr "ändra stil"
 
@@ -3102,7 +3111,7 @@ msgstr "baskurva"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "x-axel: ingående, y-axel: utgående. arbetar på RGB-kanalerna"
 
-#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:2029
+#: ../src/iop/basecurve.c:772 ../src/iop/lens.c:2030
 #: ../src/iop/vignette.c:1123 ../src/iop/watermark.c:1045
 msgid "scale"
 msgstr "skala"
@@ -3709,7 +3718,7 @@ msgstr "gyllene spiralsektioner"
 msgid "golden spiral"
 msgstr "gyllene spiral"
 
-#: ../src/iop/clipping.c:1800 ../src/iop/lens.c:1883
+#: ../src/iop/clipping.c:1800 ../src/iop/lens.c:1884
 #: ../src/libs/live_view.c:355 ../src/libs/tools/filter.c:122
 msgid "all"
 msgstr "alla"
@@ -4377,7 +4386,7 @@ msgstr "fann motsvarighet till ISO %d"
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolerat från ISO %d och %d"
 
-#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:2038
+#: ../src/iop/denoiseprofile.c:1724 ../src/iop/lens.c:2039
 msgid "mode"
 msgstr "läge"
 
@@ -4913,7 +4922,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "välj korrigeringar"
 
-#: ../src/iop/lens.c:1226
+#: ../src/iop/lens.c:1227
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4926,15 +4935,15 @@ msgstr ""
 "montering:\t\t\t%s\n"
 "beskärningsfaktor:\t%.1f"
 
-#: ../src/iop/lens.c:1457
+#: ../src/iop/lens.c:1458
 msgid "camera/lens not found - please select manually"
 msgstr "fann inte kamera/objektiv - var god välj manuellt"
 
-#: ../src/iop/lens.c:1459
+#: ../src/iop/lens.c:1460
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "försök att hitta din kamera eller ditt objektiv i de två menyerna ovan"
 
-#: ../src/iop/lens.c:1504
+#: ../src/iop/lens.c:1505
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -4953,151 +4962,151 @@ msgstr ""
 "typ:\t\t\t\t\t%s\n"
 "monteringar:\t\t%s"
 
-#: ../src/iop/lens.c:1550
+#: ../src/iop/lens.c:1551
 msgid "mm"
 msgstr "mm"
 
-#: ../src/iop/lens.c:1551
+#: ../src/iop/lens.c:1552
 msgid "focal length (mm)"
 msgstr "brännvidd (mm)"
 
-#: ../src/iop/lens.c:1578
+#: ../src/iop/lens.c:1579
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.c:1579
+#: ../src/iop/lens.c:1580
 msgid "f-number (aperture)"
 msgstr "bländartal"
 
-#: ../src/iop/lens.c:1594
+#: ../src/iop/lens.c:1595
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.c:1595
+#: ../src/iop/lens.c:1596
 msgid "distance to subject"
 msgstr "distans till motivet"
 
-#: ../src/iop/lens.c:1889
+#: ../src/iop/lens.c:1890
 msgid "distortion & TCA"
 msgstr "distortioner & TCA"
 
-#: ../src/iop/lens.c:1895
+#: ../src/iop/lens.c:1896
 msgid "distortion & vignetting"
 msgstr "distortioner och vinjettering"
 
-#: ../src/iop/lens.c:1901
+#: ../src/iop/lens.c:1902
 msgid "TCA & vignetting"
 msgstr "TCA & vinjettering"
 
-#: ../src/iop/lens.c:1907
+#: ../src/iop/lens.c:1908
 msgid "only distortion"
 msgstr "enbart distortioner"
 
-#: ../src/iop/lens.c:1913
+#: ../src/iop/lens.c:1914
 msgid "only TCA"
 msgstr "enbart TCA"
 
-#: ../src/iop/lens.c:1919
+#: ../src/iop/lens.c:1920
 msgid "only vignetting"
 msgstr "enbart vinjettering"
 
-#: ../src/iop/lens.c:1942
+#: ../src/iop/lens.c:1943
 msgid "find camera"
 msgstr "sök kamera"
 
-#: ../src/iop/lens.c:1959
+#: ../src/iop/lens.c:1960
 msgid "find lens"
 msgstr "sök objektiv"
 
-#: ../src/iop/lens.c:1992
+#: ../src/iop/lens.c:1993
 msgid "corrections"
 msgstr "korrigeringar"
 
-#: ../src/iop/lens.c:1994
+#: ../src/iop/lens.c:1995
 msgid "which corrections to apply"
 msgstr "vilka korrigeringar som ska utföras"
 
-#: ../src/iop/lens.c:2009
+#: ../src/iop/lens.c:2010
 msgid "geometry"
 msgstr "geometrisk"
 
-#: ../src/iop/lens.c:2011
+#: ../src/iop/lens.c:2012
 msgid "target geometry"
 msgstr "målgeometri"
 
-#: ../src/iop/lens.c:2012
+#: ../src/iop/lens.c:2013
 msgid "rectilinear"
 msgstr "rätlinjig"
 
-#: ../src/iop/lens.c:2013
+#: ../src/iop/lens.c:2014
 msgid "fish-eye"
 msgstr "fisköga"
 
-#: ../src/iop/lens.c:2014
+#: ../src/iop/lens.c:2015
 msgid "panoramic"
 msgstr "panoramisk"
 
-#: ../src/iop/lens.c:2015
+#: ../src/iop/lens.c:2016
 msgid "equirectangular"
 msgstr "ekvirektangulär"
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:2017
+#: ../src/iop/lens.c:2018
 msgid "orthographic"
 msgstr ""
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:2018
+#: ../src/iop/lens.c:2019
 msgid "stereographic"
 msgstr ""
 
 # NEEDS TRANSLATION
-#: ../src/iop/lens.c:2019
+#: ../src/iop/lens.c:2020
 msgid "equisolid angle"
 msgstr ""
 
 # NEEDS REVIEWING
-#: ../src/iop/lens.c:2020
+#: ../src/iop/lens.c:2021
 msgid "thoby fish-eye"
 msgstr "thoby fisköga"
 
-#: ../src/iop/lens.c:2028
+#: ../src/iop/lens.c:2029
 msgid "auto scale"
 msgstr "autoskalning"
 
-#: ../src/iop/lens.c:2040
+#: ../src/iop/lens.c:2041
 msgid "correct distortions or apply them"
 msgstr "korrigera eller applicera förvridningar"
 
-#: ../src/iop/lens.c:2041
+#: ../src/iop/lens.c:2042
 msgid "correct"
 msgstr "korrigering"
 
-#: ../src/iop/lens.c:2042
+#: ../src/iop/lens.c:2043
 msgid "distort"
 msgstr "förvrid"
 
-#: ../src/iop/lens.c:2049
+#: ../src/iop/lens.c:2050
 msgid "Transversal Chromatic Aberration red"
 msgstr "röd transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:2050
+#: ../src/iop/lens.c:2051
 msgid "TCA red"
 msgstr "röd TCA"
 
-#: ../src/iop/lens.c:2055
+#: ../src/iop/lens.c:2056
 msgid "Transversal Chromatic Aberration blue"
 msgstr "blå transversiell kromatisk avvikelse"
 
-#: ../src/iop/lens.c:2056
+#: ../src/iop/lens.c:2057
 msgid "TCA blue"
 msgstr "blå TCA"
 
-#: ../src/iop/lens.c:2063
+#: ../src/iop/lens.c:2064
 msgid "corrections done: "
 msgstr "gjorda korrigeringar: "
 
-#: ../src/iop/lens.c:2064
+#: ../src/iop/lens.c:2065
 msgid "which corrections have actually been done"
 msgstr "vilka korrigeringar som faktiskt har gjorts"
 
@@ -7458,18 +7467,15 @@ msgid "jump back to previous collection"
 msgstr "hoppa tillbaka till förra samlingen"
 
 #: ../src/libs/recentcollect.c:125
-#, c-format
 msgid " and "
 msgstr " och "
 
 #: ../src/libs/recentcollect.c:130
-#, c-format
 msgid " or "
 msgstr " eller "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:135
-#, c-format
 msgid " but not "
 msgstr " förutom "
 
@@ -8478,6 +8484,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "RAW"
+#~ msgstr "RÅ"
 
 #~ msgid "error creating GUI, see stderr"
 #~ msgstr ""
