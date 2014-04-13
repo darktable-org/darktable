@@ -330,21 +330,22 @@ dt_XYZ_to_Lab_SSE(const __m128 XYZ)
   return _mm_mul_ps(coef,_mm_sub_ps(_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,1,0,1)),_mm_shuffle_ps(f,f,_MM_SHUFFLE(3,2,1,3))));
 }
 
-void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, void *o, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
+void
+process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoid, void *ovoid, const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out)
 {
   const dt_iop_colorin_data_t *const d = (dt_iop_colorin_data_t *)piece->data;
-  const float *const cmat = d->cmatrix;
-  const float *const nmat = d->nmatrix;
-  const float *const lmat = d->lmatrix;
-  float *in  = (float *)i;
-  float *out = (float *)o;
   const int ch = piece->colors;
   const int map_blues = piece->pipe->image.flags & DT_IMAGE_RAW;
   const int clipping = (d->nrgb != NULL);
 
-  if(!isnan(cmat[0]))
+  if(!isnan(d->cmatrix[0]))
   {
     // only color matrix. use our optimized fast path!
+    const float *const cmat = d->cmatrix;
+    const float *const nmat = d->nmatrix;
+    const float *const lmat = d->lmatrix;
+    float *in  = (float *)ivoid;
+    float *out = (float *)ovoid;
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(roi_in,roi_out, out, in) schedule(static)
 #endif
@@ -423,63 +424,63 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   else
   {
     // use general lcms2 fallback
-    int rowsize=roi_out->width*3;
-    float cam[rowsize];
-    float rgb[rowsize];
-    float Lab[rowsize];
-
-    // FIXME: for some unapparent reason even this breaks lcms2 :(
-#if 0//def _OPENMP
-    #pragma omp parallel for default(none) shared(roi_out, out, in, d, cam, Lab, rowsize) schedule(static)
+#ifdef _OPENMP
+    #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
 #endif
     for(int k=0; k<roi_out->height; k++)
     {
-      const size_t m = (size_t)k*roi_out->width*ch;
+      const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-      for (int l=0; l<roi_out->width; l++)
+      void *cam = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+
+      float *camptr = (float *)cam;
+      for (int j=0; j<roi_out->width; j++,in+=4,camptr+=4)
       {
-        int ci=3*l, ii=ch*l;
+        camptr[0] = in[0];
+        camptr[1] = in[1];
+        camptr[2] = in[2];
 
-        cam[ci+0] = in[m+ii+0];
-        cam[ci+1] = in[m+ii+1];
-        cam[ci+2] = in[m+ii+2];
-
-        const float YY = cam[ci+0]+cam[ci+1]+cam[ci+2];
-        const float zz = cam[ci+2]/YY;
+        const float YY = camptr[0]+camptr[1]+camptr[2];
+        const float zz = camptr[2]/YY;
         const float bound_z = 0.5f, bound_Y = 0.5f;
         const float amount = 0.11f;
         if (zz > bound_z)
         {
           const float t = (zz - bound_z)/(1.0f-bound_z) * fminf(1.0, YY/bound_Y);
-          cam[ci+1] += t*amount;
-          cam[ci+2] -= t*amount;
+          camptr[1] += t*amount;
+          camptr[2] -= t*amount;
         }
       }
+
       // convert to (L,a/L,b/L) to be able to change L without changing saturation.
-      // lcms is not thread safe, so work on one copy for each thread :(
       if(!d->nrgb)
       {
-        cmsDoTransform (d->xform_cam_Lab[dt_get_thread_num()], cam, Lab, roi_out->width);
-      }
-      else
-      {
-        cmsDoTransform (d->xform_cam_nrgb[dt_get_thread_num()], cam, rgb, roi_out->width);
-        for(int l=0; l<rowsize; l++) rgb[l] = CLAMP(rgb[l], 0.0f, 1.0f);
-        cmsDoTransform (d->xform_nrgb_Lab[dt_get_thread_num()], rgb, Lab, roi_out->width);
-      }
+        cmsDoTransform(d->xform_cam_Lab, cam, out, roi_out->width);
+        dt_free_align(cam);
+      } else {
+        void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+        cmsDoTransform(d->xform_cam_nrgb, cam, rgb, roi_out->width);
+        dt_free_align(cam);
 
-      for (int l=0; l<roi_out->width; l++)
-      {
-        int li=3*l, oi=ch*l;
-        out[m+oi+0] = Lab[li+0];
-        out[m+oi+1] = Lab[li+1];
-        out[m+oi+2] = Lab[li+2];
+        float *rgbptr = (float *)rgb;
+        for (int j=0; j<roi_out->width; j++,rgbptr+=4)
+        {
+          const __m128 min = _mm_setzero_ps();
+          const __m128 max = _mm_set1_ps(1.0f);
+          const __m128 input = _mm_load_ps(rgbptr);
+          const __m128 result = _mm_max_ps(_mm_min_ps(input, max), min);
+          _mm_store_ps(rgbptr, result);
+        }
+
+        cmsDoTransform(d->xform_nrgb_Lab, rgb, out, roi_out->width);
+        dt_free_align(rgb);
       }
     }
   }
 
   if(piece->pipe->mask_display)
-    dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 static void
@@ -501,7 +502,6 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
 
-  const int num_threads = dt_get_num_threads();
   if(d->input) cmsCloseProfile(d->input);
   d->input = NULL;
   if(d->nrgb) cmsCloseProfile(d->nrgb);
@@ -526,15 +526,14 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->nrgb = NULL;
   }
 
-  for(int t=0; t<num_threads; t++)
-  {
-    if(d->xform_cam_Lab[t]) cmsDeleteTransform(d->xform_cam_Lab[t]);
-    if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-    if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
-    d->xform_cam_Lab[t] = NULL;
-    d->xform_cam_nrgb[t] = NULL;
-    d->xform_nrgb_Lab[t] = NULL;
-  }
+
+  if(d->xform_cam_Lab) cmsDeleteTransform(d->xform_cam_Lab);
+  if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
+  if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
+  d->xform_cam_Lab = NULL;
+  d->xform_cam_nrgb = NULL;
+  d->xform_nrgb_Lab = NULL;
+
   d->cmatrix[0] = d->nmatrix[0] = d->lmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
   d->lut[1][0] = -1.0f;
@@ -649,12 +648,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++)
-      {
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-        d->xform_cam_nrgb[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->nrgb, TYPE_RGB_FLT, p->intent, 0);
-        d->xform_nrgb_Lab[t] = cmsCreateTransform(d->nrgb, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
-      }
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
+      d->xform_cam_nrgb = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->nrgb, TYPE_RGBA_FLT, p->intent, 0);
+      d->xform_nrgb_Lab = cmsCreateTransform(d->nrgb, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
     else
     {
@@ -672,27 +668,23 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++)
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
   // we might have failed generating the clipping transformations, check that:
-  if(d->nrgb && ((!d->xform_cam_nrgb[0] && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab[0] && isnan(d->lmatrix[0]))))
+  if(d->nrgb && ((!d->xform_cam_nrgb && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab && isnan(d->lmatrix[0]))))
   {
-    for(int t=0; t<dt_get_num_threads(); t++)
-    {
-      if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-      if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
-      d->xform_cam_nrgb[t] = NULL;
-      d->xform_nrgb_Lab[t] = NULL;
-    }
+    if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
+    if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
+    d->xform_cam_nrgb = NULL;
+    d->xform_nrgb_Lab = NULL;
     dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
   }
 
   // user selected a non-supported output profile, check that:
-  if(!d->xform_cam_Lab[0] && isnan(d->cmatrix[0]))
+  if(!d->xform_cam_Lab && isnan(d->cmatrix[0]))
   {
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
@@ -703,8 +695,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     {
       piece->process_cl_ready = 0;
       d->cmatrix[0] = NAN;
-      for(int t=0; t<num_threads; t++) // WHY??? original code : d->xform[t] = cmsCreateTransform(d->Lab, TYPE_RGB_FLT, d->input, TYPE_Lab_FLT, p->intent, 0);
-        d->xform_cam_Lab[t] = cmsCreateTransform(d->input, TYPE_RGB_FLT, d->Lab, TYPE_Lab_FLT, p->intent, 0);
+      d->xform_cam_Lab = cmsCreateTransform(d->input, TYPE_RGBA_FLT, d->Lab, TYPE_LabA_FLT, p->intent, 0);
     }
   }
 
@@ -735,10 +726,9 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
   d->input = NULL;
   d->nrgb = NULL;
-  d->xform_cam_Lab = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  d->xform_cam_nrgb = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  d->xform_nrgb_Lab = (cmsHTRANSFORM *)malloc(sizeof(cmsHTRANSFORM)*dt_get_num_threads());
-  for(int t=0; t<dt_get_num_threads(); t++) d->xform_cam_Lab[t] = d->xform_cam_nrgb[t] = d->xform_nrgb_Lab[t] = NULL;
+  d->xform_cam_Lab = NULL;
+  d->xform_cam_nrgb = NULL;
+  d->xform_nrgb_Lab = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -749,12 +739,12 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
   if (d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
-  for(int t=0; t<dt_get_num_threads(); t++)
-  {
-    if(d->xform_cam_Lab[t]) cmsDeleteTransform(d->xform_cam_Lab[t]);
-    if(d->xform_cam_nrgb[t]) cmsDeleteTransform(d->xform_cam_nrgb[t]);
-    if(d->xform_nrgb_Lab[t]) cmsDeleteTransform(d->xform_nrgb_Lab[t]);
-  }
+  if(d->xform_cam_Lab) cmsDeleteTransform(d->xform_cam_Lab);
+  if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
+  if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
+  d->xform_cam_Lab = NULL;
+  d->xform_cam_nrgb = NULL;
+  d->xform_nrgb_Lab = NULL;
   free(d->xform_cam_Lab);
   free(d->xform_cam_nrgb);
   free(d->xform_nrgb_Lab);
