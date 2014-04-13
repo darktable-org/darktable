@@ -141,6 +141,11 @@ dt_imageio_open_rawspeed(
     d->decodeRaw();
     d->decodeMetaData(meta);
     RawImage r = d->mRaw;
+    
+    /* needed in exposure iop for Deflicker */
+    img->raw_black_level = r->blackLevelSeparate[0];
+    img->raw_white_point = r->whitePoint;
+
 
     /* free auto pointers on spot */
     d.reset();
@@ -171,10 +176,6 @@ dt_imageio_open_rawspeed(
     img->height = dim.y;
     img->black_offset_x = dim.x - r->dim.x;
     img->black_offset_y = dim.y - r->dim.y;
-
-    /* needed in exposure iop for Deflicker */
-    img->raw_black_level = r->blackLevel;
-    img->raw_white_point = r->whitePoint;
 
     void *buf = dt_mipmap_cache_alloc(img, DT_MIPMAP_FULL, a);
     if(!buf)
