@@ -1006,7 +1006,11 @@ init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-      module->reload_defaults(module);
+
+      // we call reload_defaults() in case the module defines it
+      if(module->reload_defaults)
+        module->reload_defaults(module);
+
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
       memset(new_params, 0, new_params_size);
