@@ -33,11 +33,10 @@
 
 DT_MODULE(1)
 
+// these need to be static numbers as they are put to the db
 #define MODE_GLOBAL_AVERAGE 0
 #define MODE_LOCAL_AVERAGE 1
 #define MODE_STATIC 2
-
-#define EXPERT_OPTIONS
 
 typedef struct dt_iop_defringe_params_t
 {
@@ -48,9 +47,7 @@ typedef struct dt_iop_defringe_params_t
   float m_bias;
   float b_bias;
   float y_bias;
-#ifdef EXPERT_OPTIONS
-  float x,y,z;
-#endif
+  float strength;
 }
 dt_iop_defringe_params_t;
 
@@ -66,9 +63,7 @@ typedef struct dt_iop_defringe_gui_data_t
   GtkWidget *m_bias_scale;
   GtkWidget *b_bias_scale;
   GtkWidget *y_bias_scale;
-#ifdef EXPERT_OPTIONS
-  GtkWidget * x,*y,*z;
-#endif
+  GtkWidget *strength_scale;
 }
 dt_iop_defringe_gui_data_t;
 
@@ -157,6 +152,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int ch = piece->colors;
 
   const int radius = ceil(2.0*ceilf(sigma));
+  const float base_strength = p->strength;
 
   float avg_edge_chroma = 0.0;
 
@@ -192,11 +188,8 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   }
   const int sampleidx_small = sampleidx_avg-1;
   // larger area when using local averaging
-#ifdef EXPERT_OPTIONS
-  const int radius_avg = ceil(radius*10*p->y);
-#else
-  const int radius_avg = ceil(radius*10);
-#endif
+  const int radius_avg = ceil((float)radius*11.0);
+
   // smaller area for artifact filter
   const int radius_artifact_filter = radius/2;
 
@@ -204,6 +197,7 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
   const int samples_avg = fib[sampleidx_avg];
   const int samples_artifact = samples_avg;
 
+  // precompute all required fibonacci lattices:
   int * xy_avg;
   if ((xy_avg = g_malloc(2 * sizeof(int) * samples_avg)))
   {
@@ -267,13 +261,6 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
       float a = in[v*width*ch + t*ch +1] - out[v*width*ch + t*ch +1];
       float b = in[v*width*ch + t*ch +2] - out[v*width*ch + t*ch +2];
 
-      float ab_edge_prop;
-#ifdef EXPERT_OPTIONS
-      ab_edge_prop = p->x;
-#else
-      ab_edge_prop = 0.6;
-#endif
-
       // color biasing
       if (a > 0.0)
         a = a*(0.1 + p->m_bias); // magenta bias
@@ -286,13 +273,14 @@ void process (struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, voi
         b = b*(0.1 + p->b_bias); // blue bias
 
       float edge = (a*a+b*b); //range up to 2 * (1.1*256)^2 -> approx. 0 to 158598
-      float saturation = fabs(in[v*width*ch + t*ch +1]) + fabs(in[v*width*ch + t*ch +2]);
-      float luminosity = in[v*width*ch + t*ch];
+      // maybe useful later again:
+      //float pseudo_saturation = fabs(in[v*width*ch + t*ch +1]) + fabs(in[v*width*ch + t*ch +2]);
+      //float pseudo_luminosity = in[v*width*ch + t*ch];
+
       // save local edge chroma in out[.. +3] , this is later compared with threshold
-      // partially dependent on luminosity / saturation
-      out[v*width*ch + t*ch +3] = edge * ab_edge_prop + edge * (1.0-ab_edge_prop) * saturation/255.0 * luminosity/255.0;
+      out[v*width*ch + t*ch +3] = edge * base_strength;
       // the average chroma of the edge-layer in the roi
-      if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge;
+      if (MODE_GLOBAL_AVERAGE == p->op_mode) avg_edge_chroma += edge * base_strength;
     }
   }
 
@@ -425,16 +413,12 @@ void reload_defaults(dt_iop_module_t *module)
   module->default_enabled = 0;
   ((dt_iop_defringe_params_t *)module->default_params)->radius = 5.0;
   ((dt_iop_defringe_params_t *)module->default_params)->thresh = 10;
+  ((dt_iop_defringe_params_t *)module->default_params)->strength = 1.0;
   ((dt_iop_defringe_params_t *)module->default_params)->op_mode = MODE_GLOBAL_AVERAGE;
   ((dt_iop_defringe_params_t *)module->default_params)->m_bias = +1.0; // magenta
   ((dt_iop_defringe_params_t *)module->default_params)->g_bias = +1.0; // green
   ((dt_iop_defringe_params_t *)module->default_params)->b_bias = +1.0; // blue
   ((dt_iop_defringe_params_t *)module->default_params)->y_bias = +1.0; // yellow
-#ifdef EXPERT_OPTIONS
-  ((dt_iop_defringe_params_t *)module->default_params)->x = 0.6;
-  ((dt_iop_defringe_params_t *)module->default_params)->y = 1.0;
-  ((dt_iop_defringe_params_t *)module->default_params)->z = 0.0;
-#endif
   memcpy(module->params, module->default_params, sizeof(dt_iop_defringe_params_t));
 }
 
@@ -494,22 +478,14 @@ bias_slider_callback (GtkWidget *w, dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
-#ifdef EXPERT_OPTIONS
 static void
-xyz_cb (GtkWidget *w, dt_iop_module_t *module)
+strength_slider_callback (GtkWidget *w, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
-  dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
-  if (w == g->x)
-    p->x = dt_bauhaus_slider_get(w);
-  else if (w == g->y)
-    p->y = dt_bauhaus_slider_get(w);
-  else if (w == g->z)
-    p->z = dt_bauhaus_slider_get(w);
+  p->strength = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
-#endif
 
 static void
 mode_callback (GtkWidget *w, dt_iop_module_t *module)
@@ -544,18 +520,26 @@ void gui_init (dt_iop_module_t *module)
   g->thresh_scale = dt_bauhaus_slider_new_with_range(module, 1.0, 128.0, 0.1, p->thresh, 1);
   dt_bauhaus_widget_set_label(g->thresh_scale, NULL, _("threshold"));
 
+  g->strength_scale = dt_bauhaus_slider_new_with_range(module, 0.1, 1.5, 0.1, p->strength, 1);
+  dt_bauhaus_widget_set_label(g->strength_scale, NULL, _("strength bias"));
+
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->radius_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->thresh_scale), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->strength_scale), TRUE, TRUE, 0);
 
   g_object_set(G_OBJECT(g->radius_scale), "tooltip-text",
                _("radius for fringe detection"), (char *)NULL);
   g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
                _("threshold for defringe, higher values mean less defringing"), (char *)NULL);
+  g_object_set(G_OBJECT(g->thresh_scale), "tooltip-text",
+               _("strength, will affect the strength of the edges"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->radius_scale), "value-changed",
                    G_CALLBACK(radius_slider_callback), module);
   g_signal_connect(G_OBJECT(g->thresh_scale), "value-changed",
                    G_CALLBACK(thresh_slider_callback), module);
+  g_signal_connect(G_OBJECT(g->strength_scale), "value-changed",
+                   G_CALLBACK(strength_slider_callback), module);
 
   /* color bias/shift/whatever sliders */
   g->g_bias_scale = dt_bauhaus_slider_new_with_range(module, 0.0, 2.0, 0.01, p->g_bias, 2);
@@ -597,28 +581,6 @@ void gui_init (dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->m_bias_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->b_bias_scale), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->y_bias_scale), TRUE, TRUE, 0);
-
-  /* expert options / internals */
-#ifdef EXPERT_OPTIONS
-  g->x = dt_bauhaus_slider_new_with_range(module, 0.0, 1.0, 0.01, p->x, 2);
-  dt_bauhaus_widget_set_label(g->x, NULL, _("ab edge proportion vs lum/sat"));
-
-  g->y = dt_bauhaus_slider_new_with_range(module, 0.0, 5.0, 0.01, p->y, 2);
-  dt_bauhaus_widget_set_label(g->y, NULL, _("local avg radius bias"));
-
-  g->z = dt_bauhaus_slider_new_with_range(module, 0.0, 1.0, 0.01, p->z, 2);
-  dt_bauhaus_widget_set_label(g->z, NULL, _("-unused-"));
-
-  g_signal_connect(G_OBJECT(g->x), "value-changed", G_CALLBACK(xyz_cb), module);
-  g_signal_connect(G_OBJECT(g->y), "value-changed", G_CALLBACK(xyz_cb), module);
-  g_signal_connect(G_OBJECT(g->z), "value-changed", G_CALLBACK(xyz_cb), module);
-
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(dtgtk_label_new(_("expert options"),DARKTABLE_LABEL_TAB|DARKTABLE_LABEL_ALIGN_RIGHT)), FALSE, FALSE, 5);
-
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->x), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->y), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(module->widget), GTK_WIDGET(g->z), TRUE, TRUE, 0);
-#endif  
 }
 
 void gui_update (dt_iop_module_t *module)
@@ -628,15 +590,11 @@ void gui_update (dt_iop_module_t *module)
   dt_bauhaus_combobox_set(g->mode_select, p->op_mode);
   dt_bauhaus_slider_set(g->radius_scale, p->radius);
   dt_bauhaus_slider_set(g->thresh_scale, p->thresh);
+  dt_bauhaus_slider_set(g->strength_scale, p->strength);
   dt_bauhaus_slider_set(g->g_bias_scale, p->g_bias);
   dt_bauhaus_slider_set(g->m_bias_scale, p->m_bias);
   dt_bauhaus_slider_set(g->b_bias_scale, p->b_bias);
   dt_bauhaus_slider_set(g->y_bias_scale, p->y_bias);
-#ifdef EXPERT_OPTIONS
-  dt_bauhaus_slider_set(g->x, p->x);
-  dt_bauhaus_slider_set(g->y, p->y);
-  dt_bauhaus_slider_set(g->z, p->z);
-#endif
 }
 
 void gui_cleanup (dt_iop_module_t *module)
