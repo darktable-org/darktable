@@ -76,21 +76,28 @@ static float _brush_point_line_distance2(const float x, const float y, const flo
   const float l = r3*r3 + r4*r4;
   const float p = d / l;
 
-  float xx, yy;
+  float dx, dy;
 
   if (l == 0.0f)
   {
-    xx = line_start[0];
-    yy = line_start[1];
+    dx = x - line_start[0];
+    dy = y - line_start[1];
+  }
+  else if (p < 0.0f)
+  {
+    dx = x - line_start[0];
+    dy = y - line_start[1];
+  }
+  else if (p > 1.0f)
+  {
+    dx = x - line_end[0];
+    dy = y - line_end[1];
   }
   else
   {
-    xx = line_start[0] + p * r3;
-    yy = line_start[1] + p * r4;
+    dx = x - (line_start[0] + p * r3);
+    dy = y - (line_start[1] + p * r4);
   }
-
-  const float dx = x - xx;
-  const float dy = y - yy;
 
   return dx*dx + dy*dy;
 }
@@ -105,7 +112,7 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
   for (int i = 1; i < points_count-1; i++)
   {
-    float d2 = _brush_point_line_distance2(points[i*2], points[i*2+1], points, points+points_count-1);
+    float d2 = _brush_point_line_distance2(points[i*2], points[i*2+1], points, points+2*(points_count-1));
     if (d2 > dmax2)
     {
       index = i;
