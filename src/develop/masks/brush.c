@@ -1404,7 +1404,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   else if (gui->point_selected>=0 && which == 3)
   {
     //we remove the point (and the entire form if there is too few points)
-    if (g_list_length(form->points) < 2)
+    if (g_list_length(form->points) <= 2)
     {
       //if the form doesn't below to a group, we don't delete it
       if (parentid<=0) return 1;
