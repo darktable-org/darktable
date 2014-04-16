@@ -325,9 +325,13 @@ amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 // Issue 1676
 // use collapse(2) to collapse the 2 loops to one large loop, so there is better scaling
 // WARNING from darktable: we don't use collapse(2) as this seems to trigger an issue in some versions of gcc 4.8
-//         -- I (houz) added it back for testing on 13.04.2014
+//         -- I (houz) added it back for testing on 13.04.2014 and disabled it for gcc 4.8.1 on 16.04.2014
 #ifdef _OPENMP
-  #pragma omp for schedule(dynamic) collapse(2) nowait
+  #if !defined(__clang__) && defined(__GNUC__) && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) == 40801)
+    #pragma omp for schedule(dynamic) nowait
+  #else
+    #pragma omp for schedule(dynamic) collapse(2) nowait
+  #endif
 #endif
     for (top=winy-16; top < winy+height; top += TS-32)
       for (left=winx-16; left < winx+width; left += TS-32)
