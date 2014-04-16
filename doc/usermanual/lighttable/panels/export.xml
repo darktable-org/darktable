@@ -270,6 +270,19 @@
 
     <sect4>
 
+      <title>overwrite</title>
+
+      <para>
+        Enabling
+        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" />
+        allows you to overwrite all images being exported (if file with same name exists),
+        but only for this export - checkbox will be deactivated as soon as you will press export in order to protect you from data loss.
+      </para>
+
+    </sect4>
+
+    <sect4>
+
       <title>file format</title>
 
       <para>
