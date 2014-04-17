@@ -64,47 +64,80 @@ static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffe
 }
 
 
-/** get squared distance of point to line segment */
-static float _brush_point_line_distance2(const float x, const float y, const float *line_start, const float *line_end)
+/** get squared distance of indexed point to line segment, taking weighted payload data into account */
+static float _brush_point_line_distance2(int index, int pointscount, const float *points, const float *payload)
 {
-  const float r1 = x - line_start[0];
-  const float r2 = y - line_start[1];
-  const float r3 = line_end[0] - line_start[0];
-  const float r4 = line_end[1] - line_start[1];
+  const float x = points[2*index];
+  const float y = points[2*index+1];
+  const float b = payload[4*index];
+  const float h = payload[4*index+1];
+  const float d = payload[4*index+2];
+  const float xstart = points[0];
+  const float ystart = points[1];
+  const float bstart = payload[0];
+  const float hstart = payload[1];
+  const float dstart = payload[2];
+  const float xend = points[2*(pointscount-1)];
+  const float yend = points[2*(pointscount-1)+1];
+  const float bend = payload[4*(pointscount-1)];
+  const float hend = payload[4*(pointscount-1)+1];
+  const float dend = payload[4*(pointscount-1)+2];
+  const float bweight = 1.0f;
+  const float hweight = 0.01f;
+  const float dweight = 0.01f;
 
-  const float d = r1*r3 + r2*r4;
+  const float r1 = x - xstart;
+  const float r2 = y - ystart;
+  const float r3 = xend - xstart;
+  const float r4 = yend - ystart;
+  const float r5 = bend - bstart;
+  const float r6 = hend - hstart;
+  const float r7 = dend - dstart;
+
+  const float r = r1*r3 + r2*r4;
   const float l = r3*r3 + r4*r4;
-  const float p = d / l;
+  const float p = r / l;
 
-  float dx, dy;
+  float dx, dy, db, dh, dd;
 
   if (l == 0.0f)
   {
-    dx = x - line_start[0];
-    dy = y - line_start[1];
+    dx = x - xstart;
+    dy = y - ystart;
+    db = b - bstart;
+    dh = h - hstart;
+    dd = d - dstart;
   }
   else if (p < 0.0f)
   {
-    dx = x - line_start[0];
-    dy = y - line_start[1];
+    dx = x - xstart;
+    dy = y - ystart;
+    db = b - bstart;
+    dh = h - hstart;
+    dd = d - dstart;
   }
   else if (p > 1.0f)
   {
-    dx = x - line_end[0];
-    dy = y - line_end[1];
+    dx = x - xend;
+    dy = y - yend;
+    db = b - bend;
+    dh = h - hend;
+    dd = d - dend;
   }
   else
   {
-    dx = x - (line_start[0] + p * r3);
-    dy = y - (line_start[1] + p * r4);
+    dx = x - (xstart + p * r3);
+    dy = y - (ystart + p * r4);
+    db = b - (bstart + p * r5);
+    dh = h - (hstart + p * r6);
+    dd = d - (dstart + p * r7);
   }
 
-  return dx*dx + dy*dy;
+  return dx*dx + dy*dy + bweight*db*db + hweight*dh*dh + dweight*dd*dd;
 }
 
 /** remove unneeded points (Ramer-Douglas-Peucker algorithm) and return resulting path as linked list */
-static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *payload, float epsilon2, dt_masks_pressure_sensitivity_t psens)
-{
+static GList *_brush_ramer_douglas_peucker(const float *points, int points_count, const float *payload, float epsilon2) {
   GList *ResultList = NULL;
 
   float dmax2 = 0.0f;
@@ -112,7 +145,7 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
   for (int i = 1; i < points_count-1; i++)
   {
-    float d2 = _brush_point_line_distance2(points[i*2], points[i*2+1], points, points+2*(points_count-1));
+    float d2 = _brush_point_line_distance2(i, points_count, points, payload);
     if (d2 > dmax2)
     {
       index = i;
@@ -122,8 +155,8 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
   if (dmax2 >= epsilon2)
   {
-    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, payload, epsilon2, psens);
-    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, payload+index*4, epsilon2, psens);
+    GList *ResultList1 = _brush_ramer_douglas_peucker(points, index+1, payload, epsilon2);
+    GList *ResultList2 = _brush_ramer_douglas_peucker(points+index*2, points_count-index, payload+index*4, epsilon2);
 
     // remove last element from ResultList1
     GList *end1 = g_list_last(ResultList1);
@@ -142,30 +175,6 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     point1->hardness = payload[1];
     point1->density = payload[2];
     point1->state = DT_MASKS_POINT_STATE_NORMAL;
-    float pressure = payload[3];
-    switch(psens)
-    {
-      case DT_MASKS_PRESSURE_HARDNESS_ABS:
-        point1->hardness = MAX(0.05f, pressure);
-        break;
-      case DT_MASKS_PRESSURE_HARDNESS_REL:
-        point1->hardness = MAX(0.05f, point1->hardness*pressure);
-        break;
-      case DT_MASKS_PRESSURE_OPACITY_ABS:
-        point1->density = MAX(0.05f, pressure);
-        break;
-      case DT_MASKS_PRESSURE_OPACITY_REL:
-        point1->density = MAX(0.05f, point1->density*pressure);
-        break;
-      case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-        point1->border[0] = MAX(0.005f, point1->border[0]*pressure);
-        point1->border[1] = MAX(0.005f, point1->border[1]*pressure);
-        break;
-      default:
-      case DT_MASKS_PRESSURE_OFF:
-        //ignore pressure value
-        break;
-    }
     ResultList = g_list_append(ResultList, (gpointer)point1);
 
     dt_masks_point_brush_t *pointn = malloc(sizeof(dt_masks_point_brush_t));
@@ -176,30 +185,6 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     pointn->hardness = payload[(points_count-1)*4+1];
     pointn->density = payload[(points_count-1)*4+2];
     pointn->state = DT_MASKS_POINT_STATE_NORMAL;
-    pressure = payload[(points_count-1)*4+3];
-    switch(psens)
-    {
-      case DT_MASKS_PRESSURE_HARDNESS_ABS:
-        pointn->hardness = MAX(0.05f, pressure);
-        break;
-      case DT_MASKS_PRESSURE_HARDNESS_REL:
-        pointn->hardness = MAX(0.05f, pointn->hardness*pressure);
-        break;
-      case DT_MASKS_PRESSURE_OPACITY_ABS:
-        pointn->density = MAX(0.05f, pressure);
-        break;
-      case DT_MASKS_PRESSURE_OPACITY_REL:
-        pointn->density = MAX(0.05f, pointn->density*pressure);
-        break;
-      case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-        pointn->border[0] = MAX(0.005f, pointn->border[0]*pressure);
-        pointn->border[1] = MAX(0.005f, pointn->border[1]*pressure);
-        break;
-      default:
-      case DT_MASKS_PRESSURE_OFF:
-        //ignore pressure value
-        break;
-    }
     ResultList = g_list_append(ResultList, (gpointer)pointn);
   }
 
@@ -1518,10 +1503,6 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
   if (form->type & DT_MASKS_CLONE) masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"),0.5f);
   else masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"),0.5f);
 
-  float masks_hardness;
-  if (form->type & DT_MASKS_CLONE) masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"),1.0f);
-  else masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"),1.0f);
-
   if (gui->creation && which == 1)
   {
     dt_iop_module_t *crea_module = gui->creation_module;
@@ -1551,10 +1532,43 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
         gui->guipoints[i*2+1] /= darktable.develop->preview_pipe->iheight;
       }
 
-      const float epsilon2 = MAX(0.005f, masks_border)*MAX(0.005f, masks_border)*masks_hardness*masks_hardness*0.05f;
+      //we consolidate pen pressure readings into payload
+      for(int i=0; i < gui->guipoints_count; i++)
+      {
+        float *payload = gui->guipoints_payload+4*i;
+        float pressure = payload[3];
+        payload[3] = 1.0f;
+
+        switch(gui->pressure_sensitivity)
+        {
+          case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
+            payload[0] = MAX(0.005f, payload[0]*pressure);
+            break;
+          case DT_MASKS_PRESSURE_HARDNESS_ABS:
+            payload[1] = MAX(0.05f, pressure);
+            break;
+          case DT_MASKS_PRESSURE_HARDNESS_REL:
+            payload[1] = MAX(0.05f, payload[1]*pressure);
+            break;
+          case DT_MASKS_PRESSURE_OPACITY_ABS:
+            payload[2] = MAX(0.05f, pressure);
+            break;
+          case DT_MASKS_PRESSURE_OPACITY_REL:
+            payload[2] = MAX(0.05f, payload[2]*pressure);
+            break;
+          default:
+          case DT_MASKS_PRESSURE_OFF:
+            //ignore pressure value
+            break;
+        }
+      }
+
+      //accuracy level for node elimination, dependent on brush size
+      //TODO: check for optimum scaling factor, potentially make scaling factor a configuration parameter
+      const float epsilon2 = 0.05f*MAX(0.005f, masks_border)*MAX(0.005f, masks_border);
 
       //we simplify the path and generate the nodes
-      form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2, gui->pressure_sensitivity);
+      form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2);
 
       //printf("guipoints_count %d, points %d\n", gui->guipoints_count, g_list_length(form->points));
 
