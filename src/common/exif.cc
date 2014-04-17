@@ -470,6 +470,23 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       int nominator = pos->toRational(0).first;
       img->exif_focus_distance = (0.001 * nominator);
     }
+#if EXIV2_MINOR_VERSION>24
+    else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper")))
+              != exifData.end() && pos->size())
+    {
+      float FocusDistanceUpper = pos->toFloat ();
+      if(FocusDistanceUpper <= 0.0f || FocusDistanceUpper >= 0xffff)
+      {
+        img->exif_focus_distance = 0.0f;
+      }
+      else if ((pos=exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceLower")))
+        != exifData.end() && pos->size())
+      {
+        float FocusDistanceLower = pos->toFloat ();
+        img->exif_focus_distance = (FocusDistanceLower+FocusDistanceUpper)/200;
+      }
+    }
+#endif
     else if ( (pos=Exiv2::subjectDistance(exifData))
               != exifData.end() && pos->size())
     {
