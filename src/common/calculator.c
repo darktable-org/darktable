@@ -175,7 +175,8 @@ static token_t * get_token(parser_state_t *self)
         return token;
       }
       default:
-        printf("error: %c\n", *self->p);
+        // people complained about the messages when "TRUE" was fed to the calculator
+//         printf("error: %c\n", *self->p);
         break;
     }
   }
