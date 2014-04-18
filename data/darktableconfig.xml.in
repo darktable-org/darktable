@@ -526,6 +526,19 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>brush_smoothing</name>
+    <type>
+      <enum>
+        <option>low</option>
+        <option>medium</option>
+        <option>high</option>
+      </enum>
+    </type>
+    <default>medium</default>
+    <shortdescription>smoothing of brush strokes</shortdescription>
+    <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>

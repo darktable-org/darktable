@@ -1563,9 +1563,21 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module,float 
         }
       }
 
+      float factor = 0.01f;
+      char *smoothing = dt_conf_get_string("brush_smoothing");
+      if(smoothing)
+      {
+        if(!strcmp(smoothing, "low"))
+          factor = 0.0025f;
+        else if(!strcmp(smoothing, "medium"))
+          factor = 0.01f;
+        else if(!strcmp(smoothing, "high"))
+          factor = 0.04f;
+        g_free(smoothing);
+      }
+
       //accuracy level for node elimination, dependent on brush size
-      //TODO: check for optimum scaling factor, potentially make scaling factor a configuration parameter
-      const float epsilon2 = 0.05f*MAX(0.005f, masks_border)*MAX(0.005f, masks_border);
+      const float epsilon2 = factor*MAX(0.005f, masks_border)*MAX(0.005f, masks_border);
 
       //we simplify the path and generate the nodes
       form->points = _brush_ramer_douglas_peucker(gui->guipoints, gui->guipoints_count, gui->guipoints_payload, epsilon2);
