@@ -322,14 +322,23 @@ static void _camera_process_job(const dt_camctl_t *c,const dt_camera_t *camera, 
       else
       {
         // everything worked
-        GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
-        if(gdk_pixbuf_loader_write(loader, (guchar*)data, data_size, NULL) == TRUE)
+        GError *error = NULL;
+        GdkPixbufLoader *loader = gdk_pixbuf_loader_new_with_mime_type("image/jpeg", &error); // there were cases where GDKPixbufLoader failed to recognize the JPEG
+        if(error)
         {
-          dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-          if(cam->live_view_pixbuf != NULL)
-            g_object_unref(cam->live_view_pixbuf);
-          cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-          dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view failed to create jpeg image loader: %s\n", error->message);
+          g_error_free(error);
+        }
+        else
+        {
+          if(gdk_pixbuf_loader_write(loader, (guchar*)data, data_size, NULL) == TRUE)
+          {
+            dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
+            if(cam->live_view_pixbuf != NULL)
+              g_object_unref(cam->live_view_pixbuf);
+            cam->live_view_pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+            dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+          }
         }
         gdk_pixbuf_loader_close(loader, NULL);
       }
