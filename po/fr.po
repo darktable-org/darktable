@@ -329,7 +329,7 @@ msgstr "développement de haute qualité lors du diaporama"
 
 #: ../build/src/preferences_gen.h:1795
 msgid "same option as for export, but applies to slideshow."
-msgstr "même option que pour l'exportation, mais pour le ddiaporama"
+msgstr "même option que pour l'exportation, mais pour le diaporama"
 
 #: ../build/src/preferences_gen.h:1802
 msgid "method to use for getting the display profile"
