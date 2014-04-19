@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-04-18 17:41+0200\n"
-"PO-Revision-Date: 2014-04-18 17:45+0100\n"
+"PO-Revision-Date: 2014-04-19 09:19+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -284,30 +284,31 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1725
 msgid "smoothing of brush strokes"
-msgstr ""
+msgstr "vervlakken penseelstreken"
 
 #: ../build/src/preferences_gen.h:1735
-#, fuzzy
 msgctxt "preferences"
 msgid "low"
-msgstr "geel"
+msgstr "laag"
 
 #: ../build/src/preferences_gen.h:1739 ../build/src/preferences_gen.h:1754
 msgctxt "preferences"
 msgid "medium"
-msgstr ""
+msgstr "gemiddeld"
 
 #: ../build/src/preferences_gen.h:1743
-#, fuzzy
 msgctxt "preferences"
 msgid "high"
-msgstr "high-pass"
+msgstr "hoog"
 
 #: ../build/src/preferences_gen.h:1757
 msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
 msgstr ""
+"kies niveau van verzacht penseelstreken, een sterkere verzachting levert "
+"minder knooppunten en dus wordt de bewerking gemakkelijker maar de "
+"nauwkeurigheid is  minder."
 
 #: ../build/src/preferences_gen.h:1764
 msgid "ask before deleting a tag"
@@ -2167,7 +2168,7 @@ msgstr "$(DESKTOP) - Bureaublad"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(TITLE) - title from metadata"
-msgstr ""
+msgstr "$(TITLE) - titel volgens metadata"
 
 #: ../src/gui/preferences.c:224
 msgid "darktable preferences"
