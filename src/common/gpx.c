@@ -26,6 +26,15 @@ typedef struct _gpx_track_point_t
   GTimeVal time;
 } _gpx_track_point_t;
 
+/* GPX XML parser */
+typedef enum _gpx_parser_element_t
+{
+  GPX_PARSER_ELEMENT_NONE  = 0,
+  GPX_PARSER_ELEMENT_TRKPT = 1<<0,
+  GPX_PARSER_ELEMENT_TIME  = 1<<1,
+  GPX_PARSER_ELEMENT_ELE   = 1<<2
+} _gpx_parser_element_t;
+
 typedef struct dt_gpx_t
 {
   /* the list of track records parsed */
@@ -33,18 +42,10 @@ typedef struct dt_gpx_t
 
   /* currently parsed track point */
   _gpx_track_point_t *current_track_point;
-  uint32_t current_parser_element;
+  _gpx_parser_element_t current_parser_element;
   gboolean invalid_track_point;
 
 } dt_gpx_t;
-
-
-
-/* GPX XML parser */
-#define GPX_PARSER_ELEMENT_TRKPT   1
-#define GPX_PARSER_ELEMENT_TIME    2
-#define GPX_PARSER_ELEMENT_ELE     4
-
 
 static void _gpx_parser_start_element(GMarkupParseContext *ctx,
                                       const gchar *element_name, const gchar **attribute_names,
@@ -271,7 +272,7 @@ void _gpx_parser_end_element (GMarkupParseContext *context, const gchar *element
   }
 
   /* clear current parser element */
-  gpx->current_parser_element = 0;
+  gpx->current_parser_element = GPX_PARSER_ELEMENT_NONE;
 
 }
 
