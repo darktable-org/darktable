@@ -5,6 +5,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     Macports will need some tuning though, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.6
+     cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
     To have working OpenMP (at least partly, only for C source files) you will also need gcc46:
      sudo port install gcc46
