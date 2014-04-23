@@ -73,7 +73,6 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'basecurve'))
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
-  gr.add_edge(('colorin', 'shrecovery'))
 
   # very linear:
   gr.add_edge(('basecurve', 'lens'))
@@ -91,7 +90,6 @@ def add_edges(gr):
   gr.add_edge(('vignette', 'flip'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
-  gr.add_edge(('shrecovery', 'basecurve'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -100,7 +98,6 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'graduatednd'))
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
-  gr.add_edge(('profile_gamma', 'shrecovery'))
   gr.add_edge(('profile_gamma', 'bilateral'))
   gr.add_edge(('profile_gamma', 'denoiseprofile'))
   
@@ -374,7 +371,6 @@ gr.add_nodes([
 'relight',
 'shadhi',
 'sharpen',
-'shrecovery',
 'soften',
 'splittoning',
 'spots',

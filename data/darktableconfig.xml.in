@@ -1851,20 +1851,6 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/shrecovery/visible</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
-    <name>plugins/darkroom/shrecovery/expanded</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/darkroom/soften/visible</name>
     <type>bool</type>
     <default>false</default>
