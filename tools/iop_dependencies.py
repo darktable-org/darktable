@@ -121,7 +121,6 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorcorrection'))
   gr.add_edge(('colorout', 'sharpen'))
   gr.add_edge(('colorout', 'grain'))
-  gr.add_edge(('colorout', 'anlfyeni'))
   gr.add_edge(('colorout', 'lowpass'))
   gr.add_edge(('colorout', 'shadhi'))
   gr.add_edge(('colorout', 'highpass'))
@@ -144,7 +143,6 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colorin'))
   gr.add_edge(('sharpen', 'colorin'))
   gr.add_edge(('grain', 'colorin'))
-  gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('lowpass', 'colorin'))
   gr.add_edge(('shadhi', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
@@ -180,7 +178,6 @@ def add_edges(gr):
   gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
-  gr.add_edge(('anlfyeni', 'nlmeans'))
   gr.add_edge(('lowpass', 'nlmeans'))
   gr.add_edge(('shadhi', 'nlmeans'))
   gr.add_edge(('highpass', 'nlmeans'))
@@ -192,7 +189,6 @@ def add_edges(gr):
   
   # don't sharpen grain:
   gr.add_edge(('grain', 'sharpen'))
-  gr.add_edge(('grain', 'anlfyeni'))
   gr.add_edge(('grain', 'atrous'))
   gr.add_edge(('grain', 'highpass'))
   
@@ -279,7 +275,6 @@ def add_edges(gr):
   gr.add_edge(('lowpass', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
-  gr.add_edge(('anlfyeni', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
   gr.add_edge(('bloom', 'colormapping'))
   
@@ -333,7 +328,6 @@ def add_edges(gr):
 
 gr = digraph()
 gr.add_nodes([
-'anlfyeni', # deprecated
 'atrous',
 'basecurve',
 'bilateral',

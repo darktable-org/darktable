@@ -294,8 +294,6 @@ dir  path=opt/darktable/share/darktable/pixmaps/plugins owner=root group=root \
     mode=755
 dir  path=opt/darktable/share/darktable/pixmaps/plugins/darkroom owner=root \
     group=root mode=755
-file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/anlfyeni.png \
-    owner=root group=root mode=644
 file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/atrous.png \
     owner=root group=root mode=644
 file path=opt/darktable/share/darktable/pixmaps/plugins/darkroom/basecurve.png \
