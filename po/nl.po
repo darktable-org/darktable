@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-18 17:41+0200\n"
-"PO-Revision-Date: 2014-04-19 09:19+0100\n"
+"POT-Creation-Date: 2014-04-24 22:18+0200\n"
+"PO-Revision-Date: 2014-04-24 22:19+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -25,7 +25,7 @@ msgstr "pixel breedte zijpanelen "
 #: ../build/src/preferences_gen.h:1558 ../build/src/preferences_gen.h:1601
 #: ../build/src/preferences_gen.h:1625 ../build/src/preferences_gen.h:1796
 #: ../build/src/preferences_gen.h:1991 ../build/src/preferences_gen.h:2015
-#: ../build/src/preferences_gen.h:2040 ../src/lua/preferences.c:379
+#: ../build/src/preferences_gen.h:2040 ../src/lua/preferences.c:442
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dubbelklik om te resetten naar `%d'"
@@ -57,7 +57,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2280 ../build/src/preferences_gen.h:2299
 #: ../build/src/preferences_gen.h:2318 ../build/src/preferences_gen.h:2368
 #: ../build/src/preferences_gen.h:2387 ../build/src/preferences_gen.h:2406
-#: ../src/lua/preferences.c:362 ../src/lua/preferences.c:370
+#: ../src/lua/preferences.c:425 ../src/lua/preferences.c:433
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dubbelklikken is resetten naar `%s'"
@@ -4075,59 +4075,59 @@ msgstr "lichtheid van de kleur"
 msgid "mix value of source lightness"
 msgstr "mix waarden voor de bron helderheden"
 
-#: ../src/iop/colormapping.c:147
+#: ../src/iop/colormapping.c:149
 msgid "color mapping"
 msgstr "kleurenkaart"
 
-#: ../src/iop/colormapping.c:166
+#: ../src/iop/colormapping.c:168
 msgctxt "accel"
 msgid "acquire as source"
 msgstr "bron binnenhalen"
 
-#: ../src/iop/colormapping.c:167
+#: ../src/iop/colormapping.c:169
 msgctxt "accel"
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1057
+#: ../src/iop/colormapping.c:1059
 msgid "source clusters:"
 msgstr "clusterbronnen"
 
-#: ../src/iop/colormapping.c:1067
+#: ../src/iop/colormapping.c:1069
 msgid "target clusters:"
 msgstr "clusterdoelen"
 
-#: ../src/iop/colormapping.c:1081
+#: ../src/iop/colormapping.c:1083
 msgid "acquire as source"
 msgstr "bron binnenhalen"
 
-#: ../src/iop/colormapping.c:1083
+#: ../src/iop/colormapping.c:1085
 msgid "analyze this image as a source image"
 msgstr "analyseer afbeelding als bronafbeelding"
 
-#: ../src/iop/colormapping.c:1087
+#: ../src/iop/colormapping.c:1089
 msgid "acquire as target"
 msgstr "doel binnenhalen"
 
-#: ../src/iop/colormapping.c:1089
+#: ../src/iop/colormapping.c:1091
 msgid "analyze this image as a target image"
 msgstr "analyseer afbeelding als doelafbeelding"
 
-#: ../src/iop/colormapping.c:1094
+#: ../src/iop/colormapping.c:1096
 msgid "number of clusters"
 msgstr "aantal clusters"
 
-#: ../src/iop/colormapping.c:1096
+#: ../src/iop/colormapping.c:1098
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "doorzoek de afbeelding op dit aantal clusters, bij een wijziging worden "
 "clusters gereset"
 
-#: ../src/iop/colormapping.c:1101
+#: ../src/iop/colormapping.c:1103
 msgid "color dominance"
 msgstr "kleurdominantie"
 
-#: ../src/iop/colormapping.c:1102
+#: ../src/iop/colormapping.c:1104
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -4135,11 +4135,11 @@ msgstr ""
 "bepaald hoe clusters in kaart worden gebracht; lage waarden op kleur "
 "nabijheid, hoge waarden op kleurdominantie"
 
-#: ../src/iop/colormapping.c:1108
+#: ../src/iop/colormapping.c:1110
 msgid "histogram equalization"
 msgstr "histogram egaliseren"
 
-#: ../src/iop/colormapping.c:1109
+#: ../src/iop/colormapping.c:1111
 msgid "level of histogram equalization"
 msgstr "mate van histogram egalisatie"
 
@@ -8476,9 +8476,14 @@ msgstr "opruimen niet gebruikte vormen"
 msgid "created shapes"
 msgstr "gecreëerde vormen"
 
-#: ../src/lua/preferences.c:342
+#: ../src/lua/preferences.c:405
 msgid "lua options"
 msgstr "lua opties"
+
+#: ../src/lua/preferences.c:451
+#, c-format
+msgid "double click to reset to `%f'"
+msgstr "dubbelklik om te resetten naar `%f'"
 
 #: ../src/imageio/format/webp.c:244
 msgid "WebP (8-bit)"
