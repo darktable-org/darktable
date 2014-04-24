@@ -1253,7 +1253,7 @@ void dt_cache_print_locked(dt_cache_t *cache)
 }
 
 void dt_cache_set_filebacked (dt_cache_t *cache, char *path, uint32_t obj_size) {
-  fprintf(stderr, "Filebacked cache: Trying to setup in %s\n", path);
+  //fprintf(stderr, "Filebacked cache: Trying to setup in %s\n", path);
   int ret = mkdir(path, 0753);
   if (!ret || errno == EEXIST) {
     cache->path = path;
