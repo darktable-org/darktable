@@ -484,13 +484,13 @@ read_finalize:
     char cachedir[DT_MAX_PATH_LEN];
     dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
     gchar *mipcachedir = g_strdup_printf("%s/DT_MIPMAP_%d",cachedir,k);
-    fprintf(stderr, "[mipmap_cache] removing all files from `%s'\n", mipcachedir);
+    //fprintf(stderr, "[mipmap_cache] removing all files from `%s'\n", mipcachedir);
     if (g_file_test(mipcachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
       const gchar *filename;
       GDir *dir = g_dir_open(mipcachedir, 0, NULL);
       while (dir && (filename = g_dir_read_name(dir))) {
         gchar *full_filename = g_strdup_printf("%s/%s",mipcachedir,filename);
-        fprintf(stderr, "[mipmap_cache] removing `%s'\n", full_filename);
+        //fprintf(stderr, "[mipmap_cache] removing `%s'\n", full_filename);
         g_unlink(full_filename);
         g_free(full_filename);
       }
