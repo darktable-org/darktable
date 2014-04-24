@@ -468,7 +468,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
        *   -- Boardhead, dpreview forums in 2005
        */
       int nominator = pos->toRational(0).first;
-      img->exif_focus_distance = (0.001 * nominator);
+      img->exif_focus_distance = fmax(0.0, (0.001 * nominator));
     }
 #if EXIV2_MINOR_VERSION>24
     else if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.CanonFi.FocusDistanceUpper")))
