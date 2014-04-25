@@ -68,7 +68,6 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <stdbool.h>
 #ifndef __WIN32__
   #include <sys/wait.h>
 #endif
@@ -980,7 +979,7 @@ void dt_free_align(void *mem)
 }
 #endif
 
-inline bool dt_is_aligned(const void *pointer, size_t byte_count)
+inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {
   return (uintptr_t)pointer % byte_count == 0;
 }
