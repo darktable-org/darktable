@@ -211,16 +211,53 @@ typedef struct dt_introspection_t
 } dt_introspection_t;
 
 
-// helper function to access array elements -- make sure to cast the result correctly!
-static inline void *dt_introspection_access_array(void * params, dt_introspection_field_t * field, unsigned int element)
+/** helper function to access array elements -- make sure to cast the result correctly!
+ *
+ * @param self field description of the array
+ * @param start pointer into the params blob to the start of the array
+ * @param element the element of the array to return
+ * @param child if non-%NULL, it returns the field description of the child element
+ * @return the pointer into the params blob to the requested element, or %NULL if not found
+ **/
+static inline void *dt_introspection_access_array(dt_introspection_field_t * self, void * start, unsigned int element, dt_introspection_field_t ** child)
 {
-  if(! (params && field && field->header.type == DT_INTROSPECTION_TYPE_ARRAY && element < field->Array.count))
+  if(! (start && self && self->header.type == DT_INTROSPECTION_TYPE_ARRAY && element < self->Array.count))
     return NULL;
 
-  char *result = (char*)params + field->header.offset;
-  result += element * field->Array.field->header.size;
-  return (void*)result;
+  if(child) *child = self->Array.field;
+  return (void*)((char*)start + element * self->Array.field->header.size);
 }
+
+
+/** helper function to access elements in a struct -- make sure to cast the result correctly!
+ *
+ * @param self field description of the struct
+ * @param start pointer into the params blob to the start of the struct
+ * @param name the name of the child to look for
+ * @param child if non-%NULL, it returns the field description of the child element
+ * @return the pointer into the params blob to the requested element, or %NULL if not found
+ **/
+static inline void *dt_introspection_get_child(dt_introspection_field_t * self, void * start, const char * name, dt_introspection_field_t ** child)
+{
+  if(! (start && self && name && *name && self->header.type == DT_INTROSPECTION_TYPE_STRUCT))
+    return NULL;
+
+  dt_introspection_field_t **iter = self->Struct.fields;
+  while(*iter)
+  {
+    if(!strcmp((*iter)->header.field_name, name))
+    {
+      size_t parent_offset = self->header.offset;
+      size_t child_offset = (*iter)->header.offset;
+      size_t relative_offset = child_offset - parent_offset;
+      if(child) *child = *iter;
+      return (void*)((char*)start + relative_offset);
+    }
+    iter++;
+  }
+  return NULL;
+}
+
 
 #endif // __INTROSPECTION_H__
 
