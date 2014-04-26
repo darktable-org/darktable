@@ -52,7 +52,7 @@ int write_image (dt_imageio_module_data_t *data, const char *filename, const voi
       if(cnt != pfm->width) status = 1;
       else status = 0;
     }
-    free(buf_line);
+    dt_free_align(buf_line);
     buf_line = NULL;
     fclose(f);
   }
