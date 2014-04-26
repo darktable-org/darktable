@@ -1251,6 +1251,22 @@ list_view (dt_lib_collect_rule_t *dr)
       goto entry_key_press_exit;
       break;
 
+    case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("tagged"),
+                          DT_LIB_COLLECT_COL_ID, 0,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("tagged"),
+                          -1);
+      gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
+      gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
+                          DT_LIB_COLLECT_COL_TEXT,_("not tagged"),
+                          DT_LIB_COLLECT_COL_ID, 1,
+                          DT_LIB_COLLECT_COL_TOOLTIP,_("not tagged"),
+                          -1);
+      goto entry_key_press_exit;
+      break;
+
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabels
       gtk_list_store_append(GTK_LIST_STORE(listmodel), &iter);
       gtk_list_store_set (GTK_LIST_STORE(listmodel), &iter,
