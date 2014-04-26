@@ -234,6 +234,7 @@ void *dt_alloc_align(size_t alignment, size_t size);
 #else
   #define dt_free_align(A) free(A)
 #endif
+gboolean dt_is_aligned(const void *pointer, size_t byte_count);
 int dt_capabilities_check(char *capability);
 void dt_capabilities_add(char *capability);
 void dt_capabilities_remove(char *capability);

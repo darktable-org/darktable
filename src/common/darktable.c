@@ -979,6 +979,11 @@ void dt_free_align(void *mem)
 }
 #endif
 
+inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
+{
+  return (uintptr_t)pointer % byte_count == 0;
+}
+
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {
   dt_times_t end;
