@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-21 12:24+0200\n"
-"PO-Revision-Date: 2014-04-21 12:30+0100\n"
+"POT-Creation-Date: 2014-04-27 12:35+0200\n"
+"PO-Revision-Date: 2014-04-27 12:43+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -25,7 +25,7 @@ msgstr "taille des panneaux latéraux en pixels"
 #: ../build/src/preferences_gen.h:1558 ../build/src/preferences_gen.h:1601
 #: ../build/src/preferences_gen.h:1625 ../build/src/preferences_gen.h:1796
 #: ../build/src/preferences_gen.h:1991 ../build/src/preferences_gen.h:2015
-#: ../build/src/preferences_gen.h:2040 ../src/lua/preferences.c:379
+#: ../build/src/preferences_gen.h:2040 ../src/lua/preferences.c:442
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "double-cliquer pour réinitialiser «%d»"
@@ -55,7 +55,7 @@ msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 #: ../build/src/preferences_gen.h:2280 ../build/src/preferences_gen.h:2299
 #: ../build/src/preferences_gen.h:2318 ../build/src/preferences_gen.h:2368
 #: ../build/src/preferences_gen.h:2387 ../build/src/preferences_gen.h:2406
-#: ../src/lua/preferences.c:362 ../src/lua/preferences.c:370
+#: ../src/lua/preferences.c:425 ../src/lua/preferences.c:433
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "double-cliquer pour réinitialiser «%s»"
@@ -731,13 +731,13 @@ msgstr ""
 #: ../src/iop/bilateral.cc:347 ../src/iop/channelmixer.c:461
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:641
 #: ../src/iop/colorbalance.c:679 ../src/iop/colorbalance.c:717
-#: ../src/iop/temperature.c:758 ../src/libs/collect.c:1257
-#: ../src/libs/collect.c:1259
+#: ../src/iop/temperature.c:758 ../src/libs/collect.c:1273
+#: ../src/libs/collect.c:1275
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:550 ../src/develop/lightroom.c:983
-#: ../src/libs/collect.c:1263 ../src/libs/collect.c:1265
+#: ../src/libs/collect.c:1279 ../src/libs/collect.c:1281
 msgid "yellow"
 msgstr "jaune"
 
@@ -745,8 +745,8 @@ msgstr "jaune"
 #: ../src/iop/bilateral.cc:348 ../src/iop/channelmixer.c:462
 #: ../src/iop/channelmixer.c:480 ../src/iop/colorbalance.c:650
 #: ../src/iop/colorbalance.c:688 ../src/iop/colorbalance.c:726
-#: ../src/iop/temperature.c:759 ../src/libs/collect.c:1269
-#: ../src/libs/collect.c:1271
+#: ../src/iop/temperature.c:759 ../src/libs/collect.c:1285
+#: ../src/libs/collect.c:1287
 msgid "green"
 msgstr "vert"
 
@@ -754,13 +754,13 @@ msgstr "vert"
 #: ../src/iop/bilateral.cc:349 ../src/iop/channelmixer.c:463
 #: ../src/iop/channelmixer.c:487 ../src/iop/colorbalance.c:659
 #: ../src/iop/colorbalance.c:697 ../src/iop/colorbalance.c:735
-#: ../src/iop/temperature.c:760 ../src/libs/collect.c:1275
-#: ../src/libs/collect.c:1277
+#: ../src/iop/temperature.c:760 ../src/libs/collect.c:1291
+#: ../src/libs/collect.c:1293
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:553 ../src/libs/collect.c:1281
-#: ../src/libs/collect.c:1283
+#: ../src/common/collection.c:553 ../src/libs/collect.c:1297
+#: ../src/libs/collect.c:1299
 msgid "purple"
 msgstr "violet"
 
@@ -770,7 +770,13 @@ msgstr "violet"
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:809
+#. geotagging
+#: ../src/common/collection.c:564 ../src/libs/collect.c:1257
+#: ../src/libs/collect.c:1259
+msgid "tagged"
+msgstr "positionnée"
+
+#: ../src/common/collection.c:813
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1699,41 +1705,41 @@ msgstr "impossible d'allouer la mémoire pour la fusion"
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module «%s» version non cohérentes: %d != %d"
 
-#: ../src/develop/imageop.c:795
+#: ../src/develop/imageop.c:793
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:800
+#: ../src/develop/imageop.c:798
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:805 ../src/libs/masks.c:1063
+#: ../src/develop/imageop.c:803 ../src/libs/masks.c:1063
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:811 ../src/libs/masks.c:1066
+#: ../src/develop/imageop.c:809 ../src/libs/masks.c:1066
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:817 ../src/libs/image.c:146
+#: ../src/develop/imageop.c:815 ../src/libs/image.c:146
 #: ../src/libs/styles.c:394 ../src/libs/tagging.c:492
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:839 ../src/develop/imageop.c:1736
+#: ../src/develop/imageop.c:837 ../src/develop/imageop.c:1734
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:839 ../src/develop/imageop.c:1736
+#: ../src/develop/imageop.c:837 ../src/develop/imageop.c:1734
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1115 ../src/gui/accelerators.c:760
+#: ../src/develop/imageop.c:1113 ../src/gui/accelerators.c:760
 #: ../src/gui/accelerators.c:840 ../src/gui/accelerators.c:1007
 #: ../src/gui/accelerators.c:1032 ../src/gui/presets.c:182
 #: ../src/gui/presets.c:283 ../src/gui/presets.c:624
@@ -1742,41 +1748,41 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1158
+#: ../src/develop/imageop.c:1156
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1163
+#: ../src/develop/imageop.c:1161
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1164
+#: ../src/develop/imageop.c:1162
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1167 ../src/libs/lib.c:547
+#: ../src/develop/imageop.c:1165 ../src/libs/lib.c:547
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1169 ../src/libs/lib.c:552
+#: ../src/develop/imageop.c:1167 ../src/libs/lib.c:552
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1706
+#: ../src/develop/imageop.c:1704
 msgid "multiple instances actions"
 msgstr "instances multiples"
 
-#: ../src/develop/imageop.c:1715 ../src/libs/lib.c:859
+#: ../src/develop/imageop.c:1713 ../src/libs/lib.c:859
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1724 ../src/gui/preferences.c:407
+#: ../src/develop/imageop.c:1722 ../src/gui/preferences.c:407
 #: ../src/libs/lib.c:872
 msgid "presets"
 msgstr "pré-réglages"
@@ -1800,7 +1806,8 @@ msgstr "mots-clés"
 msgid "rating"
 msgstr "étoile"
 
-#: ../src/develop/lightroom.c:1438 ../src/libs/geotagging.c:45
+#: ../src/develop/lightroom.c:1438 ../src/libs/collect.h:47
+#: ../src/libs/geotagging.c:45
 msgid "geotagging"
 msgstr "géolocalisation"
 
@@ -1822,7 +1829,7 @@ msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
 "tuilage impossible pour le module '%s'. la sortie est probablement corrompue."
 
-#: ../src/develop/pixelpipe_hb.c:2246
+#: ../src/develop/pixelpipe_hb.c:2138
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2225,7 +2232,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:469 ../src/gui/preferences.c:1386
-#: ../src/gui/presets.c:450 ../src/iop/exposure.c:81 ../src/iop/exposure.c:666
+#: ../src/gui/presets.c:450 ../src/iop/exposure.c:83 ../src/iop/exposure.c:667
 #: ../src/iop/relight.c:384 ../src/libs/metadata_view.c:93
 msgid "exposure"
 msgstr "exposition"
@@ -2245,7 +2252,7 @@ msgid "focal length"
 msgstr "focale"
 
 #: ../src/gui/preferences.c:490 ../src/iop/borders.c:1050
-#: ../src/iop/exposure.c:670 ../src/iop/levels.c:345
+#: ../src/iop/exposure.c:671 ../src/iop/levels.c:345
 #: ../src/iop/tonecurve.c:779
 msgid "auto"
 msgstr "auto"
@@ -2571,7 +2578,7 @@ msgstr "Cinema4K, 24fps"
 msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bits)"
 
-#: ../src/imageio/format/pfm.c:104
+#: ../src/imageio/format/pfm.c:114
 msgid "PFM (float)"
 msgstr "PFM (flottant)"
 
@@ -4557,69 +4564,69 @@ msgstr ""
 "il apparaît afin que vous le désactiviez\n"
 "et utilisiez le nouvel égaliseur"
 
-#: ../src/iop/exposure.c:98
+#: ../src/iop/exposure.c:100
 msgctxt "accel"
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:99 ../src/iop/relight.c:110
+#: ../src/iop/exposure.c:101 ../src/iop/relight.c:110
 msgctxt "accel"
 msgid "exposure"
 msgstr "exposition"
 
-#: ../src/iop/exposure.c:100
+#: ../src/iop/exposure.c:102
 msgctxt "accel"
 msgid "auto-exposure"
 msgstr "exposition auto"
 
-#: ../src/iop/exposure.c:101
+#: ../src/iop/exposure.c:103
 msgctxt "accel"
 msgid "deflicker"
 msgstr "deflicker"
 
-#: ../src/iop/exposure.c:102
+#: ../src/iop/exposure.c:104
 msgctxt "accel"
 msgid "deflicker-percentile"
 msgstr "percentile-deflicker"
 
-#: ../src/iop/exposure.c:103
+#: ../src/iop/exposure.c:105
 msgctxt "accel"
 msgid "deflicker-level"
 msgstr "valeur-deflicker"
 
-#: ../src/iop/exposure.c:152
+#: ../src/iop/exposure.c:154
 msgid "magic lantern defaults"
 msgstr "défauts de magic lantern"
 
-#: ../src/iop/exposure.c:156
+#: ../src/iop/exposure.c:158
 msgid "almost no clipping"
 msgstr "presque aucune troncature"
 
-#: ../src/iop/exposure.c:658
+#: ../src/iop/exposure.c:659
 msgid "adjust the black level"
 msgstr "ajuste les niveaux de noir"
 
-#: ../src/iop/exposure.c:660
+#: ../src/iop/exposure.c:661
 msgid "black"
 msgstr "noir"
 
-#: ../src/iop/exposure.c:664
+#: ../src/iop/exposure.c:665
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition [IL]"
 
-#: ../src/iop/exposure.c:673
+#: ../src/iop/exposure.c:674
 msgid "percentage of bright values clipped out"
 msgstr "pourcentage de valeurs hautes tronquées"
 
-#: ../src/iop/exposure.c:681
+#: ../src/iop/exposure.c:682
 msgid "deflicker"
 msgstr "deflicker"
 
-#: ../src/iop/exposure.c:685 ../src/iop/exposure.c:687
+#: ../src/iop/exposure.c:686 ../src/iop/exposure.c:688
 msgid "percentile"
 msgstr "percentile"
 
-#: ../src/iop/exposure.c:691 ../src/iop/exposure.c:693
+#: ../src/iop/exposure.c:692 ../src/iop/exposure.c:694
 msgid "target level"
 msgstr "valeur cible"
 
@@ -6150,11 +6157,11 @@ msgstr "BdB du boîtier"
 msgid "auto WB"
 msgstr "BdB automatique"
 
-#: ../src/iop/zonesystem.c:94
+#: ../src/iop/zonesystem.c:97
 msgid "zone system"
 msgstr "zones"
 
-#: ../src/iop/zonesystem.c:457
+#: ../src/iop/zonesystem.c:472
 msgid ""
 "lightness zones\n"
 "use mouse scrollwheel to change the number of zones\n"
@@ -6347,44 +6354,48 @@ msgstr "sans catégorie"
 msgid "not altered"
 msgstr "non développées"
 
-#: ../src/libs/collect.c:1474
+#: ../src/libs/collect.c:1263 ../src/libs/collect.c:1265
+msgid "not tagged"
+msgstr "non positionnée"
+
+#: ../src/libs/collect.c:1490
 msgid "local HDD"
 msgstr "disque dur local"
 
-#: ../src/libs/collect.c:1559 ../src/libs/collect.c:1573
-#: ../src/libs/collect.c:1963
+#: ../src/libs/collect.c:1575 ../src/libs/collect.c:1589
+#: ../src/libs/collect.c:1979
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
-#: ../src/libs/collect.c:1564
+#: ../src/libs/collect.c:1580
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1969
+#: ../src/libs/collect.c:1985
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1973
+#: ../src/libs/collect.c:1989
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1977
+#: ../src/libs/collect.c:1993
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1983
+#: ../src/libs/collect.c:1999
 msgid "change to: and"
 msgstr "changer en \"et\""
 
-#: ../src/libs/collect.c:1987
+#: ../src/libs/collect.c:2003
 msgid "change to: or"
 msgstr "changer en \"ou\""
 
-#: ../src/libs/collect.c:1991
+#: ../src/libs/collect.c:2007
 msgid "change to: except"
 msgstr "changer en \"mais sans\""
 
-#: ../src/libs/collect.c:2038
+#: ../src/libs/collect.c:2054
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
@@ -8572,9 +8583,14 @@ msgstr "supprimer masques non utilisés"
 msgid "created shapes"
 msgstr "masques existants"
 
-#: ../src/lua/preferences.c:342
+#: ../src/lua/preferences.c:405
 msgid "lua options"
 msgstr "options lua"
+
+#: ../src/lua/preferences.c:451
+#, c-format
+msgid "double click to reset to `%f'"
+msgstr "double-cliquer pour réinitialiser «%f»"
 
 #: ../src/imageio/format/webp.c:244
 msgid "WebP (8-bit)"
