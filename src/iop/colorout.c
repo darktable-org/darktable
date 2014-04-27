@@ -567,10 +567,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
   }
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
   d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
@@ -688,7 +688,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
-  d->xform = 0;
+  d->xform = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -698,10 +698,10 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
 
   free(piece->data);

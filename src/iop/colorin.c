@@ -526,13 +526,21 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       d->nrgb = NULL;
   }
 
-
-  if(d->xform_cam_Lab) cmsDeleteTransform(d->xform_cam_Lab);
-  if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
-  if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
-  d->xform_cam_Lab = NULL;
-  d->xform_cam_nrgb = NULL;
-  d->xform_nrgb_Lab = NULL;
+  if(d->xform_cam_Lab)
+  {
+    cmsDeleteTransform(d->xform_cam_Lab);
+    d->xform_cam_Lab = NULL;
+  }
+  if(d->xform_cam_nrgb)
+  {
+    cmsDeleteTransform(d->xform_cam_nrgb);
+    d->xform_cam_nrgb = NULL;
+  }
+  if(d->xform_nrgb_Lab)
+  {
+    cmsDeleteTransform(d->xform_nrgb_Lab);
+    d->xform_nrgb_Lab = NULL;
+  }
 
   d->cmatrix[0] = d->nmatrix[0] = d->lmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
@@ -675,10 +683,16 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // we might have failed generating the clipping transformations, check that:
   if(d->nrgb && ((!d->xform_cam_nrgb && isnan(d->nmatrix[0])) || (!d->xform_nrgb_Lab && isnan(d->lmatrix[0]))))
   {
-    if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
-    if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
-    d->xform_cam_nrgb = NULL;
-    d->xform_nrgb_Lab = NULL;
+    if(d->xform_cam_nrgb)
+    {
+      cmsDeleteTransform(d->xform_cam_nrgb);
+      d->xform_cam_nrgb = NULL;
+    }
+    if(d->xform_nrgb_Lab)
+    {
+      cmsDeleteTransform(d->xform_nrgb_Lab);
+      d->xform_nrgb_Lab = NULL;
+    }
     dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
   }
@@ -739,15 +753,22 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   if(d->input) dt_colorspaces_cleanup_profile(d->input);
   dt_colorspaces_cleanup_profile(d->Lab);
   if (d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
-  if(d->xform_cam_Lab) cmsDeleteTransform(d->xform_cam_Lab);
-  if(d->xform_cam_nrgb) cmsDeleteTransform(d->xform_cam_nrgb);
-  if(d->xform_nrgb_Lab) cmsDeleteTransform(d->xform_nrgb_Lab);
-  d->xform_cam_Lab = NULL;
-  d->xform_cam_nrgb = NULL;
-  d->xform_nrgb_Lab = NULL;
-  free(d->xform_cam_Lab);
-  free(d->xform_cam_nrgb);
-  free(d->xform_nrgb_Lab);
+  if(d->xform_cam_Lab)
+  {
+    cmsDeleteTransform(d->xform_cam_Lab);
+    d->xform_cam_Lab = NULL;
+  }
+  if(d->xform_cam_nrgb)
+  {
+    cmsDeleteTransform(d->xform_cam_nrgb);
+    d->xform_cam_nrgb = NULL;
+  }
+  if(d->xform_nrgb_Lab)
+  {
+    cmsDeleteTransform(d->xform_nrgb_Lab);
+    d->xform_nrgb_Lab = NULL;
+  }
+
   free(piece->data);
   piece->data = NULL;
 }
