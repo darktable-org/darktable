@@ -155,6 +155,10 @@
 
   <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- Slideshow  Chapter -->
+
+  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Preferences and Settings Chapter -->
 
   <xi:include href="preferences/preferences.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

@@ -273,10 +273,11 @@
       <title>overwrite</title>
 
       <para>
-        Enabling
-        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" />
-        allows you to overwrite all images being exported (if file with same name exists),
-        but only for this export - checkbox will be deactivated as soon as you will press export in order to protect you from data loss.
+        Enabling the
+        <inlinegraphic fileref="&icon_general_checkbox;" scalefit="1" width="2%" align="center" /> checkbox
+        allows darktable to overwrite existing images during export. If this option is not checked
+        darktable automatically selects a unique new file name in case of naming conflicts. The overwrite 
+        option gets reset after each export in order to protect you from accidental data loss.
       </para>
 
     </sect4>
