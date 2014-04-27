@@ -759,6 +759,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
   for(int ch=0; ch<atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void init_presets (dt_iop_module_so_t *self)

@@ -952,6 +952,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_free_align(d->tmpbuf);
   dt_free_align(d->tmpbuf2);
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 

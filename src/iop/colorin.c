@@ -749,6 +749,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   free(d->xform_cam_nrgb);
   free(d->xform_nrgb_Lab);
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)

@@ -252,6 +252,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 {
   // clean up everything again.
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
