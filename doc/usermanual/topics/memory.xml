@@ -245,8 +245,30 @@
       On a 64-bit system you can safely leave the tiling related configuration parameters at
       their defaults: <quote>host memory limit (in MB) for tiling</quote> should have a value of
       1500 and <quote>minimum amount of memory (in MB) for a single buffer in tiling</quote>
-      should be set to 16. In case you are migrating from a 32-bit to a 64-bit system you should
-      check these settings and manually change them if needed.
+      should be set to 16. In case you are migrating from a 32-bit to a 64-bit system you will need
+      to check these settings and manually change them if needed in darktable's preference dialog.
+    </para>
+
+    <para>
+      Typically there is no need to restrict oneself in the number of background threads on a 64-bit system.
+      On a multi-processor system a number of two to eight threads can speed up thumbnail generation considerably versus
+      only one thread. The reason is not so much taking maximum advantage of all your CPU cores - darktable's pixelpipe
+      anyhow uses all of them in parallel - but hiding I/O latency.
+    </para>
+
+    <indexterm>
+      <primary>panoramas</primary>
+    </indexterm>
+
+    <indexterm>
+      <primary>stitched panoramas</primary>
+    </indexterm>
+
+    <para>
+      One exception is worth to be mentioned. If you use darktable to process stitched panoramas, e.g. TIFFs as generated
+      by Hugin, these images can reach considerable sizes. Each background thread needs to allocate enough memory
+      to keep one full image plus intermediates and output in its buffers. This may quickly run even a well equipped 64-bit 
+      system out of memory. In that case lower the number of background threads to only one.
     </para>
 
   </sect2>
