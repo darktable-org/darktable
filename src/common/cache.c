@@ -1309,7 +1309,7 @@ void dt_cache_filebacked_remove(dt_cache_t *cache, const uint32_t key) {
   if (cache->path) {
     char *filename = dt_cache_filebacked_getfilename(cache, key);
     //fprintf(stderr, "Filebacked cache: Trying to remove %s\n", filename);
-    if (unlink(filename)) {
+    if (g_file_test(filename, G_FILE_TEST_EXISTS) && unlink(filename)) {
       fprintf(stderr, "Filebacked cache: Couldn't remove %s, error %s\n", filename, strerror(errno));
     }
     g_free(filename);
