@@ -103,14 +103,6 @@
     Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).
   </para>
 
-  <bridgehead renderas="sect4">indicate focus regions</bridgehead>
-
-  <para>
-    If enabled an overlay indicating image sharpness is displayed in full screen preview in
-    lighttable mode (<quote>z</quote>-option, see <xref linkend="lighttable_overview"/>). Very
-    sharp areas are indicated in red; slightly less sharp areas in blue (default off).
-  </para>
-
   <bridgehead renderas="sect4">enable filmstrip</bridgehead>
 
   <para>

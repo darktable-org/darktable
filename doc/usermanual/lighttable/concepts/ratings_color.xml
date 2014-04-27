@@ -28,14 +28,14 @@
     rating at any time. As an extension to the rating system you can also mark an image as
     <quote>rejected</quote> by pressing the
     <inlinegraphic fileref="&icon_lighttable_reject;" scalefit="1" width="2%" align="center"/>
-    icon.
+    icon or typing the <emphasis>r</emphasis> key.
   </para>
 
   <para>
     There are several ways to change a rating. With the mouse pointer over an image you can
-    press a number key <emphasis>0&nbsp;&ndash; 5</emphasis> to change the rating of a single
-    image; this is probably the fastest way when rating your images on first inspection of a
-    film roll.
+    press a number key <emphasis>0&nbsp;&ndash; 5</emphasis> or <emphasis>r</emphasis> to change 
+    the rating of a single image; this is probably the fastest way when rating your images on first 
+    inspection of a film roll.
   </para>
 
   <para>
