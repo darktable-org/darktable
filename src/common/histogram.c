@@ -83,16 +83,14 @@ histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_params
   ilo = _mm_cvtps_epi32(flo);
   ihi = _mm_cvtps_epi32(fhi);
 
-  __m128i *values = (__m128i *) dt_alloc_align(16, 2 * sizeof(__m128i));
-  _mm_store_si128 (values, ilo);
-  _mm_store_si128 (values + 1, ihi);
+  __m128i values[2] __attribute__((aligned(16)));
+  _mm_store_si128 (&(values[0]), ilo);
+  _mm_store_si128 (&(values[1]), ihi);
 
-  const uint32_t *valuesi = (uint32_t *) values;
+  const uint32_t *valuesi = (uint32_t *)(&values);
 
   for(int k = 0; k < 8; k++)
     histogram[4 * valuesi[k]] ++;
-
-  dt_free_align(values);
 }
 
 void inline
@@ -152,10 +150,10 @@ histogram_helper_cs_rgb_helper_process_pixel_m128(const dt_dev_histogram_params_
 
   const __m128i indexes = _mm_cvtps_epi32(clamped);
 
-  __m128i *values = (__m128i *) dt_alloc_align(16, sizeof(__m128i));
-  _mm_store_si128 (values, indexes);
+  __m128i values __attribute__((aligned(16)));
+  _mm_store_si128 (&values, indexes);
 
-  const uint32_t *valuesi = (uint32_t *) values;
+  const uint32_t *valuesi = (uint32_t*)(&values);
 
   histogram[4 * valuesi[0]] ++;
   histogram[4 * valuesi[1] + 1] ++;
@@ -210,10 +208,10 @@ histogram_helper_cs_Lab_helper_process_pixel_m128(const dt_dev_histogram_params_
 
   const __m128i indexes = _mm_cvtps_epi32(clamped);
 
-  __m128i *values = (__m128i *) dt_alloc_align(16, sizeof(__m128i));
-  _mm_store_si128 (values, indexes);
+  __m128i values __attribute__((aligned(16)));
+  _mm_store_si128 (&values, indexes);
 
-  const uint32_t *valuesi = (uint32_t *) values;
+  const uint32_t *valuesi = (uint32_t*)(&values);
 
   histogram[4 * valuesi[0]] ++;
   histogram[4 * valuesi[1] + 1] ++;
