@@ -327,8 +327,8 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  histogram_helper(histogram_params, cst, pixel, histogram);
-  histogram_max_helper(histogram_params, cst, histogram, histogram_max);
+  dt_histogram_helper(histogram_params, cst, pixel, histogram);
+  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
   free(histogram_params);
 }
@@ -361,8 +361,8 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
 
   const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(module);
 
-  histogram_helper(histogram_params, cst, pixel, histogram);
-  histogram_max_helper(histogram_params, cst, histogram, histogram_max);
+  dt_histogram_helper(histogram_params, cst, pixel, histogram);
+  dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
   free(histogram_params);
   dt_free_align(pixel);

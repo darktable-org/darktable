@@ -23,23 +23,23 @@
 #include "develop/pixelpipe.h"
 
 void
-histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
-                               const void *pixel, float *histogram, int j);
+dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
+                                  const void *pixel, float *histogram, int j);
 
-typedef void ((*worker)(const dt_dev_histogram_params_t *histogram_params,
-                        const void *pixel, float *histogram, int j));
-
-void
-histogram_worker(const dt_dev_histogram_params_t *histogram_params,
-                 const void *pixel, float **histogram, worker Worker);
+typedef void ((*dt_worker)(const dt_dev_histogram_params_t *histogram_params,
+                           const void *pixel, float *histogram, int j));
 
 void
-histogram_helper(const dt_dev_histogram_params_t *histogram_params,
-                 dt_iop_colorspace_type_t cst, const void *pixel, float **histogram);
+dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
+                    const void *pixel, float **histogram, dt_worker Worker);
 
 void
-histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
-                     dt_iop_colorspace_type_t cst, float **histogram, float *histogram_max);
+dt_histogram_helper(const dt_dev_histogram_params_t *histogram_params,
+                    dt_iop_colorspace_type_t cst, const void *pixel, float **histogram);
+
+void
+dt_histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
+                        dt_iop_colorspace_type_t cst, float **histogram, float *histogram_max);
 
 #endif
 

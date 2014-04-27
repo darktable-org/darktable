@@ -94,8 +94,8 @@ histogram_helper_cs_RAW_helper_process_pixel_si128(const dt_dev_histogram_params
 }
 
 void inline
-histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
-                               const void *pixel, float *histogram, int j)
+dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_params_t *histogram_params,
+                                  const void *pixel, float *histogram, int j)
 {
   const dt_iop_roi_t *roi = histogram_params->roi;
   uint16_t *in  = (uint16_t *)pixel + roi->width * j;
@@ -233,8 +233,8 @@ histogram_helper_cs_Lab(const dt_dev_histogram_params_t *histogram_params,
 //==============================================================================
 
 void
-histogram_worker(const dt_dev_histogram_params_t *histogram_params,
-                 const void *pixel, float **histogram, worker Worker)
+dt_histogram_worker(const dt_dev_histogram_params_t *histogram_params,
+                    const void *pixel, float **histogram, dt_worker Worker)
 {
   const int nthreads = omp_get_max_threads();
 
@@ -277,29 +277,29 @@ histogram_worker(const dt_dev_histogram_params_t *histogram_params,
 //------------------------------------------------------------------------------
 
 void
-histogram_helper(const dt_dev_histogram_params_t *histogram_params,
-                 dt_iop_colorspace_type_t cst, const void *pixel, float **histogram)
+dt_histogram_helper(const dt_dev_histogram_params_t *histogram_params,
+                    dt_iop_colorspace_type_t cst, const void *pixel, float **histogram)
 {
   switch(cst)
   {
     case iop_cs_RAW:
-      histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_RAW);
+      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_RAW);
       break;
 
     case iop_cs_rgb:
-      histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_rgb);
+      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_rgb);
       break;
 
     case iop_cs_Lab:
     default:
-      histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_Lab);
+      dt_histogram_worker(histogram_params, pixel, histogram, histogram_helper_cs_Lab);
       break;
   }
 }
 
 void
-histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
-                     dt_iop_colorspace_type_t cst, float **histogram, float *histogram_max)
+dt_histogram_max_helper(const dt_dev_histogram_params_t *histogram_params,
+                        dt_iop_colorspace_type_t cst, float **histogram, float *histogram_max)
 {
   if(*histogram == NULL)
     return;
