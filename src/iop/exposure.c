@@ -27,6 +27,8 @@
 #include "common/opencl.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "common/mipmap_cache.h"
+#include "common/image_cache.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -52,7 +54,7 @@ dt_iop_exposure_mode_t;
 typedef enum dt_iop_exposure_deflicker_histogram_source_t
 {
   DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL,
-  DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE // NOT IMPLEMENTED
+  DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE
 }
 dt_iop_exposure_deflicker_histogram_source_t;
 
@@ -208,6 +210,32 @@ void init_presets (dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "commit", NULL, NULL, NULL);
 }
 
+static void
+deflicker_prepare_histogram(dt_iop_module_t *self, float **histogram)
+{
+  dt_mipmap_buffer_t buf;
+  dt_mipmap_cache_read_get(darktable.mipmap_cache, &buf, self->dev->image_storage.id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING);
+  const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, self->dev->image_storage.id);
+  dt_image_cache_read_release(darktable.image_cache, img);
+  if(buf.size != DT_MIPMAP_FULL)
+  {
+    dt_control_log(_("failed to get raw buffer from image `%s'"), img->filename);
+    dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+    return;
+  }
+
+  dt_dev_histogram_params_t *histogram_params = (dt_dev_histogram_params_t*)malloc(sizeof(dt_dev_histogram_params_t));
+  memcpy(histogram_params, &self->histogram_params, sizeof(dt_dev_histogram_params_t));
+
+  dt_iop_roi_t roi = {0, 0, img->width, img->height, 1.0f};
+  histogram_params->roi = &roi;
+
+  dt_histogram_worker(histogram_params, buf.buf, histogram, dt_histogram_helper_cs_RAW_uint16);
+  free(histogram_params);
+
+  dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
+}
+
 /* input: 0 - 16384 (valid range: from black level to white level) */
 /* output: -14 ... 0 */
 static float raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
@@ -218,18 +246,17 @@ static float raw_to_ev(uint32_t raw, uint32_t black_level, uint32_t white_level)
   return raw_ev;
 }
 
-static int compute_correction(dt_iop_module_t *self, float *correction)
+static int compute_correction(dt_iop_module_t *self, float *histogram, int ch, float *correction)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(self->histogram == NULL) return 1;
+  if(histogram == NULL) return 1;
 
   uint32_t total = 0;
   for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
   {
-    total += self->histogram[4*i];
-    total += self->histogram[4*i+1];
-    total += self->histogram[4*i+2];
+    for(int k=0; k < ch; k++)
+      total += histogram[4*i+k];
   }
 
   float thr = (total * p->deflicker_percentile / 100.0f) - 2; // 50% => median; allow up to 2 stuck pixels
@@ -238,9 +265,8 @@ static int compute_correction(dt_iop_module_t *self, float *correction)
 
   for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
   {
-    n += self->histogram[4*i];
-    n += self->histogram[4*i+1];
-    n += self->histogram[4*i+2];
+    for(int k=0; k < ch; k++)
+      n += histogram[4*i+k];
 
     if (n >= thr)
     {
@@ -601,11 +627,25 @@ deflicker_process (dt_iop_module_t *self)
   if(!dt_image_is_raw(&self->dev->image_storage)) return;
 
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  float correction;
 
-  if(p->mode == EXPOSURE_MODE_DEFLICKER &&
-      !compute_correction(self, &correction))
-    exposure_set_white(self, exposure2white(correction));
+  if(p->mode != EXPOSURE_MODE_DEFLICKER) return;
+
+  float correction;
+  float *histogram = NULL;
+  switch(p->deflicker_histogram_source)
+  {
+    case DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE:
+      deflicker_prepare_histogram(self, &histogram);
+      if(!compute_correction(self, histogram, 1, &correction))
+        exposure_set_white(self, exposure2white(correction));
+      break;
+    case DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL:
+    default:
+      if(!compute_correction(self, self->histogram, 3, &correction))
+        exposure_set_white(self, exposure2white(correction));
+      break;
+  }
+  if(histogram != NULL) free(histogram);
 }
 
 static void
@@ -787,8 +827,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("thumbnail"));
   g->deflicker_histogram_sources = g_list_append(g->deflicker_histogram_sources, GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL));
 
-  //dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("source raw data")); // NOT IMPLEMENTED
-  //g->deflicker_histogram_sources = g_list_append(g->deflicker_histogram_sources, GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE));
+  dt_bauhaus_combobox_add(g->deflicker_histogram_source, _("source raw data"));
+  g->deflicker_histogram_sources = g_list_append(g->deflicker_histogram_sources, GUINT_TO_POINTER(DEFLICKER_HISTOGRAM_SOURCE_SOURCEFILE));
 
   dt_bauhaus_combobox_set_default(g->deflicker_histogram_source, DEFLICKER_HISTOGRAM_SOURCE_THUMBNAIL);
   dt_bauhaus_combobox_set(g->deflicker_histogram_source, g_list_index(g->modes, GUINT_TO_POINTER(p->deflicker_histogram_source)));
