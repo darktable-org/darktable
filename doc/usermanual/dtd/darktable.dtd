@@ -4,6 +4,7 @@
 <!-- Shared graphics -->
 <!ENTITY img_module_expander "images/darkroom_module_expander.png">
 <!ENTITY icon_general_collapse "images/general_icon_collapse.png">
+<!ENTITY icon_general_checkbox "images/general_checkbox.png">
 <!ENTITY icon_module_presets "images/darkroom_module_icon_presets.png">
 <!ENTITY icon_module_enable "images/darkroom_module_icon_enable.png">
 <!ENTITY icon_module_reset "images/darkroom_module_icon_reset.png">
