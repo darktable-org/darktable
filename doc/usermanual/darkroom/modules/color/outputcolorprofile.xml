@@ -148,11 +148,11 @@
       <para>
         <emphasis>softproof</emphasis> allows you to preview your image rendered using a printer
         profile so as to see how colors will end up on the final print and is toggled on and off
-        by pressing <quote>s</quote>.
+        by pressing <emphasis>ctrl-s</emphasis>.
       </para>
       <para>
         Likewise <emphasis>gamut check</emphasis> is toggled on and off by pressing
-        <quote>g</quote>; this function highlights in cyan all pixels out of gamut with respect
+        <emphasis>ctrl-g</emphasis>; this function highlights in cyan all pixels out of gamut with respect
         to the selected softproof profile.
       </para>
       <para>
@@ -162,9 +162,9 @@
       </para>
       <para>
         Tip: at other times it may not be obvious if the <emphasis>softproof</emphasis> mode is
-        still active or not. If in doubt press <quote>g</quote>, which will switch to
+        still active or not. If in doubt press <emphasis>ctrl-g</emphasis>, which will switch to
         <emphasis>gamut check</emphasis> and be clearly distinguishable by cyan marked pixels.
-        Press <quote>g</quote> again and you are back to normal display mode.
+        Press <emphasis>ctrl-g</emphasis> again and you are back to normal display mode.
       </para>
     </sect5>
 

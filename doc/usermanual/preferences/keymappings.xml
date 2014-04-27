@@ -672,7 +672,7 @@
           &lt;darktable&gt;/image operations/colorout/toggle gamutcheck
         </entry>
         <entry>
-          g
+          &lt;Primary&gt;g
         </entry>
       </row>
       <row>
@@ -680,7 +680,7 @@
           &lt;darktable&gt;/image operations/colorout/toggle softproofing
         </entry>
         <entry>
-          s
+          &lt;Primary&gt;s
         </entry>
       </row>
       <row>
