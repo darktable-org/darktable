@@ -55,4 +55,8 @@
 
   <xi:include href="combined_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- Color management -->
+
+  <xi:include href="colormanagement.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 </sect1>
