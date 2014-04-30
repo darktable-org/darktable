@@ -11,6 +11,16 @@
     <primary>monochrome</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>black pixels</secondary>>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>blue light sources</secondary>>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -54,6 +64,12 @@
       Tip: First reduce the filter size to concentrate its effect and move it across the hue
       pallet to find the best filter value for your desired image rendition. Then expand the
       filter to include more hues and thus more natural tonality.
+    </para>
+
+    <para>
+      Under certain conditions, especially highly saturated blue light sources in the frame,
+      this module may produce black pixel artifacts. See the <emphasis>gamut clipping</emphasis>
+      option (<xref linkend="input_color_profile"/>) on how to mitigate this issue.
     </para>
 
   </sect4>

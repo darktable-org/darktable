@@ -49,6 +49,17 @@
       pixelpipe. In order to avoid banding, you may activate this modules.
     </para>
 
+    <para>
+      Although banding is not an inherent problem of any of darktable's modules, there are some
+      operations which can provoke it as they produce a lightness gradient in the image. To
+      mitigate possible artifacts you should consider to activate dithering when using the
+      <emphasis>vignette</emphasis> and the <emphasis>graduated density</emphasis> module,
+      respectively (see <xref linkend="vignetting"/> and <xref linkend="graduated_density"/>).
+      This is especially relevant for images with extended homogeneous areas like cloudless sky.
+      Also when using a <emphasis>gradient mask</emphasis> (see
+      <xref linkend="gradient_shape"/>) you should watch out for possible banding artifacts.
+    </para>
+
   </sect4>
 
   <sect4>

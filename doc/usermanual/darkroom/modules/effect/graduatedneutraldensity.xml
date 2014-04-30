@@ -11,6 +11,11 @@
     <primary>graduated density</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>banding</secondary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -42,6 +47,12 @@
     <para>
       The module uses a gradient to modify the exposure and the color cast of the image in a
       non-homogeneously manner.
+    </para>
+
+    <para>
+      This module is known to provoke banding artifacts under certain conditions; you should
+      consider to activate the <emphasis>dithering</emphasis> module (see
+      <xref linkend="dithering"/>).
     </para>
 
     <sect5>

@@ -95,7 +95,7 @@
       <see>mask shapes</see>
     </indexterm>
 
-    <sect4>
+    <sect4 id="brush_shape">
 
       <title>brush</title>
 
@@ -158,7 +158,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="circle_shape">
 
       <title>circle</title>
 
@@ -206,7 +206,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="ellipse_shape">
 
       <title>ellipse</title>
 
@@ -250,7 +250,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="path_shape">
 
       <title>path</title>
 
@@ -319,7 +319,7 @@
 
     </sect4>
 
-    <sect4>
+    <sect4 id="gradient_shape">
 
       <title>gradient</title>
 
@@ -330,6 +330,11 @@
       <indexterm>
         <primary>mask shapes</primary>
         <secondary>gradient</secondary>
+      </indexterm>
+
+      <indexterm>
+        <primary>artifact mitigation</primary>
+        <secondary>banding</secondary>
       </indexterm>
 
       <para>
@@ -351,6 +356,12 @@
         when the mask is displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
+      </para>
+
+      <para>
+        Depending on the module and the underlying image using a gradient shape might provoke
+        banding artifacts. You should consider to activate the <emphasis>dithering</emphasis>
+        module (see <xref linkend="dithering"/>)
       </para>
 
       <informaltable frame="none">

@@ -11,6 +11,11 @@
     <primary>vignetting</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>banding</secondary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -44,6 +49,12 @@
       also will display graphical controls within the image if the module is in focus. Give it a
       try to get a feeling of how it works. On-screen controls and parameter sliders will stay
       in sync.
+    </para>
+
+    <para>
+      This module is known to provoke banding artifacts under certain conditions; you should
+      consider to activate the <emphasis>dithering</emphasis> module (see
+      <xref linkend="dithering"/>).
     </para>
 
     <sect5>

@@ -16,6 +16,16 @@
     <primary>levels</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>black pixels</secondary>>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>blue light sources</secondary>>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -73,6 +83,12 @@
     <para>
       The <quote>auto</quote> button autoadjusts the black and white point and puts the gray
       point exactly in the mean between them.
+    </para>
+
+    <para>
+      Under certain conditions, especially highly saturated blue sources in the frame, this
+      module may produce black pixel artifacts. See the <emphasis>gamut clipping</emphasis>
+      option (<xref linkend="input_color_profile"/>) on how to mitigate this issue.
     </para>
 
   </sect4>
