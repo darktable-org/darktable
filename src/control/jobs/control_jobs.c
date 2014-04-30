@@ -328,7 +328,7 @@ static char *_get_image_list(GList *l)
 {
   const guint size = g_list_length(l);
   char num[8];
-  char *buffer = malloc (size*sizeof(num));
+  char *buffer = calloc(size, sizeof(num));
   int imgid;
   gboolean first=TRUE;
 

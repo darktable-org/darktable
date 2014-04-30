@@ -349,7 +349,7 @@ int write_image (dt_imageio_module_data_t *j2k_tmp, const char *filename, const 
 
   if(parameters.cp_cinema)
   {
-    rates = (float*)malloc(parameters.tcp_numlayers * sizeof(float));
+    rates = (float*)calloc(parameters.tcp_numlayers, sizeof(float));
     for(int i=0; i< parameters.tcp_numlayers; i++)
     {
       rates[i] = parameters.tcp_rates[i];

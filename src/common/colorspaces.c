@@ -1012,7 +1012,7 @@ dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char 
   if(size == 0)
     goto error;
 
-  buf = (char*)malloc(sizeof(char) * (size + 1));
+  buf = (char*)calloc(size + 1, sizeof(char));
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, buf, size);
   if(size == 0)
     goto error;
@@ -1022,7 +1022,7 @@ dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char 
     g_strlcpy(name, buf, len); // better a little weird than totally borked
   else
   {
-    wbuf = (wchar_t*)malloc(sizeof(wchar_t) * (size + 1));
+    wbuf = (wchar_t*)calloc(size + 1, sizeof(wchar_t));
     size = cmsGetProfileInfo(p, cmsInfoDescription, language, country, wbuf, sizeof(wchar_t) * size);
     if(size == 0)
       goto error;

@@ -78,9 +78,9 @@ extern "C"
     Imf::FrameBuffer data;
 
     uint32_t channelsize=(exr->width*exr->height);
-    float *red=(float *)malloc(channelsize*sizeof(float));
-    float *green=(float *)malloc(channelsize*sizeof(float));
-    float *blue=(float *)malloc(channelsize*sizeof(float));
+    float *red=(float *)calloc(channelsize, sizeof(float));
+    float *green=(float *)calloc(channelsize, sizeof(float));
+    float *blue=(float *)calloc(channelsize, sizeof(float));
 
     for(uint32_t j=0; j<channelsize; j++)
     {

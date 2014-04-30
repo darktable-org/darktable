@@ -568,7 +568,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
 
   //buffer allocations
-  *points = malloc(2*(l+3)*sizeof(float));
+  *points = calloc(2*(l+3), sizeof(float));
   if(*points == NULL) return 0;
   *points_count = l+3;
 

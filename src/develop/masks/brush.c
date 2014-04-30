@@ -34,7 +34,7 @@ static gboolean _brush_buffer_grow(float **buffer, int *buffer_count, int *buffe
 
   if(*buffer == NULL)
   {
-    *buffer = malloc(stepsize*sizeof(float));
+    *buffer = calloc(stepsize, sizeof(float));
     *buffer_count = 0;
     *buffer_max = stepsize;
     return (*buffer != NULL);

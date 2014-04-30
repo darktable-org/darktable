@@ -132,7 +132,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
-  float **tmp = (float **)malloc((size_t)sizeof(float *)*numl_cap);
+  float **tmp = (float **)calloc(numl_cap, sizeof(float *));
   for(int k=1; k<numl_cap; k++)
   {
     const int wd = (int)(1 + (width>>(k-1))), ht = (int)(1 + (height>>(k-1)));

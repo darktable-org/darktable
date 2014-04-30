@@ -34,11 +34,10 @@
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size)
 {
   cache->entries = entries;
-  cache->data = (void **)malloc(sizeof(void *)*entries);
-  cache->size = (size_t *)malloc(sizeof(size_t)*entries);
-  cache->hash = (uint64_t *)malloc(sizeof(uint64_t)*entries);
-  cache->used = (int32_t *)malloc(sizeof(int32_t)*entries);
-  memset(cache->data,0,sizeof(void *)*entries);
+  cache->data = (void **)calloc(entries, sizeof(void *));
+  cache->size = (size_t *)calloc(entries, sizeof(size_t));
+  cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
+  cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
   for(int k=0; k<entries; k++)
   {
     cache->data[k] = (void *)dt_alloc_align(16, size);

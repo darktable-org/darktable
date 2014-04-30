@@ -605,7 +605,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_PATH)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
+    dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -623,7 +623,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_GROUP)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)malloc(nb*sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -657,7 +657,7 @@ void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev)
   else if (form->type & DT_MASKS_BRUSH)
   {
     guint nb = g_list_length(form->points);
-    dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)malloc(nb*sizeof(dt_masks_point_brush_t));
+    dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
     GList *points = g_list_first(form->points);
     int pos=0;
     while(points)
@@ -708,7 +708,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_PATH)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)malloc(nb*sizeof(dt_masks_point_path_t));
+      dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)calloc(nb, sizeof(dt_masks_point_path_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
@@ -726,7 +726,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_GROUP)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)malloc(nb*sizeof(dt_masks_point_group_t));
+      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)
@@ -760,7 +760,7 @@ void dt_masks_write_forms(dt_develop_t *dev)
     else if (form->type & DT_MASKS_BRUSH)
     {
       guint nb = g_list_length(form->points);
-      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)malloc(nb*sizeof(dt_masks_point_brush_t));
+      dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)calloc(nb, sizeof(dt_masks_point_brush_t));
       GList *points = g_list_first(form->points);
       int pos=0;
       while(points)

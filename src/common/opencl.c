@@ -1637,8 +1637,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if (*eventlist == NULL)
   {
     int newevents = DT_OPENCL_EVENTLISTSIZE;
-    *eventlist = malloc(newevents*sizeof(cl_event));
-    *eventtags = malloc(newevents*sizeof(dt_opencl_eventtag_t));
+    *eventlist = calloc(newevents, sizeof(cl_event));
+    *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if (!*eventlist || !*eventtags)
     {
       free(*eventlist);
@@ -1678,15 +1678,14 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if (*numevents == *maxevents)
   {
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
-    cl_event *neweventlist = malloc(newevents*sizeof(cl_event));
-    dt_opencl_eventtag_t *neweventtags = malloc(newevents*sizeof(dt_opencl_eventtag_t));
+    cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
+    dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if (!neweventlist || !neweventtags)
     {
       free(neweventlist);
       free(neweventtags);
       return NULL;
     }
-    memset(neweventtags, 0, newevents*sizeof(dt_opencl_eventtag_t));
     memcpy(neweventlist, *eventlist, *maxevents*sizeof(cl_event));
     memcpy(neweventtags, *eventtags, *maxevents*sizeof(dt_opencl_eventtag_t));
     free(*eventlist);

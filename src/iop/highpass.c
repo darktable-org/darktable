@@ -301,7 +301,7 @@ void process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void 
   const int hr = range/2;
 
   const int size = roi_out->width>roi_out->height?roi_out->width:roi_out->height;
-  float *scanline = malloc((size*sizeof(float)));
+  float *scanline = calloc(size, sizeof(float));
 
   for(int iteration=0; iteration<BOX_ITERATIONS; iteration++)
   {
