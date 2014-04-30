@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2014 LebedevRI.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,23 +28,32 @@
 
 DT_MODULE(1)
 
-int write_image (dt_imageio_module_data_t *pfm, const char *filename, const void *in_tmp, void *exif, int exif_len, int imgid)
+int write_image (dt_imageio_module_data_t *data, const char *filename, const void *ivoid, void *exif, int exif_len, int imgid)
 {
-  const float *in = (const float*)in_tmp;
+  const dt_imageio_module_data_t * const pfm = data;
   int status = 0;
   FILE *f = fopen(filename, "wb");
   if(f)
   {
+    //INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", pfm->width, pfm->height);
-    for(int j=pfm->height-1; j>=0; j--)
+    void *buf_line = dt_alloc_align(16, 3*sizeof(float)*pfm->width);
+    for(int j=0; j<pfm->height; j++)
     {
-      for(int i=0; i<pfm->width; i++)
+      //NOTE: pfm has rows in reverse order
+      const int row_in = pfm->height-1 - j;
+      const float *in = (const float *)ivoid + 4*(size_t)pfm->width*row_in;
+      float *out = (float *)buf_line;
+      for(int i = 0; i < pfm->width; i++, in+=4, out+=3)
       {
-        int cnt = fwrite(in + 4*((size_t)pfm->width*j + i), sizeof(float)*3, 1, f);
-        if(cnt != 1) status = 1;
-        else status = 0;
+        memcpy(out, in, 3*sizeof(float));
       }
+      int cnt = fwrite(buf_line, 3*sizeof(float), pfm->width, f);
+      if(cnt != pfm->width) status = 1;
+      else status = 0;
     }
+    dt_free_align(buf_line);
+    buf_line = NULL;
     fclose(f);
   }
   return status;

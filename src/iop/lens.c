@@ -952,6 +952,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_free_align(d->tmpbuf);
   dt_free_align(d->tmpbuf2);
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 
@@ -1005,7 +1006,8 @@ void reload_defaults(dt_iop_module_t *module)
   tmp.inverse  = 0;
   tmp.modify_flags = LF_MODIFY_TCA | LF_MODIFY_VIGNETTING |
                      LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE;
-  tmp.distance = img->exif_focus_distance;
+  //if we did not find focus_distance in EXIF, lets default to 1000
+  tmp.distance = img->exif_focus_distance == 0.0f ? 1000.0f : img->exif_focus_distance;
   tmp.target_geom = LF_RECTILINEAR;
   tmp.tca_override = 0;
   tmp.tca_r = 1.0;

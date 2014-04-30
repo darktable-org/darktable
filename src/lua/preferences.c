@@ -26,6 +26,7 @@ static const char *pref_type_name[] =
   "string",
   "bool",
   "integer",
+  "float",
   NULL
 };
 
@@ -34,6 +35,7 @@ typedef enum
   pref_string,
   pref_bool,
   pref_int,
+  pref_float,
 } pref_type;
 
 
@@ -52,11 +54,20 @@ typedef struct int_data_t
 	int default_value;
 } int_data_t;
 
+typedef struct float_data_t
+{
+	float min;
+	float max;
+  float step;
+	float default_value;
+} float_data_t;
+
 typedef union all_data_t
 {
 	string_data_t string_data;
 	bool_data_t bool_data;
 	int_data_t int_data;
+	float_data_t float_data;
 } all_data_t;
 typedef struct pref_element
 {
@@ -87,6 +98,7 @@ static void destroy_pref_element(pref_element*elt)
       break;
     case pref_bool:
     case pref_int:
+    case pref_float:
     default:
       break;
   }
@@ -169,6 +181,25 @@ static int register_pref(lua_State*L)
 
       if(!dt_conf_key_exists(pref_name)) dt_conf_set_int(pref_name,built_elt->type_data.int_data.default_value);
       break;
+    case pref_float:
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->type_data.float_data.default_value = lua_tonumber(L,cur_param);
+      cur_param++;
+
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->type_data.float_data.min = lua_tonumber(L,cur_param);
+      cur_param++;
+
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->type_data.float_data.max = lua_tonumber(L,cur_param);
+      cur_param++;
+
+      if(!lua_isnumber(L,cur_param)) goto error;
+      built_elt->type_data.float_data.step = lua_tonumber(L,cur_param);
+      cur_param++;
+
+      if(!dt_conf_key_exists(pref_name)) dt_conf_set_float(pref_name,built_elt->type_data.float_data.default_value);
+      break;
   }
 
 
@@ -209,6 +240,9 @@ static int read_pref(lua_State*L)
     case pref_int:
       lua_pushnumber(L,dt_conf_get_int(pref_name));
       break;
+    case pref_float:
+      lua_pushnumber(L,dt_conf_get_float(pref_name));
+      break;
   }
   return 1;
 }
@@ -240,6 +274,9 @@ static int write_pref(lua_State*L)
     case pref_int:
       dt_conf_set_int(pref_name,luaL_checkinteger(L,4));
       break;
+    case pref_float:
+      dt_conf_set_float(pref_name,luaL_checknumber(L,4));
+      break;
   }
   return 0;
 }
@@ -262,6 +299,12 @@ static void callback_int(GtkWidget *widget, pref_element*cur_elt )
   char pref_name[1024];
   get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
   dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+}
+static void callback_float(GtkWidget *widget, pref_element*cur_elt )
+{
+  char pref_name[1024];
+  get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+  dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
 static void response_callback_string(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
@@ -289,6 +332,15 @@ static void response_callback_int(GtkDialog *dialog, gint response_id, pref_elem
     char pref_name[1024];
     get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     dt_conf_set_int(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
+  }
+}
+static void response_callback_float(GtkDialog *dialog, gint response_id, pref_element* cur_elt)
+{
+  if(response_id == GTK_RESPONSE_ACCEPT)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+    dt_conf_set_float(pref_name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(cur_elt->widget)));
   }
 }
 
@@ -322,6 +374,17 @@ static gboolean reset_widget_int (GtkWidget *label, GdkEventButton *event, pref_
     char pref_name[1024];
     get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.int_data.default_value);
+    return TRUE;
+  }
+  return FALSE;
+}
+static gboolean reset_widget_float (GtkWidget *label, GdkEventButton *event, pref_element*cur_elt)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    char pref_name[1024];
+    get_pref_name(pref_name,sizeof(pref_name),cur_elt->script,cur_elt->name);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), cur_elt->type_data.float_data.default_value);
     return TRUE;
   }
   return FALSE;
@@ -379,6 +442,15 @@ void init_tab_lua (GtkWidget *dialog, GtkWidget *tab)
         snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%d'"), cur_elt->type_data.int_data.default_value);
         g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_int), cur_elt);
         g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_int), cur_elt);
+        break;
+      case pref_float:
+        cur_elt->widget = gtk_spin_button_new_with_range(cur_elt->type_data.float_data.min, cur_elt->type_data.float_data.max, cur_elt->type_data.float_data.step);
+        //gtk_spin_button_set_digits(GTK_SPIN_BUTTON(cur_elt->widget), 0);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(cur_elt->widget), dt_conf_get_float(pref_name));
+        g_signal_connect(G_OBJECT(cur_elt->widget), "value-changed", G_CALLBACK(callback_float), cur_elt);
+        snprintf(tooltip, sizeof(tooltip), _("double click to reset to `%f'"), cur_elt->type_data.float_data.default_value);
+        g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_float), cur_elt);
+        g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(response_callback_float), cur_elt);
         break;
     }
     g_object_set(labelev,  "tooltip-text", tooltip, (char *)NULL);

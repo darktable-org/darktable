@@ -499,16 +499,34 @@ void* get_params(dt_lib_module_t *self, int *size)
 // WARNING: also change src/libs/import.c when changing this!
 int set_params(dt_lib_module_t *self, const void *params, int size)
 {
+  if(!params)
+    return 1;
+
   char *buf         = (char* )params;
-  char *title       = buf;
+
+  char *title = buf;
+  if(!title)
+    return 1;
+
   buf += strlen(title) + 1;
   char *description = buf;
+  if(!description)
+    return 1;
+
   buf += strlen(description) + 1;
-  char *rights     = buf;
+  char *rights = buf;
+  if(!rights)
+    return 1;
+
   buf += strlen(rights) + 1;
-  char *creator     = buf;
+  char *creator = buf;
+  if(!creator)
+    return 1;
+
   buf += strlen(creator) + 1;
-  char *publisher   = buf;
+  char *publisher = buf;
+  if(!publisher)
+    return 1;
 
   if(size != strlen(title) + strlen(description) + strlen(rights) + strlen(creator) + strlen(publisher) + 5) return 1;
 

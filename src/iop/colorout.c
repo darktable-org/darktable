@@ -468,47 +468,35 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *ivoi
   }
   else
   {
-    float *in  = (float*)ivoid;
-    float *out = (float*)ovoid;
-    const int rowsize=roi_out->width * 3;
     //fprintf(stderr,"Using xform codepath\n");
-
+    const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
-    #pragma omp parallel for schedule(static) default(none) shared(out, roi_out, in)
+    #pragma omp parallel for schedule(static) default(none) shared(ivoid, ovoid, roi_out)
 #endif
     for (int k=0; k<roi_out->height; k++)
     {
-      float Lab[rowsize];
-      float rgb[rowsize];
+      const float *in = ((float *)ivoid) + (size_t)ch*k*roi_out->width;
+      float *out = ((float *)ovoid) + (size_t)ch*k*roi_out->width;
 
-      const size_t m = (size_t)k*roi_out->width*ch;
-      for (int l=0; l<roi_out->width; l++)
+      if(!gamutcheck)
       {
-        int li=3*l,ii=ch*l;
-        Lab[li+0] = in[m+ii+0];
-        Lab[li+1] = in[m+ii+1];
-        Lab[li+2] = in[m+ii+2];
-      }
-
-      cmsDoTransform (d->xform, Lab, rgb, roi_out->width);
-
-      for (int l=0; l<roi_out->width; l++)
-      {
-        int oi=ch*l, ri=3*l;
-        if(gamutcheck && (rgb[ri+0] < 0.0f || rgb[ri+1] < 0.0f || rgb[ri+2] < 0.0f))
+        cmsDoTransform(d->xform, in, out, roi_out->width);
+      } else {
+        void *rgb = dt_alloc_align(16, 4*sizeof(float)*roi_out->width);
+        cmsDoTransform(d->xform, in, rgb, roi_out->width);
+        float *rgbptr = (float *)rgb;
+        for (int j=0; j<roi_out->width; j++,rgbptr+=4,out+=4)
         {
-          out[m+oi+0] = 0.0f;
-          out[m+oi+1] = 1.0f;
-          out[m+oi+2] = 1.0f;
+          const __m128 pixel = _mm_load_ps(rgbptr);
+          const __m128 ingamut = _mm_cmpge_ps(pixel, _mm_setzero_ps());
+          const __m128 result = _mm_or_ps(_mm_andnot_ps(ingamut, outofgamutpixel),
+                                          _mm_and_ps(ingamut, pixel));
+          _mm_stream_ps(out, result);
         }
-        else
-        {
-          out[m+oi+0] = rgb[ri+0];
-          out[m+oi+1] = rgb[ri+1];
-          out[m+oi+2] = rgb[ri+2];
-        }
+        dt_free_align(rgb);
       }
     }
+    _mm_sfence();
   }
 
   if(piece->pipe->mask_display)
@@ -579,10 +567,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
     g->softproof_enabled = p->softproof_enabled;
   }
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
   d->cmatrix[0] = NAN;
   d->lut[0][0] = -1.0f;
@@ -637,9 +625,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     d->cmatrix[0] = NAN;
     piece->process_cl_ready = 0;
     d->xform = cmsCreateProofingTransform(d->Lab,
-                                          TYPE_Lab_FLT,
+                                          TYPE_LabA_FLT,
                                           d->output,
-                                          TYPE_RGB_FLT,
+                                          TYPE_RGBA_FLT,
                                           d->softproof,
                                           outintent,
                                           INTENT_RELATIVE_COLORIMETRIC,
@@ -659,9 +647,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
       piece->process_cl_ready = 0;
 
       d->xform = cmsCreateProofingTransform(d->Lab,
-                                            TYPE_Lab_FLT,
+                                            TYPE_LabA_FLT,
                                             d->output,
-                                            TYPE_RGB_FLT,
+                                            TYPE_RGBA_FLT,
                                             d->softproof,
                                             outintent,
                                             INTENT_RELATIVE_COLORIMETRIC,
@@ -700,7 +688,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->softproof_enabled = 0;
   d->softproof = d->output = NULL;
-  d->xform = 0;
+  d->xform = NULL;
   d->Lab = dt_colorspaces_create_lab_profile();
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -710,13 +698,14 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   if(d->output) dt_colorspaces_cleanup_profile(d->output);
   dt_colorspaces_cleanup_profile(d->Lab);
-  if (d->xform)
+  if(d->xform)
   {
     cmsDeleteTransform(d->xform);
-    d->xform = 0;
+    d->xform = NULL;
   }
 
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)

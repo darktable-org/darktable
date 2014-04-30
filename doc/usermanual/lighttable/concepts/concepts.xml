@@ -21,6 +21,10 @@
 
   <xi:include href="collections.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- Thumbnails -->
+
+  <xi:include href="thumbnails.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Star ratings and color labels -->
 
   <xi:include href="ratings_color.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

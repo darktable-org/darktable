@@ -43,9 +43,10 @@ const char *dt_lib_collect_string[] =
   N_("lens"),
   N_("ISO"),
   N_("aperture"),
-  N_("filename")
+  N_("filename"),
+  N_("geotagging")
 };
-const int dt_lib_collect_string_cnt = 17;
+const int dt_lib_collect_string_cnt = sizeof(dt_lib_collect_string) / sizeof(dt_lib_collect_string[0]);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -560,6 +560,10 @@ get_query_string(const dt_collection_properties_t property, const gchar *escaped
       snprintf(query, query_len, "(id %s in (select imgid from history where imgid=images.id)) ",(strcmp(escaped_text,_("altered"))==0)?"":"not");
       break;
 
+    case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
+      snprintf(query, query_len, "(id %s in (select id AS imgid from images where (longitude IS NOT NULL AND latitude IS NOT NULL))) ",(strcmp(escaped_text,_("tagged"))==0)?"":"not");
+      break;
+
     case DT_COLLECTION_PROP_CAMERA: // camera
       snprintf(query, query_len, "(maker || ' ' || model like '%%%s%%')", escaped_text);
       break;

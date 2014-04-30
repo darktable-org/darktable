@@ -624,13 +624,13 @@ end_query_cache:
 
         cairo_save(cr);
         // if(iir == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
-        dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery, FALSE);
         if (iir==1)
         {
           // we are on the single-image display at a time, in this case we want the selection to be updated to contain
           // this single image.
           dt_selection_select_single(darktable.selection, id);
         }
+        dt_view_image_expose(&(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir, img_pointerx, img_pointery, FALSE);
 
         cairo_restore(cr);
       }

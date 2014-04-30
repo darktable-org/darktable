@@ -512,6 +512,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
   // no free necessary, no data is alloc'ed
 #else
   free(piece->data);
+  piece->data = NULL;
 #endif
 }
 

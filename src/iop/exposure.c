@@ -34,6 +34,8 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/slider.h"
 #include "bauhaus/bauhaus.h"
+#include "develop/pixelpipe.h"
+#include "common/histogram.h"
 
 #define exposure2white(x)	exp2f(-(x))
 #define white2exposure(x)	-dt_log2f(fmaxf(0.001, x))
@@ -211,7 +213,7 @@ static int compute_correction(dt_iop_module_t *self, float *correction)
   if(self->histogram == NULL) return 1;
 
   float total = 0;
-  for(int i=0; i < self->histogram_bins_count; i++)
+  for(int i=0; i < self->histogram_params.bins_count; i++)
   {
     total += self->histogram[4*i];
     total += self->histogram[4*i+1];
@@ -222,7 +224,7 @@ static int compute_correction(dt_iop_module_t *self, float *correction)
   float n = 0;
   float raw = -1;
 
-  for(int i=0; i < self->histogram_bins_count; i++)
+  for(int i=0; i < self->histogram_params.bins_count; i++)
   {
     n += self->histogram[4*i];
     n += self->histogram[4*i+1];
@@ -288,6 +290,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -326,9 +329,8 @@ void init(dt_iop_module_t *module)
   module->params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_params = malloc(sizeof(dt_iop_exposure_params_t));
   module->default_enabled = 0;
-  module->request_histogram = 1; //FIXME: only when deflicker is enabled maybe?
-  module->histogram_bins_count = 16384; // we neeed really maximally reliable histogrem
-  module->histogram_step_rgb = 1; // only way do do so - analyze full-sized thumbnail
+  module->request_histogram |=  (DT_REQUEST_ON); //FIXME: only when deflicker is enabled maybe?
+  module->histogram_params.bins_count = 16384; // we neeed really maximally reliable histogrem
   module->priority = 175; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_exposure_params_t);
   module->gui_data = NULL;

@@ -291,11 +291,10 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->priority = 0;
   module->hide_enable_button = 0;
   module->request_color_pick = 0;
-  module->request_histogram = 0;
-  module->histogram_bins_count = 64;
-  module->histogram_step_raw = 3;
-  module->histogram_step_rgb = 4;
-  module->histogram_step_lab = 4;
+  module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
+  module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
+  module->histogram_params.roi = NULL;
+  module->histogram_params.bins_count = 64;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
@@ -1005,7 +1004,11 @@ init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-      module->reload_defaults(module);
+
+      // we call reload_defaults() in case the module defines it
+      if(module->reload_defaults)
+        module->reload_defaults(module);
+
       int32_t new_params_size = module->params_size;
       void *new_params = malloc(new_params_size);
       memset(new_params, 0, new_params_size);

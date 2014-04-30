@@ -73,7 +73,6 @@ def add_edges(gr):
   gr.add_edge(('colorin', 'basecurve'))
   gr.add_edge(('colorin', 'lens'))
   gr.add_edge(('colorin', 'profile_gamma'))
-  gr.add_edge(('colorin', 'shrecovery'))
 
   # very linear:
   gr.add_edge(('basecurve', 'lens'))
@@ -91,7 +90,6 @@ def add_edges(gr):
   gr.add_edge(('vignette', 'flip'))
   # gives the ability to change the space of shadow recovery fusion.
   # maybe this has to go the other way round, let's see what experience shows!
-  gr.add_edge(('shrecovery', 'basecurve'))
   
   # this evil hack for nikon crap profiles needs to come
   # as late as possible before the input profile:
@@ -100,7 +98,6 @@ def add_edges(gr):
   gr.add_edge(('profile_gamma', 'graduatednd'))
   gr.add_edge(('profile_gamma', 'basecurve'))
   gr.add_edge(('profile_gamma', 'lens'))
-  gr.add_edge(('profile_gamma', 'shrecovery'))
   gr.add_edge(('profile_gamma', 'bilateral'))
   gr.add_edge(('profile_gamma', 'denoiseprofile'))
   
@@ -121,7 +118,6 @@ def add_edges(gr):
   gr.add_edge(('colorout', 'colorcorrection'))
   gr.add_edge(('colorout', 'sharpen'))
   gr.add_edge(('colorout', 'grain'))
-  gr.add_edge(('colorout', 'anlfyeni'))
   gr.add_edge(('colorout', 'lowpass'))
   gr.add_edge(('colorout', 'shadhi'))
   gr.add_edge(('colorout', 'highpass'))
@@ -144,7 +140,6 @@ def add_edges(gr):
   gr.add_edge(('colorcorrection', 'colorin'))
   gr.add_edge(('sharpen', 'colorin'))
   gr.add_edge(('grain', 'colorin'))
-  gr.add_edge(('anlfyeni', 'colorin'))
   gr.add_edge(('lowpass', 'colorin'))
   gr.add_edge(('shadhi', 'colorin'))
   gr.add_edge(('highpass', 'colorin'))
@@ -180,7 +175,6 @@ def add_edges(gr):
   gr.add_edge(('bilat', 'nlmeans'))
   gr.add_edge(('atrous', 'nlmeans'))
   gr.add_edge(('sharpen', 'nlmeans'))
-  gr.add_edge(('anlfyeni', 'nlmeans'))
   gr.add_edge(('lowpass', 'nlmeans'))
   gr.add_edge(('shadhi', 'nlmeans'))
   gr.add_edge(('highpass', 'nlmeans'))
@@ -192,7 +186,6 @@ def add_edges(gr):
   
   # don't sharpen grain:
   gr.add_edge(('grain', 'sharpen'))
-  gr.add_edge(('grain', 'anlfyeni'))
   gr.add_edge(('grain', 'atrous'))
   gr.add_edge(('grain', 'highpass'))
   
@@ -279,7 +272,6 @@ def add_edges(gr):
   gr.add_edge(('lowpass', 'colormapping'))
   gr.add_edge(('shadhi', 'colormapping'))
   gr.add_edge(('highpass', 'colormapping'))
-  gr.add_edge(('anlfyeni', 'colormapping'))
   gr.add_edge(('lowlight', 'colormapping'))
   gr.add_edge(('bloom', 'colormapping'))
   
@@ -333,7 +325,6 @@ def add_edges(gr):
 
 gr = digraph()
 gr.add_nodes([
-'anlfyeni', # deprecated
 'atrous',
 'basecurve',
 'bilateral',
@@ -380,7 +371,6 @@ gr.add_nodes([
 'relight',
 'shadhi',
 'sharpen',
-'shrecovery',
 'soften',
 'splittoning',
 'spots',

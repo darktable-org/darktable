@@ -187,17 +187,17 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   // destroy old module list
   int error = 0;
-  dt_view_t *v = vm->view + vm->current_view;
 
   /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to remove. */
   dt_undo_clear(darktable.undo, DT_UNDO_ALL);
 
   /* Special case when entering nothing (just before leaving dt) */
-  if ( k==DT_MODE_NONE )
+  if (k==DT_MODE_NONE && vm->current_view >= 0)
   {
     /* leave the current view*/
-    if(vm->current_view >= 0 && v->leave) v->leave(v);
+    dt_view_t *v = vm->view + vm->current_view;
+    if(v->leave) v->leave(v);
 
     /* iterator plugins and cleanup plugins in current view */
     GList *plugins = g_list_last(darktable.lib->plugins);
@@ -206,10 +206,11 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
       if (!plugin->views)
-        fprintf(stderr,"module %s doesn't have views flags\n",plugin->name());
-
+      {
+        fprintf(stderr, "module %s doesn't have views flags\n", plugin->name());
+      } else
       /* does this module belong to current view ?*/
-      if (plugin->views() & v->view(v) )
+      if (plugin->views() & v->view(v))
       {
         plugin->gui_cleanup(plugin);
         dt_accel_disconnect_list(plugin->accel_closures);
@@ -243,6 +244,7 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
     if (vm->current_view >=0)
     {
       /* leave current view */
+      dt_view_t *v = vm->view + vm->current_view;
       if(v->leave) v->leave(v);
       dt_accel_disconnect_list(v->accel_closures);
       v->accel_closures = NULL;
@@ -770,13 +772,13 @@ dt_view_image_expose(
 
   const dt_image_t *img = dt_image_cache_read_testget(darktable.image_cache, imgid);
 
-  if(selected == 1)
+  if(selected == 1 && zoom != 1) // If zoom == 1 there is no need to set colors here
   {
     outlinecol = 0.4;
     bgcol = 0.6;
     fontcol = 0.5;
   }
-  if(imgsel == imgid)
+  if(imgsel == imgid || zoom == 1)
   {
     bgcol = 0.8;  // mouse over
     fontcol = 0.7;
@@ -881,7 +883,7 @@ dt_view_image_expose(
   // border around image
   const float border = zoom == 1 ? 16/scale : 2/scale;
   cairo_set_source_rgb(cr, bordercol, bordercol, bordercol);
-  if(buf.buf && selected)
+  if(buf.buf && (selected || zoom == 1))
   {
     cairo_set_line_width(cr, 1./scale);
     if(zoom == 1)
@@ -922,8 +924,9 @@ dt_view_image_expose(
   if(buf.buf)
     dt_mipmap_cache_read_release(darktable.mipmap_cache, &buf);
 
+  cairo_save(cr);
   const float fscale = fminf(width, height);
-  if(imgsel == imgid || full_preview || darktable.gui->show_overlays)
+  if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if (width > DECORATION_SIZE_LIMIT)
     {
@@ -958,7 +961,8 @@ dt_view_image_expose(
           {
             dt_view_star(cr, x, y, r1, r2);
             // Only draw hovering effects in stars for the hovered image
-            if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+            //printf ("Image selected: %d - Image processed: %d\n", imgsel, imgid);
+            if((imgsel == imgid || zoom == 1) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
             {
               *image_over = DT_VIEW_STAR_1 + k;
               cairo_fill(cr);
@@ -982,7 +986,7 @@ dt_view_image_expose(
         cairo_set_source_rgb(cr, 1., 0., 0.);
 
       // Only draw hovering effects in stars for the hovered image
-      if((imgsel == imgid) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
+      if((imgsel == imgid || zoom == 1) && ((px - x)*(px - x) + (py - y)*(py - y) < r1*r1))
       {
         *image_over = DT_VIEW_REJECT; //mouse sensitive
         cairo_new_sub_path(cr);
@@ -1092,6 +1096,7 @@ dt_view_image_expose(
       }
     }
   }
+  cairo_restore(cr);
 
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
@@ -1178,7 +1183,9 @@ dt_view_image_expose(
         int k = 0;
         while(!feof(f))
         {
-          int read = fscanf(f, "%2048[^\n]", line);
+          gchar *line_pattern = g_strdup_printf("%%%zu[^\n]", sizeof(line)-1);
+          int read = fscanf(f, line_pattern, line);
+          g_free(line_pattern);
           if(read != 1) break;
           fgetc(f); // munch \n
 

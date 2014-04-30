@@ -1919,9 +1919,16 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,1))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -1968,9 +1975,16 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 {
   if (!module) return 0;
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   //now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2042,9 +2056,16 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   double start2;
 
   //we get buffers for all points
-  float *points, *border;
+  float *points = NULL, *border = NULL;
   int points_count,border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2414,10 +2435,16 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   int path_encircles_roi = 0;
 
   //we get buffers for all points
-  float *points, *border, *cpoints = NULL;
+  float *points = NULL, *border = NULL, *cpoints = NULL;
   int points_count, border_count;
-  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0)) return 0;
-  if (points_count <= 2) return 0;
+  if (!_path_get_points_border(module->dev,form,module->priority,piece->pipe,&points,&points_count,&border,&border_count,0) || (points_count <= 2))
+  {
+    if(points)
+      free(points);
+    if(border)
+      free(border);
+    return 0;
+  }
 
   if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime()-start);
   start = start2 = dt_get_wtime();
@@ -2486,14 +2513,6 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
   }
 
-  //if path and feather completely lie outside of roi -> we're done/mask remains empty
-  if(!path_in_roi && !feather_in_roi)
-  {
-    free(points);
-    free(border);
-    return 1;
-  }
-
   //now check if feather is at least partially within roi
   for (int i=nb_corner*3; i < border_count; i++)
   {
@@ -2510,6 +2529,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       feather_in_roi = 1;
       break;
     }
+  }
+
+  //if path and feather completely lie outside of roi -> we're done/mask remains empty
+  if(!path_in_roi && !feather_in_roi)
+  {
+    free(points);
+    free(border);
+    return 1;
   }
 
   // now get min/max values
@@ -2557,8 +2584,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
     memcpy(cpoints, points, 2*points_count*sizeof(float));
 
-    //now we clip cpoints to roi -> catch special case when roi lies completely within path
-    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width - 1, 0, height - 1);
+    // now we clip cpoints to roi -> catch special case when roi lies completely within path.
+    // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling
+    // of the last roi line in the following edge-flag polygon fill algorithm.
+    int  crop_success = _path_crop_to_roi(cpoints+2*(nb_corner*3), points_count-nb_corner*3, 0, width-1, 0, height);
     path_encircles_roi = path_encircles_roi || !crop_success;
 
     if (darktable.unmuted & DT_DEBUG_PERF) dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name, dt_get_wtime()-start2);
@@ -2594,14 +2623,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
         const float m = (xstart - xend) / (ystart - yend);  // we don't need special handling of ystart==yend as following loop will take care
 
-        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)
+        for(int yy = (int)ceilf(ystart); (float)yy < yend; yy++)  // this would normally never touch the last roi line => see comment further above
         {
           const float xcross = xstart + m * (yy - ystart);
           
           int xx = floorf(xcross);
           if ((float)xx + 0.5f <= xcross) xx++;
 
-          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // just to be on the safe side
+          if(xx < 0 || xx >= width || yy < 0 || yy >= height) continue;  // sanity check just to be on the safe side
 
           size_t index = (size_t)yy*width+xx;
 
@@ -2638,7 +2667,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   //deal with feather if it does not lie outside of roi
-  if(feather_in_roi)
+  if(!path_encircles_roi)
   {
     int p0[2], p1[2];
     int last0[2] = {-100,-100};

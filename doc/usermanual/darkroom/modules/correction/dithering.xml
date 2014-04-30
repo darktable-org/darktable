@@ -11,6 +11,15 @@
     <primary>dithering</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>banding</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>banding</secondary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>

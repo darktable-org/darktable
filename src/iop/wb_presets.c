@@ -2820,6 +2820,20 @@ const wb_data wb_preset[] =
   { "NIKON", "D600", DaylightFluorescent, 0,	{ 2.039063, 1, 1.117188, 0 } },
   { "NIKON", "D600", HighTempMercuryVaporFluorescent, 0, { 2.332031, 1, 1.355469, 0 } },
 
+  /* D610 with firmware C1.00 L1.009 */
+  { "NIKON", "D610", DirectSunlight, 0,         { 1.90625, 1, 1.390625, 0 } },
+  { "NIKON", "D610", Flash, 0,                  { 2.136719, 1, 1.214844, 0 } },
+  { "NIKON", "D610", Cloudy, 0,                 { 2.039063, 1, 1.261719, 0 } },
+  { "NIKON", "D610", Shade, 0,                  { 2.328125, 1, 1.136719, 0 } },
+  { "NIKON", "D610", Incandescent, 0,           { 1.226563, 1, 2.214844, 0 } },
+  { "NIKON", "D610", SodiumVaporFluorescent, 0, { 1.148438, 1, 2.433594, 0 } },
+  { "NIKON", "D610", WarmWhiteFluorescent, 0,   { 1.230469, 1, 1.953125, 0 } },
+  { "NIKON", "D610", WhiteFluorescent, 0,       { 1.421875, 1, 2.28125, 0 } },
+  { "NIKON", "D610", CoolWhiteFluorescent, 0,   { 1.730469, 1, 2.003906, 0 } },
+  { "NIKON", "D610", DayWhiteFluorescent, 0,    { 1.777344, 1, 1.375, 0 } },
+  { "NIKON", "D610", DaylightFluorescent, 0,    { 2.039063, 1, 1.117188, 0 } },
+  { "NIKON", "D610", HighTempMercuryVaporFluorescent, 0, { 2.332031, 1, 1.355469, 0 } },
+
   { "NIKON", "D700", DirectSunlight, -6,	{ 1.980469, 1, 1.199219, 0 } },
   { "NIKON", "D700", DirectSunlight, 0,		{ 1.816406, 1, 1.355469, 0 } },
   { "NIKON", "D700", DirectSunlight, 6,		{ 1.652344, 1, 1.523437, 0 } },
@@ -3192,6 +3206,13 @@ const wb_data wb_preset[] =
   { "NIKON", "D3200", HighTempMercuryVaporFluorescent, -6, { 2.542969, 1, 1.117188, 0 } },
   { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 0, { 2.445313, 1, 1.250000, 0 } },
   { "NIKON", "D3200", HighTempMercuryVaporFluorescent, 6, { 2.324219, 1, 1.394531, 0 } },
+
+  { "NIKON", "D3300", DirectSunlight, 0,	{ 2.054688, 1, 1.394531, 0 } },
+  { "NIKON", "D3300", Flash, 0,			{ 2.289063, 1, 1.230469, 0 } },
+  { "NIKON", "D3300", Cloudy, 0,		{ 2.199219, 1, 1.277344, 0 } },
+  { "NIKON", "D3300", Shade, 0,			{ 2.527344, 1, 1.152344, 0 } },
+  { "NIKON", "D3300", Incandescent, 0,		{ 1.312500, 1, 2.214844, 0 } },
+  { "NIKON", "D3300", CoolWhiteFluorescent, 0,	{ 1.855469, 1, 2.023438, 0 } },
 
   { "NIKON", "D5000", DirectSunlight, 0,	{ 1.800781, 1, 1.308594, 0 } },
   { "NIKON", "D5000", Flash, 0,			{ 1.976562, 1, 1.152344, 0 } },
@@ -4234,6 +4255,31 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-PL3", "3300K", 0,		{ 1.414062, 1, 2.015625, 0 } },
   { "OLYMPUS", "E-PL3", "5000K", 0,		{ 1.906250, 1, 1.515625, 0 } },
 
+  /* Firmware version 1.2 */
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "OLYMPUS", "E-PL5", Daylight, -7,		{ 1.671875, 1, 2.164063, 0 } },
+  { "OLYMPUS", "E-PL5", Daylight, 0,		{ 1.945313, 1, 1.898438, 0 } },
+  { "OLYMPUS", "E-PL5", Daylight, 7,		{ 2.210938, 1, 1.625000, 0 } },
+  { "OLYMPUS", "E-PL5", Shade, -7,		{ 1.953125, 1, 1.687500, 0 } },
+  { "OLYMPUS", "E-PL5", Shade, 0,		{ 2.273438, 1, 1.484375, 0 } },
+  { "OLYMPUS", "E-PL5", Shade, 7,		{ 2.585938, 1, 1.273438, 0 } },
+  { "OLYMPUS", "E-PL5", Cloudy, -7,		{ 1.789063, 1, 1.945313, 0 } },
+  { "OLYMPUS", "E-PL5", Cloudy, 0,		{ 2.085938, 1, 1.710938, 0 } },
+  { "OLYMPUS", "E-PL5", Cloudy, 7,		{ 2.375000, 1, 1.468750, 0 } },
+  { "OLYMPUS", "E-PL5", Tungsten, -7,		{ 1.023438, 1, 3.851563, 0 } },
+  { "OLYMPUS", "E-PL5", Tungsten, 0,		{ 1.195313, 1, 3.382813, 0 } },
+  { "OLYMPUS", "E-PL5", Tungsten, 7,		{ 1.359375, 1, 2.906250, 0 } },
+  { "OLYMPUS", "E-PL5", Fluorescent, -7,	{ 1.625000, 1, 3.101563, 0 } },
+  { "OLYMPUS", "E-PL5", Fluorescent, 0,		{ 1.890625, 1, 2.726563, 0 } },
+  { "OLYMPUS", "E-PL5", Fluorescent, 7,		{ 2.148438, 1, 2.343750, 0 } },
+  { "OLYMPUS", "E-PL5", Flash, -7,		{ 1.906250, 1, 1.835938, 0 } },
+  { "OLYMPUS", "E-PL5", Flash, 0,		{ 2.218750, 1, 1.617188, 0 } },
+  { "OLYMPUS", "E-PL5", Flash, 7,		{ 2.523438, 1, 1.390625, 0 } },
+  { "OLYMPUS", "E-PL5", "2700K", 0,		{ 1.140625, 1, 3.554688, 0 } },
+  { "OLYMPUS", "E-PL5", "3000K", 0,		{ 1.296875, 1, 3.054688, 0 } },
+  { "OLYMPUS", "E-PL5", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
+  { "OLYMPUS", "E-PL5", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
+
   /* Copied from OLYMPUS E-PL3 presets */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "OLYMPUS", "E-PM1", Daylight, -7,		{ 1.695313, 1, 1.656250, 0 } },
@@ -4261,6 +4307,31 @@ const wb_data wb_preset[] =
   { "OLYMPUS", "E-PM1", "3000K", 0,		{ 1.273437, 1, 2.273437, 0 } },
   { "OLYMPUS", "E-PM1", "3300K", 0,		{ 1.414062, 1, 2.015625, 0 } },
   { "OLYMPUS", "E-PM1", "5000K", 0,		{ 1.906250, 1, 1.515625, 0 } },
+
+  /* Copied from OLYMPUS E-PL5 presets */
+  /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
+  { "OLYMPUS", "E-PM2", Daylight, -7,		{ 1.671875, 1, 2.164063, 0 } },
+  { "OLYMPUS", "E-PM2", Daylight, 0,		{ 1.945313, 1, 1.898438, 0 } },
+  { "OLYMPUS", "E-PM2", Daylight, 7,		{ 2.210938, 1, 1.625000, 0 } },
+  { "OLYMPUS", "E-PM2", Shade, -7,		{ 1.953125, 1, 1.687500, 0 } },
+  { "OLYMPUS", "E-PM2", Shade, 0,		{ 2.273438, 1, 1.484375, 0 } },
+  { "OLYMPUS", "E-PM2", Shade, 7,		{ 2.585938, 1, 1.273438, 0 } },
+  { "OLYMPUS", "E-PM2", Cloudy, -7,		{ 1.789063, 1, 1.945313, 0 } },
+  { "OLYMPUS", "E-PM2", Cloudy, 0,		{ 2.085938, 1, 1.710938, 0 } },
+  { "OLYMPUS", "E-PM2", Cloudy, 7,		{ 2.375000, 1, 1.468750, 0 } },
+  { "OLYMPUS", "E-PM2", Tungsten, -7,		{ 1.023438, 1, 3.851563, 0 } },
+  { "OLYMPUS", "E-PM2", Tungsten, 0,		{ 1.195313, 1, 3.382813, 0 } },
+  { "OLYMPUS", "E-PM2", Tungsten, 7,		{ 1.359375, 1, 2.906250, 0 } },
+  { "OLYMPUS", "E-PM2", Fluorescent, -7,	{ 1.625000, 1, 3.101563, 0 } },
+  { "OLYMPUS", "E-PM2", Fluorescent, 0,		{ 1.890625, 1, 2.726563, 0 } },
+  { "OLYMPUS", "E-PM2", Fluorescent, 7,		{ 2.148438, 1, 2.343750, 0 } },
+  { "OLYMPUS", "E-PM2", Flash, -7,		{ 1.906250, 1, 1.835938, 0 } },
+  { "OLYMPUS", "E-PM2", Flash, 0,		{ 2.218750, 1, 1.617188, 0 } },
+  { "OLYMPUS", "E-PM2", Flash, 7,		{ 2.523438, 1, 1.390625, 0 } },
+  { "OLYMPUS", "E-PM2", "2700K", 0,		{ 1.140625, 1, 3.554688, 0 } },
+  { "OLYMPUS", "E-PM2", "3000K", 0,		{ 1.296875, 1, 3.054688, 0 } },
+  { "OLYMPUS", "E-PM2", "3300K", 0,		{ 1.429688, 1, 2.640625, 0 } },
+  { "OLYMPUS", "E-PM2", "5000K", 0,		{ 1.882813, 1, 1.984375, 0 } },
 
   { "OLYMPUS", "SP500UZ", Daylight, -7,		{ 1.136719, 1, 2.359375, 0 } },
   { "OLYMPUS", "SP500UZ", Daylight, 0,		{ 1.960937, 1, 1.585937, 0 } },

@@ -58,13 +58,15 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colormapping_params_t)
 #define HISTN (1<<11)
 #define MAXN 5
 
-#define NEUTRAL          0
-#define HAS_SOURCE       1
-#define HAS_TARGET       2
-#define ACQUIRE          4
-#define GET_SOURCE       8
-#define GET_TARGET      16
-
+typedef enum dt_iop_colormapping_flags_t
+{
+  NEUTRAL    = 0,
+  HAS_SOURCE = 1<<0,
+  HAS_TARGET = 1<<1,
+  ACQUIRE    = 1<<2,
+  GET_SOURCE = 1<<3,
+  GET_TARGET = 1<<4
+} dt_iop_colormapping_flags_t;
 
 typedef struct dt_iop_colormapping_flowback_t
 {
@@ -80,7 +82,7 @@ dt_iop_colormapping_flowback_t;
 
 typedef struct dt_iop_colormapping_params_t
 {
-  int flag;
+  dt_iop_colormapping_flags_t flag;
   // number of gaussians used.
   int n;
 
@@ -799,6 +801,7 @@ void
 cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void

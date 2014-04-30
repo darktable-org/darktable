@@ -1,0 +1,41 @@
+<chapter status="final" id="slideshow_chapter">
+
+  <chapterinfo>
+    <keywordset>
+      <keyword>slideshow</keyword>
+      <keyword>view</keyword>
+    </keywordset>
+  </chapterinfo>
+
+  <title>Slideshow</title>
+
+  <indexterm>
+    <primary>slideshow view</primary>
+  </indexterm>
+
+  <para>
+    The slideshow view starts a slideshow of your most recent collection.
+  </para>
+
+  <para>
+    <screenshot>
+
+      <screeninfo>The slideshow view [ needs its own screenshot ]</screeninfo>
+
+      <graphic fileref="tethering/images/tethering_view.png" scalefit="1" width="80%"></graphic>
+
+    </screenshot>
+  </para>
+
+  <sect1 status="final">
+
+    <title>Overview</title>
+
+    <para>
+      [ Documentation on the slideshow view goes here ]
+    </para>
+
+
+  </sect1>
+
+</chapter>

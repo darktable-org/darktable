@@ -61,22 +61,13 @@ dt_dev_pixelpipe_iop_t;
 
 typedef enum dt_dev_pixelpipe_change_t
 {
-  DT_DEV_PIPE_UNCHANGED   = 0,  // no event
-  DT_DEV_PIPE_TOP_CHANGED = 1,  // only params of top element changed
-  DT_DEV_PIPE_REMOVE      = 2,  // possibly elements of the pipe have to be removed
-  DT_DEV_PIPE_SYNCH       = 4,  // all nodes up to end need to be synched, but no removal of module pieces is necessary
-  DT_DEV_PIPE_ZOOMED      = 8   // zoom event, preview pipe does not need changes
+  DT_DEV_PIPE_UNCHANGED   = 0,    // no event
+  DT_DEV_PIPE_TOP_CHANGED = 1<<0, // only params of top element changed
+  DT_DEV_PIPE_REMOVE      = 1<<1, // possibly elements of the pipe have to be removed
+  DT_DEV_PIPE_SYNCH       = 1<<2, // all nodes up to end need to be synched, but no removal of module pieces is necessary
+  DT_DEV_PIPE_ZOOMED      = 1<<3  // zoom event, preview pipe does not need changes
 }
 dt_dev_pixelpipe_change_t;
-
-typedef enum dt_dev_pixelpipe_type_t
-{
-  DT_DEV_PIXELPIPE_EXPORT,
-  DT_DEV_PIXELPIPE_FULL,
-  DT_DEV_PIXELPIPE_PREVIEW,
-  DT_DEV_PIXELPIPE_THUMBNAIL
-}
-dt_dev_pixelpipe_type_t;
 
 /**
  * this encapsulates the gegl pixel pipeline.

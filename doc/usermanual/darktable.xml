@@ -6,7 +6,7 @@
 		]>
 <book lang="en">
 
-  <title>darktable 1.4</title>
+  <title>darktable 1.5</title>
 
   <bookinfo>
 
@@ -102,10 +102,10 @@
                 user manual
               </entry>
               <entry>
-                1.4.1
+                1.5.0
               </entry>
               <entry>
-                January 2014
+                April 2014
               </entry>
             </row>
             <row>
@@ -113,10 +113,10 @@
                 darktable
               </entry>
               <entry>
-                1.4
+                1.5
               </entry>
               <entry>
-                December 2013
+                April 2014
               </entry>
             </row>
           </tbody>
@@ -154,6 +154,10 @@
 <!-- Geotagging  Chapter -->
 
   <xi:include href="map/map.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+<!-- Slideshow  Chapter -->
+
+  <xi:include href="slideshow/slideshow.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 <!-- Preferences and Settings Chapter -->
 

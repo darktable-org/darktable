@@ -39,7 +39,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_highlights_params_t)
 typedef enum dt_iop_highlights_mode_t
 {
   DT_IOP_HIGHLIGHTS_CLIP = 0,
-  DT_IOP_HIGHLIGHTS_LCH = 1
+  DT_IOP_HIGHLIGHTS_LCH = 1,
+  DT_IOP_HIGHLIGHTS_INPAINT = 2,
 }
 dt_iop_highlights_mode_t;
 
@@ -152,6 +153,86 @@ output_bpp(dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_i
   else return 4*sizeof(float);
 }
 
+static int
+FC(const int row, const int col, const unsigned int filters)
+{
+  return filters >> (((row << 1 & 14) + (col & 1)) << 1) & 3;
+}
+
+static inline void _interpolate_color(
+    void *ivoid, void *ovoid, const dt_iop_roi_t *roi_out,
+    int dim, int dir, int other, const float *clip,
+    const uint32_t filters,
+    const int pass)
+{
+  float ratio = 1.0f;
+  float *in, *out;
+
+  int i = 0, j = 0;
+  if(dim == 0) j = other;
+  else         i = other;
+  ssize_t offs = dim ? roi_out->width : 1;
+  if(dir < 0) offs = - offs;
+  int beg, end;
+  if(dim == 0 && dir == 1) { beg = 0; end = roi_out->width; }
+  else if(dim == 0 && dir == -1) { beg = roi_out->width-1; end = -1; }
+  else if(dim == 1 && dir == 1) { beg = 0; end = roi_out->height; }
+  else if(dim == 1 && dir == -1) { beg = roi_out->height-1; end = -1; }
+  else return;
+
+  if(dim == 1)
+  {
+    out = (float *)ovoid + i + (size_t)beg*roi_out->width;
+    in  = (float *)ivoid + i + (size_t)beg*roi_out->width;
+  }
+  else
+  {
+    out = (float *)ovoid + beg + (size_t)j*roi_out->width;
+    in  = (float *)ivoid + beg + (size_t)j*roi_out->width;
+  }
+  for(int k=beg;k!=end;k+=dir)
+  {
+    if(dim == 1) j = k;
+    else         i = k;
+    const float clip0 = clip[FC(j, i, filters)];
+    const float clip1 = clip[FC(dim?(j+1):j, dim?i:(i+1), filters)];
+    if(i==0 || i==roi_out->width-1 || j==0 || j==roi_out->height-1)
+    {
+      if(pass == 3)
+        out[0] = in[0];
+    }
+    else
+    {
+      if(in[0] < clip0 && in[0] > 1e-5f)
+      { // both are not clipped
+        if(in[offs] < clip1 && in[offs] > 1e-5f)
+        { // update ratio, exponential decay. ratio = in[odd]/in[even]
+          if(k & 1) ratio = (3.0f*ratio + in[0]/in[offs])/4.0f;
+          else      ratio = (3.0f*ratio + in[offs]/in[0])/4.0f;
+        }
+      }
+
+      if(in[0] >= clip0-1e-5f)
+      { // in[0] is clipped, restore it as in[1] adjusted according to ratio
+        float add = 0.0f;
+        if(in[offs] >= clip1-1e-5f) add = fmaxf(clip0, clip1);
+        else if(k & 1) add = in[offs] * ratio;
+        else           add = in[offs] / ratio;
+
+        if(pass == 0) out[0] = add;
+        else if(pass == 3) out[0] = (out[0] + add)/4.0f;
+        else out[0] += add;
+      }
+      else
+      {
+        if(pass == 3)
+          out[0] = in[0];
+      }
+    }
+    out += offs;
+    in += offs;
+  }
+}
 
 void process(
     struct dt_iop_module_t *self,
@@ -189,6 +270,33 @@ void process(
 
   switch(data->mode)
   {
+    case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
+    {
+      const float clips[4] = {
+        data->clip * piece->pipe->processed_maximum[0],
+        data->clip * piece->pipe->processed_maximum[1],
+        data->clip * piece->pipe->processed_maximum[2],
+        clip};
+#ifdef _OPENMP
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#endif
+      for(int j=0; j<roi_out->height; j++)
+      {
+        _interpolate_color(ivoid, ovoid, roi_out, 0, 1, j, clips, filters, 0);
+        _interpolate_color(ivoid, ovoid, roi_out, 0, -1, j, clips, filters, 1);
+      }
+
+      // up/down directions
+#ifdef _OPENMP
+      #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
+#endif
+      for(int i=0; i<roi_out->width; i++)
+      {
+        _interpolate_color(ivoid, ovoid, roi_out, 1, 1, i, clips, filters, 2);
+        _interpolate_color(ivoid, ovoid, roi_out, 1, -1, i, clips, filters, 3);
+      }
+      break;
+    }
     case DT_IOP_HIGHLIGHTS_LCH:
 #ifdef _OPENMP
       #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
@@ -269,18 +377,8 @@ static void
 mode_changed (GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
-  int active = dt_bauhaus_combobox_get(combo);
-
-  switch(active)
-  {
-    case DT_IOP_HIGHLIGHTS_CLIP:
-      p->mode = DT_IOP_HIGHLIGHTS_CLIP;
-      break;
-    default:
-    case DT_IOP_HIGHLIGHTS_LCH:
-      p->mode = DT_IOP_HIGHLIGHTS_LCH;
-      break;
-  }
+  p->mode = dt_bauhaus_combobox_get(combo);
+  if(p->mode > DT_IOP_HIGHLIGHTS_INPAINT) p->mode = DT_IOP_HIGHLIGHTS_INPAINT;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -289,6 +387,12 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)p1;
   dt_iop_highlights_data_t *d = (dt_iop_highlights_data_t *)piece->data;
   memcpy(d, p, sizeof(*p));
+
+  piece->process_cl_ready = 1;
+
+  // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
+  if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT)
+    piece->process_cl_ready = 0;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -318,6 +422,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -377,6 +482,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->mode, NULL, _("method"));
   dt_bauhaus_combobox_add(g->mode, _("clip highlights"));
   dt_bauhaus_combobox_add(g->mode, _("reconstruct in LCh"));
+  dt_bauhaus_combobox_add(g->mode, _("reconstruct color"));
   g_object_set(G_OBJECT(g->mode), "tooltip-text", _("highlight reconstruction method"), (char *)NULL);
 
   g->clip = dt_bauhaus_slider_new_with_range(self, 0.0, 2.0, 0.01, p->clip, 3);

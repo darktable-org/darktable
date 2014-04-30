@@ -5,14 +5,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     Macports will need some tuning though, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.6
+     cxx_stdlib libstdc++
     (practice showed that support for versions older than 10.6 isn't viable)
-    Also some versions of OS X have a bug making PTHREAD_RECURSIVE_MUTEX_INITIALIZER invalid, so gettext needs to be patched:
-     $ mkdir -p ~/ports/devel
-     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/devel/gettext ~/ports/devel/
-     $ curl -o ~/ports/devel/gettext/files/gettext-mutex-fix.patch https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gettext-mutex-fix.patch
-    then add gettext-mutex-fix.patch to patchfiles line in ~/ports/devel/gettext/Portfile and run
-     $ portindex ~/ports
-    Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     To have working OpenMP (at least partly, only for C source files) you will also need gcc46:
      sudo port install gcc46
     Configure darktable with this command instead of just "cmake ..":
@@ -26,20 +20,13 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ patch -p1 < ../darktable/packaging/macosx/gtk-mac-bundler-0.6.1.patch
      $ make install
 
-3). You will need to rebuild gtk2 with custom configure flag. Copy gtk2 Portfile to your local overlay:
-     $ mkdir ~/ports/gnome
-     $ cp -R /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/gnome/gtk2 ~/ports/gnome/
-    Add these lines to ~/ports/gnome/gtk2/Portfile:
-     variant bundle {
-         configure.args-append --enable-quartz-relocation
-     }
-    Update index file and reinstall gtk2:
-     $ portindex ~/ports
+3). You will need to rebuild gtk2 with 'bundle' variant:
      $ sudo port install gtk2 +bundle
     The problem is that with this flag gtk2 works reliably only when included in bundle, so if you need working system gtk2 you will need to revert this change
     after you're done with bundle creation. To do that you can just run this command:
      $ sudo port install gtk2 -bundle
+    Otherwise you can just add +bundle to /opt/local/etc/macports/variant.conf
 
-4). Now preparation is done, run image creating script, it should create darktable.dmg in current (packaging/macosx) directory:
+4). Now preparation is done, run image creating script, it should create darktable-<VERSION>.dmg in current (packaging/macosx) directory:
      $ cd ~/src/darktable/packaging/macosx
      $ ./make-app-bundle

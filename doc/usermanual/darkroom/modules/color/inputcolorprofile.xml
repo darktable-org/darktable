@@ -16,6 +16,20 @@
     <secondary>input color profile</secondary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>blue light sources</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>black pixels</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>gamut clipping</primary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>
@@ -45,6 +59,12 @@
 
     <title>Usage</title>
 
+    <para>
+      In this module you define the input color profile, i.e. how colors of your input image are
+      to be interpreted. You also have an option to make colors get confined to a certain gamut
+      in order to mitigate some (infrequent) color artifacts.
+    </para>
+
     <sect5>
       <title>profile</title>
       <para>
@@ -66,6 +86,25 @@
         might already contain an embedded ICC profile which darktable will use as a default. You
         can always overrule darktable and select a different profile or select <quote>embedded
         icc profile</quote> to restore the default.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>gamut clipping</title>
+      <para>
+        This combobox lets you activate a color clipping mechanism. In most cases you can leave
+        it at its default <quote>off</quote> state. However, if your image shows some specific
+        features like highly saturated blue light sources gamut, clipping might be useful to
+        avoid black pixel artifacts. See <xref linkend="possible_color_artifacts"/> for more
+        background information.
+      </para>
+      <para>
+        You can select from a list of RGB profiles. Input colors with a saturation that exceeds
+        the permissible range of the selected profile get clipped to a maximum value.
+        <quote>Beta RGB (compatible)</quote> and <quote>Adobe RGB (compatible)</quote> allow for
+        a broader range of unclipped colors, while <quote>sRGB</quote> and <quote>linear Rec709
+        RGB</quote> produce a tighter clipping. You should select the profile that prevents
+        artifacts while still maintaining highest color dynamics.
       </para>
     </sect5>
 

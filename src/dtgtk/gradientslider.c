@@ -191,7 +191,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     assert(lselected <= gslider->positions-1);
 
 
-    if(event->button==1) // left mouse button : select and start dragging
+    if(event->button==1 && lselected >= 0) // left mouse button : select and start dragging
     {
       gslider->selected = lselected;
       gslider->do_reset = FALSE;

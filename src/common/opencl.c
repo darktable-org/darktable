@@ -344,7 +344,9 @@ void dt_opencl_init(dt_opencl_t *cl, const int argc, char *argv[])
       while(!feof(f))
       {
         int prog = -1;
-        int rd = fscanf(f, "%[^\n]\n", confentry);
+        gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry)-1);
+        int rd = fscanf(f, confline_pattern, confentry);
+        g_free(confline_pattern);
         if(rd != 1) continue;
         // remove comments:
         for(size_t pos=0; pos<strlen(confentry); pos++)
@@ -576,7 +578,7 @@ static int _device_by_cname(const char *name)
   char tmp[2048] = { 0 };
   int result = -1;
 
-  _ascii_str_canonical(name, tmp, 2048);
+  _ascii_str_canonical(name, tmp, sizeof(tmp));
 
   for(int i=0; i < devs; i++)
   {
@@ -744,7 +746,7 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
   int len = 0;
 
   // first get rid of all invalid characters
-  while(*configstr != '\0' && len < 2048)
+  while(*configstr != '\0' && len < sizeof(tmp)-1)
   {
     int n = strcspn(configstr, "/!,*0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
     configstr += n;
@@ -907,7 +909,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   if (cached)
   {
 
-    if ((linkedfile_len=readlink(binname, linkedfile, 1023)) > 0)
+    if ((linkedfile_len=readlink(binname, linkedfile, sizeof(linkedfile)-1)) > 0)
     {
       linkedfile[linkedfile_len] = '\0';
 

@@ -11,6 +11,11 @@
     <primary>highlight reconstruction</primary>
   </indexterm>
 
+  <indexterm>
+    <primary>artifact mitigation</primary>
+    <secondary>magenta highlights</secondary>
+  </indexterm>
+
   <sect4>
 
     <title>Overview</title>

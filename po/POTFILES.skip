@@ -8,7 +8,3 @@ src/gegl-operations/dt-gamma.c
 darktable.glade
 src/imageio/format/rgbe.c
 src/iop/useless.c
-src/iop/shrecovery.c
-src/iop/anlfyeni.c
-src/iop/densitycurve.c
-src/iop/useless_simple.c

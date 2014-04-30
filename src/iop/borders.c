@@ -535,6 +535,7 @@ void init_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   free(piece->data);
+  piece->data = NULL;
 }
 
 void init_presets (dt_iop_module_so_t *self)
@@ -884,16 +885,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    if (p->aspect_text)
-    {
-      dt_bauhaus_combobox_set_text(g->aspect, p->aspect_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->aspect);
-      dt_bauhaus_combobox_set_text(g->aspect, text);
-    }
+    dt_bauhaus_combobox_set_text(g->aspect, p->aspect_text);
     dt_bauhaus_combobox_set(g->aspect, -1);
   }
 
@@ -911,16 +903,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    if (p->pos_h_text)
-    {
-      dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->pos_h);
-      dt_bauhaus_combobox_set_text(g->pos_h, text);
-    }
+    dt_bauhaus_combobox_set_text(g->pos_h, p->pos_h_text);
     dt_bauhaus_combobox_set(g->pos_h, -1);
   }
 
@@ -935,16 +918,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(k == DT_IOP_BORDERS_POSITION_V_COUNT)
   {
-    if (p->pos_v_text)
-    {
-      dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
-    }
-    else
-    {
-      char text[128];
-      snprintf(text, sizeof(text), "%.3f:1", p->pos_v);
-      dt_bauhaus_combobox_set_text(g->pos_v, text);
-    }
+    dt_bauhaus_combobox_set_text(g->pos_v, p->pos_v_text);
     dt_bauhaus_combobox_set(g->pos_v, -1);
   }
 

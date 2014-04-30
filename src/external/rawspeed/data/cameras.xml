@@ -514,6 +514,25 @@
 			<Alias>Canon EOS REBEL T3</Alias>
 		</Aliases>
 	</Camera>
+	<Camera make="Canon" model="Canon EOS 1200D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="146" y="54" width="0" height="0"/>
+		<Sensor black="2046" white="12279" iso_min="0" iso_max = "199"/>
+		<Sensor black="2046" white="15000"/>
+		<BlackAreas>
+			<Vertical x="0" width="140"/>
+			<Horizontal y="4" height="44"/>
+		</BlackAreas>
+		<Aliases>
+			<Alias>Canon EOS REBEL T5</Alias>
+			<Alias>Canon EOS Kiss X70</Alias>
+		</Aliases>
+	</Camera>
 	<Camera make="Canon" model="Canon EOS 400D DIGITAL">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
@@ -1015,6 +1034,19 @@
 		</CFA>
 		<Crop x="0" y="0" width="-48" height="0"/>
 		<Sensor black="0" white="16383"/>
+	</Camera>
+	<Camera make="NIKON CORPORATION" model="NIKON D3300">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="8" y="8" width="-8" height="-8"/>
+		<Sensor black="150" white="3880"/>
+		<Hints>
+			<Hint name="nikon_override_auto_black" value=""/>
+		</Hints>
 	</Camera>
 	<Camera make="NIKON CORPORATION" model="NIKON D4">
 		<CFA width="2" height="2">
@@ -1674,6 +1706,16 @@
 		</CFA>
 		<Crop x="0" y="0" width="0" height="0"/>
 		<Sensor black="255" white="4095"/>
+	</Camera>
+	<Camera make="OLYMPUS IMAGING CORP." model="E-M10">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="0" height="0"/>
+		<Sensor black="254" white="4000"/>
 	</Camera>
 	<Camera make="OLYMPUS IMAGING CORP." model="E-M5">
 		<CFA width="2" height="2">
@@ -3511,6 +3553,16 @@
 		<Crop x="0" y="0" width="-10" height="-18"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+	<Camera make="SAMSUNG" model="NX30" decoder_version="3">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">GREEN</Color>
+			<Color x="1" y="0">BLUE</Color>
+			<Color x="0" y="1">RED</Color>
+			<Color x="1" y="1">GREEN</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-10" height="-18"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
 	<Camera make="SAMSUNG" model="NX300" decoder_version="3">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
@@ -3866,7 +3918,27 @@
 			<Color x="0" y="1">GREEN</Color>
 			<Color x="1" y="1">BLUE</Color>
 		</CFA>
-		<Crop x="0" y="0" width="0" height="0"/>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="512" white="16300"/>
+	</Camera>
+	<Camera make="SONY" model="ILCE-5000" supported="yes">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-34" height="0"/>
+		<Sensor black="512" white="16300"/>
+	</Camera>
+	<Camera make="SONY" model="ILCE-6000" supported="yes">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="-28" height="0"/>
 		<Sensor black="512" white="16300"/>
 	</Camera>
 	<Camera make="SONY" model="ILCE-7" supported="yes">

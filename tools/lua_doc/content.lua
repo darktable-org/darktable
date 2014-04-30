@@ -196,7 +196,9 @@ darktable.preferences:set_text([[Lua allows you do manipulate preferences. Lua h
 
 * string
 * bool
-* integer]])
+* integer
+* float]])
+darktable.preferences:add_version_info("added float parameters")
 
 darktable.preferences.register:set_text([[Creates a new preference entry in the Lua tab of the preference screen. If this function is not called the preference can't be set by the user (you can still read and write invisible preferences).]])
 darktable.preferences.register:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])
@@ -205,8 +207,9 @@ darktable.preferences.register:add_parameter("type","string",[[The type of the p
 darktable.preferences.register:add_parameter("label","string",[[The label displayed in the preference screen.]])
 darktable.preferences.register:add_parameter("tooltip","string",[[The tooltip to display in the preference menue.]])
 darktable.preferences.register:add_parameter("default","depends on type",[[Default value to use when not set explicitely or by the user.]]):set_attribute("optional",true)
-darktable.preferences.register:add_parameter("min","int",[[Minimum value (integer preferences only).]]):set_attribute("optional",true)
-darktable.preferences.register:add_parameter("max","int",[[Maximum value (integer preferences only).]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("min","int or float",[[Minimum value (integer and float preferences only).]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("max","int or float",[[Maximum value (integer and float preferences only).]]):set_attribute("optional",true)
+darktable.preferences.register:add_parameter("step","float",[[Step of the spinner (float preferences only).]]):set_attribute("optional",true)
     
 darktable.preferences.read:set_text([[Reads a value from a Lua preference.]])
 darktable.preferences.read:add_parameter("script","string",[[Invisible prefix to guarantee unicity of preferences.]])

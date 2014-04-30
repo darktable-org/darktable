@@ -668,7 +668,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       /* get arrow icon widget */
       wlabel = g_list_nth(gtk_container_get_children(GTK_CONTAINER(header)),5)->data;
       char label[128];
-      if(module->multi_name && strcmp(module->multi_name,"0") == 0)
+      if(strcmp(module->multi_name,"0") == 0)
         g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
       else
         g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);

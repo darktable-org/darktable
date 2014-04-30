@@ -208,7 +208,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       gtk_box_pack_start (GTK_BOX (d->devices),label,TRUE,TRUE,0);
 
       /* set camera summary if available */
-      if(camera->summary.text && *camera->summary.text)
+      if(*camera->summary.text)
       {
         g_object_set(G_OBJECT(label), "tooltip-text", camera->summary.text, (char *)NULL);
       }

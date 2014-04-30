@@ -215,6 +215,7 @@ dt_gtkentry_get_default_path_compl_list ()
     { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
     { "HOME", N_("$(HOME) - home folder") },
     { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
+    { "TITLE", N_("$(TITLE) - title from metadata") },
     { NULL, NULL }
   };
 

@@ -870,7 +870,7 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
   //how many points do we need? we only take every nth point and rely on interpolation (only affecting GUI anyhow)
   const int n = 10;
   const float lambda = (a - b)/(a + b);
-  const int l = (int) ((M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda)))) / n);
+  const int l = MAX(100, (int) ((M_PI*(a + b) * (1.0f + (3.0f * lambda*lambda)/(10.0f + sqrtf(4.0f - 3.0f * lambda*lambda)))) / n));
 
   //buffer allocations
   *points = malloc(2*(l+5)*sizeof(float));
