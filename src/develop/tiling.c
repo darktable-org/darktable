@@ -191,7 +191,7 @@ _simplex(double (*objfunc) (double[], void*[]), double start[], int n, double EP
   int vh;			/* vertex with next smallest value */
   int vg;			/* vertex with largest value */
 
-  int i, j, m, row;
+  int i, j=0, m, row;
   int k;			/* track the number of function evaluations */
   int itr;			/* track the number of iterations */
 
