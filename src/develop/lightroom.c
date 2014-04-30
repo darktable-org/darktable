@@ -1113,9 +1113,30 @@ void dt_lightroom_import (int imgid, dt_develop_t *dev, gboolean iauto)
     pc.kxc = pc.kxb = 0.8f;
     pc.kya = pc.kyb = 0.2f;
     pc.kyc = pc.kyd = 0.8f;
+    float tmp;
 
     if (has_crop)
     {
+      // adjust crop data according to the rotation
+
+      switch (dev->image_storage.orientation)
+      {
+         case 5: // portrait - counter-clockwise
+           tmp = pc.ch;
+           pc.ch = 1.0 - pc.cx;
+           pc.cx = pc.cy;
+           pc.cy = 1.0 - pc.cw;
+           pc.cw = tmp;
+           break;
+         case 6: // portrait - clockwise
+           tmp = pc.ch;
+           pc.ch = pc.cw;
+           pc.cw = 1.0 - pc.cy;
+           pc.cy = pc.cx;
+           pc.cx = 1.0 - tmp;
+           break;
+      }
+
       if (pc.angle != 0)
       {
         const float rangle = -pc.angle * (3.141592 / 180);
