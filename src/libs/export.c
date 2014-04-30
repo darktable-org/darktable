@@ -145,7 +145,7 @@ gui_reset (dt_lib_module_t *self)
   g_free(storage_name);
   gtk_combo_box_set_active(d->storage, storage_index);
 
-  gtk_combo_box_set_active(d->intent, (int)dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
+  gtk_combo_box_set_active(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
   // iccprofile
   int iccfound = 0;
   gchar *iccprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
