@@ -189,17 +189,13 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* iterate over history items and add them to list*/
   GList *history = g_list_first(darktable.develop->history);
-  char label[512];
   while (history)
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
-    /* create a history button and add to box */
-    if(strcmp(hitem->module->multi_name,"0") == 0)
-      snprintf(label, sizeof(label), "%s", hitem->module->name());
-    else
-      snprintf(label, sizeof(label), "%s %s", hitem->module->name(), hitem->module->multi_name);
+    gchar *label = dt_history_item_get_name(hitem->module);
     GtkWidget *widget =_lib_history_create_button(self,num,label,hitem->enabled);
+    g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box),widget,TRUE,TRUE,0);
     gtk_box_reorder_child(GTK_BOX(d->history_box),widget,0);

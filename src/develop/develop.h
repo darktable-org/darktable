@@ -276,6 +276,9 @@ void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
 void dt_dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** same, but for all modules */
 void dt_dev_modules_update_multishow(dt_develop_t *dev);
+/** generates item multi-instance name */
+gchar *dt_history_item_get_name(struct dt_iop_module_t *module);
+gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module);
 
 /*
  * distort functions

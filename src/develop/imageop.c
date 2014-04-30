@@ -834,7 +834,9 @@ dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(togglebutton), "tooltip-text", tooltip, (char *)NULL);
 }
 
@@ -873,14 +875,10 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
-  char label[128];
-  // if multi_name is emptry or "0"
-  if(!module->multi_name[0] || strcmp(module->multi_name,"0") == 0)
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span>  ",module->name());
-  else
-    g_snprintf(label,sizeof(label),"<span size=\"larger\">%s</span> %s",module->name(),module->multi_name);
   gtk_widget_set_name(lab, "panel_label");
-  gtk_label_set_markup(GTK_LABEL(lab),label);
+  gchar *label = dt_history_item_get_name_html(module);
+  gtk_label_set_markup(GTK_LABEL(lab), label);
+  g_free(label);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -1731,7 +1729,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   gtk_widget_set_no_show_all(hw[idx],TRUE);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module->name());
+  gchar *module_label = dt_history_item_get_name(module);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
+  g_free(module_label);
   g_object_set(G_OBJECT(hw[idx]), "tooltip-text", tooltip, (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect (G_OBJECT (hw[idx]), "toggled",
