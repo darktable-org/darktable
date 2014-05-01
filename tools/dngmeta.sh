@@ -51,10 +51,10 @@ WHITE_HEX="0x$(echo "ibase=10;obase=16;$WHITE" | bc | tr 'A-Z' 'a-z')"
 CFA_PATTERN_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $2}')
 CFA_PATTERN_HEIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFARepeatPatternDim ' | awk '{print $3}')
 
-CFA_UPPER_LEFT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $2}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_UPPER_RIGHT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $3}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_LOWER_LEFT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $4}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
-CFA_LOWER_RIGHT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $5}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
+CFA_UPPER_LEFT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $2}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
+CFA_UPPER_RIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $3}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
+CFA_LOWER_LEFT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $4}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
+CFA_LOWER_RIGHT=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $5}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
 
 IMG_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
 IMG_LENGTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
