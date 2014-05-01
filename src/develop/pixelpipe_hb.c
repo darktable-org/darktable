@@ -340,15 +340,23 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
 // as long as we work on small image sizes like in image preview
 static void
 histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                     float **histogram, float *histogram_max)
+                     float **histogram, float *histogram_max, float *buffer, size_t bufsize)
 {
-  void *pixel = dt_alloc_align(64, roi->width*roi->height*4*sizeof(float));
-  if(pixel == NULL) return;
+  float *tmpbuf = NULL;
+  float *pixel;
+
+  // if buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= (size_t)roi->width*roi->height*4*sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align(64, (size_t)roi->width*roi->height*4*sizeof(float));
+  
+  if(!pixel) return;
 
   cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4*sizeof(float));
   if(err != CL_SUCCESS)
   {
-    dt_free_align(pixel);
+    if (tmpbuf) dt_free_align(tmpbuf);
     return;
   }
 
@@ -365,7 +373,7 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
   dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
   free(histogram_params);
-  dt_free_align(pixel);
+  if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif
 
@@ -433,8 +441,8 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
         picked_color_max[0] = fmaxf(picked_color_max[0], L);
         picked_color_max[1] = fmaxf(picked_color_max[1], a);
         picked_color_max[2] = fmaxf(picked_color_max[2], b);
-        for(int k=0; k<3; k++) picked_color[k] = Lab[k];
       }
+    for(int k=0; k<3; k++) picked_color[k] = Lab[k];
   }
   else
   {
@@ -470,7 +478,7 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 // as long as we work on small image sizes like in image preview
 static void
 pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop_roi_t *roi,
-                    float *picked_color, float *picked_color_min, float *picked_color_max)
+                    float *picked_color, float *picked_color_min, float *picked_color_max, float *buffer, size_t bufsize)
 {
   const float wd = darktable.develop->preview_pipe->backbuf_width;
   const float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -533,21 +541,30 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   region[1] = box[3] - box[1] + 1;
   region[2] = 1;
 
-  size_t bufsize = (size_t)region[0] * region[1];
-  float *buffer = dt_alloc_align(64, bufsize*4*sizeof(float));
-  if(buffer == NULL) return;
+  float *pixel;
+  float *tmpbuf = NULL;
+
+  size_t size = (size_t)region[0] * region[1];
+
+  // if a buffer is supplied and if size fits let's use it
+  if(buffer && bufsize >= size*4*sizeof(float))
+    pixel = buffer;
+  else
+    pixel = tmpbuf = dt_alloc_align(64, size*4*sizeof(float));
+
+  if(pixel == NULL) return;
 
   // get the required part of the image from opencl device
-  cl_int err = dt_opencl_read_host_from_device_raw(devid, buffer, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
+  cl_int err = dt_opencl_read_host_from_device_raw(devid, pixel, img, origin, region, region[0]*4*sizeof(float), CL_TRUE);
 
   if(err == CL_SUCCESS)
   {
     const float w = 1.0f/(region[0] * region[1]);
-    for(size_t k = 0; k < 4*bufsize; k += 4)
+    for(size_t k = 0; k < 4*size; k += 4)
     {
-      const float L = buffer[k];
-      const float a = buffer[k + 1];
-      const float b = buffer[k + 2];
+      const float L = pixel[k];
+      const float a = pixel[k + 1];
+      const float b = pixel[k + 2];
       Lab[0] += w*L;
       Lab[1] += w*a;
       Lab[2] += w*b;
@@ -557,11 +574,11 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
       picked_color_max[0] = fmaxf(picked_color_max[0], L);
       picked_color_max[1] = fmaxf(picked_color_max[1], a);
       picked_color_max[2] = fmaxf(picked_color_max[2], b);
-      for(int k=0; k<3; k++) picked_color[k] = Lab[k];
     }
+    for(int k=0; k<3; k++) picked_color[k] = Lab[k];
   }
 
-  dt_free_align(buffer);
+  if(tmpbuf) dt_free_align(tmpbuf);
 }
 #endif
 
@@ -887,7 +904,10 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           if(success_opencl && (dev->gui_attached || !(module->request_histogram & DT_REQUEST_ONLY_IN_GUI)) &&
             (module->request_histogram_source & pipe->type) && (module->request_histogram & DT_REQUEST_ON))
           {
-            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max);
+            // we abuse the empty output buffer on host for intermediate storage of data in histogram_collect_cl()
+            size_t outbufsize = roi_out->width*roi_out->height*bpp;
+
+            histogram_collect_cl(pipe->devid, module, cl_mem_input, &roi_in, &(module->histogram), module->histogram_max, *output, outbufsize);
             pixelpipe_flow |=  (PIXELPIPE_FLOW_HISTOGRAM_ON_GPU);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_HISTOGRAM_NONE | PIXELPIPE_FLOW_HISTOGRAM_ON_CPU);
 
@@ -923,8 +943,14 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
               module == dev->gui_module && // only modules with focus can pick
               module->request_color_pick) // and they want to pick ;)
           {
-            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
-            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
+
+            // we abuse the empty output buffer on host for intermediate storage of data in pixelpipe_picker_cl()
+            size_t outbufsize = roi_out->width*roi_out->height*bpp;
+
+            pixelpipe_picker_cl(pipe->devid, module, cl_mem_input, &roi_in, module->picked_color, module->picked_color_min, 
+                                module->picked_color_max, *output, outbufsize);
+            pixelpipe_picker_cl(pipe->devid, module, (*cl_mem_output), roi_out, module->picked_output_color, module->picked_output_color_min, 
+                                module->picked_output_color_max, *output, outbufsize);
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
