@@ -56,6 +56,30 @@ CFA_UPPER_RIGHT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern
 CFA_LOWER_LEFT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $4}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
 CFA_LOWER_RIGHT=$(exiv2 -Pkt *.dng 2>/dev/null | grep 'Exif.SubImage1.CFAPattern' | awk '{print $5}' | sed 's#0#RED#' | sed 's#1#GREEN#' | sed 's#2#BLUE#')
 
+IMG_WIDTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageWidth ' | awk '{print $2}')
+IMG_LENGTH=$(exiv2 -Pkt $DNG 2>/dev/null | grep 'Exif.SubImage1.ImageLength ' | awk '{print $2}')
+
+if [[ $IMG_WIDTH -gt $IMG_LENGTH ]]; then
+  IMG_LONG=$IMG_WIDTH
+  IMG_SHORT=$IMG_LENGTH
+else
+  IMG_LONG=$IMG_LENGTH
+  IMG_SHORT=$IMG_WIDTH
+fi
+
+if [[ $MAKE == Panasonic ]]; then
+  if [[ $((100 * $IMG_LONG / $IMG_SHORT)) -gt 164 ]]; then
+    MODE=" mode=\"16:9\""
+  elif [[ $((100 * $IMG_LONG / $IMG_SHORT)) -gt 142 ]]; then
+    MODE=" mode=\"3:2\""
+  elif [[ $((100 * $IMG_LONG / $IMG_SHORT)) -gt 116 ]]; then
+    MODE=" mode=\"4:3\""
+  else
+    MODE=" mode=\"1:1\""
+  fi
+else
+  MODE=""
+fi
 
 echo "DNG created by : $SOFTWARE"
 echo "DNG Illuminant : $ILLUMINANT (should be 21)"
@@ -73,7 +97,7 @@ echo ""
 echo ""
 echo "$ nano -w src/external/rawspeed/data/cameras.xml (mind the tabs)"
 echo ""
-echo -e "\t<Camera make=\"$MAKE\" model=\"$MODEL\" supported=\"yes\">"
+echo -e "\t<Camera make=\"$MAKE\" model=\"$MODEL\"$MODE>"
 echo -e "\t\t<CFA width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
 echo -e "\t\t\t<Color x=\"0\" y=\"0\">$CFA_UPPER_LEFT</Color>"
 echo -e "\t\t\t<Color x=\"1\" y=\"0\">$CFA_UPPER_RIGHT</Color>"
