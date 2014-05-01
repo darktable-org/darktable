@@ -130,6 +130,14 @@
       </para>
 
       <para>
+        On lifting the tablet pen or releasing the left mouse button the drawn figure is
+        converted into a number of connected nodes which define the shape. A configuration
+        option (see <xref linkend="gui_options"/>) controls how much smoothing is applied. A
+        higher level of smoothing leads to less nodes - this eases subsequent editing at the
+        expense of a lower initial accuracy.
+      </para>
+
+      <para>
         Nodes and segments of a brush stroke can be modified individually. See the documentation
         on <emphasis>path</emphasis> below for more details.
       </para>
