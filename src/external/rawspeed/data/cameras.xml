@@ -710,6 +710,20 @@
 			<Horizontal y="0" height="46"/>
 		</BlackAreas>
 	</Camera>
+	<Camera make="Canon" model="Canon PowerShot G1 X Mark II">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="82" y="52" width="-14" height="0"/>
+		<Sensor black="0" white="16000"/>
+		<BlackAreas>
+			<Vertical x="0" width="68"/>
+			<Horizontal y="0" height="46"/>
+		</BlackAreas>
+	</Camera>
 	<Camera make="Canon" model="Canon PowerShot G12">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
