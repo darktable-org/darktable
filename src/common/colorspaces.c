@@ -640,41 +640,61 @@ dt_colorspaces_create_xyz_profile(void)
 }
 
 cmsHPROFILE
-dt_colorspaces_create_linear_rgb_profile(void)
+dt_colorspaces_create_linear_rec709_rgb_profile(void)
 {
-  cmsCIExyY       D65;
-  cmsCIExyYTRIPLE Rec709Primaries =
+  cmsHPROFILE  hRec709RGB;
+
+  cmsCIEXYZTRIPLE Colorants =
   {
-    {0.6400, 0.3300, 1.0},
-    {0.3000, 0.6000, 1.0},
-    {0.1500, 0.0600, 1.0}
+    {0.436066, 0.222488, 0.013916},
+    {0.385147, 0.716873, 0.097076},
+    {0.143066, 0.060608, 0.714096}
   };
-  cmsToneCurve *Gamma[3];
-  cmsHPROFILE  hsRGB;
 
-  cmsWhitePointFromTemp(&D65, 6504.0);
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
 
-  hsRGB = cmsCreateRGBProfile(&D65, &Rec709Primaries, Gamma);
-  cmsFreeToneCurve(Gamma[0]);
-  if (hsRGB == NULL) return NULL;
+  transferFunction = build_linear_gamma();
 
-  cmsSetProfileVersion(hsRGB, 2.1);
+  hRec709RGB = cmsCreateProfilePlaceholder(0);
+
+  cmsSetProfileVersion(hRec709RGB, 2.1);
+
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu1, "en", "US", "linear rec709 rgb");
+  cmsMLUsetASCII(mlu1, "en", "US", "Linear Rec709 RGB");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear Rec709 RGB");
-  cmsWriteTag(hsRGB, cmsSigDeviceMfgDescTag,   mlu0);
-  cmsWriteTag(hsRGB, cmsSigDeviceModelDescTag, mlu1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "Linear Rec709 RGB");
   // this will only be displayed when the embedded profile is read by for example GIMP
-  cmsWriteTag(hsRGB, cmsSigProfileDescriptionTag, mlu2);
+  cmsWriteTag(hRec709RGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hRec709RGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hRec709RGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hRec709RGB, cmsSigDeviceModelDescTag,    mlu3);
   cmsMLUfree(mlu0);
   cmsMLUfree(mlu1);
   cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
 
-  return hsRGB;
+  cmsSetDeviceClass(hRec709RGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hRec709RGB, cmsSigRgbData);
+  cmsSetPCS(hRec709RGB, cmsSigXYZData);
+
+  cmsWriteTag(hRec709RGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hRec709RGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hRec709RGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hRec709RGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hRec709RGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hRec709RGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec709RGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec709RGB, cmsSigBlueTRCTag, (void*) transferFunction);
+
+  return hRec709RGB;
 }
 
 cmsHPROFILE
@@ -843,7 +863,7 @@ dt_colorspaces_create_output_profile(const int imgid)
   if(!strcmp(profile, "sRGB"))
     output = dt_colorspaces_create_srgb_profile();
   else if(!strcmp(profile, "linear_rgb"))
-    output = dt_colorspaces_create_linear_rgb_profile();
+    output = dt_colorspaces_create_linear_rec709_rgb_profile();
   else if(!strcmp(profile, "XYZ"))
     output = dt_colorspaces_create_xyz_profile();
   else if(!strcmp(profile, "adobergb"))

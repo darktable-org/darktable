@@ -49,7 +49,7 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_OFF,
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
-  DT_NORMALIZE_LINEAR_RGB,
+  DT_NORMALIZE_LINEAR_REC709_RGB,
   DT_NORMALIZE_LINEAR_REC2020_RGB
 }
 dt_iop_color_normalize_t;
@@ -515,8 +515,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     case DT_NORMALIZE_ADOBE_RGB:
       d->nrgb = dt_colorspaces_create_adobergb_profile();
       break;
-    case DT_NORMALIZE_LINEAR_RGB:
-      d->nrgb = dt_colorspaces_create_linear_rgb_profile();
+    case DT_NORMALIZE_LINEAR_REC709_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec709_rgb_profile();
       break;
     case DT_NORMALIZE_LINEAR_REC2020_RGB:
       d->nrgb = dt_colorspaces_create_linear_rec2020_rgb_profile();
@@ -623,7 +623,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else if(!strcmp(p->iccprofile, "linear_rgb"))
   {
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
   else if(!d->input)
   {
@@ -634,7 +634,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   if(!d->input && strcmp(p->iccprofile, "sRGB"))
   {
     // use linear_rgb as fallback for missing non-sRGB profiles:
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
 
   // final resort: sRGB
@@ -704,7 +704,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     if(d->input) dt_colorspaces_cleanup_profile(d->input);
     if(d->nrgb) dt_colorspaces_cleanup_profile(d->nrgb);
     d->nrgb = NULL;
-    d->input = dt_colorspaces_create_linear_rgb_profile();
+    d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
     if(dt_colorspaces_get_matrix_from_input_profile (d->input, d->cmatrix, d->lut[0], d->lut[1], d->lut[2], LUT_SAMPLES))
     {
       piece->process_cl_ready = 0;

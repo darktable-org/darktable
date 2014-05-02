@@ -513,7 +513,7 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   }
   else if(!strcmp(iccprofile, "linear_rgb"))
   {
-    profile = dt_colorspaces_create_linear_rgb_profile();
+    profile = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
   else if(!strcmp(iccprofile, "adobergb"))
   {
