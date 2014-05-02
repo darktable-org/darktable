@@ -206,7 +206,8 @@
       <xref linkend="input_color_profile"/>) has a <emphasis>gamut clipping</emphasis> option.
       It is off by default but can be activated in case you observe artifacts. Depending on the
       settings colors get confined to one of the offered RGB gamuts. In effect black pixel
-      artifacts are prevented at the costs of losing some color dynamics.
+      artifacts are prevented at the costs of losing some color dynamics. See
+      <xref linkend="input_color_profile"/> for an example.
     </para>
 
   </sect3>
