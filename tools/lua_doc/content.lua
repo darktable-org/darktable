@@ -8,7 +8,7 @@ attributes = doc.toplevel.attributes
 local tmp_node
 
 
-for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code"})   do -- add p a way to have code sections
+for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis"})   do
 	if _ENV[v]== nil then
 		error("function '"..v.."' not defined when requiring content")
 	end

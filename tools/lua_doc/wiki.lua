@@ -21,6 +21,7 @@ end
 startlist = function() return "\n\n" end
 endlist = function() return "" end
 listel = function(text) return "\n* "..text end
+emphasis = function(text) return "_"..text.."_" end
 
 
 require "content"
@@ -115,17 +116,18 @@ local function print_content(node)
 	result = result ..print_attributes(node)
 	result = result.."\n"
 	local sig = doc.get_attribute(node,"signature")
+	local ret_val = doc.get_attribute(node,"ret_val")
 	if(sig) then
 		for k,v in pairs(sig) do
 			result = result .. parse_doc_node(v,node,doc.get_short_name(v)).."\n";
 		end
 		result = result.."\n"
 	end
-	local ret_val = doc.get_attribute(node,"ret_val")
 	if(ret_val) then
 		result = result .. parse_doc_node(ret_val,node,doc.get_short_name(ret_val)).."\n";
 		result = result.."\n"
 	end
+
 	local history = doc.get_version_info(node)
 	if next(history) then
 		result = result.."\t*Version History* : \n"

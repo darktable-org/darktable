@@ -122,6 +122,7 @@ local function document_type_sub(node,result,parent,prev_name)
 			or field == "__gc"
 			or field == "__values"
 			or field == "__init"
+			or field == "__introspection_data_type"
 			)	then
 			-- nothing
 		else
