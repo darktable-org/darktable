@@ -50,7 +50,7 @@ typedef enum dt_iop_color_normalize_t
   DT_NORMALIZE_SRGB,
   DT_NORMALIZE_ADOBE_RGB,
   DT_NORMALIZE_LINEAR_RGB,
-  DT_NORMALIZE_BETA_RGB
+  DT_NORMALIZE_LINEAR_REC2020_RGB
 }
 dt_iop_color_normalize_t;
 
@@ -518,8 +518,8 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     case DT_NORMALIZE_LINEAR_RGB:
       d->nrgb = dt_colorspaces_create_linear_rgb_profile();
       break;
-    case DT_NORMALIZE_BETA_RGB:
-      d->nrgb = dt_colorspaces_create_betargb_profile();
+    case DT_NORMALIZE_LINEAR_REC2020_RGB:
+      d->nrgb = dt_colorspaces_create_linear_rec2020_rgb_profile();
       break;
     case DT_NORMALIZE_OFF:
     default:
@@ -1165,7 +1165,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cbox3, _("sRGB"));
   dt_bauhaus_combobox_add(g->cbox3, _("Adobe RGB (compatible)"));
   dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
-  dt_bauhaus_combobox_add(g->cbox3, _("Beta RGB (compatible)"));
+  dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
 
   g_object_set(G_OBJECT(g->cbox3), "tooltip-text", _("confine Lab values to gamut of RGB color space"), (char *)NULL);
 
