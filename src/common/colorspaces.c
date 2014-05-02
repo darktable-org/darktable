@@ -738,6 +738,64 @@ dt_colorspaces_create_linear_rgb_profile(void)
 }
 
 cmsHPROFILE
+dt_colorspaces_create_linear_rec2020_rgb_profile(void)
+{
+  cmsHPROFILE  hRec2020RGB;
+
+  cmsCIEXYZTRIPLE Colorants =
+  {
+    {0.673492, 0.279037, -0.001938},
+    {0.165665, 0.675354,  0.029984},
+    {0.125046, 0.045609,  0.796860}
+  };
+
+  cmsCIEXYZ black = { 0, 0, 0 };
+  cmsCIEXYZ D65 = { 0.95045, 1, 1.08905 };
+  cmsToneCurve* transferFunction;
+
+  transferFunction = build_linear_gamma();
+
+  hRec2020RGB = cmsCreateProfilePlaceholder(0);
+
+  cmsSetProfileVersion(hRec2020RGB, 2.1);
+
+  cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu0, "en", "US", "Public Domain");
+  cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu1, "en", "US", "Linear Rec2020 RGB");
+  cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu2, "en", "US", "Darktable");
+  cmsMLU *mlu3 = cmsMLUalloc(NULL, 1);
+  cmsMLUsetASCII(mlu3, "en", "US", "Linear Rec2020 RGB");
+  // this will only be displayed when the embedded profile is read by for example GIMP
+  cmsWriteTag(hRec2020RGB, cmsSigCopyrightTag,          mlu0);
+  cmsWriteTag(hRec2020RGB, cmsSigProfileDescriptionTag, mlu1);
+  cmsWriteTag(hRec2020RGB, cmsSigDeviceMfgDescTag,      mlu2);
+  cmsWriteTag(hRec2020RGB, cmsSigDeviceModelDescTag,    mlu3);
+  cmsMLUfree(mlu0);
+  cmsMLUfree(mlu1);
+  cmsMLUfree(mlu2);
+  cmsMLUfree(mlu3);
+
+  cmsSetDeviceClass(hRec2020RGB, cmsSigDisplayClass);
+  cmsSetColorSpace(hRec2020RGB, cmsSigRgbData);
+  cmsSetPCS(hRec2020RGB, cmsSigXYZData);
+
+  cmsWriteTag(hRec2020RGB, cmsSigMediaWhitePointTag, &D65);
+  cmsWriteTag(hRec2020RGB, cmsSigMediaBlackPointTag, &black);
+
+  cmsWriteTag(hRec2020RGB, cmsSigRedColorantTag, (void*) &Colorants.Red);
+  cmsWriteTag(hRec2020RGB, cmsSigGreenColorantTag, (void*) &Colorants.Green);
+  cmsWriteTag(hRec2020RGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
+
+  cmsWriteTag(hRec2020RGB, cmsSigRedTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec2020RGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hRec2020RGB, cmsSigBlueTRCTag, (void*) transferFunction);
+
+  return hRec2020RGB;
+}
+
+cmsHPROFILE
 dt_colorspaces_create_linear_infrared_profile(void)
 {
   // linear rgb with r and b swapped:
