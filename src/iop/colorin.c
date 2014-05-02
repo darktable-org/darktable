@@ -601,7 +601,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
     float cam_xyz[12];
     cam_xyz[0] = NAN;
     dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-    if(isnan(cam_xyz[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rgb");
+    if(isnan(cam_xyz[0])) snprintf(p->iccprofile, sizeof(p->iccprofile), "linear_rec709_rgb");
     else d->input = dt_colorspaces_create_xyzimatrix_profile((float (*)[3])cam_xyz);
   }
 
@@ -621,9 +621,13 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   {
     d->input = dt_colorspaces_create_adobergb_profile();
   }
-  else if(!strcmp(p->iccprofile, "linear_rgb"))
+  else if(!strcmp(p->iccprofile, "linear_rec709_rgb") || !strcmp(p->iccprofile, "linear_rgb"))
   {
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(p->iccprofile, "linear_rec2020_rgb"))
+  {
+    d->input = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!d->input)
   {
@@ -633,7 +637,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
   if(!d->input && strcmp(p->iccprofile, "sRGB"))
   {
-    // use linear_rgb as fallback for missing non-sRGB profiles:
+    // use linear_rec709_rgb as fallback for missing non-sRGB profiles:
     d->input = dt_colorspaces_create_linear_rec709_rgb_profile();
   }
 
@@ -1003,8 +1007,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1035,8 +1041,10 @@ static void update_profile_list(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->cbox2, _("sRGB (e.g. JPG)"));
     else if(!strcmp(prof->name, "adobergb"))
       dt_bauhaus_combobox_add(g->cbox2, _("Adobe RGB (compatible)"));
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
     else if(!strcmp(prof->name, "infrared"))
       dt_bauhaus_combobox_add(g->cbox2, _("linear infrared BGR"));
     else if(!strcmp(prof->name, "XYZ"))
@@ -1060,6 +1068,13 @@ void gui_init(struct dt_iop_module_t *self)
 
   // the profiles that are available for every image
   int pos = -1;
+
+  // add linear Rec2020 RGB profile:
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  g->global_profiles = g_list_append(g->global_profiles, prof);
+  prof->pos = ++pos;
 
   // add linear Rec709 RGB profile:
   prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
@@ -1120,7 +1135,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      if(!strcmp(d_name, "linear_rgb")) continue;
+      if(!strcmp(d_name, "linear_rec709_rgb") || !strcmp(d_name, "linear_rgb")) continue;
       snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)

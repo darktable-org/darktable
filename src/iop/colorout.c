@@ -511,9 +511,13 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
     // default: sRGB
     profile = dt_colorspaces_create_srgb_profile();
   }
-  else if(!strcmp(iccprofile, "linear_rgb"))
+  else if(!strcmp(iccprofile, "linear_rec709_rgb") || !strcmp(iccprofile, "linear_rgb"))
   {
     profile = dt_colorspaces_create_linear_rec709_rgb_profile();
+  }
+  else if(!strcmp(iccprofile, "linear_rec2020_rgb"))
+  {
+    profile = dt_colorspaces_create_linear_rec2020_rgb_profile();
   }
   else if(!strcmp(iccprofile, "adobergb"))
   {
@@ -849,6 +853,13 @@ void gui_init(struct dt_iop_module_t *self)
   display_pos = prof->display_pos = 3;
   g->profiles = g_list_append(g->profiles, prof);
 
+  prof = (dt_iop_color_profile_t *)g_malloc0(sizeof(dt_iop_color_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  g_strlcpy(prof->name, "linear_rec2020_rgb", sizeof(prof->name));
+  pos = prof->pos = 3;
+  display_pos = prof->display_pos = 4;
+  g->profiles = g_list_append(g->profiles, prof);
+
   // read {conf,data}dir/color/out/*.icc
   char datadir[DT_MAX_PATH_LEN];
   char confdir[DT_MAX_PATH_LEN];
@@ -929,11 +940,17 @@ void gui_init(struct dt_iop_module_t *self)
       // the system display profile is only suitable for display purposes
       dt_bauhaus_combobox_add(g->cbox3, _("system display profile"));
     }
-    else if(!strcmp(prof->name, "linear_rgb"))
+    else if(!strcmp(prof->name, "linear_rec709_rgb") || !strcmp(prof->name, "linear_rgb"))
     {
       dt_bauhaus_combobox_add(g->cbox2, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox3, _("linear Rec709 RGB"));
       dt_bauhaus_combobox_add(g->cbox5, _("linear Rec709 RGB"));
+    }
+    else if(!strcmp(prof->name, "linear_rec2020_rgb"))
+    {
+      dt_bauhaus_combobox_add(g->cbox2, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox3, _("linear Rec2020 RGB"));
+      dt_bauhaus_combobox_add(g->cbox5, _("linear Rec2020 RGB"));
     }
     else if(!strcmp(prof->name, "sRGB"))
     {

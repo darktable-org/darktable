@@ -571,6 +571,12 @@ gui_init (dt_lib_module_t *self)
   pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
+  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
+  g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
+  dt_utf8_strlcpy(prof->name, _("linear Rec2020 RGB"), sizeof(prof->name));
+  pos = prof->pos = 5;
+  d->profiles = g_list_append(d->profiles, prof);
+
   // read datadir/color/out/*.icc
   char datadir[DT_MAX_PATH_LEN];
   char confdir[DT_MAX_PATH_LEN];
