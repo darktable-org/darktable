@@ -289,8 +289,8 @@ dt_colorspaces_create_adobergb_profile(void)
   cmsWriteTag(hAdobeRGB, cmsSigBlueColorantTag, (void*) &Colorants.Blue);
 
   cmsWriteTag(hAdobeRGB, cmsSigRedTRCTag, (void*) transferFunction);
-  cmsLinkTag(hAdobeRGB, cmsSigGreenTRCTag, cmsSigRedTRCTag );
-  cmsLinkTag(hAdobeRGB, cmsSigBlueTRCTag, cmsSigRedTRCTag );
+  cmsWriteTag(hAdobeRGB, cmsSigGreenTRCTag, (void*) transferFunction);
+  cmsWriteTag(hAdobeRGB, cmsSigBlueTRCTag, (void*) transferFunction);
 
   return hAdobeRGB;
 }
