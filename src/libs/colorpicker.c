@@ -79,7 +79,7 @@ static void _update_picker_output(dt_lib_module_t *self)
   {
     darktable.gui->reset = 1;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->picker_button),
-                                 module->request_color_pick);
+                                 module->request_color_pick != DT_REQUEST_COLORPICK_OFF);
     darktable.gui->reset = 0;
 
     int input_color = dt_conf_get_int("ui_last/colorpicker_model");
@@ -134,7 +134,7 @@ static void _picker_button_toggled (GtkToggleButton *button, gpointer p)
   if(module)
   {
     dt_iop_request_focus(module);
-    module->request_color_pick = gtk_toggle_button_get_active(button);
+    module->request_color_pick = gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF;
     dt_dev_invalidate_from_gui(darktable.develop);
   }
   else

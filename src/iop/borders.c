@@ -555,10 +555,10 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* use point sample */
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -591,7 +591,7 @@ borders_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_output_color_max[0] < 0) return FALSE;
-  if(!self->request_color_pick) return FALSE;
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
 

@@ -999,7 +999,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
 
             // we abuse the empty output buffer on host for intermediate storage of data in pixelpipe_picker_cl()
@@ -1116,7 +1116,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(success_opencl && dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float*)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker(module, (float*)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1302,7 +1302,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
           // Lab color picking for module
           if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
               module == dev->gui_module && // only modules with focus can pick
-              module->request_color_pick) // and they want to pick ;)
+              module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
           {
             pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
             pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1413,7 +1413,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
         // Lab color picking for module
         if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
             module == dev->gui_module && // only modules with focus can pick
-            module->request_color_pick) // and they want to pick ;)
+            module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
         {
           pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
           pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1494,7 +1494,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
       // Lab color picking for module
       if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
           module == dev->gui_module && // only modules with focus can pick
-          module->request_color_pick) // and they want to pick ;)
+          module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
       {
         pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
         pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1561,7 +1561,7 @@ dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void *
     // Lab color picking for module
     if(dev->gui_attached && pipe == dev->preview_pipe && // pick from preview pipe to get pixels outside the viewport
         module == dev->gui_module && // only modules with focus can pick
-        module->request_color_pick) // and they want to pick ;)
+        module->request_color_pick != DT_REQUEST_COLORPICK_OFF) // and they want to pick ;)
     {
       pixelpipe_picker(module, (float *)input, &roi_in, module->picked_color, module->picked_color_min, module->picked_color_max);
       pixelpipe_picker(module, (float *)(*output), roi_out, module->picked_output_color, module->picked_output_color_min, module->picked_output_color_max);
@@ -1787,7 +1787,7 @@ post_process_collect_info:
         && (strcmp(module->op, "gamma") == 0) // only gamma provides meaningful RGB data
         && dev->gui_module
         && !strcmp(dev->gui_module->op, "colorout")
-        && dev->gui_module->request_color_pick
+        && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
         && darktable.lib->proxy.colorpicker.picked_color_rgb_mean) // colorpicker module active
     {
       uint8_t *pixel = (uint8_t*)*output;
@@ -1921,7 +1921,7 @@ post_process_collect_info:
       // Constraining the area if the colorpicker is active in area mode
       if(dev->gui_module
           && !strcmp(dev->gui_module->op, "colorout")
-          && dev->gui_module->request_color_pick
+          && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
           && darktable.lib->proxy.colorpicker.restrict_histogram)
       {
         if(darktable.lib->proxy.colorpicker.size == DT_COLORPICKER_SIZE_BOX)

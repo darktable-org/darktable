@@ -428,7 +428,7 @@ void cleanup(dt_iop_module_t *module)
 
 int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
 {
-  self->request_color_pick=0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   return 1;
 }
 
@@ -505,7 +505,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(g->in_preview_buffer) g_free (g->in_preview_buffer);
   if(g->out_preview_buffer) g_free (g->out_preview_buffer);
   dt_pthread_mutex_destroy(&g->lock);
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }

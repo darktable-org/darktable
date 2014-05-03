@@ -311,7 +311,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
   gtk_widget_set_sensitive(GTK_WIDGET(g->deflicker_level), p->deflicker);
 
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -382,7 +382,7 @@ static void exposure_set_black(struct dt_iop_module_t *self, const float black);
 static void
 autoexp_disable(dt_iop_module_t *self)
 {
-  if (self->request_color_pick <= 0) return;
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
@@ -398,7 +398,7 @@ autoexp_disable(dt_iop_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(g->autoexpp), FALSE);
 
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 }
 
 static void
@@ -497,11 +497,11 @@ autoexp_callback (GtkToggleButton *button, gpointer user_data)
 
   deflicker_disable(self);
 
-  self->request_color_pick = gtk_toggle_button_get_active(button);
+  self->request_color_pick = gtk_toggle_button_get_active(button) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF;
 
   dt_iop_request_focus(self);
 
-  if (self->request_color_pick > 0)
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
@@ -519,7 +519,7 @@ autoexpp_callback (GtkWidget* slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  if(self->request_color_pick <= 0 || self->picked_color_max[0] < 0.0f) return;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE || self->picked_color_max[0] < 0.0f) return;
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   const float white = fmaxf(fmaxf(self->picked_color_max[0], self->picked_color_max[1]), self->picked_color_max[2])
@@ -622,7 +622,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   // Needed if deflicker is part of auto-applied preset
   deflicker_process(self);
 
-  if(self->request_color_pick <= 0) return FALSE;
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE) return FALSE;
 
   if(self->picked_color_max[0] < 0.0f) return FALSE;
 
@@ -652,7 +652,7 @@ void gui_init(struct dt_iop_module_t *self)
   darktable.develop->proxy.exposure.set_black = dt_iop_exposure_set_black;
   darktable.develop->proxy.exposure.get_black = dt_iop_exposure_get_black;
 
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
 

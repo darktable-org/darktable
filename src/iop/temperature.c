@@ -364,7 +364,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void gui_update (struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
   self->color_picker_point[0] = self->color_picker_point[1] = 0.5f;
@@ -589,7 +589,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
   // capture gui color picked event.
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < self->picked_color_min[0]) return FALSE;
-  if(!self->request_color_pick) return FALSE;
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
   static float old[3] = {0, 0, 0};
   const float *grayrgb = self->picked_color;
   if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2]) return FALSE;
@@ -673,7 +673,7 @@ rgb_callback (GtkWidget *slider, gpointer user_data)
 static void
 apply_preset(dt_iop_module_t *self)
 {
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p  = (dt_iop_temperature_params_t *)self->params;
@@ -690,10 +690,10 @@ apply_preset(dt_iop_module_t *self)
     case 1: // spot wb, exposure callback will set p->coeffs.
       for(int k=0; k<3; k++) p->coeffs[k] = fp->coeffs[k];
       dt_iop_request_focus(self);
-      self->request_color_pick = 1;
+      self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
       /* set the area sample size*/
-      if (self->request_color_pick)
+      if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
         dt_lib_colorpicker_set_area(darktable.lib, 0.99);
 
       break;
@@ -742,7 +742,7 @@ void gui_init (struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t*)self->default_params;
 
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   self->widget = gtk_vbox_new(TRUE, DT_BAUHAUS_SPACE);
   g_signal_connect(G_OBJECT(self->widget), "expose-event", G_CALLBACK(expose), self);
 
@@ -799,7 +799,7 @@ void gui_init (struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }

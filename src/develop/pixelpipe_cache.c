@@ -91,7 +91,7 @@ uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_
     if(!(dev->gui_module && (dev->gui_module->operation_tags_filter() &  piece->module->operation_tags())))
     {
       hash = ((hash << 5) + hash) ^ piece->hash;
-      if(piece->module->request_color_pick)
+      if(piece->module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
       {
         if(darktable.lib->proxy.colorpicker.size)
         {

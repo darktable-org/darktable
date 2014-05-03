@@ -290,7 +290,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->off = NULL;
   module->priority = 0;
   module->hide_enable_button = 0;
-  module->request_color_pick = 0;
+  module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
   module->request_histogram_source = DT_DEV_PIXELPIPE_PREVIEW;
   module->histogram_params.roi = NULL;

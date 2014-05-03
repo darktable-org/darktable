@@ -347,7 +347,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   }
 
   // execute module callback hook.
-  if(dev->gui_module && dev->gui_module->request_color_pick)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     float wd = dev->preview_pipe->backbuf_width;
     float ht = dev->preview_pipe->backbuf_height;
@@ -1412,7 +1412,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   int handled = 0;
   x += offx;
   y += offy;
-  if(dev->gui_module && dev->gui_module->request_color_pick &&
+  if(dev->gui_module && 
+      dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF &&
       ctl->button_down &&
       ctl->button_down_which == 1)
   {
@@ -1502,7 +1503,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
   if(height_i > capht) y += (capht-height_i)*.5f;
 
   int handled = 0;
-  if(dev->gui_module && dev->gui_module->request_color_pick && which == 1)
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
     float zoom_x, zoom_y;
     dt_dev_get_pointer_zoom_pos(dev, x, y, &zoom_x, &zoom_y);

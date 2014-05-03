@@ -219,10 +219,10 @@ picker_callback (GtkDarktableToggleButton *button, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button)) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button)) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
   /* set the area sample size*/
-  if (self->request_color_pick)
+  if (self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->dev);
@@ -350,7 +350,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 
   float mean, min, max;
 
-  if(self->request_color_pick && self->picked_color_max[0] >= 0.0f)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && self->picked_color_max[0] >= 0.0f)
   {
     mean = fmin(fmax(self->picked_color[0] / 100.0f, 0.0f), 1.0f);
     min = fmin(fmax(self->picked_color_min[0] / 100.0f, 0.0f), 1.0f);
@@ -429,7 +429,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }

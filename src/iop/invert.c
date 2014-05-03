@@ -94,9 +94,9 @@ request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
 
-  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? 1 : 0);
+  self->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
 
-  if(self->request_color_pick)
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     dt_dev_reprocess_all(self->dev);
@@ -113,7 +113,7 @@ expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return FALSE;
   if(self->picked_color_max[0] < 0.0f) return FALSE;
-  if(!self->request_color_pick) return FALSE;
+  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
@@ -309,7 +309,7 @@ void cleanup_pipe  (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_d
 
 void gui_update(dt_iop_module_t *self)
 {
-  self->request_color_pick = 0;
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;

@@ -362,10 +362,10 @@ _blendop_masks_mode_callback (GtkWidget *combo, dt_iop_gui_blend_data_t *data)
   }
   else if(data->blendif_inited)
   {
-    /* switch off color picker if it was requested by blendif */
-    if(data->module->request_color_pick < 0)
+    /* switch off color picker - only if it was requested by blendif */
+    if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND)
     {
-      data->module->request_color_pick = 0;
+      data->module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), 0);
     }
 
@@ -519,21 +519,17 @@ _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *mo
 {
   if(darktable.gui->reset) return;
 
-  /* if module itself already requested color pick (positive value in request_color_pick),
-     don't tamper with it. A module color picker takes precedence. */
-  if(module->request_color_pick > 0)
+  /* if module itself already requested color pick don't tamper with it. A module color picker takes precedence. */
+  if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
   {
     gtk_toggle_button_set_active(togglebutton, 0);
     return;
   }
 
-  /* we put a negative value into request_color_pick to later see if color picker was
-     requested by blendif. A module color picker may overwrite this. This is fine, blendif
-     will use the color picker data, but not deactivate it. */
-  module->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? -1 : 0);
+  module->request_color_pick = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_BLEND : DT_REQUEST_COLORPICK_OFF);
 
   /* set the area sample size */
-  if (module->request_color_pick)
+  if (module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(module->dev);
@@ -620,7 +616,7 @@ _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *event, dt_iop_module_
   {
     //we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -646,7 +642,7 @@ _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *event, dt_iop_modul
   {
     //we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -672,7 +668,7 @@ _blendop_masks_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_iop_modu
   {
     //we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -698,7 +694,7 @@ _blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt_iop_module
   {
     //we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -726,7 +722,7 @@ _blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_iop_mod
   {
     //we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -754,7 +750,7 @@ _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event, dt_iop_mo
     darktable.gui->reset = 1;
 
     dt_iop_request_focus(self);
-    self->request_color_pick = 0;
+    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if (grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points)>0)
@@ -835,7 +831,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   }
 
   darktable.gui->reset = 1;
-  if(module->request_color_pick)  // give a bit room for rounding errors
+  if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     _blendif_scale(data->csp, raw_mean, picker_mean);
     _blendif_scale(data->csp, raw_min, picker_min);
@@ -856,7 +852,7 @@ _blendop_blendif_expose(GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
     gtk_label_set_text(label, "");
   }
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), (module->request_color_pick < 0 ? 1 : 0));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), (module->request_color_pick == DT_REQUEST_COLORPICK_BLEND ? 1 : 0));
 
   darktable.gui->reset = 0;
 
@@ -1433,9 +1429,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   else if(bd->blendif_inited)
   {
     /* switch off color picker if it was requested by blendif */
-    if(module->request_color_pick < 0)
+    if(module->request_color_pick == DT_REQUEST_COLORPICK_BLEND)
     {
-      module->request_color_pick = 0;
+      module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->colorpicker), 0);
     }
 

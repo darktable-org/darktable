@@ -121,6 +121,15 @@ typedef enum dt_dev_request_flags_t
 }
 dt_dev_request_flags_t;
 
+/** color picker request */
+typedef enum det_dev_request_colorpick_flags_t
+{
+  DT_REQUEST_COLORPICK_OFF    = 0,            // off
+  DT_REQUEST_COLORPICK_MODULE = 1<<0,         // requested by module (should take precedence)
+  DT_REQUEST_COLORPICK_BLEND  = 1<<1          // requested by parametric blending gui
+}
+dt_dev_request_colorpick_flags_t;
+
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
 struct dt_iop_module_t;
