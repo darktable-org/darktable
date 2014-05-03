@@ -560,21 +560,15 @@ gui_init (dt_lib_module_t *self)
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
-  g_strlcpy(prof->filename, "X profile", sizeof(prof->filename));
-  dt_utf8_strlcpy(prof->name, "X profile", sizeof(prof->name));
-  prof->pos = 3;
-  d->profiles = g_list_append(d->profiles, prof);
-
-  prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "linear_rgb", sizeof(prof->filename));
   dt_utf8_strlcpy(prof->name, _("linear Rec709 RGB"), sizeof(prof->name));
-  pos = prof->pos = 4;
+  pos = prof->pos = 3;
   d->profiles = g_list_append(d->profiles, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   g_strlcpy(prof->filename, "linear_rec2020_rgb", sizeof(prof->filename));
   dt_utf8_strlcpy(prof->name, _("linear Rec2020 RGB"), sizeof(prof->name));
-  pos = prof->pos = 5;
+  pos = prof->pos = 4;
   d->profiles = g_list_append(d->profiles, prof);
 
   // read datadir/color/out/*.icc
@@ -623,10 +617,7 @@ gui_init (dt_lib_module_t *self)
   while(l)
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
-    if(!strcmp(prof->name, "X profile"))
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), _("system display profile"));
-    else
-      gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->profile), prof->name);
     l = g_list_next(l);
   }
 
