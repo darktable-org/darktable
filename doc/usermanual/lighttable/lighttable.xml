@@ -127,10 +127,25 @@
                 fully zoom into the image and show areas in focus
               </entry>
             </row>
-
           </tbody>
         </tgroup>
       </informaltable>
+    </para>
+
+    <indexterm>
+      <primary>overlay</primary>
+    </indexterm>
+
+    <para>
+      The overlay button
+      <inlinegraphic fileref="&icon_general_overlay;" scalefit="1" width="2%" align="center" />
+      located in the upper panel activates the permanent display of star ratings and
+      image-changed indicator
+      <inlinegraphic fileref="images/lighttable_thumb_icon_altered.png" scalefit="1" width="3mm"/>
+      on all thumbnails. By default these overlays are only visible on the thumbnail under the
+      mouse cursor. An overlay button is also available in the other views where it affects the
+      filmstrip accordingly (see <xref linkend="filmstrip_overview"/> and
+      <xref linkend="darkroom_filmstrip"/>).
     </para>
 
     <para>
@@ -169,17 +184,18 @@
 
     <para>
       Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
-      additionally activates an analysis for focus regions. Areas of high sharpness are indicated by
-      a red border - the higher the color intensity the better the sharpness. In case that no
-      area of <emphasis>high</emphasis> sharpness is detected darktable indicates areas of <emphasis>moderate</emphasis>
-      sharpness with a blue border. For this tool to work the input image needs to hold an embedded JPEG
-      thumbnail which is the case for most RAW files. 
+      additionally activates an analysis for focus regions. Areas of high sharpness are
+      indicated by a red border - the higher the color intensity the better the sharpness. In
+      case that no area of <emphasis>high</emphasis> sharpness is detected darktable indicates
+      areas of <emphasis>moderate</emphasis> sharpness with a blue border. For this tool to work
+      the input image needs to hold an embedded JPEG thumbnail which is the case for most RAW
+      files.
     </para>
 
     <para>
-      Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an 
-      immediate effect - in that case please click into the center area and press the corresponding
-      key again.
+      Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
+      immediate effect - in that case please click into the center area and press the
+      corresponding key again.
     </para>
 
     <informaltable frame="none">
@@ -189,9 +205,9 @@
         <tbody>
           <row>
             <entry>
-              Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key with
-              indication of the areas in focus. Focus detection is based on an embedded JPEG
-              thumbnail of the original RAW file independent of any processing steps within
+              Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
+              with indication of the areas in focus. Focus detection is based on an embedded
+              JPEG thumbnail of the original RAW file independent of any processing steps within
               darktable.
             </entry>
             <entry>
