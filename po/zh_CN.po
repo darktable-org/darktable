@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2014-05-04 00:08+0800\n"
+"PO-Revision-Date: 2014-05-04 00:23+0800\n"
 "Last-Translator: Cherrot Luo <translate@cherrot.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -1786,7 +1786,7 @@ msgstr "型号"
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1361
 #: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:83
 msgid "maker"
-msgstr "作者"
+msgstr "厂商"
 
 #: ../src/gui/preferences.c:451 ../src/gui/preferences.c:1369
 #: ../src/gui/presets.c:434 ../src/libs/collect.h:43
