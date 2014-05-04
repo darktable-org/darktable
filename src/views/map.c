@@ -75,7 +75,7 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
 /* wrapper for setting the map source in the GObject */
 static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* proxy function to check if preferences have changed */
-static void _view_map_check_preference_change(const dt_view_t *view);
+static void _view_map_check_preference_change(gpointer instance, gpointer user_data);
 /* callback when the collection changs */
 static void _view_map_collection_change(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
@@ -327,6 +327,9 @@ void init(dt_view_t *self)
   /* connect collection changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
       G_CALLBACK(_view_map_collection_change), (gpointer)self);
+  /* connect preference changed signal */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+      G_CALLBACK(_view_map_check_preference_change), (gpointer)self);
 }
 
 void cleanup(dt_view_t *self)
@@ -798,8 +801,9 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
   _view_map_set_map_source_g_object(view, map_source);
 }
 
-static void _view_map_check_preference_change(const dt_view_t *view)
+static void _view_map_check_preference_change(gpointer instance, gpointer user_data)
 {
+  dt_view_t *view = (dt_view_t*)user_data;
   dt_map_t *lib = (dt_map_t*)view->data;
 
   if(_view_map_prefs_changed(lib))
