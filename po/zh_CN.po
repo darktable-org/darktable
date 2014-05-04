@@ -12,15 +12,16 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2013-04-01 23:03+0800\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2014-05-03 19:09+0800\n"
+"Last-Translator: Cherrot Luo <translate@cherrot.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 1.5.4\n"
+"Language: zh_CN\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 
 #: ../build/src/preferences_gen.h:877
 msgid "gui options"
@@ -35,18 +36,17 @@ msgstr "边栏宽度(像素)"
 #: ../build/src/preferences_gen.h:1215 ../build/src/preferences_gen.h:1289
 #: ../build/src/preferences_gen.h:1376 ../build/src/preferences_gen.h:1400
 #: ../build/src/preferences_gen.h:1425 ../src/lua/preferences.c:368
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%d'"
-msgstr "双击以重置到 `%s'"
+msgstr "双击以重置到 `%d'"
 
 #: ../build/src/preferences_gen.h:897 ../build/src/preferences_gen.h:1355
-#, fuzzy
 msgid "(needs a restart)"
 msgstr " (需要重启生效)"
 
 #: ../build/src/preferences_gen.h:904
 msgid "don't use embedded preview jpeg but half-size raw"
-msgstr "预览文件使用一半尺寸的raw，忽略内嵌的jpeg"
+msgstr "使用一半尺寸的raw文件，忽略内嵌的预览jpeg"
 
 #: ../build/src/preferences_gen.h:913 ../build/src/preferences_gen.h:932
 #: ../build/src/preferences_gen.h:951 ../build/src/preferences_gen.h:970
@@ -70,8 +70,8 @@ msgid ""
 "check this option to not use the embedded jpeg from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"勾选此项将不会使用raw文件中嵌入的jpeg，而是用raw数据创建，这样会更慢，色彩把"
-"握更精确。"
+"勾选此项将不会使用raw文件中内嵌的jpeg，而是处理raw数据。这样会更慢，但会生成"
+"色彩更精确的缩略图。"
 
 #: ../build/src/preferences_gen.h:923
 msgid "ask before removing images from database"
@@ -133,36 +133,35 @@ msgstr "导入胶卷时递归遍历目录"
 
 #: ../build/src/preferences_gen.h:1060
 msgid "creator to be applied when importing"
-msgstr "导入时应用创建器"
+msgstr "导入图像时应用的作者"
 
 #: ../build/src/preferences_gen.h:1078
 msgid "publisher to be applied when importing"
-msgstr "导入时应用发布器"
+msgstr "导入图像时应用的发行者"
 
 #: ../build/src/preferences_gen.h:1096
 msgid "rights to be applied when importing"
-msgstr "导入时应用授权"
+msgstr "导入图像时应用的授权协议"
 
 #: ../build/src/preferences_gen.h:1114
 msgid "comma separated tags to be applied when importing"
-msgstr "导入时使用逗号分隔的标签"
+msgstr "导入图像是应用的标签(逗号分隔)"
 
 #: ../build/src/preferences_gen.h:1132
 msgid "initial import rating"
-msgstr "导入星级初始评定"
+msgstr "初始导入评级"
 
 #: ../build/src/preferences_gen.h:1151
 msgid "initial star rating for all images when importing a filmroll"
-msgstr "对所有导入图像的初始星级评定"
+msgstr "导入一个胶卷时对所有图像的初始星级评定"
 
 #: ../build/src/preferences_gen.h:1158
 msgid "enable filmstrip"
 msgstr "启用幻灯片"
 
-# tethering modes 不确定
 #: ../build/src/preferences_gen.h:1170
 msgid "enable the filmstrip in darkroom and tethering modes."
-msgstr "在暗房和限制模式中启用幻灯片"
+msgstr "在暗房和连机模式中启用幻灯片"
 
 #: ../build/src/preferences_gen.h:1177
 msgid "maximum width of image drawing area"
@@ -233,14 +232,13 @@ msgid "core options"
 msgstr "核心选项"
 
 #: ../build/src/preferences_gen.h:1337
-#, fuzzy
 msgid "memory in megabytes to use for mipmap cache"
-msgstr "mipmap缓存所用内存大小（字节）"
+msgstr "mipmap 缓存所用内存大小（MB）"
 
 #: ../build/src/preferences_gen.h:1352
-#, fuzzy, c-format
+#, c-format
 msgid "double click to reset to `%<PRId64>'"
-msgstr "双击以重置到 `%s'"
+msgstr "双击以重置到 `%<PRId64>'"
 
 #: ../build/src/preferences_gen.h:1362
 msgid "number of background threads"
@@ -257,6 +255,7 @@ msgstr ""
 
 # tile rendering 解释为分块渲染。不确定是否有更贴切的说法。
 #: ../build/src/preferences_gen.h:1386
+#, fuzzy
 msgid "host memory limit (in MB) for tiling"
 msgstr "用于分块渲染的主机内存限制（MB）"
 
@@ -273,6 +272,7 @@ msgstr ""
 "值将视为500。需要重启生效。"
 
 #: ../build/src/preferences_gen.h:1410
+#, fuzzy
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "分块时单个缓冲区的最小内存容量（MB）"
 
@@ -310,17 +310,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1470
 msgid "not available on this system"
-msgstr ""
+msgstr "当前系统不可用"
 
 #: ../build/src/preferences_gen.h:1477
-#, fuzzy
 msgid "always try to use littlecms2"
-msgstr "导出时总是使用 cms2 "
+msgstr "尽量使用 littlecms2 "
 
 #: ../build/src/preferences_gen.h:1489
-#, fuzzy
 msgid "this is significantly slower as the default."
-msgstr "28b倍慢"
+msgstr "比起默认这会显著变慢"
 
 #: ../build/src/preferences_gen.h:1496
 msgid "do high quality resampling during export"
@@ -336,9 +334,8 @@ msgstr ""
 "慢。"
 
 #: ../build/src/preferences_gen.h:1515
-#, fuzzy
 msgid "dithering for darkroom mode"
-msgstr "为放大的暗房模式去马赛克"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:1527
 msgid ""
@@ -349,7 +346,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:1534
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "为放大的暗房模式去马赛克"
+msgstr "为暗房模式下放大的图像去马赛克"
 
 #: ../build/src/preferences_gen.h:1559
 msgid ""
@@ -357,12 +354,10 @@ msgid ""
 "but not as sharp. middle ground is using ppg + interpolation modes specified "
 "below, full will use exactly the settings for full-size export."
 msgstr ""
-"不看1:1在暗室模式下插补：双线性是最快的，但不尖锐。妥协的方法是使用下面的ppg"
-"+插补模式，为全尺寸导出它将使用完全相同的设置。"
 
 #: ../build/src/preferences_gen.h:1566
 msgid "pixel interpolator"
-msgstr "像素内插器"
+msgstr "像素内插器(pixel interpolator)"
 
 #: ../build/src/preferences_gen.h:1594
 msgid ""
@@ -548,18 +543,18 @@ msgstr "没有"
 #: ../src/common/imageio.c:572
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr ""
+msgstr "无法找到并应用样式 '%s' 用于导出"
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
 msgid "generic poissonian"
-msgstr ""
+msgstr "常规泊松(generic poissonian)"
 
 #: ../src/common/ratings.c:45
 #, fuzzy, c-format
 msgid "rejecting %d image"
 msgid_plural "rejecting %d images"
-msgstr[0] "删除 %d 张图像"
+msgstr[0] "丢弃 %d 张图像"
 
 #: ../src/common/ratings.c:47
 #, c-format
@@ -961,20 +956,20 @@ msgstr "双击以重置"
 #: ../src/develop/blend_gui.c:1027 ../src/develop/blend_gui.c:1065
 #: ../src/develop/masks/masks.c:941
 msgid "no mask used"
-msgstr ""
+msgstr "没有蒙版被使用"
 
 #: ../src/develop/blend_gui.c:1064
 msgid "masks"
-msgstr ""
+msgstr "蒙版"
 
 #: ../src/develop/blend_gui.c:1073
 msgid "show and edit mask elements"
-msgstr ""
+msgstr "显示和编辑蒙版元素"
 
 #: ../src/develop/blend_gui.c:1080 ../src/iop/spots.c:541
 #: ../src/libs/masks.c:773 ../src/libs/masks.c:796 ../src/libs/masks.c:1351
 msgid "add circular shape"
-msgstr ""
+msgstr "添加圆形蒙版"
 
 #: ../src/develop/blend_gui.c:1087 ../src/iop/spots.c:534
 #: ../src/libs/masks.c:777 ../src/libs/masks.c:800 ../src/libs/masks.c:1344
@@ -997,17 +992,17 @@ msgstr "显示蒙板"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
-msgstr ""
+msgstr "参数蒙版"
 
 #: ../src/develop/blend_gui.c:1297
 msgid "drawn & parametric mask"
-msgstr ""
+msgstr "绘制&参数蒙版"
 
 #: ../src/develop/blend_gui.c:1302
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
-msgstr ""
+msgstr "激活渲染：统一渲染，使用绘制蒙版，使用参数蒙版，或者两者组合"
 
 #: ../src/develop/blend_gui.c:1307
 msgid "blend mode"
@@ -1117,15 +1112,15 @@ msgstr "差异(difference)"
 
 #: ../src/develop/blend_gui.c:1388
 msgid "inverse (deprecated)"
-msgstr ""
+msgstr "反转(已废弃)"
 
 #: ../src/develop/blend_gui.c:1393
 msgid "normal (deprecated)"
-msgstr ""
+msgstr "正常(已废弃)"
 
 #: ../src/develop/blend_gui.c:1398
 msgid "unbounded (deprecated)"
-msgstr ""
+msgstr "无限的(已废弃)"
 
 #: ../src/develop/blend_gui.c:1404 ../src/iop/watermark.c:1049
 msgid "opacity"
@@ -1137,7 +1132,7 @@ msgstr "设置混合模式的不透明度"
 
 #: ../src/develop/blend_gui.c:1413
 msgid "combine masks"
-msgstr ""
+msgstr "组合蒙版"
 
 #: ../src/develop/blend_gui.c:1415
 #, fuzzy
@@ -1151,17 +1146,17 @@ msgstr "包含"
 
 #: ../src/develop/blend_gui.c:1421
 msgid "exclusive & inverted"
-msgstr ""
+msgstr "外向&反转"
 
 #: ../src/develop/blend_gui.c:1424
 msgid "inclusive & inverted"
-msgstr ""
+msgstr "内向&反转"
 
 #: ../src/develop/blend_gui.c:1428
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
-msgstr ""
+msgstr "如何组合单独的绘制蒙版和参数蒙版的不同频道"
 
 #: ../src/develop/blend_gui.c:1434
 #, fuzzy
@@ -1170,7 +1165,7 @@ msgstr "反转"
 
 #: ../src/develop/blend_gui.c:1443
 msgid "apply mask in normal or inverted mode"
-msgstr ""
+msgstr "使用正常或反转模式应用蒙版"
 
 #: ../src/develop/blend_gui.c:1450
 msgid "mask blur"
@@ -1271,7 +1266,7 @@ msgstr "显示预置菜单"
 
 #: ../src/develop/imageop.c:1990
 msgid "multiple instances actions"
-msgstr ""
+msgstr "多个实例"
 
 #: ../src/develop/imageop.c:1999 ../src/libs/lib.c:830
 msgid "reset parameters"
@@ -1283,15 +1278,16 @@ msgid "presets"
 msgstr "预置"
 
 #: ../src/develop/lightroom.c:407
+#, fuzzy
 msgid "cannot find lightroom xmp!"
-msgstr ""
+msgstr "找不到 lightroom xmp!"
 
 #: ../src/develop/lightroom.c:432 ../src/develop/lightroom.c:454
 #: ../src/develop/lightroom.c:474 ../src/develop/lightroom.c:484
 #: ../src/develop/lightroom.c:505
-#, c-format
+#, fuzzy, c-format
 msgid "`%s' not a lightroom xmp!"
-msgstr ""
+msgstr "'%s' 不是有效的 lightroom xmp!"
 
 #: ../src/develop/lightroom.c:1405 ../src/libs/import.c:511
 msgid "tags"
@@ -1499,11 +1495,12 @@ msgstr "外部备份"
 
 #: ../src/gui/camera_import_dialog.c:385
 msgid ""
-"external backup is an option to automatic do a backup of the imported image"
-"(s) to another physical location, when activated it does looks for specified "
-"backup foldername of mounted devices on your system... each found folder is "
-"used as basedirectory in the above storage structure and when a image are "
-"downloaded from camera it is replicated to found backup destinations."
+"external backup is an option to automatic do a backup of the imported "
+"image(s) to another physical location, when activated it does looks for "
+"specified backup foldername of mounted devices on your system... each found "
+"folder is used as basedirectory in the above storage structure and when a "
+"image are downloaded from camera it is replicated to found backup "
+"destinations."
 msgstr ""
 "外部备份是一个自动进行的备份选项，将导入的图片放置于另一个位置，激活此项后自"
 "动搜索指定的备份目录（要求已经挂载）每次找到的目录作为基础目录，从相机下载到"
@@ -1975,7 +1972,7 @@ msgstr "新预设"
 
 #: ../src/gui/presets.c:231
 msgid "please give preset a name"
-msgstr ""
+msgstr "请命名该预设"
 
 #: ../src/gui/presets.c:233
 #, fuzzy
@@ -1999,7 +1996,7 @@ msgstr "预置名称"
 
 #: ../src/gui/presets.c:812
 msgid "disabled: wrong module version"
-msgstr ""
+msgstr "已禁用：错误的模块版本"
 
 #: ../src/gui/presets.c:832 ../src/libs/lib.c:446
 msgid "edit this preset.."
@@ -2097,15 +2094,15 @@ msgstr "OpenEXR"
 
 #: ../src/imageio/format/j2k.c:557
 msgid "jpeg 2000"
-msgstr ""
+msgstr "jpeg 2000"
 
 #: ../src/imageio/format/j2k.c:592
 msgid "jp2"
-msgstr ""
+msgstr "jp2"
 
 #: ../src/imageio/format/j2k.c:597
 msgid "j2k"
-msgstr ""
+msgstr "j2k"
 
 #: ../src/imageio/format/j2k.c:604 ../src/imageio/format/jpeg.c:542
 #: ../src/libs/camera.c:617
@@ -2119,15 +2116,15 @@ msgstr "混合模式"
 
 #: ../src/imageio/format/j2k.c:619
 msgid "cinema2k, 24fps"
-msgstr ""
+msgstr "cinema2k, 24fps"
 
 #: ../src/imageio/format/j2k.c:620
 msgid "cinema2k, 48fps"
-msgstr ""
+msgstr "cinema2k, 48fps"
 
 #: ../src/imageio/format/j2k.c:621
 msgid "cinema4k, 24fps"
-msgstr ""
+msgstr "cinema4k, 24fps"
 
 #: ../src/imageio/format/jpeg.c:522
 msgid "8-bit jpg"
@@ -3085,7 +3082,7 @@ msgstr "裁剪和旋转"
 
 #: ../src/iop/clipping.c:1360
 msgid "invalid ratio format. it should be \"number:number\""
-msgstr ""
+msgstr "非法的比例格式。应该是 \"number:number\""
 
 #: ../src/iop/clipping.c:1460 ../src/iop/clipping.c:1701
 #: ../src/iop/clipping.c:1718
@@ -3141,7 +3138,7 @@ msgstr "水平梯形校正"
 
 #: ../src/iop/clipping.c:1721
 msgid "set perspective correction for your image"
-msgstr ""
+msgstr "为您的图像设置透视校正"
 
 #: ../src/iop/clipping.c:1726
 #, fuzzy
@@ -3160,7 +3157,7 @@ msgstr "风格"
 
 #: ../src/iop/clipping.c:1729
 msgid "automatically crop to avoid black edges"
-msgstr ""
+msgstr "自动裁剪以避免黑边"
 
 #: ../src/iop/clipping.c:1736
 msgid "free"
@@ -3363,7 +3360,7 @@ msgstr "sRGB (例如jpg)"
 #: ../src/iop/colorin.c:754 ../src/iop/colorin.c:786 ../src/iop/colorout.c:921
 #: ../src/iop/colorout.c:922 ../src/iop/colorout.c:923
 msgid "Adobe RGB (compatible)"
-msgstr ""
+msgstr "Adobe RGB (兼容)"
 
 #: ../src/iop/colorin.c:756 ../src/iop/colorin.c:788 ../src/iop/colorout.c:909
 #: ../src/iop/colorout.c:910 ../src/iop/colorout.c:911
@@ -3433,23 +3430,22 @@ msgid "mix value of source lightness"
 msgstr "源明度的混合值"
 
 #: ../src/iop/colormapping.c:147
-#, fuzzy
 msgid "color mapping"
-msgstr "色彩图权重"
+msgstr "颜色映射"
 
 #: ../src/iop/colormapping.c:166
 msgctxt "accel"
 msgid "acquire as source"
-msgstr ""
+msgstr "作为来源获取"
 
 #: ../src/iop/colormapping.c:167
 msgctxt "accel"
 msgid "acquire as target"
-msgstr ""
+msgstr "作为目标获取"
 
 #: ../src/iop/colormapping.c:1055
 msgid "source clusters:"
-msgstr ""
+msgstr "来源聚簇:"
 
 #: ../src/iop/colormapping.c:1065
 #, fuzzy
@@ -3458,7 +3454,7 @@ msgstr "导出目的地"
 
 #: ../src/iop/colormapping.c:1079
 msgid "acquire as source"
-msgstr ""
+msgstr "作为来源获取"
 
 #: ../src/iop/colormapping.c:1081
 #, fuzzy
@@ -3467,7 +3463,7 @@ msgstr "分析该图像"
 
 #: ../src/iop/colormapping.c:1085
 msgid "acquire as target"
-msgstr ""
+msgstr "作为目标获取"
 
 #: ../src/iop/colormapping.c:1087
 #, fuzzy
@@ -3480,29 +3476,28 @@ msgid "number of clusters"
 msgstr "笔画数目"
 
 #: ../src/iop/colormapping.c:1094
-#, fuzzy
 msgid "number of clusters to find in image. value change resets all clusters"
-msgstr "图像中发现的聚簇数量"
+msgstr "图像中发现的聚簇数量. 值的变化重置所有聚簇"
 
 #: ../src/iop/colormapping.c:1099
-#, fuzzy
 msgid "color dominance"
-msgstr "颜色减淡"
+msgstr "颜色支配"
 
 #: ../src/iop/colormapping.c:1100
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
 msgstr ""
+"集合如何映射。低阶值：基于颜色近似(color proximity)，高阶值：基于颜色支配"
+"(color dominance)"
 
 #: ../src/iop/colormapping.c:1106
-#, fuzzy
 msgid "histogram equalization"
-msgstr "直方图权重"
+msgstr "直方图均衡"
 
 #: ../src/iop/colormapping.c:1107
 msgid "level of histogram equalization"
-msgstr ""
+msgstr "直方图均衡级别"
 
 #: ../src/iop/colorout.c:48
 msgid "output color profile"
@@ -3615,7 +3610,6 @@ msgid "apply"
 msgstr "应用"
 
 #: ../src/iop/colortransfer.c:647
-#, fuzzy
 msgid ""
 "this module will be removed in the future\n"
 "and is only here so you can switch it off\n"
@@ -3623,7 +3617,7 @@ msgid ""
 msgstr ""
 "该模块未来将被移除\n"
 "请关掉该模块\n"
-"并使用新的均衡器"
+"并使用新的\"颜色映射\"模块"
 
 #: ../src/iop/colortransfer.c:673
 msgid "number of clusters to find in image"
@@ -3770,14 +3764,13 @@ msgid "green channels matching method"
 msgstr "绿色通道匹配方法"
 
 #: ../src/iop/denoiseprofile.c:129
-#, fuzzy
 msgid "denoise (profiled)"
-msgstr "降噪(弱)"
+msgstr "降噪(预置)"
 
 #: ../src/iop/denoiseprofile.c:1461 ../src/iop/denoiseprofile.c:1469
 #, c-format
 msgid "found match for iso %d"
-msgstr ""
+msgstr "找到 ISO %d 的匹配"
 
 #: ../src/iop/denoiseprofile.c:1478
 #, c-format
@@ -3793,14 +3786,14 @@ msgid "patch size"
 msgstr "块大小"
 
 #: ../src/iop/denoiseprofile.c:1717
-#, fuzzy
 msgid "non-local means"
-msgstr "去噪点(非局部均)"
+msgstr "非局部均值(non-local means)"
 
 #: ../src/iop/denoiseprofile.c:1718
 msgid "wavelets"
-msgstr ""
+msgstr "小波"
 
+# variance-stabilization 为学术词汇
 #: ../src/iop/denoiseprofile.c:1719
 msgid "profile used for variance stabilization"
 msgstr ""
@@ -3810,29 +3803,29 @@ msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
 msgstr ""
+"核心采用的降噪方法。非局部均值对于\"亮度\"渲染作用最好, 小波对于\"颜色\"渲染"
+"效果最好"
 
 #: ../src/iop/denoiseprofile.c:1721
-#, fuzzy
 msgid "radius of the patches to match. increase for more sharpness"
-msgstr "匹配的块半径"
+msgstr "匹配的块半径，调高将增强锐化"
 
 #: ../src/iop/denoiseprofile.c:1722
 msgid "finetune denoising strength"
-msgstr ""
+msgstr "调整降噪强度"
 
 #: ../src/iop/dither.c:98 ../src/iop/vignette.c:1134
-#, fuzzy
 msgid "dithering"
-msgstr "连机拍摄"
+msgstr "抖动(dithering)"
 
 #. add the preset.
 #: ../src/iop/dither.c:124
 msgid "dither"
-msgstr ""
+msgstr "抖动(dither)"
 
 #: ../src/iop/dither.c:561
 msgid "random"
-msgstr ""
+msgstr "随机"
 
 #: ../src/iop/dither.c:562
 msgid "floyd-steinberg 1-bit b&w"
@@ -3864,28 +3857,28 @@ msgstr ""
 
 #: ../src/iop/dither.c:584
 msgid "gradient range"
-msgstr ""
+msgstr "渐变范围"
 
 #: ../src/iop/dither.c:591
 msgid "damping level of random dither"
-msgstr ""
+msgstr "随机抖动的阻尼(damping level)"
 
 #: ../src/iop/dither.c:592
 msgid "damping"
-msgstr ""
+msgstr "阻尼(damping)"
 
 #: ../src/iop/equalizer.c:42
 msgid "legacy equalizer"
-msgstr "传统的均衡器"
+msgstr "遗留的均衡器"
 
 #: ../src/iop/equalizer.c:269
 msgctxt "equalizer"
 msgid "sharpen"
-msgstr "锐化"
+msgstr "锐化 [均衡器]"
 
 #: ../src/iop/equalizer.c:275
 msgid "null"
-msgstr "空"
+msgstr "null"
 
 #: ../src/iop/equalizer.c:303
 msgid ""
@@ -7394,11 +7387,12 @@ msgid "quick access for applying any of your styles"
 msgstr "快速途经应用你的样式"
 
 #: ../src/views/darkroom.c:1102
-#, fuzzy
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
-msgstr "切换曝光不足/过量的指示"
+msgstr ""
+"切换曝光不足/过量的指示\n"
+"右键查看选项"
 
 #: ../src/views/darkroom.c:1147
 msgid "color scheme"
@@ -7465,7 +7459,6 @@ msgstr "后退一个"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:1684
-#, fuzzy
 msgctxt "accel"
 msgid "overexposed"
 msgstr "曝光过度"
@@ -7555,12 +7548,12 @@ msgstr "地图"
 #: ../src/views/map.c:553
 msgctxt "accel"
 msgid "undo"
-msgstr ""
+msgstr "撤销"
 
 #: ../src/views/map.c:554
 msgctxt "accel"
 msgid "redo"
-msgstr ""
+msgstr "重做"
 
 #: ../src/develop/blend.c:1767 ../src/develop/blend.c:1967
 msgid "could not allocate buffer for blending"
@@ -7568,68 +7561,59 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:831 ../src/libs/masks.c:804
 msgid "add existing shape"
-msgstr ""
+msgstr "添加已存在形状"
 
 #: ../src/develop/masks/masks.c:858
 msgid "use same shapes as"
-msgstr ""
+msgstr "使用与...相同的形状"
 
 #: ../src/develop/masks/masks.c:938
-#, fuzzy
 msgid "shapes used"
-msgstr "形状"
+msgstr "已使用的形状"
 
 #: ../src/libs/masks.c:54
-#, fuzzy
 msgid "mask manager"
-msgstr "文件管理器"
+msgstr "蒙版管理器"
 
 #: ../src/libs/masks.c:870
-#, fuzzy
 msgid "delete this shape"
-msgstr "删除此预置"
+msgstr "删除此形状"
 
 #: ../src/libs/masks.c:876
-#, fuzzy
 msgid "remove from group"
-msgstr "从集合中移除"
+msgstr "从组中移除"
 
 #: ../src/libs/masks.c:884
 msgid "group the forms"
-msgstr ""
+msgstr "组合形状"
 
 #: ../src/libs/masks.c:893
 msgid "use inversed shape"
-msgstr ""
+msgstr "使用反转的形状"
 
 #: ../src/libs/masks.c:899
 msgid "mode : union"
-msgstr ""
+msgstr "模式: 并集"
 
 #: ../src/libs/masks.c:902
-#, fuzzy
 msgid "mode : intersection"
-msgstr "黄金分割部分"
+msgstr "模式: 交集"
 
 #: ../src/libs/masks.c:905
-#, fuzzy
 msgid "mode : difference"
-msgstr "差异(difference)"
+msgstr "模式: 差集"
 
 #: ../src/libs/masks.c:908
-#, fuzzy
 msgid "mode : exclusion"
-msgstr "排除"
+msgstr "模式: 排除"
 
 #: ../src/libs/masks.c:1339
-#, fuzzy
 msgid "created shapes"
-msgstr "创建HDR(高动态范围成像)"
+msgstr "已创建形状"
 
 #: ../src/lua/preferences.c:333
-#, fuzzy
 msgid "lua options"
-msgstr "GUI选项"
+msgstr "lua 选项"
 
 #~ msgid " (needs a restart) "
 #~ msgstr " (需要重启生效) "
