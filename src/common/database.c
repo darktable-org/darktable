@@ -663,21 +663,21 @@ dt_database_t *dt_database_init(char *alternative)
 
   /* lets construct the db filename  */
   gchar * dbname = NULL;
-  gchar dbfilename[DT_MAX_PATH_LEN] = {0};
-  gchar datadir[DT_MAX_PATH_LEN] = {0};
+  gchar dbfilename[PATH_MAX] = {0};
+  gchar datadir[PATH_MAX] = {0};
 
-  dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
 
   if ( alternative == NULL )
   {
     dbname = dt_conf_get_string ("database");
-    if(!dbname)               snprintf(dbfilename, DT_MAX_PATH_LEN, "%s/library.db", datadir);
-    else if(dbname[0] != '/') snprintf(dbfilename, DT_MAX_PATH_LEN, "%s/%s", datadir, dbname);
-    else                      snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", dbname);
+    if(!dbname)               snprintf(dbfilename, sizeof(dbfilename), "%s/library.db", datadir);
+    else if(dbname[0] != '/') snprintf(dbfilename, sizeof(dbfilename), "%s/%s", datadir, dbname);
+    else                      snprintf(dbfilename, sizeof(dbfilename), "%s", dbname);
   }
   else
   {
-    snprintf(dbfilename, DT_MAX_PATH_LEN, "%s", alternative);
+    snprintf(dbfilename, sizeof(dbfilename), "%s", alternative);
 
     GFile *galternative = g_file_new_for_path(alternative);
     dbname = g_file_get_basename (galternative);
@@ -919,21 +919,21 @@ const gchar *dt_database_get_path(const struct dt_database_t *db)
 
 static void _database_migrate_to_xdg_structure()
 {
-  gchar dbfilename[DT_MAX_PATH_LEN]= {0};
+  gchar dbfilename[PATH_MAX]= {0};
   gchar *conf_db = dt_conf_get_string("database");
 
-  gchar datadir[DT_MAX_PATH_LEN] = {0};
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  gchar datadir[PATH_MAX] = {0};
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   if (conf_db && conf_db[0] != '/')
   {
     char *homedir = getenv ("HOME");
-    snprintf (dbfilename,DT_MAX_PATH_LEN,"%s/%s", homedir, conf_db);
+    snprintf (dbfilename, sizeof(dbfilename), "%s/%s", homedir, conf_db);
     if (g_file_test (dbfilename, G_FILE_TEST_EXISTS))
     {
       fprintf(stderr, "[init] moving database into new XDG directory structure\n");
-      char destdbname[DT_MAX_PATH_LEN]= {0};
-      snprintf(destdbname,DT_MAX_PATH_LEN,"%s/%s",datadir,"library.db");
+      char destdbname[PATH_MAX]= {0};
+      snprintf(destdbname, sizeof(dbfilename), "%s/%s", datadir, "library.db");
       if(!g_file_test (destdbname,G_FILE_TEST_EXISTS))
       {
         rename(dbfilename,destdbname);
@@ -951,17 +951,17 @@ static void _database_delete_mipmaps_files()
   /* This migration is intended to be run only from 0.9.x to new cache in 1.0 */
 
   // Directory
-  char cachedir[DT_MAX_PATH_LEN], mipmapfilename[DT_MAX_PATH_LEN];
+  char cachedir[PATH_MAX], mipmapfilename[PATH_MAX];
   dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
-  snprintf(mipmapfilename, DT_MAX_PATH_LEN, "%s/mipmaps", cachedir);
+  snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps", cachedir);
 
   if(access(mipmapfilename, F_OK) != -1)
   {
     fprintf(stderr, "[mipmap_cache] dropping old version file: %s\n", mipmapfilename);
     unlink(mipmapfilename);
 
-    snprintf(mipmapfilename, DT_MAX_PATH_LEN, "%s/mipmaps.fallback", cachedir);
+    snprintf(mipmapfilename, sizeof(mipmapfilename), "%s/mipmaps.fallback", cachedir);
 
     if(access(mipmapfilename, F_OK) != -1)
       unlink(mipmapfilename);

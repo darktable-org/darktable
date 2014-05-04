@@ -974,7 +974,7 @@ void init_global(dt_iop_module_so_t *module)
   if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
 #endif
   {
-    char path[1024];
+    char path[PATH_MAX];
     dt_loc_get_datadir(path, sizeof(path));
     char *c = path + strlen(path);
     for(; c>path && *c != '/'; c--);

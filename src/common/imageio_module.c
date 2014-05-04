@@ -125,7 +125,7 @@ dt_imageio_load_modules_format(dt_imageio_t *iio)
   iio->plugins_format = NULL;
   GList *res = NULL;
   dt_imageio_module_format_t *module;
-  char plugindir[1024], plugin_name[256];
+  char plugindir[PATH_MAX], plugin_name[256];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins/imageio/format", sizeof(plugindir));
@@ -230,7 +230,7 @@ dt_imageio_load_modules_storage (dt_imageio_t *iio)
 {
   iio->plugins_storage = NULL;
   dt_imageio_module_storage_t *module;
-  char plugindir[1024], plugin_name[256];
+  char plugindir[PATH_MAX], plugin_name[256];
   const gchar *d_name;
   dt_loc_get_plugindir(plugindir, sizeof(plugindir));
   g_strlcat(plugindir, "/plugins/imageio/storage", sizeof(plugindir));

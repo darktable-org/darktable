@@ -797,12 +797,12 @@ dt_colorspaces_create_linear_infrared_profile(void)
 int
 dt_colorspaces_find_profile(char *filename, size_t filename_len, const char *profile, const char *inout)
 {
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  dt_loc_get_user_config_dir(datadir, sizeof(datadir));
   snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
   if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
   {
-    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+    dt_loc_get_datadir(datadir, sizeof(datadir));
     snprintf(filename, filename_len, "%s/color/%s/%s", datadir, inout, profile);
     if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return 1;
   }
@@ -829,7 +829,7 @@ dt_colorspaces_create_output_profile(const int imgid)
     }
   }
 
-  char profile[1024];
+  char profile[PATH_MAX];
   profile[0] = '\0';
   // db lookup colorout params, and dt_conf_() for override
   gchar *overprofile = dt_conf_get_string("plugins/lighttable/export/iccprofile");
@@ -880,8 +880,8 @@ dt_colorspaces_create_output_profile(const int imgid)
   else
   {
     // else: load file name
-    char filename[DT_MAX_PATH_LEN];
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, profile, "out");
+    char filename[PATH_MAX];
+    dt_colorspaces_find_profile(filename, sizeof(filename), profile, "out");
     output = cmsOpenProfileFromFile(filename, "r");
   }
   if(!output) output = dt_colorspaces_create_srgb_profile();

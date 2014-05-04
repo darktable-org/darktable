@@ -206,7 +206,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
   if(mouse_over_id >= 0)
   {
     char value[512];
-    char pathname[DT_MAX_PATH_LEN];
+    char pathname[PATH_MAX];
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, mouse_over_id);
     if(!img) goto fill_minuses;
     if(img->film_id == -1)
@@ -233,7 +233,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     _metadata_update_value(d->metadata[md_internal_version], value);
 
     gboolean from_cache = FALSE;
-    dt_image_full_path(img->id, pathname, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
     _metadata_update_value(d->metadata[md_internal_fullpath], pathname);
 
     snprintf(value, sizeof(value), "%s", (img->flags & DT_IMAGE_LOCAL_COPY)?_("yes"):_("no"));

@@ -428,13 +428,13 @@ void reload_defaults(dt_iop_module_t *module)
   };
 
   // get white balance coefficients, as shot
-  char filename[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
   int ret=0;
   /* check if file is raw / hdr */
   if(dt_image_is_raw(&module->dev->image_storage))
   {
     gboolean from_cache = TRUE;
-    dt_image_full_path(module->dev->image_storage.id, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(module->dev->image_storage.id, filename, sizeof(filename), &from_cache);
     libraw_data_t *raw = libraw_init(0);
 
     ret = libraw_open_file(raw, filename);

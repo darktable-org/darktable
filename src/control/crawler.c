@@ -79,11 +79,11 @@ GList * dt_control_crawler_run()
     if(look_for_xmp)
     {
       // construct the xmp filename for this image
-      gchar xmp_path[DT_MAX_PATH_LEN];
-      g_strlcpy(xmp_path, image_path, DT_MAX_PATH_LEN);
-      dt_image_path_append_version_no_db(version, xmp_path, DT_MAX_PATH_LEN);
+      gchar xmp_path[PATH_MAX];
+      g_strlcpy(xmp_path, image_path, sizeof(xmp_path));
+      dt_image_path_append_version_no_db(version, xmp_path, sizeof(xmp_path));
       size_t len = strlen(xmp_path);
-      if(len + 4 >= DT_MAX_PATH_LEN) continue;
+      if(len + 4 >= PATH_MAX) continue;
       xmp_path[len++] = '.';
       xmp_path[len++] = 'x';
       xmp_path[len++] = 'm';

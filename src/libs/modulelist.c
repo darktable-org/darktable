@@ -221,11 +221,11 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->multi_priority==0)
     {
-      char filename[DT_MAX_PATH_LEN], datadir[DT_MAX_PATH_LEN];
-      dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      char filename[PATH_MAX], datadir[PATH_MAX];
+      dt_loc_get_datadir(datadir, sizeof(datadir));
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
-        snprintf(filename, DT_MAX_PATH_LEN, "%s/pixmaps/plugins/darkroom/template.png", datadir);
+        snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
 
 
       GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);

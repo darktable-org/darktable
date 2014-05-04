@@ -59,13 +59,13 @@ static int default_dimension_wrapper    (struct dt_imageio_module_storage_t *sel
 static int store_wrapper(struct dt_imageio_module_storage_t *self,struct dt_imageio_module_data_t *self_data, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total, const gboolean high_quality)
 {
   /* construct a temporary file name */
-  char tmpdir[DT_MAX_PATH_LEN]= {0};
+  char tmpdir[PATH_MAX]= {0};
   gboolean from_cache = FALSE;
-  dt_loc_get_tmp_dir (tmpdir,DT_MAX_PATH_LEN);
+  dt_loc_get_tmp_dir (tmpdir, sizeof(tmpdir));
 
-  char dirname[DT_MAX_PATH_LEN];
-  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
-  dt_image_path_append_version(imgid, dirname, DT_MAX_PATH_LEN);
+  char dirname[PATH_MAX];
+  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
+  dt_image_path_append_version(imgid, dirname, sizeof(dirname));
   gchar * filename = g_path_get_basename( dirname );
   gchar * end = g_strrstr( filename,".")+1;
   g_strlcpy( end, format->extension(fdata), sizeof(dirname)-(end-dirname));

@@ -534,8 +534,8 @@ static cmsHPROFILE _create_profile(gchar *iccprofile)
   else
   {
     // else: load file name
-    char filename[DT_MAX_PATH_LEN];
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, iccprofile, "out");
+    char filename[PATH_MAX];
+    dt_colorspaces_find_profile(filename, sizeof(filename), iccprofile, "out");
     profile = cmsOpenProfileFromFile(filename, "r");
   }
 
@@ -861,15 +861,15 @@ void gui_init(struct dt_iop_module_t *self)
   g->profiles = g_list_append(g->profiles, prof);
 
   // read {conf,data}dir/color/out/*.icc
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/out", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/out", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/out", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -877,7 +877,7 @@ void gui_init(struct dt_iop_module_t *self)
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {

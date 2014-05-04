@@ -49,7 +49,7 @@ disk_t;
 // saved params
 typedef struct dt_imageio_disk_t
 {
-  char filename[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
   dt_variables_params_t *vp;
   gboolean overwrite;
 }
@@ -83,8 +83,8 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *dir = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-    char composed[DT_MAX_PATH_LEN];
-    snprintf(composed, DT_MAX_PATH_LEN, "%s/$(FILE_NAME)", dir);
+    char composed[PATH_MAX];
+    snprintf(composed, sizeof(composed), "%s/$(FILE_NAME)", dir);
     gtk_entry_set_text(GTK_ENTRY(d->entry), composed);
     dt_conf_set_string("plugins/imageio/storage/disk/file_directory", composed);
     g_free(dir);
@@ -164,10 +164,10 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
   // since we're potentially called in parallel, we should uncheck button as early as possible
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
 
-  char filename[DT_MAX_PATH_LEN]= {0};
-  char dirname[DT_MAX_PATH_LEN]= {0};
+  char filename[PATH_MAX]= {0};
+  char dirname[PATH_MAX]= {0};
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, dirname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(imgid, dirname, sizeof(dirname), &from_cache);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -175,16 +175,16 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
 
     // if filenamepattern is a directory just let att ${FILE_NAME} as default..
     if ( g_file_test(d->filename, G_FILE_TEST_IS_DIR) || ((d->filename+strlen(d->filename))[0]=='/' || (d->filename+strlen(d->filename))[0]=='\\') )
-      snprintf (d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "$(FILE_NAME)");
+      snprintf (d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "$(FILE_NAME)");
 
     // avoid braindead export which is bound to overwrite at random:
     if(total > 1 && !g_strrstr(d->filename, "$"))
     {
-      snprintf(d->filename+strlen(d->filename), DT_MAX_PATH_LEN-strlen(d->filename), "_$(SEQUENCE)");
+      snprintf(d->filename+strlen(d->filename), sizeof(d->filename)-strlen(d->filename), "_$(SEQUENCE)");
     }
 
     gchar* fixed_path = dt_util_fix_path(d->filename);
-    g_strlcpy(d->filename, fixed_path, DT_MAX_PATH_LEN);
+    g_strlcpy(d->filename, fixed_path, sizeof(d->filename));
     g_free(fixed_path);
 
     d->vp->filename = dirname;
@@ -192,8 +192,8 @@ store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const
     d->vp->imgid = imgid;
     d->vp->sequence = num;
     dt_variables_expand(d->vp, d->filename, TRUE);
-    g_strlcpy(filename, dt_variables_get_result(d->vp), DT_MAX_PATH_LEN);
-    g_strlcpy(dirname, filename, DT_MAX_PATH_LEN);
+    g_strlcpy(filename, dt_variables_get_result(d->vp), sizeof(filename));
+    g_strlcpy(dirname, filename, sizeof(dirname));
 
     const char *ext = format->extension(fdata);
     char *c = dirname + strlen(dirname);
@@ -288,7 +288,7 @@ get_params(dt_imageio_module_storage_t *self)
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
   const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  g_strlcpy(d->filename, text, DT_MAX_PATH_LEN);
+  g_strlcpy(d->filename, text, sizeof(d->filename));
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
   d->overwrite = gtk_toggle_button_get_active(g->overwrite_btn);
   return d;

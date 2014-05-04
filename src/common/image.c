@@ -139,10 +139,10 @@ gboolean dt_image_safe_remove(const int32_t imgid)
   if(!dt_conf_get_bool("write_sidecar_files")) return TRUE;
 
   // check whether the original file is accessible
-  char pathname[DT_MAX_PATH_LEN];
+  char pathname[PATH_MAX];
   gboolean from_cache = TRUE;
 
-  dt_image_full_path(imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
 
   if (!from_cache)
     return TRUE;
@@ -150,7 +150,7 @@ gboolean dt_image_safe_remove(const int32_t imgid)
   else
   {
     // finaly check if we have a .xmp for the local copy. If no modification done on the local copy it is safe to remove.
-    g_strlcat(pathname, ".xmp", DT_MAX_PATH_LEN);
+    g_strlcat(pathname, ".xmp", sizeof(pathname));
     return !g_file_test(pathname, G_FILE_TEST_EXISTS);
   }
 }
@@ -187,11 +187,11 @@ static void _image_local_copy_full_path(const int imgid, char *pathname, size_t 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char filename[DT_MAX_PATH_LEN];
-    char cachedir[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
+    char cachedir[PATH_MAX];
     g_strlcpy(filename, (char *)sqlite3_column_text(stmt, 0), pathname_len);
     char *md5_filename = g_compute_checksum_for_string (G_CHECKSUM_MD5, filename, strlen (filename));
-    dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+    dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
     // and finally, add extension, needed as some part of the code is looking for the extension
     char *c = filename + strlen(filename);
@@ -538,8 +538,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   // Search for duplicate's sidecar files and import them if found and not in DB yet
   gchar *imgfname = g_path_get_basename(filename);
   gchar *imgpath = g_path_get_dirname(filename);
-  const int len = DT_MAX_PATH_LEN + 30;
-  gchar pattern[len];
+  gchar pattern[PATH_MAX];
 
   // NULL terminated list of glob patterns; should include "" and can be extended if needed
   static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -548,13 +547,13 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   GList *files = NULL;
   while(*glob_pattern)
   {
-    snprintf(pattern, len, "%s", filename);
+    snprintf(pattern, sizeof(pattern), "%s", filename);
     gchar *c1 = pattern + strlen(pattern);
     while(*c1 != '.' && c1 > pattern) c1--;
-    snprintf(c1, pattern + len - c1, "%s", *glob_pattern);
+    snprintf(c1, pattern + sizeof(pattern) - c1, "%s", *glob_pattern);
     const gchar *c2 = filename + strlen(filename);
     while(*c2 != '.' && c2 > filename) c2--;
-    snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+    snprintf(c1+strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
 #ifdef __WIN32__
     WIN32_FIND_DATA data;
@@ -579,7 +578,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   // we store the xmp filename without version part in pattern to speed up string comparison later
-  g_snprintf(pattern, len, "%s.xmp", filename);
+  g_snprintf(pattern, sizeof(pattern), "%s.xmp", filename);
 
   GList *file_iter = g_list_first(files);
   while(file_iter != NULL)
@@ -588,7 +587,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
     int version = -1;
 
     // we need to get the version number of the sidecar filename
-    if(!strncmp(xmpfilename, pattern, len))
+    if(!strncmp(xmpfilename, pattern, sizeof(pattern)))
     {
       // this is an xmp file without version number which corresponds to version 0
       version = 0;
@@ -810,10 +809,10 @@ uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean o
 
   // read dttags and exif for database queries!
   (void) dt_exif_read(img, filename);
-  char dtfilename[DT_MAX_PATH_LEN];
-  g_strlcpy(dtfilename, filename, DT_MAX_PATH_LEN);
-  //dt_image_path_append_version(id, dtfilename, DT_MAX_PATH_LEN);
-  g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
+  char dtfilename[PATH_MAX];
+  g_strlcpy(dtfilename, filename, sizeof(dtfilename));
+  //dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
+  g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
   int res = dt_exif_xmp_read(img, dtfilename, 0);
 
@@ -894,10 +893,10 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 {
   //TODO: several places where string truncation could occur unnoticed
   int32_t result = -1;
-  gchar oldimg[DT_MAX_PATH_LEN] = {0};
-  gchar newimg[DT_MAX_PATH_LEN] = {0};
+  gchar oldimg[PATH_MAX] = {0};
+  gchar newimg[PATH_MAX] = {0};
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, oldimg, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(imgid, oldimg, sizeof(oldimg), &from_cache);
   gchar *newdir = NULL;
 
   sqlite3_stmt *film_stmt;
@@ -910,15 +909,15 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
-    gchar copysrcpath[DT_MAX_PATH_LEN];
-    gchar copydestpath[DT_MAX_PATH_LEN];
+    gchar copysrcpath[PATH_MAX];
+    gchar copydestpath[PATH_MAX];
     gchar *imgbname = g_path_get_basename(oldimg);
-    g_snprintf(newimg, DT_MAX_PATH_LEN, "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+    g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
     g_free(imgbname);
     g_free(newdir);
 
     // get current local copy if any
-    _image_local_copy_full_path(imgid, copysrcpath, DT_MAX_PATH_LEN);
+    _image_local_copy_full_path(imgid, copysrcpath, sizeof(copysrcpath));
 
     // statement for getting ids of the image to be moved and it's duplicates
     sqlite3_stmt *duplicates_stmt;
@@ -941,13 +940,13 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       {
         int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
-        gchar oldxmp[DT_MAX_PATH_LEN], newxmp[DT_MAX_PATH_LEN];
-        g_strlcpy(oldxmp, oldimg, DT_MAX_PATH_LEN);
-        g_strlcpy(newxmp, newimg, DT_MAX_PATH_LEN);
-        dt_image_path_append_version(id, oldxmp, DT_MAX_PATH_LEN);
-        dt_image_path_append_version(id, newxmp, DT_MAX_PATH_LEN);
-        g_strlcat(oldxmp, ".xmp", DT_MAX_PATH_LEN);
-        g_strlcat(newxmp, ".xmp", DT_MAX_PATH_LEN);
+        gchar oldxmp[PATH_MAX], newxmp[PATH_MAX];
+        g_strlcpy(oldxmp, oldimg, sizeof(oldxmp));
+        g_strlcpy(newxmp, newimg, sizeof(newxmp));
+        dt_image_path_append_version(id, oldxmp, sizeof(oldxmp));
+        dt_image_path_append_version(id, newxmp, sizeof(newxmp));
+        g_strlcat(oldxmp, ".xmp", sizeof(oldxmp));
+        g_strlcat(newxmp, ".xmp", sizeof(newxmp));
 
         GFile *goldxmp = g_file_new_for_path(oldxmp);
         GFile *gnewxmp = g_file_new_for_path(newxmp);
@@ -981,7 +980,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
       if (g_file_test(copysrcpath, G_FILE_TEST_EXISTS))
       {
         // get new name
-        _image_local_copy_full_path(imgid, copydestpath, DT_MAX_PATH_LEN);
+        _image_local_copy_full_path(imgid, copydestpath, sizeof(copydestpath));
 
         GFile *cold = g_file_new_for_path(copysrcpath);
         GFile *cnew = g_file_new_for_path(copydestpath);
@@ -1012,7 +1011,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 {
   int32_t newid = -1;
   sqlite3_stmt *stmt;
-  gchar srcpath[DT_MAX_PATH_LEN] = {0};
+  gchar srcpath[PATH_MAX] = {0};
   gchar *newdir = NULL;
   gchar *filename = NULL;
   gboolean from_cache = FALSE;
@@ -1026,7 +1025,7 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
   if(newdir)
   {
-    dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(imgid, srcpath, sizeof(srcpath), &from_cache);
     gchar *imgbname = g_path_get_basename(srcpath);
     gchar *destpath = g_build_filename(newdir, imgbname, NULL);
     GFile *src = g_file_new_for_path(srcpath);
@@ -1159,13 +1158,13 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 
 void dt_image_local_copy_set(const int32_t imgid)
 {
-  gchar srcpath[DT_MAX_PATH_LEN] = {0};
-  gchar destpath[DT_MAX_PATH_LEN] = {0};
+  gchar srcpath[PATH_MAX] = {0};
+  gchar destpath[PATH_MAX] = {0};
 
   gboolean from_cache = FALSE;
-  dt_image_full_path(imgid, srcpath, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(imgid, srcpath, sizeof(srcpath), &from_cache);
 
-  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+  _image_local_copy_full_path(imgid, destpath, sizeof(destpath));
 
   // check that the src file is readable
   if (!g_file_test(srcpath, G_FILE_TEST_IS_REGULAR))
@@ -1206,15 +1205,15 @@ void dt_image_local_copy_set(const int32_t imgid)
 
 int dt_image_local_copy_reset(const int32_t imgid)
 {
-  gchar destpath[DT_MAX_PATH_LEN] = {0};
-  gchar cachedir[DT_MAX_PATH_LEN] = {0};
+  gchar destpath[PATH_MAX] = {0};
+  gchar cachedir[PATH_MAX] = {0};
 
   // check that the original file is accessible
 
   gboolean from_cache = TRUE;
-  dt_image_full_path(imgid, destpath, DT_MAX_PATH_LEN, &from_cache);
-  dt_image_path_append_version(imgid, destpath, DT_MAX_PATH_LEN);
-  g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+  dt_image_full_path(imgid, destpath, sizeof(destpath), &from_cache);
+  dt_image_path_append_version(imgid, destpath, sizeof(destpath));
+  g_strlcat(destpath, ".xmp", sizeof(destpath));
 
   if (from_cache && g_file_test(destpath, G_FILE_TEST_EXISTS))
   {
@@ -1224,12 +1223,12 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
   // get name of local copy
 
-  _image_local_copy_full_path(imgid, destpath, DT_MAX_PATH_LEN);
+  _image_local_copy_full_path(imgid, destpath, sizeof(destpath));
 
   // remove cached file, but double check that this is really into the cache. We really want to avoid deleting
   // a user's original file.
 
-  dt_loc_get_user_cache_dir(cachedir, DT_MAX_PATH_LEN);
+  dt_loc_get_user_cache_dir(cachedir, sizeof(cachedir));
 
   if (g_file_test(destpath, G_FILE_TEST_EXISTS) && strstr(destpath, cachedir))
   {
@@ -1244,7 +1243,7 @@ int dt_image_local_copy_reset(const int32_t imgid)
     g_object_unref(dest);
 
     // delete xmp if any
-    g_strlcat(destpath, ".xmp", DT_MAX_PATH_LEN);
+    g_strlcat(destpath, ".xmp", sizeof(destpath));
     dest = g_file_new_for_path(destpath);
 
     if (g_file_test(destpath, G_FILE_TEST_EXISTS))
@@ -1275,10 +1274,10 @@ void dt_image_write_sidecar_file(int imgid)
   if(imgid > 0 && dt_conf_get_bool("write_sidecar_files"))
   {
     gboolean from_cache = TRUE;
-    char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
-    dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-    g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
+    char filename[PATH_MAX];
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+    dt_image_path_append_version(imgid, filename, sizeof(filename));
+    g_strlcat(filename, ".xmp", sizeof(filename));
     if(!dt_exif_xmp_write(imgid, filename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -1355,8 +1354,8 @@ void dt_image_local_copy_synch(void)
   {
     const int imgid = sqlite3_column_int(stmt, 0);
     gboolean from_cache = TRUE;
-    char filename[DT_MAX_PATH_LEN];
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+    char filename[PATH_MAX];
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
     if (!from_cache)
     {
@@ -1463,8 +1462,8 @@ char* dt_image_get_audio_path_from_path(const char* image_path)
 char* dt_image_get_audio_path(const int32_t imgid)
 {
   gboolean from_cache = FALSE;
-  char image_path[DT_MAX_PATH_LEN];
-  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+  char image_path[PATH_MAX];
+  dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_audio_path_from_path(image_path);
 }
@@ -1497,8 +1496,8 @@ char* dt_image_get_text_path_from_path(const char* image_path)
 char* dt_image_get_text_path(const int32_t imgid)
 {
   gboolean from_cache = FALSE;
-  char image_path[DT_MAX_PATH_LEN];
-  dt_image_full_path(imgid, image_path, DT_MAX_PATH_LEN, &from_cache);
+  char image_path[PATH_MAX];
+  dt_image_full_path(imgid, image_path, sizeof(image_path), &from_cache);
 
   return dt_image_get_text_path_from_path(image_path);
 }

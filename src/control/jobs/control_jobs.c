@@ -82,10 +82,10 @@ int32_t dt_control_write_sidecar_files_job_run(dt_job_t *job)
     gboolean from_cache = FALSE;
     imgid = GPOINTER_TO_INT(t->data);
     const dt_image_t *img = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
-    char dtfilename[DT_MAX_PATH_LEN+8];
-    dt_image_full_path(img->id, dtfilename, DT_MAX_PATH_LEN, &from_cache);
-    dt_image_path_append_version(img->id, dtfilename, DT_MAX_PATH_LEN);
-    g_strlcat(dtfilename, ".xmp", DT_MAX_PATH_LEN);
+    char dtfilename[PATH_MAX];
+    dt_image_full_path(img->id, dtfilename, sizeof(dtfilename), &from_cache);
+    dt_image_path_append_version(img->id, dtfilename, sizeof(dtfilename));
+    g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
     if(!dt_exif_xmp_write(imgid, dtfilename))
     {
       // put the timestamp into db. this can't be done in exif.cc since that code gets called
@@ -244,9 +244,9 @@ int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
   // output hdr as digital negative with exif data.
   uint8_t exif[65535];
-  char pathname[DT_MAX_PATH_LEN];
+  char pathname[PATH_MAX];
   gboolean from_cache = TRUE;
-  dt_image_full_path(first_imgid, pathname, DT_MAX_PATH_LEN, &from_cache);
+  dt_image_full_path(first_imgid, pathname, sizeof(pathname), &from_cache);
   // last param is dng mode
   const int exif_len = dt_exif_read_blob(exif, pathname, first_imgid, 0, wd, ht, 1);
   char *c = pathname + strlen(pathname);
@@ -469,9 +469,9 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
   while(t)
   {
     imgid = GPOINTER_TO_INT(t->data);
-    char filename[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
     gboolean from_cache = FALSE;
-    dt_image_full_path(imgid, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
 
     int duplicates = 0;
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -490,8 +490,7 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // all sidecar files - including left-overs - can be deleted;
       // left-overs can result when previously duplicates have been REMOVED;
       // no need to keep them as the source data file is gone.
-      const int len = DT_MAX_PATH_LEN + 30;
-      gchar pattern[len];
+      gchar pattern[PATH_MAX];
 
       // NULL terminated list of glob patterns; should include "" and can be extended if needed
       static const gchar *glob_patterns[] = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
@@ -500,13 +499,13 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       GList *files = NULL;
       while(*glob_pattern)
       {
-        snprintf(pattern, len, "%s", filename);
+        snprintf(pattern, sizeof(pattern), "%s", filename);
         gchar *c1 = pattern + strlen(pattern);
         while(*c1 != '.' && c1 > pattern) c1--;
-        snprintf(c1, pattern + len - c1, "%s", *glob_pattern);
+        snprintf(c1, pattern + sizeof(pattern) - c1, "%s", *glob_pattern);
         const gchar *c2 = filename + strlen(filename);
         while(*c2 != '.' && c2 > filename) c2--;
-        snprintf(c1+strlen(*glob_pattern), pattern + len - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+        snprintf(c1+strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
 
 #ifdef __WIN32__
         WIN32_FIND_DATA data;
@@ -544,8 +543,8 @@ int32_t dt_control_delete_images_job_run(dt_job_t *job)
       // don't remove the actual source data if there are further duplicates using it;
       // just delete the xmp file of the duplicate selected.
 
-      dt_image_path_append_version(imgid, filename, DT_MAX_PATH_LEN);
-      g_strlcat(filename, ".xmp", DT_MAX_PATH_LEN);
+      dt_image_path_append_version(imgid, filename, sizeof(filename));
+      g_strlcat(filename, ".xmp", sizeof(filename));
 
       dt_image_remove(imgid);
       (void)g_unlink(filename);
@@ -1220,12 +1219,12 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       // make sure the 'exported' tag is set on the image
       dt_tag_attach(etagid, imgid);
       // check if image still exists:
-      char imgfilename[DT_MAX_PATH_LEN];
+      char imgfilename[PATH_MAX];
       const dt_image_t *image = dt_image_cache_read_get(darktable.image_cache, (int32_t)imgid);
       if(image)
       {
         gboolean from_cache = TRUE;
-        dt_image_full_path(image->id, imgfilename, DT_MAX_PATH_LEN, &from_cache);
+        dt_image_full_path(image->id, imgfilename, sizeof(imgfilename), &from_cache);
         if(!g_file_test(imgfilename, G_FILE_TEST_IS_REGULAR))
         {
           dt_control_log(_("image `%s' is currently unavailable"), image->filename);

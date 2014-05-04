@@ -1092,9 +1092,9 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
     {
       if(count == 1)
       {
-        gchar pathname[DT_MAX_PATH_LEN] = {0};
+        gchar pathname[PATH_MAX] = {0};
         gboolean from_cache = TRUE;
-        dt_image_full_path(mouse_over_id, pathname, DT_MAX_PATH_LEN, &from_cache);
+        dt_image_full_path(mouse_over_id, pathname, sizeof(pathname), &from_cache);
         gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
         gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE, (guchar*) uri, strlen(uri));
         g_free(uri);
@@ -1107,9 +1107,9 @@ _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *context, GtkS
         while (sqlite3_step (stmt) == SQLITE_ROW)
         {
           int id = sqlite3_column_int(stmt, 0);
-          gchar pathname[DT_MAX_PATH_LEN] = {0};
+          gchar pathname[PATH_MAX] = {0};
           gboolean from_cache = TRUE;
-          dt_image_full_path(id, pathname, DT_MAX_PATH_LEN, &from_cache);
+          dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
           gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
           images = g_list_append(images, uri);
         }

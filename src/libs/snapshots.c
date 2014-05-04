@@ -302,7 +302,7 @@ void gui_init(dt_lib_module_t *self)
    * initialize snapshots
    */
   char wdname[32]= {0};
-  char localtmpdir[4096]= {0};
+  char localtmpdir[PATH_MAX]= {0};
   dt_loc_get_tmp_dir (localtmpdir, sizeof(localtmpdir));
 
   for (int k=0; k<d->size; k++)

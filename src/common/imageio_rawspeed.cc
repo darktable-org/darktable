@@ -90,7 +90,7 @@ dt_imageio_open_rawspeed(
   mbstowcs(filen, filename, len);
   FileReader f(filen);
 #else
-  char filen[1024];
+  char filen[PATH_MAX];
   snprintf(filen, sizeof(filen), "%s", filename);
   FileReader f(filen);
 #endif
@@ -111,7 +111,7 @@ dt_imageio_open_rawspeed(
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
       if(meta == NULL)
       {
-        char datadir[1024], camfile[1024];
+        char datadir[PATH_MAX], camfile[PATH_MAX];
         dt_loc_get_datadir(datadir, sizeof(datadir));
         snprintf(camfile, sizeof(camfile), "%s/rawspeed/cameras.xml", datadir);
         // never cleaned up (only when dt closes)

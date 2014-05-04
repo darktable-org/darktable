@@ -183,7 +183,7 @@ void dt_fswatch_destroy(const dt_fswatch_t *fswatch)
 
 void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *data)
 {
-  char filename[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
   uint32_t mask=0;
   dt_fswatch_t *ctx=(dt_fswatch_t *)fswatch;
   filename[0] = '\0';
@@ -192,7 +192,7 @@ void dt_fswatch_add(const dt_fswatch_t * fswatch,dt_fswatch_type_t type, void *d
   {
     case DT_FSWATCH_IMAGE:
       mask=IN_ALL_EVENTS;
-      dt_image_full_path(((dt_image_t *)data)->id, filename, DT_MAX_PATH_LEN);
+      dt_image_full_path(((dt_image_t *)data)->id, filename, sizeof(filename));
       break;
     case DT_FSWATCH_CURVE_DIRECTORY:
       break;

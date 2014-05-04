@@ -141,7 +141,7 @@ void _dt_sigsegv_handler(int param)
   gchar *name_used;
   int fout;
   gboolean delete_file = FALSE;
-  char datadir[DT_MAX_PATH_LEN];
+  char datadir[PATH_MAX];
 
   if((fout = g_file_open_tmp("darktable_bt_XXXXXX.txt", &name_used, NULL)) == -1)
     fout = STDOUT_FILENO; // just print everything to stdout
@@ -151,7 +151,7 @@ void _dt_sigsegv_handler(int param)
   if(fout != STDOUT_FILENO)
     close(fout);
 
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
   gchar *pid_arg = g_strdup_printf("%d", (int)getpid());
   gchar *comm_arg = g_strdup_printf("%s/gdb_commands", datadir);
   gchar *log_arg = g_strdup_printf("set logging on %s", name_used);
@@ -213,13 +213,13 @@ gboolean dt_supported_image(const gchar *filename)
 
 static void strip_semicolons_from_keymap(const char* path)
 {
-  char pathtmp[DT_MAX_PATH_LEN];
+  char pathtmp[PATH_MAX];
   FILE *fin = fopen(path, "r");
   FILE *fout;
   int i;
   int c = '\0';
 
-  snprintf(pathtmp, DT_MAX_PATH_LEN, "%s_tmp", path);
+  snprintf(pathtmp, sizeof(pathtmp), "%s_tmp", path);
   fout = fopen(pathtmp, "w");
 
   // First ignoring the first three lines
@@ -593,10 +593,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
   // dt_check_cpu(argc,argv);
 
 #ifdef HAVE_GEGL
-  char geglpath[DT_MAX_PATH_LEN];
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(geglpath, DT_MAX_PATH_LEN, "%s/gegl:/usr/lib/gegl-0.0", datadir);
+  char geglpath[PATH_MAX];
+  char datadir[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(geglpath, sizeof(geglpath), "%s/gegl:/usr/lib/gegl-0.0", datadir);
   (void)setenv("GEGL_PATH", geglpath, 1);
   gegl_init(&argc, &argv);
 #endif
@@ -606,10 +606,10 @@ int dt_init(int argc, char *argv[], const int init_gui)
 
   // thread-safe init:
   dt_exif_init();
-  char datadir[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir (datadir,DT_MAX_PATH_LEN);
-  char filename[DT_MAX_PATH_LEN];
-  snprintf(filename, DT_MAX_PATH_LEN, "%s/darktablerc", datadir);
+  char datadir[PATH_MAX];
+  dt_loc_get_user_config_dir (datadir, sizeof(datadir));
+  char filename[PATH_MAX];
+  snprintf(filename, sizeof(filename), "%s/darktablerc", datadir);
 
   // initialize the config backend. this needs to be done first...
   darktable.conf = (dt_conf_t *)malloc(sizeof(dt_conf_t));
@@ -795,17 +795,17 @@ int dt_init(int argc, char *argv[], const int init_gui)
   if(init_gui)
   {
     // Loading the keybindings
-    char keyfile[DT_MAX_PATH_LEN];
+    char keyfile[PATH_MAX];
 
     // First dump the default keymapping
-    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc_default", datadir);
+    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc_default", datadir);
     gtk_accel_map_save(keyfile);
 
     // Removing extraneous semi-colons from the default keymap
     strip_semicolons_from_keymap(keyfile);
 
     // Then load any modified keys if available
-    snprintf(keyfile, DT_MAX_PATH_LEN, "%s/keyboardrc", datadir);
+    snprintf(keyfile, sizeof(keyfile), "%s/keyboardrc", datadir);
     if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
       gtk_accel_map_load(keyfile);
     else

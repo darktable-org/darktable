@@ -231,15 +231,15 @@ static gchar * _watermark_get_svgdoc( dt_iop_module_t *self, dt_iop_watermark_da
   gsize length;
 
   gchar *svgdoc=NULL;
-  gchar configdir[DT_MAX_PATH_LEN];
-  gchar datadir[DT_MAX_PATH_LEN];
+  gchar configdir[PATH_MAX];
+  gchar datadir[PATH_MAX];
   gchar *filename;
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
-  g_strlcat(datadir,"/watermarks/", DT_MAX_PATH_LEN);
-  g_strlcat(configdir,"/watermarks/", DT_MAX_PATH_LEN);
-  g_strlcat(datadir,data->filename, DT_MAX_PATH_LEN);
-  g_strlcat(configdir,data->filename, DT_MAX_PATH_LEN);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_strlcat(datadir, "/watermarks/", sizeof(datadir));
+  g_strlcat(configdir, "/watermarks/", sizeof(configdir));
+  g_strlcat(datadir, data->filename, sizeof(datadir));
+  g_strlcat(configdir, data->filename, sizeof(configdir));
 
   if (g_file_test(configdir,G_FILE_TEST_EXISTS))
     filename=configdir;
@@ -802,13 +802,13 @@ static void refresh_watermarks( dt_iop_module_t *self )
   // check watermarkdir and update combo with entries...
   int count=0;
   const gchar *d_name = NULL;
-  gchar configdir[DT_MAX_PATH_LEN];
-  gchar datadir[DT_MAX_PATH_LEN];
-  gchar filename[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
-  g_strlcat(datadir,"/watermarks", DT_MAX_PATH_LEN);
-  g_strlcat(configdir,"/watermarks", DT_MAX_PATH_LEN);
+  gchar configdir[PATH_MAX];
+  gchar datadir[PATH_MAX];
+  gchar filename[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+  g_strlcat(datadir,"/watermarks", sizeof(datadir));
+  g_strlcat(configdir,"/watermarks", sizeof(configdir));
 
   /* read watermarks from datadir */
   GDir *dir = g_dir_open(datadir, 0, NULL);
@@ -816,7 +816,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", datadir, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", datadir, d_name);
       gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }
@@ -829,7 +829,7 @@ static void refresh_watermarks( dt_iop_module_t *self )
   {
     while((d_name = g_dir_read_name(dir)))
     {
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", configdir, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", configdir, d_name);
       gtk_combo_box_text_append_text(g->combobox1, d_name);
       count++;
     }

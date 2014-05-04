@@ -809,14 +809,14 @@ void dt_camctl_import(const dt_camctl_t *c,const dt_camera_t *cam,GList *images)
     {
       // Split file into folder and filename
       char *eos;
-      char folder[DT_MAX_PATH_LEN]= {0};
-      char filename[DT_MAX_PATH_LEN]= {0};
+      char folder[PATH_MAX]= {0};
+      char filename[PATH_MAX]= {0};
       char *file=(char *)ifile->data;
       eos=file+strlen(file);
       while( --eos>file && *eos!='/' );
       char *_file = g_strndup(file, eos-file);
-      g_strlcat(folder, _file, DT_MAX_PATH_LEN);
-      g_strlcat(filename, eos+1, DT_MAX_PATH_LEN);
+      g_strlcat(folder, _file, sizeof(folder));
+      g_strlcat(filename, eos+1, sizeof(filename));
       g_free(_file);
 
       const char *fname = _dispatch_request_image_filename(c,filename,cam);
@@ -946,11 +946,11 @@ libraw_thumb_fail:
   {
     for(int i=0; i < gp_list_count(folders); i++)
     {
-      char buffer[DT_MAX_PATH_LEN]= {0};
-      g_strlcat(buffer,path, DT_MAX_PATH_LEN);
-      if(path[1]!='\0') g_strlcat(buffer,"/", DT_MAX_PATH_LEN);
+      char buffer[PATH_MAX]= {0};
+      g_strlcat(buffer, path, sizeof(buffer));
+      if(path[1]!='\0') g_strlcat(buffer, "/", sizeof(buffer));
       gp_list_get_name (folders, i, &foldername);
-      g_strlcat(buffer,foldername, DT_MAX_PATH_LEN);
+      g_strlcat(buffer, foldername, sizeof(buffer));
       if( !_camctl_recursive_get_previews(c,flags,buffer))
         return 0;
     }

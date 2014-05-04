@@ -71,8 +71,8 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  char filename[DT_MAX_PATH_LEN];
-  char datadir[DT_MAX_PATH_LEN];
+  char filename[PATH_MAX];
+  char datadir[PATH_MAX];
   /* initialize ui widgets */
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)g_malloc(sizeof(dt_lib_darktable_t));
   self->data = (void *)d;
@@ -93,8 +93,8 @@ void gui_init(dt_lib_module_t *self)
   struct tm lt;
   localtime_r(&now, &lt);
   const char *logo = (lt.tm_mon == 11 && lt.tm_mday >= 24)?"%s/pixmaps/idbutton-2.png":"%s/pixmaps/idbutton.png"; // don't you dare to tell anyone
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(filename, DT_MAX_PATH_LEN, logo, datadir);
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(filename, sizeof(filename), logo, datadir);
   d->image = cairo_image_surface_create_from_png(filename);
   d->image_width = cairo_image_surface_get_width(d->image);
   d->image_height = cairo_image_surface_get_height(d->image);

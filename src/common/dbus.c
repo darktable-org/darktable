@@ -88,14 +88,14 @@ _handle_get_property(GDBusConnection  *connection,
   ret = NULL;
   if(!g_strcmp0(property_name, "DataDir"))
   {
-    gchar datadir[DT_MAX_PATH_LEN];
-    dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+    gchar datadir[PATH_MAX];
+    dt_loc_get_datadir(datadir, sizeof(datadir));
     ret = g_variant_new_string(datadir);
   }
   else if(!g_strcmp0(property_name, "ConfigDir"))
   {
-    gchar configdir[DT_MAX_PATH_LEN];
-    dt_loc_get_user_config_dir(configdir, DT_MAX_PATH_LEN);
+    gchar configdir[PATH_MAX];
+    dt_loc_get_user_config_dir(configdir, sizeof(configdir));
     ret = g_variant_new_string(configdir);
   }
   return ret;

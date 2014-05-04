@@ -547,9 +547,9 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   d->lut[1][0] = -1.0f;
   d->lut[2][0] = -1.0f;
   piece->process_cl_ready = 1;
-  char datadir[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
+  char datadir[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_datadir(datadir, sizeof(datadir));
 
   if(!strcmp(p->iccprofile, "Lab"))
   {
@@ -631,7 +631,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   }
   else if(!d->input)
   {
-    dt_colorspaces_find_profile(filename, DT_MAX_PATH_LEN, p->iccprofile, "in");
+    dt_colorspaces_find_profile(filename, sizeof(filename), p->iccprofile, "in");
     d->input = cmsOpenProfileFromFile(filename, "r");
   }
 
@@ -824,9 +824,9 @@ void reload_defaults(dt_iop_module_t *module)
   const dt_image_t *cimg = dt_image_cache_read_get(darktable.image_cache, module->dev->image_storage.id);
   if(!cimg->profile)
   {
-    char filename[DT_MAX_PATH_LEN];
+    char filename[PATH_MAX];
     gboolean from_cache = TRUE;
-    dt_image_full_path(cimg->id, filename, DT_MAX_PATH_LEN, &from_cache);
+    dt_image_full_path(cimg->id, filename, sizeof(filename), &from_cache);
     const gchar *cc = filename + strlen(filename);
     for(; *cc!='.'&&cc>filename; cc--);
     gchar *ext = g_ascii_strdown(cc+1, -1);
@@ -1119,15 +1119,15 @@ void gui_init(struct dt_iop_module_t *self)
   prof->pos = ++pos;
 
   // read {userconfig,datadir}/color/in/*.icc, in this order.
-  char datadir[DT_MAX_PATH_LEN];
-  char confdir[DT_MAX_PATH_LEN];
-  char dirname[DT_MAX_PATH_LEN];
-  char filename[DT_MAX_PATH_LEN];
-  dt_loc_get_user_config_dir(confdir, DT_MAX_PATH_LEN);
-  dt_loc_get_datadir(datadir, DT_MAX_PATH_LEN);
-  snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", confdir);
+  char datadir[PATH_MAX];
+  char confdir[PATH_MAX];
+  char dirname[PATH_MAX];
+  char filename[PATH_MAX];
+  dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(dirname, sizeof(dirname), "%s/color/in", confdir);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
-    snprintf(dirname, DT_MAX_PATH_LEN, "%s/color/in", datadir);
+    snprintf(dirname, sizeof(dirname), "%s/color/in", datadir);
   cmsHPROFILE tmpprof;
   const gchar *d_name;
   GDir *dir = g_dir_open(dirname, 0, NULL);
@@ -1136,7 +1136,7 @@ void gui_init(struct dt_iop_module_t *self)
     while((d_name = g_dir_read_name(dir)))
     {
       if(!strcmp(d_name, "linear_rec709_rgb") || !strcmp(d_name, "linear_rgb")) continue;
-      snprintf(filename, DT_MAX_PATH_LEN, "%s/%s", dirname, d_name);
+      snprintf(filename, sizeof(filename), "%s/%s", dirname, d_name);
       tmpprof = cmsOpenProfileFromFile(filename, "r");
       if(tmpprof)
       {
