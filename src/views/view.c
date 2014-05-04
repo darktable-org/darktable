@@ -1475,12 +1475,6 @@ void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t m
   if (vm->proxy.map.view)
     vm->proxy.map.set_map_source(vm->proxy.map.view, map_source);
 }
-
-void dt_view_map_check_preference_change(const dt_view_manager_t *vm)
-{
-  if (vm->proxy.map.view)
-    vm->proxy.map.check_preference_change(vm->proxy.map.view);
-}
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -346,7 +346,6 @@ void dt_view_filmstrip_prefetch();
 void dt_view_map_center_on_location(const dt_view_manager_t *vm, gdouble lon, gdouble lat, gdouble zoom);
 void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
-void dt_view_map_check_preference_change(const dt_view_manager_t *vm);
 #endif
 
 #endif
