@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-05-04 14:17+0200\n"
-"PO-Revision-Date: 2014-05-04 14:20+0100\n"
+"PO-Revision-Date: 2014-05-04 16:33+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -4812,7 +4812,7 @@ msgstr "mate waarmee de korrel wordt toegepast"
 
 #: ../src/iop/highlights.c:73
 msgid "highlight reconstruction"
-msgstr "reconstrueren hooglichten"
+msgstr " hooglichten herstellen"
 
 #: ../src/iop/highlights.c:483
 msgid "clip highlights"
