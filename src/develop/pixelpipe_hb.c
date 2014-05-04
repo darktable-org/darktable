@@ -443,16 +443,18 @@ pixelpipe_picker(dt_iop_module_t *module, const float *img, const dt_iop_roi_t *
 #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(img, box, mean, mmin, mmax) schedule(static)
 #endif
-    for(int j=box[1]; j<=box[3]; j++)
+    for(size_t j=box[1]; j<=box[3]; j++)
     {
-      for(int i=box[0]; i<=box[2]; i++)
+      for(size_t i=box[0]; i<=box[2]; i++)
       {
-        float *tmean = mean + 3*dt_get_thread_num();
-        float *tmmin = mmin + 3*dt_get_thread_num();
-        float *tmmax = mmax + 3*dt_get_thread_num();
-        const float L = img[4*(width*j + i) + 0];
-        const float a = img[4*(width*j + i) + 1];
-        const float b = img[4*(width*j + i) + 2];
+        const int tnum = dt_get_thread_num();
+        float *tmean = mean + 3*tnum;
+        float *tmmin = mmin + 3*tnum;
+        float *tmmax = mmax + 3*tnum;
+        const size_t k = 4*(width*j + i);
+        const float L = img[k];
+        const float a = img[k + 1];
+        const float b = img[k + 2];
         tmean[0] += w*L;
         tmean[1] += w*a;
         tmean[2] += w*b;
@@ -574,7 +576,7 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   float *pixel;
   float *tmpbuf = NULL;
 
-  const size_t size = (size_t)region[0] * region[1];
+  const size_t size = region[0] * region[1];
 
   // if a buffer is supplied and if size fits let's use it
   if(buffer && bufsize >= size*4*sizeof(float))
@@ -590,48 +592,76 @@ pixelpipe_picker_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_iop
   if(err == CL_SUCCESS)
   {
     const float w = 1.0f/(region[0] * region[1]);
-    const int numthreads = dt_get_num_threads();    
 
-    float mean[3*numthreads];
-    float mmin[3*numthreads];
-    float mmax[3*numthreads];
-
-    for(int n = 0; n < 3*numthreads; n++)
+    if(size > 100)  // avoid inefficient multi-threading in case of small region size (arbitrary limit)
     {
-      mean[n] = 0.0f;
-      mmin[n] = INFINITY;
-      mmax[n] = -INFINITY;
-    }
+      const int numthreads = dt_get_num_threads();    
+
+      float mean[3*numthreads];
+      float mmin[3*numthreads];
+      float mmax[3*numthreads];
+
+      for(int n = 0; n < 3*numthreads; n++)
+      {
+        mean[n] = 0.0f;
+        mmin[n] = INFINITY;
+        mmax[n] = -INFINITY;
+      }
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) shared(pixel, mean, mmin, mmax) schedule(static)
+      #pragma omp parallel for default(none) shared(pixel, mean, mmin, mmax, region) schedule(static)
 #endif
-    for(size_t k = 0; k < 4*size; k += 4)
-    {
-      float *tmean = mean + 3*dt_get_thread_num();
-      float *tmmin = mmin + 3*dt_get_thread_num();
-      float *tmmax = mmax + 3*dt_get_thread_num();
-      const float L = pixel[k];
-      const float a = pixel[k + 1];
-      const float b = pixel[k + 2];
-      tmean[0] += w*L;
-      tmean[1] += w*a;
-      tmean[2] += w*b;
-      tmmin[0] = fminf(tmmin[0], L);
-      tmmin[1] = fminf(tmmin[1], a);
-      tmmin[2] = fminf(tmmin[2], b);
-      tmmax[0] = fmaxf(tmmax[0], L);
-      tmmax[1] = fmaxf(tmmax[1], a);
-      tmmax[2] = fmaxf(tmmax[2], b);
-    }
-
-    for(int n = 0; n < numthreads; n++)
-    {
-      for(int k = 0; k < 3; k++)
+      for(size_t j=0; j < region[1]; j++)
       {
-        picked_color[k] += mean[3*n+k];
-        picked_color_min[k] = fminf(picked_color_min[k], mmin[3*n+k]);
-        picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3*n+k]);
+        for(size_t i=0; i < region[0]; i++)
+        {
+          const int tnum = dt_get_thread_num();
+          float *tmean = mean + 3*tnum;
+          float *tmmin = mmin + 3*tnum;
+          float *tmmax = mmax + 3*tnum;
+          const size_t k = 4*(region[0]*j + i);
+          const float L = pixel[k];
+          const float a = pixel[k + 1];
+          const float b = pixel[k + 2];
+          tmean[0] += w*L;
+          tmean[1] += w*a;
+          tmean[2] += w*b;
+          tmmin[0] = fminf(tmmin[0], L);
+          tmmin[1] = fminf(tmmin[1], a);
+          tmmin[2] = fminf(tmmin[2], b);
+          tmmax[0] = fmaxf(tmmax[0], L);
+          tmmax[1] = fmaxf(tmmax[1], a);
+          tmmax[2] = fmaxf(tmmax[2], b);
+        }
+      }
+
+      for(int n = 0; n < numthreads; n++)
+      {
+        for(int k = 0; k < 3; k++)
+        {
+          picked_color[k] += mean[3*n+k];
+          picked_color_min[k] = fminf(picked_color_min[k], mmin[3*n+k]);
+          picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3*n+k]);
+        }
+      }
+    }
+    else
+    {
+      // code path for small region, especially for color picker point mode
+      for(size_t k = 0; k < 4*size; k += 4)
+      {
+        const float L = pixel[k];
+        const float a = pixel[k + 1];
+        const float b = pixel[k + 2];
+        picked_color[0] += w*L;
+        picked_color[1] += w*a;
+        picked_color[2] += w*b;
+        picked_color_min[0] = fminf(picked_color_min[0], L);
+        picked_color_min[1] = fminf(picked_color_min[1], a);
+        picked_color_min[2] = fminf(picked_color_min[2], b);
+        picked_color_max[0] = fmaxf(picked_color_max[0], L);
+        picked_color_max[1] = fmaxf(picked_color_max[1], a);
+        picked_color_max[2] = fmaxf(picked_color_max[2], b);
       }
     }
   }

@@ -231,6 +231,8 @@ int dt_view_manager_switch (dt_view_manager_t *vm, int k)
 
   int newv = vm->current_view;
   if (k < vm->num_views) newv = k;
+
+  if(newv < 0) return 1;
   dt_view_t *nv = vm->view + newv;
 
   if (nv->try_enter)

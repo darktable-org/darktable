@@ -75,7 +75,7 @@ typedef struct dt_gui_gtk_t
   double dpi;
 
   // store which gtkrc we loaded:
-  char gtkrc[DT_MAX_PATH_LEN];
+  char gtkrc[PATH_MAX];
 }
 dt_gui_gtk_t;
 
