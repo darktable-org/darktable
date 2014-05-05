@@ -24,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-01 02:08+0200\n"
-"PO-Revision-Date: 2014-05-01 02:09+0200\n"
+"POT-Creation-Date: 2014-05-05 10:23+0200\n"
+"PO-Revision-Date: 2014-05-05 10:23+0200\n"
 "Last-Translator: Richard Levitte <richard@levitte.org>\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -841,16 +841,16 @@ msgstr ""
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:632
-#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1694
+#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1690
 #: ../src/develop/develop.c:1145 ../src/libs/live_view.c:413
 msgid "on"
 msgstr "på"
 
 #: ../src/common/history.c:274 ../src/common/history.c:275
 #: ../src/common/history.c:291 ../src/common/styles.c:632
-#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1542
-#: ../src/develop/blend_gui.c:1691 ../src/develop/develop.c:1145
-#: ../src/imageio/format/j2k.c:638 ../src/iop/colorin.c:1164
+#: ../src/common/styles.c:634 ../src/develop/blend_gui.c:1538
+#: ../src/develop/blend_gui.c:1687 ../src/develop/develop.c:1145
+#: ../src/imageio/format/j2k.c:638 ../src/iop/colorin.c:1179
 #: ../src/iop/demosaic.c:1315 ../src/iop/vignette.c:1118
 #: ../src/libs/history.c:155 ../src/libs/live_view.c:412
 msgid "off"
@@ -860,19 +860,19 @@ msgstr "av"
 msgid "orphaned image"
 msgstr "anonyma bilder"
 
-#: ../src/common/image.c:1173
+#: ../src/common/image.c:1172
 msgid "cannot create local copy when the original file is not accessible."
 msgstr "kan inte skapa lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1187
+#: ../src/common/image.c:1186
 msgid "cannot create local copy."
 msgstr "kan inte skapa lokal kopia."
 
-#: ../src/common/image.c:1221 ../src/control/jobs/control_jobs.c:405
+#: ../src/common/image.c:1220 ../src/control/jobs/control_jobs.c:405
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr "kan inte ta bort lokal kopia när originalfilen inte går att nå."
 
-#: ../src/common/image.c:1374
+#: ../src/common/image.c:1373
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -975,7 +975,7 @@ msgstr "importerade stilen '%s'"
 #: ../src/common/variables.c:239 ../src/common/variables.c:254
 #: ../src/iop/clipping.c:1475 ../src/iop/clipping.c:1708
 #: ../src/iop/clipping.c:1726 ../src/iop/clipping.c:1769
-#: ../src/iop/clipping.c:1788 ../src/iop/lens.c:1879 ../src/libs/export.c:642
+#: ../src/iop/clipping.c:1788 ../src/iop/lens.c:1879 ../src/libs/export.c:639
 #: ../src/libs/live_view.c:331 ../src/libs/live_view.c:343
 #: ../src/libs/live_view.c:361
 msgid "none"
@@ -1102,16 +1102,16 @@ msgid_plural "deleting %d images"
 msgstr[0] "raderar %d bild"
 msgstr[1] "raderar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:594
+#: ../src/control/jobs/control_jobs.c:593
 msgid "failed to parse GPX file"
 msgstr "lyckades inte tolka GPX-filen"
 
-#: ../src/control/jobs/control_jobs.c:661
+#: ../src/control/jobs/control_jobs.c:660
 #, c-format
 msgid "applied matched GPX location onto %d image(s)"
 msgstr "applicerar tillhörande GPX-läge på %d bild(er)"
 
-#: ../src/control/jobs/control_jobs.c:822
+#: ../src/control/jobs/control_jobs.c:821
 #, c-format
 msgid "do you really want to remove %d selected image from the collection?"
 msgid_plural ""
@@ -1119,11 +1119,11 @@ msgid_plural ""
 msgstr[0] "vill du verkligen ta bort %d vald bild från samlingen?"
 msgstr[1] "vill du verkligen ta bort %d valda bilder från samlingen?"
 
-#: ../src/control/jobs/control_jobs.c:825
+#: ../src/control/jobs/control_jobs.c:824
 msgid "remove images?"
 msgstr "ta bort bilder?"
 
-#: ../src/control/jobs/control_jobs.c:851
+#: ../src/control/jobs/control_jobs.c:850
 #, c-format
 msgid "do you really want to physically delete %d selected image from disk?"
 msgid_plural ""
@@ -1131,24 +1131,24 @@ msgid_plural ""
 msgstr[0] "vill du verkligen radera %d vald bilder fysiskt från disk?"
 msgstr[1] "vill du verkligen radera %d valda bilder fysiskt från disk?"
 
-#: ../src/control/jobs/control_jobs.c:854
+#: ../src/control/jobs/control_jobs.c:853
 msgid "delete images?"
 msgstr "radera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:887
+#: ../src/control/jobs/control_jobs.c:886
 msgid "failed to create film roll for destination directory, aborting move.."
 msgstr ""
 "misslyckades med att skapa filmrulle för målkatalogen, avbryter flytten.."
 
-#: ../src/control/jobs/control_jobs.c:920
-#: ../src/control/jobs/control_jobs.c:977 ../src/imageio/storage/disk.c:70
+#: ../src/control/jobs/control_jobs.c:919
+#: ../src/control/jobs/control_jobs.c:976 ../src/imageio/storage/disk.c:70
 #: ../src/imageio/storage/disk.c:126 ../src/imageio/storage/gallery.c:79
 #: ../src/imageio/storage/gallery.c:162 ../src/imageio/storage/latex.c:79
 #: ../src/imageio/storage/latex.c:162 ../src/libs/styles.c:240
 msgid "select directory"
 msgstr "välj katalog"
 
-#: ../src/control/jobs/control_jobs.c:943
+#: ../src/control/jobs/control_jobs.c:942
 #, c-format
 msgid ""
 "do you really want to physically move the %d selected image to %s?\n"
@@ -1163,13 +1163,13 @@ msgstr[1] ""
 "vill du verkligen flytta de %d valda bilderna fysiskt till %s?\n"
 "(alla ej valda kopior kommer att flyttas med)"
 
-#: ../src/control/jobs/control_jobs.c:947
+#: ../src/control/jobs/control_jobs.c:946
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "flytta bild?"
 msgstr[1] "flytta bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1000
+#: ../src/control/jobs/control_jobs.c:999
 #, c-format
 msgid "do you really want to physically copy the %d selected image to %s?"
 msgid_plural "do you really want to physically copy %d selected images to %s?"
@@ -1177,80 +1177,80 @@ msgstr[0] "vill du verkligen kopiera den %d valda bilden fysiskt till %s?"
 msgstr[1] ""
 "vill du verkligen kopiera de %d valda bilderna fysiskt från till %s?"
 
-#: ../src/control/jobs/control_jobs.c:1003
+#: ../src/control/jobs/control_jobs.c:1002
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "kopiera bild?"
 msgstr[1] "kopiera bilder?"
 
-#: ../src/control/jobs/control_jobs.c:1068
+#: ../src/control/jobs/control_jobs.c:1067
 #, c-format
 msgid "moving %d image"
 msgstr "flyttar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:1068
+#: ../src/control/jobs/control_jobs.c:1067
 #, c-format
 msgid "moving %d images"
 msgstr "flyttar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1074
+#: ../src/control/jobs/control_jobs.c:1073
 #, c-format
 msgid "copying %d image"
 msgstr "kopierar %d bild"
 
-#: ../src/control/jobs/control_jobs.c:1074
+#: ../src/control/jobs/control_jobs.c:1073
 #, c-format
 msgid "copying %d images"
 msgstr "kopierar %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1089
+#: ../src/control/jobs/control_jobs.c:1088
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "skapa lokala kopia för %d bild"
 msgstr[1] "skapa lokala kopior för %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1091
+#: ../src/control/jobs/control_jobs.c:1090
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "ta bort %d bilds lokala kopia"
 msgstr[1] "ta bort %d bilders lokala kopior"
 
-#: ../src/control/jobs/control_jobs.c:1153
+#: ../src/control/jobs/control_jobs.c:1152
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "misslyckades att hämta parametrar från lagringsmodul `%s', avbryter "
 "exporten.."
 
-#: ../src/control/jobs/control_jobs.c:1165
+#: ../src/control/jobs/control_jobs.c:1164
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exporterar %d bild..."
 msgstr[1] "exporterar %d bilder..."
 
-#: ../src/control/jobs/control_jobs.c:1167
+#: ../src/control/jobs/control_jobs.c:1166
 #, c-format
 msgid "exporting %d image to %s"
 msgid_plural "exporting %d images to %s"
 msgstr[0] "exporterar %d bild till %s"
 msgstr[1] "exporterar %d bilder till %s"
 
-#: ../src/control/jobs/control_jobs.c:1231 ../src/views/darkroom.c:467
+#: ../src/control/jobs/control_jobs.c:1230 ../src/views/darkroom.c:467
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "`%s' är inte tillgänglig"
 
-#: ../src/control/jobs/control_jobs.c:1312
+#: ../src/control/jobs/control_jobs.c:1311
 #, c-format
 msgid "adding time offset to %d image"
 msgid_plural "adding time offset to %d images"
 msgstr[0] "lägger till tidsförskjutning på %d bild"
 msgstr[1] "lägger till tidsförskjutning på %d bilder"
 
-#: ../src/control/jobs/control_jobs.c:1332
+#: ../src/control/jobs/control_jobs.c:1331
 #, c-format
 msgid "added time offset to %d image(s)"
 msgstr "la till tidsförskjutning på %d bild(er)"
@@ -1260,83 +1260,83 @@ msgstr "la till tidsförskjutning på %d bild(er)"
 msgid "importing image %s"
 msgstr "importerar bild %s"
 
-#: ../src/develop/blend_gui.c:949
+#: ../src/develop/blend_gui.c:945
 msgid "sliders for L channel"
 msgstr "reglage för L-kanal"
 
-#: ../src/develop/blend_gui.c:949
+#: ../src/develop/blend_gui.c:945
 msgid "sliders for a channel"
 msgstr "reglage för a-kanal"
 
-#: ../src/develop/blend_gui.c:949
+#: ../src/develop/blend_gui.c:945
 msgid "sliders for b channel"
 msgstr "reglage för b-kanal"
 
-#: ../src/develop/blend_gui.c:949
+#: ../src/develop/blend_gui.c:945
 msgid "sliders for chroma channel (of LCh)"
 msgstr "reglage för färgkanal (i LCh)"
 
-#: ../src/develop/blend_gui.c:949
+#: ../src/develop/blend_gui.c:945
 msgid "sliders for hue channel (of LCh)"
 msgstr "reglage för nyanskanal (i LCh)"
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:950
+#: ../src/develop/blend_gui.c:946
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for gray value"
 msgstr "reglage för gråvärden"
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for red channel"
 msgstr "reglage för röd kanal"
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for green channel"
 msgstr "reglage för grön kanal kanal"
 
-#: ../src/develop/blend_gui.c:951
+#: ../src/develop/blend_gui.c:947
 msgid "sliders for blue channel"
 msgstr "reglage för blå kanal"
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:948
 msgid "sliders for hue channel (of HSL)"
 msgstr "reglage för nyanskanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:948
 msgid "sliders for chroma channel (of HSL)"
 msgstr "reglage för färgkanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:952
+#: ../src/develop/blend_gui.c:948
 msgid "sliders for value channel (of HSL)"
 msgstr "reglage för värdekanal (i HSL)"
 
-#: ../src/develop/blend_gui.c:955
+#: ../src/develop/blend_gui.c:951
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1348,7 +1348,7 @@ msgstr ""
 "* område givet av de nedre markörerna: blanda inte alls\n"
 "* område mellan intilliggande övre/undre markörer: blanda gradvis"
 
-#: ../src/develop/blend_gui.c:957
+#: ../src/develop/blend_gui.c:953
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -1360,250 +1360,250 @@ msgstr ""
 "* område givet av de nedre markörerna: blanda inte alls\n"
 "* område mellan intilliggande övre/undre markörer: blanda gradvis"
 
-#: ../src/develop/blend_gui.c:1076 ../src/iop/colorzones.c:1042
+#: ../src/develop/blend_gui.c:1072 ../src/iop/colorzones.c:1042
 #: ../src/iop/tonecurve.c:739
 msgid "pick GUI color from image"
 msgstr "välj gränsnittsfärg från bild"
 
-#: ../src/develop/blend_gui.c:1079
+#: ../src/develop/blend_gui.c:1075
 msgid "reset blend mask settings"
 msgstr "återställ blandningsmaskens inställningar"
 
-#: ../src/develop/blend_gui.c:1082
+#: ../src/develop/blend_gui.c:1078
 msgid "invert all channel's polarities"
 msgstr "invertera alla kanalers polariteter"
 
-#: ../src/develop/blend_gui.c:1093 ../src/develop/blend_gui.c:1096
+#: ../src/develop/blend_gui.c:1089 ../src/develop/blend_gui.c:1092
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "växla polaritet. syns bäst genom att slå på 'visningsmask'"
 
-#: ../src/develop/blend_gui.c:1105
+#: ../src/develop/blend_gui.c:1101
 msgid "output"
 msgstr "utgående"
 
-#: ../src/develop/blend_gui.c:1116
+#: ../src/develop/blend_gui.c:1112
 msgid "input"
 msgstr "inkommande"
 
-#: ../src/develop/blend_gui.c:1127 ../src/develop/blend_gui.c:1128
+#: ../src/develop/blend_gui.c:1123 ../src/develop/blend_gui.c:1124
 msgid "double click to reset"
 msgstr "dubbelklicka för återställning"
 
-#: ../src/develop/blend_gui.c:1188
+#: ../src/develop/blend_gui.c:1184
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d form används"
 msgstr[1] "%d former används"
 
-#: ../src/develop/blend_gui.c:1193 ../src/develop/blend_gui.c:1239
+#: ../src/develop/blend_gui.c:1189 ../src/develop/blend_gui.c:1235
 msgid "no mask used"
 msgstr "ingen markering används"
 
-#: ../src/develop/blend_gui.c:1238 ../src/develop/blend_gui.c:1540
-#: ../src/develop/blend_gui.c:1574 ../src/develop/blend_gui.c:1659
-#: ../src/develop/blend_gui.c:1668 ../src/develop/blend_gui.c:1689
-#: ../src/develop/blend_gui.c:1705
+#: ../src/develop/blend_gui.c:1234 ../src/develop/blend_gui.c:1536
+#: ../src/develop/blend_gui.c:1570 ../src/develop/blend_gui.c:1655
+#: ../src/develop/blend_gui.c:1664 ../src/develop/blend_gui.c:1685
+#: ../src/develop/blend_gui.c:1701
 msgid "blend"
 msgstr "blanda"
 
-#: ../src/develop/blend_gui.c:1238 ../src/develop/blend_gui.c:1550
+#: ../src/develop/blend_gui.c:1234 ../src/develop/blend_gui.c:1546
 msgid "drawn mask"
 msgstr "ritad markering"
 
-#: ../src/develop/blend_gui.c:1247
+#: ../src/develop/blend_gui.c:1243
 msgid "show and edit mask elements"
 msgstr "visa och redigera markeringens element"
 
-#: ../src/develop/blend_gui.c:1253
+#: ../src/develop/blend_gui.c:1249
 msgid "toggle polarity of drawn mask"
 msgstr "växla den ritade markeringens polaritet"
 
-#: ../src/develop/blend_gui.c:1261 ../src/libs/masks.c:908
+#: ../src/develop/blend_gui.c:1257 ../src/libs/masks.c:908
 #: ../src/libs/masks.c:944 ../src/libs/masks.c:1501
 msgid "add gradient"
 msgstr "lägg till gradient"
 
-#: ../src/develop/blend_gui.c:1268 ../src/iop/spots.c:559
+#: ../src/develop/blend_gui.c:1264 ../src/iop/spots.c:559
 #: ../src/libs/masks.c:904 ../src/libs/masks.c:940 ../src/libs/masks.c:1508
 msgid "add path"
 msgstr "lägg till slinga"
 
-#: ../src/develop/blend_gui.c:1275 ../src/iop/spots.c:566
+#: ../src/develop/blend_gui.c:1271 ../src/iop/spots.c:566
 #: ../src/libs/masks.c:900 ../src/libs/masks.c:936 ../src/libs/masks.c:1515
 msgid "add ellipse"
 msgstr "lägg till ellips"
 
-#: ../src/develop/blend_gui.c:1282 ../src/iop/spots.c:573
+#: ../src/develop/blend_gui.c:1278 ../src/iop/spots.c:573
 #: ../src/libs/masks.c:896 ../src/libs/masks.c:932 ../src/libs/masks.c:1522
 msgid "add circle"
 msgstr "lägg till cirkel"
 
-#: ../src/develop/blend_gui.c:1289 ../src/libs/masks.c:928
+#: ../src/develop/blend_gui.c:1285 ../src/libs/masks.c:928
 #: ../src/libs/masks.c:1529
 msgid "add brush"
 msgstr "lägg till pensel"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:384
+#: ../src/develop/blend_gui.c:1502 ../src/libs/live_view.c:384
 msgctxt "blendmode"
 msgid "normal"
 msgstr "normal"
 
-#: ../src/develop/blend_gui.c:1507
+#: ../src/develop/blend_gui.c:1503
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "begränsad normal"
 
-#: ../src/develop/blend_gui.c:1508 ../src/libs/live_view.c:393
+#: ../src/develop/blend_gui.c:1504 ../src/libs/live_view.c:393
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "gör endast ljusare"
 
-#: ../src/develop/blend_gui.c:1509 ../src/libs/live_view.c:392
+#: ../src/develop/blend_gui.c:1505 ../src/libs/live_view.c:392
 msgctxt "blendmode"
 msgid "darken"
 msgstr "gör endast mörkare"
 
-#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:389
+#: ../src/develop/blend_gui.c:1506 ../src/libs/live_view.c:389
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "multiplicera"
 
-#: ../src/develop/blend_gui.c:1511
+#: ../src/develop/blend_gui.c:1507
 msgctxt "blendmode"
 msgid "average"
 msgstr "medel"
 
-#: ../src/develop/blend_gui.c:1512
+#: ../src/develop/blend_gui.c:1508
 msgctxt "blendmode"
 msgid "addition"
 msgstr "addition"
 
-#: ../src/develop/blend_gui.c:1513
+#: ../src/develop/blend_gui.c:1509
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "substrahera"
 
-#: ../src/develop/blend_gui.c:1514 ../src/libs/live_view.c:398
+#: ../src/develop/blend_gui.c:1510 ../src/libs/live_view.c:398
 msgctxt "blendmode"
 msgid "difference"
 msgstr "differens"
 
-#: ../src/develop/blend_gui.c:1515 ../src/libs/live_view.c:390
+#: ../src/develop/blend_gui.c:1511 ../src/libs/live_view.c:390
 msgctxt "blendmode"
 msgid "screen"
 msgstr "skärma för"
 
-#: ../src/develop/blend_gui.c:1516 ../src/libs/live_view.c:391
+#: ../src/develop/blend_gui.c:1512 ../src/libs/live_view.c:391
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "överlagring"
 
-#: ../src/develop/blend_gui.c:1517
+#: ../src/develop/blend_gui.c:1513
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "mjukt ljus"
 
-#: ../src/develop/blend_gui.c:1518
+#: ../src/develop/blend_gui.c:1514
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "hårt ljus"
 
-#: ../src/develop/blend_gui.c:1519
+#: ../src/develop/blend_gui.c:1515
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "intensivt ljus"
 
-#: ../src/develop/blend_gui.c:1520
+#: ../src/develop/blend_gui.c:1516
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "linjärt ljus"
 
-#: ../src/develop/blend_gui.c:1521
+#: ../src/develop/blend_gui.c:1517
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "snävt ljus"
 
-#: ../src/develop/blend_gui.c:1522
+#: ../src/develop/blend_gui.c:1518
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "ljushet"
 
-#: ../src/develop/blend_gui.c:1523
+#: ../src/develop/blend_gui.c:1519
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "chroma"
 
-#: ../src/develop/blend_gui.c:1524
+#: ../src/develop/blend_gui.c:1520
 msgctxt "blendmode"
 msgid "hue"
 msgstr "nyans"
 
-#: ../src/develop/blend_gui.c:1525
+#: ../src/develop/blend_gui.c:1521
 msgctxt "blendmode"
 msgid "color"
 msgstr "färg"
 
-#: ../src/develop/blend_gui.c:1526
+#: ../src/develop/blend_gui.c:1522
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "färgjustering"
 
-#: ../src/develop/blend_gui.c:1527
+#: ../src/develop/blend_gui.c:1523
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "ljushet i Lab"
 
-#: ../src/develop/blend_gui.c:1528
+#: ../src/develop/blend_gui.c:1524
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "färg i Lab"
 
-#: ../src/develop/blend_gui.c:1529
+#: ../src/develop/blend_gui.c:1525
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "ljushet i HSV"
 
-#: ../src/develop/blend_gui.c:1530
+#: ../src/develop/blend_gui.c:1526
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "färg i HSV"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:1533
+#: ../src/develop/blend_gui.c:1529
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "skillnad (utgående)"
 
-#: ../src/develop/blend_gui.c:1534
+#: ../src/develop/blend_gui.c:1530
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "inverterad (utgående)"
 
-#: ../src/develop/blend_gui.c:1535
+#: ../src/develop/blend_gui.c:1531
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "normal (utgående)"
 
-#: ../src/develop/blend_gui.c:1536
+#: ../src/develop/blend_gui.c:1532
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "obunden (utgående)"
 
-#: ../src/develop/blend_gui.c:1545
+#: ../src/develop/blend_gui.c:1541
 msgid "uniformly"
 msgstr "jämnt"
 
-#: ../src/develop/blend_gui.c:1556
+#: ../src/develop/blend_gui.c:1552
 msgid "parametric mask"
 msgstr "parametermarkering"
 
-#: ../src/develop/blend_gui.c:1562
+#: ../src/develop/blend_gui.c:1558
 msgid "drawn & parametric mask"
 msgstr "ridad och parametermarkering"
 
-#: ../src/develop/blend_gui.c:1567
+#: ../src/develop/blend_gui.c:1563
 msgid ""
 "activate blending: uniformly, with drawn mask, with parametric mask, or "
 "combination of both"
@@ -1611,43 +1611,43 @@ msgstr ""
 "slå på blandningsläge: över hela bilden, med ritad markering, med "
 "parametermarkering, eller en kombination av båda"
 
-#: ../src/develop/blend_gui.c:1574
+#: ../src/develop/blend_gui.c:1570
 msgid "blend mode"
 msgstr "blandningsläge"
 
-#: ../src/develop/blend_gui.c:1575
+#: ../src/develop/blend_gui.c:1571
 msgid "choose blending mode"
 msgstr "välj blandningstyp"
 
-#: ../src/develop/blend_gui.c:1659 ../src/iop/watermark.c:1043
+#: ../src/develop/blend_gui.c:1655 ../src/iop/watermark.c:1043
 msgid "opacity"
 msgstr "ogenomskinlighet"
 
-#: ../src/develop/blend_gui.c:1662
+#: ../src/develop/blend_gui.c:1658
 msgid "set the opacity of the blending"
 msgstr "justera blandningens ogenomskinlighet"
 
-#: ../src/develop/blend_gui.c:1668
+#: ../src/develop/blend_gui.c:1664
 msgid "combine masks"
 msgstr "kombinera markeringar"
 
-#: ../src/develop/blend_gui.c:1670
+#: ../src/develop/blend_gui.c:1666
 msgid "exclusive"
 msgstr "uteslutnande"
 
-#: ../src/develop/blend_gui.c:1673
+#: ../src/develop/blend_gui.c:1669
 msgid "inclusive"
 msgstr "inneslutande"
 
-#: ../src/develop/blend_gui.c:1676
+#: ../src/develop/blend_gui.c:1672
 msgid "exclusive & inverted"
 msgstr "uteslutande & inverterad"
 
-#: ../src/develop/blend_gui.c:1679
+#: ../src/develop/blend_gui.c:1675
 msgid "inclusive & inverted"
 msgstr "inneslutande & inverterad"
 
-#: ../src/develop/blend_gui.c:1683
+#: ../src/develop/blend_gui.c:1679
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -1655,27 +1655,27 @@ msgstr ""
 "hur individuella ritad markering samt olika kanaler i parametermarkering ska "
 "kombineras"
 
-#: ../src/develop/blend_gui.c:1689
+#: ../src/develop/blend_gui.c:1685
 msgid "invert mask"
 msgstr "invertera markering"
 
-#: ../src/develop/blend_gui.c:1698
+#: ../src/develop/blend_gui.c:1694
 msgid "apply mask in normal or inverted mode"
 msgstr "använd markeringen i normal eller inverterat läge"
 
-#: ../src/develop/blend_gui.c:1705
+#: ../src/develop/blend_gui.c:1701
 msgid "mask blur"
 msgstr "maskens fjädring"
 
-#: ../src/develop/blend_gui.c:1707
+#: ../src/develop/blend_gui.c:1703
 msgid "radius for gaussian blur of blend mask"
 msgstr "radie för blandningsmaskens gaussiska oskärpa"
 
-#: ../src/develop/blend_gui.c:1713
+#: ../src/develop/blend_gui.c:1709
 msgid "display mask"
 msgstr "visningsmask"
 
-#: ../src/develop/blend_gui.c:1720
+#: ../src/develop/blend_gui.c:1716
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "stäng av markeringen tillfälligtvis.  enbart för den aktiva modulen."
 
@@ -1816,7 +1816,7 @@ msgstr[1] "%s har importerats"
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr "tiling misslyckades i modul '%s'. resultatet kan vara förvanskat."
 
-#: ../src/develop/pixelpipe_hb.c:2142
+#: ../src/develop/pixelpipe_hb.c:2256
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -2268,7 +2268,7 @@ msgstr "importera"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:617 ../src/libs/export.c:668
+#: ../src/gui/preferences.c:617 ../src/libs/export.c:665
 #: ../src/libs/styles.c:408
 msgid "export"
 msgstr "export"
@@ -3948,92 +3948,96 @@ msgstr "ange den globala färgmättnaden"
 msgid "input color profile"
 msgstr "ingående färgprofil"
 
-#: ../src/iop/colorin.c:646
+#: ../src/iop/colorin.c:650
 msgid "input profile could not be generated!"
 msgstr "kunde inte generera ingående profil"
 
-#: ../src/iop/colorin.c:703
+#: ../src/iop/colorin.c:707
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ej stödd ingående färgprofil har ersatts med linjär Rec709 RGB!"
 
-#: ../src/iop/colorin.c:991 ../src/iop/colorin.c:1023
+#: ../src/iop/colorin.c:995 ../src/iop/colorin.c:1029
 msgid "embedded ICC profile"
 msgstr "inbyggd ICC-profil"
 
-#: ../src/iop/colorin.c:993 ../src/iop/colorin.c:1025
+#: ../src/iop/colorin.c:997 ../src/iop/colorin.c:1031
 msgid "DNG embedded matrix"
 msgstr "matris inbyggd i DNG"
 
-#: ../src/iop/colorin.c:995 ../src/iop/colorin.c:1027
+#: ../src/iop/colorin.c:999 ../src/iop/colorin.c:1033
 msgid "standard color matrix"
 msgstr "standard färgmatris"
 
-#: ../src/iop/colorin.c:997 ../src/iop/colorin.c:1029
+#: ../src/iop/colorin.c:1001 ../src/iop/colorin.c:1035
 msgid "enhanced color matrix"
 msgstr "förbättrad färgmatris"
 
-#: ../src/iop/colorin.c:999 ../src/iop/colorin.c:1031
+#: ../src/iop/colorin.c:1003 ../src/iop/colorin.c:1037
 msgid "vendor color matrix"
 msgstr "tillverkarens färgmatris"
 
-#: ../src/iop/colorin.c:1001 ../src/iop/colorin.c:1033
+#: ../src/iop/colorin.c:1005 ../src/iop/colorin.c:1039
 msgid "alternate color matrix"
 msgstr "alternativ färgmatris"
 
-#: ../src/iop/colorin.c:1003 ../src/iop/colorin.c:1035
+#: ../src/iop/colorin.c:1007 ../src/iop/colorin.c:1041
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (tex. JPG)"
 
-#: ../src/iop/colorin.c:1005 ../src/iop/colorin.c:1037
-#: ../src/iop/colorin.c:1166 ../src/iop/colorout.c:946
-#: ../src/iop/colorout.c:947 ../src/iop/colorout.c:948
+#: ../src/iop/colorin.c:1009 ../src/iop/colorin.c:1043
+#: ../src/iop/colorin.c:1181 ../src/iop/colorout.c:963
+#: ../src/iop/colorout.c:964 ../src/iop/colorout.c:965
 #: ../src/libs/export.c:558
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibel)"
 
-#: ../src/iop/colorin.c:1007 ../src/iop/colorin.c:1039
-#: ../src/iop/colorin.c:1167 ../src/iop/colorout.c:934
-#: ../src/iop/colorout.c:935 ../src/iop/colorout.c:936
-#: ../src/libs/export.c:570
+#: ../src/iop/colorin.c:1011 ../src/iop/colorin.c:1045
+#: ../src/iop/colorin.c:1182 ../src/iop/colorout.c:945
+#: ../src/iop/colorout.c:946 ../src/iop/colorout.c:947
+#: ../src/libs/export.c:564
 msgid "linear Rec709 RGB"
 msgstr "linjär Rec709 RGB"
 
-#: ../src/iop/colorin.c:1009 ../src/iop/colorin.c:1041
+#: ../src/iop/colorin.c:1013 ../src/iop/colorin.c:1047
+#: ../src/iop/colorin.c:1183 ../src/iop/colorout.c:951
+#: ../src/iop/colorout.c:952 ../src/iop/colorout.c:953
+#: ../src/libs/export.c:570
+#, fuzzy
+msgid "linear Rec2020 RGB"
+msgstr "linjär Rec2020 RGB"
+
+#: ../src/iop/colorin.c:1015 ../src/iop/colorin.c:1049
 msgid "linear infrared BGR"
 msgstr "linjär infraröd BGR"
 
-#: ../src/iop/colorin.c:1011 ../src/iop/colorin.c:1043
+#: ../src/iop/colorin.c:1017 ../src/iop/colorin.c:1051
 msgid "linear XYZ"
 msgstr "linjär XYZ"
 
-#: ../src/iop/colorin.c:1013 ../src/iop/colorin.c:1045
+#: ../src/iop/colorin.c:1019 ../src/iop/colorin.c:1053
 #: ../src/libs/colorpicker.c:541 ../src/libs/colorpicker.c:592
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/iop/colorin.c:1145 ../src/iop/denoiseprofile.c:1724
+#: ../src/iop/colorin.c:1160 ../src/iop/denoiseprofile.c:1724
 #: ../src/libs/export.c:609
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/colorin.c:1154
+#: ../src/iop/colorin.c:1169
 #, c-format
 msgid "ICC profiles in %s/color/in or %s/color/in"
 msgstr "ingående ICC profil i %s/color/in eller %s/color/in"
 
-#: ../src/iop/colorin.c:1162
+#: ../src/iop/colorin.c:1177
 msgid "gamut clipping"
 msgstr "klippning av tonomfång"
 
-#: ../src/iop/colorin.c:1165
+#: ../src/iop/colorin.c:1180
 msgid "sRGB"
 msgstr "sRGB"
 
-#: ../src/iop/colorin.c:1168
-msgid "Beta RGB (compatible)"
-msgstr "Beta RGB (kompatibel)"
-
-#: ../src/iop/colorin.c:1170
+#: ../src/iop/colorin.c:1185
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "håll Lab-värdena inom färgrymden för RGB"
 
@@ -4146,94 +4150,94 @@ msgstr "histogramutjämningens styrka"
 msgid "output color profile"
 msgstr "utgående färgprofil"
 
-#: ../src/iop/colorout.c:640
+#: ../src/iop/colorout.c:644
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "ej stödd utgående färgprofil har ersatts med srgb!"
 
-#: ../src/iop/colorout.c:781
+#: ../src/iop/colorout.c:785
 msgid "gamut check"
 msgstr "kontroll av tonskala"
 
-#: ../src/iop/colorout.c:781
+#: ../src/iop/colorout.c:785
 msgid "soft proof"
 msgstr "skärmkorrektur"
 
-#: ../src/iop/colorout.c:893
+#: ../src/iop/colorout.c:904
 msgid "output intent"
 msgstr "utgående avsikt"
 
-#: ../src/iop/colorout.c:894 ../src/iop/colorout.c:901
+#: ../src/iop/colorout.c:905 ../src/iop/colorout.c:912
 #: ../src/libs/export.c:539
 msgid "perceptual"
 msgstr "perceptuell"
 
-#: ../src/iop/colorout.c:895 ../src/iop/colorout.c:902
+#: ../src/iop/colorout.c:906 ../src/iop/colorout.c:913
 #: ../src/libs/export.c:540
 msgid "relative colorimetric"
 msgstr "relativ färgmetri"
 
-#: ../src/iop/colorout.c:896 ../src/iop/colorout.c:903
+#: ../src/iop/colorout.c:907 ../src/iop/colorout.c:914
 #: ../src/libs/export.c:541
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "mättnad"
 
-#: ../src/iop/colorout.c:897 ../src/iop/colorout.c:904
+#: ../src/iop/colorout.c:908 ../src/iop/colorout.c:915
 #: ../src/libs/export.c:542
 msgid "absolute colorimetric"
 msgstr "absolut färgmetri"
 
-#: ../src/iop/colorout.c:899
+#: ../src/iop/colorout.c:910
 msgid "display intent"
 msgstr "visningsavsikt"
 
-#: ../src/iop/colorout.c:917
+#: ../src/iop/colorout.c:928
 msgid "output profile"
 msgstr "utgående profil"
 
-#: ../src/iop/colorout.c:918
+#: ../src/iop/colorout.c:929
 msgid "softproof profile"
 msgstr "profil för skärmkorrektur"
 
-#: ../src/iop/colorout.c:919
+#: ../src/iop/colorout.c:930
 msgid "display profile"
 msgstr "skärmprofil"
 
 #. the system display profile is only suitable for display purposes
-#: ../src/iop/colorout.c:930 ../src/libs/export.c:621
+#: ../src/iop/colorout.c:941
 msgid "system display profile"
 msgstr "systemets skärmprofil"
 
-#: ../src/iop/colorout.c:940 ../src/iop/colorout.c:941
-#: ../src/iop/colorout.c:942 ../src/libs/export.c:551
+#: ../src/iop/colorout.c:957 ../src/iop/colorout.c:958
+#: ../src/iop/colorout.c:959 ../src/libs/export.c:551
 msgid "sRGB (web-safe)"
 msgstr "sRGB (webb-säker)"
 
-#: ../src/iop/colorout.c:960
+#: ../src/iop/colorout.c:977
 msgid "rendering intent"
 msgstr "återgivningsavsikt"
 
-#: ../src/iop/colorout.c:961
+#: ../src/iop/colorout.c:978
 #, c-format
 msgid "ICC profiles in %s/color/out or %s/color/out"
 msgstr "utgående ICC profiler i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:963
+#: ../src/iop/colorout.c:980
 #, c-format
 msgid "display ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärm i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:965
+#: ../src/iop/colorout.c:982
 #, c-format
 msgid "softproof ICC profiles in %s/color/out or %s/color/out"
 msgstr "ICC-profiler för skärmkorrektur i %s/color/out eller %s/color/out"
 
-#: ../src/iop/colorout.c:1003
+#: ../src/iop/colorout.c:1020
 msgctxt "accel"
 msgid "toggle softproofing"
 msgstr "växla skärmkorrektur"
 
-#: ../src/iop/colorout.c:1006
+#: ../src/iop/colorout.c:1023
 msgctxt "accel"
 msgid "toggle gamutcheck"
 msgstr "växla kontroll av tonskala"
@@ -6651,27 +6655,27 @@ msgstr "avsikt"
 msgid "image settings"
 msgstr "bildinställningar"
 
-#: ../src/libs/export.c:629
+#: ../src/libs/export.c:626
 #, c-format
 msgid "output ICC profiles in %s/color/out or %s/color/out"
 msgstr "utgående ICC-profiler i %s/color/out eller %s/color/out"
 
 #. Add style combo
-#: ../src/libs/export.c:635
+#: ../src/libs/export.c:632
 msgid "style"
 msgstr "stil"
 
-#: ../src/libs/export.c:652
+#: ../src/libs/export.c:649
 msgid "temporary style to append while exporting"
 msgstr "temporär stil som ska appliceras vid export"
 
-#: ../src/libs/export.c:670
+#: ../src/libs/export.c:667
 msgid "export with current settings (ctrl-e)"
 msgstr "exportera med nuvarande inställningar (ctrl-e)"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:878 ../src/libs/styles.c:69
-#: ../src/views/darkroom.c:1715
+#: ../src/libs/export.c:875 ../src/libs/styles.c:69
+#: ../src/views/darkroom.c:1716
 msgctxt "accel"
 msgid "export"
 msgstr "exportera"
@@ -8164,41 +8168,41 @@ msgstr "tröskelvärde för överexponerade områden"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:1703 ../src/views/map.c:707
+#: ../src/views/darkroom.c:1704 ../src/views/map.c:707
 #: ../src/views/tethering.c:387
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "växla visning av filmrulle"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:1707
+#: ../src/views/darkroom.c:1708
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom close-up"
 
-#: ../src/views/darkroom.c:1709
+#: ../src/views/darkroom.c:1710
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "fyll zoom"
 
-#: ../src/views/darkroom.c:1711
+#: ../src/views/darkroom.c:1712
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "anpassa zoom"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:1719
+#: ../src/views/darkroom.c:1720
 msgctxt "accel"
 msgid "image forward"
 msgstr "nästa bild"
 
-#: ../src/views/darkroom.c:1721
+#: ../src/views/darkroom.c:1722
 msgctxt "accel"
 msgid "image back"
 msgstr "föregående bild"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:1725
+#: ../src/views/darkroom.c:1726
 msgctxt "accel"
 msgid "overexposed"
 msgstr "överexponerad"
@@ -8527,6 +8531,9 @@ msgstr "foto"
 #: ../src/imageio/format/webp.c:317
 msgid "graphic"
 msgstr "grafik"
+
+#~ msgid "Beta RGB (compatible)"
+#~ msgstr "Beta RGB (kompatibel)"
 
 #~ msgid "RAW"
 #~ msgstr "RÅ"
