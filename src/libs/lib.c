@@ -668,19 +668,24 @@ static void
 popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
   static dt_lib_module_info_t mi;
-  int32_t size = 0;
+  int size = 0;
   g_strlcpy(mi.plugin_name, module->plugin_name, sizeof(mi.plugin_name));
   mi.version = module->version();
   mi.module = module;
   void *params = module->get_params(module, &size);
-  if(params)
+
+  //make sure that we have enough space for params
+  if(params && (size <= sizeof(mi.params)))
   {
-    g_assert(size <= 2*PATH_MAX*sizeof(char) + 4096);
     memcpy(mi.params, params, size);
     mi.params_size = size;
     free(params);
   }
-  else mi.params_size = 0;
+  else
+  {
+    mi.params_size = 0;
+    fprintf(stderr, "something went wrong: &params=%p, size=%i\n", &params, size);
+  }
   dt_lib_presets_popup_menu_show(&mi);
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0, gtk_get_current_event_time());
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
