@@ -48,9 +48,9 @@ gallery_t;
 // saved params
 typedef struct dt_imageio_gallery_t
 {
-  char filename[PATH_MAX];
+  char filename[1024];
   char title[1024];
-  char cached_dirname[PATH_MAX]; // expanded during first img store, not stored in param struct.
+  char cached_dirname[1024]; // expanded during first img store, not stored in param struct.
   dt_variables_params_t *vp;
   GList *l;
 }

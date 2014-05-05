@@ -49,7 +49,7 @@ disk_t;
 // saved params
 typedef struct dt_imageio_disk_t
 {
-  char filename[PATH_MAX];
+  char filename[1024];
   dt_variables_params_t *vp;
   gboolean overwrite;
 }
