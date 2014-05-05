@@ -978,11 +978,18 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>plugins/map/filter_images_drawn</name>
+    <type>bool</type>
+    <default>FALSE</default>
+    <shortdescription>only draw images on map that are currently collected and filtered</shortdescription>
+    <longdescription>use the current filter settings to select the geotagged images drawn on the map, i.e. limit the images drawn to the current filmstrip. this limits the number of images drawn and thus reduces the time needed to draw the images.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>plugins/map/max_images_drawn</name>
     <type>int</type>
     <default>100</default>
     <shortdescription>maximum number of images drawn on map</shortdescription>
-    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down (needs a restart).</longdescription>
+    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down.</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
