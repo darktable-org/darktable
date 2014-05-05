@@ -675,7 +675,7 @@ popup_callback(GtkButton *button, dt_lib_module_t *module)
   void *params = module->get_params(module, &size);
   if(params)
   {
-    g_assert(size <= 4096);
+    g_assert(size <= 2*PATH_MAX*sizeof(char) + 4096);
     memcpy(mi.params, params, size);
     mi.params_size = size;
     free(params);
