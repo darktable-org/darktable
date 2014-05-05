@@ -94,8 +94,9 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_AMAZE = 1,
   // methods for x-trans images
   DT_IOP_DEMOSAIC_LINEAR = DEMOSAIC_XTRANS | 0,
-  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,
-  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2
+  DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 1,
+  DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 2,
+  DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 3
 }
 dt_iop_demosaic_method_t;
 
@@ -417,6 +418,10 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
   }
 }
 
+
+//
+// x-trans specific demosaicing algorithms
+//
 
 #define fcol(row,col) xtrans[((row)+6)%6][((col)+6)%6]
 
@@ -945,6 +950,167 @@ void xtrans_lin_interpolate(
 }
 
 
+// VNG interpolate adapted from dcraw 9.20
+
+/*
+   This algorithm is officially called:
+
+   "Interpolation using a Threshold-based variable number of gradients"
+
+   described in http://scien.stanford.edu/pages/labsite/1999/psych221/projects/99/tingchen/algodep/vargra.html
+
+   I've extended the basic idea to work with non-Bayer filter arrays.
+   Gradients are numbered clockwise from NW=0 to W=7.
+ */
+void xtrans_vng_interpolate(
+  float *out, const float *in,
+  dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
+  const uint8_t xtrans[6][6])
+{
+  static const signed char *cp, terms[] = {
+    -2,-2,+0,-1,0,0x01, -2,-2,+0,+0,1,0x01, -2,-1,-1,+0,0,0x01,
+    -2,-1,+0,-1,0,0x02, -2,-1,+0,+0,0,0x03, -2,-1,+0,+1,1,0x01,
+    -2,+0,+0,-1,0,0x06, -2,+0,+0,+0,1,0x02, -2,+0,+0,+1,0,0x03,
+    -2,+1,-1,+0,0,0x04, -2,+1,+0,-1,1,0x04, -2,+1,+0,+0,0,0x06,
+    -2,+1,+0,+1,0,0x02, -2,+2,+0,+0,1,0x04, -2,+2,+0,+1,0,0x04,
+    -1,-2,-1,+0,0,0x80, -1,-2,+0,-1,0,0x01, -1,-2,+1,-1,0,0x01,
+    -1,-2,+1,+0,1,0x01, -1,-1,-1,+1,0,0x88, -1,-1,+1,-2,0,0x40,
+    -1,-1,+1,-1,0,0x22, -1,-1,+1,+0,0,0x33, -1,-1,+1,+1,1,0x11,
+    -1,+0,-1,+2,0,0x08, -1,+0,+0,-1,0,0x44, -1,+0,+0,+1,0,0x11,
+    -1,+0,+1,-2,1,0x40, -1,+0,+1,-1,0,0x66, -1,+0,+1,+0,1,0x22,
+    -1,+0,+1,+1,0,0x33, -1,+0,+1,+2,1,0x10, -1,+1,+1,-1,1,0x44,
+    -1,+1,+1,+0,0,0x66, -1,+1,+1,+1,0,0x22, -1,+1,+1,+2,0,0x10,
+    -1,+2,+0,+1,0,0x04, -1,+2,+1,+0,1,0x04, -1,+2,+1,+1,0,0x04,
+    +0,-2,+0,+0,1,0x80, +0,-1,+0,+1,1,0x88, +0,-1,+1,-2,0,0x40,
+    +0,-1,+1,+0,0,0x11, +0,-1,+2,-2,0,0x40, +0,-1,+2,-1,0,0x20,
+    +0,-1,+2,+0,0,0x30, +0,-1,+2,+1,1,0x10, +0,+0,+0,+2,1,0x08,
+    +0,+0,+2,-2,1,0x40, +0,+0,+2,-1,0,0x60, +0,+0,+2,+0,1,0x20,
+    +0,+0,+2,+1,0,0x30, +0,+0,+2,+2,1,0x10, +0,+1,+1,+0,0,0x44,
+    +0,+1,+1,+2,0,0x10, +0,+1,+2,-1,1,0x40, +0,+1,+2,+0,0,0x60,
+    +0,+1,+2,+1,0,0x20, +0,+1,+2,+2,0,0x10, +1,-2,+1,+0,0,0x80,
+    +1,-1,+1,+1,0,0x88, +1,+0,+1,+2,0,0x08, +1,+0,+2,-1,0,0x40,
+    +1,+0,+2,+1,0,0x10
+  }, chood[] = { -1,-1, -1,0, -1,+1, 0,+1, +1,+1, +1,0, +1,-1, 0,-1 };
+  unsigned short (*brow[5])[4], *pix;
+  int prow=6, pcol=6, *ip, *code[6][6], gval[8], gmin, gmax, sum[3];
+  int row, col, x, y, x1, x2, y1, y2, t, weight, grads, color, diag;
+  int g, diff, thold, num, c;
+
+  int width = roi_out->width;
+  int height = roi_out->height;
+
+  xtrans_lin_interpolate(out, in, roi_out, roi_in, xtrans);
+
+  // FIXME: for first pass at this, convert data into a buffer of unsigned shorts as dcraw does -- make this work with floats instead, and perhaps not so much copying
+  unsigned short (*image)[4];
+
+  image = (unsigned short (*)[4]) calloc(height, width*sizeof *image);
+  for (row=0; row < height; row++)
+    for (col=0; col < width; col++)
+      for (c=0; c<4; c++)
+        image[row*width+col][c] = 0xffff * out[4*(row*width+col)+c];
+
+  // FIXME: this should be based off of sizeof *int to work 32/64 bit?
+  ip = (int *) calloc (prow*pcol, 1280);
+  // FIXME: handle calloc error here and in image calloc above; and should dt_alloc_align()?
+  //merror (ip, "vng_interpolate()");
+  for (row=0; row < prow; row++)		/* Precalculate for VNG */
+    for (col=0; col < pcol; col++) {
+      code[row][col] = ip;
+      for (cp=terms, t=0; t < 64; t++) {
+	y1 = *cp++;  x1 = *cp++;
+	y2 = *cp++;  x2 = *cp++;
+	weight = *cp++;
+	grads = *cp++;
+	color = fcol(row+y1,col+x1);
+	if (fcol(row+y2,col+x2) != color) continue;
+	diag = (fcol(row,col+1) == color && fcol(row+1,col) == color) ? 2:1;
+	if (abs(y1-y2) == diag && abs(x1-x2) == diag) continue;
+	*ip++ = (y1*width + x1)*4 + color;
+	*ip++ = (y2*width + x2)*4 + color;
+	*ip++ = weight;
+	for (g=0; g < 8; g++)
+	  if (grads & 1<<g) *ip++ = g;
+	*ip++ = -1;
+      }
+      *ip++ = INT_MAX;
+      for (cp=chood, g=0; g < 8; g++) {
+	y = *cp++;  x = *cp++;
+	*ip++ = (y*width + x) * 4;
+	color = fcol(row,col);
+	if (fcol(row+y,col+x) != color && fcol(row+y*2,col+x*2) == color)
+	  *ip++ = (y*width + x) * 8 + color;
+	else
+	  *ip++ = 0;
+      }
+    }
+  // FIXME: handle calloc error
+  brow[4] = (unsigned short (*)[4]) calloc (width*3, sizeof **brow);
+  //merror (brow[4], "vng_interpolate()");
+  for (row=0; row < 3; row++)
+    brow[row] = brow[4] + row*width;
+  for (row=2; row < height-2; row++) {		/* Do VNG interpolation */
+    for (col=2; col < width-2; col++) {
+      pix = image[row*width+col];
+      ip = code[row % prow][col % pcol];
+      memset (gval, 0, sizeof gval);
+      while ((g = ip[0]) != INT_MAX) {		/* Calculate gradients */
+	diff = ABS(pix[g] - pix[ip[1]]) << ip[2];
+	gval[ip[3]] += diff;
+	ip += 5;
+	if ((g = ip[-1]) == -1) continue;
+	gval[g] += diff;
+	while ((g = *ip++) != -1)
+	  gval[g] += diff;
+      }
+      ip++;
+      gmin = gmax = gval[0];			/* Choose a threshold */
+      for (g=1; g < 8; g++) {
+	if (gmin > gval[g]) gmin = gval[g];
+	if (gmax < gval[g]) gmax = gval[g];
+      }
+      if (gmax == 0) {
+	memcpy (brow[2][col], pix, sizeof *image);
+	continue;
+      }
+      thold = gmin + (gmax >> 1);
+      memset (sum, 0, sizeof sum);
+      color = fcol(row,col);
+      for (num=g=0; g < 8; g++,ip+=2) {		/* Average the neighbors */
+	if (gval[g] <= thold) {
+	  for (c=0; c < 3; c++)
+	    if (c == color && ip[1])
+	      sum[c] += (pix[c] + pix[ip[1]]) >> 1;
+	    else
+	      sum[c] += pix[ip[0] + c];
+	  num++;
+	}
+      }
+      for (c=0; c < 3; c++) {			/* Save to buffer */
+	t = pix[color];
+	if (c != color)
+	  t += (sum[c] - sum[color]) / num;
+	brow[2][col][c] = CLIP(t);
+      }
+    }
+    if (row > 3)				/* Write buffer to image */
+      memcpy (image[(row-2)*width+2], brow[0]+2, (width-4)*sizeof *image);
+    for (g=0; g < 4; g++)
+      brow[(g-1) & 3] = brow[g];
+  }
+  memcpy (image[(row-2)*width+2], brow[0]+2, (width-4)*sizeof *image);
+  memcpy (image[(row-1)*width+2], brow[1]+2, (width-4)*sizeof *image);
+  free (brow[4]);
+  free (code[0][0]);
+
+  for (row=0; row < height; row++)
+    for (col=0; col < width; col++)
+      for (c=0; c<4; c++)
+        out[4*(row*width+col)+c]=(float)image[row*width+col][c]/0xffff;
+  free(image);
+}
+
+
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
 demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
@@ -1216,7 +1382,7 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
   const int qual = get_quality();
   int demosaicing_method = data->demosaicing_method;
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && qual < 2) // only overwrite setting if quality << requested and in dr mode
-    demosaicing_method = (img->filters != 9) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_LINEAR;
+    demosaicing_method = (img->filters != 9) ? DT_IOP_DEMOSAIC_PPG : MIN(demosaicing_method, DT_IOP_DEMOSAIC_LINEAR + qual);
 
   const float *const pixels = (float *)i;
   if(roi_out->scale > .99999f && roi_out->scale < 1.00001f)
@@ -1224,11 +1390,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     // output 1:1
     if(img->filters==9)
     {
-      if (demosaicing_method != DT_IOP_DEMOSAIC_LINEAR)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_LINEAR)
+        xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
+      else if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
+        xtrans_vng_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
+      else
         xtrans_markesteijn_interpolate(
           (float *)o, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
-      else
-        xtrans_lin_interpolate((float *)o, pixels, &roo, &roi, img->xtrans);
     }
     // green eq:
     else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
@@ -1279,11 +1447,13 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     float *tmp = (float *)dt_alloc_align(16, (size_t)roo.width*roo.height*4*sizeof(float));
     if(img->filters==9)
     {
-      if (demosaicing_method != DT_IOP_DEMOSAIC_LINEAR)
+      if (demosaicing_method == DT_IOP_DEMOSAIC_LINEAR)
+        xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+      else if (demosaicing_method < DT_IOP_DEMOSAIC_MARKESTEIJN)
+        xtrans_vng_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
+      else
         xtrans_markesteijn_interpolate(
           tmp, pixels, &roo, &roi, img, img->xtrans, 1+(demosaicing_method-DT_IOP_DEMOSAIC_MARKESTEIJN)*2);
-      else
-        xtrans_lin_interpolate(tmp, pixels, &roo, &roi, img->xtrans);
     }
     else if(data->green_eq != DT_IOP_GREEN_EQ_NO)
     {
@@ -1818,7 +1988,7 @@ void reload_defaults(dt_iop_module_t *module)
     0, 0.0f,0,0,0
   };
   if (module->dev->image_storage.filters == 9)
-    tmp.demosaicing_method = DT_IOP_DEMOSAIC_LINEAR;
+    tmp.demosaicing_method = DT_IOP_DEMOSAIC_VNG;
   memcpy(module->params, &tmp, sizeof(dt_iop_demosaic_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_demosaic_params_t));
 }
@@ -1891,21 +2061,9 @@ static void
 demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *self)
 {
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
-  int active = dt_bauhaus_combobox_get(combo);
-
-  switch(active|DEMOSAIC_XTRANS)
-  {
-    case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN_3;
-      break;
-    case DT_IOP_DEMOSAIC_MARKESTEIJN:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_MARKESTEIJN;
-      break;
-    default:
-    case DT_IOP_DEMOSAIC_LINEAR:
-      p->demosaicing_method = DT_IOP_DEMOSAIC_LINEAR;
-      break;
-  }
+  p->demosaicing_method = dt_bauhaus_combobox_get(combo)|DEMOSAIC_XTRANS;
+  if ((p->demosaicing_method > DT_IOP_DEMOSAIC_MARKESTEIJN_3) || (p->demosaicing_method < DT_IOP_DEMOSAIC_LINEAR))
+    p->demosaicing_method = DT_IOP_DEMOSAIC_VNG;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1928,8 +2086,9 @@ void gui_init     (struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->demosaic_method_xtrans, NULL, _("method"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->demosaic_method_xtrans, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("linear (fast)"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass"));
-  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("VNG"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 1-pass (slow)"));
+  dt_bauhaus_combobox_add(g->demosaic_method_xtrans, _("Markesteijn 3-pass (slower)"));
   g_object_set(G_OBJECT(g->demosaic_method_xtrans), "tooltip-text", _("demosaicing raw data method"), (char *)NULL);
 
   g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.001, p->median_thrs, 3);
