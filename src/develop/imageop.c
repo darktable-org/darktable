@@ -699,6 +699,7 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
   if (!dt_iop_is_hidden(module))
   {
     module->gui_init(module);
+    dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
     if(copy_params)
     {
       memcpy(module->params, base->params, module->params_size);
@@ -712,8 +713,6 @@ dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
         }
       }
     }
-    else
-      dt_iop_reload_defaults(module);
 
     //we save the new instance creation but keep it disabled
     dt_dev_add_history_item(module->dev, module, FALSE);
