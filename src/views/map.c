@@ -75,9 +75,9 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
 /* wrapper for setting the map source in the GObject */
 static void _view_map_set_map_source_g_object(const dt_view_t *view, OsmGpsMapSource_t map_source);
 /* proxy function to check if preferences have changed */
-static void _view_map_check_preference_change(gpointer instance, gpointer user_data);
+static void _view_map_check_preference_changed(gpointer instance, gpointer user_data);
 /* callback when the collection changs */
-static void _view_map_collection_change(gpointer instance, gpointer user_data);
+static void _view_map_collection_changed(gpointer instance, gpointer user_data);
 /* callback when an image is selected in filmstrip, centers map */
 static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 /* callback when an image is dropped from filmstrip */
@@ -326,10 +326,10 @@ void init(dt_view_t *self)
 #endif //USE_LUA
   /* connect collection changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
-      G_CALLBACK(_view_map_collection_change), (gpointer)self);
+      G_CALLBACK(_view_map_collection_changed), (gpointer)self);
   /* connect preference changed signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
-      G_CALLBACK(_view_map_check_preference_change), (gpointer)self);
+      G_CALLBACK(_view_map_check_preference_changed), (gpointer)self);
 }
 
 void cleanup(dt_view_t *self)
@@ -662,7 +662,6 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.center_on_location = _view_map_center_on_location;
   darktable.view_manager->proxy.map.show_osd = _view_map_show_osd;
   darktable.view_manager->proxy.map.set_map_source = _view_map_set_map_source;
-  darktable.view_manager->proxy.map.check_preference_change = _view_map_check_preference_change;
 
   /* restore last zoom,location in map */
   float lon = dt_conf_get_float("plugins/map/longitude");
@@ -801,7 +800,7 @@ static void _view_map_set_map_source(const dt_view_t *view, OsmGpsMapSource_t ma
   _view_map_set_map_source_g_object(view, map_source);
 }
 
-static void _view_map_check_preference_change(gpointer instance, gpointer user_data)
+static void _view_map_check_preference_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *view = (dt_view_t*)user_data;
   dt_map_t *lib = (dt_map_t*)view->data;
@@ -810,7 +809,7 @@ static void _view_map_check_preference_change(gpointer instance, gpointer user_d
     g_signal_emit_by_name(lib->map, "changed");
 }
 
-static void _view_map_collection_change(gpointer instance, gpointer user_data)
+static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *view = (dt_view_t*)user_data;
   dt_map_t *lib = (dt_map_t*)view->data;
@@ -1019,7 +1018,6 @@ static gboolean _view_map_prefs_changed(dt_map_t *lib)
 
 static void _view_map_build_main_query(dt_map_t *lib)
 {
-  char *filter;
   char *geo_query;
 
   if(lib->statements.main_query)
@@ -1029,19 +1027,16 @@ static void _view_map_build_main_query(dt_map_t *lib)
   if(lib->max_images_drawn == 0)
     lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
-  if(lib->filter_images_drawn)
-    filter = g_strdup_printf("and id in (select imgid from memory.collected_images)");
-  else
-    filter = g_strdup("");
-  geo_query = g_strdup_printf("select * from (select id, latitude from images where \
-              longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
-      and longitude not NULL and latitude not NULL %s order by abs(latitude - ?5), abs(longitude - ?6) \
-      limit 0, %d) order by (180 - latitude), id", filter, lib->max_images_drawn);
+  geo_query = g_strdup_printf("select * from (select id, latitude from %s where \
+                               longitude >= ?1 and longitude <= ?2 and latitude <= ?3 and latitude >= ?4 \
+                               and longitude not NULL and latitude not NULL order by abs(latitude - ?5), abs(longitude - ?6) \
+                               limit 0, %d) order by (180 - latitude), id",
+                              lib->filter_images_drawn?"images i inner join memory.collected_images c on i.id = c.imgid":"images",
+                              lib->max_images_drawn);
 
   /* prepare the main query statement */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), geo_query, -1, &lib->statements.main_query, NULL);
 
-  g_free(filter);
   g_free(geo_query);
 }
 

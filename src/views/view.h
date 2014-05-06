@@ -244,7 +244,6 @@ typedef struct dt_view_manager_t
       void (*center_on_location)(const dt_view_t *view, gdouble lon, gdouble lat, double zoom);
       void (*show_osd)(const dt_view_t *view, gboolean enabled);
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
-      void (*check_preference_change)(const dt_view_t *view);
     } map;
 #endif
 

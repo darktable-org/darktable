@@ -142,7 +142,7 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_IMAGEIO_STORAGE_CHANGE,
 
-  /** \brief This signal is raised after preferences have been changes
+  /** \brief This signal is raised after preferences have been changed
     1 dt_view_t* : the view
     no return
     */

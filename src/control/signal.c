@@ -80,7 +80,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] =
   {"dt-imageio-storage-change",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},               // DT_SIGNAL_IMAGEIO_STORAGE_CHANGE
 
 
-  {"dt-preferences-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},        // DT_SIGNAL_PREFERENCES_CHANGE
+  {"dt-preferences-changed",NULL,NULL,G_TYPE_NONE,g_cclosure_marshal_VOID__VOID,0,NULL},                  // DT_SIGNAL_PREFERENCES_CHANGE
 };
 
 static  GType _signal_type;
