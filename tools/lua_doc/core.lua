@@ -142,6 +142,7 @@ local function document_type_from_obj(obj,type_doc)
 			type_doc[k] = create_documentation_node(v,type_doc,k)
 		elseif type(k) == "number" and M.get_attribute(type_doc["#"],"reported_type")== "undocumented" then
 			M.remove_parent(type_doc["#"],type_doc)
+			nojoin[v] = true
 			type_doc["#"] = create_documentation_node(v,type_doc,"#")
 		end
 	end
@@ -317,6 +318,11 @@ function M.debug_print(node,name)
 		end
 
 	end
+	for k,v in pairs(known) do
+		if v == node then 
+			print ("\tknown\n");
+		end
+	end
 end
 
 
@@ -445,6 +451,9 @@ end
 
 
 function M.set_text(node,text)
+	if node._luadoc_text then
+		print("warning, double documentation for "..node:get_name())
+	end
 	node._luadoc_text = text
 	for k,v in ipairs(node._luadoc_parents) do
 		set_forced_next(v[1],v[2])

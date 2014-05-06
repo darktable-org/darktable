@@ -298,6 +298,7 @@ darktable.database.move_image:set_text([[Physically moves an image (and all its 
 darktable.database.move_image:add_version_info("function added")
 darktable.database.move_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image to move]])
 darktable.database.move_image:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to move to]])
+darktable.database.move_image:set_main_parent(darktable.database)
 darktable.database.copy_image:set_text([[Physically copies an image to another film.]]..para()..
 [[This will copy the image file and the related XMP to the directory of the new film]]..para()..
 [[If there is already a file with the same name as the image file, it wil create a duplicate from that file instead]]..para()..
@@ -306,6 +307,7 @@ darktable.database.copy_image:add_version_info("function added")
 darktable.database.copy_image:add_parameter("image",tostring(types.dt_lua_image_t),[[The image to copy]])
 darktable.database.copy_image:add_parameter("film",tostring(types.dt_lua_film_t),[[The film to copy to]])
 darktable.database.copy_image:add_return(tostring(types.dt_lua_image_t),[[The new image]])
+darktable.database.copy_image:set_main_parent(darktable.database)
 
 ------------------------
 --  DARKTABLE.MODULES --

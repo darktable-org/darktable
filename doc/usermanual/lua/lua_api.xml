@@ -301,7 +301,7 @@ All functions and data are accessed through the darktable module.</para>
 <secondary>#</secondary>
 </indexterm>
 <synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film object that contains this image.</para>
+<para>Each film has a numeric entry in the database.</para>
 
 </section>
 
@@ -1081,13 +1081,15 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" >
+<section status="final" id="darktable_database__hash_">
 <title>darktable.database.#</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Each image in the database appears with a numerical index; you can interate them using ipairs.</para>
+
 </section>
 
 <section status="final" id="darktable_database_duplicate">
@@ -1142,22 +1144,66 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 </variablelist>
 </section>
 
-<section status="final" >
+<section status="final" id="darktable_database_move_image">
 <title>darktable.database.move_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>move_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_image_t_move">types.dt_lua_image_t.move</link>
+<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> )</synopsis>
+<para>Physically moves an image (and all its duplicates) to another film.</para>
+<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
+<para>Note that the parameter order is not relevant.</para>
+
+<variablelist>
+<varlistentry><term id="darktable_database_move_image_image">image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to move</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable_database_move_image_film">film</term><listitem>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film to move to</para>
+
+</listitem></varlistentry>
+
+</variablelist>
 </section>
 
-<section status="final" >
+<section status="final" id="darktable_database_copy_image">
 <title>darktable.database.copy_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>copy_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_image_t_copy">types.dt_lua_image_t.copy</link>
+<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Physically copies an image to another film.</para>
+<para>This will copy the image file and the related XMP to the directory of the new film</para>
+<para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
+<para>Note that the parameter order is not relevant.</para>
+
+<variablelist>
+<varlistentry><term id="darktable_database_copy_image_image">image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to copy</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="darktable_database_copy_image_film">film</term><listitem>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film to copy to</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The new image</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
 </section>
 
 <section status="final" >
@@ -2957,15 +3003,6 @@ Note that this is the real image object; changing the value of a field will imme
 </row></tbody>
 </tgroup></informaltable>
 <section status="final" >
-<title>types.dt_lua_image_t.film</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>film</secondary>
-</indexterm>
-see <link linkend="darktable_films__hash_">darktable.films.#</link>
-</section>
-
-<section status="final" >
 <title>types.dt_lua_image_t.attach_tag</title>
 <indexterm>
 <primary>Lua API</primary>
@@ -3011,15 +3048,6 @@ see <link linkend="darktable_styles_apply">darktable.styles.apply</link>
 </section>
 
 <section status="final" >
-<title>types.dt_lua_image_t.group_leader</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>group_leader</secondary>
-</indexterm>
-see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
-</section>
-
-<section status="final" >
 <title>types.dt_lua_image_t.duplicate</title>
 <indexterm>
 <primary>Lua API</primary>
@@ -3028,66 +3056,22 @@ see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
 see <link linkend="darktable_database_duplicate">darktable.database.duplicate</link>
 </section>
 
-<section status="final" id="types_dt_lua_image_t_move">
+<section status="final" >
 <title>types.dt_lua_image_t.move</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>move</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> )</synopsis>
-<para>Physically moves an image (and all its duplicates) to another film.</para>
-<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
-<para>Note that the parameter order is not relevant.</para>
-
-<variablelist>
-<varlistentry><term id="types_dt_lua_image_t_move_image">image</term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to move</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term id="types_dt_lua_image_t_move_film">film</term><listitem>
-<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to move to</para>
-
-</listitem></varlistentry>
-
-</variablelist>
+see <link linkend="darktable_database_move_image">darktable.database.move_image</link>
 </section>
 
-<section status="final" id="types_dt_lua_image_t_copy">
+<section status="final" >
 <title>types.dt_lua_image_t.copy</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>copy</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>Physically copies an image to another film.</para>
-<para>This will copy the image file and the related XMP to the directory of the new film</para>
-<para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
-<para>Note that the parameter order is not relevant.</para>
-
-<variablelist>
-<varlistentry><term id="types_dt_lua_image_t_copy_image">image</term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to copy</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term id="types_dt_lua_image_t_copy_film">film</term><listitem>
-<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to copy to</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The new image</para>
-
-</listitem></varlistentry>
-
-
-</variablelist>
+see <link linkend="darktable_database_copy_image">darktable.database.copy_image</link>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_id">
@@ -3109,6 +3093,17 @@ see <link linkend="darktable_database_duplicate">darktable.database.duplicate</l
 </indexterm>
 <synopsis>string</synopsis>
 <para>The file the directory containing the image.</para>
+
+</section>
+
+<section status="final" id="types_dt_lua_image_t_film">
+<title>types.dt_lua_image_t.film</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>film</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film object that contains this image.</para>
 
 </section>
 
@@ -3540,6 +3535,17 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 
 
 </variablelist>
+</section>
+
+<section status="final" id="types_dt_lua_image_t_group_leader">
+<title>types.dt_lua_image_t.group_leader</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>group_leader</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image which is the leader of the group this image is a member of.</para>
+
 </section>
 
 <section status="final" id="types_dt_lua_image_t_local_copy">
@@ -4338,24 +4344,13 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" id="types_dt_lua_film_t__hash_">
-<title>types.dt_lua_film_t.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The images that have that tag attached to them.</para>
-
-</section>
-
 <section status="final" >
 <title>types.dt_lua_film_t.move_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>move_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_image_t_move">types.dt_lua_image_t.move</link>
+see <link linkend="darktable_database_move_image">darktable.database.move_image</link>
 </section>
 
 <section status="final" >
@@ -4364,7 +4359,18 @@ see <link linkend="types_dt_lua_image_t_move">types.dt_lua_image_t.move</link>
 <primary>Lua API</primary>
 <secondary>copy_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_image_t_copy">types.dt_lua_image_t.copy</link>
+see <link linkend="darktable_database_copy_image">darktable.database.copy_image</link>
+</section>
+
+<section status="final" id="types_dt_lua_film_t__hash_">
+<title>types.dt_lua_film_t.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The different images within the film.</para>
+
 </section>
 
 <section status="final" id="types_dt_lua_film_t_id">
@@ -4586,15 +4592,6 @@ see <link linkend="darktable_tags_attach">darktable.tags.attach</link>
 see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 </section>
 
-<section status="final" >
-<title>types.dt_lua_tag_t.#</title>
-<indexterm>
-<primary>Lua API</primary>
-<secondary>#</secondary>
-</indexterm>
-see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
-</section>
-
 <section status="final" id="types_dt_lua_tag_t_name">
 <title>types.dt_lua_tag_t.name</title>
 <indexterm>
@@ -4603,6 +4600,17 @@ see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
 </indexterm>
 <synopsis>string</synopsis>
 <para>The name of the tag.</para>
+
+</section>
+
+<section status="final" id="types_dt_lua_tag_t__hash_">
+<title>types.dt_lua_tag_t.#</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>#</secondary>
+</indexterm>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images that have that tag attached to them.</para>
 
 </section>
 
