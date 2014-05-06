@@ -43,7 +43,7 @@
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-DT_MODULE_INTROSPECTION(3, dt_iop_lensfun_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
 {
@@ -85,10 +85,28 @@ typedef struct dt_iop_lensfun_params2_t
 }
 dt_iop_lensfun_params2_t;
 
+typedef struct dt_iop_lensfun_params3_t
+{
+  int modify_flags;
+  int inverse;
+  float scale;
+  float crop;
+  float focal;
+  float aperture;
+  float distance;
+  lfLensType target_geom;
+  char camera[128];
+  char lens[128];
+  int tca_override;
+  float tca_r, tca_b;
+}
+dt_iop_lensfun_params3_t;
+
 typedef struct dt_iop_lensfun_params_t
 {
   int modify_flags;
   int inverse;
+  int use_defaults;
   float scale;
   float crop;
   float focal;
@@ -213,7 +231,7 @@ void connect_key_accels(dt_iop_module_t *self)
 int
 legacy_params (dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params, const int new_version)
 {
-  if (old_version == 2 && new_version == 3)
+  if (old_version == 2 && new_version == 4)
   {
     const dt_iop_lensfun_params2_t *old = old_params;
     dt_iop_lensfun_params_t *new = new_params;
@@ -231,6 +249,29 @@ legacy_params (dt_iop_module_t *self, const void *const old_params, const int ol
     new->tca_b = old->tca_b;
     strncpy(new->camera, old->camera, sizeof(new->camera));
     strncpy(new->lens, old->lens, sizeof(new->lens));
+    new->use_defaults = 0;
+
+    return 0;
+  }
+  if (old_version == 3 && new_version == 4)
+  {
+    const dt_iop_lensfun_params3_t *old = old_params;
+    dt_iop_lensfun_params_t *new = new_params;
+
+    new->modify_flags = old->modify_flags;
+    new->inverse = old->inverse;
+    new->scale = old->scale;
+    new->crop = old->crop;
+    new->focal = old->focal;
+    new->aperture = old->aperture;
+    new->distance = old->distance;
+    new->target_geom = old->target_geom;
+    new->tca_override = old->tca_override;
+    new->tca_r = old->tca_r;
+    new->tca_b = old->tca_b;
+    strncpy(new->camera, old->camera, sizeof(new->camera));
+    strncpy(new->lens, old->lens, sizeof(new->lens));
+    new->use_defaults = 0;
 
     return 0;
   }
@@ -865,6 +906,17 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   // pull in new params to gegl
 #error "lensfun needs to be ported to GEGL!"
 #else
+  
+  if (p->use_defaults)
+  {
+    dt_iop_lensfun_params_t* defaults = (dt_iop_lensfun_params_t*)self->default_params;
+    p->focal        = defaults->focal;
+    p->aperture     = defaults->aperture;
+    p->distance     = defaults->distance;
+    strncpy(p->camera, defaults->camera, sizeof(defaults->camera));
+    strncpy(p->lens, defaults->lens, sizeof(defaults->lens));
+  }
+
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
@@ -999,6 +1051,7 @@ void reload_defaults(dt_iop_module_t *module)
   g_strlcpy(tmp.lens, new_lens, sizeof(tmp.lens));
   free(new_lens);
   g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.lens));
+  tmp.use_defaults = 1;
   tmp.crop     = img->exif_crop;
   tmp.aperture = img->exif_aperture;
   tmp.focal    = img->exif_focal_length;
@@ -1239,6 +1292,8 @@ static void camera_menu_select (
   GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  p->use_defaults = 0;
   camera_set (self, (lfCamera *)g_object_get_data(G_OBJECT(menuitem), "lfCamera"));
   if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1400,6 +1455,7 @@ static void camera_autosearch_clicked(
 static void lens_comboentry_focal_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  p->use_defaults = 0;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text)
     (void)sscanf (text, "%f", &p->focal);
@@ -1409,6 +1465,7 @@ static void lens_comboentry_focal_update (GtkWidget *widget, dt_iop_module_t *se
 static void lens_comboentry_aperture_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  p->use_defaults = 0;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text)
     (void)sscanf (text, "%f", &p->aperture);
@@ -1418,6 +1475,7 @@ static void lens_comboentry_aperture_update (GtkWidget *widget, dt_iop_module_t 
 static void lens_comboentry_distance_update (GtkWidget *widget, dt_iop_module_t *self)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  p->use_defaults = 0;
   const char *text = dt_bauhaus_combobox_get_text(widget);
   if(text)
     (void)sscanf (text, "%f", &p->distance);
@@ -1620,6 +1678,8 @@ static void lens_menu_select (
   GtkMenuItem *menuitem, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  p->use_defaults = 0;
   lens_set (self, (lfLens *)g_object_get_data(G_OBJECT(menuitem), "lfLens"));
   if(!darktable.gui->reset) dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2078,6 +2138,15 @@ void gui_update(struct dt_iop_module_t *self)
   // let gui elements reflect params
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  if (p->use_defaults)
+  {
+    dt_iop_lensfun_params_t* defaults = (dt_iop_lensfun_params_t*)self->default_params;
+    p->focal        = defaults->focal;
+    p->aperture     = defaults->aperture;
+    p->distance     = defaults->distance;
+    strncpy(p->camera, defaults->camera, sizeof(defaults->camera));
+    strncpy(p->lens, defaults->lens, sizeof(defaults->lens));
+  }
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   gtk_button_set_label(g->camera_model, p->camera);
