@@ -445,7 +445,7 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.view_manager->proxy.filmstrip.module = NULL;
 
   /* cleanup */
-  g_free(self->data);
+  free(self->data);
   self->data = NULL;
 }
 
