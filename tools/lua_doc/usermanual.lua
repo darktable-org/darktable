@@ -58,8 +58,10 @@ local function get_reported_type(node,simple)
 		local sig = doc.get_attribute(node,"signature")
 		for k,v in pairs(sig) do
 			if(doc.get_attribute(v,"optional")) then
+				--rtype = rtype.."["..emphasis(get_node_with_link(v,doc.get_short_name(v))).."]"
 				rtype = rtype.."["..emphasis(doc.get_short_name(v)).."]"
 			else
+				--rtype = rtype..emphasis(get_node_with_link(v,doc.get_short_name(v)))
 				rtype = rtype..emphasis(doc.get_short_name(v))
 			end
 			if next(sig,k) then
@@ -145,20 +147,6 @@ local function print_content(node)
 		result = result.."</variablelist>\n"
 	end
 
-	local history = doc.get_version_info(node)
-	if next(history) then
-		result = result..emphasis("Version History : ")
-		result = result..startlist()
-		for version, notes in pairs(history) do
-			result = result..listel(version)
-			result = result..startlist()
-			for _,text in pairs(notes) do
-				result = result..listel(text)
-			end
-			result = result..endlist()
-		end
-		result = result..endlist()
-	end
 	for k,v in doc.unskiped_children(node) do
 		result = result .. parse_doc_node(v,node,k).."\n";
 	end

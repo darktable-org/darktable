@@ -271,12 +271,6 @@ All functions and data are accessed through the darktable module.</para>
 
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>This parameter was added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </listitem></varlistentry>
 
 </variablelist>
@@ -300,13 +294,15 @@ All functions and data are accessed through the darktable module.</para>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" >
+<section status="final" id="darktable_films__hash_">
 <title>darktable.films.#</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_image_t_film">types.dt_lua_image_t.film</link>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film object that contains this image.</para>
+
 </section>
 
 <section status="final" id="darktable_films_new">
@@ -334,12 +330,6 @@ see <link linkend="types_dt_lua_image_t_film">types.dt_lua_image_t.film</link>
 
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>The function was added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" >
@@ -455,12 +445,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>Function added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 </section>
@@ -720,12 +704,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <synopsis>number</synopsis>
 <para>The major version number of the lua API.</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="darktable_configuration_api_version_minor">
@@ -737,12 +715,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <synopsis>number</synopsis>
 <para>The minor version number of the lua API.</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="darktable_configuration_api_version_patch">
@@ -754,12 +726,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <synopsis>number</synopsis>
 <para>The patch version number of the lua API.</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="darktable_configuration_api_version_suffix">
@@ -771,12 +737,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <synopsis>string</synopsis>
 <para>The version suffix of the lua API.</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="darktable_configuration_api_version_string">
@@ -788,12 +748,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <synopsis>string</synopsis>
 <para>The version description of the lua API. This is a string compatible with the semantic versionning convention</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 </section>
@@ -814,12 +768,6 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 * integer
 * float</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>added float parameters</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="darktable_preferences_register">
 <title>darktable.preferences.register</title>
 <indexterm>
@@ -1139,7 +1087,7 @@ see <link linkend="types_dt_lua_film_t_delete">types.dt_lua_film_t.delete</link>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_tag_t__hash_">types.dt_lua_tag_t.#</link>
+see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
 </section>
 
 <section status="final" id="darktable_database_duplicate">
@@ -1200,7 +1148,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 <primary>Lua API</primary>
 <secondary>move_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_film_t_move_image">types.dt_lua_film_t.move_image</link>
+see <link linkend="types_dt_lua_image_t_move">types.dt_lua_image_t.move</link>
 </section>
 
 <section status="final" >
@@ -1209,7 +1157,7 @@ see <link linkend="types_dt_lua_film_t_move_image">types.dt_lua_film_t.move_imag
 <primary>Lua API</primary>
 <secondary>copy_image</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_film_t_copy_image">types.dt_lua_film_t.copy_image</link>
+see <link linkend="types_dt_lua_image_t_copy">types.dt_lua_image_t.copy</link>
 </section>
 
 <section status="final" >
@@ -1458,12 +1406,6 @@ see <link linkend="darktable_modules_storage_email">darktable.modules.storage.em
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>View objects added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="darktable_modules_view_map">
 <title>darktable.modules.view.map</title>
 <indexterm>
@@ -1640,12 +1582,6 @@ end</programlisting>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>lib were added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="darktable_modules_lib_backgroundjobs">
 <title>darktable.modules.lib.backgroundjobs</title>
 <indexterm>
@@ -3020,15 +2956,13 @@ Note that this is the real image object; changing the value of a field will imme
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" id="types_dt_lua_image_t_film">
+<section status="final" >
 <title>types.dt_lua_image_t.film</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>film</secondary>
 </indexterm>
-<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film object that contains this image.</para>
-
+see <link linkend="darktable_films__hash_">darktable.films.#</link>
 </section>
 
 <section status="final" >
@@ -3082,7 +3016,7 @@ see <link linkend="darktable_styles_apply">darktable.styles.apply</link>
 <primary>Lua API</primary>
 <secondary>group_leader</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_tag_t__hash_">types.dt_lua_tag_t.#</link>
+see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
 </section>
 
 <section status="final" >
@@ -3094,22 +3028,66 @@ see <link linkend="types_dt_lua_tag_t__hash_">types.dt_lua_tag_t.#</link>
 see <link linkend="darktable_database_duplicate">darktable.database.duplicate</link>
 </section>
 
-<section status="final" >
+<section status="final" id="types_dt_lua_image_t_move">
 <title>types.dt_lua_image_t.move</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>move</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_film_t_move_image">types.dt_lua_film_t.move_image</link>
+<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> )</synopsis>
+<para>Physically moves an image (and all its duplicates) to another film.</para>
+<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
+<para>Note that the parameter order is not relevant.</para>
+
+<variablelist>
+<varlistentry><term id="types_dt_lua_image_t_move_image">image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to move</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types_dt_lua_image_t_move_film">film</term><listitem>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film to move to</para>
+
+</listitem></varlistentry>
+
+</variablelist>
 </section>
 
-<section status="final" >
+<section status="final" id="types_dt_lua_image_t_copy">
 <title>types.dt_lua_image_t.copy</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>copy</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_film_t_copy_image">types.dt_lua_film_t.copy_image</link>
+<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>Physically copies an image to another film.</para>
+<para>This will copy the image file and the related XMP to the directory of the new film</para>
+<para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
+<para>Note that the parameter order is not relevant.</para>
+
+<variablelist>
+<varlistentry><term id="types_dt_lua_image_t_copy_image">image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to copy</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term id="types_dt_lua_image_t_copy_film">film</term><listitem>
+<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
+<para>The film to copy to</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The new image</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_id">
@@ -3473,12 +3451,6 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 </listitem></varlistentry>
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_delete">
@@ -3498,12 +3470,6 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 </listitem></varlistentry>
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 <section status="final" id="types_dt_lua_image_t_group_with">
@@ -3585,12 +3551,6 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 <synopsis>boolean</synopsis>
 <para>True if the image has a copy in the local cache</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 </section>
@@ -4378,87 +4338,33 @@ see <link linkend="types_dt_lua_image_t_red">types.dt_lua_image_t.red</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<section status="final" >
+<section status="final" id="types_dt_lua_film_t__hash_">
 <title>types.dt_lua_film_t.#</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-see <link linkend="types_dt_lua_tag_t__hash_">types.dt_lua_tag_t.#</link>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The images that have that tag attached to them.</para>
+
 </section>
 
-<section status="final" id="types_dt_lua_film_t_move_image">
+<section status="final" >
 <title>types.dt_lua_film_t.move_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>move_image</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> )</synopsis>
-<para>Physically moves an image (and all its duplicates) to another film.</para>
-<para>This will move the image file, the related XMP and all XMP for the duplicates to the directory of the new film</para>
-<para>Note that the parameter order is not relevant.</para>
-
-<variablelist>
-<varlistentry><term id="types_dt_lua_film_t_move_image_image">image</term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to move</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term id="types_dt_lua_film_t_move_image_film">film</term><listitem>
-<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to move to</para>
-
-</listitem></varlistentry>
-
-</variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>function added</para></listitem>
-</itemizedlist>
-</itemizedlist>
+see <link linkend="types_dt_lua_image_t_move">types.dt_lua_image_t.move</link>
 </section>
 
-<section status="final" id="types_dt_lua_film_t_copy_image">
+<section status="final" >
 <title>types.dt_lua_film_t.copy_image</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>copy_image</secondary>
 </indexterm>
-<synopsis>function( <emphasis>image</emphasis>, <emphasis>film</emphasis> ) : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>Physically copies an image to another film.</para>
-<para>This will copy the image file and the related XMP to the directory of the new film</para>
-<para>If there is already a file with the same name as the image file, it wil create a duplicate from that file instead</para>
-<para>Note that the parameter order is not relevant.</para>
-
-<variablelist>
-<varlistentry><term id="types_dt_lua_film_t_copy_image_image">image</term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to copy</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term id="types_dt_lua_film_t_copy_image_film">film</term><listitem>
-<synopsis><link linkend="types_dt_lua_film_t">types.dt_lua_film_t</link></synopsis>
-<para>The film to copy to</para>
-
-</listitem></varlistentry>
-
-<varlistentry><term><emphasis>return</emphasis></term><listitem>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The new image</para>
-
-</listitem></varlistentry>
-
-
-</variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>function added</para></listitem>
-</itemizedlist>
-</itemizedlist>
+see <link linkend="types_dt_lua_image_t_copy">types.dt_lua_image_t.copy</link>
 </section>
 
 <section status="final" id="types_dt_lua_film_t_id">
@@ -4506,12 +4412,6 @@ see <link linkend="types_dt_lua_tag_t__hash_">types.dt_lua_tag_t.#</link>
 </listitem></varlistentry>
 
 </variablelist>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>function added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </section>
 
 </section>
@@ -4686,15 +4586,13 @@ see <link linkend="darktable_tags_attach">darktable.tags.attach</link>
 see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 </section>
 
-<section status="final" id="types_dt_lua_tag_t__hash_">
+<section status="final" >
 <title>types.dt_lua_tag_t.#</title>
 <indexterm>
 <primary>Lua API</primary>
 <secondary>#</secondary>
 </indexterm>
-<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The images that have that tag attached to them.</para>
-
+see <link linkend="types_dt_lua_film_t__hash_">types.dt_lua_film_t.#</link>
 </section>
 
 <section status="final" id="types_dt_lua_tag_t_name">
@@ -4729,12 +4627,6 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>Type added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="types_dt_lib_module_t_id">
 <title>types.dt_lib_module_t.id</title>
 <indexterm>
@@ -4866,12 +4758,6 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>Type added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="types_dt_view_t_id">
 <title>types.dt_view_t.id</title>
 <indexterm>
@@ -4915,12 +4801,6 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 </synopsis></entry>
 </row></tbody>
 </tgroup></informaltable>
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>type added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 <section status="final" id="types_dt_lua_backgroundjob_t_percent">
 <title>types.dt_lua_backgroundjob_t.percent</title>
 <indexterm>
@@ -4997,24 +4877,12 @@ see <link linkend="darktable_tags_detach">darktable.tags.detach</link>
 <synopsis><link linkend="types_dt_imageio_module_format_t">types.dt_imageio_module_format_t</link></synopsis>
 <para>The format used to export the image.</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </listitem></varlistentry>
 
 <varlistentry><term id="events_intermediate-export-image_callback_storage">storage</term><listitem>
 <synopsis><link linkend="types_dt_imageio_module_storage_t">types.dt_imageio_module_storage_t</link></synopsis>
 <para>The storage used to export the image (can be nil).</para>
 
-<emphasis>Version History : </emphasis><itemizedlist>
-<listitem><para>undocumented_version</para></listitem>
-<itemizedlist>
-<listitem><para>field added</para></listitem>
-</itemizedlist>
-</itemizedlist>
 </listitem></varlistentry>
 
 </variablelist>
