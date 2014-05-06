@@ -7,12 +7,26 @@ events = doc.toplevel.events
 attributes = doc.toplevel.attributes
 local tmp_node
 
-
+---------------------
+-- check for generator functions
+---------------------
 for _,v in pairs({"node_to_string","para","startlist","listel","endlist","code","emphasis"})   do
 	if _ENV[v]== nil then
 		error("function '"..v.."' not defined when requiring content")
 	end
 end
+---------------------
+-- check for database content
+---------------------
+if  #real_darktable.database == 0 then
+	error("The database needs to contain at least one image to generate documentation")
+end
+if  #real_darktable.styles == 0 then
+	error("The database needs to contain at least one style to generate documentation")
+end
+
+
+
 ----------------------
 --  EARLY TWEAKING  --
 ----------------------

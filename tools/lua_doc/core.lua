@@ -534,7 +534,7 @@ function M.add_parameter(node,param_name,param_type,text)
 	--M.set_real_name(subnode,param_name)
 	if M.get_attribute(node,"reported_type") ~= "function" and 
 		M.get_attribute(node,"reported_type") ~= "documentation node" then
-		error("not a function documentation : ".. M.get_attribute(node,"reported_type"))
+		error("not a function documentation : ".. M.get_attribute(node,"reported_type").." for "..node:get_name())
 	end
 	local signature = M.get_attribute(node,"signature")
 	if not signature then
