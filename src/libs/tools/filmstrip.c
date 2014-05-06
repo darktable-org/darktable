@@ -331,14 +331,15 @@ void connect_key_accels(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_filmstrip_t *d = (dt_lib_filmstrip_t *)g_malloc(sizeof(dt_lib_filmstrip_t));
+  dt_lib_filmstrip_t *d = (dt_lib_filmstrip_t *)calloc(1, sizeof(dt_lib_filmstrip_t));
   self->data = (void *)d;
-  memset(d,0,sizeof(dt_lib_filmstrip_t));
 
   d->last_selected_id = -1;
   d->history_copy_imgid = -1;
   d->activated_image = -1;
   d->mouse_over_id = -1;
+  d->pointerx = -1;
+  d->pointery = -1;
   dt_gui_hist_dialog_init(&d->dg);
 
   /* creating drawing area */
@@ -704,7 +705,8 @@ static gboolean _lib_filmstrip_expose_callback(GtkWidget *widget, GdkEventExpose
     darktable.gui->center_tooltip++;
 
   strip->image_over = DT_VIEW_DESERT;
-  dt_control_set_mouse_over_id(-1);
+  if(pointerx >= 0 && pointery >= 0) // don't reset the global mouse_over_id when the cursor isn't even over the filmstrip
+    dt_control_set_mouse_over_id(-1);
 
   /* create cairo surface */
   cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
