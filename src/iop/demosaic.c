@@ -530,9 +530,6 @@ void cam_xyz_coeff (float rgb_cam[3][4], float cam_xyz[4][3])
 
 void cielab_init(const dt_image_t *img, float cbrt[0x10000], float xyz_cam[3][3])
 {
-  int c, i, j, k;
-  float r;
-
   const double xyz_rgb[3][3] = {			/* XYZ from RGB */
     { 0.412453, 0.357580, 0.180423 },
     { 0.212671, 0.715160, 0.072169 },
@@ -552,28 +549,33 @@ void cielab_init(const dt_image_t *img, float cbrt[0x10000], float xyz_cam[3][3]
   dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
   // FIXME: little visual difference between linear RGB and camera matrix, so save a lot of code and just use linear RGB always?
   if (isnan(cam_xyz[0]))
-    for (i=0; i < 4; i++)
-      for (c=0; c < 3; c++)
+    for (int i=0; i < 4; i++)
+      for (int c=0; c < 3; c++)
         rgb_cam[c][i] = c == i;
   else
     cam_xyz_coeff (rgb_cam, (float (*)[3])cam_xyz);
 
   // taken from dcraw's cielab()
-  for (i=0; i < 0x10000; i++) {
-    r = i / 65535.0;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(cbrt) schedule(static)
+#endif
+  for (int i=0; i < 0x10000; i++) {
+    float r = i / 65535.0;
     cbrt[i] = r > 0.008856 ? pow(r,1/3.0) : 7.787*r + 16/116.0;
   }
-  for (i=0; i < 3; i++)
-    for (j=0; j < 3; j++)
-      for (xyz_cam[i][j] = k=0; k < 3; k++)
+  for (int i=0; i < 3; i++)
+    for (int j=0; j < 3; j++) {
+      xyz_cam[i][j] = 0;
+      for (int k=0; k < 3; k++)
         xyz_cam[i][j] += xyz_rgb[i][k] * rgb_cam[k][j] / d65_white[i];
+    }
 }
 
-#define LIM(x,min,max) MAX(min,MIN(x,max))
-#define CLIP(x) LIM(x,0,65535)
+#define CLIP(x) CLAMPS(x,0,65535)
+#define CLIPF(x) CLAMPS(x,0.0f,1.0f)
 
 void cielab(const float cbrt[0x10000], float xyz_cam[3][3],
-            unsigned short rgb[3], short lab[3])
+            float rgb[3], float lab[3])
 {
   int c;
   float xyz[3];
@@ -584,9 +586,9 @@ void cielab(const float cbrt[0x10000], float xyz_cam[3][3],
     xyz[1] += xyz_cam[1][c] * rgb[c];
     xyz[2] += xyz_cam[2][c] * rgb[c];
   }
-  xyz[0] = cbrt[CLIP((int) xyz[0])];
-  xyz[1] = cbrt[CLIP((int) xyz[1])];
-  xyz[2] = cbrt[CLIP((int) xyz[2])];
+  xyz[0] = cbrt[CLIP((int)(0xffff * xyz[0]))];
+  xyz[1] = cbrt[CLIP((int)(0xffff * xyz[1]))];
+  xyz[2] = cbrt[CLIP((int)(0xffff * xyz[2]))];
   lab[0] = 64 * (116 * xyz[1] - 16);
   lab[1] = 64 * 500 * (xyz[0] - xyz[1]);
   lab[2] = 64 * 200 * (xyz[1] - xyz[2]);
@@ -594,7 +596,7 @@ void cielab(const float cbrt[0x10000], float xyz_cam[3][3],
 
 
 #define SQR(x) ((x)*(x))
-#define TS 512		/* Tile Size */
+#define TS 256		/* Tile Size */
 
 /*
    Frank Markesteijn's algorithm for Fuji X-Trans sensors
@@ -606,211 +608,221 @@ xtrans_markesteijn_interpolate(
   const dt_image_t *img,
   const uint8_t xtrans[6][6], int passes)
 {
-  int c, d, f, g, h, i, v, ng, row, col, top, left, mrow, mcol;
-  int val, ndir, pass, hm[8], avg[4];
-  int color[3][8];
   static const short orth[12] = { 1,0,0,1,-1,0,0,-1,1,0,0,1 },
 	patt[2][16] = { { 0,1,0,-1,2,0,-1,0,1,1,1,-1,0,0,0,0 },
 			{ 0,1,0,-2,1,0,-2,0,1,1,-2,-2,1,-1,-1,1 } },
 	dir[4] = { 1,TS,TS+1,TS-1 };
 
-  short allhex[3][3][2][8], *hex;
-  unsigned short min, max, sgrow, sgcol;
-  unsigned short (*rgb)[TS][TS][3], (*rix)[3],(*pix)[4];
-  short (*lab)    [TS][3], (*lix)[3];
-  float (*drv)[TS][TS], diff[6], tr;
-  char (*homo)[TS][TS], *buffer;
+  short allhex[3][3][2][8];
+  // initialize as gcc thinks these could be uninitialized below
+  unsigned short sgrow=0, sgcol=0;
 
-  int width = roi_out->width;
-  int height = roi_out->height;
+  const int width = roi_out->width;
+  const int height = roi_out->height;
+  const int xoff = roi_in->x;
+  const int yoff = roi_in->y;
+  const int ndir = 4 << (passes > 1);
 
-  int xoff = roi_in->x;
-  int yoff = roi_in->y;
-
-  float cbrt[0x10000], xyz_cam[3][3];
-
-  // FIXME: for first pass at this, convert data into a buffer of unsigned shorts as dcraw does -- make this work with floats instead, and perhaps not so much copying
-  unsigned short (*image)[4];
-  image = (unsigned short (*)[4]) calloc(height, width*sizeof *image);
-  for (row=0; row < height; row++)
-    for (col=0; col < width; col++)
-      for (c=0; c<4; c++)
+  border_interpolate(out, in, roi_out, roi_in, xtrans, 6);
+  float (*image)[4] = (float (*)[4]) out;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(in, image, xtrans, roi_in, roi_out) schedule(static)
+#endif
+  for (int row=6; row < height-6; row++)
+    for (int col=6; col < width-6; col++)
+      for (int c=0; c<4; c++)
         if (fcol(row+yoff,col+xoff) == c)
-          image[row*width+col][c] = 0xffff * in[roi_in->width*(row + roi_out->y) + col + roi_out->x];
+          image[row*width+col][c] = in[roi_in->width*(row + roi_out->y) + col + roi_out->x];
         else
           image[row*width+col][c]=0;
 
-  border_interpolate(out, in, roi_out, roi_in, xtrans, 6);
-
-  // FIXME: hack: this copies interpolated data into the temporary buffer
-  for (unsigned row=0; row < height; row++)
-    for (unsigned col=0; col < width; col++) {
-      if (col==6 && row >= 6 && row < roi_out->height-6)
-	col = roi_out->width-6;
-      if(col < width)
-        for (c=0; c<3; c++)
-          image[row*width+col][c] = 0xffff * out[4*(row*width+col)+c];
-    }
-
+  float cbrt[0x10000], xyz_cam[3][3];
   cielab_init(img, cbrt, xyz_cam);
 
-  ndir = 4 << (passes > 1);
-  // FIXME: handle malloc error here and in image calloc above; and should dt_alloc_align()?
-  buffer = (char *) malloc (TS*TS*(ndir*11+6));
-  rgb  = (unsigned short(*)[TS][TS][3]) buffer;
-  lab  = (short (*)    [TS][3])(buffer + TS*TS*(ndir*6));
-  drv  = (float (*)[TS][TS])   (buffer + TS*TS*(ndir*6+6));
-  homo = (char  (*)[TS][TS])   (buffer + TS*TS*(ndir*10+6));
-
-  sgrow=sgcol=-1;               // gcc thinks these could be uninitialized below
-
   /* Map a green hexagon around each non-green pixel and vice versa:	*/
-  for (row=0; row < 3; row++)
-    for (col=0; col < 3; col++)
-      for (ng=d=0; d < 10; d+=2) {
-	g = fcol(row,col) == 1;
+  for (int row=0; row < 3; row++)
+    for (int col=0; col < 3; col++)
+      for (int ng=0, d=0; d < 10; d+=2) {
+	int g = fcol(row,col) == 1;
 	if (fcol(row+orth[d],col+orth[d+2]) == 1) ng=0; else ng++;
 	if (ng == 4) { sgrow = row; sgcol = col; }
 	if (ng == g+1)
-          for (c=0; c<8; c++) {
-            v = orth[d  ]*patt[g][c*2] + orth[d+1]*patt[g][c*2+1];
-            h = orth[d+2]*patt[g][c*2] + orth[d+3]*patt[g][c*2+1];
+          for (int c=0; c<8; c++) {
+            int v = orth[d  ]*patt[g][c*2] + orth[d+1]*patt[g][c*2+1];
+            int h = orth[d+2]*patt[g][c*2] + orth[d+3]*patt[g][c*2+1];
             allhex[row][col][0][c^(g*2 & d)] = h + v*width;
             allhex[row][col][1][c^(g*2 & d)] = h + v*TS;
           }
       }
 
   /* Set green1 and green3 to the minimum and maximum allowed values:	*/
-  for (row=2; row < height-2; row++)
-    for (min=~(max=0), col=2; col < width-2; col++) {
-      if (fcol(yoff+row,xoff+col) == 1 && (min=~(max=0))) continue;
-      pix = image + row*width + col;
-      hex = allhex[row%3][col%3][0];
-      if (!max)
-        for (c=0; c<6; c++) {
-          val = pix[hex[c]][1];
-          if (min > val) min = val;
-          if (max < val) max = val;
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(image, xtrans, allhex, sgrow) schedule(static)
+#endif
+  for (int row=2; row < height-2; row++) {
+    float min=FLT_MAX, max=0;
+    for (int col=2; col < width-2; col++) {
+      if (fcol(yoff+row,xoff+col) == 1) {
+        min=FLT_MAX;
+        max=0;
+        continue;
+      }
+      float (*pix)[4] = image + row*width + col;
+      short *hex = allhex[row%3][col%3][0];
+      if (max==0)
+        for (int c=0; c<6; c++) {
+          float val = pix[hex[c]][1];
+          min = fminf(min,val);
+          max = fmaxf(max,val);
         }
       pix[0][1] = min;
       pix[0][3] = max;
       switch ((row-sgrow) % 3) {
-	case 1: if (row < height-3) { row++; col--; } break;
-	case 2: if ((min=~(max=0)) && (col+=2) < width-3 && row > 2) row--;
+      case 1:
+        if (row < height-3) { row++; col--; }
+        break;
+      case 2:
+        min=FLT_MAX;
+        max=0;
+        if ((col+=2) < width-3 && row > 2) row--;
       }
     }
+  }
 
-  for (top=3; top < height-19; top += TS-16)
-    for (left=3; left < width-19; left += TS-16) {
-      mrow = MIN (top+TS, height-3);
-      mcol = MIN (left+TS, width-3);
-      for (row=top; row < mrow; row++)
-	for (col=left; col < mcol; col++)
-	  memcpy (rgb[0][row-top][col-left], image[row*width+col], 6);
-      for (c=0; c<3; c++) memcpy (rgb[c+1], rgb[0], sizeof *rgb);
+  const size_t buffer_size = TS*TS*(ndir*((size_t)sizeof(char)+7*(size_t)sizeof(float)));
+  char *all_buffers = (char *) dt_alloc_align(16, dt_get_num_threads()*buffer_size);
+  if (!all_buffers) {
+    printf("[demosaic] not able to allocate Markesteijn buffers\n");
+    return;
+  }
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(passes, sgrow, sgcol, xtrans, cbrt, xyz_cam, allhex, image, all_buffers) schedule(static)
+#endif
+  for (int top=3; top < height-19; top += TS-16) {
+    char *buffer = all_buffers + dt_get_thread_num() * buffer_size;
+    float (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
+    float (*lab)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
+    float (*drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*6*sizeof(float)));
+    char (*homo)[TS][TS]     = (char (*)[TS][TS])   (buffer + TS*TS*(ndir*7*sizeof(float)));
+
+    for (int left=3; left < width-19; left += TS-16) {
+      int mrow = MIN (top+TS, height-3);
+      int mcol = MIN (left+TS, width-3);
+      for (int row=top; row < mrow; row++)
+	for (int col=left; col < mcol; col++)
+	  memcpy (rgb[0][row-top][col-left], image[row*width+col], 3*sizeof(float));
+      for (int c=0; c<3; c++) memcpy (rgb[c+1], rgb[0], sizeof *rgb);
 
       /* Interpolate green horizontally, vertically, and along both diagonals: */
-      for (row=top; row < mrow; row++)
-	for (col=left; col < mcol; col++) {
-	  if ((f = fcol(row+yoff,col+xoff)) == 1) continue;
-          pix = image + row*width + col;
-	  hex = allhex[row%3][col%3][0];
-	  color[1][0] = 174 * (pix[  hex[1]][1] + pix[  hex[0]][1]) -
-			 46 * (pix[2*hex[1]][1] + pix[2*hex[0]][1]);
-	  color[1][1] = 223 *  pix[  hex[3]][1] + pix[  hex[2]][1] * 33 +
-			 92 * (pix[      0 ][f] - pix[ -hex[2]][f]);
-	  for (c=0; c<2; c++) color[1][2+c] =
-		164 * pix[hex[4+c]][1] + 92 * pix[-2*hex[4+c]][1] + 33 *
-		(2*pix[0][f] - pix[3*hex[4+c]][f] - pix[-3*hex[4+c]][f]);
-	  for (c=0; c<4; c++) rgb[c^!((row-sgrow) % 3)][row-top][col-left][1] =
-		LIM(color[1][c] >> 8,pix[0][1],pix[0][3]);
+      for (int row=top; row < mrow; row++)
+	for (int col=left; col < mcol; col++) {
+          float color[8];
+          int f = fcol(row+yoff,col+xoff);
+	  if (f == 1) continue;
+          float (*pix)[4] = image + row*width + col;
+	  short *hex = allhex[row%3][col%3][0];
+	  color[0] = 0.68 * (pix[  hex[1]][1] + pix[  hex[0]][1]) -
+                     0.18 * (pix[2*hex[1]][1] + pix[2*hex[0]][1]);
+	  color[1] = 0.87 *  pix[  hex[3]][1] + pix[  hex[2]][1] * 0.13 +
+                     0.36 * (pix[      0 ][f] - pix[ -hex[2]][f]);
+	  for (int c=0; c<2; c++) color[2+c] =
+                0.64 * pix[hex[4+c]][1] + 0.36 * pix[-2*hex[4+c]][1] + 0.13 *
+                (2*pix[0][f] - pix[3*hex[4+c]][f] - pix[-3*hex[4+c]][f]);
+	  for (int c=0; c<4; c++) rgb[c^!((row-sgrow) % 3)][row-top][col-left][1] =
+                CLAMPS(color[c],pix[0][1],pix[0][3]);
 	}
 
-      for (pass=0; pass < passes; pass++) {
+      for (int pass=0; pass < passes; pass++) {
 	if (pass == 1)
 	  memcpy (rgb+=4, buffer, 4*sizeof *rgb);
 
         /* Recalculate green from interpolated values of closer pixels:	*/
 	if (pass) {
-	  for (row=top+2; row < mrow-2; row++)
-	    for (col=left+2; col < mcol-2; col++) {
-	      if ((f = fcol(row+yoff,col+xoff)) == 1) continue;
-	      pix = image + row*width + col;
-	      hex = allhex[row%3][col%3][1];
-	      for (d=3; d < 6; d++) {
-		rix = &rgb[(d-2)^!((row-sgrow) % 3)][row-top][col-left];
-		val = rix[-2*hex[d]][1] + 2*rix[hex[d]][1]
-		    - rix[-2*hex[d]][f] - 2*rix[hex[d]][f] + 3*rix[0][f];
-		rix[0][1] = LIM(val/3,pix[0][1],pix[0][3]);
+	  for (int row=top+2; row < mrow-2; row++)
+	    for (int col=left+2; col < mcol-2; col++) {
+              int f = fcol(row+yoff,col+xoff);
+	      if (f == 1) continue;
+	      float (*pix)[4] = image + row*width + col;
+	      short *hex = allhex[row%3][col%3][1];
+	      for (int d=3; d < 6; d++) {
+		float (*rfx)[3] = &rgb[(d-2)^!((row-sgrow) % 3)][row-top][col-left];
+		float val = rfx[-2*hex[d]][1] + 2*rfx[hex[d]][1]
+                    - rfx[-2*hex[d]][f] - 2*rfx[hex[d]][f] + 3*rfx[0][f];
+		rfx[0][1] = CLAMPS(val/3,pix[0][1],pix[0][3]);
 	      }
 	    }
 	}
 
         /* Interpolate red and blue values for solitary green pixels:	*/
-	for (row=(top-sgrow+4)/3*3+sgrow; row < mrow-2; row+=3)
-	  for (col=(left-sgcol+4)/3*3+sgcol; col < mcol-2; col+=3) {
-	    rix = &rgb[0][row-top][col-left];
-	    h = fcol(row+yoff,col+xoff+1);
-	    memset (diff, 0, sizeof diff);
-	    for (i=1, d=0; d < 6; d++, i^=TS^1, h^=2) {
-	      for (c=0; c < 2; c++, h^=2) {
-		g = 2*rix[0][1] - rix[i<<c][1] - rix[-i<<c][1];
-		color[h][d] = g + rix[i<<c][h] + rix[-i<<c][h];
+	for (int row=(top-sgrow+4)/3*3+sgrow; row < mrow-2; row+=3)
+	  for (int col=(left-sgcol+4)/3*3+sgcol; col < mcol-2; col+=3) {
+	    float (*rfx)[3] = &rgb[0][row-top][col-left];
+	    int h = fcol(row+yoff,col+xoff+1);
+            float diff[6] = {0.0f};
+            float color[3][8];
+	    for (int i=1, d=0; d < 6; d++, i^=TS^1, h^=2) {
+	      for (int c=0; c < 2; c++, h^=2) {
+		float g = 2*rfx[0][1] - rfx[i<<c][1] - rfx[-i<<c][1];
+		color[h][d] = g + rfx[i<<c][h] + rfx[-i<<c][h];
 		if (d > 1)
-		  diff[d] += SQR (rix[i<<c][1] - rix[-i<<c][1]
-				- rix[i<<c][h] + rix[-i<<c][h]) + SQR(g);
+		  diff[d] += SQR (rfx[i<<c][1] - rfx[-i<<c][1]
+				- rfx[i<<c][h] + rfx[-i<<c][h]) + SQR(g);
 	      }
 	      if (d > 1 && (d & 1))
 		if (diff[d-1] < diff[d])
-                  for (c=0; c<2; c++) color[c*2][d] = color[c*2][d-1];
+                  for (int c=0; c<2; c++) color[c*2][d] = color[c*2][d-1];
 	      if (d < 2 || (d & 1)) {
-		for (c=0; c<2; c++) rix[0][c*2] = CLIP(color[c*2][d]/2);
-		rix += TS*TS;
+		for (int c=0; c<2; c++) rfx[0][c*2] = CLIPF(color[c*2][d]/2);
+		rfx += TS*TS;
 	      }
 	    }
 	  }
 
         /* Interpolate red for blue pixels and vice versa:		*/
-	for (row=top+1; row < mrow-1; row++)
-	  for (col=left+1; col < mcol-1; col++) {
-	    if ((f = 2-fcol(row+yoff,col+xoff)) == 1) continue;
-	    rix = &rgb[0][row-top][col-left];
-	    i = (row-sgrow) % 3 ? TS:1;
-	    for (d=0; d < 4; d++, rix += TS*TS)
-	      rix[0][f] = CLIP((rix[i][f] + rix[-i][f] +
-		  2*rix[0][1] - rix[i][1] - rix[-i][1])/2);
+	for (int row=top+1; row < mrow-1; row++)
+	  for (int col=left+1; col < mcol-1; col++) {
+            int f = 2-fcol(row+yoff,col+xoff);
+	    if (f == 1) continue;
+	    float (*rfx)[3] = &rgb[0][row-top][col-left];
+	    int i = (row-sgrow) % 3 ? TS:1;
+	    for (int d=0; d < 4; d++, rfx += TS*TS)
+	      rfx[0][f] = CLIPF((rfx[i][f] + rfx[-i][f] +
+		  2*rfx[0][1] - rfx[i][1] - rfx[-i][1])/2);
 	  }
 
         /* Fill in red and blue for 2x2 blocks of green:		*/
-	for (row=top+2; row < mrow-2; row++) if ((row-sgrow) % 3)
-	  for (col=left+2; col < mcol-2; col++) if ((col-sgcol) % 3) {
-	    rix = &rgb[0][row-top][col-left];
-	    hex = allhex[row%3][col%3][1];
-	    for (d=0; d < ndir; d+=2, rix += TS*TS)
+	for (int row=top+2; row < mrow-2; row++) if ((row-sgrow) % 3)
+	  for (int col=left+2; col < mcol-2; col++) if ((col-sgcol) % 3) {
+	    float (*rfx)[3] = &rgb[0][row-top][col-left];
+	    short *hex = allhex[row%3][col%3][1];
+	    for (int d=0; d < ndir; d+=2, rfx += TS*TS)
 	      if (hex[d] + hex[d+1]) {
-		g = 3*rix[0][1] - 2*rix[hex[d]][1] - rix[hex[d+1]][1];
-		for (c=0; c < 4; c+=2) rix[0][c] =
-			CLIP((g + 2*rix[hex[d]][c] + rix[hex[d+1]][c])/3);
+		float g = 3*rfx[0][1] - 2*rfx[hex[d]][1] - rfx[hex[d+1]][1];
+		for (int c=0; c < 4; c+=2) rfx[0][c] =
+			CLIPF((g + 2*rfx[hex[d]][c] + rfx[hex[d+1]][c])/3);
 	      } else {
-		g = 2*rix[0][1] - rix[hex[d]][1] - rix[hex[d+1]][1];
-		for (c=0; c < 4; c+=2) rix[0][c] =
-			CLIP((g + rix[hex[d]][c] + rix[hex[d+1]][c])/2);
+		float g = 2*rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d+1]][1];
+		for (int c=0; c < 4; c+=2) rfx[0][c] =
+			CLIPF((g + rfx[hex[d]][c] + rfx[hex[d+1]][c])/2);
 	      }
 	  }
       }
-      rgb = (unsigned short(*)[TS][TS][3]) buffer;
+      rgb = (float(*)[TS][TS][3]) buffer;
       mrow -= top;
       mcol -= left;
 
       /* Convert to CIELab and differentiate in all directions:	*/
-      for (d=0; d < ndir; d++) {
-	for (row=2; row < mrow-2; row++)
-	  for (col=2; col < mcol-2; col++)
+      for (int d=0; d < ndir; d++) {
+	for (int row=2; row < mrow-2; row++)
+	  for (int col=2; col < mcol-2; col++)
 	    cielab (cbrt, xyz_cam, rgb[d][row][col], lab[row][col]);
-	for (f=dir[d & 3],row=3; row < mrow-3; row++)
-	  for (col=3; col < mcol-3; col++) {
-	    lix = &lab[row][col];
-	    g = 2*lix[0][0] - lix[f][0] - lix[-f][0];
+        int f=dir[d & 3];
+	for (int row=3; row < mrow-3; row++)
+	  for (int col=3; col < mcol-3; col++) {
+            float (*lix)[3] = &lab[row][col];
+            // FIXME: make float when lix is a float
+	    int g = 2*lix[0][0] - lix[f][0] - lix[-f][0];
 	    drv[d][row][col] = SQR(g)
 	      + SQR((2*lix[0][1] - lix[f][1] - lix[-f][1] + g*500/232))
 	      + SQR((2*lix[0][2] - lix[f][2] - lix[-f][2] - g*500/580));
@@ -819,15 +831,16 @@ xtrans_markesteijn_interpolate(
 
       /* Build homogeneity maps from the derivatives:			*/
       memset(homo, 0, ndir*TS*TS);
-      for (row=4; row < mrow-4; row++)
-	for (col=4; col < mcol-4; col++) {
-	  for (tr=FLT_MAX, d=0; d < ndir; d++)
+      for (int row=4; row < mrow-4; row++)
+	for (int col=4; col < mcol-4; col++) {
+          float tr=FLT_MAX;
+	  for (int d=0; d < ndir; d++)
 	    if (tr > drv[d][row][col])
 		tr = drv[d][row][col];
 	  tr *= 8;
-	  for (d=0; d < ndir; d++)
-	    for (v=-1; v <= 1; v++)
-	      for (h=-1; h <= 1; h++)
+	  for (int d=0; d < ndir; d++)
+	    for (int v=-1; v <= 1; v++)
+	      for (int h=-1; h <= 1; h++)
 		if (drv[d][row+v][col+h] <= tr)
 		  homo[d][row][col]++;
 	}
@@ -835,34 +848,32 @@ xtrans_markesteijn_interpolate(
       /* Average the most homogenous pixels for the final result:	*/
       if (height-top < TS+4) mrow = height-top+2;
       if (width-left < TS+4) mcol = width-left+2;
-      for (row = MIN(top,8); row < mrow-8; row++)
-	for (col = MIN(left,8); col < mcol-8; col++) {
-	  for (d=0; d < ndir; d++)
-	    for (hm[d]=0, v=-2; v <= 2; v++)
-	      for (h=-2; h <= 2; h++)
+      for (int row = MIN(top,8); row < mrow-8; row++)
+	for (int col = MIN(left,8); col < mcol-8; col++) {
+          int hm[8] = { 0 };
+	  for (int d=0; d < ndir; d++) {
+	    for (int v=-2; v <= 2; v++)
+	      for (int h=-2; h <= 2; h++)
 		hm[d] += homo[d][row+v][col+h];
-	  for (d=0; d < ndir-4; d++)
+          }
+	  for (int d=0; d < ndir-4; d++)
 	    if (hm[d] < hm[d+4]) hm[d  ] = 0; else
 	    if (hm[d] > hm[d+4]) hm[d+4] = 0;
-	  for (max=hm[0],d=1; d < ndir; d++)
+          unsigned short max=hm[0];
+	  for (int d=1; d < ndir; d++)
 	    if (max < hm[d]) max = hm[d];
 	  max -= max >> 3;
-	  memset (avg, 0, sizeof avg);
-	  for (d=0; d < ndir; d++)
+          float avg[4] = {0.0f};
+	  for (int d=0; d < ndir; d++)
 	    if (hm[d] >= max) {
-	      for (c=0; c<3; c++) avg[c] += rgb[d][row][col][c];
-	      avg[3]++;
+	      for (int c=0; c<3; c++) avg[c] += rgb[d][row][col][c];
+	      avg[3]+=1;
 	    }
-	  for (c=0; c<3; c++) image[(row+top)*width+col+left][c] = avg[c]/avg[3];
+	  for (int c=0; c<3; c++) image[(row+top)*width+col+left][c] = avg[c]/avg[3];
 	}
     }
-  free(buffer);
-
-  for (row=0; row < height; row++)
-    for (col=0; col < width; col++)
-      for (c=0; c<4; c++)
-        out[4*(row*width+col)+c]=(float)image[row*width+col][c]/0xffff;
-  free(image);
+  }
+  free(all_buffers);
 }
 
 #undef TS
@@ -993,12 +1004,20 @@ void xtrans_vng_interpolate(
     +1,+0,+2,+1,1,0x10
   }, chood[] = { -1,-1, -1,0, -1,+1, 0,+1, +1,+1, +1,0, +1,-1, 0,-1 };
   int *ip, *code[6][6];
+  float (*brow[5])[4];
   const int width = roi_out->width, height = roi_out->height;
 
   xtrans_lin_interpolate(out, in, roi_out, roi_in, xtrans);
 
   ip = (int *) dt_alloc_align(16, (size_t)sizeof(*ip) * 6*6 * 320);
-  // FIXME: handle alloc error here?
+  brow[4] = (float (*)[4]) dt_alloc_align(16, (size_t)sizeof(**brow)*width*3);
+  if (!ip || !brow[4]) {
+    fprintf(stderr, "[demosaic] not able to allocate VNG buffers\n");
+    free(ip);
+    free(brow[4]);
+    return;
+  }
+
   for (int row=0; row < 6; row++)		/* Precalculate for VNG */
     for (int col=0; col < 6; col++) {
       code[row][col] = ip;
@@ -1031,9 +1050,7 @@ void xtrans_vng_interpolate(
 	  *ip++ = 0;
       }
     }
-  float (*brow[5])[4];
-  // FIXME: handle alloc error
-  brow[4] = (float (*)[4]) dt_alloc_align(16, (size_t)sizeof(**brow)*width*3);
+
   for (int row=0; row < 3; row++)
     brow[row] = brow[4] + row*width;
   for (int row=2; row < height-2; row++) {	/* Do VNG interpolation */
@@ -1082,7 +1099,7 @@ void xtrans_vng_interpolate(
 	float tot = pix[color];
 	if (c != color)
 	  tot += (sum[c] - sum[color]) / num;
-	brow[2][col][c] = LIM(tot,0.0f,1.0f);
+	brow[2][col][c] = CLIPF(tot);
       }
     }
     if (row > 3)				/* Write buffer to image */
