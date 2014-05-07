@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2014-05-04 00:23+0800\n"
+"PO-Revision-Date: 2014-05-08 00:05+0800\n"
 "Last-Translator: Cherrot Luo <translate@cherrot.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -987,9 +987,8 @@ msgid "uniformly"
 msgstr "均匀"
 
 #: ../src/develop/blend_gui.c:1285
-#, fuzzy
 msgid "drawn mask"
-msgstr "显示蒙板"
+msgstr "绘制蒙板"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
@@ -2611,7 +2610,7 @@ msgstr "尼康系列"
 
 #: ../src/iop/basecurve.c:102
 msgid "nikon like alternate"
-msgstr "尼康D系列"
+msgstr "尼康其他系列"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
@@ -3654,7 +3653,7 @@ msgstr "偏振片"
 
 #: ../src/iop/colorzones.c:501
 msgid "natural skin tones"
-msgstr "天然皮肤色调"
+msgstr "自然皮肤色调"
 
 #: ../src/iop/colorzones.c:529
 msgid "black & white film"
