@@ -122,7 +122,7 @@ typedef enum dt_dev_request_flags_t
 dt_dev_request_flags_t;
 
 /** color picker request */
-typedef enum det_dev_request_colorpick_flags_t
+typedef enum dt_dev_request_colorpick_flags_t
 {
   DT_REQUEST_COLORPICK_OFF    = 0,            // off
   DT_REQUEST_COLORPICK_MODULE = 1<<0,         // requested by module (should take precedence)
@@ -228,8 +228,8 @@ typedef struct dt_iop_module_t
   int32_t priority;
   /** module sets this if the enable checkbox should be hidden. */
   int32_t hide_enable_button;
-  /** set to 1 if you want an input color picked during next eval. gui mode only. */
-  int32_t request_color_pick;
+  /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color picked during next eval. gui mode only. */
+  dt_dev_request_colorpick_flags_t request_color_pick;
   /** (bitwise) set if you want an histogram generated during next eval */
   dt_dev_request_flags_t request_histogram;
   /** set to source for histogram */

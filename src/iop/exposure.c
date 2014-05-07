@@ -530,6 +530,7 @@ autoexpp_callback (GtkWidget* slider, gpointer user_data)
 static void
 deflicker_process (dt_iop_module_t *self)
 {
+  if(self->dt->gui->reset) return;
   if(!(self->dev->image_storage.flags & DT_IMAGE_RAW)) return;
 
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
@@ -550,7 +551,8 @@ deflicker_params_callback (GtkWidget* slider, gpointer user_data)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  p->deflicker = TRUE;
+  if(!p->deflicker) return;
+
   p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
   p->deflicker_level = dt_bauhaus_slider_get(g->deflicker_level);
 
