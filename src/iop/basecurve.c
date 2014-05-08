@@ -767,7 +767,8 @@ void gui_init(struct dt_iop_module_t *self)
   // gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
   // gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(c->area));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, 258);
+  int size = dt_conf_get_int("panel_width") * 0.95;
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), 0, size);
 
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));

@@ -2024,7 +2024,7 @@ gui_init (dt_lib_module_t *self)
 
   self->data = (void *)d;
   self->widget = gtk_vbox_new(FALSE, 5);
-  gtk_widget_set_size_request(self->widget, 100, -1);
+//   gtk_widget_set_size_request(self->widget, 100, -1);
   d->active_rule = 0;
   d->params = (dt_lib_collect_params_t*)malloc(sizeof(dt_lib_collect_params_t));
 
@@ -2062,7 +2062,7 @@ gui_init (dt_lib_module_t *self)
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(w, 13, 13);
+    gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   }
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -2071,7 +2071,7 @@ gui_init (dt_lib_module_t *self)
   GtkTreeView  *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(view), -1, 300);
+  gtk_widget_set_size_request(GTK_WIDGET(view), -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT (view), "row-activated", G_CALLBACK (row_activated), d);
 
@@ -2096,7 +2096,7 @@ gui_init (dt_lib_module_t *self)
   d->sw2 = GTK_SCROLLED_WINDOW (sw2);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(sw2), GTK_WIDGET(d->box));
-  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, 300);
+  gtk_widget_set_size_request(GTK_WIDGET(sw2), -1, DT_PIXEL_APPLY_DPI(300));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
 

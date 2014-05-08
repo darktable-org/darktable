@@ -1634,7 +1634,7 @@ _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_d
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
-  int bs = 12;
+  int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
   GtkWidget *expander = gtk_vbox_new(FALSE, 3);
   GtkWidget *header_evb = gtk_event_box_new();

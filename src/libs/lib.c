@@ -819,7 +819,7 @@ dt_lib_gui_get_expander (dt_lib_module_t *module)
     return NULL;
   }
 
-  int bs = 12;
+  int bs = DT_PIXEL_APPLY_DPI(12);
 
   GtkWidget *expander = gtk_vbox_new(FALSE, 3);
   GtkWidget *header_evb = gtk_event_box_new();

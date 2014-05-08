@@ -312,7 +312,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
                      TRUE, TRUE, 0);
 
   sample->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(sample->output_button, 40, -1);
+  gtk_widget_set_size_request(sample->output_button, DT_PIXEL_APPLY_DPI(40), -1);
   gtk_widget_set_events(sample->output_button,
                         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_tooltip_text(sample->output_button,
@@ -485,7 +485,7 @@ void gui_init(dt_lib_module_t *self)
 
   // The output button
   data->output_button = dtgtk_button_new(NULL, CPF_STYLE_BOX);
-  gtk_widget_set_size_request(data->output_button, 100, 100);
+  gtk_widget_set_size_request(data->output_button, DT_PIXEL_APPLY_DPI(100), DT_PIXEL_APPLY_DPI(100));
   gtk_widget_set_sensitive(data->output_button, FALSE);
   gtk_box_pack_start(GTK_BOX(output_row), data->output_button, FALSE, FALSE, 0);
 
@@ -499,7 +499,7 @@ void gui_init(dt_lib_module_t *self)
                             _("area"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector),
                            dt_conf_get_int("ui_last/colorpicker_size"));
-  gtk_widget_set_size_request(data->size_selector, 30, -1);
+  gtk_widget_set_size_request(data->size_selector, DT_PIXEL_APPLY_DPI(30), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->size_selector,
                      TRUE, TRUE, 0);
 
@@ -508,7 +508,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->picker_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker,
                         CPF_STYLE_BOX);
-  gtk_widget_set_size_request(data->picker_button, 50, -1);
+  gtk_widget_set_size_request(data->picker_button, DT_PIXEL_APPLY_DPI(50), -1);
   gtk_box_pack_start(GTK_BOX(picker_subrow), data->picker_button,
                      FALSE, FALSE, 0);
 
@@ -549,7 +549,7 @@ void gui_init(dt_lib_module_t *self)
 
   data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
-  gtk_widget_set_size_request(data->output_label, 80, -1);
+  gtk_widget_set_size_request(data->output_label, DT_PIXEL_APPLY_DPI(80), -1);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label,
                      FALSE, FALSE, 0);
 

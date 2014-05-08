@@ -70,8 +70,8 @@ int position()
   return 1002;
 }
 
-#define STAR_SIZE 12
-#define STAR_SPACING 6
+#define STAR_SIZE DT_PIXEL_APPLY_DPI(12)
+#define STAR_SPACING DT_PIXEL_APPLY_DPI(6)
 
 void gui_init(dt_lib_module_t *self)
 {

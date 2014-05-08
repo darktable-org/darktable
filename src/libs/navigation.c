@@ -227,7 +227,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_translate(cr, 0, height);
       cairo_set_source_rgba(cr, 1., 1., 1., 0.5);
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 11);
+      cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(11));
 
       char zoomline[5];
       snprintf(zoomline, sizeof(zoomline), "%.0f%%", cur_scale*100);
@@ -257,7 +257,7 @@ static gboolean _lib_navigation_expose_callback(GtkWidget *widget, GdkEventExpos
       cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
       cairo_text_extents_t ext;
       cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size (cr, 11);
+      cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(11));
       cairo_text_extents(cr,"100%",&ext); //dummy text, just to get the height
       h = d->zoom_h = ext.height;
       w = h*1.5;

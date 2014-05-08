@@ -565,7 +565,7 @@ gui_init_tab(
   // color button
   GtkDarktableButton* color;
   *ppcolor = color = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color,CPF_IGNORE_FG_STATE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER));
-  gtk_widget_set_size_request(GTK_WIDGET(color),32,32);
+  gtk_widget_set_size_request(GTK_WIDGET(color), DT_PIXEL_APPLY_DPI(32), DT_PIXEL_APPLY_DPI(32));
 
   // hue slider
   GtkWidget* hue;

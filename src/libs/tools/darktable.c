@@ -25,12 +25,19 @@
 #include "libs/lib.h"
 #include "gui/gtk.h"
 
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
+
 DT_MODULE(1)
 
 
 typedef struct dt_lib_darktable_t
 {
   cairo_surface_t *image;
+  guint8 *image_buffer;
   int image_width, image_height;
 }
 dt_lib_darktable_t;
@@ -68,6 +75,14 @@ int position()
   return 1001;
 }
 
+static int is_it_xmas()
+{
+  time_t now;
+  time(&now);
+  struct tm lt;
+  localtime_r(&now, &lt);
+  return (lt.tm_mon == 11 && lt.tm_mday >= 24);
+}
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -88,25 +103,111 @@ void gui_init(dt_lib_module_t *self)
                     G_CALLBACK (_lib_darktable_button_press_callback), self);
 
   /* create a cairo surface of dt icon */
-  time_t now;
-  time(&now);
-  struct tm lt;
-  localtime_r(&now, &lt);
-  const char *logo = (lt.tm_mon == 11 && lt.tm_mday >= 24)?"%s/pixmaps/idbutton-2.png":"%s/pixmaps/idbutton.png"; // don't you dare to tell anyone
+  const char *logo = is_it_xmas()?"%s/pixmaps/idbutton-2.%s":"%s/pixmaps/idbutton.%s"; // don't you dare to tell anyone
   dt_loc_get_datadir(datadir, sizeof(datadir));
-  snprintf(filename, sizeof(filename), logo, datadir);
-  d->image = cairo_image_surface_create_from_png(filename);
-  d->image_width = cairo_image_surface_get_width(d->image);
-  d->image_height = cairo_image_surface_get_height(d->image);
+  snprintf(filename, sizeof(filename), logo, datadir, "svg");
+
+  // first we try the SVG
+  {
+    GError *error = NULL;
+    RsvgHandle *svg = rsvg_handle_new_from_file(filename,&error);
+    if(!svg || error)
+    {
+      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n%s\n", filename, error->message);
+      g_error_free(error);
+      error = NULL;
+      goto png_fallback;
+    }
+
+    cairo_surface_t *surface;
+    cairo_t *cr;
+
+    RsvgDimensionData dimension;
+    rsvg_handle_get_dimensions(svg,&dimension);
+
+    int width = DT_PIXEL_APPLY_DPI(dimension.width),
+        height = DT_PIXEL_APPLY_DPI(dimension.height);
+    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+
+    d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
+    surface = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+    {
+      free(d->image_buffer);
+      d->image_buffer = NULL;
+      g_object_unref(svg);
+      fprintf(stderr, "warning: can't load darktable logo from SVG file `%s', falling back to PNG version\n", filename);
+      goto png_fallback;
+    }
+
+    cr = cairo_create(surface);
+    cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
+    rsvg_handle_render_cairo(svg,cr);
+    cairo_surface_flush(surface);
+
+    d->image = surface;
+    g_object_unref(svg);
+  }
+
+  goto done;
+
+png_fallback:
+  // let's fall back to the PNG
+  {
+    cairo_surface_t *surface;
+    cairo_t *cr;
+
+    snprintf(filename, sizeof(filename), logo, datadir, "png");
+    surface = cairo_image_surface_create_from_png(filename);
+    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+    {
+      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      d->image = NULL;
+      goto done;
+    }
+    int png_width = cairo_image_surface_get_width(surface),
+        png_height = cairo_image_surface_get_height(surface);
+
+    // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
+    int width = DT_PIXEL_APPLY_DPI(png_width),
+        height = DT_PIXEL_APPLY_DPI(png_height);
+    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
+
+    d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
+    d->image = cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
+    if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
+    {
+      free(d->image_buffer);
+      d->image_buffer = NULL;
+      cairo_surface_destroy(surface);
+      fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
+      d->image = NULL;
+      goto done;
+    }
+
+    cr = cairo_create(d->image);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_fill(cr);
+    cairo_surface_flush(d->image);
+
+    cairo_surface_destroy(surface);
+  }
+
+done:
+  d->image_width = d->image?cairo_image_surface_get_width(d->image):0;
+  d->image_height = d->image?cairo_image_surface_get_height(d->image):0;
 
   /* set size of drawing area */
-  gtk_widget_set_size_request(self->widget, d->image_width + 180, d->image_height + 8);
+  gtk_widget_set_size_request(self->widget, d->image_width + DT_PIXEL_APPLY_DPI(180), d->image_height + DT_PIXEL_APPLY_DPI(8));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
+  free(d->image_buffer);
   g_free(self->data);
   self->data = NULL;
 }
@@ -129,28 +230,30 @@ static gboolean _lib_darktable_expose_callback(GtkWidget *widget, GdkEventExpose
   cairo_paint(cr);
 
   /* paint icon image */
-  cairo_set_source_surface(cr, d->image, 0, 7);
-  cairo_rectangle(cr,0,0,d->image_width + 8, d->image_height + 8);
-  cairo_fill(cr);
-
+  if(d->image)
+  {
+    cairo_set_source_surface(cr, d->image, 0, DT_PIXEL_APPLY_DPI(7));
+    cairo_rectangle(cr,0,0,d->image_width + DT_PIXEL_APPLY_DPI(8), d->image_height + DT_PIXEL_APPLY_DPI(8));
+    cairo_fill(cr);
+  }
 
   /* create a pango layout and print fancy  name/version string */
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout (widget,NULL);
   pango_font_description_set_weight (style->font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size (style->font_desc, 25 * PANGO_SCALE);
+  pango_font_description_set_absolute_size (style->font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
 
   pango_layout_set_text (layout,PACKAGE_NAME,-1);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to (cr, d->image_width + 2.0, 5.0);
+  cairo_move_to (cr, d->image_width + DT_PIXEL_APPLY_DPI(2.0), DT_PIXEL_APPLY_DPI(5.0));
   pango_cairo_show_layout (cr, layout);
 
   /* print version */
-  pango_font_description_set_absolute_size (style->font_desc, 10 * PANGO_SCALE);
+  pango_font_description_set_absolute_size (style->font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description (layout,style->font_desc);
   pango_layout_set_text (layout,PACKAGE_VERSION,-1);
-  cairo_move_to (cr, d->image_width + 4.0, 30.0);
+  cairo_move_to (cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.3);
   pango_cairo_show_layout (cr, layout);
 
@@ -176,7 +279,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), "copyright (c) the authors 2009-2014");
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "http://www.darktable.org/");
-  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), "darktable");
+  gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), is_it_xmas()?"darktable-2":"darktable");
   const char *authors[] =
   {
     _("* developers *"),

@@ -1056,13 +1056,15 @@ gui_init(struct dt_iop_module_t *self)
 
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE));
 
+  int panel_width = dt_conf_get_int("panel_width") * 0.95;
+
   GtkHBox *hbox1 = GTK_HBOX(gtk_hbox_new(FALSE, 0));
   GtkWidget *source = gtk_label_new(_("source clusters:"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(source), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox1), TRUE, TRUE, 0);
 
   g->source_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->source_area, 300, 100);
+  gtk_widget_set_size_request(g->source_area, panel_width, panel_width / 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->source_area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->source_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 
@@ -1072,7 +1074,7 @@ gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox2), TRUE, TRUE, 0);
 
   g->target_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(g->target_area, 300, 100);
+  gtk_widget_set_size_request(g->target_area, panel_width, panel_width / 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (g->target_area), "expose-event", G_CALLBACK (cluster_preview_expose), self);
 

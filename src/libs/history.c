@@ -111,7 +111,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* add toolbar button for creating style */
   GtkWidget *hbutton2 = dtgtk_button_new (dtgtk_cairo_paint_styles,0);
-  //gtk_widget_set_size_request (hbutton,24,-1);
+  //gtk_widget_set_size_request (hbutton, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect (G_OBJECT (hbutton2), "clicked", G_CALLBACK (_lib_history_create_style_button_clicked_callback),NULL);
   g_object_set (G_OBJECT (hbutton2), "tooltip-text", _("create a style from the current history stack"), (char *)NULL);
   d->create_button = hbutton2;

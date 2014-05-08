@@ -543,7 +543,7 @@ void gui_update (dt_iop_module_t *self)
 
 void gui_init (dt_iop_module_t *self)
 {
-  const int bs = 14;
+  const int bs = DT_PIXEL_APPLY_DPI(14);
   self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 

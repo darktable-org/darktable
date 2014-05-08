@@ -18,6 +18,7 @@
 #include <string.h>
 #include "button.h"
 #include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 
 static void _button_class_init (GtkDarktableButtonClass *klass);
 static void _button_init (GtkDarktableButton *button);
@@ -44,8 +45,8 @@ _button_size_request(GtkWidget *widget,GtkRequisition *requisition)
   g_return_if_fail (widget != NULL);
   g_return_if_fail (DTGTK_IS_BUTTON(widget));
   g_return_if_fail (requisition != NULL);
-  requisition->width = 17;
-  requisition->height = 17;
+  requisition->width = DT_PIXEL_APPLY_DPI(17);
+  requisition->height = DT_PIXEL_APPLY_DPI(17);
 }
 
 static gboolean
@@ -61,7 +62,7 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   int flags = DTGTK_BUTTON (widget)->icon_flags;
 
   /* set inner border */
-  int border = (flags&CPF_DO_NOT_USE_BORDER)?2:4;
+  int border = DT_PIXEL_APPLY_DPI((flags&CPF_DO_NOT_USE_BORDER)?2:4);
 
   /* prelight */
   if (state == GTK_STATE_PRELIGHT)
@@ -77,7 +78,8 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
   if (text)
   {
     layout = gtk_widget_create_pango_layout (widget,NULL);
-    pango_layout_set_font_description (layout,style->font_desc);
+    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
@@ -132,16 +134,19 @@ _button_expose (GtkWidget *widget, GdkEventExpose *event)
     else
       DTGTK_BUTTON (widget)->icon (cr,x+border,y+border,width-(border*2),height-(border*2),flags);
   }
-  cairo_destroy (cr);
 
   /* draw label */
   if (text)
   {
-    int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
+    int lx=x+DT_PIXEL_APPLY_DPI(2), ly=y+((height/2.0)-(ph/2.0));
     if (DTGTK_BUTTON (widget)->icon) lx += width;
-    GdkRectangle t= {x,y,x+width,y+height};
-    gtk_paint_layout(style,gtk_widget_get_window(widget), GTK_STATE_NORMAL,TRUE,&t,widget,"label",lx,ly,layout);
+    cairo_move_to(cr, lx, ly);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
+    pango_cairo_show_layout(cr, layout);
+    g_object_unref(layout);
   }
+
+  cairo_destroy (cr);
 
   return FALSE;
 }

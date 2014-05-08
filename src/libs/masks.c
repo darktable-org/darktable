@@ -1430,8 +1430,8 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
 
 void gui_init(dt_lib_module_t *self)
 {
-  const int bs = 14;
-  const int bs2 = 13;
+  const int bs = DT_PIXEL_APPLY_DPI(14);
+  const int bs2 = DT_PIXEL_APPLY_DPI(13);
 
   /* initialize ui widgets */
   dt_lib_masks_t *d = (dt_lib_masks_t *)g_malloc(sizeof(dt_lib_masks_t));
@@ -1565,7 +1565,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection,GTK_SELECTION_MULTIPLE);
   gtk_tree_selection_set_select_function(selection,_tree_restrict_select,d,NULL);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->treeview), FALSE);
-  gtk_widget_set_size_request(d->treeview, -1, 300);
+  gtk_widget_set_size_request(d->treeview, -1, DT_PIXEL_APPLY_DPI(300));
   gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   //gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
   g_object_set (d->treeview, "has-tooltip", TRUE, NULL);

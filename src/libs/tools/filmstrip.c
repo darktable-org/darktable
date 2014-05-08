@@ -387,11 +387,11 @@ void gui_init(dt_lib_module_t *self)
 
   /* set size of filmstrip */
   int32_t height = dt_conf_get_int("plugins/lighttable/filmstrip/height");
-  gtk_widget_set_size_request(d->filmstrip, -1, CLAMP(height,64,400));
+  gtk_widget_set_size_request(d->filmstrip, -1, CLAMP(height,DT_PIXEL_APPLY_DPI(64), DT_PIXEL_APPLY_DPI(400)));
 
   /* create the resize handle */
   GtkWidget *size_handle = gtk_event_box_new();
-  gtk_widget_set_size_request(size_handle,-1,10);
+  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(10));
   gtk_widget_add_events(size_handle,
                         GDK_POINTER_MOTION_MASK |
                         GDK_POINTER_MOTION_HINT_MASK |
@@ -499,7 +499,7 @@ static gboolean _lib_filmstrip_size_handle_motion_notify_callback(GtkWidget *w, 
     gint x,y,sx,sy;
     gdk_window_get_pointer (gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)), &x, &y, NULL);
     gtk_widget_get_size_request (d->filmstrip,&sx,&sy);
-    sy = CLAMP(d->size_handle_height+(d->size_handle_y - y), 64,400);
+    sy = CLAMP(d->size_handle_height+(d->size_handle_y - y), DT_PIXEL_APPLY_DPI(64), DT_PIXEL_APPLY_DPI(400));
 
     dt_conf_set_int("plugins/lighttable/filmstrip/height", sy);
 

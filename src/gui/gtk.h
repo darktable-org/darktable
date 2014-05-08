@@ -25,6 +25,9 @@
 
 #define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
 
+/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96 DPI */
+#define DT_PIXEL_APPLY_DPI(value) (value * darktable.gui->dpi_factor)
+
 typedef enum dt_gui_view_switch_t
 {
   DT_GUI_VIEW_SWITCH_TO_TETHERING = 1,
@@ -72,7 +75,7 @@ typedef struct dt_gui_gtk_t
 
   gboolean show_overlays;
 
-  double dpi;
+  double dpi, dpi_factor;
 
   // store which gtkrc we loaded:
   char gtkrc[PATH_MAX];

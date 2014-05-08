@@ -25,6 +25,7 @@
 #include "gradientslider.h"
 #include "common/darktable.h"
 #include "develop/develop.h"
+#include "gui/gtk.h"
 
 #define CLAMP_RANGE(x,y,z)      (CLAMP(x,y,z))
 
@@ -340,8 +341,8 @@ static void  _gradient_slider_size_request(GtkWidget *widget,GtkRequisition *req
   g_return_if_fail(widget != NULL);
   g_return_if_fail(DTGTK_IS_GRADIENT_SLIDER(widget));
   g_return_if_fail(requisition != NULL);
-  requisition->width = 100;
-  requisition->height = 17;
+  requisition->width = DT_PIXEL_APPLY_DPI(100);
+  requisition->height = DT_PIXEL_APPLY_DPI(17);
 }
 
 
@@ -378,8 +379,8 @@ static void _gradient_slider_realize(GtkWidget *widget)
   attributes.window_type = GDK_WINDOW_CHILD;
   attributes.x = allocation.x;
   attributes.y = allocation.y;
-  attributes.width = 100;
-  attributes.height = 17;
+  attributes.width = DT_PIXEL_APPLY_DPI(100);
+  attributes.height = DT_PIXEL_APPLY_DPI(17);
 
   attributes.wclass = GDK_INPUT_OUTPUT;
   attributes.event_mask = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK |  GDK_LEAVE_NOTIFY_MASK | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK;
@@ -552,17 +553,17 @@ static gboolean _gradient_slider_expose(GtkWidget *widget, GdkEventExpose *event
     if(mk & 0x04) /* upper arrow */
     {
       if (mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, vx-sz/2, sz < 10 ? 1 : -2,sz,sz,CPF_DIRECTION_DOWN);
+        dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5), sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2), DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN);
       else
-        dtgtk_cairo_paint_triangle(cr, vx-sz/2, sz < 10 ? 1 : -2,sz,sz,CPF_DIRECTION_DOWN);
+        dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5), sz < 10 ? DT_PIXEL_APPLY_DPI(1) : DT_PIXEL_APPLY_DPI(-2), DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_DOWN);
     }
 
     if(mk & 0x02) /* lower arrow */
     {
       if (mk & 0x01) /* filled */
-        dtgtk_cairo_paint_solid_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-11,sz,sz,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_solid_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5), sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height - DT_PIXEL_APPLY_DPI(11), DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP);
       else
-        dtgtk_cairo_paint_triangle(cr, vx-sz/2,sz < 10 ? height-6 : height-11,sz,sz,CPF_DIRECTION_UP);
+        dtgtk_cairo_paint_triangle(cr, (vx - DT_PIXEL_APPLY_DPI(sz) * 0.5), sz < 10 ? height - DT_PIXEL_APPLY_DPI(6) : height - DT_PIXEL_APPLY_DPI(11), DT_PIXEL_APPLY_DPI(sz), DT_PIXEL_APPLY_DPI(sz), CPF_DIRECTION_UP);
     }
   }
 

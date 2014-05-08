@@ -143,7 +143,7 @@ void gui_init(dt_lib_module_t *self)
   /*
    * layout button row
    */
-  int iconsize = 28;
+  int iconsize = DT_PIXEL_APPLY_DPI(28);
   GtkWidget *br = self->widget;
   for (int k=0; k<DT_MODULEGROUP_SIZE; k++)
   {

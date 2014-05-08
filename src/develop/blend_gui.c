@@ -1068,7 +1068,7 @@ void dt_iop_gui_init_blendif(GtkVBox *blendw, dt_iop_module_t *module)
 
     gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(bd->channel_tabs), FALSE, FALSE, 0);
 
-    bd->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT);
+    bd->colorpicker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
     g_object_set(G_OBJECT(bd->colorpicker), "tooltip-text", _("pick GUI color from image"), (char *)NULL);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT);
@@ -1222,7 +1222,7 @@ void dt_iop_gui_init_masks(GtkVBox *blendw, dt_iop_module_t *module)
   /* create and add masks support if module supports it */
   if (bd->masks_support)
   {
-    const int bs = 14;
+    const int bs = DT_PIXEL_APPLY_DPI(14);
 
     bd->masks_combo_ids = NULL;
     bd->masks_shown = DT_MASKS_EDIT_OFF;
@@ -1480,7 +1480,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   /* create and add blend mode if module supports it */
   if (module->flags()&IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    const int bs = 14;
+    const int bs = DT_PIXEL_APPLY_DPI(14);
 
     module->blend_data = g_malloc(sizeof(dt_iop_gui_blend_data_t));
     memset(module->blend_data, 0, sizeof(dt_iop_gui_blend_data_t));

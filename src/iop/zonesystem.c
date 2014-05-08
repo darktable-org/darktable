@@ -460,8 +460,7 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new (FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   /* create the zone preview widget */
-  const int _p_w = dt_conf_get_int("panel_width");
-  const int panel_width = MAX(-1, MIN(500, _p_w));
+  const int panel_width = dt_conf_get_int("panel_width");
 
   g->preview = gtk_drawing_area_new();
   g_signal_connect (G_OBJECT (g->preview), "expose-event", G_CALLBACK (dt_iop_zonesystem_preview_expose), self);
@@ -478,7 +477,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->zones), "button-release-event", G_CALLBACK (dt_iop_zonesystem_bar_button_release), self);
   g_signal_connect (G_OBJECT (g->zones), "scroll-event", G_CALLBACK (dt_iop_zonesystem_bar_scrolled), self);
   gtk_widget_add_events (GTK_WIDGET (g->zones), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_size_request(g->zones, -1, 40);
+  gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));
 
   GtkWidget *aspect = gtk_aspect_frame_new(NULL, .5f, .5f, 1.0f, FALSE);
   gtk_frame_set_shadow_type(GTK_FRAME(aspect), GTK_SHADOW_NONE);

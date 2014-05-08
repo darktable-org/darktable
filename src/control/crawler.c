@@ -370,7 +370,7 @@ void dt_control_crawler_show_image_list(GList *images)
                                  GTK_DIALOG_DESTROY_WITH_PARENT|GTK_DIALOG_MODAL,
                                  GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
                                  NULL);
-  gtk_widget_set_size_request(dialog, -1, 400);
+  gtk_widget_set_size_request(dialog, -1, DT_PIXEL_APPLY_DPI(400));
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 

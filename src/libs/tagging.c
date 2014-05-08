@@ -30,7 +30,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
-#define FLOATING_ENTRY_WIDTH 150
+#define FLOATING_ENTRY_WIDTH DT_PIXEL_APPLY_DPI(150)
 
 DT_MODULE(1)
 
@@ -392,7 +392,7 @@ gui_init (dt_lib_module_t *self)
   d->imgsel = -1;
 
   self->widget = gtk_vbox_new(TRUE, 5);
-  gtk_widget_set_size_request(self->widget,100,-1);
+//   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;
   GtkWidget *button;
@@ -460,7 +460,7 @@ gui_init (dt_lib_module_t *self)
 
   // related tree view
   w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w,-1,100);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->related = GTK_TREE_VIEW(gtk_tree_view_new());

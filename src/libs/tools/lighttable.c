@@ -108,7 +108,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create horizontal zoom slider */
   d->zoom = gtk_hscale_new_with_range(1, 21, 1);
-  gtk_widget_set_size_request (GTK_WIDGET(d->zoom), 140, -1);
+  gtk_widget_set_size_request (GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->zoom, TRUE, TRUE, 0);
 

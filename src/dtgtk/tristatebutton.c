@@ -19,6 +19,8 @@
 #include <math.h>
 #include "tristatebutton.h"
 #include "button.h"
+#include "gui/gtk.h"
+#include "bauhaus/bauhaus.h"
 
 static guint _tristatebutton_signals[TRISTATEBUTTON_LAST_SIGNAL] = { 0 };
 
@@ -71,23 +73,24 @@ static void  _tristatebutton_size_request(GtkWidget *widget,GtkRequisition *requ
   g_return_if_fail(requisition != NULL);
 
   /* create pango text settings if label exists */
-  GtkStyle *style = gtk_widget_get_style(widget);
   PangoLayout *layout = NULL;
   int pw=0,ph=0;
   const gchar *text=gtk_button_get_label (GTK_BUTTON (widget));
   if (text)
   {
     layout = gtk_widget_create_pango_layout (widget,NULL);
-    pango_layout_set_font_description (layout,style->font_desc);
+    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
+    g_object_unref(layout);
 
-    requisition->width = pw+4;
-    requisition->height = ph+4;
+    requisition->width = pw + DT_PIXEL_APPLY_DPI(4);
+    requisition->height = ph + DT_PIXEL_APPLY_DPI(4);
   }
   else
   {
-    requisition->width = requisition->height = 24;
+    requisition->width = requisition->height = DT_PIXEL_APPLY_DPI(24);
   }
 }
 
@@ -139,10 +142,10 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   int flags = DTGTK_TRISTATEBUTTON (widget)->icon_flags;
 
   /* set inner border */
-  int border = (flags&CPF_DO_NOT_USE_BORDER)?2:6;
+  int border = DT_PIXEL_APPLY_DPI((flags&CPF_DO_NOT_USE_BORDER)?2:6);
 
   /* update active state paint flag */
-  gboolean active = DTGTK_TRISTATEBUTTON(widget)->state>0?TRUE:FALSE;
+  gboolean active = DTGTK_TRISTATEBUTTON(widget)->state > 0;
   if (active)
     flags |= CPF_ACTIVE;
   else
@@ -199,7 +202,8 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   if (text)
   {
     layout = pango_cairo_create_layout (cr);
-    pango_layout_set_font_description (layout,style->font_desc);
+    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
+    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     pango_layout_set_text (layout,text,-1);
     pango_layout_get_pixel_size (layout,&pw,&ph);
   }
@@ -244,9 +248,10 @@ static gboolean _tristatebutton_expose(GtkWidget *widget, GdkEventExpose *event)
   /* draw label */
   if (text)
   {
-    int lx=x+2, ly=y+((height/2.0)-(ph/2.0));
+    int lx=x+DT_PIXEL_APPLY_DPI(2), ly=y+((height/2.0)-(ph/2.0));
     cairo_translate(cr, lx, ly);
     pango_cairo_show_layout (cr,layout);
+    g_object_unref(layout);
   }
 
   cairo_destroy (cr);

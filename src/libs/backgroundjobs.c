@@ -239,7 +239,7 @@ static void lib_backgroundjobs_set_cancellable(dt_lib_module_t *self, const guin
     GtkWidget *w=j->widget;
     GtkBox *hbox = GTK_BOX (g_list_nth_data (gtk_container_get_children (GTK_CONTAINER ( gtk_bin_get_child (GTK_BIN (w) ) ) ), 0));
     GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel,CPF_STYLE_FLAT);
-    gtk_widget_set_size_request(button,17,17);
+    gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
     g_signal_connect (G_OBJECT (button), "clicked",callback, data);
     gtk_box_pack_start (hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
     gtk_widget_show_all(button);

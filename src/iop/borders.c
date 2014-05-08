@@ -1085,12 +1085,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *box = gtk_hbox_new(FALSE, 0);
   g->colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   GtkWidget *label = dtgtk_reset_label_new (_("border color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->colorpick), "clicked", G_CALLBACK (colorpick_callback), self);
   g->border_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_object_set(G_OBJECT(g->border_picker), "tooltip-text", _("pick border color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->border_picker), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->border_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->border_picker), "toggled", G_CALLBACK(request_pick_toggled_border), self);
 
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
@@ -1100,12 +1100,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   box = gtk_hbox_new(FALSE, 0);
   g->frame_colorpick = DTGTK_BUTTON(dtgtk_button_new(dtgtk_cairo_paint_color, CPF_IGNORE_FG_STATE | CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->frame_colorpick), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->frame_colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   label = dtgtk_reset_label_new (_("frame line color"), self, &p->color, 3*sizeof(float));
   g_signal_connect (G_OBJECT (g->frame_colorpick), "clicked", G_CALLBACK (frame_colorpick_callback), self);
   g->frame_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
   g_object_set(G_OBJECT(g->frame_picker), "tooltip-text", _("pick frame line color from image"), (char *)NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(g->frame_picker), 24, 24);
+  gtk_widget_set_size_request(GTK_WIDGET(g->frame_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->frame_picker), "toggled", G_CALLBACK(request_pick_toggled_frame), self);
 
   gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);

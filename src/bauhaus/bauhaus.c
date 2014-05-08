@@ -682,7 +682,7 @@ dt_bauhaus_init()
   // we need.
   dt_gui_key_accel_block_on_focus_connect(darktable.bauhaus->popup_area);
 
-  gtk_widget_set_size_request(darktable.bauhaus->popup_area, 300, 300);
+  gtk_widget_set_size_request(darktable.bauhaus->popup_area, DT_PIXEL_APPLY_DPI(300), DT_PIXEL_APPLY_DPI(300));
   gtk_window_set_resizable(GTK_WINDOW(darktable.bauhaus->popup_window), FALSE);
   gtk_window_set_default_size(GTK_WINDOW(darktable.bauhaus->popup_window), 260, 260);
   // gtk_window_set_modal(GTK_WINDOW(c->popup_window), TRUE);
@@ -773,7 +773,7 @@ dt_bauhaus_widget_init(dt_bauhaus_widget_t* w, dt_iop_module_t *self)
   w->quad_paint  = 0;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
-  gtk_widget_set_size_request(GTK_WIDGET(w), 260, get_line_height());
+  gtk_widget_set_size_request(GTK_WIDGET(w), DT_PIXEL_APPLY_DPI(260), get_line_height());
 
   gtk_widget_add_events(GTK_WIDGET(w),
                         GDK_POINTER_MOTION_MASK |

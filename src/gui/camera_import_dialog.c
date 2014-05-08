@@ -184,14 +184,14 @@ _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg
 
   GtkWidget *button=dtgtk_button_new(dtgtk_cairo_paint_store,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(button,"tooltip-text",_("store value as default"),(char *)NULL);
-  gtk_widget_set_size_request(button,13,13);
+  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_gcw_store_callback), gcw);
 
   button=dtgtk_button_new(dtgtk_cairo_paint_reset,CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER);
   g_object_set(button,"tooltip-text",_("reset value to default"),(char *)NULL);
-  gtk_widget_set_size_request(button,13,13);
+  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox),button,FALSE,FALSE,0);
   g_signal_connect (G_OBJECT (button), "clicked",
                     G_CALLBACK (_gcw_reset_callback), gcw);
@@ -296,7 +296,7 @@ void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   // end
   gtk_box_pack_start(GTK_BOX(content),data->notebook,TRUE,TRUE,0);
-  //gtk_widget_set_size_request(content,400,400);
+  //gtk_widget_set_size_request(content, DT_PIXEL_APPLY_DPI(400), DT_PIXEL_APPLY_DPI(400));
 }
 
 int _camera_storage_image_filename(const dt_camera_t *camera,const char *filename,CameraFile *preview,CameraFile *exif,void *user_data)

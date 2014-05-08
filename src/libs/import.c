@@ -425,7 +425,7 @@ static GtkWidget* _lib_import_get_extra_widget(dt_lib_import_metadata_t *data, g
   gtk_box_pack_start(GTK_BOX (extra), alignment, FALSE, FALSE, 0);
 
   creator = gtk_entry_new();
-  gtk_widget_set_size_request(creator, 300, -1);
+  gtk_widget_set_size_request(creator, DT_PIXEL_APPLY_DPI(300), -1);
   gchar *str = dt_conf_get_string("ui_last/import_last_creator");
   gtk_entry_set_text(GTK_ENTRY(creator), str);
   g_free(str);

@@ -409,7 +409,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect (G_OBJECT (g->gslider1), "value-changed",
                     G_CALLBACK (center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON (dtgtk_togglebutton_new (dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT));
-  gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1),22,22);
+  gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));
 
   g_signal_connect (G_OBJECT (g->tbutton1), "toggled",
                     G_CALLBACK (picker_callback), self);

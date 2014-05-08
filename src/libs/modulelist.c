@@ -31,9 +31,9 @@
 
 DT_MODULE(1)
 
-#define DT_MODULE_LIST_SPACING 2
+#define DT_MODULE_LIST_SPACING DT_PIXEL_APPLY_DPI(2)
 
-#define ICON_SIZE 20
+#define ICON_SIZE DT_PIXEL_APPLY_DPI(20)
 typedef struct dt_lib_modulelist_t
 {
   GtkTreeView *tree;
@@ -79,10 +79,10 @@ void gui_init(dt_lib_module_t *self)
   memset(d,0,sizeof(dt_lib_modulelist_t));
   self->data = (void *)d;
   self->widget = gtk_scrolled_window_new(NULL, NULL); //GTK_ADJUSTMENT(gtk_adjustment_new(200, 100, 200, 10, 100, 100))
-  gtk_widget_set_size_request(self->widget, -1, 208);
+  gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(208));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(self->widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
   d->tree = GTK_TREE_VIEW(gtk_tree_view_new());
-  gtk_widget_set_size_request(GTK_WIDGET(d->tree), 50, -1);
+  gtk_widget_set_size_request(GTK_WIDGET(d->tree), DT_PIXEL_APPLY_DPI(50), -1);
   gtk_container_add(GTK_CONTAINER(self->widget), GTK_WIDGET(d->tree));
 
   /* connect to signal for darktable.develop initialization */
@@ -223,12 +223,14 @@ static void _lib_modulelist_populate_callback(gpointer instance, gpointer user_d
     {
       char filename[PATH_MAX], datadir[PATH_MAX];
       dt_loc_get_datadir(datadir, sizeof(datadir));
-      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
+      snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
+      if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
+        snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
       if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR))
         snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
 
 
-      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename,NULL);
+      GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(filename, ICON_SIZE, ICON_SIZE, NULL);
       gtk_list_store_append (store, &iter);
       gtk_list_store_set (store, &iter,
                           COL_IMAGE, pixbuf,
