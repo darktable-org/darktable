@@ -20,13 +20,11 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
-#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/interpolation.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/tiling.h"
-#include "external/adobe_coeff.c"
 #include <memory.h>
 #include <stdlib.h>
 #include <math.h>
@@ -466,135 +464,9 @@ void border_interpolate (
     }
 }
 
+// xtrans_interpolate adapted from dcraw 9.20
 
-// from here through xtrans_interpolate much is adapted from dcraw 9.20
-
-void pseudoinverse (double (*in)[3], double (*out)[3], int size)
-{
-  double work[3][6], num;
-  int i, j, k;
-
-  for (i=0; i < 3; i++) {
-    for (j=0; j < 6; j++)
-      work[i][j] = j == i+3;
-    for (j=0; j < 3; j++)
-      for (k=0; k < size; k++)
-	work[i][j] += in[k][i] * in[k][j];
-  }
-  for (i=0; i < 3; i++) {
-    num = work[i][i];
-    for (j=0; j < 6; j++)
-      work[i][j] /= num;
-    for (k=0; k < 3; k++) {
-      if (k==i) continue;
-      num = work[k][i];
-      for (j=0; j < 6; j++)
-	work[k][j] -= work[i][j] * num;
-    }
-  }
-  for (i=0; i < size; i++)
-    for (j=0; j < 3; j++)
-      for (out[i][j]=k=0; k < 3; k++)
-	out[i][j] += work[j][k+3] * in[i][k];
-}
-
-// from dcraw: calculate rgb_cam from cam_xyz
-// FIXME: is there a colorspaces equivalent?
-void cam_xyz_coeff (float rgb_cam[3][4], float cam_xyz[4][3])
-{
-  double cam_rgb[4][3], inverse[4][3], num;
-  //float pre_mul[4];
-  int i, j, k;
-
-  const double xyz_rgb[3][3] = {			/* XYZ from RGB */
-    { 0.412453, 0.357580, 0.180423 },
-    { 0.212671, 0.715160, 0.072169 },
-    { 0.019334, 0.119193, 0.950227 } };
-
-  for (i=0; i < 3; i++)		/* Multiply out XYZ colorspace */
-    for (j=0; j < 3; j++)
-      for (cam_rgb[i][j] = k=0; k < 3; k++)
-	cam_rgb[i][j] += cam_xyz[i][k] * xyz_rgb[k][j];
-
-  for (i=0; i < 3; i++) {		/* Normalize cam_rgb so that */
-    for (num=j=0; j < 3; j++)		/* cam_rgb * (1,1,1) is (1,1,1,1) */
-      num += cam_rgb[i][j];
-    for (j=0; j < 3; j++)
-      cam_rgb[i][j] /= num;
-  }
-  pseudoinverse (cam_rgb, inverse, 3);
-  for (i=0; i < 3; i++)
-    for (j=0; j < 3; j++)
-      rgb_cam[i][j] = inverse[j][i];
-}
-
-void cielab_init(const dt_image_t *img, float cbrt[0x10000], float xyz_cam[3][3])
-{
-  const double xyz_rgb[3][3] = {			/* XYZ from RGB */
-    { 0.412453, 0.357580, 0.180423 },
-    { 0.212671, 0.715160, 0.072169 },
-    { 0.019334, 0.119193, 0.950227 } };
-  const float d65_white[3] = { 0.950456, 1, 1.088754 };
-
-  // FIXME: this is a very verbose way to get the camera matrix for conversion to Lab: replace this with colorspaces library code, dt_colorspaces_create_xyzmatrix_profile or dt_colorspaces_create_cmatrix_profile instead? or dt_colorspaces_create_linear_rgb_profile
-
-  // find the color conversion matrix
-
-  // from colorin module:
-  char makermodel[1024];
-  dt_colorspaces_get_makermodel(makermodel, 1024, img->exif_maker, img->exif_model);
-  float cam_xyz[12];
-  float rgb_cam[3][4];
-  cam_xyz[0] = NAN;
-  dt_dcraw_adobe_coeff(makermodel, "", (float (*)[12])cam_xyz);
-  // FIXME: little visual difference between linear RGB and camera matrix, so save a lot of code and just use linear RGB always?
-  if (isnan(cam_xyz[0]))
-    for (int i=0; i < 4; i++)
-      for (int c=0; c < 3; c++)
-        rgb_cam[c][i] = c == i;
-  else
-    cam_xyz_coeff (rgb_cam, (float (*)[3])cam_xyz);
-
-  // taken from dcraw's cielab()
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(cbrt) schedule(static)
-#endif
-  for (int i=0; i < 0x10000; i++) {
-    float r = i / 65535.0;
-    cbrt[i] = r > 0.008856 ? pow(r,1/3.0) : 7.787*r + 16/116.0;
-  }
-  for (int i=0; i < 3; i++)
-    for (int j=0; j < 3; j++) {
-      xyz_cam[i][j] = 0;
-      for (int k=0; k < 3; k++)
-        xyz_cam[i][j] += xyz_rgb[i][k] * rgb_cam[k][j] / d65_white[i];
-    }
-}
-
-#define CLIP(x) CLAMPS(x,0,65535)
 #define CLIPF(x) CLAMPS(x,0.0f,1.0f)
-
-void cielab(const float cbrt[0x10000], float xyz_cam[3][3],
-            float rgb[3], float lab[3])
-{
-  int c;
-  float xyz[3];
-
-  xyz[0] = xyz[1] = xyz[2] = 0.5;
-  for (c=0; c<3; c++) {
-    xyz[0] += xyz_cam[0][c] * rgb[c];
-    xyz[1] += xyz_cam[1][c] * rgb[c];
-    xyz[2] += xyz_cam[2][c] * rgb[c];
-  }
-  xyz[0] = cbrt[CLIP((int)(0xffff * xyz[0]))];
-  xyz[1] = cbrt[CLIP((int)(0xffff * xyz[1]))];
-  xyz[2] = cbrt[CLIP((int)(0xffff * xyz[2]))];
-  lab[0] = 64 * (116 * xyz[1] - 16);
-  lab[1] = 64 * 500 * (xyz[0] - xyz[1]);
-  lab[2] = 64 * 200 * (xyz[1] - xyz[2]);
-}
-
-
 #define SQR(x) ((x)*(x))
 #define TS 256		/* Tile Size */
 
@@ -635,9 +507,6 @@ xtrans_markesteijn_interpolate(
           image[row*width+col][c] = in[roi_in->width*(row + roi_out->y) + col + roi_out->x];
         else
           image[row*width+col][c]=0;
-
-  float cbrt[0x10000], xyz_cam[3][3];
-  cielab_init(img, cbrt, xyz_cam);
 
   /* Map a green hexagon around each non-green pixel and vice versa:	*/
   for (int row=0; row < 3; row++)
@@ -697,12 +566,12 @@ xtrans_markesteijn_interpolate(
   }
 
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(passes, sgrow, sgcol, xtrans, cbrt, xyz_cam, allhex, image, all_buffers) schedule(static)
+  #pragma omp parallel for default(none) shared(passes, sgrow, sgcol, xtrans, allhex, image, all_buffers) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16) {
     char *buffer = all_buffers + dt_get_thread_num() * buffer_size;
     float (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
-    float (*lab)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
+    float (*yuv)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
     float (*drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*6*sizeof(float)));
     char (*homo)[TS][TS]     = (char (*)[TS][TS])   (buffer + TS*TS*(ndir*7*sizeof(float)));
 
@@ -812,20 +681,33 @@ xtrans_markesteijn_interpolate(
       mrow -= top;
       mcol -= left;
 
-      /* Convert to CIELab and differentiate in all directions:	*/
+      /* Convert to perceptual colorspace and differentiate in all directions:	*/
+      // Original dcraw algorithm uses CIELab as perceptual space
+      // (presumably coming from original AHD) and converts taking
+      // camera matrix into account. Now use YPbPr which requires much
+      // less code and is nearly indistinguishable. It assumes the
+      // camera RGB is roughly linear.
       for (int d=0; d < ndir; d++) {
 	for (int row=2; row < mrow-2; row++)
-	  for (int col=2; col < mcol-2; col++)
-	    cielab (cbrt, xyz_cam, rgb[d][row][col], lab[row][col]);
+	  for (int col=2; col < mcol-2; col++) {
+	    float *rx = rgb[d][row][col];
+            // use ITU-R BT.2020 YPbPr, which is great, but could use
+            // a better/simpler choice? note that imageop.h provides
+            // dt_iop_RGB_to_YCbCr which uses Rec. 601 conversion,
+            // which appears less good with specular highlights
+            float y = 0.2627 * rx[0] + 0.6780 * rx[1] + 0.0593 * rx[2];
+            yuv[row][col][0] = y;
+            yuv[row][col][1] = (rx[2]-y)*0.56433;
+            yuv[row][col][2] = (rx[0]-y)*0.67815;
+          }
         int f=dir[d & 3];
 	for (int row=3; row < mrow-3; row++)
 	  for (int col=3; col < mcol-3; col++) {
-            float (*lix)[3] = &lab[row][col];
-            // FIXME: make float when lix is a float
-	    int g = 2*lix[0][0] - lix[f][0] - lix[-f][0];
+            float (*yfx)[3] = &yuv[row][col];
+	    float g = 2*yfx[0][0] - yfx[f][0] - yfx[-f][0];
 	    drv[d][row][col] = SQR(g)
-	      + SQR((2*lix[0][1] - lix[f][1] - lix[-f][1] + g*500/232))
-	      + SQR((2*lix[0][2] - lix[f][2] - lix[-f][2] - g*500/580));
+	      + SQR(2*yfx[0][1] - yfx[f][1] - yfx[-f][1])
+	      + SQR(2*yfx[0][2] - yfx[f][2] - yfx[-f][2]);
 	  }
       }
 
