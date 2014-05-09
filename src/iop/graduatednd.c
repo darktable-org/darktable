@@ -432,16 +432,16 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   float xa = g->xa*wd, xb = g->xb*wd, ya = g->ya*ht, yb = g->yb*ht;
   //the lines
   cairo_set_line_cap(cr,CAIRO_LINE_CAP_ROUND);
-  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, 5.0/zoom_scale);
-  else                           cairo_set_line_width(cr, 3.0/zoom_scale);
+  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(5.0)/zoom_scale);
+  else                           cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3.0)/zoom_scale);
   cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
   cairo_stroke(cr);
 
-  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, 2.0/zoom_scale);
-  else                           cairo_set_line_width(cr, 1.0/zoom_scale);
+  if(g->selected == 3 || g->dragging == 3) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0)/zoom_scale);
+  else                           cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   cairo_set_source_rgba(cr, .8, .8, .8, .8);
   cairo_move_to(cr,xa,ya);
   cairo_line_to(cr,xb,yb);
@@ -461,7 +461,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_line_to(cr,x1,y1);
   cairo_line_to(cr,x2,y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   if(g->selected == 1 || g->dragging == 1) cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
   else                           cairo_set_source_rgba(cr, .8, .8, .8, .5);
   cairo_fill_preserve(cr);
@@ -479,7 +479,7 @@ gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_
   cairo_line_to(cr,x1,y1);
   cairo_line_to(cr,x2,y2);
   cairo_close_path(cr);
-  cairo_set_line_width(cr, 1.0/zoom_scale);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0)/zoom_scale);
   if(g->selected == 2 || g->dragging == 2) cairo_set_source_rgba(cr, .8, .8, .8, 1.0);
   else                           cairo_set_source_rgba(cr, .8, .8, .8, .5);
   cairo_fill_preserve(cr);
@@ -529,7 +529,7 @@ mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, i
   else
   {
     g->selected = 0;
-    const float ext = 0.02f / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
     //are we near extermity ?
     if (pzy>g->ya-ext && pzy<g->ya+ext && pzx>g->xa-ext && pzx<g->xa+ext)
     {

@@ -925,7 +925,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
   height -= 2*inset;
 
 
-  const float sep = 2.0;
+  const float sep = DT_PIXEL_APPLY_DPI(2.0);
   const float qwd = (width-(p->n-1)*sep)/(float)p->n;
   for(int cl=0; cl<p->n; cl++)
   {
@@ -941,7 +941,7 @@ cluster_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_
         Lab.L = 53.390011;
         cmsDoTransform(g->xform, &Lab, rgb, 1);
         cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-.5, height/3.0-.5);
+        cairo_rectangle(cr, qwd*(i+1)/3.0, height*(j+1)/3.0, qwd/3.0-DT_PIXEL_APPLY_DPI(.5), height/3.0-DT_PIXEL_APPLY_DPI(.5));
         cairo_fill(cr);
       }
     cairo_translate (cr, qwd + sep, 0);

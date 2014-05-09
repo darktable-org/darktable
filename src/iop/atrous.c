@@ -32,7 +32,7 @@
 // SSE4 actually not used yet.
 // #include <smmintrin.h>
 
-#define INSET 5
+#define INSET DT_PIXEL_APPLY_DPI(5)
 #define INFL .3f
 
 
@@ -1019,7 +1019,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   width -= 2*inset;
   height -= 2*inset;
 
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -1044,14 +1044,14 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 8, 0, 0, width, height);
 
   cairo_save(cr);
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_translate(cr, 0, height);
 
   // draw frequency histogram in bg.
@@ -1061,7 +1061,6 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_save(cr);
     for(int k=1; k<c->num_samples; k+=2)
     {
-      cairo_set_line_width(cr, 1.f);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.3);
       cairo_move_to(cr, width*c->sample[k-1], 0.0f);
       cairo_line_to(cr, width*c->sample[k-1], -height);
@@ -1082,7 +1081,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   if(c->band_max > 0)
   {
     cairo_save(cr);
-    cairo_scale(cr, width/(BANDS-1.0), -(height-5)/c->band_max);
+    cairo_scale(cr, width/(BANDS-1.0), -(height-DT_PIXEL_APPLY_DPI(5))/c->band_max);
     cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
     cairo_move_to(cr, 0, 0);
     for(int k=0; k<BANDS; k++) cairo_line_to(cr, k, c->band_hist[k]);
@@ -1095,7 +1094,7 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 
   // cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   for(int i=0; i<=atrous_s; i++)
   {
     // draw curves, selected last.
@@ -1148,10 +1147,10 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     cairo_save(cr);
     if(ch != ch2) cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
     else          cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-    cairo_set_line_width(cr, 1.);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
     for(int k=0; k<BANDS; k++)
     {
-      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], 3.0, 0.0, 2.0*M_PI);
+      cairo_arc(cr, width*p.x[ch2][k], - height*p.y[ch2][k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0*M_PI);
       if(c->x_move == k) cairo_fill(cr);
       else               cairo_stroke(cr);
     }
@@ -1181,12 +1180,12 @@ area_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
   // draw x positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
-  const float arrw = 7.0f;
+  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for(int k=1; k<BANDS-1; k++)
   {
-    cairo_move_to(cr, width*p.x[ch][k], inset-1);
+    cairo_move_to(cr, width*p.x[ch][k], inset-DT_PIXEL_APPLY_DPI(1));
     cairo_rel_line_to(cr, -arrw*.5f, 0);
     cairo_rel_line_to(cr, arrw*.5f, -arrw);
     cairo_rel_line_to(cr, arrw*.5f, arrw);

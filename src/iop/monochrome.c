@@ -36,7 +36,7 @@
 
 DT_MODULE_INTROSPECTION(2, dt_iop_monochrome_params_t)
 
-#define DT_COLORCORRECTION_INSET 5
+#define DT_COLORCORRECTION_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_COLORCORRECTION_MAX 40.
 #define PANEL_WIDTH 256.0f
 
@@ -409,10 +409,11 @@ dt_iop_monochrome_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user
       Lab.L *= f*f; // exaggerate filter a little
       cmsDoTransform(g->xform, &Lab, rgb, 1);
       cairo_set_source_rgb (cr, rgb[0], rgb[1], rgb[2]);
-      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-1, height/(float)cells-1);
+      cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-DT_PIXEL_APPLY_DPI(1), height/(float)cells-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
   cairo_set_source_rgb(cr, .7, .7, .7);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
   const float x = p->a * width/PANEL_WIDTH + width * .5f, y = p->b * height/PANEL_WIDTH + height* .5f;
   cairo_arc(cr, x, y, width*.22f*p->size, 0, 2.0*M_PI);
   cairo_stroke(cr);

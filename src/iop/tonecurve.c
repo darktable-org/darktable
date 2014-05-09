@@ -33,7 +33,7 @@
 #include "common/opencl.h"
 #include "libs/colorpicker.h"
 
-#define DT_GUI_CURVE_EDITOR_INSET 1
+#define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 #define DT_GUI_CURVE_INFL .3f
 
 #define DT_IOP_TONECURVE_RES 64
@@ -904,7 +904,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     cairo_fill(cr);
   }
 #else
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -932,7 +932,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   dt_draw_grid(cr, 4, 0, 0, width, height);
 
@@ -940,18 +940,18 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   if (autoscale_ab && ch != ch_L) goto finally;
 
   // draw nodes positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_translate(cr, 0, height);
 
   for(int k=0; k<nodes; k++)
   {
-    cairo_arc(cr, tonecurve[k].x*width, -tonecurve[k].y*height, 3, 0, 2.*M_PI);
+    cairo_arc(cr, tonecurve[k].x*width, -tonecurve[k].y*height, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
   // draw histogram in background
   // only if module is enabled
@@ -973,7 +973,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
     if(hist && hist_max > 0)
     {
       cairo_save(cr);
-      cairo_scale(cr, width/63.0, -(height-5)/(float)hist_max);
+      cairo_scale(cr, width/63.0, -(height-DT_PIXEL_APPLY_DPI(5))/(float)hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
       dt_draw_histogram_8(cr, hist, ch, dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM?DT_DEV_HISTOGRAM_LOGARITHMIC:dev->histogram_type); // TODO: make draw handle waveform histograms
       cairo_restore(cr);
@@ -1022,7 +1022,7 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_select_font_face (cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size (cr, 0.06*height);
+        cairo_set_font_size (cr, DT_PIXEL_APPLY_DPI(0.06)*height);
         cairo_move_to (cr, 0.02f*width, -0.94*height);
         cairo_show_text(cr, text);
         cairo_stroke(cr);
@@ -1033,12 +1033,12 @@ static gboolean dt_iop_tonecurve_expose(GtkWidget *widget, GdkEventExpose *event
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
-    cairo_arc(cr, tonecurve[c->selected].x*width, -tonecurve[c->selected].y*height, 4, 0, 2.*M_PI);
+    cairo_arc(cr, tonecurve[c->selected].x*width, -tonecurve[c->selected].y*height, DT_PIXEL_APPLY_DPI(4), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw curve
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, -height*c->draw_ys[0]);

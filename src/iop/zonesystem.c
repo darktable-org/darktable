@@ -509,7 +509,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-#define DT_ZONESYSTEM_INSET 5
+#define DT_ZONESYSTEM_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_ZONESYSTEM_BAR_SPLIT_WIDTH 0.0
 #define DT_ZONESYSTEM_REFERENCE_SPLIT 0.30
 static gboolean
@@ -571,8 +571,8 @@ dt_iop_zonesystem_bar_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_m
 
   /* render control points handles */
   cairo_set_source_rgb (cr, 0.6, 0.6, 0.6);
-  cairo_set_line_width (cr, 1.);
-  const float arrw = 7.0f;
+  cairo_set_line_width (cr, DT_PIXEL_APPLY_DPI(1.));
+  const float arrw = DT_PIXEL_APPLY_DPI(7.0f);
   for (int k=1; k<p->size-1; k++)
   {
     float nzw=zonemap[k+1]-zonemap[k];
@@ -748,7 +748,7 @@ dt_iop_zonesystem_bar_motion_notify (GtkWidget *widget, GdkEventMotion *event, d
 static gboolean
 dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_iop_module_t *self)
 {
-  const int inset = 2;
+  const int inset = DT_PIXEL_APPLY_DPI(2);
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
@@ -796,13 +796,13 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f*wd, -.5f*ht);
 
-    cairo_rectangle(cr, 1, 1, wd-2, ht-2);
+    cairo_rectangle(cr, DT_PIXEL_APPLY_DPI(1), DT_PIXEL_APPLY_DPI(1), wd-DT_PIXEL_APPLY_DPI(2), ht-DT_PIXEL_APPLY_DPI(2));
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
     cairo_fill_preserve(cr);
     cairo_surface_destroy (surface);
 
-    cairo_set_line_width(cr, 1.0);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
     cairo_set_source_rgb(cr, .1, .1, .1);
     cairo_stroke(cr);
 

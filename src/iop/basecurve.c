@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define DT_GUI_CURVE_EDITOR_INSET 5
+#define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_GUI_CURVE_INFL .3f
 #define DT_IOP_TONECURVE_RES 256
 #define MAXNODES 20
@@ -508,7 +508,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     cairo_fill(cr);
   }
 #else
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
   cairo_set_source_rgb (cr, .1, .1, .1);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke(cr);
@@ -522,7 +522,7 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
   cairo_scale(cr, 1.0f, -1.0f);
 
   // draw grid
-  cairo_set_line_width(cr, .4);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb (cr, .1, .1, .1);
   if(c->loglogscale)
     dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale);
@@ -530,28 +530,28 @@ dt_iop_basecurve_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
   // draw nodes positions
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   for(int k=0; k<nodes; k++)
   {
     const float x = to_log(basecurve[k].x, c->loglogscale), y = to_log(basecurve[k].y, c->loglogscale);
-    cairo_arc(cr, x*width, y*height, 3, 0, 2.*M_PI);
+    cairo_arc(cr, x*width, y*height, DT_PIXEL_APPLY_DPI(3), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw selected cursor
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
 
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
     const float x = to_log(basecurve[c->selected].x, c->loglogscale), y = to_log(basecurve[c->selected].y, c->loglogscale);
-    cairo_arc(cr, x*width, y*height, 4, 0, 2.*M_PI);
+    cairo_arc(cr, x*width, y*height, DT_PIXEL_APPLY_DPI(4), 0, 2.*M_PI);
     cairo_stroke(cr);
   }
 
   // draw curve
-  cairo_set_line_width(cr, 2.);
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
   cairo_move_to(cr, 0, height*to_log(c->draw_ys[0], c->loglogscale));
