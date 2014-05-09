@@ -15,14 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/darktable.h"
-#include "imageio.h"
-#include "imageio_tiff.h"
-#include "develop/develop.h"
-#include "common/exif.h"
-#include "common/colorspaces.h"
-#include "control/conf.h"
-
 #include <memory.h>
 #include <stdio.h>
 #include <png.h>
@@ -30,6 +22,13 @@
 #include <strings.h>
 #include <assert.h>
 
+#include "common/darktable.h"
+#include "imageio.h"
+#include "imageio_tiff.h"
+#include "develop/develop.h"
+#include "common/exif.h"
+#include "common/colorspaces.h"
+#include "control/conf.h"
 
 typedef struct dt_imageio_png_t
 {

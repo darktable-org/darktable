@@ -20,6 +20,13 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <png.h>
+#include <inttypes.h>
+#include <zlib.h>
+
 #include "common/darktable.h"
 #include "common/imageio_module.h"
 #include "common/imageio.h"
@@ -27,11 +34,6 @@
 #include "control/conf.h"
 #include "dtgtk/slider.h"
 #include "common/imageio_format.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <png.h>
-#include <inttypes.h>
-#include <zlib.h>
 
 DT_MODULE(1)
 
