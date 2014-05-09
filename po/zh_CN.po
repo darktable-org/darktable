@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-07 10:04+0200\n"
-"PO-Revision-Date: 2014-05-03 19:09+0800\n"
+"PO-Revision-Date: 2014-05-08 00:05+0800\n"
 "Last-Translator: Cherrot Luo <translate@cherrot.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -547,6 +547,7 @@ msgstr "无法找到并应用样式 '%s' 用于导出"
 
 #. preset name                   maker    model            iso    a a a                                 b b b
 #: ../src/common/noiseprofiles.h:37
+#, fuzzy
 msgid "generic poissonian"
 msgstr "常规泊松(generic poissonian)"
 
@@ -771,29 +772,29 @@ msgid_plural "copy images?"
 msgstr[0] "复制图像？"
 
 #: ../src/control/jobs/control_jobs.c:891
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d image"
-msgstr "移除 %d 张图像"
+msgstr "移动 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:891
-#, fuzzy, c-format
+#, c-format
 msgid "moving %d images"
-msgstr "移除 %d 张图像"
+msgstr "移动 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:897
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d image"
-msgstr "捕获 %d 张图像"
+msgstr "复制 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:897
-#, fuzzy, c-format
+#, c-format
 msgid "copying %d images"
-msgstr "捕获 %d 张图像"
+msgstr "复制 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:928
-#, fuzzy, c-format
+#, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
-msgstr "从存储模块获取参数失败，导出中断.."
+msgstr "从存储模块 `%s' 获取参数失败，导出中断.."
 
 #: ../src/control/jobs/control_jobs.c:932
 #, c-format
@@ -986,9 +987,8 @@ msgid "uniformly"
 msgstr "均匀"
 
 #: ../src/develop/blend_gui.c:1285
-#, fuzzy
 msgid "drawn mask"
-msgstr "显示蒙板"
+msgstr "绘制蒙板"
 
 #: ../src/develop/blend_gui.c:1291
 msgid "parametric mask"
@@ -1137,18 +1137,20 @@ msgstr "组合蒙版"
 #: ../src/develop/blend_gui.c:1415
 #, fuzzy
 msgid "exclusive"
-msgstr "排除"
+msgstr "外向"
 
 #: ../src/develop/blend_gui.c:1418
 #, fuzzy
 msgid "inclusive"
-msgstr "包含"
+msgstr "内向"
 
 #: ../src/develop/blend_gui.c:1421
+#, fuzzy
 msgid "exclusive & inverted"
 msgstr "外向&反转"
 
 #: ../src/develop/blend_gui.c:1424
+#, fuzzy
 msgid "inclusive & inverted"
 msgstr "内向&反转"
 
@@ -1159,9 +1161,8 @@ msgid ""
 msgstr "如何组合单独的绘制蒙版和参数蒙版的不同频道"
 
 #: ../src/develop/blend_gui.c:1434
-#, fuzzy
 msgid "invert mask"
-msgstr "反转"
+msgstr "反转蒙版"
 
 #: ../src/develop/blend_gui.c:1443
 msgid "apply mask in normal or inverted mode"
@@ -1731,9 +1732,8 @@ msgid "$(EXIF_SECOND) - exif second"
 msgstr "$(EXIF_SECOND) - exif秒"
 
 #: ../src/gui/gtkentry.c:210
-#, fuzzy
 msgid "$(EXIF_ISO) - iso value"
-msgstr "$(EXIF_HOUR) - exif时"
+msgstr "$(EXIF_ISO) - iso 感光度"
 
 #: ../src/gui/gtkentry.c:211 ../src/imageio/storage/gallery.c:144
 #: ../src/imageio/storage/latex.c:144
@@ -1785,7 +1785,7 @@ msgstr "型号"
 #: ../src/gui/preferences.c:444 ../src/gui/preferences.c:1361
 #: ../src/gui/presets.c:427 ../src/libs/metadata_view.c:83
 msgid "maker"
-msgstr "作者"
+msgstr "厂商"
 
 #: ../src/gui/preferences.c:451 ../src/gui/preferences.c:1369
 #: ../src/gui/presets.c:434 ../src/libs/collect.h:43
@@ -1975,9 +1975,8 @@ msgid "please give preset a name"
 msgstr "请命名该预设"
 
 #: ../src/gui/presets.c:233
-#, fuzzy
 msgid "unnamed preset"
-msgstr "新预设"
+msgstr "未命名预设"
 
 #: ../src/gui/presets.c:256 ../src/libs/lib.c:138
 #, c-format
@@ -2455,21 +2454,18 @@ msgstr ""
 "flickr账户并且授权darktable可以上传图片。"
 
 #: ../src/imageio/storage/picasa.c:845
-#, fuzzy
 msgid "picasa authentication"
-msgstr "flickr 授权"
+msgstr "picasa 授权"
 
 #: ../src/imageio/storage/picasa.c:1299
 msgid "picasa webalbum"
 msgstr "picasa 网络相册"
 
 #: ../src/imageio/storage/picasa.c:1356
-#, fuzzy
 msgid "private"
-msgstr "隐私"
+msgstr "私有"
 
 #: ../src/imageio/storage/picasa.c:1358
-#, fuzzy
 msgid "public"
 msgstr "公开"
 
@@ -2602,63 +2598,63 @@ msgstr "暗对比度"
 
 #: ../src/iop/basecurve.c:99
 msgid "canon eos like"
-msgstr "佳能 EOS 样式的"
+msgstr "佳能EOS系列"
 
 #: ../src/iop/basecurve.c:100
 msgid "canon eos like alternate"
-msgstr "佳能 EOS 备用的样式的"
+msgstr "佳能EOS其他系列"
 
 #: ../src/iop/basecurve.c:101
 msgid "nikon like"
-msgstr "尼康 样式的"
+msgstr "尼康系列"
 
 #: ../src/iop/basecurve.c:102
 msgid "nikon like alternate"
-msgstr "尼康 备用的样式的"
+msgstr "尼康其他系列"
 
 #: ../src/iop/basecurve.c:103
 msgid "sony alpha like"
-msgstr "索尼alpha 样式的"
+msgstr "索尼alpha系列"
 
 #: ../src/iop/basecurve.c:104
 msgid "pentax like"
-msgstr "宾得 样式的"
+msgstr "宾得系列"
 
 #: ../src/iop/basecurve.c:105
 msgid "ricoh like"
-msgstr "尼康 样式的"
+msgstr "理光系列"
 
 #: ../src/iop/basecurve.c:106
 msgid "olympus like"
-msgstr "奥林巴斯 样式的"
+msgstr "奥林巴斯系列"
 
 #: ../src/iop/basecurve.c:107
 msgid "olympus like alternate"
-msgstr "奥林巴斯 备用的样式的"
+msgstr "奥林巴斯其他系列"
 
 #: ../src/iop/basecurve.c:108
 msgid "panasonic like"
-msgstr "松下 样式的"
+msgstr "松下样式"
 
 #: ../src/iop/basecurve.c:109
 msgid "leica like"
-msgstr "理光 样式的"
+msgstr "徕卡样式"
 
 #: ../src/iop/basecurve.c:110
 msgid "kodak easyshare like"
-msgstr "柯达 样式的"
+msgstr "柯达easyshare系列"
 
 #: ../src/iop/basecurve.c:111
 msgid "konica minolta like"
-msgstr "柯尼卡 样式的"
+msgstr "柯尼卡minolta系列"
 
 #: ../src/iop/basecurve.c:112
 msgid "samsung like"
-msgstr "三星 样式的"
+msgstr "三星系列"
 
 #: ../src/iop/basecurve.c:113
 msgid "fujifilm like"
-msgstr "富士 样式的"
+msgstr "富士系列"
 
 #: ../src/iop/basecurve.c:114
 msgid "fotogenetic (point & shoot)"
@@ -3657,7 +3653,7 @@ msgstr "偏振片"
 
 #: ../src/iop/colorzones.c:501
 msgid "natural skin tones"
-msgstr "天然皮肤色调"
+msgstr "自然皮肤色调"
 
 #: ../src/iop/colorzones.c:529
 msgid "black & white film"
