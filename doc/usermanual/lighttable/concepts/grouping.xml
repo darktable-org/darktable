@@ -55,9 +55,9 @@
     <inlinegraphic  fileref="images/lighttable_icon_group.png" scalefit="1" width="2%"/>
     in the top panel of the lightroom view toggles grouping mode on and off. If grouping is off,
     each image is displayed as an individual thumb. If grouping is on, images of a group are
-    collapsed, which means they are represented by one thumbnail. The image you see is called
-    the group head. If you press <quote>G</quote> symbol in the thumbnail of a group, only this
-    group gets expanded; if another group was expanded at that time, it gets collapsed. To
+    collapsed, which means they are represented by a single thumbnail. This thumbnail you see is called
+    the group head. If you press the <quote>G</quote> symbol in the group's thumbnail, only this
+    group gets expanded; if you then expand another group, the first group collapses. To
     collapse an expanded group again, just click on the <quote>G</quote> symbol of its group
     head.
   </para>
@@ -91,17 +91,22 @@
   </para>
 
   <para>
-    If you are in collapsed view, and enter darkroom mode with an image group (eg. by
-    double-clicking on the thumbnail), only the group head will be opened.
+    If you collapse an image group and then enter darkroom mode (e.g., by double-clicking on the
+	thumbnail), the <emphasis>group head</emphasis> will be opened for developing.
   </para>
 
   <para>
     Image groups are a convenient way to protect an existing history stack against unintentional
-    changes. Suppose you have just finalized an image; all you need to do now is generate a
-    duplicate, make sure grouping is switched on, and the group collapsed. Whenever you open the
-    image group again in darkroom, only the group head will be altered. The underlying duplicate
-    remains unchanged. Please note that duplicating images only means that a second copy of your
-    history stack, and a second small XMP file, is generated. There still is only one RAW file,
+	changes. Suppose you have just finalized an image and want to protect its current version: 
+	all you need to do is select the image, click <quote>duplicate</quote> in the <emphasis>selected images</emphasis> panel,
+	and make sure that grouping is switched on and that the group is collapsed. Now, whenever you open
+	the image group again in darkroom, only the group head will be altered. The underlying duplicate
+	remains unchanged.
+  </para>
+
+  <para>
+	Please note that <quote>duplicating images</quote> here only generates a copy of your
+    history stack, stored in another small XMP file. There is still only one RAW file,
     so you don't waste a lot of disk space.
   </para>
 
