@@ -264,9 +264,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_vbox_new(FALSE, DT_BAUHAUS_SPACE);
   g->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  GtkWidget *asp = gtk_aspect_frame_new(NULL, 0.5, 0.5, 1.0, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), asp, TRUE, TRUE, 0);
-  gtk_container_add(GTK_CONTAINER(asp), GTK_WIDGET(g->area));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   int size = dt_conf_get_int("panel_width") * 0.95;
   gtk_widget_set_size_request(GTK_WIDGET(g->area), size, size);
   g_object_set (GTK_OBJECT(g->area), "tooltip-text", _("drag the line for split toning. "
@@ -336,6 +334,7 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
   cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
   width -= 2*inset;
   height -= 2*inset;
   // flip y:
@@ -358,6 +357,7 @@ dt_iop_colorcorrection_expose(GtkWidget *widget, GdkEventExpose *event, gpointer
       cairo_rectangle(cr, width*i/(float)cells, height*j/(float)cells, width/(float)cells-DT_PIXEL_APPLY_DPI(1), height/(float)cells-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
   float loa, hia, lob, hib;
   loa = .5f*(width + width*p->loa/(float)DT_COLORCORRECTION_MAX);
   hia = .5f*(width + width*p->hia/(float)DT_COLORCORRECTION_MAX);

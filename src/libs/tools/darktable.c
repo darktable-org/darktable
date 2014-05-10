@@ -75,15 +75,6 @@ int position()
   return 1001;
 }
 
-static int is_it_xmas()
-{
-  time_t now;
-  time(&now);
-  struct tm lt;
-  localtime_r(&now, &lt);
-  return (lt.tm_mon == 11 && lt.tm_mday >= 24);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   char filename[PATH_MAX];

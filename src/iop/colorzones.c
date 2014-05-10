@@ -641,6 +641,9 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
     self->picked_color[1] =  0.0f;
     self->picked_color[2] = -5.0f;
   }
+
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_NONE);
+
   const float pickC = sqrtf(self->picked_color[1]*self->picked_color[1] + self->picked_color[2]*self->picked_color[2]);
   const int cellsi = 16, cellsj = 9;
   for(int j=0; j<cellsj; j++) for(int i=0; i<cellsi; i++)
@@ -701,6 +704,8 @@ colorzones_expose(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
       cairo_rectangle(cr, width*i/(float)cellsi, height*j/(float)cellsj, width/(float)cellsi-DT_PIXEL_APPLY_DPI(1), height/(float)cellsj-DT_PIXEL_APPLY_DPI(1));
       cairo_fill(cr);
     }
+
+  cairo_set_antialias(cr,CAIRO_ANTIALIAS_DEFAULT);
 
   if(self->picked_color_max[0] >= 0.0f)
   {
@@ -1052,7 +1057,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), -1, panel_width * 0.75);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), -1, panel_width * (9.0 / 16.0));
 
   c->strength = dt_bauhaus_slider_new_with_range(self,-200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength,"%.01f%%");

@@ -39,6 +39,12 @@
 #include "gui/presets.h"
 #include <xmmintrin.h>
 
+#include <librsvg/rsvg.h>
+// ugh, ugly hack. why do people break stuff all the time?
+#ifndef RSVG_CAIRO_H
+#include <librsvg/rsvg-cairo.h>
+#endif
+
 
 #define CLIP(x) (((x)>=0)?((x)<=1.0?(x):1.0):0.0)
 DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
@@ -88,6 +94,11 @@ typedef struct dt_iop_zonesystem_gui_data_t
   int zone_under_mouse;
   int mouse_over_output_zones;
   dt_pthread_mutex_t lock;
+
+  cairo_surface_t *image;
+  guint8 *image_buffer;
+  int image_width, image_height;
+
 }
 dt_iop_zonesystem_gui_data_t;
 
@@ -460,12 +471,12 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_vbox_new (FALSE,DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   /* create the zone preview widget */
-  const int panel_width = dt_conf_get_int("panel_width");
+  const int panel_width = dt_conf_get_int("panel_width") * 0.8;
 
   g->preview = gtk_drawing_area_new();
   g_signal_connect (G_OBJECT (g->preview), "expose-event", G_CALLBACK (dt_iop_zonesystem_preview_expose), self);
   gtk_widget_add_events (GTK_WIDGET (g->preview), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
-  gtk_widget_set_size_request(g->preview, panel_width * 0.8, panel_width * 0.8);
+  gtk_widget_set_size_request(g->preview, panel_width, panel_width);
 
   /* create the zonesystem bar widget */
   g->zones = gtk_drawing_area_new();
@@ -479,10 +490,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_add_events (GTK_WIDGET (g->zones), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));
 
-  GtkWidget *aspect = gtk_aspect_frame_new(NULL, .5f, .5f, 1.0f, FALSE);
-  gtk_frame_set_shadow_type(GTK_FRAME(aspect), GTK_SHADOW_NONE);
-  gtk_container_add(GTK_CONTAINER(aspect), g->preview);
-  gtk_box_pack_start (GTK_BOX (self->widget),aspect,TRUE,TRUE,0);
+  gtk_box_pack_start (GTK_BOX (self->widget),g->preview,TRUE,TRUE,0);
   gtk_box_pack_start (GTK_BOX (self->widget),g->zones,TRUE,TRUE,0);
 
   /* add signal handler for preview pipe finish to redraw the preview */
@@ -491,6 +499,53 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(_iop_zonesystem_redraw_preview_callback),
                             self);
 
+
+  /* load the dt logo as a brackground */
+  g->image = NULL;
+  g->image_buffer = NULL;
+  g->image_width = 0;
+  g->image_height = 0;
+
+  char filename[PATH_MAX];
+  char datadir[PATH_MAX];
+  const char *logo = is_it_xmas()?"%s/pixmaps/idbutton-2.svg":"%s/pixmaps/idbutton.svg";
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  snprintf(filename, sizeof(filename), logo, datadir);
+  RsvgHandle *svg = rsvg_handle_new_from_file(filename, NULL);
+  if(svg)
+  {
+    cairo_surface_t *surface;
+    cairo_t *cr;
+
+    RsvgDimensionData dimension;
+    rsvg_handle_get_dimensions(svg, &dimension);
+
+    float svg_size = MAX(dimension.width, dimension.height);
+    float final_size = panel_width * 0.75;
+    float factor = final_size / svg_size;
+    float final_width = dimension.width * factor,
+          final_height = dimension.height * factor;
+    int stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, final_width);
+
+    g->image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    surface = cairo_image_surface_create_for_data(g->image_buffer, CAIRO_FORMAT_ARGB32, final_width, final_height, stride);
+    if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
+    {
+      free(g->image_buffer);
+      g->image_buffer = NULL;
+    }
+    else
+    {
+      cr = cairo_create(surface);
+      cairo_scale(cr, factor, factor);
+      rsvg_handle_render_cairo(svg, cr);
+      cairo_surface_flush(surface);
+      g->image = surface;
+      g->image_width = final_width;
+      g->image_height = final_height;
+    }
+    g_object_unref(svg);
+  }
 
 }
 
@@ -503,6 +558,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   if(g->in_preview_buffer) g_free (g->in_preview_buffer);
   if(g->out_preview_buffer) g_free (g->out_preview_buffer);
+  if(g->image) cairo_surface_destroy(g->image);
+  free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
@@ -762,7 +819,10 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
   /* clear background */
   GtkStateType state = gtk_widget_get_state(self->expander);
   GtkStyle *style = gtk_widget_get_style(self->expander);
-  cairo_set_source_rgb (cr, style->bg[state].red/65535.0, style->bg[state].green/65535.0, style->bg[state].blue/65535.0);
+  float bg_red = style->bg[state].red/65535.0,
+        bg_green = style->bg[state].green/65535.0,
+        bg_blue = style->bg[state].blue/65535.0;
+  cairo_set_source_rgb (cr, bg_red, bg_green, bg_blue);
   cairo_paint (cr);
 
   width -= 2*inset;
@@ -809,7 +869,24 @@ dt_iop_zonesystem_preview_expose (GtkWidget *widget, GdkEventExpose *event, dt_i
     g_free(image);
   }
   else
+  {
     dt_pthread_mutex_unlock(&g->lock);
+    // draw a big, subdued dt logo
+    if(g->image)
+    {
+      cairo_set_source_surface(cr, g->image, (width - g->image_width) * 0.5, (height - g->image_height) * 0.5);
+      cairo_rectangle(cr, 0, 0, width, height);
+      cairo_set_operator(cr, CAIRO_OPERATOR_HSL_LUMINOSITY);
+      cairo_fill_preserve(cr);
+      cairo_set_operator(cr, CAIRO_OPERATOR_DARKEN);
+      cairo_set_source_rgb(cr, bg_red + 0.02, bg_green + 0.02, bg_blue+ 0.02);
+      cairo_fill_preserve(cr);
+      cairo_set_operator(cr, CAIRO_OPERATOR_LIGHTEN);
+      cairo_set_source_rgb(cr, bg_red - 0.02, bg_green - 0.02, bg_blue- 0.02);
+      cairo_fill(cr);
+    }
+
+  }
 
   cairo_destroy(cr);
   cairo_t *cr_pixmap = gdk_cairo_create(gtk_widget_get_window(widget));

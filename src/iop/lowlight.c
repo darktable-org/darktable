@@ -802,7 +802,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   int panel_width = dt_conf_get_int("panel_width") * 0.95;
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width);
+  gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width*0.75);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area),FALSE, FALSE, 0);
 
