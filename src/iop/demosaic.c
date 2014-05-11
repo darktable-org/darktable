@@ -407,6 +407,116 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
   }
 }
 
+
+#define fcol(row,col) xtrans[((row)+6)%6][((col)+6)%6]
+
+/* taken from dcraw and demosaic_ppg below */
+
+void xtrans_lin_interpolate_f(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const uint8_t xtrans[6][6])
+{
+  // snap to start of mosaic block
+  // FIXME: need this? why?
+  roi_out->x = 0;
+  roi_out->y = 0;
+
+  // border interpolate
+  for (unsigned row=0; row < roi_out->height; row++)
+    for (unsigned col=0; col < roi_out->width; col++) {
+      float sum[3] = {0.0f};
+      uint8_t count[3] = {0};
+      if (col==1 && row >= 1 && row < roi_out->height-1)
+	col = roi_out->width-1;
+      if(col == roi_out->width) break;
+      // average all the adjoining pixels inside image by color
+      for (int y=row-1; y != row+2; y++)
+	for (int x=col-1; x != col+2; x++)
+        {
+          const int yy = y + roi_out->y, xx = x + roi_out->x;
+	  if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
+          {
+	    const uint8_t f = fcol(y+roi_in->y,x+roi_in->x);
+	    sum[f] += in[y*roi_in->width + x];
+	    count[f]++;
+	  }
+        }
+      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
+      // for each color which needs interpolation (not the sensor
+      // color for current pixel), simply average adjoining pixels of
+      // that sensor color which are w/in image
+      for (int c=0; c<3; c++)
+      {
+        if (c != f && count[c] != 0)
+          out[4*(row*roi_out->width+col)+c] = sum[c] / count[c];
+        else
+          out[4*(row*roi_out->width+col)+c] = in[(row+roi_out->y)*roi_in->width+col+roi_out->x];
+      }
+    }
+
+  // build interpolation lookup table which for a given offset in the sensor
+  // lists neighboring pixels from which to interpolate:
+  // NUM_PIXELS                 # of neighboring pixels to read
+  // for (1..NUM_PIXELS):
+  //   OFFSET                   # in bytes from current pixel
+  //   WEIGHT                   # how much weight to give this neighbor
+  //   COLOR                    # sensor color
+  // # weights of adjoining pixels not of this pixel's color
+  // COLORA TOT_WEIGHT
+  // COLORB TOT_WEIGHT
+  // COLORPIX                   # color of center pixel
+
+  // would be nice to precalculate this for each orientation, but offsets change
+  // depending on roi_in->width
+  int lookup[6][6][32];
+  for (int row=0; row < 6; row++)
+    for (int col=0; col < 6; col++)
+    {
+      int *ip = lookup[row][col]+1;
+      int sum[3] = {0};
+      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
+      // make list of adjoining pixel offsets by weight & color
+      for (int y=-1; y <= 1; y++)
+	for (int x=-1; x <= 1; x++)
+        {
+	  int weight = 1 << ((y==0) + (x==0));
+	  const uint8_t color = fcol(row+y+roi_in->y,col+x+roi_in->x);
+	  if (color == f) continue;
+	  *ip++ = (roi_in->width*(y + roi_out->y) + roi_out->x + x);
+          *ip++ = weight;
+	  *ip++ = color;
+	  sum[color] += weight;
+	}
+      lookup[row][col][0] = (ip - lookup[row][col]) / 3; /* # of neighboring pixels found */
+      for (int c=0; c < 3; c++)
+	if (c != f)
+        {
+	  *ip++ = c;
+          *ip++ = sum[c];
+	}
+      *ip = f;
+    }
+
+  for (int row=1; row < roi_out->height-1; row++)
+  {
+    float *buf = out + 4*roi_out->width*row + 4;
+    const float *buf_in = in + roi_in->width*(row + roi_out->y) + 1 + roi_out->x;
+    for (int col=1; col < roi_out->width-1; col++)
+    {
+      float sum[3] = {0.0f};
+      int *ip = lookup[row % 6][col % 6]; // interp. lookup for current pos in sensor
+      // for each adjoining pixel not of this pixel's color, sum up its weighted values
+      for (int i=*ip++; i--; ip+=3)
+	sum[ip[2]] += buf_in[ip[0]] * ip[1];
+      // for each interpolated color, load it into the pixel
+      for (int i=3; --i; ip+=2)
+	buf[*ip] = sum[ip[0]] / ip[1];
+      buf[*ip] = *buf_in;
+      buf += 4;
+      buf_in ++;
+    }
+  }
+}
+
+
 /** 1:1 demosaic from in to out, in is full buf, out is translated/cropped (scale == 1.0!) */
 static void
 demosaic_ppg(float *out, const float *in, dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in, const int filters, const float thrs)
@@ -704,7 +814,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(img->filters==9)
+        xtrans_lin_interpolate_f((float *)o, pixels, &roo, &roi, img->xtrans);
+      else if (demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg((float *)o, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, (float *)o, &roi, &roo, data->filters);
@@ -751,7 +863,9 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
     }
     else
     {
-      if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      if(img->filters==9)
+        xtrans_lin_interpolate_f(tmp, pixels, &roo, &roi, img->xtrans);
+      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, pixels, &roo, &roi, data->filters, data->median_thrs);
       else
         amaze_demosaic_RT(self, piece, pixels, tmp, &roi, &roo, data->filters);
@@ -773,6 +887,8 @@ process (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, void *i, v
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, tmp, &roo, &roi, roo.width, roi.width, data->filters, clip);
       dt_free_align(tmp);
     }
+    else if(img->filters==9)
+      dt_iop_clip_and_zoom_demosaic_third_size_xtrans_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, img->xtrans);
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width, data->filters, clip);
   }
@@ -792,6 +908,12 @@ process_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem 
   if(roi_out->scale >= 1.00001f)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] demosaic with upscaling not yet supported by opencl code\n");
+    return FALSE;
+  }
+
+  if(img->filters==9)
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] non-Bayer demosaic not yet supported by opencl code\n");
     return FALSE;
   }
 
