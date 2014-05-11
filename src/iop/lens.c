@@ -1006,7 +1006,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)malloc(sizeof(dt_iop_lensfun_global_data_t));
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)calloc(1, sizeof(dt_iop_lensfun_global_data_t));
   module->data = gd;
   gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
   gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
@@ -1036,7 +1036,9 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 
 void reload_defaults(dt_iop_module_t *module)
 {
+  if(!module) return;
   dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
+  if(!gd || !gd->db) return;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const dt_image_t *img = &module->dev->image_storage;
   // reload image specific stuff
