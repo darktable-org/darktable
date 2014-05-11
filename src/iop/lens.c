@@ -1006,7 +1006,7 @@ void cleanup_pipe (struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)malloc(sizeof(dt_iop_lensfun_global_data_t));
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)calloc(1, sizeof(dt_iop_lensfun_global_data_t));
   module->data = gd;
   gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
   gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
@@ -1036,12 +1036,16 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
-  lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
-  const dt_image_t *img = &module->dev->image_storage;
   // reload image specific stuff
   // get all we can from exif:
   dt_iop_lensfun_params_t tmp;
+  memset(&tmp, 0, sizeof(dt_iop_lensfun_params_t));
+
+  // we might be called from presets update infrastructure => there is no image
+  if(!module || !module->dev) goto end;
+
+  const dt_image_t *img = &module->dev->image_storage;
+
   char *new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(tmp.lens, new_lens, sizeof(tmp.lens));
   free(new_lens);
@@ -1067,8 +1071,13 @@ void reload_defaults(dt_iop_module_t *module)
   for(char cnt = 0, *c = model; c < model+100 && *c != '\0'; c++) if(*c == ' ') if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {
+    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
+
+    // just to be sure
+    if(!gd || !gd->db) goto end;
+
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-    const lfCamera **cam = lf_db_find_cameras_ext(dt_iop_lensfun_db,
+    const lfCamera **cam = lf_db_find_cameras_ext(gd->db,
                            img->exif_maker, img->exif_model, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     if(cam)
@@ -1079,6 +1088,7 @@ void reload_defaults(dt_iop_module_t *module)
     }
   }
 
+end:
   memcpy(module->params, &tmp, sizeof(dt_iop_lensfun_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lensfun_params_t));
   module->default_enabled = 0;
