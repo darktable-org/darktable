@@ -385,6 +385,8 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
     dt_iop_gui_set_state(module,state);
   }
 
+  module->data = so->data;
+
   // now init the instance:
   module->init(module);
 
@@ -986,8 +988,7 @@ init_presets(dt_iop_module_so_t *module_so)
 
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)malloc(sizeof(dt_iop_module_t));
-      memset(module, 0, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if( dt_iop_load_module_by_so(module, module_so, NULL) )
       {
         free(module);
@@ -1007,8 +1008,7 @@ init_presets(dt_iop_module_so_t *module_so)
         module->reload_defaults(module);
 
       int32_t new_params_size = module->params_size;
-      void *new_params = malloc(new_params_size);
-      memset(new_params, 0, new_params_size);
+      void *new_params = calloc(1, new_params_size);
 
       // convert the old params to new
       if( module->legacy_params(module, old_params, old_params_version, new_params, module_version ) )
@@ -1055,7 +1055,6 @@ init_presets(dt_iop_module_so_t *module_so)
         continue;
       }
 
-      module->init(module);
       if(module->params_size == 0)
       {
         dt_iop_cleanup_module(module);
@@ -1221,8 +1220,11 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  free(module->default_params);
-  module->default_params = NULL;
+  if (module->default_params != NULL)
+  {
+    free(module->default_params);
+    module->default_params = NULL;
+  }
   if (module->blend_params != NULL)
   {
     free(module->blend_params);
