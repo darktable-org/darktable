@@ -234,6 +234,56 @@ static inline void _interpolate_color(
   }
 }
 
+void process_lch_xtrans(
+  void *ivoid, void *ovoid,
+  const int width, const int height,
+  const float clip)
+{
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#endif
+  for(int j=0; j<height; j++)
+  {
+    float *out = (float *)ovoid + width*j;
+    float *in  = (float *)ivoid + width*j;
+    for(int i=0; i<width; i++)
+    {
+      if(i<3 || i>width-3 || j<3 || j>height-3)
+      {
+        // fast path for border
+        out[0] = in[0];
+      }
+      else
+      {
+        const float near_clip = 0.96f*clip;
+        const float post_clip = 1.10f*clip;
+        float blend = 0.0f;
+        float mean = 0.0f;
+        for(int jj=-3; jj<3; jj++)
+        {
+          for(int ii=-3; ii<3; ii++)
+          {
+            const float val = in[jj*width + ii];
+            mean += val;
+            blend += (fminf(post_clip, val) - near_clip)/(post_clip-near_clip);
+          }
+        }
+        blend = CLAMP(blend, 0.0f, 1.0f);
+        if(blend > 0)
+        {
+          // recover:
+          mean /= 36.0f;
+          out[0] = blend*mean + (1.f-blend)*in[0];
+        }
+        else out[0] = in[0];
+      }
+      out ++;
+      in ++;
+    }
+  }
+}
+
+
 void process(
     struct dt_iop_module_t *self,
     dt_dev_pixelpipe_iop_t *piece,
@@ -268,7 +318,13 @@ void process(
     return;
   }
 
-  switch(data->mode)
+  int mode = data->mode;
+  if ((filters == 9) && (mode > DT_IOP_HIGHLIGHTS_LCH)) {
+    mode = DT_IOP_HIGHLIGHTS_LCH;
+    fprintf(stderr, "[highlights] inpaint not yet implemented for x-trans, falling back to Lch\n");
+  }
+
+  switch(mode)
   {
     case DT_IOP_HIGHLIGHTS_INPAINT: // a1ex's (magiclantern) idea of color inpainting:
     {
@@ -298,6 +354,11 @@ void process(
       break;
     }
     case DT_IOP_HIGHLIGHTS_LCH:
+      if (filters == 9)
+      {
+        process_lch_xtrans(ivoid, ovoid, roi_out->width, roi_out->height, clip);
+        break;
+      }
 #ifdef _OPENMP
       #pragma omp parallel for schedule(dynamic) default(none) shared(ovoid, ivoid, roi_in, roi_out, data, piece)
 #endif
@@ -389,6 +450,10 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
   memcpy(d, p, sizeof(*p));
 
   piece->process_cl_ready = 1;
+
+  // x-trans images not implemented in OpenCL yet
+  if(pipe->image.filters == 9)
+    piece->process_cl_ready = 0;
 
   // no OpenCL for DT_IOP_HIGHLIGHTS_INPAINT yet.
   if(d->mode == DT_IOP_HIGHLIGHTS_INPAINT)
