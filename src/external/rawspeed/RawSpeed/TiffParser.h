@@ -31,6 +31,7 @@
 #include "DngDecoder.h"
 #include "Cr2Decoder.h"
 #include "ArwDecoder.h"
+#include "MrwDecoder.h"
 #include "PefDecoder.h"
 #include "NefDecoder.h"
 #include "OrfDecoder.h"

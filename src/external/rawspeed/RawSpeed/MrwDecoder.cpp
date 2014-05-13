@@ -53,8 +53,9 @@ RawImage MrwDecoder::decodeRawInternal() {
   }
   uint32 width = raw->getEntry(IMAGEWIDTH)->getInt();
   uint32 height = raw->getEntry(IMAGELENGTH)->getInt();
-  uint32 bitPerPixel = raw->getEntry(BITSPERSAMPLE)->getInt();
-  }
+
+  uint32 c2 = counts->getInt();
+  uint32 off = offsets->getInt();
 
   ByteStream input(mFile->getData(off), c2);
  
@@ -73,9 +74,8 @@ void MrwDecoder::DecodeMRW(ByteStream &input, uint32 w, uint32 h) {
   ushort16* dest = (ushort16*) & data[0];
   uint32 pitch = mRaw->pitch / sizeof(ushort16);
 
-  uint32 vbits=0;
-  printf("Called packed_load_raw with tiff_bps=%d\n", tiff_bps);
-
+  ushort16 vbits=0;
+  
   for (uint32 row=0; row < h; row++) {
     for (uint32 col=0; col < w; col++) {
       // Read enough bytes so we have a full sample, on the first run we'll read
@@ -84,7 +84,7 @@ void MrwDecoder::DecodeMRW(ByteStream &input, uint32 w, uint32 h) {
       for (vbits -= 12; vbits < 0; vbits += 8)
         data++;
       // Then we need to ignore any extra bits to get a clean 12 bit value
-      dest[col+row*pitch] = (((ushort16 *) data) >> vbits) & 0x0fff;
+      dest[col+row*pitch] = (*((ushort16 *) data) >> vbits) & 0x0fff;
     }
   }
 }

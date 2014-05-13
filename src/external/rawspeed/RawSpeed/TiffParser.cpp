@@ -136,6 +136,10 @@ RawDecoder* TiffParser::getDecoder() {
         mRootIFD = NULL;
         return new ArwDecoder(root, mInput);
       }
+      if (!make.compare("KONICA MINOLTA")) {
+        mRootIFD = NULL;
+        return new MrwDecoder(root, mInput);
+      }
       if (!make.compare("PENTAX Corporation")) {
         mRootIFD = NULL;
         return new PefDecoder(root, mInput);

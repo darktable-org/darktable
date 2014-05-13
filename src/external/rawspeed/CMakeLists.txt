@@ -6,6 +6,7 @@ set(RAWSPEED_SOURCES
   "RawSpeed/CameraSensorInfo.cpp"
   "RawSpeed/RawParser.cpp"
   "RawSpeed/ArwDecoder.cpp"
+  "RawSpeed/MrwDecoder.cpp"
   "RawSpeed/BitPumpJPEG.cpp"
   "RawSpeed/BitPumpMSB32.cpp"
   "RawSpeed/BitPumpMSB.cpp"
