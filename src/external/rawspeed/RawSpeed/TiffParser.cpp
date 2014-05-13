@@ -51,7 +51,10 @@ void TiffParser::parseData() {
   const unsigned char* data = mInput->getData(0);
   if (mInput->getSize() < 16)
     throw TiffParserException("Not a TIFF file (size too small)");
-  if (data[0] != 0x49 || data[1] != 0x49) {
+  if (data[0] == 0x00 && data[1] == 0x4D) {
+    // We're in a MRW
+    tiff_endian = little;
+  } else if (data[0] != 0x49 || data[1] != 0x49) {
     tiff_endian = big;
     if (data[0] != 0x4D || data[1] != 0x4D)
       throw TiffParserException("Not a TIFF file (ID)");
@@ -116,6 +119,7 @@ RawDecoder* TiffParser::getDecoder() {
     for (vector<TiffIFD*>::iterator i = potentials.begin(); i != potentials.end(); ++i) {
       string make = (*i)->getEntry(MAKE)->getString();
       TrimSpaces(make);
+      fprintf(stderr, "Got camera from maker '%s'", make.c_str());
       if (!make.compare("Canon")) {
         mRootIFD = NULL;
         return new Cr2Decoder(root, mInput);
@@ -158,6 +162,8 @@ RawDecoder* TiffParser::getDecoder() {
       }
     }
   }
+  fprintf(stderr, "Didn't find a maker\n");
+
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
 }

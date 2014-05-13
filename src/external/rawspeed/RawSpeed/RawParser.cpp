@@ -40,7 +40,7 @@ RawDecoder* RawParser::getDecoder() {
     TiffParser p(mInput);
     p.parseData();
     return p.getDecoder();
-  } catch (TiffParserException) {}
+  } catch (TiffParserException *e) {fprintf(stderr, "TiffParseException: %s", e->what());}
   throw RawDecoderException("No decoder found. Sorry.");
   return NULL;
 }
