@@ -48,7 +48,7 @@ RawImage MrwDecoder::decodeRawInternal() {
   ByteStream input(mFile->getData(data_offset), imgsize);
  
   try {
-    Decode12BitRaw(input, raw_width, raw_height);
+    Decode12BitRawBE(input, raw_width, raw_height);
   } catch (IOException &e) {
     mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
