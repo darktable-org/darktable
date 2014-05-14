@@ -58,7 +58,8 @@ RawImage MrwDecoder::decodeRawInternal() {
 }
 
 void MrwDecoder::checkSupportInternal(CameraMetaData *meta) {
-  //FIXME: NOOP for now
+  //FIXME: Get the actual make and model from the TIFF section
+  this->checkCameraSupported(meta, "KONICA MINOLTA", "DYNAX 5D", "");
 }
 
 void MrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
