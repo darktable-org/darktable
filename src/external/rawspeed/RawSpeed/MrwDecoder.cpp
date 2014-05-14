@@ -38,38 +38,23 @@ RawImage MrwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(raw_width, raw_height);
   mRaw->createData();
 
-  ByteStream input(mFile->getData(data_offset), 0);
+  uint32 imgsize = raw_width * raw_height * 3 / 2;
+
+  if (!mFile->isValid(data_offset))
+    ThrowRDE("Sony MRW decoder: Data offset after EOF, file probably truncated");
+  if (!mFile->isValid(data_offset+imgsize-1))
+    ThrowRDE("Sony MRW decoder: Image end after EOF, file probably truncated");
+
+  ByteStream input(mFile->getData(data_offset), imgsize);
  
   try {
-    DecodeMRW(input);
+    Decode12BitRaw(input, raw_width, raw_height);
   } catch (IOException &e) {
     mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
   }
 
   return mRaw;
-}
-
-void MrwDecoder::DecodeMRW(ByteStream &input) {
-  uchar8* data = mRaw->getData();
-  ushort16* dest = (ushort16*) & data[0];
-  uint32 pitch = mRaw->pitch / sizeof(ushort16);
-  ushort16 bitbuf=0;
-  ushort16 vbits=0;
-  
-  for (uint32 row=0; row < raw_height; row++) {
-    for (uint32 col=0; col < raw_width; col++) {
-      // Read enough bytes so we have a full sample, on the first run we'll read
-      // 16bits and then on the second run we'll read 8bits and use the 4 left
-      // over from the previous read, rinse repeat
-      for (vbits -= 12; vbits < 0; vbits += 8) {
-        bitbuf <<= 8;
-        bitbuf |= input.getByte();
-      }
-      // Then we need to ignore any extra bits to get a clean 12 bit value
-      dest[col+row*pitch] = (bitbuf >> vbits) & 0x0fff;
-    }
-  }
 }
 
 void MrwDecoder::checkSupportInternal(CameraMetaData *meta) {

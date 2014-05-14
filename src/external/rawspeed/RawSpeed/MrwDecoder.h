@@ -36,9 +36,9 @@ public:
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
 protected:
-  void DecodeMRW(ByteStream &input);
   ByteStream *in;
   uint32 raw_width, raw_height, data_offset;
+  const uchar8 *data;
 };
 
 } // namespace RawSpeed
