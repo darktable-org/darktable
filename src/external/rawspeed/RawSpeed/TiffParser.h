@@ -55,6 +55,8 @@ protected:
   FileMap *mInput;
   TiffIFD* mRootIFD;
   Endianness host_endian;
+  
+  uint32 raw_width, raw_height, mrw_parsing, data_offset;
 };
 
 } // namespace RawSpeed

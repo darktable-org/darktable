@@ -23,7 +23,6 @@
 #define MRW_DECODER_H
 
 #include "RawDecoder.h"
-#include "TiffIFD.h"
 
 namespace RawSpeed {
 
@@ -31,19 +30,15 @@ class MrwDecoder :
   public RawDecoder
 {
 public:
-  MrwDecoder(TiffIFD *rootIFD, FileMap* file);
+  MrwDecoder(uint32 data_offset, uint32 raw_width, uint32 raw_height, FileMap* file);
   virtual ~MrwDecoder(void);
   virtual RawImage decodeRawInternal();
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
-//  virtual void decodeThreaded(RawDecoderThread* t);
-  virtual TiffIFD* getRootIFD() {return mRootIFD;}
 protected:
-  void DecodeMRW(ByteStream &input, uint32 w, uint32 h);
-  TiffIFD *mRootIFD;
-  uint32 curve[0x4001];
+  void DecodeMRW(ByteStream &input);
   ByteStream *in;
-  int mShiftDownScale;
+  uint32 raw_width, raw_height, data_offset;
 };
 
 } // namespace RawSpeed
