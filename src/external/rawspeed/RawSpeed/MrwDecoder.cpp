@@ -65,8 +65,6 @@ void MrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
   int iso = 0;
 
-  mRaw->cfa.setCFA(CFA_RED, CFA_GREEN, CFA_GREEN2, CFA_BLUE);
-
   //FIXME: Get the actual make and model from the TIFF section
   setMetaData(meta, "KONICA MINOLTA", "DYNAX 5D", "", iso);
 }
