@@ -81,8 +81,9 @@ dt_iop_levels_pick_t;
 
 typedef struct dt_iop_levels_gui_data_t
 {
+  GList *modes;
   GtkWidget *mode;
-  GtkVBox *vbox_manual;
+  GtkWidget *vbox_manual;
   GtkDrawingArea *area;
   double mouse_x, mouse_y;
   int dragging, handle_move;
@@ -91,7 +92,7 @@ typedef struct dt_iop_levels_gui_data_t
   GtkToggleButton *activeToggleButton;
   float last_picked_color;
   double pick_xy_positions[3][2];
-  GtkVBox *vbox_automatic;
+  GtkWidget *vbox_automatic;
   GtkWidget *percentile_black;
   GtkWidget *percentile_grey;
   GtkWidget *percentile_white;
@@ -447,10 +448,23 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  dt_bauhaus_combobox_set(g->mode, p->mode);
+  dt_bauhaus_combobox_set(g->mode, g_list_index(g->modes, GUINT_TO_POINTER(p->mode)));
   dt_bauhaus_slider_set(g->percentile_black, p->percentiles[0]);
   dt_bauhaus_slider_set(g->percentile_grey, p->percentiles[1]);
   dt_bauhaus_slider_set(g->percentile_white, p->percentiles[2]);
+
+  switch(p->mode)
+  {
+    case LEVELS_MODE_PARAMETRIC:
+      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
+      gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
+      break;
+    case LEVELS_MODE_MANUAL:
+    default:
+      gtk_widget_hide(GTK_WIDGET(g->vbox_automatic));
+      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
+      break;
+  }
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -510,6 +524,8 @@ void gui_init(dt_iop_module_t *self)
 
   c->reprocess_on_next_expose = FALSE;
 
+  c->modes = NULL;
+
   const int panel_width = dt_conf_get_int("panel_width") * 0.95;
 
   c->mouse_x = c->mouse_y = -1.0;
@@ -522,15 +538,22 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
 
   c->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->mode, NULL, _("Levels mode"));
+  dt_bauhaus_widget_set_label(c->mode, NULL, _("Mode"));
+
   dt_bauhaus_combobox_add(c->mode, _("manual"));
+  c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_MANUAL));
+
   dt_bauhaus_combobox_add(c->mode, _("automatic"));
+  c->modes = g_list_append(c->modes, GUINT_TO_POINTER(LEVELS_MODE_PARAMETRIC));
+
   dt_bauhaus_combobox_set_default(c->mode, 0);
-  dt_bauhaus_combobox_set(c->mode, p->mode);
+  dt_bauhaus_combobox_set(c->mode, g_list_index(c->modes, GUINT_TO_POINTER(p->mode)));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode, TRUE, TRUE, 0);
 
   c->area = GTK_DRAWING_AREA(gtk_drawing_area_new());
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  c->vbox_manual = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  gtk_box_pack_start(GTK_BOX(c->vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+
   gtk_widget_set_size_request(GTK_WIDGET(c->area), panel_width, panel_width * (9.0 / 16.0));
   g_object_set (GTK_OBJECT(c->area), "tooltip-text", _("drag handles to set black, grey, and white points.  operates on L channel."), (char *)NULL);
 
@@ -585,7 +608,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(greypick), FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(box), GTK_WIDGET(whitepick), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(c->vbox_manual), box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_manual, TRUE, TRUE, 0);
 
   c->percentile_black = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, .1f, p->percentiles[0], 3);
   g_object_set(G_OBJECT(c->percentile_black), "tooltip-text", _("Black percentile"), (char *)NULL);
@@ -602,10 +626,24 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white,"%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("White"));
 
-  GtkWidget *box2 = gtk_vbox_new(TRUE,0);
-  gtk_box_pack_start(GTK_BOX(box2), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box2), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box2), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
+  c->vbox_automatic = GTK_WIDGET(gtk_vbox_new(FALSE, 5));
+  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(c->vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->vbox_automatic, TRUE, TRUE, 0);
+
+  switch(p->mode)
+  {
+    case LEVELS_MODE_PARAMETRIC:
+      gtk_widget_hide(GTK_WIDGET(c->vbox_manual));
+      gtk_widget_show(GTK_WIDGET(c->vbox_automatic));
+      break;
+    case LEVELS_MODE_MANUAL:
+    default:
+      gtk_widget_hide(GTK_WIDGET(c->vbox_automatic));
+      gtk_widget_show(GTK_WIDGET(c->vbox_manual));
+      break;
+  }
 
   g_signal_connect (G_OBJECT (c->mode), "value-changed",
                     G_CALLBACK (dt_iop_levels_mode_callback), self);
@@ -615,7 +653,6 @@ void gui_init(dt_iop_module_t *self)
                     G_CALLBACK (dt_iop_levels_percentiles_callback), self);
   g_signal_connect (G_OBJECT (c->percentile_white), "value-changed",
                     G_CALLBACK (dt_iop_levels_percentiles_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), box2, TRUE, TRUE, 0);
 
   g_signal_connect (G_OBJECT(autobutton), "clicked",
                     G_CALLBACK(dt_iop_levels_autoadjust_callback), (gpointer)self);
@@ -629,6 +666,9 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t*)self->gui_data;
+  g_list_free(g->modes);
+
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1095,17 +1135,23 @@ dt_iop_levels_mode_callback(GtkWidget *combo, gpointer user_data)
 
   if(darktable.gui->reset) return;
 
+  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
-  dt_iop_levels_mode_t new_mode = dt_bauhaus_combobox_get(combo);
+
+  const dt_iop_levels_mode_t new_mode = GPOINTER_TO_UINT(g_list_nth_data(g->modes, dt_bauhaus_combobox_get(combo)));
 
   switch(new_mode)
   {
     case LEVELS_MODE_PARAMETRIC:
       p->mode = LEVELS_MODE_PARAMETRIC;
+      gtk_widget_hide(GTK_WIDGET(g->vbox_manual));
+      gtk_widget_show(GTK_WIDGET(g->vbox_automatic));
       break;
     case LEVELS_MODE_MANUAL:
     default:
       p->mode = LEVELS_MODE_MANUAL;
+      gtk_widget_hide(GTK_WIDGET(g->vbox_automatic));
+      gtk_widget_show(GTK_WIDGET(g->vbox_manual));
       break;
   }
 
