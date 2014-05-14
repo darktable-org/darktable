@@ -424,46 +424,6 @@ green_equilibration_favg(float *out, const float *const in, const int width, con
 
 #define fcol(row,col) xtrans[((row)+6)%6][((col)+6)%6]
 
-
-void border_interpolate (
-  float *out, const float *in,
-  const dt_iop_roi_t *roi_out, const dt_iop_roi_t *roi_in,
-  const uint8_t xtrans[6][6],
-  const int border)
-{
-  for (unsigned row=0; row < roi_out->height; row++)
-    for (unsigned col=0; col < roi_out->width; col++) {
-      float sum[3] = {0.0f};
-      uint8_t count[3] = {0};
-      if (col==border && row >= border && row < roi_out->height-border)
-	col = roi_out->width-border;
-      if(col >= roi_out->width) break;
-      // average all the adjoining pixels inside image by color
-      for (int y=row-1; y != row+2; y++)
-	for (int x=col-1; x != col+2; x++)
-        {
-          const int yy = y + roi_out->y, xx = x + roi_out->x;
-	  if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
-          {
-	    const uint8_t f = fcol(y+roi_in->y,x+roi_in->x);
-	    sum[f] += in[y*roi_in->width + x];
-	    count[f]++;
-	  }
-        }
-      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
-      // for current cell, copy the current sensor's color data,
-      // interpolate the other two colors from surrounding pixels of
-      // their color
-      for (int c=0; c<3; c++)
-      {
-        if (c != f && count[c] != 0)
-          out[4*(row*roi_out->width+col)+c] = sum[c] / count[c];
-        else
-          out[4*(row*roi_out->width+col)+c] = in[(row+roi_out->y)*roi_in->width+col+roi_out->x];
-      }
-    }
-}
-
 // xtrans_interpolate adapted from dcraw 9.20
 
 #define CLIPF(x) CLAMPS(x,0.0f,1.0f)
@@ -489,24 +449,56 @@ xtrans_markesteijn_interpolate(
   // initialize as gcc thinks these could be uninitialized below
   unsigned short sgrow=0, sgcol=0;
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
+  const int width = roi_out->width+12;
+  const int height = roi_out->height+12;
   const int xoff = roi_in->x;
   const int yoff = roi_in->y;
   const int ndir = 4 << (passes > 1);
 
-  border_interpolate(out, in, roi_out, roi_in, xtrans, 6);
-  float (*image)[4] = (float (*)[4]) out;
+  // snap to start of mosaic block, though this is also happens for now in process()
+  roi_out->x = 0;
+  roi_out->y = 0;
+
+  const size_t image_size = width*height*4*(size_t)sizeof(float);
+  const size_t buffer_size = TS*TS*(ndir*((size_t)sizeof(char)+7*(size_t)sizeof(float)));
+  char *all_buffers = (char *) dt_alloc_align(16, image_size+dt_get_num_threads()*buffer_size);
+  if (!all_buffers) {
+    printf("[demosaic] not able to allocate Markesteijn buffers\n");
+    return;
+  }
+
+  float (*image)[4] = (float (*)[4]) all_buffers;
+  // Work in a 4-color temp buffer with 6-pixel borders filled with
+  // mirrored/interpolated edge data. The extra border helps the
+  // algorithm avoid discontinuities at image edges.
+#define TRANSLATE(n,size) ((n<6)?(6-n):((n>=size-6)?(2*size-n-20):(n-6)))
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) shared(in, image, xtrans, roi_in, roi_out) schedule(static)
+  #pragma omp parallel for default(none) shared(in, image, xtrans, roi_in) schedule(static)
 #endif
-  for (int row=6; row < height-6; row++)
-    for (int col=6; col < width-6; col++)
-      for (int c=0; c<4; c++)
-        if (fcol(row+yoff,col+xoff) == c)
-          image[row*width+col][c] = in[roi_in->width*(row + roi_out->y) + col + roi_out->x];
-        else
-          image[row*width+col][c]=0;
+  for (int row=0; row < height; row++)
+    for (int col=0; col < width; col++)
+      if (col>=6 && row >= 6 && col < width-6 && row < height-6) {
+        const uint8_t f = fcol(row-6+yoff,col-6+xoff);
+        for (int c=0; c<3; c++)
+          image[row*width+col][c] = (c == f) ? in[roi_in->width*(row-6) + (col-6)] : 0;
+      } else {
+        float sum[3] = {0.0f};
+        uint8_t count[3] = {0};
+        for (int y=row-1; y <= row+1; y++)
+          for (int x=col-1; x <= col+1; x++) {
+            const int xx=TRANSLATE(x,width), yy=TRANSLATE(y,height);
+            const uint8_t f = fcol(yy+yoff,xx+xoff);
+            sum[f] += in[roi_in->width*yy + xx];
+            count[f]++;
+          }
+        const int cx=TRANSLATE(col,width), cy=TRANSLATE(row,height);
+        const uint8_t f = fcol(cy+yoff,cx+xoff);
+        for (int c=0; c<3; c++)
+          if (c != f && count[c] != 0)
+            image[row*width+col][c] = sum[c] / count[c];
+          else
+            image[row*width+col][c] = in[roi_in->width*cy + cx];
+      }
 
   /* Map a green hexagon around each non-green pixel and vice versa:	*/
   for (int row=0; row < 3; row++)
@@ -558,18 +550,11 @@ xtrans_markesteijn_interpolate(
     }
   }
 
-  const size_t buffer_size = TS*TS*(ndir*((size_t)sizeof(char)+7*(size_t)sizeof(float)));
-  char *all_buffers = (char *) dt_alloc_align(16, dt_get_num_threads()*buffer_size);
-  if (!all_buffers) {
-    printf("[demosaic] not able to allocate Markesteijn buffers\n");
-    return;
-  }
-
 #ifdef _OPENMP
   #pragma omp parallel for default(none) shared(passes, sgrow, sgcol, xtrans, allhex, image, all_buffers) schedule(static)
 #endif
   for (int top=3; top < height-19; top += TS-16) {
-    char *buffer = all_buffers + dt_get_thread_num() * buffer_size;
+    char *buffer = all_buffers + image_size + dt_get_thread_num() * buffer_size;
     float (*rgb)[TS][TS][3]  = (float(*)[TS][TS][3]) buffer;
     float (*yuv)    [TS][3]  = (float(*)    [TS][3])(buffer + TS*TS*(ndir*3*sizeof(float)));
     float (*drv)[TS][TS]     = (float(*)[TS][TS])   (buffer + TS*TS*(ndir*6*sizeof(float)));
@@ -755,6 +740,15 @@ xtrans_markesteijn_interpolate(
 	}
     }
   }
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(none) shared(image, out, roi_out) schedule(static)
+#endif
+  for (int row=0; row < roi_out->height; row++)
+    for (int col=0; col < roi_out->width; col++)
+      for (int c=0; c<3; c++)
+        out[4*(roi_out->width*row + col) + c] = image[(row+6)*width+(col+6)][c];
+
   free(all_buffers);
 }
 
@@ -770,11 +764,39 @@ void xtrans_lin_interpolate(
   const uint8_t xtrans[6][6])
 {
   // snap to start of mosaic block
-  // FIXME: need this? why?
   roi_out->x = 0;
   roi_out->y = 0;
 
-  border_interpolate(out, in, roi_out, roi_in, xtrans, 1);
+  for (int row=0; row < roi_out->height; row++)
+    for (int col=0; col < roi_out->width; col++) {
+      float sum[3] = {0.0f};
+      uint8_t count[3] = {0};
+      if (col==1 && row >= 1 && row < roi_out->height-1)
+	col = roi_out->width-1;
+      // average all the adjoining pixels inside image by color
+      for (int y=row-1; y != row+2; y++)
+	for (int x=col-1; x != col+2; x++)
+        {
+          const int yy = y + roi_out->y, xx = x + roi_out->x;
+	  if (yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
+          {
+	    const uint8_t f = fcol(y+roi_in->y,x+roi_in->x);
+	    sum[f] += in[y*roi_in->width + x];
+	    count[f]++;
+	  }
+        }
+      const uint8_t f = fcol(row+roi_in->y,col+roi_in->x);
+      // for current cell, copy the current sensor's color data,
+      // interpolate the other two colors from surrounding pixels of
+      // their color
+      for (int c=0; c<3; c++)
+      {
+        if (c != f && count[c] != 0)
+          out[4*(row*roi_out->width+col)+c] = sum[c] / count[c];
+        else
+          out[4*(row*roi_out->width+col)+c] = in[(row+roi_out->y)*roi_in->width+col+roi_out->x];
+      }
+    }
 
   // build interpolation lookup table which for a given offset in the sensor
   // lists neighboring pixels from which to interpolate:
