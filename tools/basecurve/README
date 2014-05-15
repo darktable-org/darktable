@@ -160,7 +160,7 @@ The tool has some known limitations:
  - it computes RGB basecurve on the sole G channel, though all three channels are
    analysed
  - the tool supposes the JPEG files are sRGB ones. It doesn't know or understands
-   about ICC powered profiles. Sorry
+   about ICC profiles.
  - the tool is happily confused by JPEG files that are portrait rotated, and their
    raw is not. The helper script tries to correct that during the conversion phase
    However that code has been tested on few samples only, it may rotate the data
@@ -170,13 +170,17 @@ The tool has some known limitations:
 Cheating script for the braves who read the READMEs up to the last bit
 --------------------------------------------------------------------------------
 
-For Canon and Nikon users, a script called dt-curve-tool-helper is provided. It
-automates:
- - the extraction of the embedded JPEG file found in the raw file,
- - the conversion of the JPEG file and raw file to PPM format,
- - their analysis by the dt-curve-tool using the default save state filename
+A script called dt-curve-tool-helper is provided. It automates most of what has
+been documented in this README:
+ - if provided a raw only, it tries to use a file named as the raw file but with
+   a .JPG or a .jpg extension. If not found it tries to extract the
+   embedded JPEG file from the raw (support for Canon and Nikon for now)
+ - it converts both the JPEG file and the raw file to PPM format,
+ - it launches the analysis by the dt-curve-tool
 
 It even reminds you about the final dt-curve-tool invocation for computing the
 curves.
+
+Use dt-curve-tool-helper -h for more information
 
 Enjoy
