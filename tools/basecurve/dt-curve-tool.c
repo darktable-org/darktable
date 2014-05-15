@@ -111,43 +111,106 @@ hexify(uint8_t* out, const uint8_t* in, size_t len)
   out[2*len] = '\0';
 }
 
+static int
+read_ppm_header(
+  FILE *f,
+  int* wd,
+  int* ht)
+{
+  int r = 0;
+  char buf[2];
+
+  r = fseek(f, 0, SEEK_SET);
+  if (r != 0) {
+    r = -1;
+    goto exit;
+  }
+
+  // read and check header
+  r = fread(buf, 1, 2, f);
+  if (r != 2 || buf[0] != 'P' || buf[1] != '6')
+  {
+    r = -1;
+    goto exit;
+  }
+
+  // scan for width and height
+  r = fscanf(f, "%*[^0-9]%d %d\n%*[^\n]", wd, ht);
+
+  // read final newline
+  fgetc(f);
+
+  // finalize return value
+  r = (r != 2) ? -1 : 0;
+
+exit:
+  return r;
+}
+
 static uint16_t*
 read_ppm16(const char *filename, int *wd, int *ht)
 {
-  FILE *f = fopen(filename, "rb");
-  if(!f) return 0;
-  fscanf(f, "P6\n%d %d\n%*[^\n]", wd, ht);
-  fgetc(f); // eat only one newline
+  FILE *f = NULL;
+  uint16_t *p = NULL;
 
-  uint16_t *p = (uint16_t *)malloc(sizeof(uint16_t)*3*(*wd)*(*ht));
+  f = fopen(filename, "rb");
+  if (!f)
+  {
+    goto exit;
+  }
+
+  if (read_ppm_header(f, wd, ht)) {
+    goto exit;
+  }
+
+  p = (uint16_t *)malloc(sizeof(uint16_t)*3*(*wd)*(*ht));
   int rd = fread(p, sizeof(uint16_t)*3, (*wd)*(*ht), f);
-  fclose(f);
   if(rd != (*wd)*(*ht))
   {
     fprintf(stderr, "[read_ppm] unexpected end of file! maybe you're loading an 8-bit ppm here instead of a 16-bit one? (%s)\n", filename);
     free(p);
-    return 0;
+    p = NULL;
   }
+
+exit:
+  if (f) {
+    fclose(f);
+    f = NULL;
+  }
+
   return p;
 }
 
 static uint8_t*
 read_ppm8(const char *filename, int *wd, int *ht)
 {
-  FILE *f = fopen(filename, "rb");
-  if(!f) return 0;
-  fscanf(f, "P6\n%d %d\n%*[^\n]", wd, ht);
-  fgetc(f); // eat only one newline
+  FILE* f = NULL;
+  uint8_t *p = NULL;
 
-  uint8_t *p = (uint8_t *)malloc(sizeof(uint8_t)*3*(*wd)*(*ht));
+  f = fopen(filename, "rb");
+  if(!f) {
+    goto exit;
+  }
+
+  if (read_ppm_header(f, wd, ht)) {
+    goto exit;
+  }
+
+  p = (uint8_t *)malloc(sizeof(uint8_t)*3*(*wd)*(*ht));
   int rd = fread(p, sizeof(uint8_t)*3, (*wd)*(*ht), f);
-  fclose(f);
   if(rd != (*wd)*(*ht))
   {
     fprintf(stderr, "[read_ppm] unexpected end of file! (%s)\n", filename);
     free(p);
-    return 0;
+    p  = NULL;
   }
+
+exit:
+  if (f) {
+    fclose(f);
+    f = NULL;
+  }
+
   return p;
 }
 
