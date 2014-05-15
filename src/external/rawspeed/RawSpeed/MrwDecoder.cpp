@@ -91,10 +91,15 @@ const char* MrwDecoder::modelName(uint64 cameraid) {
 }
 
 RawImage MrwDecoder::decodeRawInternal() {
+  uint32 imgsize;
+
   mRaw->dim = iPoint2D(raw_width, raw_height);
   mRaw->createData();
 
-  uint32 imgsize = raw_width * raw_height * 3 / 2;
+  if (packed)
+    imgsize = raw_width * raw_height * 3 / 2;
+  else
+    imgsize = raw_width * raw_height * 2;
 
   if (!mFile->isValid(data_offset))
     ThrowRDE("MRW decoder: Data offset after EOF, file probably truncated");
