@@ -3664,7 +3664,7 @@
 			<Vertical x="6032" width="14"/>
 		</BlackAreas>
 	</Camera>
-	<Camera make="KONICA MINOLTA" model="DYNAX 5D">
+	<Camera make="MINOLTA" model="DYNAX 5D">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>
 			<Color x="1" y="0">GREEN</Color>

@@ -37,19 +37,49 @@ int MrwDecoder::isMRW(FileMap* input) {
   return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
 }
 
+#define get2BE(data,pos) ((((ushort16)(data)[pos]) << 8) | ((ushort16)(data)[pos+1]))
+
+#define get4BE(data,pos) ((((uint32)(data)[pos]) << 24) | (((uint32)(data)[pos+1]) << 16) | \
+                          (((uint32)(data)[pos+2]) << 8) | ((uint32)(data)[pos+3]))
+
+#define get8LE(data,pos) ((((uint64)(data)[pos+7]) << 56) | (((uint64)(data)[pos+6]) << 48) | \
+                          (((uint64)(data)[pos+5]) << 40) | (((uint64)(data)[pos+4]) << 32) | \
+                          (((uint64)(data)[pos+3]) << 24) | (((uint64)(data)[pos+2]) << 16) | \
+                          (((uint64)(data)[pos+1]) << 8) | ((uint64)(data)[pos]))
+                        
+static mrw_camera_t mrw_camera_table[] = {
+  {"21860002", "DYNAX 5D"},
+};
+
 void MrwDecoder::parseHeader() {
   const unsigned char* data = mFile->getData(0);
   
   if (!isMRW(mFile))
     ThrowRDE("This isn't actually a MRW file, why are you calling me?");
     
-  // FIXME: We need to be more complete and parse the full PRD, WBG and TTW 
-  //        entries (see dcraw parse_minolta code)
-  data_offset = ((data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7])+8;
-  raw_height = (data[24] << 8) | data[25];
-  raw_width = (data[26] << 8) | data[27];
+  data_offset = get4BE(data,4)+8;
+  
+  // Let's just get all we need from the PRD block and be done with it
+  raw_height = get2BE(data,24);
+  raw_width = get2BE(data,26);
+  packed = (data[28] == 12);
+  cameraid = get8LE(data,16);
+  cameraName = modelName(cameraid);
+  if (!cameraName) {
+    uchar8 cameracode[9] = {0};
+    *((uint64 *) cameracode) = cameraid;
+    ThrowRDE("MRW decoder: Unknown camera with ID %s", cameracode);
+  }
 }
 
+const char* MrwDecoder::modelName(uint64 cameraid) {
+  for (uint32 i=0; i<sizeof(mrw_camera_table)/sizeof(mrw_camera_table[0]); i++) { 
+    if (*((uint64*) mrw_camera_table[i].code) == cameraid) {
+        return mrw_camera_table[i].name;
+    }
+  }
+  return NULL;
+}
 
 RawImage MrwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(raw_width, raw_height);
@@ -75,16 +105,14 @@ RawImage MrwDecoder::decodeRawInternal() {
 }
 
 void MrwDecoder::checkSupportInternal(CameraMetaData *meta) {
-  //FIXME: Get the actual make and model from the TIFF section
-  this->checkCameraSupported(meta, "KONICA MINOLTA", "DYNAX 5D", "");
+  this->checkCameraSupported(meta, "MINOLTA", cameraName, "");
 }
 
 void MrwDecoder::decodeMetaDataInternal(CameraMetaData *meta) {
   //Default
   int iso = 0;
 
-  //FIXME: Get the actual make and model from the TIFF section
-  setMetaData(meta, "KONICA MINOLTA", "DYNAX 5D", "", iso);
+  setMetaData(meta, "MINOLTA", cameraName, "", iso);
 }
 
 } // namespace RawSpeed

@@ -24,7 +24,14 @@
 
 #include "RawDecoder.h"
 
+#define MRW_DYNAX_5D 0
+
 namespace RawSpeed {
+
+typedef struct {
+  const char* code;
+  const char* name;
+} mrw_camera_t;
 
 class MrwDecoder :
   public RawDecoder
@@ -38,7 +45,10 @@ public:
   static int isMRW(FileMap* input);
 protected:
   virtual void parseHeader();
-  uint32 raw_width, raw_height, data_offset;
+  uint32 raw_width, raw_height, data_offset, packed;
+  uint64 cameraid;
+  const char* cameraName;
+  static const char* modelName(uint64 cameraid);
 };
 
 } // namespace RawSpeed
