@@ -724,8 +724,8 @@ main(int argc, char** argv)
   // jpeg related vars
   int jpeg_width = -1;
   int jpeg_height = -1;
-  uint8_t *jpeg_raw = NULL;
-  float* jpeg_raw_f = NULL;
+  uint8_t *jpeg_buff = NULL;
+  float* jpeg_buff_f = NULL;
 
   // all in one FILE handle
   FILE* f = NULL;
@@ -797,8 +797,8 @@ main(int argc, char** argv)
   }
 
   // read the JPEG PPM file
-  jpeg_raw = read_ppm8(opt.filename_jpeg, &jpeg_width, &jpeg_height);
-  if(!jpeg_raw)
+  jpeg_buff = read_ppm8(opt.filename_jpeg, &jpeg_width, &jpeg_height);
+  if(!jpeg_buff)
   {
     fprintf(stderr, "error: failed reading JPEG file\n");
     goto exit;
@@ -835,18 +835,18 @@ main(int argc, char** argv)
   free(raw_buff);
   raw_buff = NULL;
 
-  jpeg_raw_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
-  if (!jpeg_raw_f) {
+  jpeg_buff_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  if (!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
   }
 
   // linearize and normalize to unit cube
-  linearize_8bit(jpeg_width, jpeg_height, jpeg_raw, jpeg_raw_f);
+  linearize_8bit(jpeg_width, jpeg_height, jpeg_buff, jpeg_buff_f);
 
   // get rid of original 8bit data
-  free(jpeg_raw);
-  jpeg_raw = NULL;
+  free(jpeg_buff);
+  jpeg_buff = NULL;
 
   /* ------------------------------------------------------------------------
    * Overflow test, we test for worst case scenario, all pixels would be
@@ -887,7 +887,7 @@ main(int argc, char** argv)
 
   for (int ch=0; ch<3; ch++)
   {
-    build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw_f, raw_offx, raw_offy, raw_width, raw_buff_f, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
+    build_channel_basecurve(jpeg_width, jpeg_height, jpeg_buff_f, raw_offx, raw_offy, raw_width, raw_buff_f, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
   }
 
   {
@@ -921,7 +921,7 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw_f, raw_offx, raw_offy, raw_width, raw_buff_f, curve_tone, hist_tone);
+  build_tonecurve(jpeg_width, jpeg_height, jpeg_buff_f, raw_offx, raw_offy, raw_width, raw_buff_f, curve_tone, hist_tone);
 
   {
     float* ch0 = &curve_tone[0*CURVE_RESOLUTION];
@@ -945,8 +945,8 @@ main(int argc, char** argv)
   free(raw_buff_f);
   raw_buff_f = NULL;
 
-  free(jpeg_raw_f);
-  jpeg_raw_f = NULL;
+  free(jpeg_buff_f);
+  jpeg_buff_f = NULL;
 
   /* ------------------------------------------------------------------------
    * Write save state w/ the gathered data
@@ -1148,17 +1148,17 @@ exit:
     free(raw_buff);
     raw_buff = NULL;
   }
-  if (jpeg_raw) {
-    free(jpeg_raw);
-    jpeg_raw = NULL;
+  if (jpeg_buff) {
+    free(jpeg_buff);
+    jpeg_buff = NULL;
   }
   if (raw_buff_f) {
     free(raw_buff_f);
     raw_buff_f = NULL;
   }
-  if (jpeg_raw_f) {
-    free(jpeg_raw_f);
-    jpeg_raw_f = NULL;
+  if (jpeg_buff_f) {
+    free(jpeg_buff_f);
+    jpeg_buff_f = NULL;
   }
   if (csample.m_Samples)
   {
