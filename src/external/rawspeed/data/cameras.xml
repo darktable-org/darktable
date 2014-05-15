@@ -3704,6 +3704,16 @@
 		<Crop x="0" y="0" width="3272" height="2456"/>
 		<Sensor black="0" white="3965"/>
 	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE 7">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
 	<Camera make="MINOLTA" model="DIMAGE 7I">
 		<CFA width="2" height="2">
 			<Color x="0" y="0">RED</Color>

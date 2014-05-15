@@ -50,6 +50,7 @@ int MrwDecoder::isMRW(FileMap* input) {
 static mrw_camera_t mrw_camera_table[] = {
   {"27820001", "DIMAGE A1"},
   {"27200001", "DIMAGE A2"},
+  {"27660001", "DIMAGE 7"},
   {"27790001", "DIMAGE 7I"},
   {"27780001", "DIMAGE 7HI"},
   {"21810002", "DYNAX 7D"},
