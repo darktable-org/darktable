@@ -317,9 +317,44 @@ enum module_type
 };
 
 static void
+linearize_8bit(
+  int width, int height,
+  uint8_t* s,
+  float* d)
+{
+  // XXX support ICC profiles here ?
+  for (int y=0; y<height; y++) {
+    for (int x=0; x<width; x++) {
+      d[0] = linearize_sRGB((float)s[0]/255.f);
+      d[1] = linearize_sRGB((float)s[1]/255.f);
+      d[2] = linearize_sRGB((float)s[2]/255.f);
+      d += 3;
+      s += 3;
+    }
+  }
+}
+
+static void
+linearize_16bit(
+  int width, int height,
+  uint16_t* s,
+  float* d)
+{
+  for (int y=0; y<height; y++) {
+    for (int x=0; x<width; x++) {
+      d[0] = (float)s[0]/65535.f;
+      d[1] = (float)s[1]/65535.f;
+      d[2] = (float)s[2]/65535.f;
+      d += 3;
+      s += 3;
+    }
+  }
+}
+
+static void
 build_channel_basecurve(
-  int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
-  int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
+  int width_jpeg, int height_jpeg, float* buf_jpeg,
+  int offx_raw, int offy_raw, int width_raw, float* buf_raw,
   int ch, float* curve, uint32_t* cnt)
 {
   for(int j=0;j<height_jpeg;j++)
@@ -331,16 +366,12 @@ build_channel_basecurve(
       const int rj = offy_raw + j;
 
       // grab channel from JPEG first
-      float val = buf_jpeg[3*(width_jpeg*j + i) + ch]/255.f;
-
-      // linearize the sRGB value
-      // XXX: this supposes it is sRGB, support arbitrary colorspace with ICC lib ?
-      float jpegVal = linearize_sRGB(val);
+      float jpegVal = buf_jpeg[3*(width_jpeg*j + i) + ch];
 
       // grab RGB from RAW
-      float rawVal = (float)buf_raw[3*(width_raw*rj + ri) + ch]/65535.f;
+      float rawVal = buf_raw[3*(width_raw*rj + ri) + ch];
 
-      uint16_t raw = (uint16_t)((rawVal*65535.f) + 0.5f);
+      size_t raw = (size_t)((rawVal*(float)(CURVE_RESOLUTION-1)) + 0.5f);
       curve[raw] = (curve[raw]*cnt[raw] + jpegVal)/(cnt[raw] + 1.0f);
       cnt[raw]++;
     }
@@ -349,8 +380,8 @@ build_channel_basecurve(
 
 static void
 build_tonecurve(
-  int width_jpeg, int height_jpeg, uint8_t* buf_jpeg,
-  int offx_raw, int offy_raw, int width_raw, uint16_t* buf_raw,
+  int width_jpeg, int height_jpeg, float* buf_jpeg,
+  int offx_raw, int offy_raw, int width_raw, float* buf_raw,
   float* curve, uint32_t* hist)
 {
   float* cL = curve;
@@ -370,14 +401,9 @@ build_tonecurve(
       const int rj = offy_raw + j;
 
       // grab RGB from JPEG first
-      float r = buf_jpeg[3*(width_jpeg*j + i) + 0]/255.f;
-      float g = buf_jpeg[3*(width_jpeg*j + i) + 1]/255.f;
-      float b = buf_jpeg[3*(width_jpeg*j + i) + 2]/255.f;
-
-      // linearize the sRGB value (this supposes it is sRGB, TODO support arbitrary colorspace with ICC lib ?)
-      r = linearize_sRGB(r);
-      g = linearize_sRGB(g);
-      b = linearize_sRGB(b);
+      float r = buf_jpeg[3*(width_jpeg*j + i) + 0];
+      float g = buf_jpeg[3*(width_jpeg*j + i) + 1];
+      float b = buf_jpeg[3*(width_jpeg*j + i) + 2];
 
       // Compute the JPEG L val
       float L_jpeg;
@@ -387,9 +413,9 @@ build_tonecurve(
       Lab2UnitCube(&L_jpeg, &a_jpeg, &b_jpeg);
 
       // grab RGB from RAW
-      r = (float)buf_raw[3*(width_raw*rj + ri) + 0]/65535.f;
-      g = (float)buf_raw[3*(width_raw*rj + ri) + 1]/65535.f;
-      b = (float)buf_raw[3*(width_raw*rj + ri) + 2]/65535.f;
+      r = buf_raw[3*(width_raw*rj + ri) + 0];
+      g = buf_raw[3*(width_raw*rj + ri) + 1];
+      b = buf_raw[3*(width_raw*rj + ri) + 2];
 
       // Compute the RAW L val
       float L_raw;
@@ -398,9 +424,9 @@ build_tonecurve(
       RGB2Lab(&L_raw, &a_raw, &b_raw, r, g, b);
       Lab2UnitCube(&L_raw, &a_raw, &b_raw);
 
-      uint16_t Li = (uint16_t)(L_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
-      uint16_t ai = (uint16_t)(a_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
-      uint16_t bi = (uint16_t)(b_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      size_t Li = (size_t)(L_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      size_t ai = (size_t)(a_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
+      size_t bi = (size_t)(b_raw*(float)(CURVE_RESOLUTION-1) + 0.5f);
       cL[Li] = (cL[Li]*hL[Li] + L_jpeg)/(hL[Li] + 1.0f);
       ca[ai] = (ca[ai]*ha[ai] + a_jpeg)/(ha[ai] + 1.0f);
       cb[bi] = (cb[bi]*hb[bi] + b_jpeg)/(hb[bi] + 1.0f);
@@ -693,11 +719,13 @@ main(int argc, char** argv)
   int raw_offx = -1;
   int raw_offy = -1;
   uint16_t *raw_buff = NULL;
+  float* raw_buff_f = NULL;
 
   // jpeg related vars
   int jpeg_width = -1;
   int jpeg_height = -1;
   uint8_t *jpeg_raw = NULL;
+  float* jpeg_raw_f = NULL;
 
   // all in one FILE handle
   FILE* f = NULL;
@@ -760,10 +788,28 @@ main(int argc, char** argv)
     goto fit;
   }
 
+  // read the raw PPM file
   raw_buff = read_ppm16(opt.filename_raw, &raw_width, &raw_height);
   if(!raw_buff)
   {
-    fprintf(stderr, "error: failed reading the RAW file data\n");
+    fprintf(stderr, "error: failed reading the raw file data\n");
+    goto exit;
+  }
+
+  // read the JPEG PPM file
+  jpeg_raw = read_ppm8(opt.filename_jpeg, &jpeg_width, &jpeg_height);
+  if(!jpeg_raw)
+  {
+    fprintf(stderr, "error: failed reading JPEG file\n");
+    goto exit;
+  }
+
+  // discard rotated JPEGs for now
+  raw_offx = (raw_width - jpeg_width)/2;
+  raw_offy = (raw_height - jpeg_height)/2;
+  if(raw_offx < 0 || raw_offy < 0)
+  {
+    fprintf(stderr, "error: jpeg has a higher resolution than the raw ? (%dx%d vs %dx%d)\n", jpeg_width, jpeg_height, raw_width, raw_height);
     goto exit;
   }
 
@@ -776,20 +822,31 @@ main(int argc, char** argv)
     }
   }
 
-  jpeg_raw = read_ppm8(opt.filename_jpeg, &jpeg_width, &jpeg_height);
-  if(!jpeg_raw)
-  {
-    fprintf(stderr, "error: failed reading JPEG file\n");
+  raw_buff_f = calloc(1, 3*raw_width*raw_height*sizeof(float));
+  if (!raw_buff_f) {
+    fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
   }
 
-  raw_offx = (raw_width - jpeg_width)/2;
-  raw_offy = (raw_height - jpeg_height)/2;
-  if(raw_offx < 0 || raw_offy < 0)
-  {
-    fprintf(stderr, "error: jpeg has a higher resolution than the raw ? (%dx%d vs %dx%d)\n", jpeg_width, jpeg_height, raw_width, raw_height);
+  // normalize to [0,1] cube once for all
+  linearize_16bit(raw_width, raw_height, raw_buff, raw_buff_f);
+
+  // get rid of original 16bit data
+  free(raw_buff);
+  raw_buff = NULL;
+
+  jpeg_raw_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  if (!jpeg_raw_f) {
+    fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
   }
+
+  // linearize and normalize to unit cube
+  linearize_8bit(jpeg_width, jpeg_height, jpeg_raw, jpeg_raw_f);
+
+  // get rid of original 8bit data
+  free(jpeg_raw);
+  jpeg_raw = NULL;
 
   /* ------------------------------------------------------------------------
    * Overflow test, we test for worst case scenario, all pixels would be
@@ -830,7 +887,7 @@ main(int argc, char** argv)
 
   for (int ch=0; ch<3; ch++)
   {
-    build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
+    build_channel_basecurve(jpeg_width, jpeg_height, jpeg_raw_f, raw_offx, raw_offy, raw_width, raw_buff_f, ch, curve_base+ch*CURVE_RESOLUTION, hist_base+ch*CURVE_RESOLUTION);
   }
 
   {
@@ -864,7 +921,7 @@ main(int argc, char** argv)
     goto exit;
   }
 
-  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw, raw_offx, raw_offy, raw_width, raw_buff, curve_tone, hist_tone);
+  build_tonecurve(jpeg_width, jpeg_height, jpeg_raw_f, raw_offx, raw_offy, raw_width, raw_buff_f, curve_tone, hist_tone);
 
   {
     float* ch0 = &curve_tone[0*CURVE_RESOLUTION];
@@ -885,11 +942,11 @@ main(int argc, char** argv)
   fclose(f);
   f = NULL;
 
-  free(raw_buff);
-  raw_buff = NULL;
+  free(raw_buff_f);
+  raw_buff_f = NULL;
 
-  free(jpeg_raw);
-  jpeg_raw = NULL;
+  free(jpeg_raw_f);
+  jpeg_raw_f = NULL;
 
   /* ------------------------------------------------------------------------
    * Write save state w/ the gathered data
@@ -1086,6 +1143,22 @@ exit:
   {
     fclose(f);
     f = NULL;
+  }
+  if (raw_buff) {
+    free(raw_buff);
+    raw_buff = NULL;
+  }
+  if (jpeg_raw) {
+    free(jpeg_raw);
+    jpeg_raw = NULL;
+  }
+  if (raw_buff_f) {
+    free(raw_buff_f);
+    raw_buff_f = NULL;
+  }
+  if (jpeg_raw_f) {
+    free(jpeg_raw_f);
+    jpeg_raw_f = NULL;
   }
   if (csample.m_Samples)
   {
