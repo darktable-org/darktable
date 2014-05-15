@@ -58,6 +58,9 @@ static mrw_camera_t mrw_camera_table[] = {
 void MrwDecoder::parseHeader() {
   const unsigned char* data = mFile->getData(0);
   
+  if (mFile->getSize() < 30)
+    ThrowRDE("Not a valid MRW file (size too small)");
+
   if (!isMRW(mFile))
     ThrowRDE("This isn't actually a MRW file, why are you calling me?");
     
