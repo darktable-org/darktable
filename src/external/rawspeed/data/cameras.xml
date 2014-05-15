@@ -3665,7 +3665,6 @@
 		</BlackAreas>
 	</Camera>
 	<Camera make="SONY" model="DSLR-A100">
-		<!-- Files doesn't have a valid TIFF structure -->
 		<CFA width="2" height="2">
 			<Color x="0" y="0">GREEN</Color>
 			<Color x="1" y="0">RED</Color>
