@@ -70,7 +70,7 @@ void MrwDecoder::parseHeader() {
   // Let's just get all we need from the PRD block and be done with it
   raw_height = get2BE(data,24);
   raw_width = get2BE(data,26);
-  packed = (data[28] == 12);
+  packed = (data[32] == 12);
   cameraid = get8LE(data,16);
   cameraName = modelName(cameraid);
   if (!cameraName) {
@@ -103,7 +103,10 @@ RawImage MrwDecoder::decodeRawInternal() {
   ByteStream input(mFile->getData(data_offset), imgsize);
  
   try {
-    Decode12BitRawBE(input, raw_width, raw_height);
+    if (packed)
+      Decode12BitRawBE(input, raw_width, raw_height);
+    else
+      Decode12BitRawBEunpacked(input, raw_width, raw_height);
   } catch (IOException &e) {
     mRaw->setError(e.what());
     // Let's ignore it, it may have delivered somewhat useful data.
