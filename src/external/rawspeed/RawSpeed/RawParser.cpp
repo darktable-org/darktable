@@ -38,17 +38,20 @@ RawParser::~RawParser(void) {
 }
 
 RawDecoder* RawParser::getDecoder() {
-  // If the file starts with "\0MRM" it's a MRW
   if (MrwDecoder::isMRW(mInput)) {
     try {
       return new MrwDecoder(mInput);
-    } catch (RawDecoderException) {}
+    } catch (RawDecoderException *e) {
+      fprintf(stderr, "rawspeed: Error decoding MRW: %s\n", e->what());
+    }
   } else {
     try {
       TiffParser p(mInput);
       p.parseData();
       return p.getDecoder();
-    } catch (TiffParserException) {}
+    } catch (TiffParserException *e) {
+      fprintf(stderr, "rawspeed: Error parsing TIFF: %s\n", e->what());
+    }
   }
   throw RawDecoderException("No decoder found. Sorry.");
   return NULL;
