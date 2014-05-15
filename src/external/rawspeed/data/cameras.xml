@@ -3674,6 +3674,56 @@
 		<Crop x="0" y="0" width="3016" height="2008"/>
 		<Sensor black="0" white="4095"/>
 	</Camera>
+  <Camera make="MINOLTA" model="DYNAX 7D">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="3016" height="2008"/>
+		<Sensor black="0" white="4095"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE A1">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE A2">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="3272" height="2456"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE 7I">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
+	<Camera make="MINOLTA" model="DIMAGE 7HI">
+		<CFA width="2" height="2">
+			<Color x="0" y="0">RED</Color>
+			<Color x="1" y="0">GREEN</Color>
+			<Color x="0" y="1">GREEN</Color>
+			<Color x="1" y="1">BLUE</Color>
+		</CFA>
+		<Crop x="0" y="0" width="2568" height="1928"/>
+		<Sensor black="0" white="3965"/>
+	</Camera>
 	<Camera make="SONY" model="DSLR-A100" supported="no">
 		<!-- Files doesn't have a valid TIFF structure -->
 		<CFA width="2" height="2">
