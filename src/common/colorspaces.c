@@ -987,7 +987,8 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   {
     snprintf(makermodel, makermodel_len, "%s", model);
   }
-  else if (!strcmp(maker, "KONICA MINOLTA")) {
+  else if (!strcmp(maker, "KONICA MINOLTA") &&
+           (!strcmp(model, "MAXXUM" || !strcmp(model, "DYNAX") || !strcmp(model, "ALPHA")) {
     // Use the dcraw name name for the Konica Minolta 5D/7D (without Konica)
     int numoffset = !strncmp(model, "MAXXUM", 6) ? 7 : 6;
     snprintf(makermodel, makermodel_len, "MINOLTA DYNAX %s", model+numoffset);
