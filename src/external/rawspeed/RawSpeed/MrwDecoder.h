@@ -30,12 +30,14 @@ class MrwDecoder :
   public RawDecoder
 {
 public:
-  MrwDecoder(uint32 data_offset, uint32 raw_width, uint32 raw_height, FileMap* file);
+  MrwDecoder(FileMap* file);
   virtual ~MrwDecoder(void);
   virtual RawImage decodeRawInternal();
   virtual void checkSupportInternal(CameraMetaData *meta);
   virtual void decodeMetaDataInternal(CameraMetaData *meta);
+  static int isMRW(FileMap* input);
 protected:
+  virtual void parseHeader();
   uint32 raw_width, raw_height, data_offset;
 };
 

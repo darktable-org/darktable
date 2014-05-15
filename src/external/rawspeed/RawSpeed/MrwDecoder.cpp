@@ -24,15 +24,32 @@
 
 namespace RawSpeed {
 
-MrwDecoder::MrwDecoder(uint32 doff, uint32 w, uint32 h, FileMap* file) :
+MrwDecoder::MrwDecoder(FileMap* file) :
     RawDecoder(file) {
-  data_offset = doff;
-  raw_width = w;
-  raw_height = h;
+  parseHeader();
 }
 
 MrwDecoder::~MrwDecoder(void) {
 }
+
+int MrwDecoder::isMRW(FileMap* input) {
+  const uchar8* data = input->getData(0);
+  return data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D;
+}
+
+void MrwDecoder::parseHeader() {
+  const unsigned char* data = mFile->getData(0);
+  
+  if (!isMRW(mFile))
+    ThrowRDE("This isn't actually a MRW file, why are you calling me?");
+    
+  // FIXME: We need to be more complete and parse the full PRD, WBG and TTW 
+  //        entries (see dcraw parse_minolta code)
+  data_offset = ((data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7])+8;
+  raw_height = (data[24] << 8) | data[25];
+  raw_width = (data[26] << 8) | data[27];
+}
+
 
 RawImage MrwDecoder::decodeRawInternal() {
   mRaw->dim = iPoint2D(raw_width, raw_height);
@@ -41,9 +58,9 @@ RawImage MrwDecoder::decodeRawInternal() {
   uint32 imgsize = raw_width * raw_height * 3 / 2;
 
   if (!mFile->isValid(data_offset))
-    ThrowRDE("Sony MRW decoder: Data offset after EOF, file probably truncated");
+    ThrowRDE("MRW decoder: Data offset after EOF, file probably truncated");
   if (!mFile->isValid(data_offset+imgsize-1))
-    ThrowRDE("Sony MRW decoder: Image end after EOF, file probably truncated");
+    ThrowRDE("MRW decoder: Image end after EOF, file probably truncated");
 
   ByteStream input(mFile->getData(data_offset), imgsize);
  

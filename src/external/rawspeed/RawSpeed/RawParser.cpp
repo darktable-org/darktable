@@ -2,6 +2,8 @@
 #include "RawParser.h"
 #include "TiffParserException.h"
 #include "TiffParser.h"
+#include "MrwDecoder.h"
+
 
 /*
     RawSpeed - RAW file decoder.
@@ -36,11 +38,18 @@ RawParser::~RawParser(void) {
 }
 
 RawDecoder* RawParser::getDecoder() {
-  try {
-    TiffParser p(mInput);
-    p.parseData();
-    return p.getDecoder();
-  } catch (TiffParserException) {}
+  // If the file starts with "\0MRM" it's a MRW
+  if (MrwDecoder::isMRW(mInput)) {
+    try {
+      return new MrwDecoder(mInput);
+    } catch (RawDecoderException) {}
+  } else {
+    try {
+      TiffParser p(mInput);
+      p.parseData();
+      return p.getDecoder();
+    } catch (TiffParserException) {}
+  }
   throw RawDecoderException("No decoder found. Sorry.");
   return NULL;
 }

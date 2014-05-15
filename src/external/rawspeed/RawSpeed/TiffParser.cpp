@@ -49,26 +49,8 @@ TiffParser::~TiffParser(void) {
 
 void TiffParser::parseData() {
   const unsigned char* data = mInput->getData(0);
-
   if (mInput->getSize() < 16)
     throw TiffParserException("Not a TIFF file (size too small)");
-    
-  if (data[0] == 0x00 && data[1] == 0x4D && data[2] == 0x52 && data[3] == 0x4D) {
-    // We're in a MRW, lets get what we need and bail out
-    // FIXME: We need to be more complete and parse the full PRD, WBG and TTW 
-    //        entries (see dcraw parse_minolta code)
-    mrw_parsing = TRUE;
-    data_offset = ((data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7])+8;
-    raw_height = (data[24] << 8) | data[25];
-    raw_width = (data[26] << 8) | data[27];
-    
-    //fprintf(stderr, "Will try to decode MRW at offset %d, with size %dx%d\n", data_offset, raw_width, raw_height);
-    
-    return;
-  } else {
-    mrw_parsing = FALSE;
-  }
-  
   if (data[0] != 0x49 || data[1] != 0x49) {
     tiff_endian = big;
     if (data[0] != 0x4D || data[1] != 0x4D)
@@ -110,9 +92,6 @@ void TiffParser::parseData() {
 }
 
 RawDecoder* TiffParser::getDecoder() {
-  if (mrw_parsing)
-    return new MrwDecoder(data_offset, raw_width, raw_height, mInput);
-
   if (!mRootIFD)
     parseData();
 
@@ -137,7 +116,6 @@ RawDecoder* TiffParser::getDecoder() {
     for (vector<TiffIFD*>::iterator i = potentials.begin(); i != potentials.end(); ++i) {
       string make = (*i)->getEntry(MAKE)->getString();
       TrimSpaces(make);
-      fprintf(stderr, "Got camera from maker '%s'", make.c_str());
       if (!make.compare("Canon")) {
         mRootIFD = NULL;
         return new Cr2Decoder(root, mInput);
@@ -176,8 +154,6 @@ RawDecoder* TiffParser::getDecoder() {
       }
     }
   }
-  fprintf(stderr, "Didn't find a maker\n");
-
   throw TiffParserException("No decoder found. Sorry.");
   return NULL;
 }

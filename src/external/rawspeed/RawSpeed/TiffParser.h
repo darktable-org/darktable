@@ -31,7 +31,6 @@
 #include "DngDecoder.h"
 #include "Cr2Decoder.h"
 #include "ArwDecoder.h"
-#include "MrwDecoder.h"
 #include "PefDecoder.h"
 #include "NefDecoder.h"
 #include "OrfDecoder.h"
@@ -55,8 +54,6 @@ protected:
   FileMap *mInput;
   TiffIFD* mRootIFD;
   Endianness host_endian;
-  
-  uint32 raw_width, raw_height, mrw_parsing, data_offset;
 };
 
 } // namespace RawSpeed
