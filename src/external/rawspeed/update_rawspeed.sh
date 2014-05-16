@@ -1,6 +1,11 @@
 #!/bin/bash
-svn export https://rawstudio.org/svn/rawspeed/RawSpeed --force
-svn export https://rawstudio.org/svn/rawspeed/data --force
+
+wget https://github.com/klauspost/rawspeed/archive/develop.zip
+
+unzip -j -o develop.zip rawspeed-develop/RawSpeed/* -d RawSpeed
+unzip -j -o develop.zip rawspeed-develop/data/* -d data
+
+rm develop.zip
 
 fromdos RawSpeed/*
 fromdos data/*
