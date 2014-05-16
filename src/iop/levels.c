@@ -385,32 +385,16 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
     d->percentiles[1] = p->percentiles[1];
     d->percentiles[2] = p->percentiles[2];
 
-    if(self->dev->gui_attached)
+    if(self->dev->gui_attached && histogram_is_good)
     {
       /*
        * if in GUI, user might zoomed main view => we would get histogram of
        * only part of image, so if in GUI we must always use histogram of
        * preview pipe, wich is always full-size and have biggest size
        */
-      if(!histogram_is_good)
-      {
-        /*
-         * but sadly we do not yet have a histogram to do so, so this time we
-         * process asif not in gui, and in expose() immediately reprocess,
-         * thus everything works as expected
-         */
-        g->reprocess_on_next_expose = TRUE;
-        d->mode = p->mode;
-        //commit_params_late() will compute LUT later
-        self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
-        self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
-      }
-      else
-      {
-        d->mode = p->mode;
-        commit_params_late(self, piece);
-        d->mode = LEVELS_MODE_MANUAL;
-      }
+      d->mode = p->mode;
+      commit_params_late(self, piece);
+      d->mode = LEVELS_MODE_MANUAL;
     }
     else
     {
@@ -418,6 +402,16 @@ void commit_params (dt_iop_module_t *self, dt_iop_params_t *p1,
       //commit_params_late() will compute LUT later
       self->request_histogram        &= ~(DT_REQUEST_ONLY_IN_GUI);
       self->request_histogram_source  =  (DT_DEV_PIXELPIPE_ANY);
+
+      if(self->dev->gui_attached && !histogram_is_good)
+      {
+        /*
+         * but sadly we do not yet have a histogram to do so, so this time we
+         * process asif not in gui, and in expose() immediately reprocess,
+         * thus everything works as expected
+         */
+        g->reprocess_on_next_expose = TRUE;
+      }
     }
   }
   else
