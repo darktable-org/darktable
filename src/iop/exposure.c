@@ -644,7 +644,19 @@ static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float 
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
-  if(p->mode == EXPOSURE_MODE_MANUAL)
+  if(p->mode == EXPOSURE_MODE_DEFLICKER)
+  {
+    dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
+
+    p->deflicker_level = white;
+
+    darktable.gui->reset = 1;
+    dt_bauhaus_slider_set(g->deflicker_level, p->deflicker_level);
+    darktable.gui->reset = 0;
+
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+  }
+  else
   {
     exposure_set_white(self, white);
     autoexp_disable(self);
@@ -654,7 +666,15 @@ static void dt_iop_exposure_set_white(struct dt_iop_module_t *self, const float 
 static float dt_iop_exposure_get_white(struct dt_iop_module_t *self)
 {
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
-  return exposure2white(p->exposure);
+
+  if(p->mode == EXPOSURE_MODE_DEFLICKER)
+  {
+    return p->deflicker_level;
+  }
+  else
+  {
+    return exposure2white(p->exposure);
+  }
 }
 
 static void exposure_set_black(struct dt_iop_module_t *self, const float black)
