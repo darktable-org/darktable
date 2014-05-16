@@ -166,8 +166,8 @@ void tiling_callback  (struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop
 
   if(d->mode == MODE_NLMEANS)
   {
-    const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-    const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+    const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
+    const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // nbhood
 
     tiling->factor = 4.0f + 0.25f*NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
     tiling->maxbuf = 1.0f;
@@ -681,9 +681,9 @@ void process_nlmeans(
 
   // TODO: fixed K to use adaptive size trading variance and bias!
   // adjust to zoom size:
-  const float scale = roi_in->scale / piece->iscale;
+  const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = ceilf(7 * scale);
+  const int K = ceilf(7 * scale); // nbhood
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -914,8 +914,8 @@ int process_nlmeans_cl (struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   cl_int err = -999;
 
-  const int P = ceilf(d->radius * roi_in->scale / piece->iscale); // pixel filter size
-  const int K = ceilf(7 * roi_in->scale / piece->iscale); // nbhood
+  const int P = ceilf(d->radius * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // pixel filter size
+  const int K = ceilf(7 * fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f)); // nbhood
   const float norm = 0.015f/(2*P+1);
 
 
