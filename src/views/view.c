@@ -857,17 +857,17 @@ dt_view_image_expose(
                 fminf(darktable.thumbnail_height, height) / (float)buf.height
               );
     }
-    else scale = fminf(width*imgwd/(float)buf.width, height*imgwd/(float)buf.height);
+    else scale = fminf(width*imgwd/fmax((float)buf.width, 8.0f), height*imgwd/fmax((float)buf.height, 8.0f));
   }
 
   // draw centered and fitted:
   cairo_save(cr);
-  cairo_translate(cr, width/2.0, height/2.0f);
+  cairo_translate(cr, width/2.0, height/2.0);
   cairo_scale(cr, scale, scale);
 
   if(buf.buf)
   {
-    cairo_translate(cr, -.5f*buf.width, -.5f*buf.height);
+    cairo_translate(cr, -0.5*buf.width, -0.5*buf.height);
     cairo_set_source_surface (cr, surface, 0, 0);
     // set filter no nearest:
     // in skull mode, we want to see big pixels.
@@ -879,7 +879,8 @@ dt_view_image_expose(
     cairo_fill(cr);
     cairo_surface_destroy (surface);
 
-    cairo_rectangle(cr, 0, 0, buf.width, buf.height);
+    if(buf.width > 8 && buf.height > 8)
+      cairo_rectangle(cr, 0, 0, buf.width, buf.height);
   }
 
   // border around image
