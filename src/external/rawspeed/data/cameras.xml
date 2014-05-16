@@ -3512,7 +3512,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="48" y="4" width="-60" height="-28"/>
+		<Crop x="89" y="17" width="-71" height="-55"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
 			<Hint name="msb_override" value="false"/>
@@ -3525,7 +3525,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="48" y="4" width="-60" height="-28"/>
+		<Crop x="89" y="17" width="-71" height="-55"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
 			<Hint name="msb_override" value="false"/>
@@ -3538,7 +3538,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="48" y="4" width="-60" height="-28"/>
+		<Crop x="89" y="17" width="-71" height="-55"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
 			<Hint name="msb_override" value="false"/>
@@ -3551,7 +3551,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="48" y="4" width="-60" height="-60"/>
+		<Crop x="89" y="17" width="-71" height="-55"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
 			<Hint name="msb_override" value="false"/>
@@ -3564,7 +3564,7 @@
 			<Color x="0" y="1">BLUE</Color>
 			<Color x="1" y="1">GREEN</Color>
 		</CFA>
-		<Crop x="48" y="4" width="-60" height="-60"/>
+		<Crop x="89" y="17" width="-71" height="-55"/>
 		<Sensor black="0" white="4095"/>
 		<Hints>
 			<Hint name="msb_override" value="false"/>
