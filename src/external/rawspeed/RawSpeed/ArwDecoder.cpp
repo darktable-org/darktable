@@ -39,14 +39,12 @@ RawImage ArwDecoder::decodeRawInternal() {
   vector<TiffIFD*> data = mRootIFD->getIFDsWithTag(STRIPOFFSETS);
 
   if (data.empty()) {
-    TiffEntry *dwidth = mRootIFD->getEntryRecursive(IMAGEWIDTH);
-    TiffEntry *dheight = mRootIFD->getEntryRecursive(IMAGELENGTH);
+    TiffEntry *model = mRootIFD->getEntryRecursive(MODEL);
 
-    if (dwidth && dwidth->isInt() && dwidth->getInt() == 3872 &&
-        dheight && dheight->isInt() && dheight->getInt() == 2592) {
+    if (model && model->getString() == "DSLR-A100") {
       // We've caught the elusive A100 in the wild, a transitional format
       // between the simple sanity of the MRW custom format and the wordly
-      // sophistication of the Tiff-based ARW format, let's shoot from the hip
+      // wonderfullness of the Tiff-based ARW format, let's shoot from the hip
       uint32 off = mRootIFD->getEntryRecursive(SUBIFDS)->getInt();
       uint32 width = 3881;
       uint32 height = 2608;
