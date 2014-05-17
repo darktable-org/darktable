@@ -968,16 +968,7 @@ int dt_exif_read_blob(
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.StripByteCounts")))
          != exifData.end() )
       exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.XResolution")))
-         != exifData.end() )
-      exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.YResolution")))
-         != exifData.end() )
-      exifData.erase(pos);
     if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.PlanarConfiguration")))
-         != exifData.end() )
-      exifData.erase(pos);
-    if ( (pos=exifData.findKey(Exiv2::ExifKey("Exif.Image.ResolutionUnit")))
          != exifData.end() )
       exifData.erase(pos);
 
@@ -1101,6 +1092,10 @@ int dt_exif_read_blob(
       exifData["Exif.Photo.PixelXDimension"] = out_width;
     if (out_height > 0)
       exifData["Exif.Photo.PixelYDimension"] = out_height;
+
+    exifData["Exif.Image.XResolution"] = 300;
+    exifData["Exif.Image.YResolution"] = 300;
+    exifData["Exif.Image.ResolutionUnit"] = uint16_t(2); /* inches */
 
     exifData["Exif.Image.Software"] = PACKAGE_STRING;
 
