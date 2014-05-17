@@ -92,6 +92,16 @@ button_clicked (GtkWidget *widget, dt_imageio_module_storage_t *self)
   gtk_widget_destroy (filechooser);
 }
 
+static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
+{
+  dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(entry));
+}
+
+static void overwrite_toggle_callback(GtkToggleButton *togglebutton, gpointer user_data)
+{
+  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", gtk_toggle_button_get_active(togglebutton));
+}
+
 void
 gui_init (dt_imageio_module_storage_t *self)
 {
@@ -121,6 +131,8 @@ gui_init (dt_imageio_module_storage_t *self)
   d->entry = GTK_ENTRY(widget);
   dt_gui_key_accel_block_on_focus_connect (GTK_WIDGET (d->entry));
   g_object_set(G_OBJECT(widget), "tooltip-text", tooltip_text, (char *)NULL);
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
+
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, 0);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   g_object_set(G_OBJECT(widget), "tooltip-text", _("select directory"), (char *)NULL);
@@ -129,6 +141,7 @@ gui_init (dt_imageio_module_storage_t *self)
 
   d->overwrite_btn = GTK_TOGGLE_BUTTON(gtk_check_button_new_with_label(_("overwrite")));
   gtk_box_pack_start(GTK_BOX(self->widget),GTK_WIDGET (d->overwrite_btn),TRUE,FALSE,0);
+  g_signal_connect(G_OBJECT(d->overwrite_btn), "toggled", G_CALLBACK(overwrite_toggle_callback), self);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overwrite_btn), FALSE);
 
   g_free(tooltip_text);
@@ -158,11 +171,7 @@ int
 store (dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
        const int num, const int total, const gboolean high_quality)
 {
-  disk_t *g = (disk_t *)self->gui_data;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
-
-  // since we're potentially called in parallel, we should uncheck button as early as possible
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
 
   char filename[PATH_MAX]= {0};
   char dirname[PATH_MAX]= {0};
@@ -282,15 +291,17 @@ void init(dt_imageio_module_storage_t *self)
 void*
 get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_disk_t *d = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
-  memset(d, 0, sizeof(dt_imageio_disk_t));
-  disk_t *g = (disk_t *)self->gui_data;
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
+
+  char *text = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
+  g_strlcpy(d->filename, text, sizeof(d->filename));
+  g_free(text);
+
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
-  const char *text = gtk_entry_get_text(GTK_ENTRY(g->entry));
-  g_strlcpy(d->filename, text, sizeof(d->filename));
-  dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
-  d->overwrite = gtk_toggle_button_get_active(g->overwrite_btn);
+
+  d->overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite");
+
   return d;
 }
 
@@ -305,15 +316,22 @@ free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 int
 set_params(dt_imageio_module_storage_t *self, const void *params, const int size)
 {
-  if(size != self->params_size(self)) return 1;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
   disk_t *g = (disk_t *)self->gui_data;
+
+  if(size != self->params_size(self)) return 1;
+
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
-  dt_conf_set_string("plugins/imageio/storage/disk/file_directory", d->filename);
 
   // we really do not want user to unintentionally overwrite image
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
   return 0;
+}
+
+void export_dispatched(dt_imageio_module_storage_t *self)
+{
+  disk_t *g = (disk_t *)self->gui_data;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->overwrite_btn), FALSE);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

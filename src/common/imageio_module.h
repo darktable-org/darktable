@@ -159,6 +159,9 @@ typedef struct dt_imageio_module_storage_t
   void* (*get_params)   (struct dt_imageio_module_storage_t *self);
   void  (*free_params)  (struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
   int   (*set_params)   (struct dt_imageio_module_storage_t *self, const void *params, const int size);
+
+  void  (*export_dispatched) (struct dt_imageio_module_storage_t *self);
+
   luaA_Type parameter_lua_type;
 }
 dt_imageio_module_storage_t;
