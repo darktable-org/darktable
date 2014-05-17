@@ -2226,6 +2226,13 @@
     <shortdescription>method to use for getting the display profile</shortdescription>
     <longdescription>this option allows to force a specific means of getting the current display profile. this is useful when one alternative gives wrong results</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>metadata/resolution</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="core">
     <name>run_crawler_on_start</name>
     <type>bool</type>

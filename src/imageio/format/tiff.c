@@ -137,11 +137,16 @@ int write_image (dt_imageio_module_data_t *d_tmp, const char *filename, const vo
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->height);
   TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-  TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)DT_TIFFIO_STRIPE);
   TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
-  TIFFSetField(tif, TIFFTAG_XRESOLUTION, 300.f);
-  TIFFSetField(tif, TIFFTAG_YRESOLUTION, 300.f);
+
+  int resolution = dt_conf_get_int("metadata/resolution");
+  if (resolution > 0)
+  {
+    TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
+    TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+  }
 
   rowsize = (d->width*3) * d->bpp / 8;
   stripesize = rowsize * DT_TIFFIO_STRIPE;
