@@ -190,11 +190,7 @@ static void dt_iop_levels_compute_levels_automatic(dt_iop_module_t *self, dt_dev
 
   if(self->histogram == NULL) return;
 
-  uint32_t total = 0;
-  for(uint32_t i=0; i < self->histogram_params.bins_count; i++)
-  {
-    total += self->histogram[4*i];
-  }
+  uint32_t total = self->histogram_pixels;
 
   float thr[3];
   for(int k=0; k < 3; k++)

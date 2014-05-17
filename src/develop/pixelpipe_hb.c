@@ -332,6 +332,7 @@ histogram_collect(dt_iop_module_t *module, const void *pixel, const dt_iop_roi_t
   dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
   module->histogram_bins_count = histogram_params->bins_count;
+  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
 
   free(histogram_params);
 }
@@ -376,6 +377,7 @@ histogram_collect_cl(int devid, dt_iop_module_t *module, cl_mem img, const dt_io
   dt_histogram_max_helper(histogram_params, cst, histogram, histogram_max);
 
   module->histogram_bins_count = histogram_params->bins_count;
+  module->histogram_pixels = (roi->width - roi->x) * (roi->height - roi->y);
 
   free(histogram_params);
   if(tmpbuf) dt_free_align(tmpbuf);

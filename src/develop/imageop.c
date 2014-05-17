@@ -296,6 +296,7 @@ dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt_dev
   module->histogram_params.roi = NULL;
   module->histogram_params.bins_count = 64;
   module->histogram_bins_count = 0;
+  module->histogram_pixels = 0;
   module->multi_priority = 0;
   for(int k=0; k<3; k++)
   {
