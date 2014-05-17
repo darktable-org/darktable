@@ -987,8 +987,11 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
   {
     snprintf(makermodel, makermodel_len, "%s", model);
   }
-  else
-  {
+  else if (!strcmp(maker, "KONICA MINOLTA")) {
+    // Use the dcraw name name for the Konica Minolta 5D/7D (without Konica)
+    int numoffset = !strncmp(model, "MAXXUM", 6) ? 7 : 6;
+    snprintf(makermodel, makermodel_len, "MINOLTA DYNAX %s", model+numoffset);
+  } else {
     // else need to append first word of the maker:
     c = maker;
     d = model;
@@ -996,11 +999,8 @@ dt_colorspaces_get_makermodel(char *makermodel, size_t makermodel_len, const cha
     // separate with space
     *(e++) = ' ';
     // and continue with model.
-    // replace MAXXUM with DYNAX for wb presets.
-    if(!strcmp(maker, "MINOLTA") && !strncmp(model, "MAXXUM", 6))
-      snprintf(e, makermodel_len - (d-maker), "DYNAX %s", model+7);
     // need FinePix gone from some fuji cameras to match dcraws description:
-    else if(!strncmp(model, "FinePix", 7))
+    if(!strncmp(model, "FinePix", 7))
       snprintf(e, makermodel_len - (d-maker), "%s", model + 8);
     else snprintf(e, makermodel_len - (d-maker), "%s", model);
   }

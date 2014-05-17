@@ -338,14 +338,10 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
     if( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Keywords")))
         != iptcData.end() )
     {
-      while(pos != iptcData.end())
-      {
-        std::string str = pos->print(/*&iptcData*/);
-        guint tagid = 0;
-        dt_tag_new(str.c_str(),&tagid);
-        dt_tag_attach(tagid, img->id);
-        ++pos;
-      }
+      std::string str = pos->print(/*&iptcData*/);
+      guint tagid = 0;
+      dt_tag_new(str.c_str(),&tagid);
+      dt_tag_attach(tagid, img->id);
     }
     if ( (pos=iptcData.findKey(Exiv2::IptcKey("Iptc.Application2.Caption")))
          != iptcData.end() )

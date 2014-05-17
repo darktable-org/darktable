@@ -2027,7 +2027,8 @@ post_process_collect_info:
             const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
             for(int k = 0; k < 3; k++)
             {
-              const int out_y = CLAMP(1.0 - (8.0/9.0) * rgb[k], 0.0, 1.0) * _height;
+              const float v = isnan(rgb[k]) ? 0.0f : rgb[k];   // catch NaNs as they don't convert well to integers
+              const int out_y = CLAMP(1.0 - (8.0/9.0) * v, 0.0, 1.0) * _height;
               uint32_t * const out = buf + (out_y * dev->histogram_waveform_width * 3 + out_x * 3 + k);
               (*out)++;
 //               mincol[k] = MIN(mincol[k], *out);
