@@ -20,6 +20,7 @@
 
 #include <inttypes.h>
 #include "control/control.h"
+#include "common/imageio_module.h"
 
 typedef struct dt_control_export_t
 {
